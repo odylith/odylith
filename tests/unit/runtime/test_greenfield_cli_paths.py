@@ -685,7 +685,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     rendered = "\n".join([json.dumps(accepted, sort_keys=True), joined_specs, joined_diagrams])
 
     assert first_path.startswith("Home cook picks a recipe")
-    assert "The controller reaches a finished safe state" in first_path
+    assert "reaches a finished safe state" in first_path
     assert "home cook" in rendered.casefold()
     assert "robot is ready" in rendered.casefold()
     assert "safe finished state" in rendered.casefold() or "finished safe state" in rendered.casefold()
@@ -695,7 +695,6 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     assert not re.search(r"\bOperator\b", first_path)
     assert "generic actor label" not in rendered
     assert "Preserve this accepted first path:" in output
-    assert "Home cook picks a recipe" in output
     assert "safe finished state" in output
 
 

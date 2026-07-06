@@ -16,6 +16,8 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
+from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
+from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import proposal_with_component_brief_gate
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract import responsibility_from_contract
@@ -563,6 +565,15 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
     assert modal_base_form_drift_phrases("The user can coordinator creates packet state.") == [
         "can coordinator creates"
     ]
+    assert repair_modal_base_form_drift("One analyst can records benchmark datasets and exports a review packet.") == (
+        "One analyst can record benchmark datasets and export a review packet."
+    )
+    assert repair_infinitive_base_form_drift("The review prompt asks a user to inspects retrieved keys and exports proof.") == (
+        "The review prompt asks a user to inspect retrieved keys and export proof."
+    )
+    assert repair_infinitive_base_form_drift("The workflow routes to records archive for audit.") == (
+        "The workflow routes to records archive for audit."
+    )
     assert base_gerund_clause("uploading benchmark runs and inspecting failures") == (
         "upload benchmark runs and inspect failures"
     )

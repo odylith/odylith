@@ -299,8 +299,16 @@ def _has_unbalanced_quote_span(value: str) -> bool:
     return (
         text.count('"') % 2 == 1
         or text.count("“") != text.count("”")
-        or bool(re.search(r"(?:^|\s)'[A-Za-z][^']*$", text))
+        or _has_unbalanced_single_quote_span(text)
     )
+
+
+def _has_unbalanced_single_quote_span(text: str) -> bool:
+    quote_index = text.rfind("'")
+    if quote_index < 0 or quote_index + 1 >= len(text):
+        return False
+    previous_is_boundary = quote_index == 0 or text[quote_index - 1].isspace()
+    return previous_is_boundary and text[quote_index + 1].isalpha()
 
 
 def _continues_title_after_role(value: Any, offset: int) -> bool:

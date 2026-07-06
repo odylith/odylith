@@ -66,7 +66,7 @@ def confirmed_project_brief(
     internal_summary = join_system_labels(internal_systems, limit=8) or (
         f"{state_ref} ownership and {evidence_ref} review"
     )
-    component_summary = join_system_labels(component_labels, limit=8) or internal_summary
+    component_summary = _join_component_display_labels(component_labels, limit=8) or internal_summary
     external_summary = boundary_clause_text(external_systems) or "explicitly deferred external systems"
     story = product_story or (
         f"{label} turns the confirmed request into one usable product path with named users, "
@@ -745,6 +745,15 @@ def _repair_show_actor_artifact(value: str) -> str:
         value,
         flags=re.IGNORECASE,
     )
+
+
+def _join_component_display_labels(items: list[str] | None, *, limit: int) -> str:
+    values: list[str] = []
+    for item in items or []:
+        label = compact_text(item).strip(" .")
+        if label and label not in values:
+            values.append(label)
+    return ", ".join(values[:limit])
 
 
 def _brief_option(identifier: str, decision: str, recommended: str, impact: str) -> dict[str, Any]:

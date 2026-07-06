@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
@@ -93,6 +94,7 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "window",
     "saved",
 }
+_FINITE_ACTION_PATTERN = action_verb_pattern(include_base=False, include_finite=True)
 
 
 def capability_phrase(proposal: Mapping[str, Any]) -> str:
@@ -125,12 +127,39 @@ def _base_user_action_phrase(value: str) -> str:
     actor_action = _actor_led_base_action_phrase(text)
     if actor_action:
         return actor_action
+    subject_action = _subject_led_finite_action_phrase(text)
+    if subject_action:
+        return subject_action
     return base_action_clause(text)
 
 
 def _actor_led_base_action_phrase(value: str) -> str:
     _actor, action = _actor_led_base_action_parts(value)
     return action
+
+
+def _subject_led_finite_action_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    match = re.search(
+        rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_PATTERN})(?![A-Za-z0-9_-])",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or match.start() <= 0:
+        return ""
+    subject = text[: match.start()].strip(" ,")
+    if not 1 <= len(subject.split()) <= 5:
+        return ""
+    if re.search(
+        r"\b(?:decision|evidence|proof|recommendation|record|report|result|status|summary|view)\b",
+        subject,
+        flags=re.IGNORECASE,
+    ):
+        return ""
+    action = text[match.start() :].strip(" .")
+    return base_action_clause(action, force_leading_finite=True) if looks_like_action_clause(action) else ""
 
 
 def _actor_led_base_action_parts(value: str) -> tuple[str, str]:

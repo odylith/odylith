@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence import greenfield_confirmed_completion_text_model as completion_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import FirstPathContract
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import _first_path_contract_claim
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
@@ -48,6 +49,46 @@ def test_semantic_model_prefers_terminal_visible_outcome_over_mid_path_confirmat
         ("follows", False),
         ("sees", True),
     ]
+
+
+def test_first_path_outcome_does_not_concatenate_title_cased_actor_and_action() -> None:
+    first_path = (
+        "Home Cook picks a recipe, the controller validates the robot is ready, runs the step sequence, "
+        "surfaces progress, and reaches a finished safe state."
+    )
+
+    outcome = first_path_outcome_phrase(
+        first_path,
+        proof_boundary=(
+            "First version proves load a recipe, run its steps with closed-loop control, "
+            "hit a safe finished state, and honor an emergency stop."
+        ),
+    )
+
+    assert "cookpicks" not in outcome.casefold()
+    assert outcome in {"a finished safe state", "Progress"}
+
+
+def test_completion_action_phrase_strips_subject_before_user_can_clause() -> None:
+    proposal = {
+        "intent": {
+            "first_path": (
+                "Home Cook picks a recipe, the controller validates the robot is ready, runs the step sequence, "
+                "surfaces progress, and reaches a finished safe state."
+            )
+        }
+    }
+
+    action = completion_text.action_phrase(proposal)
+    product_view = completion_text.workstream_product_view(
+        label="Recipe Sequencer",
+        action=action,
+        outcome="a finished safe state",
+    )
+
+    assert action == "pick a recipe"
+    assert "user can home cook picks" not in product_view.casefold()
+    assert "user can pick a recipe" in product_view.casefold()
 
 
 def test_semantic_model_attaches_terminal_visible_result_when_record_is_noun_and_verb() -> None:

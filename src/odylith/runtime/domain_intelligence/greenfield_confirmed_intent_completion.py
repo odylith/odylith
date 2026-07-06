@@ -7,6 +7,8 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
+from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference, project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description, completed_actor_rows as _completed_actor_rows
@@ -235,7 +237,10 @@ def _normalize_visible_result_language(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     )
-    return _clean(_normalize_visible_result_terms(text))
+    text = _normalize_visible_result_terms(text)
+    text = repair_modal_base_form_drift(text)
+    text = repair_infinitive_base_form_drift(text)
+    return _clean(text)
 
 
 def _normalize_first_path(value: str) -> str:

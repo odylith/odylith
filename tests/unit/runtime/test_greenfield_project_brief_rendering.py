@@ -405,3 +405,41 @@ def test_project_brief_renderer_preserves_lower_first_source_symbol_at_fragment_
 
     assert "mRNA Stability Batch Comparison Workspace helps" in rendered
     assert "MRNA Stability" not in rendered
+
+
+def test_confirmed_project_brief_preserves_long_component_label_tails() -> None:
+    component_labels = [
+        "Annealing Result Review Console for QUBO models, Ising models, baseline comparisons, and reproducibility evidence",
+        "Solver Access Control Plane for D-Wave Leap credentials, simulator fallback, queue visibility, and run imports",
+        "Physical Lab Operations Register for workstations, access state, equipment notes, and operational handoffs",
+    ]
+    brief = confirmed_project_brief(
+        label="Quantum Annealing Research Lab",
+        prompt="quantum annealing research lab",
+        release="0.0.1",
+        state_object="An experiment package tracks model, backend, parameters, results, baseline, and review evidence.",
+        evidence_record="Experiment review evidence packet",
+        product_story=(
+            "Research teams need one governed lab workflow for annealing experiments, physical lab readiness, "
+            "baseline comparison, and reproducibility review."
+        ),
+        first_path=(
+            "A researcher defines a small optimization problem, formulates it for annealing, records parameters, "
+            "runs or imports results, compares them with a classical baseline, and publishes a review packet."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 succeeds when one experiment package can be reviewed with baseline comparison, "
+            "uncertainty notes, and reproducibility evidence without claiming quantum advantage."
+        ),
+        human_actors=["Research scientist", "Lab operator", "Reviewer"],
+        internal_systems=["Experiment registry", "Backend control plane", "Run ledger", "Review board"],
+        component_labels=component_labels,
+    )
+
+    component_gate = next(
+        gate for gate in brief["coding_readiness_gates"] if "components come from product systems" in gate
+    )
+
+    for label in component_labels:
+        assert label in component_gate
+    assert "Annealing Result Review Console, Solver Access Control Plane" not in component_gate

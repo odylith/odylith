@@ -13,6 +13,7 @@ from dataclasses import asdict, dataclass
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
@@ -55,6 +56,7 @@ _NON_HUMAN_WORKFLOW_SUBJECT_TERMS = frozenset(
     status summary view workflow
     """.split()
 )
+_FINITE_ACTION_PATTERN = action_verb_pattern(include_base=False, include_finite=True)
 
 
 @dataclass(frozen=True)
@@ -721,6 +723,8 @@ def _candidate_is_product_result(value: str) -> bool:
         return False
     if _is_internal_action_candidate(text) and not visible_result_object(text) and not _is_predicate_result_state(text):
         return False
+    if _is_actor_led_material_action_candidate(text):
+        return False
     if _starts_with_connector(text):
         return False
     if _starts_with_result_modifier(text):
@@ -729,6 +733,27 @@ def _candidate_is_product_result(value: str) -> bool:
         return False
     lowered = text.casefold()
     if lowered in {"next action", "next step", "what happens next", "what happened next"}:
+        return False
+    return True
+
+
+def _is_actor_led_material_action_candidate(value: str) -> bool:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return False
+    if visible_result_object(text) or _is_predicate_result_state(text) or _is_action_state_result(text):
+        return False
+    match = re.search(
+        rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_PATTERN})(?![A-Za-z0-9_-])",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or match.start() <= 0:
+        return False
+    subject = text[: match.start()].strip(" ,")
+    if not 1 <= word_count(subject) <= 5:
+        return False
+    if re.search(r"\b(?:result|status|summary|view|report|record|recommendation|decision|proof|evidence)\b", subject, flags=re.IGNORECASE):
         return False
     return True
 

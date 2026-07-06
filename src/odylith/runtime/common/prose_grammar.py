@@ -226,6 +226,7 @@ _INFINITIVE_TO_FINITE = {
     "vote": "votes",
     "watch": "watches",
     "write": "writes",
+    "wrangle": "wrangles",
 }
 
 _FINITE_ACTION_VERBS = set(_INFINITIVE_TO_FINITE.values()) | {
@@ -267,6 +268,32 @@ _MODAL_COORDINATED_PLURAL_OBJECT_TERMS = frozenset(
 )
 _MODAL_COORDINATED_OBJECT_BOUNDARIES = frozenset(
     {"", "after", "and", "because", "before", "for", "from", "if", "into", "or", "then", "through", "to", "until", "when", "where", "which", "while", "with", "without"}
+)
+_TO_NOUN_PRECEDER_VERBS = frozenset(
+    {
+        "add",
+        "adds",
+        "attach",
+        "attaches",
+        "connect",
+        "connects",
+        "link",
+        "links",
+        "map",
+        "maps",
+        "point",
+        "points",
+        "relate",
+        "relates",
+        "reply",
+        "replies",
+        "respond",
+        "responds",
+        "route",
+        "routes",
+        "send",
+        "sends",
+    }
 )
 _GERUND_NO_DOUBLE_FINAL_CONSONANT = frozenset(
     {
@@ -633,6 +660,52 @@ def repair_modal_base_form_drift(value: str) -> str:
         str(value or ""),
         flags=re.IGNORECASE,
     )
+
+
+def repair_infinitive_base_form_drift(value: str) -> str:
+    """Repair generated infinitive clauses such as ``to inspects``."""
+
+    text = str(value or "")
+    finite_pattern = "|".join(re.escape(verb) for verb in sorted(_FINITE_TO_BASE, key=len, reverse=True))
+
+    def replace_clause(match: re.Match[str]) -> str:
+        body = match.group("body")
+        if _looks_like_to_plural_noun_context(text, match):
+            return match.group(0)
+        if not _infinitive_clause_starts_with_action(body):
+            return match.group(0)
+        return f"{match.group('marker')} {_repair_modal_clause_body(body, finite_pattern=finite_pattern)}"
+
+    return re.sub(
+        rf"\b(?P<marker>to)\s+(?P<body>[^.!?;:]+)",
+        replace_clause,
+        text,
+        flags=re.IGNORECASE,
+    )
+
+
+def _infinitive_clause_starts_with_action(value: str) -> bool:
+    first, _separator, _rest = str(value or "").strip().partition(" ")
+    token = _clean_word_token(first)
+    return bool(token and (looks_like_base_action_token(token) or looks_like_finite_action_token(token)))
+
+
+def _looks_like_to_plural_noun_context(source: str, match: re.Match[str]) -> bool:
+    body = match.group("body")
+    first, _separator, _rest = str(body or "").strip().partition(" ")
+    target = _clean_word_token(first)
+    if not target.endswith("s"):
+        return False
+    previous = _previous_word_before(source, match.start("marker"))
+    return previous in _TO_NOUN_PRECEDER_VERBS
+
+
+def _previous_word_before(value: str, index: int) -> str:
+    prefix = str(value or "")[: max(0, index)].rstrip()
+    if not prefix:
+        return ""
+    match = re.search(r"([A-Za-z0-9][A-Za-z0-9'-]*)\W*$", prefix)
+    return _clean_word_token(match.group(1)) if match else ""
 
 
 def _repair_modal_clause_body(value: str, *, finite_pattern: str) -> str:

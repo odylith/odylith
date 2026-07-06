@@ -102,6 +102,40 @@ def test_project_judgment_accepts_full_case_label_and_tail_coverage() -> None:
     assert greenfield_project_judgment_issues(package) == ()
 
 
+def test_project_judgment_rejects_component_summary_missing_long_label_tails() -> None:
+    long_label = (
+        "Annealing Result Review Console for QUBO models, Ising models, "
+        "baseline comparisons, and reproducibility evidence"
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            **_proposal(),
+            "components": [
+                {"component_id": "annealing-review", "label": long_label},
+                {
+                    "component_id": "solver-access",
+                    "label": (
+                        "Solver Access Control Plane for D-Wave Leap credentials, simulator fallback, "
+                        "queue visibility, and run imports"
+                    ),
+                },
+            ],
+        },
+        project_brief_preview={
+            "coding_readiness_gates": [
+                (
+                    "The ReviewLedger components come from product systems named in the accepted product "
+                    "direction: Annealing Result Review Console, Solver Access Control Plane."
+                )
+            ]
+        },
+    )
+
+    issues = greenfield_project_judgment_issues(package)
+
+    assert f"greenfield project brief component summary omits `{long_label}`" in issues
+
+
 def test_project_judgment_treats_repeated_short_actions_as_tail_coverage() -> None:
     proposal = _proposal()
     proposal["semantic_model"] = {

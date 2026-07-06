@@ -55,6 +55,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections im
     confirmed_intent_sections as _sections,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
+    is_confirmed_intent_supporting_section as _is_supporting_section,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     normalize_confirmed_intent_heading as _normalize_heading,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
@@ -223,8 +226,15 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
     raw_title_candidate = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
-    if not _has_structured_body_sections(sections) and not _has_unheaded_confirmation_shape(text, raw_title_candidate):
-        thin_source = _thin_operator_intent_source(text, prompt=prompt)
+    if not _has_structured_body_sections(sections) and not _has_unheaded_confirmation_shape(
+        text,
+        sections,
+        raw_title_candidate,
+    ):
+        thin_source = _thin_operator_intent_source(
+            _thin_recovery_source_text(text, sections, raw_title_candidate),
+            prompt=prompt,
+        )
         if thin_source:
             text = confirmation_from_operator_intent(thin_source, prefer_product_title=True)
             generated_confirmation = True
@@ -233,7 +243,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
     title = title_normalization.canonical_title
     preamble_story = _preamble_story(sections, title)
-    preamble_paragraphs = _preamble_paragraphs(text, title)
+    preamble_paragraphs = _product_context_paragraphs(text, sections, title)
     derived_proof = _derived_proof_boundary_paragraph(preamble_paragraphs)
     derived_state = _derived_state_paragraph(preamble_paragraphs)
     derived_first_path = _derived_first_path_paragraph(preamble_paragraphs)
@@ -359,15 +369,24 @@ def _thin_operator_intent_source(text: str, *, prompt: str = "") -> str:
     return ""
 
 
-def _has_unheaded_confirmation_shape(text: str, title: str) -> bool:
-    paragraphs = _preamble_paragraphs(text, title)
+def _thin_recovery_source_text(text: str, sections: Mapping[str, list[str]], title: str) -> str:
+    if not _has_explicit_section_boundaries(sections):
+        return _clean(text)
+    paragraphs = _product_context_paragraphs(text, sections, title)
+    title_text = _clean(title)
+    source = _clean(". ".join([title_text, *paragraphs] if title_text else paragraphs))
+    return source or _clean(text)
+
+
+def _has_unheaded_confirmation_shape(text: str, sections: Mapping[str, list[str]], title: str) -> bool:
+    paragraphs = _product_context_paragraphs(text, sections, title)
     if len(paragraphs) < 3:
         return False
     state = _derived_state_paragraph(paragraphs)
     first_path = _derived_first_path_paragraph(paragraphs)
     proof = _derived_proof_boundary_paragraph(paragraphs)
     story = _derived_product_story(paragraphs, state=state, first_path=first_path, proof_boundary=proof)
-    return bool(state and first_path and proof and story)
+    return bool(state and first_path and story)
 
 
 def _operator_request_source(value: str) -> str:
@@ -543,8 +562,19 @@ def _looks_like_bare_title(value: str) -> bool:
     words = _label_terms(text)
     if not 1 <= len(words) <= 10:
         return False
+    title_like_words = [
+        word
+        for word in str(text or "").split()
+        if word.strip("()[]{}.,:;")
+    ]
+    title_like_count = sum(
+        1
+        for word in title_like_words
+        if word.strip("()[]{}.,:;")[:1].isupper() or word.strip("()[]{}.,:;").isupper()
+    )
+    title_like = bool(title_like_words) and title_like_count >= max(1, len(title_like_words) - 1)
     lowered = text.casefold()
-    if re.search(
+    if not title_like and re.search(
         r"\b(?:wants?|needs?|helps?|uses?|creates?|submits?|reviews?|records?|tracks?|decides?|should|must|can|will)\b",
         lowered,
     ):
@@ -554,7 +584,13 @@ def _looks_like_bare_title(value: str) -> bool:
 
 def _section_text(sections: Mapping[str, list[str]], key: str) -> str:
     lines = sections.get(key, [])
-    return _clean(" ".join(line.strip("-* \t") for line in lines if line.strip()))
+    return _clean(
+        " ".join(
+            _strip_list_marker(line)
+            for line in lines
+            if line.strip() and not _looks_like_operator_instruction_line(_strip_list_marker(line))
+        )
+    )
 
 
 def _preamble_story(sections: Mapping[str, list[str]], title: str) -> str:
@@ -568,30 +604,139 @@ def _preamble_story(sections: Mapping[str, list[str]], title: str) -> str:
             continue
         if _classify_heading(line):
             continue
+        if _looks_like_operator_instruction_line(line):
+            continue
         lines.append(line)
     return _clean(" ".join(lines))
 
 
+def _product_context_paragraphs(text: str, sections: Mapping[str, list[str]], title: str) -> list[str]:
+    if not _has_explicit_section_boundaries(sections):
+        return _preamble_paragraphs(text, title)
+    rows: list[str] = []
+    for key, lines in sections.items():
+        if key != "preamble" and not _is_supporting_section(key):
+            continue
+        rows.extend(lines)
+        rows.append("")
+    return _paragraphs_from_lines(rows, title, keep_list_items=True)
+
+
+def _has_explicit_section_boundaries(sections: Mapping[str, list[str]]) -> bool:
+    return any(key != "preamble" for key in sections)
+
+
 def _preamble_paragraphs(text: str, title: str) -> list[str]:
-    title_text = _clean(title).casefold()
-    paragraphs: list[str] = []
+    rows: list[str] = []
     for raw in re.split(r"\n\s*\n+", str(text or "")):
-        lines: list[str] = []
+        row_lines: list[str] = []
         for line in raw.splitlines():
             cleaned = _clean(line.lstrip("#").strip())
             if not cleaned:
-                continue
-            if title_text and cleaned.casefold() == title_text:
                 continue
             if _heading_key(line):
                 continue
             if re.match(r"^\s*(?:[-*•]|\d+[.)])\s+", line):
                 continue
-            lines.append(cleaned)
-        paragraph = _clean(" ".join(lines))
-        if paragraph:
-            paragraphs.append(paragraph)
+            row_lines.append(cleaned)
+        rows.append(" ".join(row_lines))
+        rows.append("")
+    return _expand_narrative_cue_paragraphs(_paragraphs_from_lines(rows, title, keep_list_items=False))
+
+
+def _expand_narrative_cue_paragraphs(paragraphs: Sequence[str]) -> list[str]:
+    expanded: list[str] = []
+    for paragraph in paragraphs:
+        split = _narrative_cue_paragraphs(paragraph)
+        expanded.extend(split or [paragraph])
+    return expanded
+
+
+def _narrative_cue_paragraphs(value: str) -> list[str]:
+    text = _clean(value).strip(" .")
+    if _word_count(text) < 35:
+        return []
+    state_match = re.search(
+        r"\b(?:the\s+main\s+thing\s+(?:the\s+)?product\s+keeps\s+is\s+this|"
+        r"core\s+record|state\s+object|main\s+record|central\s+record)\s*:?\s*",
+        text,
+        flags=re.IGNORECASE,
+    )
+    first_match = re.search(
+        r"\b(?:for\s+the\s+first\s+release|first\s+complete\s+path|first\s+path|first\s+workflow|"
+        r"first\s+journey|first\s+version)\s*(?:,|:|\bis\b)?\s*",
+        text,
+        flags=re.IGNORECASE,
+    )
+    proof_match = re.search(
+        r"\b(?:proof\s+is\s+intentionally\s+narrow|proof\s+boundary|done\s+when|acceptance)\s*:?\s*"
+        r"|\brelease\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not (state_match and first_match and proof_match):
+        return []
+    if not (state_match.start() < first_match.start() < proof_match.start()):
+        return []
+    rows: list[str] = []
+    story = text[: state_match.start()].strip(" .")
+    state = text[state_match.end() : first_match.start()].strip(" .")
+    first_path = text[first_match.end() : proof_match.start()].strip(" .")
+    proof_start = proof_match.start() if text[proof_match.start() :].casefold().startswith("release ") else proof_match.end()
+    proof = text[proof_start:].strip(" .")
+    proof = re.split(
+        r"\b(?:the\s+user\s+can\s+edit|these\s+are\s+the\s+product\s+facts|implementation\s+prompt|next\s+steps?)\b",
+        proof,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0].strip(" .")
+    for row in (story, state, first_path, proof):
+        cleaned = _clean(row).strip(" .")
+        if cleaned and _word_count(cleaned) >= 6:
+            rows.append(cleaned)
+    return rows if len(rows) >= 3 else []
+
+
+def _paragraphs_from_lines(lines: Sequence[str], title: str, *, keep_list_items: bool) -> list[str]:
+    title_text = _clean(title).casefold()
+    paragraphs: list[str] = []
+    current: list[str] = []
+    for raw_line in lines:
+        raw_text = str(raw_line or "")
+        cleaned = _clean(raw_text.lstrip("#").strip())
+        if not cleaned:
+            _append_context_paragraph(paragraphs, current, title_text=title_text)
+            current = []
+            continue
+        if title_text and cleaned.casefold() == title_text:
+            continue
+        if _heading_key(raw_text):
+            continue
+        list_item = re.match(r"^\s*(?:[-*•]|\d+[.)])\s+", raw_text)
+        if list_item and not keep_list_items:
+            continue
+        cleaned = _strip_list_marker(cleaned)
+        if _looks_like_operator_instruction_line(cleaned):
+            continue
+        if list_item:
+            _append_context_paragraph(paragraphs, current, title_text=title_text)
+            current = []
+            _append_context_paragraph(paragraphs, [cleaned], title_text=title_text)
+            continue
+        current.append(cleaned)
+    _append_context_paragraph(paragraphs, current, title_text=title_text)
     return paragraphs
+
+
+def _append_context_paragraph(paragraphs: list[str], lines: Sequence[str], *, title_text: str) -> None:
+    paragraph = _clean(" ".join(line for line in lines if line))
+    if not paragraph:
+        return
+    if title_text and paragraph.casefold() == title_text:
+        return
+    if _looks_like_operator_instruction_line(paragraph):
+        return
+    paragraphs.append(paragraph)
 
 
 def _derived_state_paragraph(paragraphs: Sequence[str]) -> str:
@@ -727,7 +872,9 @@ def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
         text = raw_line.strip()
         if not text:
             continue
-        item = re.sub(r"^\s*(?:[-*•]|\d+[.)])\s*", "", text).strip()
+        item = _strip_list_marker(text)
+        if _looks_like_operator_instruction_line(item):
+            continue
         if item:
             values.append(_clean(item))
     if values:
@@ -738,6 +885,44 @@ def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
 
 def _clean(value: object) -> str:
     return clean_markdown_text(value)
+
+
+def _strip_list_marker(value: object) -> str:
+    return re.sub(r"^\s*(?:[-*•]|\d+[.)])\s*", "", str(value or "")).strip()
+
+
+def _looks_like_operator_instruction_line(value: str) -> bool:
+    text = _clean(value).strip()
+    if not text:
+        return False
+    lowered = text.casefold()
+    exact_or_prefixes = (
+        "confirmed cli after confirmation",
+        "confirm this interpretation",
+        "edit any section",
+        "host reasoning task",
+        "no files changed",
+        "reject it to stop",
+        "source posture:",
+        "visible format contract",
+        "write in chat",
+        "write this same visible",
+    )
+    if lowered.startswith(exact_or_prefixes):
+        return True
+    blocked_fragments = (
+        ".odylith/runtime/greenfield/confirmed-intent",
+        "--intent-file",
+        "--repo-root",
+        "after confirmation should",
+        "child boundaries after confirmation",
+        "coding should start",
+        "confirm: write",
+        "od ylith greenfield create",
+        "odylith greenfield create",
+        "technical plan and proof target",
+    )
+    return any(fragment in lowered for fragment in blocked_fragments)
 
 
 __all__ = [

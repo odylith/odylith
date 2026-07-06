@@ -79,6 +79,16 @@ def test_generated_copy_quality_treats_shell_commands_as_atomic_quote_units() ->
     )
 
 
+def test_generated_copy_quality_checks_large_apostrophe_heavy_text_linearly() -> None:
+    text = " ".join(f"researcher's evidence packet {index}" for index in range(2500))
+
+    assert generated_public_copy_issues("large apostrophe text", text) == ()
+    assert any(
+        "unbalanced quoted text" in issue
+        for issue in generated_public_copy_issues("large unfinished quote", f"{text} 'unfinished")
+    )
+
+
 def test_generated_copy_quality_does_not_splice_mermaid_label_headers_into_payload_text() -> None:
     mermaid = """
 flowchart LR

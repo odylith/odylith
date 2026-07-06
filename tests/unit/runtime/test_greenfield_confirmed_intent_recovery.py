@@ -102,7 +102,8 @@ def test_host_guidance_recovery_rejects_action_chain_prefix_as_actor(tmp_path) -
     rendered = json.dumps(completed, sort_keys=True)
 
     assert intent["human_actors"] == [
-        "Legal Aides: need the product to organize diversion records and keep the result visible and reviewable"
+        "Legal Aides: need the product to organize diversion records, tribal consultation notes, drought restrictions, "
+        "expert exhibits, and filing deadlines into a reviewable hearing packet and keep the result visible and reviewable"
     ]
     assert "Legal Aides Organize Diversion" not in rendered
     assert "can organizes" not in rendered

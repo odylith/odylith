@@ -562,8 +562,11 @@ def _looks_like_direct_transformation_workflow_action(value: str) -> bool:
     action = _word_key(words[0])
     if action in {"capture", "captures", "record", "records", "register", "registers"}:
         return len(first_path_model(value).steps) == 1
-    return action in {"convert", "converts", "transform", "transforms", "translate", "translates", "turn", "turns"} and (
-        " into " in f" {clean_markdown_text(value).casefold()} "
+    if action in {"convert", "converts", "transform", "transforms", "translate", "translates", "turn", "turns"}:
+        return " into " in f" {clean_markdown_text(value).casefold()} "
+    model = first_path_model(value)
+    return looks_like_action_clause(value) and len(model.steps) == 1 and bool(
+        model.material_action or model.visible_outcome
     )
 
 

@@ -538,7 +538,7 @@ def lower_plain_title_subject_fragment(value: Any, *, action_offset: int) -> str
     subject = text[:action_offset].strip(" ,")
     if len(subject.split()) < 2 or not plain_title_phrase(subject):
         return text
-    return f"{subject.casefold()}{text[action_offset:]}"
+    return f"{subject.casefold()} {text[action_offset:].lstrip()}"
 
 
 def _lower_plain_title_phrase(value: str) -> str:

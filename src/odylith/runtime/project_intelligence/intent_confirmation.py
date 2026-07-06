@@ -57,6 +57,7 @@ def build_product_intent_confirmation(
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
+                "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
                 "a clear Next step block with three separate bullet lines for Confirm, Edit, and Reject; each choice must say exactly what happens next",
                 "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it and normalize structured intent internally",
@@ -69,12 +70,14 @@ def build_product_intent_confirmation(
                 "use Markdown emphasis or code formatting around normal domain words",
                 "turn the product story into a list of governance artifacts",
                 "invent source-backed implementation evidence",
+                "promote references, citations, authors, equations, benchmark tables, slide captions, legal boilerplate, or coding instructions into product actors, product systems, assumptions, or proof claims",
                 "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation",
                 "dump a generic template or domain catalog",
             ],
             "reasoning_standard": (
                 "Infer the product shape live from the operator prompt and any observed repo source. "
                 "If the prompt is broad, name the strongest plausible interpretation and only the few questions that change the first path, risk posture, topology, or proof bar. "
+                "If the prompt includes a long document or attachment-derived text, segment it mentally into product evidence, supporting context, and non-product scaffolding; only product evidence should appear in the confirmation. "
                 "When the request is scientific, research, model, simulation, prediction, or evaluation oriented, preserve scientific depth without inventing domain facts: carry source evidence, method boundaries, variables, uncertainty, baselines, reproducibility, and excluded claims into the confirmation so create can project them into Radar, Registry, Atlas, and proof artifacts. "
                 "Keep the answer human and product-first: no scaffolding language, no copied prompt-as-title, no artifact inventory before the product makes sense."
             ),
