@@ -20,8 +20,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     build_greenfield_package_report,
     GreenfieldCompletionPackage,
+    _component_preview_path_fidelity_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_until_clean
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
@@ -175,6 +177,79 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
             prompt="Draft a greenfield proposal for a municipal permit review workspace",
         ),
     )
+
+
+def test_confirmed_completion_reconciles_release_plan_to_repaired_backlog_titles(tmp_path: Path) -> None:
+    confirmed_intent = parse_confirmed_intent_text(
+        """# Product Intent Confirmation: Breakeven Solver Evaluation Workspace
+
+## Product Story
+PDE researchers need one reviewable workspace for turning neural and classical solver evidence into a bounded release decision without spreading assumptions across notes, spreadsheets, and ad hoc messages.
+
+## State Object
+A solver evaluation case tracks benchmark dataset, PDE family, neural solver run, classical solver run, error target, training budget, inference cost, breakeven solve count, reviewer note, invalid assumption flag, export status, and version history.
+
+## Human Actors
+Evaluation researcher; benchmark reviewer; release decision owner.
+
+## First Complete Path
+One evaluator can create a solver evaluation case, add neural and classical runs, match error targets, compute breakeven complexity, flag invalid assumptions, and export a reproducible evidence packet.
+
+## Proof Boundary
+Release 0.0.1 succeeds when one benchmark case can be created, reviewed, blocked for invalid assumptions, and exported with replayable evidence without claiming universal solver superiority.
+""",
+        prompt="Productize the PDE solver evaluation paper.",
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Productize the PDE solver evaluation paper.",
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+    )
+
+    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+
+    child_titles = [str(row["title"]) for row in completed["backlog"][1:]]
+    release_plan = completed["release_plan"]
+    assert release_plan["target_workstream_titles"] == child_titles
+    assert release_plan["release_stages"][0]["workstream_titles"] == [child_titles[0]]
+
+
+def test_confirmed_completion_repairs_slide_style_proof_metric_projection(tmp_path: Path) -> None:
+    confirmed_intent = parse_confirmed_intent_text(
+        """Slide 1 - Breakeven Solver Evaluation Workspace
+- Why: PDE researchers need one reviewable workspace for turning neural and classical solver evidence into a bounded release decision without spreading assumptions across notes, spreadsheets, and ad hoc messages.
+- People: Evaluation researcher; benchmark reviewer; release decision owner.
+
+Slide 2 - Product Shape
+- State: A solver evaluation case tracks benchmark dataset, PDE family, neural solver run, classical solver run, error target, training budget, inference cost, breakeven solve count, reviewer note, invalid assumption flag, export status, and version history.
+- First workflow: One evaluator can create a solver evaluation case, add neural and classical runs, match error targets, compute breakeven complexity, flag invalid assumptions, and export a reproducible evidence packet.
+
+Slide 3 - Release Proof
+- Proof: Release 0.0.1 succeeds when one benchmark case can be created, reviewed, blocked for invalid assumptions, and exported with replayable evidence without claiming universal solver superiority.
+- Out of scope: broad claims outside the first release.
+
+Speaker Notes
+Make it beautiful; this note is not product truth.
+""",
+        prompt="Productize the PDE solver evaluation slide deck.",
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Productize the PDE solver evaluation slide deck.",
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+    )
+
+    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+
+    assert semantic_compiler_issues(completed) == []
+    root_metrics = " ".join(str(row) for row in completed["backlog"][0]["success_metrics"])
+    assert "exported with replayable evidence" not in root_metrics.casefold()
+    assert "export a reproducible evidence packet" in root_metrics.casefold()
+    assert "exported reproducible evidence packet" in root_metrics.casefold()
+    assert "slide 3" not in root_metrics.casefold()
+    assert "speaker notes" not in root_metrics.casefold()
 
 
 def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(tmp_path: Path) -> None:
@@ -1455,6 +1530,75 @@ def test_greenfield_prewrite_remaps_component_preview_paths_to_target_repo(tmp_p
     assert remapped[0]["spec_path"] == str(
         (target_root / "odylith/registry/source/components/c-001/CURRENT_SPEC.md").resolve()
     )
+
+
+def test_greenfield_component_memory_path_fidelity_treats_alias_roots_as_same_path(tmp_path: Path) -> None:
+    real_root = tmp_path / "real"
+    alias_root = tmp_path / "alias"
+    real_root.mkdir()
+    alias_root.symlink_to(real_root, target_is_directory=True)
+    component_id = "c-001"
+    expected = (
+        {
+            "component_id": component_id,
+            "registry_path": str(real_root / "odylith/registry/source/component_registry.v1.json"),
+            "spec_path": str(real_root / "odylith/registry/source/components/c-001/CURRENT_SPEC.md"),
+        },
+    )
+    actual = (
+        {
+            "component_id": component_id,
+            "registry_path": str(alias_root / "odylith/registry/source/component_registry.v1.json"),
+            "spec_path": str(alias_root / "odylith/registry/source/components/c-001/CURRENT_SPEC.md"),
+        },
+    )
+
+    assert _component_preview_path_fidelity_issues(
+        owner="accepted-project memory preview",
+        expected=expected,
+        actual=actual,
+    ) == []
+
+
+def test_greenfield_accepted_memory_preserves_structural_path_underscores() -> None:
+    proposal = {
+        "intent": {
+            "title": "Genomic Variant Triage Board",
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+        },
+        "semantic_model": {},
+    }
+    component = {
+        "component_id": "variant-case-ledger",
+        "label": "Variant Case Ledger",
+        "registry_path": "/private/tmp/odylith-variance-genomics-rfp-bullets-t__wl1oz/odylith/registry/source/component_registry.v1.json",
+        "spec_path": "/private/tmp/odylith-variance-genomics-rfp-bullets-t__wl1oz/odylith/registry/source/components/variant-case-ledger/CURRENT_SPEC.md",
+    }
+
+    accepted = proposal_memory.build_accepted_project_source_payload(
+        proposal=proposal,
+        backlog_items=(),
+        component_items=(component,),
+        diagram_ids=(),
+        release_selector="0.0.1",
+        release_id="release-genomic-variant-triage-0-0-1",
+        validation_gate={"status": "passed"},
+        source_launch_context=None,
+        accepted_at="prewrite",
+    )
+    event = proposal_memory.build_greenfield_acceptance_event_preview(
+        proposal=proposal,
+        backlog_items=(),
+        component_items=(component,),
+        diagram_ids=(),
+        release_selector="0.0.1",
+        release_id="release-genomic-variant-triage-0-0-1",
+    )
+
+    created_component = accepted["created"]["components"][0]
+    assert created_component["registry_path"] == component["registry_path"]
+    assert created_component["spec_path"] == component["spec_path"]
+    assert component["spec_path"] in event["artifacts"]
 
 
 def test_greenfield_package_gate_rejects_workstream_preview_without_semantic_proof(tmp_path: Path) -> None:

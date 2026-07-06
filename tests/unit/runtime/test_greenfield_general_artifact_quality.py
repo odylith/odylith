@@ -14,9 +14,11 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
+from odylith.runtime.domain_intelligence.artifact_enrichment import _scoped_sentence
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
@@ -31,6 +33,8 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift 
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
     rendered_spec_alignment_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import build_workstream_domain_intelligence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
     generated_semantic_slop_issues,
     material_first_path_action,
@@ -144,6 +148,56 @@ def test_artifact_judgment_does_not_treat_source_owned_gate_labels_as_contract_f
         },
     )
 
+    assert not any(
+        "component-contract noun slots" in issue
+        for issue in greenfield_artifact_judgment_issues(package)
+    )
+
+
+def test_ocean_reproducibility_proof_stays_out_of_component_noun_slots(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(
+        """Ocean Sensor Drift Calibration Studio
+
+Product story
+Marine scientists validating sensor drift corrections before publishing data need one reviewable workspace for turning source evidence into a bounded release decision.
+
+State object
+A calibration review case tracks sensor identity, deployment window, raw reading, reference sample, drift estimate, correction decision, reviewer note, and history.
+
+First complete path
+A marine scientist creates one calibration review case, imports raw readings, attaches reference samples, estimates drift, records correction decision, routes reviewer approval, and exports a calibrated data packet.
+
+Human actors
+- Marine scientist
+- Data steward
+
+External systems
+- Sensor data file
+- Reference sample registry
+
+Internal product systems
+- Calibration case ledger
+- Drift estimate workspace
+- Data publication gate
+
+Proof boundary
+A data steward can reproduce the accepted or rejected correction from sensor identity, raw reading, reference sample, drift estimate, correction decision, and reviewer note.
+""",
+        prompt="Productize this marine science calibration input.",
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Productize this marine science calibration input.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+    specs = _rendered_specs(completed)
+    package = GreenfieldCompletionPackage(proposal=completed, rendered_component_specs=specs)
+    rendered = json.dumps({"components": completed["components"], "specs": specs}, sort_keys=True).casefold()
+
+    assert "data steward reproduce" not in rendered
+    assert "calibration review case" in rendered
     assert not any(
         "component-contract noun slots" in issue
         for issue in greenfield_artifact_judgment_issues(package)
@@ -1797,6 +1851,72 @@ def test_greenfield_release_title_normalization_preserves_comma_bearing_titles()
 
     assert release_plan["target_workstream_titles"] == [title]
     assert release_plan["release_stages"][0]["workstream_titles"] == [title]
+
+
+def test_greenfield_release_title_normalization_preserves_semicolon_bearing_titles() -> None:
+    title = "Let Evaluation Researcher; Benchmark Reviewer; Release Decision Review the Exported Evidence Packet"
+
+    release_plan = _normalize_release_plan(
+        {
+            "selector": "0.0.1",
+            "target_workstream_titles": title,
+            "release_stages": [{"stage": "wave-1", "workstream_titles": title}],
+        }
+    )
+
+    assert release_plan["target_workstream_titles"] == [title]
+    assert release_plan["release_stages"][0]["workstream_titles"] == [title]
+
+
+def test_greenfield_text_list_normalization_preserves_structured_semicolon_items() -> None:
+    metric = "Let Evaluation Researcher; Benchmark Reviewer; Release Decision Review keeps evidence attached."
+
+    assert normalize_text_list([metric]) == [metric]
+
+
+def test_greenfield_radar_enrichment_preserves_scope_boundary_tail() -> None:
+    row = _scoped_sentence(
+        "Boundary",
+        "Keep Solver Evaluation Case Clear and Reviewable",
+        (
+            "Keep this slice inside the accepted first-release scope: Do not expand beyond one evaluator can create "
+            "a solver evaluation case, add neural and classical runs, match error targets, compute breakeven "
+            "complexity, flag invalid assumptions, and export a reproducible evidence packet."
+        ),
+    )
+
+    assert "match error targets" in row
+    assert "export a reproducible evidence packet" in row
+
+
+def test_greenfield_scope_boundary_preserves_long_first_path_tail() -> None:
+    packet = build_workstream_domain_intelligence(
+        label="Museum Artifact Provenance Review Desk",
+        row_title="Keep Provenance Review Case Clear and Reviewable",
+        problem="Museum registrars need reviewable provenance evidence before accession decisions.",
+        opportunity="Keep source documents, custody claims, expert review, and decision proof together.",
+        product_view="A provenance review desk for one accession decision.",
+        first_slice="Keep the first provenance review case clear and reviewable.",
+        metrics=["Every accession-ready case cites source documents and expert review."],
+        dependencies=["Collection management system"],
+        interfaces=["Provenance review workspace"],
+        validation=["A curator reproduces the accession-ready or blocked decision."],
+        proof_boundary="A curator can reproduce the accession-ready or blocked decision from source documents.",
+        state_object="A provenance review case tracks artifact identity, source document, custody claim, and decision history.",
+        evidence_record="Provenance proof packet",
+        first_path=(
+            "A museum registrar creates one provenance review case, attaches source documents, records custody claims, "
+            "flags an evidence gap, routes expert review, marks accession-ready or blocked, and exports provenance proof."
+        ),
+        human_actors=["Museum registrar", "Curator"],
+        internal_systems=["Provenance case ledger", "Custody evidence viewer", "Expert review queue"],
+        external_systems=["Collection management system", "Digitized archive"],
+        non_goals=["Do not appraise market value or automate final legal title decisions."],
+    )
+
+    constraints = packet["constraints"]
+
+    assert any("exports provenance proof" in row for row in constraints)
 
 
 def test_greenfield_quality_gate_rejects_split_release_title_fragments(tmp_path: Path) -> None:

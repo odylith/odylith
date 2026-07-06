@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import inline_first_path_scope_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
@@ -57,7 +58,9 @@ def confirmed_project_brief(
 ) -> dict[str, Any]:
     label_lower = sentence_label(label)
     state_label = compact_domain_object_label(state_object, fallback=f"{label} state")
+    state_exact_label = domain_object_label(state_object, fallback=state_label)
     state_reference = _state_reference_text(state_object, state_label=state_label)
+    state_reference = _state_reference_with_label(state_reference, state_label=state_exact_label)
     state_descriptor = state_object_descriptor(state_reference)
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
     state_ref = sentence_label(state_label)
@@ -106,6 +109,11 @@ def confirmed_project_brief(
     evidence_summary = _brief_clause(join_confirmed_items((evidence_requirements or [])[:8]), limit=520)
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
+    )
+    release_scope_summary = _release_scope_summary(
+        first_path=first_path or first,
+        first_slice=first,
+        non_goal_summary=non_goal_summary,
     )
     assumption_summary = boundary_clause_text(assumptions) or "accepted first-release assumptions"
     command_prompt = _command_prompt(label=label, first=first, fallback=prompt)
@@ -205,7 +213,7 @@ def confirmed_project_brief(
             _brief_option(
                 "D5",
                 "Release ambition",
-                f"Keep {release} to the accepted first path and non-goals: {non_goal_summary}.",
+                f"Keep {release} to the accepted first path and non-goals: {release_scope_summary}.",
                 "Changes planning depth and validation cost.",
             ),
         ],
@@ -353,6 +361,23 @@ def _command_first_path_summary(value: str) -> str:
     if ". " in text:
         return text.split(". ", 1)[0].strip(" .")
     return text or "accepted first path"
+
+
+def _release_scope_summary(*, first_path: str, first_slice: str, non_goal_summary: str) -> str:
+    path = _brief_clause(first_path or first_slice, limit=620).strip(" .")
+    if not path:
+        return non_goal_summary
+    return f"Do not expand beyond {inline_first_path_scope_fragment(path)} until the first outcome works"
+
+
+def _state_reference_with_label(value: str, *, state_label: str) -> str:
+    text = compact_text(value)
+    label = compact_text(state_label).strip(" .")
+    if not text or not label:
+        return text
+    if label.casefold() in text.casefold():
+        return text
+    return f"{label}: {text}"
 
 
 def _brief_clause(value: str, *, limit: int = 180) -> str:

@@ -102,6 +102,57 @@ def test_project_judgment_accepts_full_case_label_and_tail_coverage() -> None:
     assert greenfield_project_judgment_issues(package) == ()
 
 
+def test_project_judgment_does_not_cross_into_unrelated_scope_prose() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal=_proposal(),
+        project_brief_preview={
+            "coding_readiness_gates": [
+                (
+                    "Keep this slice narrow: Do not expand beyond opening a packet, recording evidence, and "
+                    "approving the final outcome; deferred scope: Do not expand into adjacent workflows until "
+                    "their own path is accepted."
+                )
+            ]
+        },
+    )
+
+    assert "greenfield scope boundary truncates the accepted first-path tail" not in greenfield_project_judgment_issues(package)
+
+
+def test_project_judgment_accepts_visible_result_inflection_in_scope_tail() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            **_proposal(),
+            "semantic_model": {
+                "first_path_contract": {
+                    "visible_result": "exported provenance proof",
+                    "events": [
+                        {"action": "creates", "text": "A museum registrar creates one provenance review case"},
+                        {"action": "attaches", "text": "A museum registrar attaches source documents"},
+                        {"action": "routes", "text": "A museum registrar routes expert review"},
+                        {"action": "marks", "text": "A museum registrar marks accession-ready or blocked"},
+                        {"action": "exports", "text": "A museum registrar exports provenance proof"},
+                    ],
+                }
+            },
+        },
+        project_brief_preview={
+            "customization_options": [
+                {
+                    "recommended": (
+                        "Keep 0.0.1 to the accepted first path and non-goals: Do not expand beyond a museum "
+                        "registrar creates one provenance review case, attaches source documents, routes expert "
+                        "review, marks accession-ready or blocked, and exports provenance proof until the first "
+                        "outcome works."
+                    )
+                }
+            ]
+        },
+    )
+
+    assert greenfield_project_judgment_issues(package) == ()
+
+
 def test_project_judgment_rejects_component_summary_missing_long_label_tails() -> None:
     long_label = (
         "Annealing Result Review Console for QUBO models, Ising models, "

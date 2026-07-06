@@ -297,7 +297,8 @@ def _has_meaningful_story_shape(text: str) -> bool:
     return bool(
         re.search(
             r"\b(?:need|needs|want|wants|help|helps|manage|manages|track|tracks|record|records|show|shows|"
-            r"understand|decide|trust|review|route|collect|reduce|avoid|prevent|resolve|coordinate)\b",
+            r"give|gives|provide|provides|support|supports|understand|decide|trust|review|route|collect|"
+            r"reduce|avoid|prevent|resolve|coordinate)\b",
             cleaned,
             re.IGNORECASE,
         )

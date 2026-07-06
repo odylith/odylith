@@ -169,8 +169,37 @@ def _normalize_list_fields(row: dict[str, Any], fields: Sequence[str], *, split_
 
 
 def _normalize_workstream_ref_fields(row: dict[str, Any]) -> None:
-    _normalize_list_fields(row, _WORKSTREAM_TITLE_LIST_FIELDS)
+    for key in _WORKSTREAM_TITLE_LIST_FIELDS:
+        if key in row:
+            row[key] = _normalize_workstream_title_refs(row.get(key))
     _normalize_list_fields(row, _WORKSTREAM_SCALAR_REF_LIST_FIELDS, split_commas=True)
+
+
+def _normalize_workstream_title_refs(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, Mapping):
+        values: list[str] = []
+        for nested in value.values():
+            values.extend(_normalize_workstream_title_refs(nested))
+        return list(unique_text(values))
+    if isinstance(value, (list, tuple, set)):
+        values = []
+        for nested in value:
+            values.extend(_normalize_workstream_title_refs(nested))
+        return list(unique_text(values))
+    raw = str(value or "").strip()
+    if not raw:
+        return []
+    if "\n" not in raw and "\r" not in raw:
+        token = clean_text(raw)
+        return [token] if token else []
+    rows: list[str] = []
+    for line in raw.splitlines():
+        token = clean_text(line).lstrip("-*").strip()
+        if token:
+            rows.append(token)
+    return list(unique_text(rows))
 
 
 def _normalize_validation_strategy(value: Any) -> list[Any]:

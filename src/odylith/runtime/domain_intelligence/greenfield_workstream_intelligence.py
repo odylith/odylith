@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms_tree
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import inline_first_path_scope_fragment
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -169,6 +170,12 @@ def build_workstream_domain_intelligence(
     internal_labels = join_system_labels(internals) or join_items(internals)
     externals = external_systems or ["No live external system is accepted for the first release."]
     non_goal_text = boundary_clause_text(list(non_goals), item_limit=150) or "unconfirmed broader platform behavior"
+    scope_boundary = _accepted_scope_boundary(
+        non_goal_text=non_goal_text,
+        first_path=first_path,
+        first_slice=first_slice,
+        proof_boundary=proof_boundary,
+    )
     focus = short_summary(product_view or first_slice or opportunity, limit=360)
     risk = short_summary(problem, limit=300) or f"{label} can fail if {row_title} is too vague to implement."
     risk_sentence = sentence_label(risk).strip(" .") or risk
@@ -215,7 +222,7 @@ def build_workstream_domain_intelligence(
             f"External source boundaries here: {join_items(externals)}.",
         ],
         "constraints": [
-            f"Keep this slice inside the accepted first-release scope: {non_goal_text}.",
+            f"Keep this slice inside the accepted first-release scope: {scope_boundary}.",
             f"Do not claim this slice ready until validation demonstrates: {validation_summary or proof_boundary}.",
         ],
         "source_of_truth_map": [
@@ -294,6 +301,20 @@ def build_workstream_domain_intelligence(
     }
     normalized = collapse_adjacent_duplicate_terms_tree(packet)
     return normalized if isinstance(normalized, dict) else packet
+
+
+def _accepted_scope_boundary(
+    *,
+    non_goal_text: str,
+    first_path: str,
+    first_slice: str,
+    proof_boundary: str,
+) -> str:
+    path = short_summary(first_path or first_slice or proof_boundary, limit=620).strip(" .")
+    scope = clean_text(non_goal_text).strip(" .")
+    if not path:
+        return scope or "unconfirmed broader platform behavior"
+    return f"Do not expand beyond {inline_first_path_scope_fragment(path)}"
 
 
 def _join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:

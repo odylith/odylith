@@ -113,6 +113,11 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
     assert capitalize_sentence_start_preserving_source_terms("workflow stays reviewable") == "Workflow stays reviewable"
     assert sentence_label("GLP-1 Companion") == "GLP-1 companion"
     assert sentence_label("AI/ML Review API") == "AI/ML review API"
+    assert (
+        sentence_label("School Support Teams Coordinating Student Accommodation Follow-Through need one reviewable workspace")
+        == "school support teams coordinating student accommodation follow-through need one reviewable workspace"
+    )
+    assert sentence_label("Cryo-EM ReviewLedger evidence") == "Cryo-EM ReviewLedger evidence"
     assert focus_label("GLP-1 Companion — Medication Tracking App") == "GLP-1 Companion Medication Tracking"
     assert domain_object_label(
         (

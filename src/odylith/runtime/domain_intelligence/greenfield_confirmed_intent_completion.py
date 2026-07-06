@@ -275,6 +275,16 @@ def _completion_seed_is_sufficient(intent: Mapping[str, Any]) -> bool:
     return len(_semantic_terms(core)) >= 6
 
 
+def _lower_initial_fragment(value: str) -> str:
+    text = _clean(value)
+    if not text:
+        return ""
+    first = text.split(maxsplit=1)[0]
+    if first.isupper() and len(first) > 1:
+        return text
+    return f"{text[:1].lower()}{text[1:]}"
+
+
 def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
     story = _clean(intent.get("product_story"))
     state = _clean(intent.get("state_object"))
@@ -290,9 +300,11 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
             fallback=f"{title} helps {actor_text} complete the accepted first path",
             limit=220,
         )
+        state_fragment = _lower_initial_fragment(_short(state, fallback="the first release state"))
+        path_fragment = _lower_initial_fragment(_short(first_path, fallback="the first user journey"))
         intent["product_story"] = _sentence(
-            f"{story_head}. It keeps {_short(state, fallback='the first release state')} tied to "
-            f"{_short(first_path, fallback='the first user journey')} so the outcome, blockers, and evidence can be explained."
+            f"{story_head}. It keeps {state_fragment} tied to "
+            f"{path_fragment} so the outcome, blockers, and evidence can be explained."
         )
     if _word_count(state) < CORE_FIELD_MIN_WORDS["state_object"]:
         state_label = _state_label(state, title=title)

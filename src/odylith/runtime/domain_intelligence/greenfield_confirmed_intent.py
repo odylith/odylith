@@ -225,7 +225,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     generated_confirmation = _looks_like_host_guidance_envelope(text)
     text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
-    raw_title_candidate = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
+    raw_title_candidate = _title_from_sections(sections) or _title_from_text(text) or _title_from_preamble(sections) or fallback_title
     if not _has_structured_body_sections(sections) and not _has_unheaded_confirmation_shape(
         text,
         sections,
@@ -239,7 +239,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
             text = confirmation_from_operator_intent(thin_source, prefer_product_title=True)
             generated_confirmation = True
             sections = _sections(text)
-    raw_title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
+    raw_title = _title_from_sections(sections) or _title_from_text(text) or _title_from_preamble(sections) or fallback_title
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
     title = title_normalization.canonical_title
     preamble_story = _preamble_story(sections, title)
@@ -275,6 +275,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         "ambiguities": _section_list(sections, "ambiguities"),
         "non_goals": _section_list(sections, "non_goals"),
     }
+    _split_embedded_ambiguity_rows(result)
     if title_normalization.changed:
         result["source_title"] = title_normalization.raw_title
     result["internal_systems"] = _internal_system_rows(
@@ -287,6 +288,37 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
     return result
+
+
+def _split_embedded_ambiguity_rows(intent: dict[str, Any]) -> None:
+    non_goals: list[str] = []
+    ambiguities = list(confirmed_text_values(intent.get("ambiguities")))
+    changed = False
+    for row in confirmed_text_values(intent.get("non_goals")):
+        non_goal, ambiguity = _split_embedded_ambiguity(row)
+        if non_goal:
+            non_goals.append(non_goal)
+        if ambiguity:
+            ambiguities.append(ambiguity)
+            changed = True
+        changed |= bool(ambiguity)
+    if changed:
+        intent["non_goals"] = list(dict.fromkeys(non_goals))
+        intent["ambiguities"] = list(dict.fromkeys(ambiguities))
+
+
+def _split_embedded_ambiguity(value: str) -> tuple[str, str]:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "", ""
+    match = re.search(
+        r"\b(?:remaining\s+ambiguity|ambiguity|open\s+question|open\s+product\s+question)\s*:\s*",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return text, ""
+    return text[: match.start()].strip(" ."), text[match.end() :].strip(" .")
 
 
 def _restore_prompt_material_first_path(
@@ -507,6 +539,9 @@ def _title_from_text(text: str) -> str:
         candidate = title_from_product_intent_line(line)
         if candidate:
             return candidate
+        candidate = _title_from_export_line(line)
+        if candidate:
+            return candidate
         if line and not _classify_heading(line):
             return line
     for raw_line in str(text or "").splitlines():
@@ -524,6 +559,14 @@ def _title_from_text(text: str) -> str:
         candidate = title_from_product_intent_line(line)
         if candidate:
             return candidate
+        candidate = _title_from_export_line(line)
+        if candidate:
+            return candidate
+        candidate = _title_from_is_for_line(line)
+        if candidate:
+            return candidate
+        if _looks_like_bare_title(line):
+            return line
     return ""
 
 
@@ -580,6 +623,39 @@ def _looks_like_bare_title(value: str) -> bool:
     ):
         return False
     return True
+
+
+def _title_from_is_for_line(value: str) -> str:
+    text = _clean(value).strip()
+    match = re.match(r"^(?P<title>[A-Z][A-Za-z0-9&/:' -]{3,90}?)\s+is\s+for\s+", text)
+    if not match:
+        return ""
+    candidate = _clean(match.group("title")).strip(" .")
+    words = _label_terms(candidate)
+    if not 2 <= len(words) <= 10:
+        return ""
+    if not any(word[:1].isupper() or word.isupper() for word in candidate.split()):
+        return ""
+    return candidate
+
+
+def _title_from_export_line(value: str) -> str:
+    text = _clean(value).strip()
+    match = re.match(
+        r"^(?:deck\s+export|slide\s+deck|presentation|slides|document|source\s+document)\s+[—-]\s+(?P<title>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        match = re.match(
+            r"^(?:rfp\s+attachment\s+excerpt\s+for|attachment\s+excerpt\s+for|source\s+excerpt\s+for)\s+(?P<title>.+)$",
+            text,
+            flags=re.IGNORECASE,
+        )
+    if not match:
+        return ""
+    candidate = _clean(match.group("title")).strip(" .")
+    return candidate if _looks_like_bare_title(candidate) else ""
 
 
 def _section_text(sections: Mapping[str, list[str]], key: str) -> str:
@@ -846,7 +922,9 @@ def _looks_like_state_paragraph(value: str) -> bool:
     return bool(
         re.search(
             r"\b(?:central|core|main|primary)\s+(?:object|state)\b"
-            r"|\b(?:state|record|history)\s+(?:is|records?|keeps?|carries?|tracks?|stores?|maintains?)\b"
+            r"|\b(?:case|decision|entity|history|item|ledger|object|package|plan|profile|record|request|review|snapshot|state|ticket)\s+"
+            r"(?:is|records?|keeps?|carries?|tracks?|stores?|maintains?)\b"
+            r"|\bworkflow\s+where\s+[^.]{1,120}\brecords?\b"
             r"|\b(?:the\s+)?(?:product|system|application|app)\s+(?:keeps?|records?|stores?|tracks?|maintains?|captures?)\s+"
             r"(?:a|an|the)\s+",
             text,

@@ -1177,7 +1177,10 @@ def _clear_bad_projection_fields(row: dict[str, Any], *, visible: GreenfieldSema
             row[key] = ""
             changed = True
     metrics = row.get("success_metrics")
-    if any(projection_uses_proof_boundary_as_result(value, visible_result=visible.text, proof_boundary=proof) for value in text_values(metrics)):
+    if projection_uses_proof_boundary_as_result(metrics, visible_result=visible.text, proof_boundary=proof) or any(
+        projection_uses_proof_boundary_as_result(value, visible_result=visible.text, proof_boundary=proof)
+        for value in text_values(metrics)
+    ):
         row["success_metrics"] = []
         changed = True
     return changed

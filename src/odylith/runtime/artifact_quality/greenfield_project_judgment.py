@@ -15,7 +15,10 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
-_SCOPE_BOUNDARY_RE = re.compile(r"\bDo\s+not\s+expand\s+beyond\s+(?P<body>.+?)\s+until\b", re.IGNORECASE)
+_SCOPE_BOUNDARY_RE = re.compile(
+    r"\bDo\s+not\s+expand\s+beyond\s+(?P<body>.+?)\s+until\s+the\s+first\s+outcome\s+works\b",
+    re.IGNORECASE,
+)
 _STATE_OBJECT_PREDICATE_RE = re.compile(
     r"\b(?:accepted\s+change|state\s+change|versioned\s+state\s+object|state\s+object)\s*"
     r"(?:to|is|:)\s+(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
@@ -288,6 +291,8 @@ def _tail_events_covered(
             covered_events += 1
     visible_terms = _terms(visible_result)
     visible_covered = not visible_terms or len(visible_terms & body_terms) >= min(2, len(visible_terms))
+    if not visible_covered:
+        visible_covered = len(_terms_with_variants(visible_result) & body_terms) >= min(2, len(visible_terms))
     return visible_covered and covered_events >= max(1, len(tail_events) - 1)
 
 
@@ -306,6 +311,14 @@ def _term_variants(value: str) -> set[str]:
     return {term for variant in variants for term in _terms(variant)} | {variant for variant in variants if len(variant) >= 3}
 
 
+def _terms_with_variants(value: str) -> set[str]:
+    rows: set[str] = set()
+    for term in _terms(value):
+        rows.add(term)
+        rows.update(_term_variants(term))
+    return rows
+
+
 def _action_inflection_variants(value: str) -> set[str]:
     text = normalize_string(value).casefold().strip(" .")
     if not text or not re.fullmatch(r"[a-z]+", text):
@@ -313,6 +326,10 @@ def _action_inflection_variants(value: str) -> set[str]:
     roots = {text}
     if text.endswith("ies") and len(text) > 4:
         roots.add(f"{text[:-3]}y")
+    elif text.endswith("ied") and len(text) > 5:
+        roots.add(f"{text[:-3]}y")
+    elif text.endswith("ed") and len(text) > 4:
+        roots.add(text[:-2])
     elif text.endswith("es") and len(text) > 4:
         roots.add(text[:-2])
     elif text.endswith("s") and len(text) > 3:

@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from collections.abc import Sequence
 from dataclasses import asdict
 from dataclasses import dataclass
+from pathlib import Path
 import re
 from typing import Any
 
@@ -708,9 +709,23 @@ def _component_preview_path_fidelity_issues(
         for key in ("registry_path", "spec_path"):
             expected_path = clean_text(expected_row.get(key))
             actual_path = clean_text(actual_row.get(key))
-            if expected_path and actual_path and expected_path != actual_path:
+            if expected_path and actual_path and not _same_component_artifact_path(expected_path, actual_path):
                 issues.append(f"{owner} component `{component_id}` {key} drifted from Registry prewrite output")
     return issues
+
+
+def _same_component_artifact_path(expected: str, actual: str) -> bool:
+    """Compare governed component artifact paths by filesystem identity when possible."""
+
+    expected_text = clean_text(expected)
+    actual_text = clean_text(actual)
+    if expected_text == actual_text:
+        return True
+    expected_path = Path(expected_text).expanduser()
+    actual_path = Path(actual_text).expanduser()
+    if not expected_path.is_absolute() or not actual_path.is_absolute():
+        return False
+    return expected_path.resolve(strict=False) == actual_path.resolve(strict=False)
 
 
 def _prewrite_path_leak_issues(owner: str, value: Any) -> list[str]:

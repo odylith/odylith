@@ -103,7 +103,7 @@ def build_confirmed_greenfield_proposal(
     assumptions = confirmed_intent_list(confirmed_intent, "assumptions")
     ambiguities = confirmed_intent_list(confirmed_intent, "ambiguities")
     non_goals = confirmed_intent_list(confirmed_intent, "non_goals")
-    scope_constraints = [*non_goals, *confirmed_intent_list(confirmed_intent, "ambiguities")]
+    scope_constraints = list(non_goals)
     problem_summary = confirmed_intent_summary(confirmed_intent, "problem", "")
     customer_summary = confirmed_intent_summary(confirmed_intent, "customer", "")
     opportunity_summary = confirmed_intent_summary(confirmed_intent, "opportunity", "")
@@ -508,6 +508,7 @@ def _project_intelligence(
     opportunity_summary = _short_summary(opportunity, limit=320) or "The accepted first path becomes the planning boundary for source work and proof."
     product_view_summary = _short_summary(product_view, limit=320) or "The first release stays narrow until source-backed behavior and review evidence exist."
     first_path_summary = _short_summary(first_path, limit=360)
+    first_path_scope = _short_summary(first_path, limit=620) or first_path_summary
     proof_summary = proof_claim_summary(proof_boundary, limit=320)
     visible_result_text = _short_summary(visible_result, limit=260) or first_path_outcome_phrase(
         first_path,
@@ -529,9 +530,9 @@ def _project_intelligence(
             "The product outcome is useful only when each accepted role can see its relevant result, explanation, and evidence.",
         ],
         "scope": [
-            f"In scope: {first_path_summary}",
+            f"In scope: {first_path_scope}",
             f"In scope systems: {internals}. External systems: {externals}.",
-            f"Out of scope: {non_goal_text} until the first path holds.",
+            f"Out of scope after the accepted first path: {non_goal_text}.",
         ],
         "ontology": [
             f"{label} actor: one of the people or teams named in the confirmed intent. Boundary: {actor_boundary}.",

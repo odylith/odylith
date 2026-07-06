@@ -29,7 +29,9 @@ def _clean(value: Any) -> str:
     return display_text.strip_inline_markdown_emphasis(value)
 
 
-def _first_nonempty(values: Sequence[str], *, limit: int) -> list[str]:
+def _first_nonempty(values: Sequence[str], *, limit: int, structural: bool = False) -> list[str]:
+    if structural:
+        return dedupe_strings((str(raw or "").strip() for raw in values), limit=limit)
     return dedupe_strings((_clean(raw) for raw in values), limit=limit)
 
 
@@ -107,6 +109,77 @@ def _context_item_text(value: Any, *, fields: Sequence[str]) -> str:
     return _clean(value)
 
 
+_STRUCTURAL_MEMORY_KEYS = frozenset(
+    {
+        "accepted_project",
+        "artifact",
+        "artifacts",
+        "component",
+        "component_id",
+        "component_ids",
+        "components",
+        "diagram",
+        "diagram_id",
+        "diagram_ids",
+        "diagrams",
+        "id",
+        "ids",
+        "origin",
+        "path",
+        "paths",
+        "project_brief",
+        "registry_path",
+        "release_id",
+        "release_selector",
+        "schema_version",
+        "source",
+        "source_path",
+        "spec_path",
+        "status",
+        "stream",
+        "title",
+        "validation_gate",
+        "version",
+        "workstream",
+        "workstreams",
+    }
+)
+_STRUCTURAL_MEMORY_SUFFIXES = (
+    "_id",
+    "_ids",
+    "_path",
+    "_paths",
+    "_selector",
+    "_version",
+)
+
+
+def _strip_memory_public_copy_emphasis(value: Any, *, key: str = "") -> Any:
+    """Strip Markdown emphasis only from public prose, never typed memory fields."""
+
+    if isinstance(value, str):
+        return value if _structural_memory_key(key) else display_text.strip_inline_markdown_emphasis_tokens(value)
+    if isinstance(value, Mapping):
+        return {
+            item_key: _strip_memory_public_copy_emphasis(item_value, key=str(item_key))
+            for item_key, item_value in value.items()
+        }
+    if isinstance(value, list):
+        return [_strip_memory_public_copy_emphasis(item, key=key) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_strip_memory_public_copy_emphasis(item, key=key) for item in value)
+    if isinstance(value, Sequence) and not isinstance(value, (bytes, bytearray, str)):
+        return [_strip_memory_public_copy_emphasis(item, key=key) for item in value]
+    return value
+
+
+def _structural_memory_key(key: str) -> bool:
+    token = str(key or "").strip().casefold()
+    if token in {"first_path", "raw_path"}:
+        return False
+    return bool(token and (token in _STRUCTURAL_MEMORY_KEYS or token.endswith(_STRUCTURAL_MEMORY_SUFFIXES)))
+
+
 def _accepted_project_source_path(repo_root: Path) -> Path:
     return Path(repo_root).expanduser().resolve() / ACCEPTED_PROJECT_SOURCE_PATH
 
@@ -136,6 +209,7 @@ def build_greenfield_acceptance_event_preview(
             *[str(row.get("spec_path", "")) for row in component_items if _clean(row.get("spec_path"))],
         ],
         limit=12,
+        structural=True,
     )
     payload = {
         "version": "v1",
@@ -159,18 +233,20 @@ def build_greenfield_acceptance_event_preview(
         "evidence_tier": "user_intent",
         "work_category": "governance",
     }
-    return dict(_normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload)))
+    return dict(_normalize_accepted_memory_copy(_strip_memory_public_copy_emphasis(payload)))
 
 
-def _normalize_accepted_memory_copy(value: Any) -> Any:
+def _normalize_accepted_memory_copy(value: Any, *, key: str = "") -> Any:
     if isinstance(value, str):
+        if _structural_memory_key(key):
+            return value
         return base_adverbial_note_action(value)
     if isinstance(value, Mapping):
-        return {key: _normalize_accepted_memory_copy(item) for key, item in value.items()}
+        return {item_key: _normalize_accepted_memory_copy(item, key=str(item_key)) for item_key, item in value.items()}
     if isinstance(value, list):
-        return [_normalize_accepted_memory_copy(item) for item in value]
+        return [_normalize_accepted_memory_copy(item, key=key) for item in value]
     if isinstance(value, tuple):
-        return tuple(_normalize_accepted_memory_copy(item) for item in value)
+        return tuple(_normalize_accepted_memory_copy(item, key=key) for item in value)
     return value
 
 
@@ -207,7 +283,7 @@ def build_accepted_project_source_payload(
         "source_launch": _source_launch_payload(source_launch_context),
         "validation_gate": dict(validation_gate or {}),
     }
-    normalized = _normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload))
+    normalized = _normalize_accepted_memory_copy(_strip_memory_public_copy_emphasis(payload))
     source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
     if source_text:
         normalized = greenfield_source_casing.restore_source_casing_in_public_copy(

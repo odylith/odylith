@@ -14,6 +14,7 @@ from odylith.runtime.artifact_quality.greenfield_package_quality import _narrati
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_gerund_clause
+from odylith.runtime.common.prose_grammar import gerund_action_verb
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
@@ -577,6 +578,10 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
     assert base_gerund_clause("uploading benchmark runs and inspecting failures") == (
         "upload benchmark runs and inspect failures"
     )
+    assert gerund_action_verb("register") == "registering"
+    assert gerund_action_verb("render") == "rendering"
+    assert gerund_action_verb("offer") == "offering"
+    assert gerund_action_verb("order") == "ordering"
 
 
 def test_actor_led_common_workflow_verbs_compile_to_base_actions() -> None:
@@ -1405,6 +1410,64 @@ def test_confirmed_project_brief_summarizes_long_boundary_without_clipped_tail()
     assert generated_public_copy_issues("project brief preview", outcome) == ()
 
 
+def test_confirmed_project_brief_release_scope_keeps_first_path_tail() -> None:
+    brief = confirmed_project_brief(
+        label="Museum Artifact Provenance Review Desk",
+        prompt="Productize this cultural heritage provenance process.",
+        release="0.0.1",
+        state_object=(
+            "A provenance review case tracks artifact identity, source document, chain-of-custody claim, "
+            "gap concern, expert note, decision state, and audit trail."
+        ),
+        evidence_record="Provenance proof packet",
+        product_story=(
+            "Museum Artifact Provenance Review Desk helps museum registrars evaluate provenance evidence before "
+            "accession decisions."
+        ),
+        first_path=(
+            "A museum registrar creates one provenance review case, attaches source documents, records custody claims, "
+            "flags an evidence gap, routes expert review, marks accession-ready or blocked, and exports provenance proof."
+        ),
+        proof_boundary=(
+            "A curator can reproduce the accession-ready or blocked decision from source documents, custody claims, "
+            "expert note, gap concern, and decision history."
+        ),
+        human_actors=["Museum registrar", "Curator"],
+        internal_systems=["Provenance case ledger", "Custody evidence viewer", "Expert review queue"],
+        non_goals=["Do not appraise market value or automate final legal title decisions."],
+    )
+
+    release_option = next(row for row in brief["customization_options"] if row["id"] == "D5")
+
+    assert "exports provenance proof" in release_option["recommended"]
+
+
+def test_confirmed_project_brief_preserves_exact_state_object_label() -> None:
+    brief = confirmed_project_brief(
+        label="Legal Discovery Privilege Review Queue",
+        prompt="Productize this discovery review workflow.",
+        release="0.0.1",
+        state_object=(
+            "A privilege review item tracks document identity, custodian, matter, privilege signal, issue tag, "
+            "reviewer note, decision state, and audit history."
+        ),
+        evidence_record="Privilege decision proof packet",
+        product_story="Litigation teams review discovery documents for privilege decisions.",
+        first_path=(
+            "A privilege reviewer creates one review item, imports a document reference, records custodian context, "
+            "flags privilege signals, adds issue tags, routes senior review, and marks produce or withhold."
+        ),
+        proof_boundary=(
+            "A litigation lead can reproduce the produce or withhold decision from document identity, custodian "
+            "context, privilege signal, issue tag, reviewer note, and decision history."
+        ),
+    )
+
+    rendered = json.dumps(brief, sort_keys=True)
+
+    assert "Privilege Review Item" in rendered
+
+
 def test_confirmed_backlog_success_metrics_use_compact_state_reference() -> None:
     intent = parse_confirmed_intent_text(
         """
@@ -2156,6 +2219,10 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
     assert normalize_visible_result_language(
         "shows progress, and reaches a finished safe-to-serve state with emergency stop available throughout"
     ) == "a finished safe-to-serve state with emergency stop available throughout"
+    assert normalize_visible_result_language("blocked or accepted") == "blocked or accepted"
+    assert normalize_visible_result_language(
+        "one local memory-key decision can be reviewed, blocked or accepted, replayed from fixtures"
+    ) == "one local memory-key decision can be reviewed, blocked or accepted, replayed from fixtures"
     assert visible_result_object("The record shows the final status with source evidence") == (
         "the final status with source evidence"
     )

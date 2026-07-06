@@ -252,6 +252,11 @@ def _first_path_action_text(
         if step.is_dash_detail:
             continue
         if fragment:
+            if _is_context_setup_step(step):
+                if not fragments:
+                    fallback_fragments.append(fragment)
+                visible_seen = visible_seen or step.is_visible_result
+                continue
             if not step.is_material_action:
                 if not fragments:
                     fallback_fragments.append(fragment)
@@ -271,6 +276,16 @@ def _first_path_action_text(
     if not fragments:
         fragments.extend(fallback_fragments[: max(1, max_fragments)])
     return _clip_phrase(_join_series(_unique(fragments)), limit=limit) or clean_first_path_text(fallback)
+
+
+def _is_context_setup_step(step: FirstPathStepView) -> bool:
+    text = clean_first_path_text(step.fragment or step.text).casefold()
+    return bool(
+        re.match(
+            r"^(?:a|an|the)?\s*[a-z0-9 /'-]{0,60}\b(?:notice|notices|observe|observes|spot|spots|recognize|recognizes)\b",
+            text,
+        )
+    )
 
 
 def _step_fragment(step: FirstPathStepView, *, gerund: bool) -> str:

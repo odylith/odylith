@@ -918,6 +918,8 @@ def _preferred_source_casing_tokens(source: str) -> tuple[str, ...]:
     for index, token in enumerate(_source_casing_tokens(source)):
         key = token.casefold()
         priority = _source_casing_priority(token)
+        if priority <= 0:
+            continue
         current = chosen.get(key)
         if current is None or priority > current[0]:
             chosen[key] = (priority, index, token)
@@ -934,11 +936,27 @@ def _source_casing_priority(token: str) -> int:
         return 0
     if token[:1].islower() and any(char.isupper() for char in token[1:]):
         return 3
+    if re.search(r"[0-9_]", token):
+        return 3
+    if any(separator in token for separator in "-/"):
+        parts = [part for part in re.split(r"[-/]+", token) if part]
+        if any(_looks_like_source_acronym_segment(part) for part in parts):
+            return 2
+        if any(part[:1].islower() and any(char.isupper() for char in part[1:]) for part in parts):
+            return 2
+        return 0
+    if token[:1].isupper() and any(char.isupper() for char in token[1:]) and any(char.islower() for char in letters):
+        return 2
     if any(char.islower() for char in letters) and any(char.isupper() for char in letters):
         return 2
     if all(char.isupper() for char in letters):
         return 1
     return 0
+
+
+def _looks_like_source_acronym_segment(value: str) -> bool:
+    letters = [char for char in str(value or "") if char.isalpha()]
+    return bool(len(letters) >= 2 and all(char.isupper() for char in letters))
 
 
 def _strip_state_object_predicate(value: str) -> str:

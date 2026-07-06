@@ -837,7 +837,11 @@ def _completion_priority_write_allowed(
         return False
     if not projection_copy_debt_allowed:
         return False
-    return all(_late_projection_copy_debt_issue(debt_prefix=debt_prefix, issue=issue) for issue in issue_rows)
+    return all(
+        _late_projection_copy_debt_issue(debt_prefix=debt_prefix, issue=issue)
+        or _completion_priority_policy_covers_late_issue(policy, issue)
+        for issue in issue_rows
+    )
 
 
 def _completion_priority_policy_base_allowed(policy: Mapping[str, Any] | None) -> bool:
@@ -913,6 +917,14 @@ def _mechanical_projection_copy_issue(text: str) -> bool:
     ):
         return True
     return _mechanical_generated_prose_issue(text)
+
+
+def _completion_priority_policy_covers_late_issue(policy: Mapping[str, Any] | None, issue: str) -> bool:
+    if not isinstance(policy, Mapping):
+        return False
+    codes = {str(code or "").strip() for code in policy.get("debt_issue_codes", []) if str(code or "").strip()}
+    text = str(issue or "").casefold()
+    return "component_contract_quality" in codes and "finite/finite ownership verb drift" in text
 
 
 _MECHANICAL_GENERATED_PROSE_LABELS = (

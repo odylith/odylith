@@ -219,6 +219,8 @@ def _normalize_result_status_item(value: str) -> str:
     object_keys = [word.strip(".,;:").casefold() for word in object_words]
     if status not in RESULT_STATUS_MODIFIERS:
         return text
+    if any(key in {"and", "or"} for key in object_keys):
+        return text
     if len(object_words) > 5 or any(key in {"am", "are", "be", "been", "being", "is", "was", "were"} for key in object_keys):
         return text
     if any(re.fullmatch(action_verb_pattern(), key, flags=re.IGNORECASE) for key in object_keys):
@@ -714,6 +716,16 @@ def join_sentence_text(value: Any) -> str:
 
 
 def normalize_text_list(value: Any, *, split_commas: bool = False) -> list[str]:
+    if isinstance(value, (list, tuple, set)):
+        values: list[str] = []
+        for nested in value:
+            if isinstance(nested, (list, tuple, set, Mapping)):
+                values.extend(normalize_text_list(nested, split_commas=split_commas))
+                continue
+            token = clean_text(_LIST_BULLET_RE.sub("", str(nested or "")))
+            if token:
+                values.append(token)
+        return list(unique_text(values))
     return list(
         text_values(
             value,

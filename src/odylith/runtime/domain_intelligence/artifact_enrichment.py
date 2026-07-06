@@ -241,6 +241,8 @@ def _compact_focus_label(value: str) -> str:
 
 def _compact_detail_text(value: str) -> str:
     text = clean_text(value).strip(" .")
+    if "do not expand beyond " in text.casefold() and len(text) <= 420:
+        return text
     if text.count(",") < 4 and len(text) <= 260:
         return text
     if len(text) <= 260 and _preserve_complete_validation_predicate(text):

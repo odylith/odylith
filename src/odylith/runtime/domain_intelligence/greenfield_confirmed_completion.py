@@ -7,6 +7,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
+from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_confirmed_completion_text_model as completion_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
@@ -72,6 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_risks import build_p
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -120,10 +123,12 @@ def greenfield_repair_until_clean(
             text_needs_repair=_text_needs_repair,
             visible_result=completion_text.outcome_phrase(payload),
         )
+        changed |= repair_greenfield_semantic_projections(payload)
         changed |= _complete_backlog(payload)
         changed |= complete_component_rows(payload)
         changed |= differentiate_component_contracts(payload)
         changed |= _reconcile_backlog_with_components(payload)
+        changed |= _reconcile_release_plan_with_backlog(payload)
         changed |= _complete_semantic_model(
             payload,
             title=completion_text.project_title(payload),
@@ -131,7 +136,11 @@ def greenfield_repair_until_clean(
             first_path=completion_text.first_path(payload),
             proof_boundary=completion_text.proof_boundary(payload),
         )
+        if repair_greenfield_semantic_projections(payload):
+            changed = True
+            changed |= _complete_backlog(payload)
         changed |= _complete_diagrams(payload)
+        changed |= _repair_generated_modal_grammar(payload)
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
             return payload
@@ -415,6 +424,37 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
     return changed
 
 
+def _reconcile_release_plan_with_backlog(proposal: dict[str, Any]) -> bool:
+    release_plan = proposal.get("release_plan")
+    if not isinstance(release_plan, dict):
+        return False
+    child_titles = [
+        _clean(row.get("title"))
+        for row in dict_rows(proposal.get("backlog"))[1:]
+        if _clean(row.get("title"))
+    ]
+    if not child_titles:
+        return False
+    changed = False
+    if list(text_values(release_plan.get("target_workstream_titles"))) != child_titles:
+        release_plan["target_workstream_titles"] = list(child_titles)
+        changed = True
+    stages = release_plan.get("release_stages")
+    if isinstance(stages, list):
+        title_lookup = {title.casefold() for title in child_titles}
+        for index, stage in enumerate(stages):
+            if not isinstance(stage, dict):
+                continue
+            current = [ref for ref in text_values(stage.get("workstream_titles")) if _clean(ref)]
+            valid_current = [ref for ref in current if ref.casefold() in title_lookup]
+            if valid_current and valid_current == current:
+                continue
+            fallback_title = child_titles[min(index, len(child_titles) - 1)]
+            stage["workstream_titles"] = valid_current or [fallback_title]
+            changed = True
+    return changed
+
+
 def _complete_diagrams(proposal: dict[str, Any]) -> bool:
     rows = proposal.get("diagrams")
     if not isinstance(rows, list):
@@ -500,6 +540,82 @@ def _repair_preflight_issues(
     if "generic actor label" in issue_text or "project-specific actor" in issue_text:
         changed |= _repair_generic_actor_labels(proposal)
     return changed
+
+
+_MODAL_GRAMMAR_SKIP_KEYS = frozenset(
+    {
+        "actor_id",
+        "component_id",
+        "diagram_id",
+        "id",
+        "kind",
+        "link_state",
+        "owner",
+        "path",
+        "prompt",
+        "prompt_source",
+        "raw_prompt",
+        "release_id",
+        "slug",
+        "source",
+        "source_path",
+        "source_text",
+        "target_workstream_titles",
+        "title",
+        "watch_paths",
+        "workstream_id",
+        "workstream_ids",
+        "workstream_titles",
+    }
+)
+
+
+def _repair_generated_modal_grammar(value: Any, *, parent_key: str = "") -> bool:
+    """Repair modal and infinitive verb-form drift in generated prose leaves."""
+
+    if isinstance(value, dict):
+        changed = False
+        for key, child in list(value.items()):
+            key_text = str(key)
+            if _skip_modal_grammar_repair_key(key_text):
+                continue
+            if isinstance(child, str):
+                repaired = _repair_modal_grammar_text(child)
+                if repaired != child:
+                    value[key] = repaired
+                    changed = True
+                continue
+            if _repair_generated_modal_grammar(child, parent_key=key_text):
+                changed = True
+        return changed
+    if isinstance(value, list):
+        changed = False
+        for index, child in enumerate(list(value)):
+            if isinstance(child, str):
+                repaired = _repair_modal_grammar_text(child)
+                if repaired != child:
+                    value[index] = repaired
+                    changed = True
+                continue
+            if _repair_generated_modal_grammar(child, parent_key=parent_key):
+                changed = True
+        return changed
+    if isinstance(value, str):
+        return False
+    return False
+
+
+def _skip_modal_grammar_repair_key(key: str) -> bool:
+    text = key.casefold().strip()
+    if text in _MODAL_GRAMMAR_SKIP_KEYS:
+        return True
+    return text.endswith(("_id", "_ids", "_slug", "_path", "_paths"))
+
+
+def _repair_modal_grammar_text(value: str) -> str:
+    repaired = repair_modal_base_form_drift(value)
+    repaired = repair_infinitive_base_form_drift(repaired)
+    return repaired
 
 
 def _repair_release_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:

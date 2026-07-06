@@ -314,7 +314,7 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generi
             if _actor_label_is_usable(label) and _derived_actor_label_has_human_signal(label):
                 labels.append(label)
     labels = _dedupe_actor_labels(list(unique_text(labels)))
-    if allow_generic_fallback and len(labels) < 2:
+    if allow_generic_fallback and not labels:
         labels.extend(
             [
                 f"{focus} operator",
@@ -437,6 +437,8 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
     if re.search(r"\b(?:defer(?:red|s)?|out\s+of\s+scope|non[-\s]?goals?|later|future|not\s+included)\b", sentence):
         return True
     if previous_token in {"explicit", "using"}:
+        return True
+    if looks_like_base_action_token(previous_token) or looks_like_finite_action_token(previous_token):
         return True
     if previous_previous_token in {"without", "instead", "before", "after"} and previous_token.endswith("ing"):
         return True

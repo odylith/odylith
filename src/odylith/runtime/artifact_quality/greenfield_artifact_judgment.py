@@ -21,13 +21,21 @@ def greenfield_artifact_judgment_issues(package: Any) -> list[str]:
     """Return role-oriented quality failures for a rendered greenfield package."""
 
     issues: list[str] = []
-    source_owned_phrases = _source_owned_phrases(package)
     for identity, text in _artifact_texts(package):
-        lowered = text.casefold()
-        issues.extend(_product_manager_issues(identity, lowered))
-        issues.extend(_architect_issues(identity, lowered, source_owned_phrases=source_owned_phrases))
-        issues.extend(_engineer_issues(identity, lowered))
-        issues.extend(_domain_reviewer_issues(identity, lowered))
+        issues.extend(greenfield_artifact_judgment_text_issues(package, identity, text))
+    return unique_text(issues)
+
+
+def greenfield_artifact_judgment_text_issues(package: Any, identity: str, text: str) -> list[str]:
+    """Return judgment issues for one rendered artifact while preserving artifact custody."""
+
+    lowered = normalize_string(text).casefold()
+    source_owned_phrases = _source_owned_phrases(package)
+    issues: list[str] = []
+    issues.extend(_product_manager_issues(identity, lowered))
+    issues.extend(_architect_issues(identity, lowered, source_owned_phrases=source_owned_phrases))
+    issues.extend(_engineer_issues(identity, lowered))
+    issues.extend(_domain_reviewer_issues(identity, lowered))
     return unique_text(issues)
 
 
@@ -103,7 +111,7 @@ def _has_contract_fragment_tuple(lowered: str, *, source_owned_phrases: set[str]
     for match in re.finditer(r"\bcovers?\s+(?!(?:a|an|one|that|the|their|this)\b)\w+\s+\w+\b", lowered):
         if not _source_owns_contract_fragment(match.group(0), source_owned_phrases):
             return True
-    for match in re.finditer(r"\bgate\s+\w+\s+\w+\s+(?:result|status|state)\b", lowered):
+    for match in re.finditer(r"\bgate\s+(?!and\s+related\s+)\w+\s+\w+\s+(?:result|status|state)\b", lowered):
         if not _source_owns_contract_fragment(match.group(0), source_owned_phrases):
             return True
     return False
@@ -153,4 +161,4 @@ def _abstract_contract_noun_run(lowered: str) -> int:
     return best
 
 
-__all__ = ["greenfield_artifact_judgment_issues"]
+__all__ = ["greenfield_artifact_judgment_issues", "greenfield_artifact_judgment_text_issues"]

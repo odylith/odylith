@@ -10,7 +10,7 @@ from odylith.runtime.artifact_quality import greenfield_package_repetition as _p
 from odylith.runtime.artifact_quality import greenfield_rendered_artifacts as _rendered_artifacts
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
-from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
+from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_text_issues
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
@@ -134,12 +134,15 @@ def greenfield_rendered_package_quality_findings(package: Any) -> list[RenderedP
                 _rendered_artifacts.artifact_quality_finding(artifact, issue)
                 for issue in _mermaid_connectivity_issues(artifact)
             )
+        findings.extend(
+            _rendered_artifacts.artifact_quality_finding(artifact, issue)
+            for issue in greenfield_artifact_judgment_text_issues(package, artifact.identity, artifact.text)
+        )
     findings.extend(_package_repetition.package_repetition_quality_findings(package, artifacts))
     findings.extend(
         _rendered_artifacts.package_quality_finding(issue)
         for issue in (
             *tuple(_package_component_identity_issues(package)),
-            *tuple(greenfield_artifact_judgment_issues(package)),
             *tuple(greenfield_project_judgment_issues(package)),
         )
     )

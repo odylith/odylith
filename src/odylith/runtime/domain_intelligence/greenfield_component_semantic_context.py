@@ -54,6 +54,8 @@ def context_object_phrases(
     carry = 0
     carry_base: tuple[str, ...] = ()
     for clause in clauses(value):
+        if _is_reproducibility_proof_clause(clause):
+            continue
         if _is_deferred_or_outside_clause(clause):
             continue
         truth_unit = _truth_unit_artifact(clause)
@@ -220,6 +222,8 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
         return []
     rows: list[str] = []
     for clause in re.split(r"(?<=[.!?])\s+|[,;]", _clean(value)):
+        if _is_reproducibility_proof_clause(clause):
+            continue
         if _is_deferred_or_outside_clause(clause):
             continue
         truth_unit = _truth_unit_artifact(clause)
@@ -461,6 +465,11 @@ def _is_deferred_or_outside_clause(value: str) -> bool:
         re.search(r"\b(?:outside|beyond|not\s+in|not\s+part\s+of)\s+(?:the\s+)?(?:first|initial|release|proof|scope|boundary)\b", text)
         or re.search(r"\b(?:deferred|out\s+of\s+scope|future\s+release|later\s+release)\b", text)
     )
+
+
+def _is_reproducibility_proof_clause(value: str) -> bool:
+    text = _clean(value).casefold()
+    return bool(re.search(r"\b(?:can|must|should)\s+reproduc(?:e|es|ed|ing)\b", text))
 
 
 def _preserve_explicit_detail_carrier(terms: Sequence[str], phrase: str) -> list[str]:

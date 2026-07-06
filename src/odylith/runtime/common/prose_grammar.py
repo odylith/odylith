@@ -180,6 +180,7 @@ _INFINITIVE_TO_FINITE = {
     "repair": "repairs",
     "render": "renders",
     "rehearse": "rehearses",
+    "reproduce": "reproduces",
     "resolve": "resolves",
     "restore": "restores",
     "return": "returns",
@@ -304,7 +305,11 @@ _GERUND_NO_DOUBLE_FINAL_CONSONANT = frozenset(
         "filter",
         "gather",
         "monitor",
+        "offer",
         "open",
+        "order",
+        "register",
+        "render",
         "visit",
     }
 )

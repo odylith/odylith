@@ -538,12 +538,18 @@ def _protected_actor_label_token(value: str) -> bool:
 def _lower_sentence_label_words(value: str) -> str:
     words = str(value or "").split()
     lowered: list[str] = []
+    previous_protected = False
     for word in words:
         stripped = word.strip(".,;:()[]{}")
         if _protected_actor_label_token(stripped):
             lowered.append(word)
+            previous_protected = True
+        elif previous_protected and _source_cased_actor_label_follower(stripped):
+            lowered.append(word)
+            previous_protected = False
         else:
             lowered.append(word.casefold())
+            previous_protected = False
     return " ".join(lowered)
 
 
@@ -553,6 +559,32 @@ def _lower_role_words(value: str) -> str:
         lambda match: match.group(0).casefold(),
         value,
     )
+
+
+def _source_cased_actor_label_follower(value: str) -> bool:
+    token = str(value or "").strip()
+    if not token or not token[:1].isupper():
+        return False
+    return token.casefold() not in _ACTOR_ROLE_WORDS
+
+
+_ACTOR_ROLE_WORDS = frozenset(
+    {
+        "actor",
+        "admin",
+        "administrator",
+        "applicant",
+        "coordinator",
+        "customer",
+        "lead",
+        "manager",
+        "operator",
+        "owner",
+        "participant",
+        "reviewer",
+        "user",
+    }
+)
 
 
 def role_label_fragment(value: str) -> str:
