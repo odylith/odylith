@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import FirstPathStepView
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_step_view
+from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import is_supporting_setup_step
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_text
 
@@ -165,11 +166,12 @@ def _first_path_capability_text(
     view = first_path_semantic_view(model)
     steps = [step for step in view.steps if step.text and not step.is_trivial_start]
     selected: list[FirstPathStepView] = []
+    setup_fallbacks: list[FirstPathStepView] = []
     primary_actor = view.primary_actor_signature
     included_visible_result = False
     if model.material_action:
         material_step = first_path_step_view(model.material_action)
-        if not material_step.is_system_generated:
+        if not material_step.is_system_generated and not is_supporting_setup_step(material_step.text):
             selected.append(material_step)
             if material_step.visible_object and view.covers_visible_object(material_step.visible_object):
                 included_visible_result = True
@@ -178,6 +180,9 @@ def _first_path_capability_text(
     for step in steps:
         fragment_key = step.fragment_key
         if step.is_dash_detail:
+            continue
+        if is_supporting_setup_step(step.text):
+            setup_fallbacks.append(step)
             continue
         if fragment_key and fragment_key in selected_fragments:
             continue
@@ -202,6 +207,8 @@ def _first_path_capability_text(
                 selected_fragments.add(fragment_key)
         visible_seen = visible_seen or step.is_visible_result
     fragments = _unique([_step_fragment(step, gerund=gerund) for step in selected])
+    if not fragments and setup_fallbacks:
+        fragments = _unique([_step_fragment(step, gerund=gerund) for step in setup_fallbacks[: max(1, max_fragments)]])
     if model.visible_outcome and not included_visible_result:
         visible_action = first_path_step_view(model.visible_outcome).fragment
         if visible_action and _fragment_already_present(visible_action, fragments):
@@ -237,6 +244,11 @@ def _first_path_action_text(
     for step in view.steps:
         visible_object = step.visible_object_key
         if step.is_trivial_start:
+            continue
+        if is_supporting_setup_step(step.text):
+            if step.fragment and not fragments:
+                fallback_fragments.append(step.fragment)
+            visible_seen = visible_seen or step.is_visible_result
             continue
         if step.is_system_generated:
             visible_seen = visible_seen or step.is_visible_result
@@ -279,6 +291,8 @@ def _first_path_action_text(
 
 
 def _is_context_setup_step(step: FirstPathStepView) -> bool:
+    if is_supporting_setup_step(step.text):
+        return True
     text = clean_first_path_text(step.fragment or step.text).casefold()
     return bool(
         re.match(
@@ -306,7 +320,7 @@ def _readable_action_steps(
     view = first_path_semantic_view(model)
     rows: list[str] = []
     for step in view.steps:
-        if step.is_trivial_start or step.is_dash_detail or step.is_system_generated:
+        if step.is_trivial_start or step.is_dash_detail or step.is_system_generated or is_supporting_setup_step(step.text):
             continue
         if step.is_visible_result and not include_visible_results:
             continue

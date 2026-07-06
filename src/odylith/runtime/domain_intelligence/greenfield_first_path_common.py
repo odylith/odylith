@@ -73,6 +73,9 @@ def inline_first_path_scope_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
+    compact = _compact_first_path_scope_fragment(text)
+    if compact:
+        text = compact
     text = re.sub(r",\s*(?:shows?|surfaces?)\s+progress,\s+and\s+", ", ", text, flags=re.IGNORECASE)
     text = _lower_initial_fragment(text)
     finite_action = action_verb_pattern(include_base=False, include_finite=True)
@@ -81,6 +84,45 @@ def inline_first_path_scope_fragment(value: str) -> str:
         lambda match: f"{match.group('head')} {match.group('title').casefold()} ",
         text,
     ).strip()
+
+
+def _compact_first_path_scope_fragment(value: str) -> str:
+    """Project scope boundaries from first-path behavior instead of raw source prose."""
+
+    try:
+        from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
+        from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
+        from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+    except ImportError:
+        return ""
+    compact = readable_action_chain_phrase(
+        value,
+        fallback="",
+        limit=320,
+        max_steps=6,
+        include_visible_results=True,
+    ).strip(" .")
+    model = first_path_model(value)
+    outcome = (model.visible_outcome or first_path_outcome_phrase(value, fallback="", limit=160)).strip(" .")
+    if outcome and compact and _scope_missing_terminal_outcome(compact, outcome):
+        candidate = f"{compact}; outcome: {outcome}"
+        if len(candidate) <= 420:
+            return candidate
+    return compact
+
+
+def _scope_missing_terminal_outcome(scope: str, outcome: str) -> bool:
+    scope_terms = {
+        word.casefold().strip(".,:;")
+        for word in clean_first_path_text(scope).replace("-", " ").split()
+        if len(word.strip(".,:;")) >= 4
+    }
+    outcome_terms = {
+        word.casefold().strip(".,:;")
+        for word in clean_first_path_text(outcome).replace("-", " ").split()
+        if len(word.strip(".,:;")) >= 4
+    }
+    return bool(outcome_terms and not outcome_terms <= scope_terms)
 
 
 def _lower_initial_fragment(value: str) -> str:

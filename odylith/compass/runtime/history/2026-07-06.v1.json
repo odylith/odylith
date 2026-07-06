@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -126,7 +126,7 @@
         "Nothing moved in this window: B-141 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -923,20 +923,20 @@
       "fingerprint": "4bcc299b049b6eefb4702a4c0de147a0b3c671a32a111987781a74f6848106a6",
       "substrate_fingerprint": "4bcc299b049b6eefb4702a4c0de147a0b3c671a32a111987781a74f6848106a6",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-07-06T23:14:30Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
-        "provider_model": "gpt-5.3-codex-spark",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-07-06T23:44:32Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Confirmed greenfield setup prose contaminated post confirm projections. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     },
@@ -947,20 +947,20 @@
       "fingerprint": "51318263014fd0d0eed85d013decfdc08eb44b7cf0a717fae930b4c993555744",
       "substrate_fingerprint": "51318263014fd0d0eed85d013decfdc08eb44b7cf0a717fae930b4c993555744",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-07-06T23:14:30Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
-        "provider_model": "gpt-5.3-codex-spark",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-07-06T23:44:32Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Confirmed greenfield setup prose contaminated post confirm projections. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     }
@@ -1296,19 +1296,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "6e959093ead46c667c217891b7863882a8c008a7531ce0c768be5cf3e1d44212",
+        "substrate_fingerprint": "6e959093ead46c667c217891b7863882a8c008a7531ce0c768be5cf3e1d44212",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-06T23:14:30Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during.",
+            "Watch: Primary watch item is closure discipline: 21 plan items remain open for Universal greenfield domain intelligence (B-142)."
+          ]
         },
         "evidence_lookup": {}
       },

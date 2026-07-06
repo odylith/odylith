@@ -226,6 +226,9 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
 
 def outcome_action_phrase(outcome: str) -> str:
     text = _reviewable_result_object(_clean(outcome).rstrip(" .") or "the product result")
+    predicate_object = _predicate_result_object(text)
+    if predicate_object:
+        return _modal_safe_outcome_action(f"review {predicate_object}")
     system_action = _system_generated_outcome_action(text)
     if system_action:
         return _modal_safe_outcome_action(system_action)
@@ -353,7 +356,28 @@ def _object_phrase(value: str) -> str:
 
 def inline_result_phrase(value: str) -> str:
     text = _reviewable_result_object(_clean(value).rstrip(" .") or "the product result")
-    return lower_first(text)
+    return _predicate_result_object(text) or lower_first(text)
+
+
+def _predicate_result_object(value: str) -> str:
+    """Return a noun phrase for bare predicate outcomes such as `it delivers X`."""
+
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    match = re.match(
+        r"^(?:(?:it|this|that|they|both|each|all)\s+)?"
+        r"(?P<verb>delivers?|powers?)\s+(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    result_object = _clean(match.group("object")).strip(" .")
+    if not result_object:
+        return ""
+    noun = "delivery" if match.group("verb").casefold().startswith("deliver") else "proof"
+    return f"{noun} of {lower_first(result_object)}"
 
 
 def _looks_like_question_result(value: str) -> bool:

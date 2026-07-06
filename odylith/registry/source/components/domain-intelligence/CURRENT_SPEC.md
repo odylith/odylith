@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-05
+Last updated: 2026-07-06
 
 
 ## Overview
@@ -47,6 +47,23 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-06: Closed confirmed-intent setup-prose contamination in post-confirm projection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-219`; Diagram: D-045)
+  Domain Intelligence now classifies structural first-path setup sentences such
+  as equipment, storage, component, or protocol lists as supporting setup
+  instead of user-owned action truth. Confirmed greenfield projection skips
+  those setup rows when building Radar action copy, project-brief readiness
+  gates, first-release scope boundaries, and generated public-copy previews,
+  while still preserving the accepted first path as source evidence where a
+  later implementation prompt needs it. Terminal delivery and review outcomes
+  now outrank earlier publish/record fragments for release-scope proof, proof
+  predicate copy is normalized before rendering, external-system labels are no
+  longer passed through visible-result grammar, and confirmation next steps use
+  highlighted `Confirm`, `Edit`, and `Reject` bullets. Source-local ArborCell
+  create replay completed governed records with zero hits for the escaped
+  repeated setup phrase, `current Lab measurement tools`, `proven it`, and the
+  fake setup-review phrase; the focused greenfield live/confirmed-text/diagram
+  slice passed `58` tests.
 
 - 2026-07-05: Proved current final-dist post-confirm projection custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
   Domain Intelligence now has current installed proof for the retained final

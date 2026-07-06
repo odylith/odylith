@@ -9,6 +9,8 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import _first_path_readiness_summary
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
@@ -16,6 +18,80 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
+
+
+_ARBORCELL_PROMPT = (
+    "Draft a product-first greenfield proposal for generating electricity from a tree using natural chlorophyl "
+    "process. Think hard and make this innovative :)"
+)
+
+_ARBORCELL_CONFIRMED_INTENT = """# Product Intent Confirmation: ArborCell
+
+## Product story
+
+ArborCell is a living-tree energy interface for research labs that turns a tree's normal photosynthesis cycle into trace usable electricity without harming the tree. The product does not plug into chlorophyll directly. Instead, sunlight drives chlorophyll in the leaves, the tree sends some carbon-rich compounds into the root zone, and a bioelectrochemical root collar harvests electrons released by soil microbes as they metabolize those compounds.
+
+The first product targets controlled lab prototypes using both a young sapling and a bonsai-scale tree. Its first useful workload is one sensor reading per hour, powered by stored trace energy from the living root system.
+
+## State object
+
+A Tree Energy Session tracks prototype type, tree species, pot or soil context, light exposure, soil moisture, temperature, electrode geometry, microbial maturity, voltage, current, stored capacitor energy, hourly sensor duty cycle, tree-health signals, and excluded claims. It also records that this release is a research-lab proof and not a claim of household, vehicle, or grid-scale power.
+
+## First complete path
+
+A research lab installs a non-invasive root-zone energy collar on a living sapling and a bonsai-scale tree. Each collar uses a porous anode in the oxygen-poor root zone, an oxygen-facing cathode, a low-leakage energy harvester, and a small storage capacitor. The system waits for the microbial biofilm to mature, measures power across light and dark cycles, and proves it can deliver one sensor reading per hour while showing that both trees remain healthy.
+
+## Human actors
+
+- Research founder: needs a credible first prototype and falsifiable proof boundary
+- Lab researcher: configures experiments, compares sapling and bonsai-scale runs, and reviews measurement quality
+- Field or lab technician: installs collars, checks soil, swaps sensors, and avoids root damage
+- Reviewer or grant evaluator: needs clear evidence, limits, and repeatable measurements
+
+## External systems
+
+- Living sapling and bonsai-scale tree
+- Rhizosphere microbiome around each tree's roots
+- Sunlight or controlled grow lights
+- Water, soil chemistry, oxygen gradients, and seasonal or chamber conditions
+- Environmental sensor package for one reading per hour
+- Lab measurement tools for current, voltage, impedance, stored energy, and plant health
+
+## Internal product systems
+
+- Root-halo electrode module: soft, modular, non-invasive anode and cathode layout for sapling and bonsai-scale containers
+- Biofilm maturity tracker: separates startup noise from stable energy production
+- Chlorophyll-to-root energy model: links light, photosynthesis proxy, root exudate availability, and measured output
+- Energy budget controller: stores trace energy and schedules one sensor reading per hour only when enough charge exists
+- Comparative prototype dashboard: shows sapling and bonsai-scale performance side by side
+- Tree health guard: blocks successful-power claims if either tree is stressed
+- Proof ledger: keeps raw measurements, calibration notes, units, tolerances, baselines, and failed runs
+
+## Critical assumptions
+
+- The first viable product is a research-lab self-powered sensing platform, not a general electricity generator
+- The first prototype compares one sapling and one bonsai-scale tree under controlled conditions
+- The most honest mechanism is photosynthesis-fed root microbial electricity, not direct chlorophyll extraction from the tree
+- One sensor reading per hour is the first useful energy workload
+- Non-invasive design matters more than peak output
+- Release 0.0.1 proves repeatability in controlled lab conditions before expanding to species libraries, outdoor deployments, or customer pilots
+
+## Ambiguities
+
+- Which sapling species and bonsai-scale tree species should be used first
+- Whether grow lights, natural daylight, or both define the first light regime
+- How much biological intervention is allowed: native microbes only, inoculated electroactive microbes, or engineered biology excluded
+- Required tree-health evidence: visual inspection, chlorophyll fluorescence, growth rate, soil respiration, or simpler proxies
+- Whether the hourly sensor reading should measure tree health, soil moisture, temperature, voltage/current, or a combined packet
+
+## Proof boundary
+
+Release 0.0.1 succeeds when ArborCell repeatedly harvests measurable current from both a living sapling root system and a bonsai-scale tree root system, stores it, and powers one defined sensor reading per hour under documented research-lab conditions. The proof must include units, baselines without the tree, dark-cycle behavior, soil-only controls, uncertainty, and tree-health checks. It must not claim scalable household, vehicle, or grid power unless later evidence supports that.
+
+## Next step
+
+Confirmed: expand this accepted Product Intent Confirmation into the governed proposal contract for release 0.0.1, writing records only if validation and Tribunal gates pass.
+"""
 
 
 def _intent_from_prompt(prompt: str) -> dict[str, object]:
@@ -59,6 +135,94 @@ def _proposal_and_prewrite(tmp_path: Path, prompt: str):
         release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
     )
     return proposal, prewrite
+
+
+def test_arborcell_setup_details_do_not_become_confirmed_action_truth() -> None:
+    intent = parse_confirmed_intent_text(_ARBORCELL_CONFIRMED_INTENT, prompt=_ARBORCELL_PROMPT)
+    first_path = str(intent["first_path"])
+    capability = first_path_capability_phrase(first_path, max_fragments=8, limit=360)
+    readiness = _first_path_readiness_summary(
+        first_path,
+        fallback="",
+        proof_boundary=str(intent["proof_boundary"]),
+        visible_result="",
+        limit=520,
+    )
+
+    assert "Lab measurement tools for current, voltage, impedance, stored energy, and plant health" in intent["external_systems"]
+    assert all("current Lab measurement tools for" not in value for value in intent["external_systems"])
+    assert "measure power across light and dark cycles" in capability
+    assert "one sensor reading per hour" in capability
+    assert "measure power across light and dark cycles" in readiness
+    assert "one sensor reading per hour" in readiness
+    assert "Each collar uses" not in capability
+    assert "Each collar uses" not in readiness
+    assert "review the oxygen-poor root zone" not in capability
+    assert "review the oxygen-poor root zone" not in readiness
+
+
+def test_generic_setup_sentences_do_not_project_as_review_actions() -> None:
+    first_path = (
+        "A records team opens a reconciliation run. "
+        "Each gateway uses a buffer, retry ledger, and checksum cache. "
+        "The service validates records, publishes a signed result, and proves it delivers one export per hour."
+    )
+    capability = first_path_capability_phrase(first_path, max_fragments=8, limit=320)
+    readiness = _first_path_readiness_summary(
+        first_path,
+        fallback="",
+        proof_boundary="The first proof succeeds when one export is delivered with replay evidence.",
+        visible_result="",
+        limit=420,
+    )
+
+    assert capability == "open a reconciliation run"
+    assert "validate records" in readiness
+    assert "signed result" in readiness
+    assert "one export per hour" in readiness
+    assert "Each gateway uses" not in capability
+    assert "review a buffer" not in capability
+    assert "Each gateway uses" not in readiness
+    assert "review a buffer" not in readiness
+
+
+def test_arborcell_post_confirm_package_does_not_repeat_setup_or_malformed_copy(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(_ARBORCELL_CONFIRMED_INTENT, prompt=_ARBORCELL_PROMPT)
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=_ARBORCELL_PROMPT,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    report = build_greenfield_package_report(prewrite.package)
+    public_payload = json.dumps(
+        {
+            "backlog": prewrite.package.backlog_result.get("idea_files"),
+            "registry": prewrite.package.rendered_component_specs,
+            "atlas": prewrite.package.rendered_atlas_sources,
+            "brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+    assert tribunal.passed, tribunal.issues
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+    assert "Each collar uses a porous anode in the oxygen-poor root zone, and an oxygen-facing cathode" not in public_payload
+    assert "current Lab measurement tools for" not in public_payload
+    assert "proven it" not in public_payload
+    assert "review the oxygen-poor root zone" not in public_payload
 
 
 def test_confirmed_actor_labels_drop_dangling_action_fragments(tmp_path: Path) -> None:

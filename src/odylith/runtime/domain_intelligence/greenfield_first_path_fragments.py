@@ -187,7 +187,7 @@ def action_chain_fragment(value: str) -> str:
         if re.match(r"^confirms?\b", stripped, flags=re.IGNORECASE) and _confirm_action_is_actor_led(text):
             return base_action_clause(stripped).strip(" .")
         if re.match(
-            r"^(?:checks?|closes?|decides?|inspects?|publishes?|reads?|reports?|reviews?|sees?|uses?|views?)\b",
+            r"^(?:checks?|closes?|decides?|inspects?|launches?|opens?|publishes?|reads?|reports?|reviews?|sees?|starts?|uses?|views?)\b",
             stripped,
             flags=re.IGNORECASE,
         ):

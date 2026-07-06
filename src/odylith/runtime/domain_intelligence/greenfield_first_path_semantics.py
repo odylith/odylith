@@ -59,6 +59,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_review_outcome im
 )
 from odylith.runtime.domain_intelligence import greenfield_first_path_purpose_context as _purpose_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import is_supporting_setup_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import (
     base_from_gerund_action as _base_from_gerund_action,
 )
@@ -77,6 +78,12 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _ACTION_BASE_VERB_PATTERN = action_base_verb_pattern()
 _ACTION_VERB_PATTERN = action_verb_pattern()
+_PREFERRED_VISIBLE_RESULT_ACTION_RE = re.compile(
+    r"\b(?:compare|compares|deliver|delivers|display|displays|find|finds|produce|produces|publish|publishes|"
+    r"recompute|recomputes|report|reports|render|renders|return|returns|review|reviews|save|saves|see|sees|"
+    r"show|shows|update|updates|view|views|receive|receives)\b",
+    flags=re.IGNORECASE,
+)
 _SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(exclude={"keep", "keeps"})
 _OPEN_PLUS_MATERIAL_RE = re.compile(
     r"^\s*(?P<subject>(?:a|an|the)?\s*[^,.;]{0,80}?)\b(?:open|opens|launch|launches)\b"
@@ -288,8 +295,12 @@ def _first_path_frame_head(value: str) -> bool:
 def _material_action(steps: Sequence[str]) -> str:
     if not steps:
         return ""
+    setup_fallback = ""
     for step in steps:
         if _is_trivial_start(step):
+            continue
+        if is_supporting_setup_step(step):
+            setup_fallback = setup_fallback or step
             continue
         match = _OPEN_PLUS_MATERIAL_RE.match(step)
         if match and _MATERIAL_ACTION_RE.search(match.group("material")):
@@ -299,6 +310,8 @@ def _material_action(steps: Sequence[str]) -> str:
         actor, action = _actor_led_action_parts(step)
         if actor and action:
             return _sentence_case(f"{actor} {action}")
+    if setup_fallback:
+        return _sentence_case(_action_chain_fragment(setup_fallback))
     return _sentence_case(_action_chain_fragment(steps[0]))
 
 def _visible_outcome(steps: Sequence[str]) -> str:
@@ -325,7 +338,7 @@ def _visible_outcome(steps: Sequence[str]) -> str:
                 if _prefer_visible_result_object(object_visible, action_visible)
                 else action_visible or object_visible or cleaned
             )
-            if re.search(r"\b(?:compare|compares|display|displays|find|finds|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|receive|receives)\b", cleaned, flags=re.IGNORECASE) and not re.search(
+            if _has_preferred_visible_result_action(cleaned) and not re.search(
                 r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b",
                 cleaned,
                 flags=re.IGNORECASE,
@@ -342,6 +355,15 @@ def _visible_outcome(steps: Sequence[str]) -> str:
             outcome = _nominal_material_outcome(step) or step
             return _sentence_case(_normalize_visible_result_language(outcome) or outcome)
     return ""
+
+
+def _has_preferred_visible_result_action(value: str) -> bool:
+    text = _clean(value)
+    for match in _PREFERRED_VISIBLE_RESULT_ACTION_RE.finditer(text):
+        if _action_word_inside_compound_noun(text, match.start()):
+            continue
+        return True
+    return False
 
 
 def _nominal_material_outcome(value: str) -> str:
@@ -535,8 +557,8 @@ def _has_actor_led_subject_prefix(value: str) -> bool:
 
 def _split_action_pieces(value: str) -> list[str]:
     pieces: list[str] = []
-    subject_prefix = ""
     for raw_segment in [part.strip(" .,;:") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .,;:")]:
+        subject_prefix = ""
         for purpose_segment in _split_purpose_action_tail(raw_segment):
             for segment in _split_temporal_action_tail(purpose_segment):
                 current = ""

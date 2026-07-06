@@ -80,6 +80,10 @@ def nominal_action_result_object(value: str, result: str = "") -> str:
         return ""
     if not nominal or not object_text:
         return ""
+    if nominal == "proven":
+        predicate_result = _proof_predicate_result_object(object_text)
+        if predicate_result:
+            return predicate_result
     return f"{nominal} {object_text}".strip(" .")
 
 
@@ -100,6 +104,21 @@ def _drop_leading_article(value: str) -> str:
     if separator and first.casefold() in {"a", "an", "the"}:
         return rest.strip()
     return clean_first_path_text(value).strip(" .")
+
+
+def _proof_predicate_result_object(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    text = re.sub(r"^(?:that\s+)?", "", text, flags=re.IGNORECASE).strip(" .")
+    if not text:
+        return ""
+    if re.match(
+        r"^(?:it|this|that|they|both|each|all)\s+"
+        r"(?:can\s+)?[a-z][a-z0-9'/-]+(?:s|ed|ing)?\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return text
+    return ""
 
 
 __all__ = ["nominal_action_result_object", "nominalize_leading_result_action"]

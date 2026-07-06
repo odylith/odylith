@@ -17,7 +17,7 @@ def review_step_visible_result(value: str) -> str:
     if re.search(r"\b(?:blocker|blockers|next\s+step)\b", stripped, flags=re.IGNORECASE):
         return ""
     if not re.search(
-        r"\b(?:decision|evidence|output|prediction|proof|readout|recommendation|report|result|results|status|summary|view)\b",
+        r"\b(?:decision|evidence|output|prediction|proof|readout|recommendation|report|result|results|standing|standings|status|summary|view)\b",
         stripped,
         flags=re.IGNORECASE,
     ):

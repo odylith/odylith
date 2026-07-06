@@ -205,10 +205,32 @@ def visible_mermaid_label_quality_texts(source: object) -> tuple[str, ...]:
             continue
         header = chunks[0].casefold().strip(" .:")
         if header in _LABEL_HEADER_TEXTS:
-            units.extend(chunks[1:] or chunks)
+            units.extend(_merge_quality_line_fragments(chunks[1:] or chunks))
             continue
         units.append(clean_mermaid_text(label.replace("<br/>", " ").replace("<br>", " ")))
     return tuple(unit for unit in dict.fromkeys(units) if unit)
+
+
+def _merge_quality_line_fragments(chunks: Sequence[str]) -> tuple[str, ...]:
+    merged: list[str] = []
+    index = 0
+    rows = [clean_mermaid_text(chunk) for chunk in chunks if clean_mermaid_text(chunk)]
+    while index < len(rows):
+        current = rows[index]
+        while index + 1 < len(rows) and _quality_line_needs_following_word(current):
+            index += 1
+            current = f"{current} {rows[index]}".strip()
+        merged.append(current)
+        index += 1
+    return tuple(merged)
+
+
+def _quality_line_needs_following_word(value: str) -> bool:
+    words = clean_mermaid_text(value).split()
+    if not words:
+        return False
+    tail = words[-1].casefold().strip(".,;:")
+    return tail in {"include", "includes", "keep", "keeps", "remain", "remains", "return", "returns", "with"}
 
 
 def _raw_visible_labels(source: object) -> tuple[str, ...]:

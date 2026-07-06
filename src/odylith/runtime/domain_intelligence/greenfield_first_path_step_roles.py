@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+import re
+
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 
 
 def drop_release_proof_control_steps(values: Sequence[str]) -> list[str]:
@@ -35,6 +38,29 @@ def is_release_proof_control_step(value: str) -> bool:
     return words[:3] == ["the", "first", "release"]
 
 
+def is_supporting_setup_step(value: str) -> bool:
+    """Return whether a first-path step describes structure, not user-owned action."""
+
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return False
+    match = re.match(
+        r"^(?:(?:a|an|the|one|this|that|each|another)\s+)?"
+        r"(?P<subject>[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,6})\s+"
+        r"(?P<verb>uses?|contains?|includes?|has|have|consists?|comprises?)\b"
+        r"(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return False
+    subject = match.group("subject").strip(" .")
+    if has_actor_role_word(subject):
+        return False
+    object_text = _compact_text(match.group("object")).strip(" .")
+    return bool(object_text)
+
+
 def _is_release_readiness_product_phrase(words: Sequence[str]) -> bool:
     if len(words) < 3 or words[:2] != ["release", "readiness"] or "for" not in words:
         return False
@@ -63,4 +89,8 @@ def _compact_text(value: str) -> str:
     return " ".join(str(value or "").split())
 
 
-__all__ = ["drop_release_proof_control_steps", "is_release_proof_control_step"]
+__all__ = [
+    "drop_release_proof_control_steps",
+    "is_release_proof_control_step",
+    "is_supporting_setup_step",
+]

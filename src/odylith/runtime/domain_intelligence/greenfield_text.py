@@ -143,6 +143,12 @@ def word_occurrences(value: Any, word: Any) -> int:
 def normalize_visible_result_language(value: Any) -> str:
     text = clean_text(value)
     text = re.sub(r"\bintaked\b", "received", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\bproven\s+(?=(?:it|this|that|they|both|each|all)\b)",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = _normalize_saved_destination_language(text)
     text = _normalize_possessive_result_lists(text)
     text = normalize_reviewed_result_nouns(text)

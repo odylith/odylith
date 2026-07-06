@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import inl
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
+from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import is_supporting_setup_step
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_outcome_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -524,6 +525,8 @@ def _sequence_steps_are_structural_actions(steps: list[str]) -> bool:
     if not steps:
         return False
     for step in steps:
+        if is_supporting_setup_step(step):
+            continue
         action = action_chain_fragment(step)
         if not action or not looks_like_action_clause(action):
             return False
@@ -531,7 +534,11 @@ def _sequence_steps_are_structural_actions(steps: list[str]) -> bool:
 
 
 def _first_path_step_summary(steps: list[str], *, limit: int) -> str:
-    rows = [compact_text(step).strip(" .") for step in steps if compact_text(step).strip(" .")]
+    rows = [
+        compact_text(step).strip(" .")
+        for step in steps
+        if compact_text(step).strip(" .") and not is_supporting_setup_step(step)
+    ]
     if not rows:
         return ""
     candidate = ". ".join(rows)
@@ -604,7 +611,7 @@ def _first_path_readiness_summary(
     text = _prefer_more_complete_action_summary(structured_action, capability or clauses.action_chain) or fallback
     if not structured_action:
         text = _readiness_action_head(text)
-    outcome = compact_text(visible_result or clauses.visible_result).strip(" .")
+    outcome = compact_text(visible_result or clauses.model.visible_outcome or clauses.visible_result).strip(" .")
     if (
         outcome
         and not _result_terms_covered(outcome, text)
@@ -657,6 +664,8 @@ def _coverage_term(value: str) -> str:
 def _first_path_action_step_summary(value: str, *, limit: int) -> str:
     actions: list[str] = []
     for step in sequence_event_steps(value):
+        if is_supporting_setup_step(step):
+            continue
         action = action_chain_fragment(step)
         if action and looks_like_action_clause(action):
             actions.append(action)

@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _SEMANTIC_MODEL_TERM_STOPWORDS = {
@@ -684,7 +685,7 @@ def _proof_checkpoint(value: str, *, state_label: str) -> str:
     ]
     for clause in clauses:
         if word_count(clause) >= 4:
-            clipped = _clip_clause(_nominal_proof_checkpoint_clause(clause), 88)
+            clipped = _clip_clause(_nominal_proof_checkpoint_clause(clause), 140)
             return f"visible outcome proof: {clipped}" if clipped else "visible outcome proof"
     return f"visible outcome proof: {state_label} validation, replay evidence, blockers, and release decision"
 
@@ -735,6 +736,17 @@ def _is_synthetic_visible_result_event(text: str, visible_result: str) -> bool:
 
 def _nominal_proof_checkpoint_clause(value: str) -> str:
     text = _clean(value).strip(" .")
+    proof = re.match(
+        r"^(?:(?:a|an|the|one|this|that|each)\s+)?"
+        r"(?:[A-Za-z][A-Za-z0-9/&'-]*\s+){0,5}"
+        r"proves?\s+(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if proof:
+        result = normalize_visible_result_language(proof.group("object"))
+        if result:
+            return result
     action = re.match(
         r"^(?:(?:a|an|the)\s+)?(?:[A-Za-z][A-Za-z0-9/&'-]*\s+){0,5}"
         r"(?P<verb>captures?|confirms?|exports?|publishes?|records?|saves?|submits?)\s+"

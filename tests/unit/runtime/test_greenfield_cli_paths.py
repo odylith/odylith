@@ -84,9 +84,9 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Ambiguities" in output
     assert "Proof boundary" in output
     assert "Next step" in output
-    assert "- Confirm: if this interpretation is right" in output
-    assert "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
-    assert "- Reject: if this is not the intended product" in output
+    assert "- `Confirm`: if this interpretation is right" in output
+    assert "- `Edit`: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
+    assert "- `Reject`: if this is not the intended product" in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
     assert "Original user intent" not in output

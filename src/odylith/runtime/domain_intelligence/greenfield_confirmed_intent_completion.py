@@ -130,7 +130,7 @@ def _normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) ->
 
 
 def _normalize_external_system_language(value: str) -> str:
-    text = _normalize_visible_result_language(value)
+    text = clean_text(value)
     text = re.sub(
         r"^(?:optional|optionally|deferred|future|later|if\s+needed|if\s+available)(?:\s*:\s*|\s+)",
         "",

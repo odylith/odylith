@@ -116,13 +116,13 @@ def semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
         visible = _proof_checkpoint_from_visible_result(visible)
         visible = _lower_leading_possessive_fragment(visible)
         if word_count(visible) >= 3:
-            return trim(visible, 80)
+            return trim(visible, 140)
     graph = semantic_model.get("diagram_event_graph")
     if isinstance(graph, Mapping):
         value = normalize_proof_boundary_language(compact_text(str(graph.get("proof_checkpoint") or "")))
         value = _strip_dangling_tail(value)
         if word_count(value) >= 4:
-            return trim(value, 80)
+            return trim(value, 140)
     return ""
 
 
@@ -194,7 +194,7 @@ def proof_checkpoint_label(value: str) -> str:
     ]
     for clause in clauses:
         if word_count(clause) >= 4:
-            return trim(clause, 82)
+            return trim(clause, 120)
     return ""
 
 
