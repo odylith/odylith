@@ -92,10 +92,7 @@ This section captures synchronized requirement and contract signals derived from
   first-path/projection tests, plus py-compile and whitespace checks. Clean
   committed-head installed release proof remains the next gate.
 
-- 2026-07-07: Reopened scope-tail custody after installed volume discovery found
-  system-classified source actions missing from release scope. (Plan:
-  [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug:
-  `CB-220`; Diagram: D-045)
+- 2026-07-07: Reopened scope-tail custody after installed volume discovery found system-classified source actions missing from release scope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`; Diagram: D-045)
   The fd0e5a51 local-release 120-case discovery stopped on case 2,
   `cryogenic ion trap calibration intake-to-proof workspace`, because
   release-scope projection rendered only `provide inputs; review a baseline;

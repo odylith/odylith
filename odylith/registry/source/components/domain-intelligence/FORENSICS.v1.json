@@ -10,10 +10,10 @@
     "empty_reasons": [],
     "explicit_event_count": 408,
     "mapped_workstream_evidence_count": 375,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 253,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 254,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 408
+    "timeline_event_count": 409
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 932,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-07T02:04:51-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 3,
       "artifacts": [
