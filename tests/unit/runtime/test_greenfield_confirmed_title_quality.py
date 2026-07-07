@@ -78,7 +78,7 @@ def test_confirmed_create_repairs_prompt_shaped_title_before_quality_gate(tmp_pa
         "Draft a product-first greenfield proposal for a people activity tracker app that captures "
         "what specific people are doing so that we can follow the same and make money."
     )
-    fallback_title = greenfield_proposals._intent_title(prompt)
+    fallback_title = greenfield_proposals.intent_title(prompt)
     intent = parse_confirmed_intent_text(
         ACTIVITY_WATCHLIST_INTENT,
         prompt=prompt,
@@ -114,7 +114,7 @@ def test_intent_title_uses_prompt_boundary_instead_of_clipped_target_tail() -> N
         "incident response, and least-privilege automation."
     )
 
-    title = greenfield_proposals._intent_title(prompt)
+    title = greenfield_proposals.intent_title(prompt)
 
     assert title.casefold() == "end-to-end export-control and data-handling compliance workflow"
     assert "Research Lab Processing" not in title
@@ -187,7 +187,7 @@ def test_confirmed_json_intent_repairs_prompt_shaped_title() -> None:
     )
     intent = normalize_confirmed_intent(
         {
-            "title": greenfield_proposals._intent_title(prompt),
+            "title": greenfield_proposals.intent_title(prompt),
             "product_story": (
                 "A researcher wants to follow public activity signals for selected people, compare those signals "
                 "with a private watchlist, and decide whether each signal deserves more research. The product keeps "
@@ -236,7 +236,7 @@ def test_confirmed_title_repair_uses_shared_label_terms_for_display_tokens(tmp_p
         release_selector="0.0.1",
         confirmed_intent=intent,
     )
-    stale_title = greenfield_proposals._intent_title(prompt)
+    stale_title = greenfield_proposals.intent_title(prompt)
     proposal["intent"]["title"] = stale_title
     proposal["release_plan"]["label"] = "Ship AI/ML Review Workspace First Release"
 
@@ -261,7 +261,7 @@ def test_confirmed_completion_repairs_stale_prompt_shaped_title_bindings(tmp_pat
         release_selector="0.0.1",
         confirmed_intent=intent,
     )
-    stale_title = greenfield_proposals._intent_title(prompt)
+    stale_title = greenfield_proposals.intent_title(prompt)
     proposal["intent"]["title"] = stale_title
     proposal["intent"]["project_slug"] = "people-activity-tracker-app-that-captures-what-specific-people-are-doing-so-that-we-can-follow"
     proposal["artifact_derivation"] = {

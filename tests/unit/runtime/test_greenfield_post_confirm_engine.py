@@ -580,6 +580,208 @@ def test_package_report_emits_source_typed_semantic_coverage_findings() -> None:
     assert "radar" in {projection for operation in operations for projection in operation["affected_projections"]}
 
 
+def test_radar_semantic_coverage_accepts_typed_raw_path_when_capability_stays_aligned() -> None:
+    raw_path = (
+        "Procurement risk manager can turn an ambiguous supplier review into a review-ready record "
+        "using sanctions screening, delivery history, cyber questionnaire, contract terms, explicit expert review, "
+        "auditable decision ledger, and a final supplier approval recommendation."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "title": "Procurement Supplier Risk Board",
+                "first_path": raw_path,
+            },
+            "semantic_model": {
+                "schema_version": "odylith.greenfield.semantic_model.v1",
+                "domain_ontology": {},
+                "first_path_contract": {
+                    "capability": "turn supplier review into review-ready record",
+                    "raw_path": raw_path,
+                },
+                "component_contracts": [],
+                "workstream_contracts": [],
+                "diagram_event_graph": {},
+            },
+        },
+        backlog_result={
+            "created": [{"title": "Supplier risk review", "idea_id": "B-001"}],
+            "idea_files": {
+                "B-001.md": (
+                    "Procurement Risk Manager needs to turn an ambiguous supplier review into a review-ready "
+                    "record using sanctions screening, delivery history, cyber questionnaire, contract terms, "
+                    "explicit expert review, auditable decision ledger, and a final supplier approval recommendation."
+                )
+            },
+            "backlog_index_text": "Supplier risk review",
+            "validation_gate": {"status": "passed"},
+        },
+    )
+
+    typed_findings = package_artifact_findings(package)
+    report = build_greenfield_package_report(package)
+
+    assert not any(
+        finding.message == "prewrite Radar package missing semantic coverage for first path"
+        for finding in typed_findings
+    )
+    assert "prewrite Radar package missing semantic coverage for first path" not in report.issues
+    assert "FirstPathContract capability drifted from accepted raw path" not in report.issues
+
+
+def test_radar_semantic_coverage_rejects_intent_fallback_without_typed_contract() -> None:
+    first_path = (
+        "Procurement risk manager can turn an ambiguous supplier review into a review-ready record "
+        "using sanctions screening, delivery history, cyber questionnaire, contract terms, explicit expert review, "
+        "auditable decision ledger, and a final supplier approval recommendation."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "title": "Procurement Supplier Risk Board",
+                "first_path": first_path,
+            },
+            "semantic_model": {
+                "schema_version": "odylith.greenfield.semantic_model.v1",
+                "domain_ontology": {},
+                "first_path_contract": {
+                    "capability": "reviewing into a review-ready record",
+                },
+                "component_contracts": [],
+                "workstream_contracts": [],
+                "diagram_event_graph": {},
+            },
+        },
+        backlog_result={
+            "created": [{"title": "Supplier risk review", "idea_id": "B-001"}],
+            "idea_files": {
+                "B-001.md": (
+                    "Procurement Risk Manager needs to turn an ambiguous supplier review into a review-ready "
+                    "record using sanctions screening, delivery history, cyber questionnaire, contract terms, "
+                    "explicit expert review, auditable decision ledger, and a final supplier approval recommendation."
+                )
+            },
+            "backlog_index_text": "Supplier risk review",
+            "validation_gate": {"status": "passed"},
+        },
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert "prewrite Radar package missing semantic coverage for first path" in report.issues
+    assert any(
+        finding.message == "prewrite Radar package missing semantic coverage for first path"
+        and finding.semantic_node_id == "SemanticModelIR.first_path_contract"
+        for finding in report.findings
+    )
+
+
+def test_radar_semantic_coverage_rejects_unrelated_text_even_with_raw_path() -> None:
+    raw_path = (
+        "Procurement risk manager can turn an ambiguous supplier review into a review-ready record "
+        "using sanctions screening, delivery history, cyber questionnaire, contract terms, explicit expert review, "
+        "auditable decision ledger, and a final supplier approval recommendation."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "title": "Procurement Supplier Risk Board",
+                "first_path": raw_path,
+            },
+            "semantic_model": {
+                "schema_version": "odylith.greenfield.semantic_model.v1",
+                "domain_ontology": {},
+                "first_path_contract": {
+                    "capability": "reviewing into a review-ready record",
+                    "raw_path": raw_path,
+                },
+                "component_contracts": [],
+                "workstream_contracts": [],
+                "diagram_event_graph": {},
+            },
+        },
+        backlog_result={
+            "created": [{"title": "Supplier risk review", "idea_id": "B-001"}],
+            "idea_files": {
+                "B-001.md": (
+                    "A generic operations dashboard tracks unrelated budget status, meeting notes, "
+                    "and team capacity without supplier risk review evidence."
+                )
+            },
+            "backlog_index_text": "Supplier risk review",
+            "validation_gate": {"status": "passed"},
+        },
+    )
+
+    typed_findings = package_artifact_findings(package)
+    report = build_greenfield_package_report(package)
+
+    assert any(
+        finding.message == "prewrite Radar package missing semantic coverage for first path"
+        for finding in typed_findings
+    )
+    assert "prewrite Radar package missing semantic coverage for first path" in report.issues
+
+
+def test_first_path_capability_drift_fails_even_when_raw_path_covers_radar() -> None:
+    raw_path = (
+        "Procurement risk manager can turn an ambiguous supplier review into a review-ready record "
+        "using sanctions screening, delivery history, cyber questionnaire, contract terms, explicit expert review, "
+        "auditable decision ledger, and a final supplier approval recommendation."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "title": "Procurement Supplier Risk Board",
+                "first_path": raw_path,
+            },
+            "semantic_model": {
+                "schema_version": "odylith.greenfield.semantic_model.v1",
+                "domain_ontology": {},
+                "first_path_contract": {
+                    "capability": "approve employee vacation calendar and payroll export",
+                    "raw_path": raw_path,
+                },
+                "component_contracts": [],
+                "workstream_contracts": [],
+                "diagram_event_graph": {},
+            },
+        },
+        backlog_result={
+            "created": [{"title": "Supplier risk review", "idea_id": "B-001"}],
+            "idea_files": {
+                "B-001.md": (
+                    "Procurement Risk Manager needs to turn an ambiguous supplier review into a review-ready "
+                    "record using sanctions screening, delivery history, cyber questionnaire, contract terms, "
+                    "explicit expert review, auditable decision ledger, and a final supplier approval recommendation."
+                )
+            },
+            "backlog_index_text": "Supplier risk review",
+            "validation_gate": {"status": "passed"},
+        },
+    )
+
+    typed_findings = package_artifact_findings(package)
+    report = build_greenfield_package_report(package)
+
+    assert not any(
+        finding.message == "prewrite Radar package missing semantic coverage for first path"
+        for finding in typed_findings
+    )
+    assert "prewrite Radar package missing semantic coverage for first path" not in report.issues
+    assert "FirstPathContract capability drifted from accepted raw path" in report.issues
+    assert any(
+        finding.message == "FirstPathContract capability drifted from accepted raw path"
+        and finding.source == "semantic_model_shape"
+        and finding.repairability == "semantic_patch"
+        for finding in report.findings
+    )
+
+
 def test_package_report_emits_structured_quality_lens_findings() -> None:
     package = GreenfieldCompletionPackage(
         proposal={

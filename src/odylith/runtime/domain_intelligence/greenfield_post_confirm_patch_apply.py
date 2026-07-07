@@ -91,11 +91,18 @@ def _apply_operations(
     return repaired
 
 
-def complete_greenfield_semantic_apply_payload(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:
+def complete_greenfield_semantic_apply_payload(
+    proposal: dict[str, Any],
+    *,
+    release_selector: str,
+    proposal_completed: bool = False,
+) -> dict[str, Any]:
     """Complete proposal semantics and clear poisoned semantic projections."""
 
     repaired = ensure_apply_semantic_model(proposal, refresh=True)
     projection_changed = repair_greenfield_semantic_projections(repaired)
+    if proposal_completed and not projection_changed:
+        return repaired
     completed = complete_confirmed_proposal(repaired, release_selector=release_selector)
     if projection_changed or completed != repaired:
         repaired = completed
@@ -107,7 +114,11 @@ def complete_greenfield_semantic_apply_payload(proposal: dict[str, Any], *, rele
 def _complete_confirmed_semantic_proposal(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:
     repaired = complete_confirmed_proposal(proposal, release_selector=release_selector)
     repaired = _normalized_proposal(repaired)
-    return complete_greenfield_semantic_apply_payload(repaired, release_selector=release_selector)
+    return complete_greenfield_semantic_apply_payload(
+        repaired,
+        release_selector=release_selector,
+        proposal_completed=True,
+    )
 
 
 def _normalized_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:

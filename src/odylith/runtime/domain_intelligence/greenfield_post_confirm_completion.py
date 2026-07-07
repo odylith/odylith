@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import project
 from odylith.runtime.domain_intelligence.greenfield_atlas_semantic_coverage import (
     atlas_first_path_contract_coverage_text,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_coverage import first_path_contract_has_coverage
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
@@ -536,15 +537,17 @@ def _radar_preview_semantic_issues(package: GreenfieldCompletionPackage, *, idea
     semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
-    intent = package.proposal.get("intent") if isinstance(package.proposal.get("intent"), Mapping) else {}
-    required = {
-        "first path": clean_text(first_path.get("capability") or intent.get("first_path")),
-        "proof boundary": clean_text(ontology.get("proof_boundary")),
-    }
     issues: list[str] = []
-    for label, value in required.items():
-        if value and _semantic_overlap_ratio(value, text) < 0.18:
-            issues.append(f"prewrite Radar package missing semantic coverage for {label}")
+    if not first_path_contract_has_coverage(
+        first_path,
+        text,
+        overlap_ratio=_semantic_overlap_ratio,
+        threshold=0.18,
+    ):
+        issues.append("prewrite Radar package missing semantic coverage for first path")
+    proof_boundary = clean_text(ontology.get("proof_boundary"))
+    if proof_boundary and _semantic_overlap_ratio(proof_boundary, text) < 0.18:
+        issues.append("prewrite Radar package missing semantic coverage for proof boundary")
     return issues
 
 

@@ -10,14 +10,8 @@ pushing internal normalization or repair work back onto the host.
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable
-import contextlib
-import io
 import json
-import os
 import re
-import sys
-import tempfile
 import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -35,8 +29,10 @@ from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import ensure
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
-from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
@@ -47,9 +43,6 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_fail
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_completion_ready
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    GreenfieldPostConfirmEngineError,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     GreenfieldPostConfirmRepairContext,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
@@ -57,9 +50,6 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     POST_CONFIRM_MAX_PASSES,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    POST_CONFIRM_REPAIR_TIERS,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     run_greenfield_post_confirm_engine,
@@ -77,18 +67,16 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collap
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.common import display_text
-from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
-from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 
 
-def _prompt_text(prompt: str) -> str:
+def prompt_text(prompt: str) -> str:
     text = " ".join(str(prompt or "").split()).strip()
     text = re.sub(r"^odylith[,:\s-]+", "", text, flags=re.IGNORECASE).strip()
     return text or "new project"
 
 
-def _intent_title(prompt: str) -> str:
-    text = _prompt_text(prompt)
+def intent_title(prompt: str) -> str:
+    text = prompt_text(prompt)
     lowered = text.casefold()
     for prefix in (
         "draft a product-first greenfield proposal for ",
@@ -235,6 +223,7 @@ _TITLE_ACRONYMS = {
 
 _MAX_PACKAGE_REPAIR_PASSES = POST_CONFIRM_MAX_PASSES
 _DEFAULT_POST_CONFIRM_REPAIR_TIER = "auto"
+DEFAULT_POST_CONFIRM_REPAIR_TIER = _DEFAULT_POST_CONFIRM_REPAIR_TIER
 
 
 def _title_token(token: str) -> str:
@@ -258,7 +247,7 @@ def _looks_like_source_mixed_case_token(value: str) -> bool:
     return bool(len(letters) >= 2 and any(char.islower() for char in letters) and any(char.isupper() for char in letters[1:]))
 
 
-def _source_evidence(repo_root: Path) -> dict[str, Any]:
+def source_evidence(repo_root: Path) -> dict[str, Any]:
     identity = repo_analysis.read_project_identity(repo_root)
     summary = repo_analysis.summarize_source_inventory(repo_root)
     if summary.app_modules >= 3:
@@ -342,7 +331,7 @@ def build_greenfield_proposal(
     return proposal
 
 
-def _load_proposal(args: argparse.Namespace) -> dict[str, Any]:
+def load_proposal(args: argparse.Namespace) -> dict[str, Any]:
     if str(getattr(args, "proposal_file", "") or "").strip():
         path = Path(str(args.proposal_file)).expanduser().resolve()
         return json.loads(path.read_text(encoding="utf-8"))
@@ -352,7 +341,7 @@ def _load_proposal(args: argparse.Namespace) -> dict[str, Any]:
     raise ValueError("provide --proposal-file or --proposal-json")
 
 
-def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
+def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
     intent_file = str(getattr(args, "intent_file", "") or "").strip()
     if not intent_file:
         raise ValueError(
@@ -367,7 +356,7 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     record = load_confirmed_intent_record(
         path,
         prompt=str(getattr(args, "prompt", "") or ""),
-        fallback_title=_intent_title(str(getattr(args, "prompt", "") or "")),
+        fallback_title=intent_title(str(getattr(args, "prompt", "") or "")),
     )
     intent = record.product_facts
     write_structured_confirmed_intent_file(path, intent, envelope=record.envelope)
@@ -552,6 +541,98 @@ def _build_repaired_prewrite_package(
     return result.proposal, result.tribunal, result.prewrite_build, result.manifest
 
 
+def compile_greenfield_create_transaction(
+    *,
+    repo_root: Path,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+    proposal_ready: bool = False,
+    repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
+) -> ProductCreateTransaction:
+    """Compile and quality-gate the complete create package before commit."""
+
+    root = Path(repo_root).expanduser().resolve()
+    release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    proposal, tribunal, prewrite_build, quality_manifest = _build_repaired_prewrite_package(
+        root=root,
+        proposal=proposal,
+        release_selector=release_selector,
+        proposal_ready=proposal_ready,
+        repair_tier=repair_tier,
+    )
+    package_proposal = prewrite_build.package.proposal
+    if isinstance(package_proposal, Mapping):
+        proposal = package_proposal
+    transaction = build_product_create_transaction(
+        proposal=proposal,
+        release_selector=release_selector,
+        validation_gate=tribunal.to_dict() if hasattr(tribunal, "to_dict") else {},
+        prewrite_package=prewrite_build.package,
+        backlog_result=prewrite_build.backlog_result,
+        quality_manifest=quality_manifest,
+    )
+    require_product_create_transaction_verified(transaction)
+    return transaction
+
+
+def commit_greenfield_create_transaction(
+    *,
+    repo_root: Path,
+    transaction: ProductCreateTransaction,
+    confirm: bool,
+    started_at: float | None = None,
+) -> dict[str, Any]:
+    """Commit an already compiled ProductCreateTransaction without product repair."""
+
+    if not confirm:
+        raise ValueError("--confirm is required before greenfield apply writes accepted product records")
+    require_product_create_transaction_verified(transaction)
+    root = Path(repo_root).expanduser().resolve()
+    started = time.perf_counter() if started_at is None else float(started_at)
+    completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(
+        transaction.quality_manifest
+    )
+    with GreenfieldApplyTransaction(root) as write_transaction:
+        ensure_greenfield_create_baseline(root)
+        result = greenfield_apply_write.write_greenfield_proposal(
+            root=root,
+            proposal=transaction.proposal,
+            release_selector=transaction.release_selector,
+            tribunal=transaction.validation_gate,
+            backlog_result=transaction.backlog_result,
+            prewrite_package=transaction.prewrite_package,
+            completion_priority_write_policy=completion_priority_write_policy,
+        )
+        write_transaction.commit()
+    final_manifest = finalize_greenfield_post_confirm_manifest(
+        transaction.quality_manifest,
+        whole_project_elapsed_seconds=time.perf_counter() - started,
+        write_transaction_status="committed",
+    )
+    final_manifest["product_create_transaction"] = transaction.summary()
+    write_manifest = dict(final_manifest.get("write_transaction") or {})
+    write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
+    write_manifest["commit_only"] = True
+    final_manifest["write_transaction"] = write_manifest
+    final_write_debt = result.get("completion_priority_quality_debt")
+    if final_write_debt:
+        final_manifest["status"] = "passed_with_quality_debt"
+        final_manifest["stop_reason"] = "completion_priority_quality_debt"
+        completion_priority = (
+            dict(final_manifest["completion_priority"])
+            if isinstance(final_manifest.get("completion_priority"), Mapping)
+            else dict(completion_priority_write_policy or {})
+        )
+        completion_priority["final_write_quality_debt"] = list(final_write_debt)
+        completion_priority["final_write_quality_debt_count"] = len(final_write_debt)
+        completion_priority.setdefault("status", "write_allowed_with_projection_quality_debt")
+        completion_priority.setdefault("hard_blocker_count", 0)
+        final_manifest["completion_priority"] = completion_priority
+    result["post_confirm_quality_manifest"] = final_manifest
+    result["product_create_transaction"] = transaction.summary()
+    return result
+
+
 def _repair_confirmed_apply_payload(
     proposal: Mapping[str, Any],
     *,
@@ -611,267 +692,24 @@ def apply_greenfield_proposal(
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     if not backlog_rows:
         raise ValueError("proposal has no backlog records")
-    release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    proposal, tribunal, prewrite_build, post_confirm_manifest = _build_repaired_prewrite_package(
-        root=root,
+    transaction = compile_greenfield_create_transaction(
+        repo_root=root,
         proposal=proposal,
         release_selector=release_selector,
         proposal_ready=proposal_ready,
         repair_tier=repair_tier,
     )
-    if isinstance(prewrite_build.package.proposal, Mapping):
-        proposal = prewrite_build.package.proposal
-    backlog_result = prewrite_build.backlog_result
-    completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(post_confirm_manifest)
-    with GreenfieldApplyTransaction(root) as transaction:
-        ensure_greenfield_create_baseline(root)
-        result = greenfield_apply_write.write_greenfield_proposal(
-            root=root,
-            proposal=proposal,
-            release_selector=release_selector,
-            tribunal=tribunal,
-            backlog_result=backlog_result,
-            prewrite_package=prewrite_build.package,
-            completion_priority_write_policy=completion_priority_write_policy,
-        )
-        transaction.commit()
-        final_manifest = finalize_greenfield_post_confirm_manifest(
-            post_confirm_manifest,
-            whole_project_elapsed_seconds=time.perf_counter() - post_confirm_started,
-            write_transaction_status="committed",
-        )
-        final_write_debt = result.get("completion_priority_quality_debt")
-        if final_write_debt:
-            final_manifest["status"] = "passed_with_quality_debt"
-            final_manifest["stop_reason"] = "completion_priority_quality_debt"
-            completion_priority = (
-                dict(final_manifest["completion_priority"])
-                if isinstance(final_manifest.get("completion_priority"), Mapping)
-                else dict(completion_priority_write_policy or {})
-            )
-            completion_priority["final_write_quality_debt"] = list(final_write_debt)
-            completion_priority["final_write_quality_debt_count"] = len(final_write_debt)
-            completion_priority.setdefault("status", "write_allowed_with_projection_quality_debt")
-            completion_priority.setdefault("hard_blocker_count", 0)
-            final_manifest["completion_priority"] = completion_priority
-        result["post_confirm_quality_manifest"] = final_manifest
-        return result
-
-def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(prog="odylith greenfield", description="Preview and apply confirmation-gated greenfield product records.")
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    propose = subparsers.add_parser("propose", help="Preview a confirmation-gated greenfield product proposal.")
-    propose.add_argument("--repo-root", default=".")
-    propose.add_argument("--prompt", required=True)
-    propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
-    propose.add_argument(
-        "--detail",
-        choices=("brief", "full"),
-        default="brief",
-        help="Text preview depth after intent is confirmed. Default propose shows only Product Intent Confirmation.",
+    return commit_greenfield_create_transaction(
+        repo_root=root,
+        transaction=transaction,
+        confirm=True,
+        started_at=post_confirm_started,
     )
-    propose.add_argument(
-        "--confirm-intent",
-        action="store_true",
-        help="Build the full proposal preview or JSON after the operator confirms the Product Intent Confirmation.",
-    )
-    propose.add_argument(
-        "--intent-file",
-        "--confirmed-intent-file",
-        default="",
-        dest="intent_file",
-        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
-    )
-    apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield product proposal.")
-    apply.add_argument("--repo-root", default=".")
-    apply.add_argument("--proposal-file", default="")
-    apply.add_argument("--proposal-json", default="")
-    apply.add_argument("--confirm", action="store_true")
-    apply.add_argument("--release", default="")
-    apply.add_argument(
-        "--repair-tier",
-        choices=POST_CONFIRM_REPAIR_TIERS,
-        default=_DEFAULT_POST_CONFIRM_REPAIR_TIER,
-        help=(
-            "Post-confirm repair budget: auto keeps the standard path under 60s and enters 90s rescue only "
-            "after a repairable final semantic or quality gate failure; deep is explicit 120s premium/CI repair."
-        ),
-    )
-    apply.add_argument("--json", action="store_true", dest="as_json")
-    create = subparsers.add_parser("create", help="Create confirmed greenfield records from Product Intent.")
-    create.add_argument("--repo-root", default=".")
-    create.add_argument("--prompt", required=True)
-    create.add_argument(
-        "--intent-file",
-        "--confirmed-intent-file",
-        default="",
-        dest="intent_file",
-        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
-    )
-    create.add_argument("--confirm", action="store_true")
-    create.add_argument("--release", default="")
-    create.add_argument(
-        "--repair-tier",
-        choices=POST_CONFIRM_REPAIR_TIERS,
-        default=_DEFAULT_POST_CONFIRM_REPAIR_TIER,
-        help=(
-            "Post-confirm repair budget: auto keeps the standard path under 60s and enters 90s rescue only "
-            "after a repairable final semantic or quality gate failure; deep is explicit 120s premium/CI repair."
-        ),
-    )
-    create.add_argument("--json", action="store_true", dest="as_json")
-    return parser.parse_args(argv)
-
-
-def _run_with_optional_stdout_capture(
-    *,
-    enabled: bool,
-    action: Callable[[], dict[str, Any]],
-) -> tuple[dict[str, Any], list[str]]:
-    if not enabled:
-        return action(), []
-    stdout_fd = 1
-    try:
-        probe_fd = os.dup(stdout_fd)
-    except OSError:
-        captured_output = io.StringIO()
-        with contextlib.redirect_stdout(captured_output):
-            result = action()
-        return result, _captured_lines(captured_output.getvalue())
-    else:
-        os.close(probe_fd)
-    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured_output:
-        sys.stdout.flush()
-        saved_fd = os.dup(stdout_fd)
-        try:
-            os.dup2(captured_output.fileno(), stdout_fd)
-            with contextlib.redirect_stdout(captured_output):
-                result = action()
-                captured_output.flush()
-        finally:
-            os.dup2(saved_fd, stdout_fd)
-            os.close(saved_fd)
-        captured_output.seek(0)
-        return result, _captured_lines(captured_output.read())
-
-
-def _captured_lines(text: str) -> list[str]:
-    return [line.rstrip() for line in str(text or "").splitlines() if line.strip()]
-
-
-def _with_operator_output(result: Mapping[str, Any], captured: Sequence[str]) -> dict[str, Any]:
-    payload = dict(result)
-    if captured:
-        payload["operator_output"] = list(captured)
-    return payload
-
-
-def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
-    if as_json:
-        payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
-        if isinstance(exc, GreenfieldPostConfirmEngineError):
-            payload["post_confirm_quality_manifest"] = exc.manifest
-        print(json.dumps(payload, indent=2, sort_keys=True))
-        return
-    print(str(exc))
-
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
-    repo_root = Path(str(args.repo_root)).expanduser().resolve()
-    if args.command == "propose":
-        if not bool(args.confirm_intent):
-            confirmation = build_product_intent_confirmation(
-                prompt=str(args.prompt),
-                title=_intent_title(str(args.prompt)),
-                repo_name=repo_root.name,
-                observed_source=_source_evidence(repo_root),
-            )
-            if args.output_format == "json":
-                print(json.dumps(confirmation, indent=2, sort_keys=True))
-            else:
-                print(format_product_intent_confirmation_text(confirmation), end="")
-            return 0
-        try:
-            confirmed_intent = _load_confirmed_intent_args(args, repo_root=repo_root)
-            proposal = build_greenfield_proposal(
-                repo_root=repo_root,
-                prompt=str(args.prompt),
-                confirmed_intent=confirmed_intent,
-            )
-        except (ValueError, RuntimeError) as exc:
-            _print_greenfield_error(exc, as_json=args.output_format == "json")
-            return 2
-        if args.output_format == "json":
-            print(json.dumps(proposal, indent=2, sort_keys=True))
-        else:
-            print(format_proposal_text(proposal, detail=str(args.detail)), end="")
-        return 0
-    if args.command == "apply":
-        try:
-            proposal = _load_proposal(args)
-            result, captured = _run_with_optional_stdout_capture(
-                enabled=bool(args.as_json),
-                action=lambda: apply_greenfield_proposal(
-                    repo_root=repo_root,
-                    proposal=proposal,
-                    confirm=bool(args.confirm),
-                    release_selector=str(args.release),
-                    repair_tier=str(args.repair_tier),
-                ),
-            )
-        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            _print_greenfield_error(exc, as_json=bool(args.as_json))
-            return 2
-        if args.as_json:
-            result = _with_operator_output(result, captured)
-            print(json.dumps(result, indent=2, sort_keys=True))
-        else:
-            print_apply_result(result, verb="apply")
-        return 0
-    if args.command == "create":
-        if not bool(args.confirm):
-            message = (
-                "greenfield create requires --confirm after the Product Intent Confirmation is accepted. "
-                "Run `odylith greenfield propose --repo-root . --prompt "
-                + json.dumps(_prompt_text(str(args.prompt)))
-                + "` first, then rerun create with --confirm when the interpretation is correct."
-            )
-            if args.as_json:
-                print(json.dumps({"mode": "error", "error": message}, indent=2, sort_keys=True))
-            else:
-                print(message)
-            return 2
-        try:
-            confirmed_intent = _load_confirmed_intent_args(args, repo_root=repo_root)
-            proposal = build_greenfield_proposal(
-                repo_root=repo_root,
-                prompt=str(args.prompt),
-                release_selector=str(args.release),
-                confirmed_intent=confirmed_intent,
-                require_completion_ready=False,
-            )
-            result, captured = _run_with_optional_stdout_capture(
-                enabled=bool(args.as_json),
-                action=lambda: apply_greenfield_proposal(
-                    repo_root=repo_root,
-                    proposal=proposal,
-                    confirm=True,
-                    release_selector=str(args.release),
-                    proposal_ready=True,
-                    repair_tier=str(args.repair_tier),
-                ),
-            )
-        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            _print_greenfield_error(exc, as_json=bool(args.as_json))
-            return 2
-        if args.as_json:
-            result = _with_operator_output(result, captured)
-            print(json.dumps(result, indent=2, sort_keys=True))
-        else:
-            print_apply_result(result, verb="create")
-        return 0
-    return 2
+    from odylith.runtime.domain_intelligence.greenfield_proposals_cli import main as _main
+
+    return _main(argv)
 
 
 if __name__ == "__main__":  # pragma: no cover

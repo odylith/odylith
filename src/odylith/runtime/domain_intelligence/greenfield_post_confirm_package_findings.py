@@ -13,6 +13,7 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import Artif
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_exact_repair_path
 from odylith.runtime.domain_intelligence.greenfield_atlas_semantic_coverage import atlas_first_path_contract_coverage_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_coverage import first_path_contract_has_coverage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import dedupe_review_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
@@ -125,33 +126,33 @@ def _radar_preview_semantic_findings(
     semantic = _semantic_model(package)
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
-    intent = _intent(package)
-    required = (
-        (
-            "first path",
-            clean_text(first_path.get("capability") or intent.get("first_path")),
-            "SemanticModelIR.first_path_contract",
-            "semantic_model.first_path_contract",
-        ),
-        (
-            "proof boundary",
-            clean_text(ontology.get("proof_boundary")),
-            "SemanticModelIR.domain_ontology.proof_boundary",
-            "semantic_model.domain_ontology.proof_boundary",
-        ),
-    )
     findings: list[GreenfieldReviewFinding] = []
-    for label, value, semantic_node_id, target_path in required:
-        if value and _semantic_overlap_ratio(value, text) < 0.18:
-            findings.append(
-                _semantic_package_finding(
-                    message=f"prewrite Radar package missing semantic coverage for {label}",
-                    surface="radar",
-                    projection_id="radar",
-                    semantic_node_id=semantic_node_id,
-                    target_path=target_path,
-                )
+    if not first_path_contract_has_coverage(
+        first_path,
+        text,
+        overlap_ratio=_semantic_overlap_ratio,
+        threshold=0.18,
+    ):
+        findings.append(
+            _semantic_package_finding(
+                message="prewrite Radar package missing semantic coverage for first path",
+                surface="radar",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.first_path_contract",
+                target_path="semantic_model.first_path_contract",
             )
+        )
+    proof_boundary = clean_text(ontology.get("proof_boundary"))
+    if proof_boundary and _semantic_overlap_ratio(proof_boundary, text) < 0.18:
+        findings.append(
+            _semantic_package_finding(
+                message="prewrite Radar package missing semantic coverage for proof boundary",
+                surface="radar",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.domain_ontology.proof_boundary",
+                target_path="semantic_model.domain_ontology.proof_boundary",
+            )
+        )
     return tuple(findings)
 
 

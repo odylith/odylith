@@ -272,6 +272,85 @@ def test_project_brief_normalization_repairs_shallow_outcome_from_accepted_inten
     assert word_count(normalized["project_outcome"]) >= 10
 
 
+def test_project_brief_normalization_repairs_raw_prompt_echoes() -> None:
+    raw_prompt = "Build an ecommerce checkout recovery product"
+    normalized = normalize_project_brief(
+        {
+            "purpose": (
+                "Build An Ecommerce Checkout Recovery Product helps the first user complete one reviewable "
+                "product path without losing state, owner, failure, or evidence context."
+            ),
+            "project_outcome": (
+                "A reviewer can inspect the Build An Ecommerce Checkout Recovery Product first path, state "
+                "change, evidence, non-goals, and release decision before implementation expands scope."
+            ),
+            "coding_readiness_gates": [
+                "Build An Ecommerce Checkout Recovery Product has an accepted product story with actors, systems, first path, and unresolved assumptions.",
+                "The first implementation lane maps to one workstream, one component boundary, one diagram path, and one proof gate.",
+                "Every external dependency is fixture-backed, sandboxed, source-backed, or explicitly deferred before source edits start.",
+                "The release plan names promotion criteria and does not claim production readiness beyond the accepted first path.",
+            ],
+        },
+        intent={
+            "prompt": raw_prompt,
+            "title": "Build An Ecommerce Checkout Recovery Product",
+            "first_path": "A shopper resumes checkout, fixes payment or address errors, and sees a saved recovery result.",
+            "proof_boundary": "Release 0.0.1 proves one checkout recovery path with replay and blocked-input evidence.",
+            "state_object": "Checkout recovery record",
+        },
+        release_selector="0.0.1",
+    )
+
+    encoded = json.dumps(
+        {
+            "purpose": normalized["purpose"],
+            "project_outcome": normalized["project_outcome"],
+            "coding_readiness_gates": normalized["coding_readiness_gates"],
+        },
+        sort_keys=True,
+    ).casefold()
+    assert raw_prompt.casefold() not in encoded
+    assert "Ecommerce Checkout Recovery Product" in normalized["purpose"]
+    assert "Release 0.0.1 proves Ecommerce Checkout Recovery Product" in normalized["project_outcome"]
+    assert project_brief_issues(
+        {
+            **normalized,
+            "operating_principle": "Every release claim stays tied to state, result, evidence, recovery, and review.",
+            "blueprint_sections": [
+                {"section": "Story", "must_capture": "Accepted product facts", "why_it_matters": "Avoids prompt leakage."}
+            ]
+            * 4,
+            "customization_options": [
+                {
+                    "id": f"option-{index}",
+                    "decision": "Boundary",
+                    "recommended": "Keep the first path narrow.",
+                    "choices": ["narrow", "broad"],
+                    "impact": "Controls release proof.",
+                }
+                for index in range(5)
+            ],
+            "customization_prompts": [
+                "Change the first user if this actor is wrong.",
+                "Change the state object if ownership is wrong.",
+                "Change the proof boundary if release evidence is wrong.",
+            ],
+            "pre_coding_checkpoints": [
+                {
+                    "checkpoint": f"Checkpoint {index}",
+                    "operator_question": "Is the accepted path still true?",
+                    "done_when": "The answer is recorded.",
+                }
+                for index in range(4)
+            ],
+            "host_independent_paths": [
+                {"path": "Confirm", "command": "odylith greenfield propose", "works_in": "shell", "use_when": "Before writes."}
+            ]
+            * 3,
+        }
+    ) == []
+
+
 def test_project_brief_long_outcome_uses_state_object_label_not_state_sentence() -> None:
     normalized = normalize_project_brief(
         {

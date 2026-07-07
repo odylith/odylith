@@ -562,7 +562,7 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         "the formulation scientist turns an ambiguous mRNA stability batch comparison case into a review-ready record."
     )
     assert prompt_project_title_source(mrna_prompt) == "mRNA stability batch comparison"
-    assert greenfield_proposals._intent_title(mrna_prompt) == "mRNA Stability Batch Comparison"
+    assert greenfield_proposals.intent_title(mrna_prompt) == "mRNA Stability Batch Comparison"
     planned = prompt_intent_source(
         "Plan a new exception review cockpit for operations teams that tracks evidence, review holds, "
         "decision outcomes, exception notes, and release proof."

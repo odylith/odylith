@@ -317,7 +317,10 @@ _GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "toolin
 def _source_cased_validation_gate(tribunal: Any, *, source_text: str) -> dict[str, Any]:
     """Return the validation gate using the same visible source-casing custody as durable memory."""
 
-    gate = tribunal.to_dict() if hasattr(tribunal, "to_dict") else {}
+    if isinstance(tribunal, Mapping):
+        gate = dict(tribunal)
+    else:
+        gate = tribunal.to_dict() if hasattr(tribunal, "to_dict") else {}
     if not isinstance(gate, Mapping):
         return {}
     if not source_text:

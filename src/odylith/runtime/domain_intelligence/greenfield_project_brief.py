@@ -57,6 +57,7 @@ def normalize_project_brief(
         result.get("host_independent_paths"),
         required_keys=("path", "command", "works_in", "use_when"),
     )
+    _repair_prompt_echoes(result, intent=intent, release_selector=release_selector)
     return result
 
 
@@ -238,6 +239,73 @@ def _brief_state_label(value: str) -> str:
     if len(parts) >= 3:
         return parts[0]
     return text or "the product state"
+
+
+def _repair_prompt_echoes(result: dict[str, Any], *, intent: Mapping[str, Any], release_selector: str) -> None:
+    raw_prompt = clean_text(intent.get("prompt"))
+    if len(raw_prompt) < 32:
+        return
+    replacements = _prompt_echo_replacements(intent=intent, release_selector=release_selector)
+    for key in ("purpose", "project_outcome"):
+        text = clean_text(result.get(key))
+        if _contains_prompt_echo(text, raw_prompt):
+            result[key] = replacements[key]
+    gates = normalize_text_list(result.get("coding_readiness_gates"))
+    repaired_gates = [
+        replacements["coding_readiness_gates"][index]
+        if index < len(replacements["coding_readiness_gates"]) and _contains_prompt_echo(gate, raw_prompt)
+        else gate
+        for index, gate in enumerate(gates)
+    ]
+    result["coding_readiness_gates"] = repaired_gates
+
+
+def _contains_prompt_echo(text: str, raw_prompt: str) -> bool:
+    prompt = clean_text(raw_prompt).casefold()
+    return bool(prompt and prompt in clean_text(text).casefold())
+
+
+def _prompt_echo_replacements(*, intent: Mapping[str, Any], release_selector: str) -> dict[str, Any]:
+    label = _prose_project_label(intent)
+    release = clean_text(release_selector) or "the first release"
+    state = _brief_state_label(clean_text(intent.get("state_object")) or "the product state")
+    first_path = _brief_field_text(clean_text(intent.get("first_path")), limit=180)
+    proof = _brief_field_text(clean_text(intent.get("proof_boundary")), limit=180)
+    first_path_clause = first_path or "the accepted first path"
+    proof_clause = proof or "the accepted proof boundary"
+    return {
+        "purpose": (
+            f"{label} helps the first users complete {first_path_clause} while {state} and release evidence "
+            "remain reviewable."
+        ),
+        "project_outcome": (
+            f"Release {release} proves {label} through one reviewable path. Reviewers can inspect the visible "
+            f"result, {state}, blocked-path evidence, and decision evidence together."
+        ),
+        "coding_readiness_gates": [
+            f"{label} has an accepted product story with actors, systems, first path, and unresolved assumptions.",
+            "The first implementation lane maps to one workstream, one component boundary, one diagram path, and one proof gate.",
+            "Every external dependency is fixture-backed, sandboxed, source-backed, or explicitly deferred before source edits start.",
+            f"Release {release} stays inside the accepted proof boundary: {proof_clause}.",
+        ],
+    }
+
+
+def _prose_project_label(intent: Mapping[str, Any]) -> str:
+    title = clean_text(intent.get("title") or intent.get("source_title") or intent.get("product_title"))
+    prompt = clean_text(intent.get("prompt"))
+    text = title or prompt or "This product"
+    text = re.sub(
+        r"^(?:build|create|draft|make|design|implement)\s+(?:an?|the)?\s*",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    if not text:
+        text = "This product"
+    if prompt and text.casefold() == prompt.casefold():
+        text = "This product"
+    return text
 
 
 def render_project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:

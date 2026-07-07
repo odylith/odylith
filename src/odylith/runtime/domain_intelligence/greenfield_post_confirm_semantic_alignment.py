@@ -5,9 +5,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+
+_FIRST_PATH_CAPABILITY_ALIGNMENT_THRESHOLD = 0.25
 
 
 def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
@@ -32,8 +35,12 @@ def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
         issues.append("FirstPathContract must include structured first-path events")
     elif not any(isinstance(row, Mapping) and row.get("visible_result") for row in events):
         issues.append("FirstPathContract must identify at least one visible result event")
-    if not clean_text(first_path.get("capability") if isinstance(first_path, Mapping) else ""):
+    first_path_capability = clean_text(first_path.get("capability") if isinstance(first_path, Mapping) else "")
+    first_path_raw_path = clean_text(first_path.get("raw_path") if isinstance(first_path, Mapping) else "")
+    if not first_path_capability:
         issues.append("FirstPathContract must preserve the accepted path capability")
+    elif _first_path_capability_drifted(first_path_capability, first_path_raw_path):
+        issues.append("FirstPathContract capability drifted from accepted raw path")
     ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
     if not clean_text(ontology.get("product_title") if isinstance(ontology, Mapping) else ""):
         issues.append("DomainOntology must carry the canonical product title")
@@ -195,3 +202,20 @@ def _component_id(row: Mapping[str, Any]) -> str:
 def _is_first_release_scope(value: Any) -> bool:
     scope = clean_text(value).casefold()
     return scope not in {"deferred", "out_of_scope", "future", "external"}
+
+
+def _first_path_capability_drifted(capability: str, raw_path: str) -> bool:
+    if not raw_path:
+        return False
+    capability_terms = _capability_alignment_terms(capability)
+    raw_path_terms = set(_capability_alignment_terms(raw_path))
+    if len(capability_terms) < 3 or not raw_path_terms:
+        return False
+    if len(raw_path_terms) >= 8 and len(capability_terms) <= 4:
+        return True
+    shared = len([term for term in capability_terms if term in raw_path_terms])
+    return shared / max(1, len(capability_terms)) < _FIRST_PATH_CAPABILITY_ALIGNMENT_THRESHOLD
+
+
+def _capability_alignment_terms(value: str) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(ordered_terms(value, minimum=4)))

@@ -5,6 +5,8 @@ import os
 import re
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -496,6 +498,98 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         assert (tmp_path / diagram["source_png"]).is_file()
         assert diagram["reviewed_watch_fingerprints"]
         assert diagram["render_source_fingerprint"]
+
+
+def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monkeypatch, capsys) -> None:
+    _write_confirmed_intent(tmp_path)
+    proposal = {
+        "intent": {"title": "Municipal Permit Review Workspace"},
+        "backlog": [{"title": "Prove permit review path"}],
+        "components": [],
+        "diagrams": [],
+    }
+    package = GreenfieldCompletionPackage(
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result={
+            "created": [{"title": "Prove permit review path", "idea_id": "B-001"}],
+            "idea_files": {},
+            "backlog_index": str(tmp_path / "odylith/radar/source/INDEX.md"),
+            "backlog_index_text": "",
+            "_candidate_idea_specs": {},
+        },
+    )
+    transaction = build_product_create_transaction(
+        proposal=proposal,
+        release_selector="0.0.1",
+        validation_gate={"status": "passed", "issues": []},
+        prewrite_package=package,
+        backlog_result=package.backlog_result or {},
+        quality_manifest={
+            "status": "passed",
+            "validation_status": "passed",
+            "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
+        },
+    )
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_build_greenfield_proposal(**kwargs):
+        calls.append(("build", dict(kwargs)))
+        return proposal
+
+    def fake_compile(**kwargs):
+        calls.append(("compile", dict(kwargs)))
+        return transaction
+
+    def fake_commit(**kwargs):
+        calls.append(("commit", dict(kwargs)))
+        assert kwargs["transaction"] is transaction
+        return {
+            "mode": "applied",
+            "validation_gate": transaction.validation_gate,
+            "backlog": [],
+            "components": [],
+            "diagrams": [],
+            "product_create_transaction": transaction.summary(),
+            "post_confirm_quality_manifest": {
+                "status": "passed",
+                "validation_status": "passed",
+                "write_transaction": {
+                    "status": "committed",
+                    "commit_only": True,
+                    "product_create_transaction_hash": transaction.transaction_hash,
+                },
+            },
+        }
+
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", fake_build_greenfield_proposal)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", fake_compile)
+    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", fake_commit)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert [name for name, _call in calls] == ["build", "compile", "commit"]
+    assert calls[0][1]["require_completion_ready"] is False
+    assert calls[1][1]["proposal_ready"] is True
+    assert calls[2][1]["confirm"] is True
+    assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
+    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
 
 
 def test_greenfield_create_cli_completes_privacy_export_lifecycle_end_to_end(tmp_path, monkeypatch, capsys) -> None:
