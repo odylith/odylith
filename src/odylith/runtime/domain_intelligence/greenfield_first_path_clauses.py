@@ -95,6 +95,8 @@ def readable_action_chain_phrase(
     limit: int = 220,
     max_steps: int = 4,
     include_visible_results: bool = False,
+    include_system_steps: bool = False,
+    preserve_source_actions: bool = False,
 ) -> str:
     """Return a step-view action phrase for prose fields that cannot carry long lists."""
 
@@ -105,11 +107,21 @@ def readable_action_chain_phrase(
     if not text:
         return ""
     model = _model_for(text)
-    rows = _readable_action_steps(model, max_steps=max_steps, include_visible_results=include_visible_results)
+    rows = _readable_action_steps(
+        model,
+        max_steps=max_steps,
+        include_visible_results=include_visible_results,
+        include_system_steps=include_system_steps,
+        preserve_source_actions=preserve_source_actions,
+    )
     candidate = _join_step_rows_within_limit(rows, limit=limit)
     if candidate:
         return candidate
-    return _clip_phrase(_readable_action_step_fragment(text), limit=limit).strip(" ,.") or fallback_text
+    fallback_fragment = _readable_action_step_fragment(
+        text,
+        preserve_source_action=preserve_source_actions,
+    )
+    return _clip_phrase(fallback_fragment, limit=limit).strip(" ,.") or fallback_text
 
 
 def readable_action_chain_sentence(
@@ -316,15 +328,23 @@ def _readable_action_steps(
     *,
     max_steps: int,
     include_visible_results: bool = False,
+    include_system_steps: bool = False,
+    preserve_source_actions: bool = False,
 ) -> list[str]:
     view = first_path_semantic_view(model)
     rows: list[str] = []
     for step in view.steps:
-        if step.is_trivial_start or step.is_dash_detail or step.is_system_generated or is_supporting_setup_step(step.text):
+        if step.is_trivial_start or step.is_dash_detail or is_supporting_setup_step(step.text):
+            continue
+        if step.is_system_generated and not include_system_steps:
             continue
         if step.is_visible_result and not include_visible_results:
             continue
-        fragment = _readable_action_step_fragment(step.fragment or step.text)
+        fragment_source = step.text if preserve_source_actions else step.fragment or step.text
+        fragment = _readable_action_step_fragment(
+            fragment_source,
+            preserve_source_action=preserve_source_actions,
+        )
         if fragment:
             rows.append(fragment)
         if len(rows) >= max(1, max_steps):
@@ -335,10 +355,16 @@ def _readable_action_steps(
     return [fallback] if fallback else []
 
 
-def _readable_action_step_fragment(value: str) -> str:
+def _readable_action_step_fragment(value: str, *, preserve_source_action: bool = False) -> str:
     text = clean_first_path_text(value).strip(" ,.")
     if not text:
         return ""
+    if preserve_source_action:
+        _actor, actor_action = _actor_led_action_parts(text)
+        if actor_action:
+            text = actor_action
+        text = base_action_clause(text).strip(" ,.")
+        return text
     if text.count(",") < 2:
         return text
     head = text.split(",", 1)[0].strip(" ,.")

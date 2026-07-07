@@ -26,7 +26,7 @@
 
 - Ownership: Domain Intelligence first-path projection, project-brief release-scope rendering, and typed package artifact gate.
 
-- Timeline: 2026-07-06 local-release matrix failed a high-variance case; 2026-07-07 source-local propose/create reproduced the no-write package failure; diagnosis showed semantic events preserved five steps and visible_result saved reproducible run record while project-brief cleanup and scope-tail inflection comparison rejected valid output.
+- Timeline: 2026-07-06 local-release matrix failed a high-variance case; 2026-07-07 source-local propose/create reproduced the no-write package failure; diagnosis showed semantic events preserved five steps and visible_result saved reproducible run record while project-brief cleanup and scope-tail inflection comparison rejected valid output. A later installed 120-case discovery run against `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-fd0e5a51` reopened the family on case 2, `cryogenic ion trap calibration intake-to-proof workspace`, with the same typed-package artifact gate after the release-scope fragment dropped accepted source actions: `validate units and provenance`, `run the model`, `record uncertainty`, and `save a reviewable result`.
 
 - Blast Radius: Any confirmed greenfield intent whose terminal action uses an inflected visible result such as saved versus save, or whose terminal action can be clipped as a noun-like record tail.
 
@@ -38,13 +38,13 @@
 
 - Invariant Violated: After confirmation, valid typed first-path tail events and the visible result must survive release-scope projection and package quality gates without user-facing failure.
 
-- Root Cause: Project-brief clause cleanup treated a complete terminal action ending in record as an incomplete clipped verb tail, while the package gate compared saved to save without silent-e inflection variants.
+- Root Cause: The first fix closed the saved/silent-e and clipped-record class but was incomplete. Release-scope projection still reused the general readable action chain that intentionally skipped steps classified as system-generated. In scientific and modeling workflows, accepted human first-path actions such as validate, run, record, and save can be classified as system-side for ordinary UI copy, but they remain product truth for release-boundary scope. The gate correctly rejected the resulting truncated scope.
 
-- Solution: Keep complete terminal action clauses during project-brief polishing; add past-tense silent-e variants to scope-tail coverage; move comma/then action splitting into the dedicated action-split owner; preserve actor carry through same-sentence then continuations and explicit pronoun carry; preserve actor-owned visible-result event copy without rewriting it into a different capability; clean Atlas evidence-record descriptions.
+- Solution: Keep complete terminal action clauses during project-brief polishing; add past-tense silent-e variants to scope-tail coverage; move comma/then action splitting into the dedicated action-split owner; preserve actor carry through same-sentence then continuations and explicit pronoun carry; preserve actor-owned visible-result event copy without rewriting it into a different capability; clean Atlas evidence-record descriptions. The reopened fix keeps the ordinary confirmation/action compactors unchanged but lets the release-scope boundary explicitly include accepted system-classified source steps and preserve their source actions before the typed package gate evaluates tail coverage.
 
 - Rollback/Forward Fix: Forward fix only; weakening the tail gate or deleting the release-scope check would hide real projection loss.
 
-- Verification: Focused regressions passed; broader parser/projection/artifact-quality slice passed 213 tests in 408.27s after the action-split and actor-owned copy cleanup; exact source-local high-variance replay committed governed records with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, rollback guard enabled, 4 Radar workstreams, 3 Registry components, 6 Atlas diagrams, and zero known bad signature hits.
+- Verification: Focused regressions passed; broader parser/projection/artifact-quality slice passed 213 tests in 408.27s after the action-split and actor-owned copy cleanup; exact source-local high-variance replay committed governed records with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, rollback guard enabled, 4 Radar workstreams, 3 Registry components, 6 Atlas diagrams, and zero known bad signature hits. Fresh reopening evidence: installed 120-case discovery stopped at 1/120 because fd0e5a51 case 2 failed before writes with `greenfield scope boundary truncates the accepted first-path tail`; result evidence lives under `/Volumes/FREEDOM_RESEARCH/research-code/odylith-fd0e5a51-volume-120-20260707T000000Z/`. Source-local exact replay after the reopened fix passed with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, elapsed 7.561s, 4 Radar workstreams, 3 Registry components, and 6 Atlas diagrams. Remaining proof: rebuild a fresh dist, rerun the exact installed failed-subset, then resume broader 120/240-case discovery and document/PRD/edited-Markdown tiers.
 
 - Prevention: Scope-tail gates must compare typed event and visible-result variants without domain vocabulary, and project brief cleanup must only drop genuinely clipped terminal clauses.
 
@@ -52,9 +52,9 @@
 
 - Preflight Checks: Search CB-219, high-variance first-path tail records, and greenfield scope-boundary tests before changing parser, project brief, or package gates.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_project_judgment_quality.py::test_project_judgment_accepts_past_tense_visible_result_in_scope_tail; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_confirmed_project_brief_keeps_terminal_save_record_tail; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner plus existing parser/title/proof-label, backlog actor-owned outcome, and protected-token casing regressions.
+- Regression Tests Added: tests/unit/runtime/test_greenfield_project_judgment_quality.py::test_project_judgment_accepts_past_tense_visible_result_in_scope_tail; tests/unit/runtime/test_greenfield_project_judgment_quality.py::test_scope_fragment_preserves_scientific_tail_actions_marked_system_side; tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py::test_workstream_scope_boundary_preserves_scientific_tail_actions_marked_system_side; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_confirmed_project_brief_keeps_terminal_save_record_tail; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner plus existing parser/title/proof-label, backlog actor-owned outcome, and protected-token casing regressions.
 
-- Monitoring Updates: Release matrices should retain prompt-only scientific cases whose visible result is a saved or exported record and scan generated payloads for adjacent record-record style copy.
+- Monitoring Updates: Release matrices should retain prompt-only scientific cases whose visible result is a saved or exported record, scientific first paths where accepted source actions are classified as system-side for ordinary copy, and scans for adjacent record-record style copy.
 
 - Version/Build: v0.1.15 development branch 2026/freedom/v0.1.15
 
@@ -64,7 +64,7 @@
 
 - Related Incidents/Bugs: CB-219, CB-215, B-142
 
-- GitHub Status: fixed_pending_release
+- GitHub Status: reopened_source_fix_pending_fresh_dist
 
 - Public Response: pending
 

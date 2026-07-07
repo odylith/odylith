@@ -104,6 +104,8 @@ def _compact_first_path_scope_fragment(value: str) -> str:
         limit=scope_limit,
         max_steps=max_scope_steps,
         include_visible_results=True,
+        include_system_steps=True,
+        preserve_source_actions=True,
     ).strip(" .")
     outcome = (model.visible_outcome or first_path_outcome_phrase(value, fallback="", limit=160)).strip(" .")
     if outcome and compact and _scope_missing_terminal_outcome(compact, outcome):

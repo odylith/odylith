@@ -265,6 +265,52 @@ def test_project_judgment_accepts_past_tense_visible_result_in_scope_tail() -> N
     assert greenfield_project_judgment_issues(package) == ()
 
 
+def test_scope_fragment_preserves_scientific_tail_actions_marked_system_side() -> None:
+    first_path = (
+        "Physicist can provide inputs, validate units and provenance, run the model, "
+        "compare against a baseline, record uncertainty, and save a reviewable result."
+    )
+    fragment = inline_first_path_scope_fragment(first_path)
+
+    assert "validate units and provenance" in fragment
+    assert "run the model" in fragment
+    assert "compare against a baseline" in fragment
+    assert "record uncertainty" in fragment
+    assert "save a reviewable result" in fragment
+
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Cryogenic Ion Trap Calibration Intake-to-proof Workspace",
+            state_object=(
+                "A cryogenic ion trap calibration intake-to-proof run record tracks source data, "
+                "method version, baseline comparison, uncertainty, review notes, and reproducibility evidence."
+            ),
+            first_path=first_path,
+            proof_boundary=(
+                "Release 0.0.1 succeeds when a researcher can complete one bounded run, "
+                "review the method version and baseline comparison, and reproduce the saved result."
+            ),
+            components=[],
+            human_actors=["Physicist"],
+        )
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={**_proposal(), "semantic_model": semantic_model},
+        project_brief_preview={
+            "customization_options": [
+                {
+                    "recommended": (
+                        "Keep 0.0.1 to the accepted first path and non-goals: "
+                        f"Do not expand beyond {fragment} until the first outcome works."
+                    )
+                }
+            ]
+        },
+    )
+
+    assert greenfield_project_judgment_issues(package) == ()
+
+
 def test_project_judgment_rejects_component_summary_missing_long_label_tails() -> None:
     long_label = (
         "Annealing Result Review Console for QUBO models, Ising models, "

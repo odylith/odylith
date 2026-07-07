@@ -150,6 +150,42 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
     assert 'replace("scope scope"' not in source
 
 
+def test_workstream_scope_boundary_preserves_scientific_tail_actions_marked_system_side() -> None:
+    first_path = (
+        "Physicist can provide inputs, validate units and provenance, run the model, "
+        "compare against a baseline, record uncertainty, and save a reviewable result."
+    )
+    packet = build_workstream_domain_intelligence(
+        label="Cryogenic Ion Trap Calibration Workspace",
+        row_title="Prove Cryogenic Ion Trap Calibration Intake-to-proof Workspace",
+        problem="A physicist needs one bounded calibration run before broader automation.",
+        opportunity="Keep the first release inside one reproducible calibration run.",
+        product_view="The workspace preserves source data, baseline comparison, uncertainty, and review notes.",
+        first_slice="one physicist completes one cryogenic calibration run",
+        metrics=["One run succeeds, blocks, and can be reviewed."],
+        dependencies=["Accepted physicist and calibration evidence context."],
+        interfaces=["Source data, baseline comparison, uncertainty, and review note."],
+        validation=["Run success, missing provenance, and baseline comparison paths."],
+        state_object="Cryogenic calibration run record",
+        evidence_record="Cryogenic calibration proof record",
+        first_path=first_path,
+        proof_boundary="Release works when one physicist can save a reviewable result with uncertainty.",
+        human_actors=["Physicist: reviews calibration results."],
+        internal_systems=["Calibration Intake", "Uncertainty Ledger"],
+        external_systems=["Lab instrument export"],
+        non_goals=["No live instrument control."],
+    )
+    rendered_constraints = "\n".join(packet["constraints"])
+
+    assert "validate units and provenance" in rendered_constraints
+    assert "run the model" in rendered_constraints
+    assert "compare against a baseline" in rendered_constraints
+    assert "record uncertainty" in rendered_constraints
+    assert "save a reviewable result" in rendered_constraints
+    assert "review a baseline" not in rendered_constraints
+    assert "outcome:" not in rendered_constraints
+
+
 def test_confirmed_workstream_titles_compact_long_state_changer_without_pronoun_tail() -> None:
     components = [
         {"label": "Warehouse Robot Near-miss Investigation Workspace Intake Register Service"},

@@ -87,6 +87,31 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-07-07 scope-tail reopened installed-discovery checkpoint: the retained
+  fd0e5a51 local-release dist is not release-ready. A controlled installed
+  120-case discovery run stopped on case 2,
+  `cryogenic ion trap calibration intake-to-proof workspace`, with
+  `greenfield scope boundary truncates the accepted first-path tail` and no
+  governed writes. The v2 Product Intent Envelope behaved correctly: host
+  guidance and confirmation Next Step prose were classified as ignored
+  instructions, and canonical product facts stayed typed. The failure was
+  downstream projection custody: release-scope copy reused the ordinary
+  readable-action compactor, which skips steps classified as system-generated
+  for general UI copy. That dropped accepted first-path source actions such as
+  validating units and provenance, running the model, recording uncertainty,
+  and saving a reviewable result. Source fix keeps the ordinary confirmation
+  compactors narrow but lets the release-scope boundary include accepted
+  system-classified source steps while preserving their source action wording.
+  Focused package-gate and workstream-scope regressions passed, and exact
+  source-local replay of the failed prompt committed governed records with a
+  passed post-confirm manifest, validation passed, issue_count 0, rollback
+  guard enabled, 4 Radar workstreams, 3 Registry components, and 6 Atlas
+  diagrams. This is source-local closure only; the required next boundary is a
+  fresh local-release dist, exact installed failed-subset replay, resumed
+  120/240-case discovery, and the missing document/PRD/edited-Markdown chaos
+  tiers. Do not weaken the scope-tail gate or raise the 60-second standard
+  budget to hide this class.
+
 - 2026-07-05 confirmed projection-custody checkpoint: the source-local repair
   for structured visible-result selection was necessary but insufficient on its
   own. A targeted replay showed that accepted-project/project-intelligence and

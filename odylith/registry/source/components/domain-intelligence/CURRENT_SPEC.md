@@ -92,7 +92,27 @@ This section captures synchronized requirement and contract signals derived from
   first-path/projection tests, plus py-compile and whitespace checks. Clean
   committed-head installed release proof remains the next gate.
 
-- 2026-07-07: Closed scope-tail rejection for valid terminal saved-result paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`; Diagram: D-045)
+- 2026-07-07: Reopened scope-tail custody after installed volume discovery found
+  system-classified source actions missing from release scope. (Plan:
+  [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug:
+  `CB-220`; Diagram: D-045)
+  The fd0e5a51 local-release 120-case discovery stopped on case 2,
+  `cryogenic ion trap calibration intake-to-proof workspace`, because
+  release-scope projection rendered only `provide inputs; review a baseline;
+  outcome: A reviewable result`. The confirmed intent custody ledger was clean:
+  host instructions and Next Step prose were ignored, and product facts stayed
+  typed. The defect was downstream projection: release-scope copy reused the
+  ordinary readable-action compactor that skips steps classified as
+  system-generated, dropping accepted source actions such as validating units
+  and provenance, running the model, recording uncertainty, and saving a
+  reviewable result. Release-scope projection now opts into accepted
+  system-classified source steps and preserves their source actions while the
+  ordinary confirmation/action compactors keep their narrower behavior.
+  Focused source proof and exact source-local replay passed; the next gate is a
+  fresh local-release dist with exact installed failed-subset replay and
+  resumed 120/240-case discovery.
+
+- 2026-07-07: Closed the initial scope-tail rejection for valid terminal saved-result paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`; Diagram: D-045)
   Domain Intelligence now preserves complete terminal action clauses such as
   `save a reproducible run record` through project-brief readiness and
   first-release scope projection. The typed package artifact gate compares
