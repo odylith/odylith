@@ -159,6 +159,7 @@ def normalize_visible_result_language(value: Any) -> str:
     text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
     text = re.sub(r"\bagainst\s+(?:the\s+)?target\s+plus\b", "compared with the target and", text, flags=re.IGNORECASE)
     text = re.sub(r"\bagainst\s+target\b", "against the target", text, flags=re.IGNORECASE)
+    text = re.sub(r",\s+with\b", " with", text, flags=re.IGNORECASE)
     text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
     text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
     text = re.sub(r"\bmetrics?\s+(?:trended|moved)\s+with\b", "metrics changed with", text, flags=re.IGNORECASE)

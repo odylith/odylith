@@ -9,16 +9,18 @@ from odylith.runtime.common.prose_grammar import (
     base_action_clause,
     base_following_action_verbs,
     gerund_action_verb,
-    looks_like_action_clause,
-    looks_like_finite_action,
 )
-from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
-from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
-from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import (
-    actor_led_open_action_parts as _actor_led_open_action_parts,
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import (
+    SYSTEM_SUBJECT_TERMS,
+    actor_led_action_parts,
+    actor_signature,
+    leading_subject_prefix,
+    looks_like_actor_subject_prefix,
+    modal_action_fragment,
+    modal_actor_action_parts,
+    strip_action_subject,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
-from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase, lowercase_leading_article
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_declarative_visible_result_prefix
@@ -60,13 +62,6 @@ TRIVIAL_NAMED_PRODUCT_START_RE = re.compile(
 TRIVIAL_AUTH_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,60}?\b(?:authenticates?|logs?\s+in|signs?\s+in)\b\s*$",
     re.IGNORECASE,
-)
-_ACTOR_SIGNATURE_STOPWORDS = frozenset({"a", "an", "the", "one", "this", "that", "each", "another", "can"})
-_PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
-_MODAL_ACTOR_MARKERS = frozenset({"can", "could", "must", "should", "will", "would"})
-_SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whether", "which", "while"})
-_SYSTEM_SUBJECT_TERMS = frozenset(
-    "app application dashboard engine model os pipeline platform product service system tool view workspace".split()
 )
 _VISIBLE_RESULT_OBJECT_LIMIT = 240
 
@@ -176,14 +171,18 @@ def is_trivial_start(value: str) -> bool:
     return bool(TRIVIAL_START_RE.match(text) or TRIVIAL_NAMED_PRODUCT_START_RE.match(text) or TRIVIAL_AUTH_RE.match(text))
 
 def action_chain_fragment(value: str) -> str:
-    text = clean_visible_result_phrase(value) or clean_first_path_text(value).strip(" .")
+    raw_text = clean_first_path_text(value).strip(" .")
+    transformation_action = _raw_transformation_action_clause(raw_text)
+    if transformation_action:
+        return transformation_action
+    text = clean_visible_result_phrase(raw_text) or raw_text
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
     result_list_fragment = _result_list_capability_fragment(text)
     if result_list_fragment:
         return result_list_fragment
-    _modal_actor, modal_action = _modal_actor_action_parts(text)
+    _modal_actor, modal_action = modal_actor_action_parts(text)
     if modal_action:
         text = modal_action
     routing_action = _routing_action_clause(text, strip_subject=strip_action_subject)
@@ -224,6 +223,23 @@ def action_chain_fragment(value: str) -> str:
     text = re.sub(r"\s+", " ", text).strip(" ,.")
     return _lower_initial_for_fragment(text)
 
+def _raw_transformation_action_clause(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if not text:
+        return ""
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
+    _modal_actor, modal_action = modal_actor_action_parts(text)
+    candidate = modal_action or strip_action_subject(text)
+    if not _is_transformation_action_clause(candidate):
+        return ""
+    candidate = re.split(
+        r"\s+\b(?:including|using|via|with)\b\s+",
+        candidate,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0].strip(" .")
+    return base_action_clause(candidate).strip(" .")
+
 def base_adverbial_note_action(value: str) -> str:
     return re.sub(
         r"\b(?P<modifier>[a-z]+ly)\s+notes\b",
@@ -254,10 +270,10 @@ def _confirm_action_is_actor_led(value: str) -> bool:
     prefix = text[: match.start()].strip(" ,.")
     if not prefix:
         return True
-    if _looks_like_actor_subject_prefix(prefix):
+    if looks_like_actor_subject_prefix(prefix):
         return True
     terms = {term.casefold() for term in label_terms(prefix)}
-    return not bool(terms & _SYSTEM_SUBJECT_TERMS)
+    return not bool(terms & SYSTEM_SUBJECT_TERMS)
 
 def _strip_action_possessives(value: str) -> str:
     text = clean_first_path_text(value)
@@ -518,6 +534,9 @@ def _transformation_result_object(value: str) -> str:
     )
     if not match:
         return ""
+    full_result = focused_visible_result_object(nominal_visible_result_object(match.group("object")))
+    if re.match(r"^(?:(?:a|an|the)\s+)?final\b", full_result, flags=re.IGNORECASE):
+        return clip_first_path_phrase(full_result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     result = re.split(
         r"\s+\b(?:using|with|from|based\s+on|backed\s+by|supported\s+by)\b\s+",
         match.group("object"),
@@ -593,210 +612,6 @@ def outcome_capability_fragment(value: str) -> str:
         return fragment
     return f"see {_lower_initial_for_fragment(text)}".strip(" .")
 
-def strip_action_subject(value: str) -> str:
-    text = clean_first_path_text(value)
-    text = re.sub(r"^on\s+save,\s*", "save, ", text, flags=re.IGNORECASE)
-    _relative_actor, relative_action = _relative_actor_action_parts(text)
-    if relative_action:
-        return relative_action
-    _modal_actor, modal_action = _modal_actor_action_parts(text)
-    if modal_action:
-        return modal_action
-    _actor, actor_action = _actor_led_finite_action_parts(text)
-    if actor_action:
-        return actor_action
-    _actor, actor_action = _actor_led_open_action_parts(text)
-    if actor_action:
-        return actor_action
-    match = MATERIAL_ACTION_RE.search(text)
-    if match and match.start() > 0:
-        prefix = text[: match.start()].strip(" ,")
-        modal_actor = _modal_actor_prefix(prefix)
-        if match.end() == len(text):
-            return text
-        if modal_actor or _looks_like_actor_subject_prefix(prefix):
-            return text[match.start() :]
-        if re.search(r"\b(?:if|that|when|where|which|while)\b", prefix, flags=re.IGNORECASE):
-            return text
-        if len(label_terms(prefix)) <= 6 and (
-            re.search(
-                r"\b(?:actor|applicant|coordinator|customer|operator|owner|participant|person|requester|reviewer|supervisor|user)\b",
-                prefix,
-                flags=re.IGNORECASE,
-            )
-            or re.search(r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b", prefix, flags=re.IGNORECASE)
-                or (
-                    re.match(r"^(?:a|an|the|one)\s+", prefix, flags=re.IGNORECASE)
-                    and not re.search(
-                        r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b",
-                        prefix,
-                        flags=re.IGNORECASE,
-                    )
-                    and not re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", prefix, flags=re.IGNORECASE)
-                )
-            ):
-                text = text[match.start() :]
-    return text
-
-def actor_signature(value: str) -> str:
-    subject = leading_subject_prefix(value)
-    if not subject:
-        text = clean_first_path_text(value)
-        relative_actor, _relative_action = _relative_actor_action_parts(text)
-        if relative_actor:
-            subject = relative_actor
-        modal_actor, _modal_action = _modal_actor_action_parts(text)
-        if not subject and modal_actor:
-            subject = modal_actor
-        actor, _actor_action = _actor_led_action_parts(text)
-        if not subject and actor:
-            subject = actor
-        match = MATERIAL_ACTION_RE.search(text)
-        if not subject and match and match.start() > 0:
-            if action_word_starts_result_list_noun(text, match.start()):
-                return ""
-            candidate = text[: match.start()].strip(" ,")
-            modal_actor = _modal_actor_prefix(candidate)
-            if modal_actor:
-                subject = modal_actor
-                candidate = ""
-            if candidate and _looks_like_actor_subject_prefix(candidate):
-                subject = candidate
-    if not subject:
-        return ""
-    subject = re.sub(r"^(?:a|an|the|one)\s+", "", subject, flags=re.IGNORECASE)
-    subject = re.sub(r"\s+can\s*$", "", subject, flags=re.IGNORECASE)
-    subject = re.sub(r"\b(?:product|system|app|application|workspace|engine|dashboard|view)\b", "", subject, flags=re.IGNORECASE)
-    return " ".join(
-        ordered_terms(
-            subject,
-            minimum=3,
-            stopwords=_ACTOR_SIGNATURE_STOPWORDS,
-            preserve_terms=_PRESERVED_SHORT_ACTOR_TERMS,
-        )
-    )
-
-def _actor_led_finite_action_parts(value: str) -> tuple[str, str]:
-    text = clean_first_path_text(value).strip(" .")
-    for match in MATERIAL_ACTION_RE.finditer(text):
-        prefix = text[: match.start()].strip(" ,")
-        if not _looks_like_actor_subject_prefix(prefix):
-            continue
-        if action_word_starts_result_list_noun(text, match.start()):
-            continue
-        action = text[match.start() :].strip(" .")
-        if looks_like_finite_action(action) or looks_like_action_clause(action):
-            return prefix, action
-    return "", ""
-
-
-def _actor_led_action_parts(value: str) -> tuple[str, str]:
-    actor, action = _actor_led_finite_action_parts(value)
-    if actor and action:
-        return actor, base_action_clause(action)
-    return _actor_led_open_action_parts(value)
-
-
-def actor_led_action_parts(value: str) -> tuple[str, str]:
-    return _actor_led_action_parts(value)
-
-
-def _modal_actor_prefix(value: str) -> str:
-    words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
-    if len(words) < 2:
-        return ""
-    marker_start = -1
-    if words[-1].casefold() in _MODAL_ACTOR_MARKERS:
-        marker_start = len(words) - 1
-    elif len(words) >= 3 and words[-2].casefold() in {"need", "needs"} and words[-1].casefold() == "to":
-        marker_start = len(words) - 2
-    if marker_start <= 0:
-        return ""
-    actor = " ".join(words[:marker_start]).strip(" .")
-    if not _looks_like_actor_prefix(actor):
-        return ""
-    return actor
-
-def _relative_actor_action_parts(value: str) -> tuple[str, str]:
-    pattern = r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,100}?)\s+(?:who|that)\s+(?P<action>.+)$"
-    match = re.match(pattern, clean_first_path_text(value).strip(" ."), flags=re.IGNORECASE)
-    if not match:
-        return "", ""
-    actor = match.group("actor").strip(" .")
-    action = match.group("action").strip(" .")
-    return (actor, action) if action and MATERIAL_ACTION_RE.search(action) and _looks_like_actor_prefix(actor) else ("", "")
-
-def _modal_actor_action_parts(value: str) -> tuple[str, str]:
-    text = clean_first_path_text(value).strip(" .")
-    words = [word.strip(".,:;") for word in text.split() if word.strip(".,:;")]
-    if len(words) < 3:
-        return "", ""
-    for match in re.finditer(r"\b(?:can|could|must|should|will|would|needs?\s+to)\b", text, flags=re.IGNORECASE):
-        actor = text[: match.start()].strip(" .")
-        action = text[match.end() :].strip(" .")
-        if _looks_like_actor_prefix(actor) and action and not _contains_subordinate_subject_marker(actor):
-            return actor, action
-    return "", ""
-
-def _contains_subordinate_subject_marker(value: str) -> bool:
-    tokens = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split()]
-    return any(token in _SUBORDINATE_SUBJECT_MARKERS for token in tokens)
-
-def modal_actor_action_parts(value: str) -> tuple[str, str]:
-    return _modal_actor_action_parts(value)
-
-def modal_action_fragment(value: str) -> str:
-    _actor, action = _modal_actor_action_parts(value)
-    return action
-
-def _looks_like_actor_prefix(value: str) -> bool:
-    text = clean_first_path_text(value).strip(" .")
-    terms = {term.casefold() for term in label_terms(value)}
-    return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or _has_actor_role_signal(text)))
-
-def _looks_like_actor_subject_prefix(value: str) -> bool:
-    text = clean_first_path_text(value).strip(" .")
-    if not text or not _looks_like_actor_prefix(text):
-        return False
-    if re.search(r"[,;]", text):
-        return False
-    if _has_unowned_action_tail(text):
-        return False
-    if re.search(r"\b(?:if|that|when|where|which|while)\b", text, flags=re.IGNORECASE):
-        return False
-    if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", text, flags=re.IGNORECASE):
-        return False
-    if _has_actor_role_signal(text):
-        return True
-    terms = [term.casefold() for term in label_terms(text)]
-    return len(terms) == 1 and _looks_like_plural_actor_term(terms[0])
-
-def _has_unowned_action_tail(value: str) -> bool:
-    words = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
-    if words and looks_like_action_clause(f"{words[0]} placeholder") and not any(
-        looks_like_actor_role_term(word) for word in words[1:]
-    ):
-        return True
-    for index in range(1, len(words)):
-        token = words[index]
-        if looks_like_actor_role_term(token):
-            continue
-        if not looks_like_action_clause(f"{token} placeholder"):
-            continue
-        if any(looks_like_actor_role_term(word) for word in words[index + 1 :]):
-            continue
-        return True
-    return False
-
-
-def _has_actor_role_signal(value: str) -> bool:
-    return any(looks_like_actor_role_term(word) for word in clean_first_path_text(value).replace("-", " ").split())
-
-
-def _looks_like_plural_actor_term(value: str) -> bool:
-    term = str(value or "").casefold().strip(" .")
-    return len(term) > 3 and term.endswith("s") and not term.endswith(("ics", "ss", "us"))
-
 def primary_actor_signature(model: FirstPathModel) -> str:
     """Return the actor for the first material user action, if the path names one."""
 
@@ -812,19 +627,6 @@ def primary_actor_signature(model: FirstPathModel) -> str:
         if actor:
             return actor
     return ""
-
-def leading_subject_prefix(value: str) -> str:
-    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", clean_first_path_text(value), flags=re.IGNORECASE).strip()
-    match = MATERIAL_ACTION_RE.search(text)
-    if not match or match.start() == 0:
-        return ""
-    subject = text[: match.start()].strip()
-    if not re.match(r"^(?:a|an|the|one|this|that|each|another)\s+", subject, flags=re.IGNORECASE):
-        return ""
-    subject = re.sub(r"\s+(?:[A-Za-z]+ly|again|already|eventually|finally|later|next|then)$", "", subject, flags=re.IGNORECASE).strip()
-    if len(label_terms(subject)) > 6:
-        return ""
-    return subject
 
 def gerund_action_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")

@@ -39,6 +39,7 @@ _INFINITIVE_TO_FINITE = {
     "bring": "brings",
     "build": "builds",
     "calculate": "calculates",
+    "call": "calls",
     "capture": "captures",
     "catch": "catches",
     "check": "checks",

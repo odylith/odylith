@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
@@ -9,6 +11,7 @@ _RESULT_SUMMARY_NOUNS = frozenset(
     "answer answers decision decisions explanation explanations insight insights outcome outcomes readout readouts "
     "recommendation recommendations result results report reports status summary summaries view views".split()
 )
+_TERMINAL_FINAL_SUMMARY_NOUNS = _RESULT_SUMMARY_NOUNS - {"status"}
 _RESULT_QUALITY_TERMS = frozenset("actionable clear explainable plain readable specific understandable".split())
 _NON_GOAL_TAIL_ACTIONS = frozenset(
     {
@@ -94,14 +97,25 @@ def _terminal_final_summary_item(items: list[str]) -> str:
     if len(items) < 2:
         return ""
     tail = clean_text(items[-1]).strip(" .")
-    if not tail.casefold().startswith(("a final ", "an final ", "the final ")):
+    final_tail = _terminal_and_final_tail(tail)
+    if final_tail:
+        tail = final_tail
+    if not tail.casefold().startswith(("final ", "a final ", "an final ", "the final ")):
         return ""
     terms = semantic_terms(tail)
     if "final" not in terms:
         return ""
-    if not terms & _RESULT_SUMMARY_NOUNS:
+    if not terms & _TERMINAL_FINAL_SUMMARY_NOUNS:
         return ""
     return tail
+
+
+def _terminal_and_final_tail(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    found = None
+    for found in re.finditer(r"\band\s+(?P<tail>(?:(?:a|an|the)\s+)?final\b.+)$", text, flags=re.IGNORECASE):
+        pass
+    return clean_text(found.group("tail")).strip(" .") if found else ""
 
 
 def _focus_score(value: str) -> int:

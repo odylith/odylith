@@ -116,7 +116,7 @@ def action_phrase(proposal: Mapping[str, Any]) -> str:
     """Return the material user-side action without folding in the final result."""
 
     path = first_path(proposal)
-    action = _first_system_material_action_after_human_setup(path) or first_path_action_phrase(
+    action = first_path_action_phrase(
         path,
         fallback="complete the first product action",
         max_fragments=1,
@@ -233,6 +233,8 @@ def outcome_action_phrase(outcome: str) -> str:
     if actor_review:
         return _modal_safe_outcome_action(actor_review)
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
+    if words & {"explanation", "explanations", "recommendation", "recommendations"}:
+        return _modal_safe_outcome_action(f"review {_object_phrase(text)}")
     actor, actor_action = _actor_led_base_action_parts(
         re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
     )
@@ -259,8 +261,6 @@ def outcome_action_phrase(outcome: str) -> str:
     object_text = _object_phrase(text)
     if "status" in words and "visible" in words:
         return _modal_safe_outcome_action(f"see {object_text}")
-    if words & {"recommendation", "recommendations"}:
-        return _modal_safe_outcome_action(f"review {object_text}")
     if "readiness" in words:
         return _modal_safe_outcome_action(f"see {object_text}")
     if "status" in words and words & {"tracking", "lifecycle"}:

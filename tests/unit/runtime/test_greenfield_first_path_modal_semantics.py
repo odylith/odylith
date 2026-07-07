@@ -6,6 +6,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import actor_led_open_action_parts
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
@@ -73,11 +74,13 @@ def test_first_path_steps_drop_role_led_architecture_and_delivery_requirements()
     )
     model = first_path_model(first_path)
 
-    assert model.steps[0] == "Process safety engineer turns an ambiguous batch into a review-ready record using readings"
-    assert "Pressure logs, safety evidence" in model.steps
-    assert "Expert review, decision ledger and final release recommendation" in model.steps
+    assert model.steps[0] == (
+        "Process safety engineer turns an ambiguous batch into a review-ready record using readings, "
+        "condition checks, pressure logs, safety evidence, expert review, decision ledger and final release recommendation"
+    )
+    assert len(model.steps) == 1
     assert model.material_action.startswith("Turn an ambiguous batch into a review-ready record")
-    assert model.visible_outcome == "Expert review, decision ledger and final release recommendation"
+    assert model.visible_outcome == "Final release recommendation"
     rendered = " ".join(model.steps).casefold()
     assert "bounded components" not in rendered
     assert "governance artifacts" not in rendered
@@ -168,6 +171,11 @@ def test_actor_led_open_action_beats_homonym_object_fallback() -> None:
     )
     assert model.material_action != "Baseline routes and operator notes before releasing a safety result"
     assert "can baseline routes" not in model.material_action.casefold()
+
+
+def test_actor_led_open_action_rejects_bare_final_recommendation_noun() -> None:
+    assert actor_led_open_action_parts("a final nutrient plan recommendation") == ("", "")
+    assert actor_led_open_action_parts("final lesson explanation") == ("", "")
 
 
 def test_first_path_steps_split_carried_subject_finite_group_action() -> None:

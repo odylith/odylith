@@ -91,6 +91,8 @@ def _looks_like_open_actor_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     if not text or not _looks_like_actor_prefix(text):
         return False
+    if re.match(r"^(?:(?:a|an|the)\s+)?final\b", text, flags=re.IGNORECASE):
+        return False
     words = [word.casefold().strip(".,:;") for word in text.split() if word.strip(".,:;")]
     if not words or any(word in _SUBORDINATE_SUBJECT_MARKERS for word in words):
         return False

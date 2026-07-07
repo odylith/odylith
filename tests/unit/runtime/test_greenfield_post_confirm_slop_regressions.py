@@ -70,6 +70,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_action_split import split_action_pieces
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
@@ -123,6 +124,7 @@ FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenf
 FIRST_PATH_ACTION_SPLIT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_action_split.py"
 FIRST_PATH_COMMON_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_common.py"
 FIRST_PATH_FRAGMENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py"
+FIRST_PATH_SUBJECTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_subjects.py"
 FIRST_PATH_VIEW_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_view.py"
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
@@ -193,6 +195,7 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     action_split_source = FIRST_PATH_ACTION_SPLIT_PATH.read_text(encoding="utf-8")
     common_source = FIRST_PATH_COMMON_PATH.read_text(encoding="utf-8")
     fragment_source = FIRST_PATH_FRAGMENTS_PATH.read_text(encoding="utf-8")
+    subject_source = FIRST_PATH_SUBJECTS_PATH.read_text(encoding="utf-8")
     view_source = FIRST_PATH_VIEW_PATH.read_text(encoding="utf-8")
     type_source = FIRST_PATH_TYPES_PATH.read_text(encoding="utf-8")
     index_source = DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
@@ -202,6 +205,7 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert len(action_split_source.splitlines()) < 800
     assert len(common_source.splitlines()) < 800
     assert len(fragment_source.splitlines()) < 800
+    assert len(subject_source.splitlines()) < 800
     assert len(view_source.splitlines()) < 800
     for moved in (
         "def first_path_clauses",
@@ -264,7 +268,10 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert "def first_path_semantic_view" in view_source
     assert "def first_path_step_view" in view_source
     assert "greenfield_domain_term_index import label_terms" in fragment_source
-    assert "greenfield_domain_term_index import ordered_terms" in fragment_source
+    assert "greenfield_domain_term_index import ordered_terms" not in fragment_source
+    assert "greenfield_domain_term_index import ordered_terms" in subject_source
+    assert "def strip_action_subject" in subject_source
+    assert "def actor_signature" in subject_source
     assert "greenfield_first_path_common import clean_first_path_text" in clause_source
     assert "greenfield_first_path_common import clean_first_path_text" in parser_source
     assert "MATERIAL_ACTION_RE = re.compile" in common_source
@@ -355,6 +362,65 @@ def test_plural_actor_subjects_and_decision_pair_outcomes_render_as_reviewable_r
         == "review the approval or rejection of the permit with an auditable rationale"
     )
     assert outcome_action_phrase("Hearing readiness") == "see the hearing readiness"
+
+
+def test_using_evidence_list_does_not_become_user_can_action() -> None:
+    first_path = (
+        "Precision agronomy advisor can turn an ambiguous field prescription into a review-ready record "
+        "using soil samples, yield maps, weather forecast, fertilizer constraints, explicit expert review, "
+        "auditable decision ledger, and a final nutrient plan recommendation."
+    )
+    proposal = {
+        "intent": {"first_path": first_path},
+        "semantic_model": {"first_path_contract": {"visible_result": "a final nutrient plan recommendation"}},
+    }
+
+    assert split_action_pieces(first_path) == [
+        (
+            "Precision agronomy advisor can turn an ambiguous field prescription into a review-ready record "
+            "using soil samples, yield maps, weather forecast, fertilizer constraints, explicit expert review, "
+            "auditable decision ledger, and a final nutrient plan recommendation"
+        )
+    ]
+    assert action_phrase(proposal).startswith("turn an ambiguous field prescription into a review-ready record")
+    assert "yield maps" not in action_phrase(proposal)
+
+    product_view = workstream_product_view(
+        label="Final Nutrient Plan Recommendation Workspace Intake Register Service",
+        action=action_phrase(proposal),
+        outcome=outcome_phrase(proposal),
+    )
+
+    assert "the user can yield maps" not in product_view.casefold()
+    assert "the user can turn an ambiguous field prescription" in product_view.casefold()
+    assert "review a final nutrient plan recommendation" in product_view.casefold()
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
+def test_using_evidence_tail_can_still_split_follow_on_carried_subject_actions() -> None:
+    first_path = (
+        "Planner turns a request into a service plan using intake notes, calls the customer, "
+        "and saves the plan."
+    )
+
+    assert split_action_pieces(first_path) == [
+        "Planner turns a request into a service plan using intake notes",
+        "Planner calls the customer",
+        "Planner saves the plan",
+    ]
+
+
+def test_final_explanation_result_does_not_become_user_can_plan_action() -> None:
+    product_view = workstream_product_view(
+        label="Lesson Explanation Workspace",
+        action="turn an ambiguous lesson into a review-ready record",
+        outcome="a final lesson explanation",
+    )
+
+    assert "the user can plan explanation" not in product_view.casefold()
+    assert "review a final lesson explanation" in product_view.casefold()
+    assert outcome_action_phrase("a final lesson explanation") == "review a final lesson explanation"
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
 
 
 def test_temporal_choice_tail_expands_into_reviewable_first_path_events() -> None:
@@ -511,7 +577,7 @@ def test_workstream_titles_avoid_clipped_actor_and_material_action_slop() -> Non
                 )
             }
         }
-    ) == "validate the robot is ready"
+    ) == "pick a recipe"
     assert first_path_capability_phrase(
         (
             "Home cook picks a recipe, the controller validates the robot is ready, "

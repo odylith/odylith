@@ -12,6 +12,7 @@ from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
     carried_subject_action_verb as _carried_subject_action_verb,
@@ -67,7 +68,9 @@ def split_action_pieces(value: str) -> list[str]:
                     for part in _merge_status_modifier_parts(
                         [piece.strip(" .,;:") for piece in re.split(r",\s+", segment) if piece.strip(" .,;:")]
                     ):
-                        if current and _starts_new_action_clause(
+                        if current and _continues_adverbial_object_list(part, current):
+                            current = f"{current}, {part}".strip(" .,;:")
+                        elif current and _starts_new_action_clause(
                             part,
                             allow_homonym_subject=True,
                         ) and not _continues_subject_object_list(part, current):
@@ -302,6 +305,73 @@ def _continues_subject_object_list(value: str, current: str) -> bool:
     if connector_core_starts_action_clause(core):
         return False
     return bool(_carried_subject_prefix(current))
+
+
+def _continues_adverbial_object_list(value: str, current: str) -> bool:
+    current_text = _clean(current).strip(" .")
+    if not re.search(
+        r"\b(?:including|using|via|with)\s+[A-Za-z0-9]",
+        current_text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+    text = re.sub(r"^(?:and|or)\s+", "", _clean(value).strip(" ."), flags=re.IGNORECASE)
+    if not text:
+        return False
+    first_word = text.split(maxsplit=1)[0].strip(".,:;()[]{}").casefold()
+    if first_word.endswith("s") and _MATERIAL_ACTION_RE.match(text):
+        return False
+    if _has_explicit_subject_action(text):
+        return False
+    terms = label_terms(text)
+    return 1 <= len(terms) <= 8
+
+
+def _has_explicit_subject_action(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    if _actor_role_subject_action(text):
+        return True
+    if starts_subject_finite_action_clause(
+        text,
+        material_action_match=_MATERIAL_ACTION_RE.match,
+    ):
+        return True
+    return bool(
+        re.match(
+            r"^(?:(?:a|an|the|one|this|that|each|another)\s+)?"
+            r"(?:product|system|user|person|actor|app|application|workspace|engine|dashboard|view|"
+            r"controller|service|platform|tool)\b"
+            r"(?:\s+[A-Za-z0-9'-]+){0,5}\s+"
+            rf"(?:{_SPLIT_ACTION_VERB_PATTERN})\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _actor_role_subject_action(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    words = [word.strip(".,:;()[]{}") for word in text.split() if word.strip(".,:;()[]{}")]
+    if len(words) < 3:
+        return False
+    for index in range(1, min(5, len(words) - 1)):
+        subject = " ".join(words[:index]).strip(" .")
+        action = " ".join(words[index:]).strip(" .")
+        if not subject or not action:
+            continue
+        if not has_actor_role_word(subject):
+            continue
+        if not looks_like_actor_led_subject_prefix(subject, text):
+            continue
+        if not _MATERIAL_ACTION_RE.match(action):
+            continue
+        action_words = [word for word in action.split() if word]
+        if len(action_words) < 2:
+            continue
+        return True
+    return False
 
 
 def _carried_action_verb(subject_prefix: str, verb: str) -> str:

@@ -636,7 +636,10 @@ def _product_view_result_sentence(outcome_object: str, *, lead_action: str) -> s
     outcome = _clean(outcome_object).strip(" .")
     if not outcome or word_count(outcome) < 3:
         return ""
-    if outcome.casefold() in _clean(lead_action).casefold():
+    lead = _clean(lead_action).casefold()
+    if outcome.casefold() in lead and not (
+        re.search(r"\binto\b", lead) and re.match(r"^(?:a|an|the)\s+final\b", outcome, flags=re.IGNORECASE)
+    ):
         return ""
     return f"The visible result is {outcome}. "
 
