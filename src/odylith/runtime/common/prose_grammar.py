@@ -786,7 +786,7 @@ def base_following_action_verbs(value: str) -> str:
     if not text:
         return ""
     text = _base_action_part(text)
-    finite_pattern = "|".join(re.escape(verb) for verb in sorted(_FINITE_TO_BASE, key=len, reverse=True))
+    finite_pattern = _finite_action_verb_pattern_cached()
 
     def replace(match: re.Match[str]) -> str:
         connector = match.group("connector")
@@ -828,7 +828,12 @@ def base_action_clause(value: str, *, force_leading_finite: bool = False) -> str
 def base_gerund_clause(value: str) -> str:
     """Convert a generated gerund action list into a direct action claim."""
 
-    parts = [part for part in re.split(r"(,\s*)", str(value or "").strip(" .")) if part]
+    return _base_gerund_clause_cached(str(value or ""))
+
+
+@lru_cache(maxsize=16384)
+def _base_gerund_clause_cached(value: str) -> str:
+    parts = [part for part in re.split(r"(,\s*)", value.strip(" .")) if part]
     if not parts:
         return ""
     converted: list[str] = []
@@ -841,6 +846,11 @@ def base_gerund_clause(value: str) -> str:
         converted.append(text)
         conversion_seen |= converted_part
     return "".join(converted).strip(" .") if conversion_seen else ""
+
+
+@lru_cache(maxsize=1)
+def _finite_action_verb_pattern_cached() -> str:
+    return "|".join(re.escape(verb) for verb in sorted(_FINITE_TO_BASE, key=len, reverse=True))
 
 
 def _base_action_part(value: str) -> str:

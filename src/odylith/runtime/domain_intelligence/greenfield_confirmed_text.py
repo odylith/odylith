@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 import re
 from collections.abc import Iterable, Sequence
 from typing import Any
@@ -914,6 +915,11 @@ def _restore_source_mixed_case_tokens(label: str, source: str) -> str:
 
 
 def _preferred_source_casing_tokens(source: str) -> tuple[str, ...]:
+    return _preferred_source_casing_tokens_cached(str(source or ""))
+
+
+@lru_cache(maxsize=1024)
+def _preferred_source_casing_tokens_cached(source: str) -> tuple[str, ...]:
     chosen: dict[str, tuple[int, int, str]] = {}
     for index, token in enumerate(_source_casing_tokens(source)):
         key = token.casefold()
@@ -927,6 +933,11 @@ def _preferred_source_casing_tokens(source: str) -> tuple[str, ...]:
 
 
 def _source_casing_tokens(source: str) -> tuple[str, ...]:
+    return _source_casing_tokens_cached(str(source or ""))
+
+
+@lru_cache(maxsize=1024)
+def _source_casing_tokens_cached(source: str) -> tuple[str, ...]:
     return tuple(match.group(0) for match in re.finditer(r"\b[A-Za-z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", source))
 
 

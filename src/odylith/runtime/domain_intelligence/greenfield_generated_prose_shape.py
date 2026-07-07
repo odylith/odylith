@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 import re
 
 from collections.abc import Collection
@@ -36,7 +37,14 @@ def _modal_action_tail(tokens: list[str]) -> list[str]:
 def gerund_actor_role_finite_action_splice(value: str, *, actor_labels: Collection[str] = ()) -> bool:
     """Return whether a gerundized action word leaked into an actor-role subject."""
 
-    allowed_actor_labels = {_actor_label_key(label) for label in actor_labels if _actor_label_key(label)}
+    text = str(value or "")
+    allowed_actor_labels = tuple(sorted({_actor_label_key(label) for label in actor_labels if _actor_label_key(label)}))
+    return _gerund_actor_role_finite_action_splice_cached(text, allowed_actor_labels)
+
+
+@lru_cache(maxsize=16384)
+def _gerund_actor_role_finite_action_splice_cached(value: str, allowed_actor_labels: tuple[str, ...]) -> bool:
+    allowed_actor_label_set = set(allowed_actor_labels)
     for tokens in _token_segments(value):
         for index in range(0, max(0, len(tokens) - 2)):
             window = tokens[index : min(len(tokens), index + 10)]
@@ -45,11 +53,11 @@ def gerund_actor_role_finite_action_splice(value: str, *, actor_labels: Collecti
                 normalized_prefix = base_gerund_clause(prefix).strip(" .")
                 if not normalized_prefix or normalized_prefix.casefold() == prefix.casefold():
                     continue
-                if _is_source_owned_actor_label(prefix, allowed_actor_labels) or _is_source_owned_actor_label_prefix(
+                if _is_source_owned_actor_label(prefix, allowed_actor_label_set) or _is_source_owned_actor_label_prefix(
                     window,
                     split_index=split_index,
-                    allowed_actor_labels=allowed_actor_labels,
-                ) or _is_source_owned_actor_label_suffix(prefix, allowed_actor_labels):
+                    allowed_actor_labels=allowed_actor_label_set,
+                ) or _is_source_owned_actor_label_suffix(prefix, allowed_actor_label_set):
                     continue
                 if _looks_like_title_compound_actor(prefix, normalized_prefix):
                     continue
