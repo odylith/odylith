@@ -7,6 +7,18 @@ import re
 
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
+    WORD_SENSE_CONTROL_CUSTODY_TERMS as _WORD_SENSE_CONTROL_CUSTODY_TERMS,
+)
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
+    WORD_SENSE_DESCRIPTOR_TERMS as _WORD_SENSE_DESCRIPTOR_TERMS,
+)
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
+    word_sense_tail_has_control_obligation as _word_sense_tail_has_control_obligation,
+)
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
+    word_sense_tail_starts_content_clause as _word_sense_tail_starts_content_clause,
+)
 
 _ARCHITECTURE_CONTROL_TERMS = frozenset(
     {
@@ -457,7 +469,7 @@ def _tokens_start_vocabulary_metadata(tokens: Sequence[tuple[str, int]], index: 
 
 
 def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: int) -> bool:
-    window = [token for token, _start in tokens[index : index + 14]]
+    window = [token for token, _start in tokens[index : index + 28]]
     if len(window) < 5:
         return False
     subject_index = index
@@ -467,7 +479,7 @@ def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: 
         return False
     subject = tokens[subject_index][0]
     verb = tokens[subject_index + 1][0]
-    tail = [token for token, _start in tokens[subject_index + 2 : subject_index + 14]]
+    tail = [token for token, _start in tokens[subject_index + 2 : subject_index + 28]]
     if subject in {"instruction", "instructions", "prompt", "request"} and verb in {
         "calls",
         "describes",
@@ -488,65 +500,12 @@ def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: 
         "states",
         "warns",
     }:
+        if _word_sense_tail_starts_content_clause(tail):
+            return _word_sense_tail_has_control_obligation(tail)
         return _word_sense_tail_describes_metadata(tail) or _word_sense_tail_contains_copular_metadata(tail)
     if verb in {"is", "are"}:
         return _word_sense_tail_describes_metadata(tail) and _word_sense_tail_has_control_custody(tail)
     return False
-
-
-_WORD_SENSE_DESCRIPTOR_TERMS = frozenset(
-    {
-        "act",
-        "acts",
-        "action",
-        "actions",
-        "adjective",
-        "adjectives",
-        "adverb",
-        "adverbs",
-        "artifact",
-        "artifacts",
-        "entity",
-        "entities",
-        "gerund",
-        "gerunds",
-        "label",
-        "labels",
-        "name",
-        "names",
-        "noun",
-        "nouns",
-        "object",
-        "objects",
-        "operation",
-        "operations",
-        "participle",
-        "participles",
-        "predicate",
-        "predicates",
-        "record",
-        "records",
-        "subject",
-        "subjects",
-        "term",
-        "terms",
-        "verb",
-        "verbs",
-        "word",
-        "words",
-    }
-)
-_WORD_SENSE_CONTROL_CUSTODY_TERMS = frozenset(
-    {
-        "ambiguity",
-        "ambiguous",
-        "custody",
-        "explicit",
-        "governance",
-        "ownership",
-        "owned",
-    }
-)
 
 
 def _word_sense_tail_describes_metadata(tokens: Sequence[str]) -> bool:

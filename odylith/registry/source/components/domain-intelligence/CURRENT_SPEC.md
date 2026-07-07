@@ -60,7 +60,10 @@ This section captures synchronized requirement and contract signals derived from
   visible-result extraction keeps the clean leading nominal result, leading
   metadata and declared visible-result/proof-boundary metadata are rejected, and
   the semantic slop gate fails if the leaked phrase family reaches generated
-  artifacts. Focused proof passed 22 affected parser/projection/quality-gate
+  artifacts. Reporting-verb clauses that open a product content clause remain
+  product evidence, while visible-result extraction still prefers the clean
+  preceding nominal outcome instead of promoting grammar evidence into awkward
+  result copy. Focused proof covers the affected parser/projection/quality-gate
   regressions, and exact source-local replay of the escaped scientific Atlas
   homonym prompt committed 4 Radar records, 3 Registry components, and 6 Atlas
   diagrams with post-confirm manifest passed, issue_count 0, validation passed,

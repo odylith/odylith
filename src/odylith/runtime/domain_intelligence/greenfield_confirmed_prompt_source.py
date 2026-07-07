@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import strip_request_reporting_custody_tail
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import word_sense_tail_starts_content_clause
 
 
 _REQUEST_TITLE_MAX_WORDS = 10
@@ -137,8 +140,6 @@ _RELEASE_PROOF_ACTION_WORDS = frozenset(
         "succeeded",
     }
 )
-
-
 @dataclass(frozen=True)
 class PromptIntentSource:
     """Operator prompt interpretation before confirmed-intent recovery."""
@@ -738,7 +739,8 @@ def _strip_leading_helper_word(value: str) -> str:
 
 
 def _smooth_request_first_path_clause(value: str) -> str:
-    words = _request_words(strip_trailing_requirement_control_steps(value))
+    normalized = _normalize_request_reporting_product_clauses(value)
+    words = _request_words(strip_trailing_requirement_control_steps(normalized))
     if not words:
         return ""
     while words and words[0].casefold() == "to":
@@ -769,6 +771,40 @@ def _smooth_request_first_path_clause(value: str) -> str:
             continue
         smoothed.append(word)
     return " ".join(smoothed).strip(" .")
+
+
+def _normalize_request_reporting_product_clauses(value: str) -> str:
+    rows = _sentence_fragments(clean_markdown_text(value).strip(" ."))
+    if not rows:
+        return ""
+    normalized: list[str] = []
+    for row in rows:
+        product_clause = _request_reporting_product_clause(row)
+        if product_clause and any(_looks_like_recoverable_first_path(previous) for previous in normalized):
+            continue
+        normalized.append(product_clause or row)
+    return ". ".join(row for row in normalized if row).strip(" .")
+
+
+def _request_reporting_product_clause(value: str) -> str:
+    words = _request_words(value)
+    if len(words) < 5:
+        return ""
+    lowered = [_word_key(word) for word in words]
+    subject_index = 1 if lowered[0] in {"a", "an", "the", "this", "that"} else 0
+    if subject_index + 2 >= len(lowered):
+        return ""
+    if lowered[subject_index] not in {"instruction", "instructions", "prompt", "request"}:
+        return ""
+    if lowered[subject_index + 1] not in REQUEST_REPORTING_VERBS:
+        return ""
+    tail_words = words[subject_index + 2 :]
+    if tail_words and _word_key(tail_words[0]) == "that":
+        tail_words = tail_words[1:]
+    tail_keys = [_word_key(word) for word in tail_words]
+    if not word_sense_tail_starts_content_clause(tail_keys):
+        return ""
+    return strip_request_reporting_custody_tail(clean_markdown_text(" ".join(tail_words))).strip(" .")
 
 
 def _drop_relative_use_to_action(words: list[str]) -> list[str]:

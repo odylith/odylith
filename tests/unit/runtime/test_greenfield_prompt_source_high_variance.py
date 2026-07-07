@@ -85,10 +85,29 @@ def test_semantic_slop_gate_rejects_word_sense_metadata_as_visible_result() -> N
 
 def test_word_sense_metadata_does_not_reject_grammar_product_language() -> None:
     text = "The sentence treats record as a noun and verb in the lesson."
+    request_framed_text = "The request says the lesson shows record as both a noun and a governed object in English grammar."
+    descriptor_subject_text = (
+        "The request says the record lesson shows record as both a noun and a governed object in English grammar."
+    )
+    custody_subject_text = (
+        "The request says the ownership report shows record as both a noun and a governed object in English grammar."
+    )
+    mixed_request_framed_text = (
+        "The request says the lesson shows record as both a noun and a governed object in English grammar, "
+        "so ownership must be explicit."
+    )
 
     assert not contains_word_sense_metadata_clause(text)
     assert generated_semantic_slop_issues({"lesson_copy": text}) == []
     assert not contains_word_sense_metadata_clause("The sentence treats record as both a noun and a governed object in the lesson.")
+    assert not contains_word_sense_metadata_clause(request_framed_text)
+    assert not contains_word_sense_metadata_clause(descriptor_subject_text)
+    assert not contains_word_sense_metadata_clause(custody_subject_text)
+    assert generated_semantic_slop_issues({"request_framed_lesson_copy": request_framed_text}) == []
+    assert generated_semantic_slop_issues({"descriptor_subject_lesson_copy": descriptor_subject_text}) == []
+    assert generated_semantic_slop_issues({"custody_subject_lesson_copy": custody_subject_text}) == []
+    assert contains_word_sense_metadata_clause(mixed_request_framed_text)
+    assert generated_semantic_slop_issues({"mixed_request_framed_copy": mixed_request_framed_text})
     assert (
         generated_semantic_slop_issues(
             {
@@ -131,6 +150,17 @@ def test_visible_result_object_rejects_leading_word_sense_metadata() -> None:
         visible_result_object("The request says record is both a noun and a governed object, so ownership must be explicit")
         == ""
     )
+    request_framed_result = visible_result_object(
+        "The request says the lesson shows record as both a noun and a governed object in English grammar."
+    )
+    assert request_framed_result
+    assert "noun" in request_framed_result
+    assert "governed object" in request_framed_result
+    short_prefix_result = visible_result_object(
+        "A classroom-ready record. The request says the lesson shows record as both a noun and a governed object in "
+        "English grammar."
+    )
+    assert short_prefix_result == "A classroom-ready record"
     assert visible_result_object("Record is both a verb and a governed object, so ownership must be explicit") == ""
     assert visible_result_object("Record is both a noun and a governed object, so ownership must be explicit") == ""
     assert visible_result_object("The visible result is The request uses record both as an action and as a governed object") == ""
@@ -177,6 +207,98 @@ def test_prompt_source_rejects_reporting_verb_word_sense_metadata_escape() -> No
         "request says",
         leaked_phrase="noun and a governed object",
     )
+
+
+def test_prompt_source_preserves_request_framed_grammar_product_content() -> None:
+    prompt = (
+        "Create a greenfield proposal for English grammar ambiguity lesson. Focus on a governed workflow where the "
+        "teacher turns a confusing sentence analysis into a classroom-ready record using examples, answer keys, "
+        "student misconceptions, grammar evidence, explicit review, and a final lesson explanation. The request says "
+        "the lesson shows record as both a noun and a governed object in English grammar. A product manager must see "
+        "the first complete path, actor value, non-goals, and success metrics. The post-confirm create must finish "
+        "all project and governance artifacts under the standard budget."
+    )
+
+    source = prompt_intent_source(prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=source.title,
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt),
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+    semantic_visible_result = proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
+
+    assert "the request says" not in source.first_path.casefold()
+    assert "the request says" not in rendered
+    assert "ownership must be explicit" not in rendered
+    assert "english grammar" in rendered or "grammar ambiguity" in rendered
+    assert "lesson" in rendered
+    assert "noun and a governed object" not in semantic_visible_result
+    assert "final lesson explanation" in semantic_visible_result or "classroom-ready record" in semantic_visible_result
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_preserves_request_framed_product_subjects_with_descriptor_terms() -> None:
+    for subject in ("record lesson", "ownership report"):
+        prompt = (
+            "Create a greenfield proposal for English grammar ambiguity lesson. Focus on a governed workflow where the "
+            "teacher turns a confusing sentence analysis into a classroom-ready record using examples, answer keys, "
+            f"student misconceptions, grammar evidence, explicit review, and a final lesson explanation. The request says the "
+            f"{subject} shows record as both a noun and a governed object in English grammar. A product manager must see "
+            "the first complete path, actor value, non-goals, and success metrics. The post-confirm create must finish "
+            "all project and governance artifacts under the standard budget."
+        )
+
+        source = prompt_intent_source(prompt)
+        proposal = build_confirmed_greenfield_proposal(
+            prompt=prompt,
+            title=source.title,
+            observed_source={},
+            release_selector="0.0.1",
+            confirmed_intent=parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt),
+        )
+        rendered = json.dumps(proposal, sort_keys=True).casefold()
+        semantic_visible_result = proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
+
+        assert "the request says" not in source.first_path.casefold()
+        assert "the request says" not in rendered
+        assert "ownership must be explicit" not in rendered
+        assert "english grammar" in rendered or "grammar ambiguity" in rendered
+        assert "noun and a governed object" not in semantic_visible_result
+        assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_strips_request_framed_grammar_custody_tail() -> None:
+    prompt = (
+        "Create a greenfield proposal for English grammar ambiguity lesson. Focus on a governed workflow where the "
+        "teacher turns a confusing sentence analysis into a classroom-ready record using examples, answer keys, "
+        "student misconceptions, grammar evidence, explicit review, and a final lesson explanation. The request says "
+        "the lesson shows record as both a noun and a governed object in English grammar, so ownership must be explicit. "
+        "A product manager must see the first complete path, actor value, non-goals, and success metrics. The "
+        "post-confirm create must finish all project and governance artifacts under the standard budget."
+    )
+
+    source = prompt_intent_source(prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=source.title,
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt),
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+    semantic_visible_result = proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
+
+    assert "the request says" not in source.first_path.casefold()
+    assert "the request says" not in rendered
+    assert "ownership must be explicit" not in source.first_path.casefold()
+    assert "ownership must be explicit" not in rendered
+    assert "english grammar" in rendered or "grammar ambiguity" in rendered
+    assert "noun and a governed object" not in semantic_visible_result
+    assert "final lesson explanation" in semantic_visible_result or "classroom-ready record" in semantic_visible_result
+    assert greenfield_quality_issues(proposal) == []
 
 
 def _assert_prompt_word_sense_phrase_is_metadata(

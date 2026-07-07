@@ -24,6 +24,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import cli
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_declarative_visible_result_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import word_sense_metadata_start
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import strip_request_reporting_custody_tail
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import word_sense_tail_starts_content_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominal_action_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominalize_leading_result_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_inside_compound_noun
@@ -293,17 +296,118 @@ def _nominal_result_after_control_strip(value: str) -> str:
     result = focused_visible_result_object(nominal_visible_result_object(text))
     return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
 
+def _prefix_visible_result_before_word_sense_clause(value: str) -> str:
+    text = clean_visible_result_phrase(value)
+    if not text:
+        return ""
+    action_match = MATERIAL_ACTION_RE.search(text)
+    if action_match and not (
+        re.match(r"^(?:a|an|the)\s+", text, flags=re.IGNORECASE) and action_match.end() == len(text)
+    ):
+        return ""
+    if is_declarative_visible_result_prefix(text):
+        return ""
+    result = focused_visible_result_object(nominal_visible_result_object(text))
+    return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+
+def _nominal_result_before_reporting_clause(value: str) -> str:
+    text = clean_visible_result_phrase(value)
+    if not text:
+        return ""
+    match = re.search(
+        r"\b(?:the\s+)?(?:instruction|instructions|prompt|request)\s+"
+        r"(?:adds|clarifies|explains|indicates|notes|says|specifies|states|warns)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or match.start() <= 0:
+        return ""
+    prefix = text[: match.start()].strip(" ,.;:")
+    return _prefix_visible_result_before_word_sense_clause(prefix)
+
+def _nominal_result_before_request_word_sense_clause(value: str) -> str:
+    text = clean_visible_result_phrase(value)
+    if not text:
+        return ""
+    match = re.search(
+        r"\b(?:the\s+)?(?:instruction|instructions|prompt|request)\s+"
+        r"(?:calls|describes|frames|mentions|treats|uses|adds|clarifies|explains|indicates|notes|says|specifies|states|warns)\b"
+        r"[^.]{0,180}\b(?:as\s+both|both|as\s+[A-Za-z][A-Za-z0-9'-]*\s+and\s+as)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or match.start() <= 0:
+        return ""
+    prefix = text[: match.start()].strip(" ,.;:")
+    return _prefix_visible_result_before_word_sense_clause(prefix)
+
+def _nominal_result_before_word_sense_content_clause(value: str) -> str:
+    text = clean_visible_result_phrase(value)
+    if not text:
+        return ""
+    word_sense_descriptor = (
+        r"(?:act|action|adjective|adverb|artifact|entity|gerund|label|name|noun|object|"
+        r"operation|participle|predicate|record|subject|term|verb|word)s?"
+    )
+    match = re.search(
+        rf"\b(?:a|an|the|this|that)?\s*[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){{0,3}}\s+"
+        rf"(?:captures?|classif(?:y|ies)|contains?|demonstrates?|displays?|explains?|helps?|includes?|"
+        rf"labels?|maps?|models?|presents?|renders?|reviews?|shows?|teaches?|tracks?|treats?|turns?|uses?)\s+"
+        rf"[^.]*\b(?:as\s+both|both|as\s+{word_sense_descriptor}\s+and\s+as)\b[^.]*\b{word_sense_descriptor}\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or match.start() <= 0:
+        return ""
+    prefix = text[: match.start()].strip(" ,.;:")
+    return _prefix_visible_result_before_word_sense_clause(prefix)
+
+def _standalone_request_reporting_product_clause(value: str) -> str:
+    text = clean_visible_result_phrase(value)
+    if not text:
+        return ""
+    words = re.findall(r"[A-Za-z][A-Za-z0-9'-]*", text)
+    if len(words) < 5:
+        return ""
+    lowered = [word.casefold() for word in words]
+    subject_index = 1 if lowered[0] in {"a", "an", "the", "this", "that"} else 0
+    if subject_index + 2 >= len(lowered):
+        return ""
+    if lowered[subject_index] not in {"instruction", "instructions", "prompt", "request"}:
+        return ""
+    if lowered[subject_index + 1] not in REQUEST_REPORTING_VERBS:
+        return ""
+    tail_words = words[subject_index + 2 :]
+    if tail_words and tail_words[0].casefold() == "that":
+        tail_words = tail_words[1:]
+    tail_tokens = [word.casefold() for word in tail_words]
+    if not word_sense_tail_starts_content_clause(tail_tokens):
+        return ""
+    return strip_request_reporting_custody_tail(" ".join(tail_words)).strip(" .")
+
 def visible_result_object(value: str) -> str:
     raw_text = clean_first_path_text(value)
     metadata_start = word_sense_metadata_start(raw_text)
     if metadata_start == 0:
         return ""
-    stripped_text = clean_visible_result_phrase(strip_requirement_control_tail(value))
+    request_reporting_text = _standalone_request_reporting_product_clause(raw_text)
+    if request_reporting_text:
+        raw_text = request_reporting_text
+    stripped_text = clean_visible_result_phrase(strip_requirement_control_tail(raw_text))
     if metadata_start > 0 and is_declarative_visible_result_prefix(stripped_text):
         return ""
     raw_visible_text = clean_visible_result_phrase(raw_text)
     control_tail_removed = bool(stripped_text and stripped_text != raw_visible_text)
     text = stripped_text or raw_text
+    reporting_prefix_result = _nominal_result_before_reporting_clause(raw_text)
+    if reporting_prefix_result:
+        return reporting_prefix_result
+    request_word_sense_prefix_result = _nominal_result_before_request_word_sense_clause(raw_text)
+    if request_word_sense_prefix_result:
+        return request_word_sense_prefix_result
+    word_sense_prefix_result = _nominal_result_before_word_sense_content_clause(raw_text)
+    if word_sense_prefix_result:
+        return word_sense_prefix_result
     display_result = display_carrier_result_object(text, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     if display_result:
         return display_result
