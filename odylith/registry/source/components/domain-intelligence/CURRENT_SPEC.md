@@ -48,6 +48,20 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-07: Fixed next-step first-path preservation false negatives for sparse confirmed paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-221`; Diagram: D-045)
+  Installed word-sense replay against local-release `c3274ff5` exposed a
+  post-confirm package-gate failure where the operator next-step prompt literally
+  contained the accepted sparse first path, but the contrastive semantic overlap
+  signature collapsed generic source terms to gerunds and scored zero against the
+  finite-verb prompt text. The next-step preservation gate now accepts exact
+  `raw_path` containment before falling back to semantic overlap, while
+  fragment-only prompts that mention only the visible result or mutation still
+  fail the preservation contract. Focused next-step proof passed the positive
+  sparse literal regression plus fragment-only negative regressions, and the
+  widened high-variance/source-repair/slop guard passed 75 tests. Fresh installed
+  failed-subset replay against a rebuilt dist remains required before release
+  readiness.
+
 - 2026-07-07: Hardened confirmed homonym custody and request-metadata stripping in Greenfield post-confirm projection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-216`, `CB-215`; Diagram: D-045)
   Domain Intelligence now evaluates Odylith surface-name homonyms in confirmed
   generated proposals against canonical confirmed product sections, not only

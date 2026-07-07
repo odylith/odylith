@@ -451,7 +451,7 @@ def _next_steps_preview_issues(
     semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     first_path_text = _next_step_first_path_overlap_text(first_path)
-    if first_path_text and _semantic_overlap_ratio(first_path_text, prompt) < 0.08:
+    if first_path_text and not _next_step_prompt_preserves_first_path(first_path, prompt):
         issues.append("operator next-steps implementation prompt must overlap the accepted first path")
     operator_sequence = text_values(next_steps_preview.get("operator_sequence"))
     if len(operator_sequence) < 3:
@@ -468,6 +468,27 @@ def _next_steps_preview_issues(
 
 def _operator_next_step_copy_issues(next_steps_preview: Mapping[str, Any]) -> list[str]:
     return list(generated_public_copy_issues("operator next-steps preview", next_steps_preview))
+
+
+def _next_step_prompt_preserves_first_path(first_path: Mapping[str, Any], prompt: str) -> bool:
+    prompt_text = clean_text(prompt).casefold()
+    if not prompt_text:
+        return False
+    for candidate in _next_step_first_path_literal_candidates(first_path):
+        text = clean_text(candidate)
+        if text and text.casefold() in prompt_text:
+            return True
+    overlap_text = _next_step_first_path_overlap_text(first_path)
+    return bool(overlap_text and _semantic_overlap_ratio(overlap_text, prompt) >= 0.08)
+
+
+def _next_step_first_path_literal_candidates(first_path: Mapping[str, Any]) -> tuple[str, ...]:
+    values: list[str] = []
+    for key in ("raw_path",):
+        text = clean_text(first_path.get(key))
+        if text:
+            values.append(text)
+    return tuple(dict.fromkeys(values))
 
 
 def _next_step_first_path_overlap_text(first_path: Mapping[str, Any]) -> str:

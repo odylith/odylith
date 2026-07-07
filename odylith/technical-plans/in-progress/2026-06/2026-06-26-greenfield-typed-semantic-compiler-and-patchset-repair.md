@@ -944,6 +944,16 @@ vocabulary, or degraded packages.
   focused authority bundle passed `47` tests, the reviewer-targeted
   product-intent/semantic/slop suite passed `163` tests, and the adversarial
   CLI/live-selection smoke passed `18` tests.
+- 2026-07-07 next-step overlap checkpoint: installed replay against local-release
+  `c3274ff5` found a post-confirm package-gate false negative where the operator
+  next-step implementation prompt literally preserved the accepted sparse first
+  path, but the contrastive semantic overlap signature collapsed generic source
+  terms to gerunds and scored zero against finite verbs in the prompt. CB-221
+  now owns that failure. The fix accepts literal `raw_path` preservation before
+  semantic-overlap fallback, while fragment-only visible-result or mutation
+  prompts still fail. Focused next-step proof and the widened high-variance/
+  source-repair/slop guard passed `75` tests. Rebuilt installed failed-subset
+  replay remains the next release-readiness gate.
 
 ## Implementation Slices
 

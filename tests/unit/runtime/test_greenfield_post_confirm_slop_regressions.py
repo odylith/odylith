@@ -3669,6 +3669,124 @@ def test_source_launch_prompt_preserves_canonical_apply_first_path_over_project_
     assert "owner attestations. Queue holds" not in prompt
 
 
+def _literal_sparse_first_path_package(implementation_prompt: str) -> GreenfieldCompletionPackage:
+    first_path = (
+        "A representative user reviews greenfield proposal details, records the current status, "
+        "and sees a greenfield proposal result with blockers and evidence for review."
+    )
+    return GreenfieldCompletionPackage(
+        proposal={
+            "intent": {"title": "Greenfield Proposal Grammar Lesson", "first_path": first_path},
+            "semantic_model": {
+                "first_path_contract": {
+                    "raw_path": first_path,
+                    "capability": (
+                        "reviewing greenfield proposal details, recording the current status, and seeing "
+                        "a greenfield proposal result with blockers and evidence for review"
+                    ),
+                    "visible_result": "a greenfield proposal result with blockers and evidence for review",
+                    "mutation": "Review greenfield proposal details",
+                    "action": "review",
+                    "entity": "Greenfield Proposal",
+                    "events": [
+                        {
+                            "text": "A representative user reviews greenfield proposal details",
+                            "mutation": "A representative user reviews greenfield proposal details",
+                            "action": "reviews",
+                            "target_entity": "proposal detail",
+                        },
+                        {
+                            "text": "A representative user records the current status",
+                            "mutation": "A representative user records the current status",
+                            "action": "records",
+                            "target_entity": "current status",
+                        },
+                        {
+                            "text": (
+                                "A representative user sees a greenfield proposal result with blockers "
+                                "and evidence for review"
+                            ),
+                            "mutation": (
+                                "A representative user sees a greenfield proposal result with blockers "
+                                "and evidence for review"
+                            ),
+                            "action": "sees",
+                            "target_entity": "proposal result",
+                        },
+                    ],
+                }
+            },
+        },
+        release_selector="0.0.1",
+        next_steps_preview={
+            "project_workstream_id": "B-001",
+            "start_workstream_id": "B-002",
+            "start_workstream_title": "Let Representative User Record the Current Status",
+            "release_selector": "0.0.1",
+            "implementation_prompt": implementation_prompt,
+            "operator_sequence": [
+                "Review the accepted project brief.",
+                "Confirm the active wave and release.",
+                "Open B-002 only after coding-readiness gates are accepted.",
+            ],
+            "coding_readiness_gates": [
+                "The accepted product story names the user problem.",
+                "The first implementation lane is ready.",
+                "Release 0.0.1 has proof checks for success, failure, replay, and review evidence.",
+                "External dependencies are simulated, source-backed, or deferred.",
+            ],
+            "verification_commands": [
+                "./.odylith/bin/odylith context --repo-root . B-002",
+                "./.odylith/bin/odylith validate plan-workstream-binding --repo-root .",
+            ],
+        },
+        backlog_result={"created": [{"idea_id": "B-001"}, {"idea_id": "B-002"}]},
+    )
+
+
+def test_operator_next_steps_accept_literal_sparse_first_path_preservation() -> None:
+    first_path = (
+        "A representative user reviews greenfield proposal details, records the current status, "
+        "and sees a greenfield proposal result with blockers and evidence for review."
+    )
+    package = _literal_sparse_first_path_package(
+        "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
+        f"{first_path} Treat `Let Representative User Record the Current Status` as the first coding "
+        "scope and do not advance waves until success, blocked-input, replay, and handoff evidence is "
+        "written and reviewed."
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert "operator next-steps implementation prompt must overlap the accepted first path" not in report.issues
+
+
+def test_operator_next_steps_reject_visible_result_only_first_path_fragment() -> None:
+    package = _literal_sparse_first_path_package(
+        "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
+        "a greenfield proposal result with blockers and evidence for review. Treat "
+        "`Let Representative User Record the Current Status` as the first coding scope and do not advance waves "
+        "until success, blocked-input, replay, and handoff evidence is written and reviewed."
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert "operator next-steps implementation prompt must overlap the accepted first path" in report.issues
+
+
+def test_operator_next_steps_reject_mutation_only_first_path_fragment() -> None:
+    package = _literal_sparse_first_path_package(
+        "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
+        "Review greenfield proposal details. Treat `Let Representative User Record the Current Status` "
+        "as the first coding scope and do not advance waves until success, blocked-input, replay, and handoff "
+        "evidence is written and reviewed."
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert "operator next-steps implementation prompt must overlap the accepted first path" in report.issues
+
+
 def test_field_heavy_state_object_stays_compact_in_workstream_titles_and_completion_metrics() -> None:
     state_object = (
         "Corridor Readiness Record with route segment, requesting organization, receiving site, operating window, "
