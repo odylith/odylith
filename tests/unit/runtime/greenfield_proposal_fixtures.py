@@ -208,6 +208,22 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             "project_slug": "commerce-launch-system",
             "reasoning_mode": "host_model_reasoned",
             "evidence_tier": "user_intent",
+            "product_story": (
+                "Commerce Launch System helps a shopper and commerce operator prove browse-to-checkout recovery "
+                "before production payment readiness is claimed."
+            ),
+            "state_object": (
+                "The commerce checkout record tracks shopper session, cart items, checkout status, payment sandbox "
+                "result, order draft, retry state, and release proof."
+            ),
+            "first_path": (
+                "A shopper opens the storefront, adds one product to the cart, starts checkout, handles one failed "
+                "sandbox payment response, retries checkout, and sees the order draft with recovery status."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when one shopper can browse to cart, enter checkout, recover from one failed "
+                "sandbox payment, and review the order draft without claiming production payment readiness."
+            ),
         },
         "observed_source": {"source_posture": "empty_or_no_app_source"},
         "assumptions": [

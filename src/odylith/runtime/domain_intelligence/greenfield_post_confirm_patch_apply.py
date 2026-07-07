@@ -13,7 +13,6 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifac
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor import (
     apply_artifact_plan_patch_operations,
 )
-from odylith.runtime.domain_intelligence.greenfield_apply_semantic import complete_intent_semantic_facts_from_apply_sources
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
@@ -95,11 +94,10 @@ def _apply_operations(
 def complete_greenfield_semantic_apply_payload(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:
     """Complete proposal semantics and clear poisoned semantic projections."""
 
-    semantic_fact_changed = complete_intent_semantic_facts_from_apply_sources(proposal)
     repaired = ensure_apply_semantic_model(proposal, refresh=True)
     projection_changed = repair_greenfield_semantic_projections(repaired)
     completed = complete_confirmed_proposal(repaired, release_selector=release_selector)
-    if semantic_fact_changed or projection_changed or completed != repaired:
+    if projection_changed or completed != repaired:
         repaired = completed
         repaired = _normalized_proposal(repaired)
         repaired = ensure_apply_semantic_model(repaired, refresh=True)

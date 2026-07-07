@@ -908,8 +908,9 @@ vocabulary, or degraded packages.
   `source_sha256`, reject unverifiable v2 envelopes instead of trusting mirrored
   top-level projection, require nested `intent` ownership for semantic compiler
   certification, remove generated `project_brief` prose as a compiler fallback
-  or legacy-promotion source, and broaden terminal handoff result extraction
-  without accepting person-to-person routing. Exact regressions passed, the
+  or legacy-promotion source, remove all downstream legacy-source mutation of
+  canonical `intent.*`, and broaden terminal handoff result extraction without
+  accepting person-to-person routing. Exact regressions passed, the
   focused authority bundle passed `47` tests, the reviewer-targeted
   product-intent/semantic/slop suite passed `163` tests, and the adversarial
   CLI/live-selection smoke passed `18` tests.
@@ -1122,11 +1123,12 @@ vocabulary, or degraded packages.
       headings, forged JSON sidecars with recomputed product-facts hashes,
       forged in-memory envelopes, unverifiable v2 envelope downgrade attempts,
       missing-intent semantic compiler fallbacks, top-level fact bypasses,
-      generated project-brief legacy promotion attempts, and terminal handoff
-      variants now have focused regressions. Exact regressions passed; the
-      authority bundle passed `47` tests; the reviewer-targeted
-      product-intent/semantic/slop suite passed `163` tests in `131.62s`;
-      py-compile and whitespace checks passed.
+      generated project-brief and downstream legacy promotion attempts, and
+      terminal handoff variants now have focused regressions. Exact regressions
+      passed; the authority bundle passed `47` tests; the reviewer-targeted
+      product-intent/semantic/slop suite passed `163` tests in `136.69s`; the
+      CLI/live-selection smoke passed `21` tests; py-compile and whitespace
+      checks passed.
 - [ ] Unit tests proving `PatchSet` repair applies to `SemanticModelIR` or
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
       rendered artifacts directly. Current checkpoint proves the operation-level

@@ -61,9 +61,10 @@ This section captures synchronized requirement and contract signals derived from
   The semantic compiler also fails closed when nested confirmed
   `intent.first_path` or `intent.proof_boundary` is missing instead of
   certifying generated project brief prose or top-level compatibility fields.
-  Legacy apply-source promotion excludes generated `project_brief.*`, default
-  sources, and synthetic visible-result fallback text while preserving allowed
-  non-default legacy apply sources. Terminal handoff extraction now covers
+  Legacy apply semantic input may still compile compatibility models from
+  downstream fields, but it no longer promotes project-brief, backlog,
+  release-plan, validation, default, or synthetic fallback prose into canonical
+  `intent.*`. Terminal handoff extraction now covers
   `hands off`, `hands over`, `sends`, and `routes` forms only when the
   destination is a product-owned handoff surface. Focused authority proof passed
   `47` tests and the reviewer-targeted product-intent/semantic/slop suite passed

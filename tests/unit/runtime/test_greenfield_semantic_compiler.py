@@ -564,7 +564,7 @@ def test_apply_semantic_visibility_fallback_does_not_leave_trailing_comma_step()
     assert "Start with checkout spine proof and failed-payment recovery" in persisted_input
 
 
-def test_apply_semantic_model_promotes_legacy_sources_into_canonical_intent() -> None:
+def test_apply_semantic_model_does_not_promote_downstream_legacy_sources() -> None:
     proposal = {
         "intent": {
             "title": "Checkout Recovery",
@@ -584,13 +584,14 @@ def test_apply_semantic_model_promotes_legacy_sources_into_canonical_intent() ->
     report = compile_greenfield_semantics(ensured)
     source_paths = ensured["apply_semantic_input"]["source_paths"]
 
-    assert ensured["intent"]["first_path"] == "Start with checkout spine proof and failed-payment recovery."
-    assert ensured["intent"]["proof_boundary"] == "Browser and recovery proof pass."
-    assert "['" not in ensured["intent"]["proof_boundary"]
-    assert source_paths["first_path"] == "intent.first_path"
-    assert source_paths["proof_boundary"] == "intent.proof_boundary"
-    assert report.status == "passed"
-    assert not any(item.code.startswith("intent.") for item in report.counterexamples)
+    assert "first_path" not in ensured["intent"]
+    assert "proof_boundary" not in ensured["intent"]
+    assert source_paths["first_path"] == "backlog.recommended_first_slice"
+    assert source_paths["proof_boundary"] == "release_plan.promotion_criteria"
+    assert "['" not in ensured["apply_semantic_input"]["proof_boundary"]
+    assert report.status == "failed"
+    assert any(item.code == "intent.first_path_missing" for item in report.counterexamples)
+    assert any(item.code == "intent.proof_boundary_missing" for item in report.counterexamples)
 
 
 def test_apply_semantic_model_does_not_promote_generated_project_brief_sources() -> None:
