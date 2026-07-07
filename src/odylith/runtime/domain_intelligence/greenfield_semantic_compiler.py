@@ -656,9 +656,18 @@ def _step_visible_result_confidence(result: str, *, step: str, path_model: First
         clean_first_path_text(path_model.visible_outcome)
         and clean_first_path_text(step).casefold() != clean_first_path_text(path_model.visible_outcome).casefold()
         and actor_signature(step)
+        and not _step_result_preserves_model_visible_outcome(result, path_model=path_model)
     ):
         score -= 0.3
     return score
+
+
+def _step_result_preserves_model_visible_outcome(result: str, *, path_model: FirstPathModel) -> bool:
+    visible = clean_first_path_text(path_model.visible_outcome)
+    candidate = clean_first_path_text(result)
+    if not visible or not candidate:
+        return False
+    return _term_overlap_ratio(visible, candidate) >= 0.8
 
 
 def _terminal_visible_outcome_bonus(value: str) -> float:

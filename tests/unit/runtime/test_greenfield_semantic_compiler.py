@@ -513,6 +513,46 @@ def test_apply_semantic_input_trusts_terminal_first_path_event_visible_result() 
     assert ensured["semantic_model"]["first_path_contract"]["visible_result"] == "published proof"
 
 
+def test_apply_semantic_input_trusts_terminal_published_readiness_proof() -> None:
+    first_path = (
+        "Physicist can submit a scenario, inspect controls and assumptions, execute the simulation, "
+        "review confidence and residuals, route exceptions, and publish readiness proof."
+    )
+    proof_boundary = (
+        "Release 0.0.1 succeeds when a physicist can inspect confidence limits, residuals, "
+        "exceptions, and reproducible readiness proof."
+    )
+    proposal = {
+        "intent": {
+            "title": "Cryogenic Ion Trap Calibration Simulation Review Board",
+            "state_object": (
+                "A cryogenic ion trap calibration scenario record tracks scenario version, control variable, "
+                "error bound, residuals, exception routing, confidence limits, and readiness proof."
+            ),
+            "first_path": first_path,
+            "proof_boundary": proof_boundary,
+            "human_actors": ["Physicist"],
+        },
+    }
+
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof_boundary)
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    ensured = ensure_apply_semantic_model(proposal, refresh=True)
+    contract = ensured["semantic_model"]["first_path_contract"]
+    joined_events = " ".join(str(row["text"]) for row in contract["events"])
+
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.source_path == "first_path.events.6"
+    assert candidate.text == "published readiness proof"
+    assert candidate.confidence >= 0.55
+    assert compiler_input.first_path == first_path
+    assert dict(compiler_input.source_paths)["first_path"] == "intent.first_path"
+    assert contract["visible_result"] == "published readiness proof"
+    assert contract["events"][-1]["text"] == "Physicist publishes readiness proof"
+    assert contract["events"][-1]["visible_result"] is True
+    assert "accepted result for review" not in joined_events
+
+
 def test_apply_semantic_accepts_first_path_event_visible_result_below_proof_boundary_floor(monkeypatch) -> None:
     def semantic_candidate(value: Any, *, proof_boundary: Any = "", **_kwargs: Any) -> GreenfieldSemanticCandidate:
         return GreenfieldSemanticCandidate(
