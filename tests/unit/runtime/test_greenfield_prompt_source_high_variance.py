@@ -3,12 +3,18 @@ from __future__ import annotations
 import json
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
 
 def _guidance_envelope(prompt: str) -> str:
@@ -62,6 +68,74 @@ def test_prompt_source_keeps_domain_expert_modal_clause_out_of_actor_label() -> 
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_semantic_slop_gate_rejects_word_sense_metadata_as_visible_result() -> None:
+    issues = generated_semantic_slop_issues(
+        {
+            "product_view": "The computational biologist can reach an action and as a governed object.",
+            "source_note": "The request uses record both as an action and as a governed object.",
+            "visible_object": "an action and as a governed object, so ownership must be explicit.",
+        }
+    )
+
+    assert sum("word-sense metadata leaked as visible result" in issue for issue in issues) >= 3
+
+
+def test_visible_result_object_ignores_word_sense_metadata_tail() -> None:
+    result = visible_result_object(
+        "A final ranked perturbation interpretation The request uses record both as an action "
+        "and as a governed object, so ownership must be explicit"
+    )
+
+    assert result == "A final ranked perturbation interpretation"
+
+
+def test_visible_result_object_rejects_leading_word_sense_metadata() -> None:
+    assert (
+        visible_result_object("The request uses record both as an action and as a governed object, so ownership must be explicit")
+        == ""
+    )
+    assert (
+        visible_result_object("The request uses record as an action and as a governed object, so ownership must be explicit")
+        == ""
+    )
+    assert visible_result_object("Record is both an action and a governed object, so ownership must be explicit") == ""
+    assert visible_result_object("The visible result is The request uses record both as an action and as a governed object") == ""
+
+
+def test_semantic_compiler_ignores_declared_word_sense_visible_result() -> None:
+    candidate = select_visible_result_candidate(
+        "Computational biologist reviews a final ranked perturbation interpretation",
+        product_view="The visible result is The request uses record both as an action and as a governed object.",
+    )
+
+    assert candidate.source_kind != "intent.product_view.visible_result"
+    assert candidate.text == "a final ranked perturbation interpretation"
+
+
+def test_semantic_compiler_ignores_word_sense_proof_boundary_fallback() -> None:
+    candidate = select_visible_result_candidate(
+        "Computational biologist submits the study inputs",
+        proof_boundary="The request uses record both as an action and as a governed object, so ownership must be explicit.",
+        fallback="the promised user-visible result",
+    )
+
+    assert candidate.source_kind != "proof_boundary"
+    assert "action and as" not in candidate.text
+
+
+def test_evidence_anchors_ignore_word_sense_metadata_requirements() -> None:
+    prompt = (
+        "Create a greenfield proposal for single cell perturbation atlas. The request uses record "
+        "both as an action and as a governed object, so ownership must be explicit. "
+        "A product manager must see actor value, non-goals, and success metrics."
+    )
+
+    anchors = evidence_anchor_phrases(prompt)
+
+    assert "both as an action and as a governed object" not in anchors
+    assert "so ownership must be explicit" not in anchors
+
+
 def test_prompt_source_prioritizes_where_workflow_over_expert_lens_sentence() -> None:
     prompt = (
         "Create a greenfield proposal for maternal health referral priority. Focus on a governed workflow "
@@ -83,11 +157,18 @@ def test_prompt_source_prioritizes_where_workflow_over_expert_lens_sentence() ->
         confirmed_intent=intent,
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
+    outcome = first_path_outcome_phrase(source.first_path, fallback="")
 
     assert source.actor == "care coordination nurse"
     assert source.first_path.startswith("care coordination nurse turn an ambiguous referral case")
+    assert "record both as an action" not in source.first_path
+    assert "as a governed object" not in source.first_path
+    assert "action and as" not in outcome
+    assert "action and as" not in outcome_action_phrase(outcome)
     assert "appointment capacity" in rendered
     assert "architect can see bounded components" not in rendered
+    assert "reach an action and as a governed object" not in rendered
+    assert "see an action and as a governed object" not in rendered
     assert "modal/base-form grammar drift" not in "\n".join(greenfield_quality_issues(proposal))
     assert greenfield_quality_issues(proposal) == []
 

@@ -220,6 +220,32 @@ def contains_requirement_control_clause(value: str) -> bool:
     return _requirement_control_start(value) >= 0
 
 
+def contains_word_sense_metadata_clause(value: str) -> bool:
+    """Return whether text describes prompt word senses instead of product behavior."""
+
+    return _word_sense_metadata_start(value) >= 0
+
+
+def word_sense_metadata_start(value: str) -> int:
+    """Return the start offset for prompt word-sense metadata, or -1."""
+
+    return _word_sense_metadata_start(value)
+
+
+def is_declarative_visible_result_prefix(value: str) -> bool:
+    """Return whether text only introduces a visible result without naming it."""
+
+    text = _clean(value).strip(" .")
+    return bool(
+        re.fullmatch(
+            r"(?:the\s+)?visible\s+result\s+(?:is|will\s+be|should\s+be|must\s+be)?",
+            text,
+            flags=re.IGNORECASE,
+        )
+        or re.search(r"\b(?:is|are|was|were|be|being)$", text, flags=re.IGNORECASE)
+    )
+
+
 def strip_requirement_control_tail(value: str) -> str:
     """Remove a trailing requirement/proof clause accidentally fused into a path event."""
 
@@ -400,8 +426,25 @@ def _words(value: str) -> set[str]:
 
 def _requirement_control_start(value: str) -> int:
     tokens = _word_spans(value)
+    word_sense_start = _word_sense_metadata_start_from_tokens(tokens)
+    if word_sense_start >= 0:
+        return word_sense_start
     for index, token in enumerate(tokens):
-        if _tokens_start_vocabulary_metadata(tokens, index) or _tokens_start_subject_modal_requirement(tokens, index):
+        if (
+            _tokens_start_vocabulary_metadata(tokens, index)
+            or _tokens_start_subject_modal_requirement(tokens, index)
+        ):
+            return token[1]
+    return -1
+
+
+def _word_sense_metadata_start(value: str) -> int:
+    return _word_sense_metadata_start_from_tokens(_word_spans(value))
+
+
+def _word_sense_metadata_start_from_tokens(tokens: Sequence[tuple[str, int]]) -> int:
+    for index, token in enumerate(tokens):
+        if _tokens_start_word_sense_metadata(tokens, index):
             return token[1]
     return -1
 
@@ -411,6 +454,38 @@ def _tokens_start_vocabulary_metadata(tokens: Sequence[tuple[str, int]], index: 
     if not window:
         return False
     return bool(set(window[:5]) & _VOCABULARY_METADATA_TERMS and set(window) & _VOCABULARY_METADATA_ACTIONS)
+
+
+def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: int) -> bool:
+    window = [token for token, _start in tokens[index : index + 14]]
+    if len(window) < 5:
+        return False
+    subject_index = index
+    if tokens[subject_index][0] in {"a", "an", "the", "this", "that"}:
+        subject_index += 1
+    if subject_index + 2 >= len(tokens):
+        return False
+    subject = tokens[subject_index][0]
+    verb = tokens[subject_index + 1][0]
+    tail = [token for token, _start in tokens[subject_index + 2 : subject_index + 14]]
+    if subject in {"instruction", "instructions", "prompt", "request", "sentence"} and verb in {
+        "calls",
+        "describes",
+        "frames",
+        "mentions",
+        "treats",
+        "uses",
+    }:
+        return _word_sense_tail_describes_action_object(tail)
+    if verb in {"is", "are"}:
+        return _word_sense_tail_describes_action_object(tail)
+    return False
+
+
+def _word_sense_tail_describes_action_object(tokens: Sequence[str]) -> bool:
+    if "action" not in tokens or "object" not in tokens:
+        return False
+    return "both" in tokens or sum(1 for token in tokens if token == "as") >= 2
 
 
 def _tokens_start_subject_modal_requirement(tokens: Sequence[tuple[str, int]], index: int) -> bool:
@@ -457,10 +532,13 @@ def _word_spans(value: str) -> list[tuple[str, int]]:
 __all__ = [
     "drop_requirement_control_steps",
     "contains_requirement_control_clause",
+    "contains_word_sense_metadata_clause",
+    "is_declarative_visible_result_prefix",
     "is_operator_review_lens_step",
     "is_requirement_control_step",
     "operator_review_lens_obligations",
     "is_scope_or_deferred_statement",
     "strip_requirement_control_tail",
     "strip_trailing_requirement_control_steps",
+    "word_sense_metadata_start",
 ]

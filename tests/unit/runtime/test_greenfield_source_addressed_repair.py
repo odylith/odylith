@@ -100,3 +100,108 @@ def test_greenfield_quality_gate_allows_source_grounded_control_plane_homonym_on
         for issue in greenfield_quality_issues(leaked)
         if "control-plane term `Atlas`" in issue
     ]
+
+
+def test_greenfield_quality_gate_uses_confirmed_sections_for_atlas_review_homonym() -> None:
+    workstream = "Keep Single Cell Perturbation Atlas Result Record Clear During Atlas Review"
+    proposal = {
+        "write_policy": "confirmed_intent_before_confirmed_create",
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "title": "Single Cell Perturbation Atlas Workspace",
+            "product_story": "Single Cell Perturbation Atlas Workspace helps a computational biologist.",
+            "state_object": "A single cell perturbation atlas result record tracks review status.",
+            "first_path": "Computational biologist can turn a gene perturbation study into a review-ready record.",
+            "internal_systems": [
+                "Single Cell Perturbation Atlas Review Workspace presents current state and next action.",
+            ],
+        },
+        "program": {
+            "blueprint": {"child_workstreams": [workstream]},
+            "waves": [{"workstream_titles": [workstream]}],
+        },
+        "release_plan": {"target_workstream_titles": [workstream]},
+        "backlog": [{"title": workstream}],
+    }
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert not any("control-plane term `Atlas`" in issue for issue in issues)
+
+
+def test_confirmed_homonym_context_still_rejects_ungrounded_atlas_surface_copy() -> None:
+    proposal = {
+        "write_policy": "confirmed_intent_before_confirmed_create",
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "title": "Geologic Atlas Field Mapping Workspace",
+            "product_story": "Geologic Atlas Field Mapping Workspace helps field geologists review map evidence.",
+            "state_object": "A geologic atlas field record tracks map evidence.",
+            "first_path": "Field geologist reviews map evidence before publishing a warning status.",
+            "internal_systems": [
+                "Geologic Atlas Field Mapping Review Workspace presents map evidence.",
+            ],
+        },
+        "backlog": [
+            {
+                "title": "Review Map Evidence",
+                "product_view": "The Atlas diagram shows the generated governance flow.",
+            }
+        ],
+    }
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("control-plane term `Atlas`" in issue for issue in issues)
+
+
+def test_confirmed_homonym_context_rejects_source_laundered_atlas_surface_copy() -> None:
+    proposal = {
+        "write_policy": "confirmed_intent_before_confirmed_create",
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "title": "Geologic Atlas Field Mapping Workspace",
+            "product_story": "The Atlas diagram shows the generated governance flow.",
+            "state_object": "A geologic atlas field record tracks map evidence.",
+            "first_path": "Field geologist reviews map evidence before publishing a warning status.",
+            "internal_systems": [
+                "Geologic Atlas Field Mapping Review Workspace presents map evidence.",
+            ],
+        },
+        "backlog": [
+            {
+                "title": "Review Map Evidence",
+                "product_view": "The Atlas diagram shows the generated governance flow.",
+            }
+        ],
+    }
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("control-plane term `Atlas`" in issue for issue in issues)
+
+
+def test_confirmed_homonym_context_rejects_source_laundered_odylith_atlas_copy() -> None:
+    proposal = {
+        "write_policy": "confirmed_intent_before_confirmed_create",
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "title": "Geologic Atlas Field Mapping Workspace",
+            "product_story": "Odylith Atlas shows the generated governance flow.",
+            "state_object": "A geologic atlas field record tracks map evidence.",
+            "first_path": "Field geologist reviews map evidence before publishing a warning status.",
+            "internal_systems": [
+                "Geologic Atlas Field Mapping Review Workspace presents map evidence.",
+            ],
+        },
+        "backlog": [
+            {
+                "title": "Review Map Evidence",
+                "product_view": "Odylith Atlas shows the generated governance flow.",
+            }
+        ],
+    }
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("control-plane term `Atlas`" in issue for issue in issues)

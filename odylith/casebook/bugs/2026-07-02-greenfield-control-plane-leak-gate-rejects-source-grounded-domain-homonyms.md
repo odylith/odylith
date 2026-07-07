@@ -63,15 +63,42 @@
   passed the source-grounded `Atlas` domain case, the ungrounded Atlas diagram
   rejection case, and the full confirmed-intent recovery suite.
 
+- 2026-07-07 Follow-up Learning: The committed-head installed volume replay
+  reopened the same custody class on `single cell perturbation atlas`. The
+  first blocker was legitimate public product copy containing `Atlas Review`,
+  where the second `Atlas` came from confirmed typed sections rather than the
+  original prompt/title cone. The repair now trusts canonical confirmed product
+  sections for confirmed generated proposals while keeping a hard platform
+  context guard for `Odylith Atlas`, `Atlas diagram`, `Atlas surface`,
+  Mermaid/catalog/dashboard contexts, governance-flow collocations, and
+  control-plane copy. The same replay exposed a second-order slop path: the
+  prompt note `The request uses record both as an action and as a governed
+  object` could leak through evidence anchors and visible-result extraction as
+  `reach an action and as a governed object`. Source repair now classifies
+  word-sense/request-meta clauses as requirement-control metadata, strips them
+  before first-path and visible-result projection, excludes them from evidence
+  anchors, rejects leading metadata and declared visible-result/proof-boundary
+  fallback contamination, and adds a semantic slop tripwire if that phrase
+  family reaches generated artifacts. Focused proof passed 22 affected regressions; exact
+  source-local replay of the single-cell failed prompt committed records with
+  post-confirm manifest passed, issue_count 0, validation passed, 4 Radar
+  records, 3 Registry components, 6 Atlas diagrams, and zero source-record hits
+  for the escaped Atlas/platform and word-sense leak signatures.
+
 - Prevention: Do not use arbitrary top-N source-term caps for semantic leak detection. Prefer structured accepted-intent evidence and keep control-plane leakage rejection tied to whether the term is grounded in user-accepted product meaning.
 
 - Agent Guardrails: When a platform leak gate flags a word that is also ordinary domain vocabulary, first check accepted-intent grounding before adding a term exception or weakening the gate.
 
 - Preflight Checks: Search existing control-plane leakage and domain-term Casebook records; prove both homonym allowance and ungrounded Odylith surface rejection.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_quality_gate_allows_control_plane_homonym_from_accepted_intent and existing control-plane rejection coverage.
+- Regression Tests Added: tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_quality_gate_allows_control_plane_homonym_from_accepted_intent; tests/unit/runtime/test_greenfield_source_addressed_repair.py::test_greenfield_quality_gate_uses_confirmed_sections_for_atlas_review_homonym; tests/unit/runtime/test_greenfield_source_addressed_repair.py::test_confirmed_homonym_context_still_rejects_ungrounded_atlas_surface_copy; tests/unit/runtime/test_greenfield_source_addressed_repair.py::test_confirmed_homonym_context_rejects_source_laundered_atlas_surface_copy; tests/unit/runtime/test_greenfield_prompt_source_high_variance.py::test_visible_result_object_ignores_word_sense_metadata_tail; tests/unit/runtime/test_greenfield_prompt_source_high_variance.py::test_evidence_anchors_ignore_word_sense_metadata_requirements; tests/unit/runtime/test_greenfield_prompt_source_high_variance.py::test_semantic_slop_gate_rejects_word_sense_metadata_as_visible_result.
 
 - Related Incidents/Bugs: CB-215, CB-209, CB-184
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py
+- src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py
+- src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py
+- src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py
+- src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py
+- src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py
 - tests/unit/runtime/test_greenfield_proposals.py

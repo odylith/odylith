@@ -20,8 +20,11 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import lowercase_leading_article
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_declarative_visible_result_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_requirement_control_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_scope_or_deferred_statement
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     action_chain_fragment,
 )
@@ -335,6 +338,10 @@ def _product_result_from_visible_outcome(value: Any) -> str:
     text = clean_first_path_text(value)
     if not text:
         return ""
+    if contains_word_sense_metadata_clause(text):
+        text = clean_first_path_text(strip_requirement_control_tail(text))
+        if not text or is_declarative_visible_result_prefix(text):
+            return ""
     visible_object = visible_result_object(text)
     if _starts_with_connector(visible_object) and _is_visible_object_list_result(text):
         visible_object = text
@@ -356,6 +363,10 @@ def _product_result_from_proof_boundary(value: Any) -> str:
     text = clean_first_path_text(value)
     if not text:
         return ""
+    if contains_word_sense_metadata_clause(text):
+        text = clean_first_path_text(strip_requirement_control_tail(text))
+        if not text or is_declarative_visible_result_prefix(text):
+            return ""
     candidate = visible_result_object(text) or action_chain_fragment(text) or text
     candidate = _strip_proof_leading_clause(candidate)
     candidate = _binary_actor_action_result_object(candidate) or candidate
@@ -380,7 +391,6 @@ def _product_result_from_intent_context(
         candidate = normalize_visible_result_language(state_reference) or state_reference
         return lowercase_leading_article(candidate).strip(" ."), "intent.state_object", (state_text,)
     return "", "", ()
-
 
 def _declared_visible_result(value: Any) -> str:
     text = clean_first_path_text(value)

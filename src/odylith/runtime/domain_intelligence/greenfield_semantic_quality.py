@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import fi
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import material_first_path_action
@@ -458,6 +459,11 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"sentence fragment leaked after understand at {location}")
         if re.search(r"\b(?:reach|use)\s+(?:a|an|the\s+)?(?:reflection|result|summary|view|readout|outcome|consequence)\b", lowered):
             issues.append(f"awkward visible-result action leaked at {location}")
+        if contains_word_sense_metadata_clause(text) or re.search(
+            r"\b(?:(?:reach|see|review|show|use)\s+)?(?:(?:a|an|the)\s+)?action\s+(?:and\s+)?(?:as\s+)?(?:(?:a|an|the)\s+)?(?:governed\s+)?object\b",
+            lowered,
+        ):
+            issues.append(f"word-sense metadata leaked as visible result at {location}")
         if re.search(
             r"\b(?:that|this)\s+(?:path|loop|journey|flow)\s+[–—-][^.]{0,160}\b(?:smallest\s+version\s+of\s+the\s+whole\s+product|working\s+end\s+to\s+end)\b",
             lowered,

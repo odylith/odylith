@@ -21,6 +21,9 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase, lowercase_leading_article
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_declarative_visible_result_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import word_sense_metadata_start
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominal_action_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominalize_leading_result_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_inside_compound_noun
@@ -277,8 +280,30 @@ def _drop_launcher_prefix(value: str) -> str:
         return text
     return tail
 
+def _nominal_result_after_control_strip(value: str) -> str:
+    text = clean_visible_result_phrase(value)
+    if not text or MATERIAL_ACTION_RE.search(text):
+        return ""
+    if is_declarative_visible_result_prefix(text):
+        return ""
+    if not re.match(r"^(?:a|an|the)\s+\S", text, flags=re.IGNORECASE):
+        return ""
+    if len(label_terms(text)) < 3:
+        return ""
+    result = focused_visible_result_object(nominal_visible_result_object(text))
+    return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+
 def visible_result_object(value: str) -> str:
-    text = clean_visible_result_phrase(value) or clean_first_path_text(value)
+    raw_text = clean_first_path_text(value)
+    metadata_start = word_sense_metadata_start(raw_text)
+    if metadata_start == 0:
+        return ""
+    stripped_text = clean_visible_result_phrase(strip_requirement_control_tail(value))
+    if metadata_start > 0 and is_declarative_visible_result_prefix(stripped_text):
+        return ""
+    raw_visible_text = clean_visible_result_phrase(raw_text)
+    control_tail_removed = bool(stripped_text and stripped_text != raw_visible_text)
+    text = stripped_text or raw_text
     display_result = display_carrier_result_object(text, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     if display_result:
         return display_result
@@ -352,6 +377,8 @@ def visible_result_object(value: str) -> str:
             ),
             limit=_VISIBLE_RESULT_OBJECT_LIMIT,
         )
+    if control_tail_removed:
+        return _nominal_result_after_control_strip(stripped_text)
     return ""
 
 def _result_list_capability_fragment(value: str) -> str:

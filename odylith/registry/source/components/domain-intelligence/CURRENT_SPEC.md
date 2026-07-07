@@ -48,6 +48,25 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-07: Hardened confirmed homonym custody and request-metadata stripping in Greenfield post-confirm projection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-216`, `CB-215`; Diagram: D-045)
+  Domain Intelligence now evaluates Odylith surface-name homonyms in confirmed
+  generated proposals against canonical confirmed product sections, not only
+  the raw prompt/title cone, while retaining hard platform-context rejection
+  for `Odylith Atlas`, Atlas diagram/surface/Mermaid/catalog/dashboard
+  contexts, governance-flow copy, and control-plane collocations. The same pass
+  classifies word-sense/request-meta clauses such as "the request uses record
+  both as an action and as a governed object" as requirement-control metadata:
+  first-path projection strips them, evidence-anchor extraction ignores them,
+  visible-result extraction keeps the clean leading nominal result, leading
+  metadata and declared visible-result/proof-boundary metadata are rejected, and
+  the semantic slop gate fails if the leaked phrase family reaches generated
+  artifacts. Focused proof passed 22 affected parser/projection/quality-gate
+  regressions, and exact source-local replay of the escaped single-cell
+  perturbation atlas prompt committed 4 Radar records, 3 Registry components,
+  and 6 Atlas diagrams with post-confirm manifest passed, issue_count 0,
+  validation passed, and zero governed-source hits for the escaped
+  Atlas/platform or word-sense leak signatures.
+
 - 2026-07-07: Tightened Product Intent custody after adversarial source review. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-043)
   Domain Intelligence now treats the product-facts hash as an integrity check,
   not sufficient authority by itself. A structured JSON sidecar can supply

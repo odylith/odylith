@@ -361,7 +361,11 @@ def _control_plane_leak_issues(
 
 
 def _source_grounded_control_contexts(proposal: Mapping[str, Any]) -> dict[str, tuple[frozenset[str], ...]]:
-    source_keys = ("prompt", "source_title", "title", "first_path")
+    source_keys = (
+        ("source_title", *_INTENT_DOMAIN_TERM_KEYS)
+        if _is_confirmed_generated_proposal(proposal)
+        else ("prompt", "source_title", "title", "first_path")
+    )
     contexts: dict[str, list[frozenset[str]]] = {}
     intent = proposal.get("intent")
     if not isinstance(intent, Mapping):
@@ -378,6 +382,8 @@ def _source_grounded_control_contexts(proposal: Mapping[str, Any]) -> dict[str, 
 
 
 def _control_label_is_source_grounded(text: str, *, label: str, contexts: tuple[frozenset[str], ...]) -> bool:
+    if _control_label_has_hard_platform_context(text, label=label):
+        return False
     if not contexts:
         return False
     observed = tuple(context for context in _control_label_contexts(text, label=label) if context)
@@ -407,6 +413,18 @@ def _control_label_contexts(text: str, *, label: str) -> tuple[frozenset[str], .
         )
         contexts.append(context)
     return tuple(contexts)
+
+
+def _control_label_has_hard_platform_context(text: str, *, label: str) -> bool:
+    literal = re.escape(label)
+    hard_patterns = (
+        rf"\bOdylith\s+{literal}\b",
+        rf"\b{literal}\s+(?:Mermaid|surface|surfaces|catalog|dashboard|viewer|render(?:ed|er)?|assets?|source)\b",
+        rf"\b{literal}\s+diagram\b(?=[^.\n]*(?:generated|governance|control[-\s]+plane|Odylith|surface|Mermaid))",
+        rf"\b(?:generated|governance|control[-\s]+plane|Odylith|surface|Mermaid)[^.\n]{{0,80}}\b{literal}\s+diagram\b",
+        rf"\b{literal}\b[^.\n]{{0,80}}\b(?:governance\s+(?:flow|record|records|surface|surfaces)|control[-\s]+plane)\b",
+    )
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in hard_patterns)
 
 
 def _stale_generic_issues(public_leaves: list[tuple[str, str]]) -> list[str]:

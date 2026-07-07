@@ -9,6 +9,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_requirement_control_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -207,6 +208,8 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
         if _meaningful_anchor(normalized):
             rows.append(normalized)
     for sentence in _sentences(value):
+        if contains_word_sense_metadata_clause(sentence):
+            continue
         if not (is_requirement_control_step(sentence) or contains_requirement_control_clause(sentence)):
             continue
         tail = _requirement_tail(sentence)
