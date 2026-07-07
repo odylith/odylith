@@ -3007,6 +3007,19 @@ def test_visible_result_object_accepts_result_bearing_handoff_without_routing_fa
     assert visible_result_object("An operator hands the reviewed permit bundle to the next action queue") == (
         "the permit bundle to the next action queue"
     )
+    assert visible_result_object("An operator hands off the reviewed decision to the next action queue") == (
+        "the decision to the next action queue"
+    )
+    assert visible_result_object("An operator hands over the reviewed decision to the next action queue") == (
+        "the decision to the next action queue"
+    )
+    assert visible_result_object("An operator sends the reviewed scorecard to the next action queue") == (
+        "the scorecard to the next action queue"
+    )
+    assert visible_result_object("An operator routes the reviewed permit bundle to the next action queue") == (
+        "the permit bundle to the next action queue"
+    )
+    assert visible_result_object("An operator sends the reviewed decision to a teammate") == ""
 
 
 def test_workstream_risk_uses_compact_state_label_instead_of_field_list() -> None:

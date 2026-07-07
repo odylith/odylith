@@ -130,8 +130,17 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
         if (
             heading
             and is_confirmed_intent_supporting_section(current)
-            and not explicit_heading
+            and not is_confirmed_intent_ignored_section(heading)
+            and (not explicit_heading or _explicit_markdown_heading_depth(line) > 2)
             and not _supporting_heading_can_reenter_product_truth(line, heading)
+        ):
+            heading = ""
+        if (
+            heading
+            and is_confirmed_intent_ignored_section(current)
+            and explicit_heading
+            and _explicit_markdown_heading_depth(line) > 2
+            and not is_confirmed_intent_ignored_section(heading)
         ):
             heading = ""
         if heading:
@@ -204,6 +213,11 @@ def _explicit_markdown_heading_key(line: str) -> str:
     if not text.startswith("#"):
         return ""
     return confirmed_intent_heading_key(text)
+
+
+def _explicit_markdown_heading_depth(line: str) -> int:
+    match = re.match(r"^(?P<hashes>#{1,6})\s+\S", str(line or "").strip())
+    return len(match.group("hashes")) if match else 0
 
 
 def _looks_like_document_title_heading(line: str) -> bool:

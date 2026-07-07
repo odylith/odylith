@@ -900,6 +900,19 @@ vocabulary, or degraded packages.
   confirmed-intent recovery tests, `203` first-path/projection tests,
   py-compile, and whitespace checks passed. Clean committed-head installed
   proof remains required before release readiness.
+- 2026-07-07 adversarial custody checkpoint: follow-up source review found
+  that typed custody still needed source-byte verification, nested-heading
+  containment, and stricter compiler fact authority. The follow-up fixes block
+  nested supporting/ignored Markdown headings from product-fact re-entry,
+  require sidecar JSON product facts to match adjacent Markdown
+  `source_sha256`, reject unverifiable v2 envelopes instead of trusting mirrored
+  top-level projection, require nested `intent` ownership for semantic compiler
+  certification, remove generated `project_brief` prose as a compiler fallback
+  or legacy-promotion source, and broaden terminal handoff result extraction
+  without accepting person-to-person routing. Exact regressions passed, the
+  focused authority bundle passed `47` tests, the reviewer-targeted
+  product-intent/semantic/slop suite passed `163` tests, and the adversarial
+  CLI/live-selection smoke passed `18` tests.
 
 ## Implementation Slices
 
@@ -1105,6 +1118,15 @@ vocabulary, or degraded packages.
       product-envelope, and metamorphic confirmed-intent tests passed `203`
       tests in `148.23s`; py-compile passed for changed source owners; and
       `git diff --check` passed.
+- [x] Adversarial authority-boundary follow-up proof: nested supporting
+      headings, forged JSON sidecars with recomputed product-facts hashes,
+      forged in-memory envelopes, unverifiable v2 envelope downgrade attempts,
+      missing-intent semantic compiler fallbacks, top-level fact bypasses,
+      generated project-brief legacy promotion attempts, and terminal handoff
+      variants now have focused regressions. Exact regressions passed; the
+      authority bundle passed `47` tests; the reviewer-targeted
+      product-intent/semantic/slop suite passed `163` tests in `131.62s`;
+      py-compile and whitespace checks passed.
 - [ ] Unit tests proving `PatchSet` repair applies to `SemanticModelIR` or
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
       rendered artifacts directly. Current checkpoint proves the operation-level

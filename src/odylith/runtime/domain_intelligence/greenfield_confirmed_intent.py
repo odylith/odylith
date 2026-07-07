@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -51,9 +52,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     is_product_intent_envelope,
-)
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    product_facts_from_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_hash,
@@ -145,16 +143,31 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
             raise ValueError(f"confirmed intent JSON is invalid: {exc}") from exc
-        intent = normalize_confirmed_intent(payload, prompt=prompt, fallback_title=fallback_title)
-        envelope = (
-            _canonicalized_loaded_envelope(payload, intent)
-            if is_product_intent_envelope(payload)
-            else build_product_intent_envelope(
+        verified_markdown = _verified_markdown_source_for_json(source, payload)
+        if verified_markdown:
+            markdown_path, markdown_text = verified_markdown
+            intent = parse_confirmed_intent_text(markdown_text, prompt=prompt, fallback_title=fallback_title)
+            envelope = build_product_intent_envelope(
                 intent,
-                source_text=text,
-                source_path=source,
-                source_format="legacy_json",
+                source_text=markdown_text,
+                source_path=markdown_path,
+                source_format="markdown",
             )
+            return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
+        if is_product_intent_envelope(payload):
+            raise ValueError(
+                "confirmed intent JSON envelope could not be verified against its recorded Markdown source"
+            )
+        intent = normalize_confirmed_intent(
+            _json_projection_payload(payload),
+            prompt=prompt,
+            fallback_title=fallback_title,
+        )
+        envelope = build_product_intent_envelope(
+            intent,
+            source_text=text,
+            source_path=source,
+            source_format="json",
         )
         return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
     intent = parse_confirmed_intent_text(text, prompt=prompt, fallback_title=fallback_title)
@@ -182,10 +195,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         return parse_confirmed_intent_text(value, prompt=prompt, fallback_title=fallback_title)
     if not isinstance(value, Mapping):
         raise ValueError("confirmed intent must be Markdown text or a JSON object")
-    envelope_facts = product_facts_from_envelope(value)
-    if envelope_facts is not None:
-        return normalize_confirmed_intent(envelope_facts, prompt=prompt, fallback_title=fallback_title)
-    payload = dict(value)
+    payload = _json_projection_payload(value) if is_product_intent_envelope(value) else dict(value)
     raw_title = _clean(payload.get("title") or payload.get("product_title") or fallback_title)
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
     title = title_normalization.canonical_title
@@ -261,13 +271,52 @@ def write_structured_confirmed_intent_file(
     return target
 
 
-def _canonicalized_loaded_envelope(payload: Mapping[str, Any], intent: Mapping[str, Any]) -> dict[str, Any]:
-    envelope = dict(payload)
-    envelope["product_facts"] = product_facts_payload(intent)
-    decision_record = dict(envelope.get("decision_record")) if isinstance(envelope.get("decision_record"), Mapping) else {}
-    decision_record[PRODUCT_FACTS_HASH_KEY] = product_facts_hash(envelope["product_facts"])
-    envelope["decision_record"] = decision_record
-    return envelope
+def _verified_markdown_source_for_json(source: Path, payload: object) -> tuple[Path, str] | None:
+    if not is_product_intent_envelope(payload) or not isinstance(payload, Mapping):
+        return None
+    evidence = payload.get("source_evidence")
+    if not isinstance(evidence, Mapping):
+        return None
+    expected_hash = _clean(evidence.get("source_sha256"))
+    if not expected_hash:
+        return None
+    candidates: list[Path] = []
+    source_path = _clean(evidence.get("source_path"))
+    if source_path:
+        candidate = Path(source_path)
+        candidates.append(candidate if candidate.is_absolute() else source.parent / candidate)
+    candidates.extend([source.with_suffix(".md"), source.with_suffix(".markdown")])
+    seen: set[Path] = set()
+    for candidate in candidates:
+        path = candidate.expanduser()
+        if path in seen or not path.is_file():
+            continue
+        seen.add(path)
+        if path.resolve() == source.resolve():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if hashlib.sha256(text.encode("utf-8")).hexdigest() == expected_hash:
+            return path, text
+    return None
+
+
+def _json_projection_payload(payload: object) -> object:
+    if not isinstance(payload, Mapping):
+        return payload
+    result = dict(payload)
+    for key in (
+        "schema_version",
+        "product_facts",
+        "custody_ledger",
+        "source_evidence",
+        "materiality_gate",
+        "decision_record",
+    ):
+        result.pop(key, None)
+    return result
 
 
 def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> dict[str, Any]:

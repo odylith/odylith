@@ -48,6 +48,27 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-07: Tightened Product Intent custody after adversarial source review. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-043)
+  Domain Intelligence now treats the product-facts hash as an integrity check,
+  not sufficient authority by itself. A structured JSON sidecar can supply
+  canonical `product_facts` only when its recorded source hash matches the
+  adjacent confirmed Markdown bytes; unverifiable v2 envelopes now fail closed
+  instead of degrading to forged top-level projection, and generic in-memory
+  normalization strips envelope-only authority fields before recovery.
+  Nested headings inside supporting or ignored sections no longer re-enter
+  product truth unless they match sanctioned supporting evidence cues, so
+  appendices and planning notes cannot overwrite accepted product sections.
+  The semantic compiler also fails closed when nested confirmed
+  `intent.first_path` or `intent.proof_boundary` is missing instead of
+  certifying generated project brief prose or top-level compatibility fields.
+  Legacy apply-source promotion excludes generated `project_brief.*`, default
+  sources, and synthetic visible-result fallback text while preserving allowed
+  non-default legacy apply sources. Terminal handoff extraction now covers
+  `hands off`, `hands over`, `sends`, and `routes` forms only when the
+  destination is a product-owned handoff surface. Focused authority proof passed
+  `47` tests and the reviewer-targeted product-intent/semantic/slop suite passed
+  `163` tests.
+
 - 2026-07-07: Introduced the Product Intent Custody Envelope for confirmed greenfield ingress. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-215`, `CB-220`; Diagrams: D-043, D-045)
   Domain Intelligence now writes and reads confirmed product intent through a
   versioned `ProductIntentEnvelope` v2 with a `CustodyLedger` v1 and a

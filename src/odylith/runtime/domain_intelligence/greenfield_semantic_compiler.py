@@ -231,8 +231,8 @@ def select_visible_result_text(
 def compile_greenfield_semantics(proposal: Mapping[str, Any]) -> GreenfieldSemanticCompilerReport:
     intent = _intent_mapping(proposal)
     semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
-    first_path = _first_nonempty(intent.get("first_path"), _project_brief_value(proposal, "first_path"))
-    proof = _first_nonempty(intent.get("proof_boundary"), _project_brief_value(proposal, "proof"))
+    first_path = _first_nonempty(intent.get("first_path"))
+    proof = _first_nonempty(intent.get("proof_boundary"))
     visible = select_visible_result_candidate(
         first_path,
         proof_boundary=proof,
@@ -240,6 +240,7 @@ def compile_greenfield_semantics(proposal: Mapping[str, Any]) -> GreenfieldSeman
         state_object=intent.get("state_object"),
     )
     counterexamples: list[GreenfieldSemanticCounterexample] = []
+    counterexamples.extend(_intent_fact_counterexamples(first_path=first_path, proof_boundary=proof))
     counterexamples.extend(_first_path_subject_counterexamples(first_path))
     counterexamples.extend(_visible_result_counterexamples(semantic, visible, proof=proof))
     counterexamples.extend(_projection_counterexamples(proposal, visible, proof=proof))
@@ -1027,6 +1028,29 @@ def _first_path_subject_counterexamples(first_path: Any) -> list[GreenfieldSeman
     return []
 
 
+def _intent_fact_counterexamples(*, first_path: str, proof_boundary: str) -> list[GreenfieldSemanticCounterexample]:
+    issues: list[GreenfieldSemanticCounterexample] = []
+    if not clean_first_path_text(first_path):
+        issues.append(
+            _counterexample(
+                code="intent.first_path_missing",
+                path="intent.first_path",
+                message="missing confirmed first-path fact; generated project-brief prose is not product authority",
+                repair_hint="recover first_path from confirmed product intent before semantic compilation",
+            )
+        )
+    if not clean_first_path_text(proof_boundary):
+        issues.append(
+            _counterexample(
+                code="intent.proof_boundary_missing",
+                path="intent.proof_boundary",
+                message="missing confirmed proof-boundary fact; generated project-brief prose is not product authority",
+                repair_hint="recover proof_boundary from confirmed product intent before semantic compilation",
+            )
+        )
+    return issues
+
+
 def _first_path_has_human_actor(value: str) -> bool:
     model = first_path_model(value)
     return any(_actor_text_has_human_signal(actor_signature(step)) for step in model.steps)
@@ -1293,7 +1317,7 @@ def _terms(value: str) -> set[str]:
 
 def _intent_mapping(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return intent if intent else proposal
+    return intent
 
 
 def _project_brief_value(proposal: Mapping[str, Any], key: str) -> str:

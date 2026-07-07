@@ -48,6 +48,8 @@ def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = Fal
     if not refresh and existing_model and existing_input:
         return proposal
     compiler_input = greenfield_apply_semantic_input(proposal)
+    if _complete_canonical_intent_semantics(proposal, compiler_input):
+        compiler_input = greenfield_apply_semantic_input(proposal)
     proposal["apply_semantic_input"] = apply_semantic_input_mapping(compiler_input)
     if not refresh and existing_model:
         return proposal
@@ -68,6 +70,33 @@ def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = Fal
         )
     )
     return proposal
+
+
+def complete_intent_semantic_facts_from_apply_sources(proposal: dict[str, Any]) -> bool:
+    """Promote non-default legacy apply facts into canonical intent before strict compilation."""
+
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    return _complete_canonical_intent_semantics(proposal, compiler_input)
+
+
+def _complete_canonical_intent_semantics(
+    proposal: dict[str, Any],
+    compiler_input: GreenfieldApplySemanticInput,
+) -> bool:
+    intent = proposal.get("intent")
+    if not isinstance(intent, dict):
+        return False
+    sources = dict(compiler_input.source_paths)
+    changed = False
+    if _intent_fact_missing(intent.get("first_path")) and _is_authoritative_legacy_fact_source(sources.get("first_path")):
+        intent["first_path"] = compiler_input.first_path
+        changed = True
+    if _intent_fact_missing(intent.get("proof_boundary")) and _is_authoritative_legacy_fact_source(
+        sources.get("proof_boundary")
+    ):
+        intent["proof_boundary"] = compiler_input.proof_boundary
+        changed = True
+    return changed
 
 
 def apply_semantic_input_mapping(compiler_input: GreenfieldApplySemanticInput) -> dict[str, Any]:
@@ -244,10 +273,32 @@ def _first_text_with_source(
     fallback: tuple[str, str],
 ) -> tuple[str, str]:
     for source, value in candidates:
-        text = clean_text(value)
+        text = _candidate_source_text(value)
         if text:
             return text, source
     return fallback[1], fallback[0]
+
+
+def _candidate_source_text(value: Any) -> str:
+    if not isinstance(value, str):
+        rows = text_values(value)
+        if rows:
+            return clean_text(" ".join(rows))
+    return clean_text(value)
+
+
+def _intent_fact_missing(value: Any) -> bool:
+    text = clean_text(value).casefold().strip(" .")
+    return not text or text in {"the accepted first path", "the promised user-visible result"}
+
+
+def _is_authoritative_legacy_fact_source(value: Any) -> bool:
+    source = clean_text(value).casefold()
+    if not source or source.startswith("default.") or "+semantic_visible_result_fallback" in source:
+        return False
+    if source.startswith("project_brief."):
+        return False
+    return True
 
 
 def _first_path_has_visible_result(value: str, *, proof_boundary: str, product_view: Any = "", state_object: Any = "") -> bool:
@@ -305,6 +356,7 @@ __all__ = [
     "APPLY_SEMANTIC_INPUT_VERSION",
     "GreenfieldApplySemanticInput",
     "apply_semantic_input_mapping",
+    "complete_intent_semantic_facts_from_apply_sources",
     "ensure_apply_semantic_model",
     "greenfield_apply_semantic_input",
 ]

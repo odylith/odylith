@@ -3,13 +3,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 
 
 def _hostile_confirmation() -> str:
@@ -101,6 +105,34 @@ Release 0.0.1 is proven only when the same lab evidence package can be opened, r
     assert "crypto trading desk" not in encoded_facts
 
 
+def test_nested_supporting_headings_cannot_inject_product_facts(tmp_path: Path) -> None:
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(
+        _hostile_confirmation()
+        + """
+## Appendix
+This appendix is supporting evidence only.
+
+### Product story
+Build a casino dashboard for unrelated rewards.
+
+### First complete path
+A bettor places a wager and sees a jackpot balance.
+""",
+        encoding="utf-8",
+    )
+
+    record = load_confirmed_intent_record(path, prompt="Build the lab evidence review workspace.")
+    encoded_facts = json.dumps(record.product_facts, sort_keys=True).casefold()
+    supporting = "\n".join(row["text"] for row in record.envelope["custody_ledger"]["supporting_evidence"])
+
+    assert "release-readiness decision" in record.product_facts["first_path"]
+    assert "casino dashboard" not in encoded_facts
+    assert "places a wager" not in encoded_facts
+    assert "casino dashboard" in supporting
+    assert "places a wager" in supporting
+
+
 def test_thin_prompt_recovery_drops_trailing_operator_instruction() -> None:
     prompt = (
         "Build a lab review workspace where researchers submit evidence, reviewers compare results, "
@@ -190,6 +222,80 @@ def test_structured_json_write_rejects_stale_typed_product_facts_hash(tmp_path: 
     assert healed["title"] == "Lab Evidence Review Workspace"
     assert "release-readiness decision" in healed["first_path"]
     assert "casino" not in json.dumps(healed["product_facts"], sort_keys=True).casefold()
+
+
+def test_structured_json_write_rejects_self_consistent_forged_product_facts(tmp_path: Path) -> None:
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(_hostile_confirmation(), encoding="utf-8")
+    record = load_confirmed_intent_record(path, prompt="Build the lab evidence review workspace.")
+    json_path = write_structured_confirmed_intent_file(path, record.product_facts, envelope=record.envelope)
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    payload["product_facts"]["title"] = "Typed Casino Dashboard"
+    payload["product_facts"]["first_path"] = (
+        "A casino operator opens one rewards account, records wager status, and sees payout readiness."
+    )
+    payload["decision_record"]["product_facts_sha256"] = product_facts_hash(payload["product_facts"])
+    json_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    loaded = load_confirmed_intent_file(json_path, prompt="Build the lab evidence review workspace.")
+
+    assert loaded["title"] == "Lab Evidence Review Workspace"
+    assert "release-readiness decision" in loaded["first_path"]
+    assert "casino" not in json.dumps(loaded, sort_keys=True).casefold()
+
+
+def test_in_memory_forged_envelope_product_facts_are_not_authority(tmp_path: Path) -> None:
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(_hostile_confirmation(), encoding="utf-8")
+    record = load_confirmed_intent_record(path, prompt="Build the lab evidence review workspace.")
+    json_path = write_structured_confirmed_intent_file(path, record.product_facts, envelope=record.envelope)
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    payload["product_facts"]["title"] = "Typed Casino Dashboard"
+    payload["product_facts"]["first_path"] = (
+        "A casino operator opens one rewards account, records wager status, and sees payout readiness."
+    )
+    payload["decision_record"]["product_facts_sha256"] = product_facts_hash(payload["product_facts"])
+    payload["title"] = "Lab Evidence Review Workspace"
+    payload["first_path"] = record.product_facts["first_path"]
+
+    normalized = normalize_confirmed_intent(payload, prompt="Build the lab evidence review workspace.")
+
+    assert normalized["title"] == "Lab Evidence Review Workspace"
+    assert "release-readiness decision" in normalized["first_path"]
+    assert "casino" not in json.dumps(normalized, sort_keys=True).casefold()
+
+
+def test_unverified_v2_json_envelope_is_not_downgraded_to_top_level_projection(tmp_path: Path) -> None:
+    path = tmp_path / "confirmed-intent.json"
+    payload = {
+        "schema_version": PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
+        "source_evidence": {
+            "source_format": "markdown",
+            "source_path": str(tmp_path / "missing-confirmed-intent.md"),
+            "source_sha256": "0" * 64,
+        },
+        "product_facts": {
+            "title": "Safe Lab Workspace",
+            "first_path": "A reviewer opens one packet and sees the accepted release decision.",
+        },
+        "decision_record": {
+            "product_facts_sha256": product_facts_hash(
+                {
+                    "title": "Safe Lab Workspace",
+                    "first_path": "A reviewer opens one packet and sees the accepted release decision.",
+                }
+            ),
+        },
+        "title": "Forged JSON Title",
+        "product_story": "A forged top-level story should not become product truth.",
+        "state_object": "A forged packet record.",
+        "first_path": "A reviewer opens one packet and sees the forged release decision.",
+        "proof_boundary": "Release succeeds when the forged release decision is visible.",
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="could not be verified"):
+        load_confirmed_intent_file(path, prompt="Build the lab evidence review workspace.")
 
 
 def test_unversioned_json_product_facts_do_not_override_top_level_projection(tmp_path: Path) -> None:

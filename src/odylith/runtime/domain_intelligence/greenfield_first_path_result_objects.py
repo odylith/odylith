@@ -21,7 +21,12 @@ def handoff_visible_result_object(value: str) -> str:
     """Return the result object from a reviewed handoff into a product destination."""
 
     text = clean_text(value).strip(" .")
-    match = re.search(r"\bhands?\s+(?P<object>.+?)\s+to\s+(?P<destination>[^.;,]+)$", text, flags=re.IGNORECASE)
+    match = re.search(
+        r"\b(?:hands?\s+off|hands?\s+over|sends?|routes?|forwards?|delivers?|hands?)\s+"
+        r"(?P<object>.+?)\s+to\s+(?P<destination>[^.;,]+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
     if not match:
         return ""
     raw_result_object = clean_text(match.group("object")).strip(" .")
@@ -33,9 +38,9 @@ def handoff_visible_result_object(value: str) -> str:
     object_terms = _terms(result_object)
     raw_object_terms = _terms(raw_result_object)
     destination_terms = _terms(destination)
-    if not object_terms & _HANDOFF_RESULT_OBJECT_TERMS and not (
-        raw_object_terms & _HANDOFF_RESULT_MODIFIER_TERMS and destination_terms & _HANDOFF_DESTINATION_TERMS
-    ):
+    if not destination_terms & _HANDOFF_DESTINATION_TERMS:
+        return ""
+    if not object_terms & _HANDOFF_RESULT_OBJECT_TERMS and not raw_object_terms & _HANDOFF_RESULT_MODIFIER_TERMS:
         return ""
     return f"the {_drop_leading_article(result_object)} to {destination}".strip(" .")
 

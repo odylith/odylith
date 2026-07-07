@@ -78,10 +78,18 @@ def is_product_intent_envelope(value: object) -> bool:
     return isinstance(value, Mapping) and str(value.get("schema_version") or "") == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
 
 
-def product_facts_from_envelope(value: object) -> dict[str, Any] | None:
-    """Extract canonical product facts from a v2 envelope, if present."""
+def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict[str, Any] | None:
+    """Extract canonical product facts from a source-verified v2 envelope."""
 
     if not is_product_intent_envelope(value):
+        return None
+    if not source_text:
+        return None
+    expected_source_hash = _envelope_source_hash(value)
+    if not expected_source_hash:
+        return None
+    actual_source_hash = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest()
+    if actual_source_hash != expected_source_hash:
         return None
     facts = value.get("product_facts")
     if isinstance(facts, Mapping):
@@ -166,6 +174,13 @@ def _envelope_product_facts_hash(value: Mapping[str, Any]) -> str:
     if not isinstance(decision_record, Mapping):
         return ""
     return clean_markdown_text(decision_record.get(PRODUCT_FACTS_HASH_KEY))
+
+
+def _envelope_source_hash(value: Mapping[str, Any]) -> str:
+    evidence = value.get("source_evidence")
+    if not isinstance(evidence, Mapping):
+        return ""
+    return clean_markdown_text(evidence.get("source_sha256"))
 
 
 def _source_spans(sections: Mapping[str, Sequence[str]]) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:

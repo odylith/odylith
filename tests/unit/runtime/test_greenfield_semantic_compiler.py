@@ -214,6 +214,37 @@ def test_semantic_compiler_rejects_object_led_workflow_subjects() -> None:
     assert any(item.code == "first_path.non_human_workflow_subject" for item in report.counterexamples)
 
 
+def test_semantic_compiler_fails_closed_when_intent_first_path_is_missing() -> None:
+    report = compile_greenfield_semantics(
+        {
+            "intent": {
+                "title": "Packet Desk",
+                "proof_boundary": "Release succeeds when one packet is reviewable.",
+            },
+            "project_brief": {"first_path": "A reviewer opens a packet and sees the packet decision."},
+            "semantic_model": {"first_path_contract": {"visible_result": "the packet decision"}},
+        }
+    )
+
+    assert report.status == "failed"
+    assert report.visible_result.source_path != "project_brief.first_path"
+    assert any(item.code == "intent.first_path_missing" for item in report.counterexamples)
+
+
+def test_semantic_compiler_requires_nested_intent_facts() -> None:
+    report = compile_greenfield_semantics(
+        {
+            "first_path": "A reviewer opens one packet and sees the decision.",
+            "proof_boundary": "Release succeeds when the decision is visible.",
+            "semantic_model": {"first_path_contract": {"visible_result": "the decision"}},
+        }
+    )
+
+    assert report.status == "failed"
+    assert any(item.code == "intent.first_path_missing" for item in report.counterexamples)
+    assert any(item.code == "intent.proof_boundary_missing" for item in report.counterexamples)
+
+
 def test_semantic_compiler_prioritizes_terminal_first_path_result_over_long_proof_result() -> None:
     first_path = (
         "The home cook picks a recipe, the controller validates that ingredients are staged and sensors are live, "
@@ -531,6 +562,58 @@ def test_apply_semantic_visibility_fallback_does_not_leave_trailing_comma_step()
     assert "recovery," not in first_path
     assert ",. Show" not in persisted_input
     assert "Start with checkout spine proof and failed-payment recovery" in persisted_input
+
+
+def test_apply_semantic_model_promotes_legacy_sources_into_canonical_intent() -> None:
+    proposal = {
+        "intent": {
+            "title": "Checkout Recovery",
+            "state_object": "Checkout recovery record",
+        },
+        "release_plan": {
+            "promotion_criteria": ["Browser and recovery proof pass."],
+        },
+        "backlog": [
+            {
+                "recommended_first_slice": "Start with checkout spine proof and failed-payment recovery.",
+            }
+        ],
+    }
+
+    ensured = ensure_apply_semantic_model(proposal, refresh=True)
+    report = compile_greenfield_semantics(ensured)
+    source_paths = ensured["apply_semantic_input"]["source_paths"]
+
+    assert ensured["intent"]["first_path"] == "Start with checkout spine proof and failed-payment recovery."
+    assert ensured["intent"]["proof_boundary"] == "Browser and recovery proof pass."
+    assert "['" not in ensured["intent"]["proof_boundary"]
+    assert source_paths["first_path"] == "intent.first_path"
+    assert source_paths["proof_boundary"] == "intent.proof_boundary"
+    assert report.status == "passed"
+    assert not any(item.code.startswith("intent.") for item in report.counterexamples)
+
+
+def test_apply_semantic_model_does_not_promote_generated_project_brief_sources() -> None:
+    proposal = {
+        "intent": {
+            "title": "Packet Desk",
+            "state_object": "Review packet",
+        },
+        "project_brief": {
+            "first_path": "A reviewer opens one packet and compares the evidence.",
+            "proof": "Release succeeds when the packet decision is visible.",
+        },
+    }
+
+    ensured = ensure_apply_semantic_model(proposal, refresh=True)
+    report = compile_greenfield_semantics(ensured)
+
+    assert "first_path" not in ensured["intent"]
+    assert "proof_boundary" not in ensured["intent"]
+    assert ensured["apply_semantic_input"]["source_paths"]["first_path"].startswith("project_brief.")
+    assert report.status == "failed"
+    assert any(item.code == "intent.first_path_missing" for item in report.counterexamples)
+    assert any(item.code == "intent.proof_boundary_missing" for item in report.counterexamples)
 
 
 def test_apply_semantic_input_is_persisted_when_semantic_model_already_exists() -> None:

@@ -47,6 +47,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligen
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import complete_semantic_model as _complete_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import preflight_issues as _preflight_issues
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import complete_intent_semantic_facts_from_apply_sources
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_projection import (
     refresh_confirmed_diagram_projection as _refresh_confirmed_diagram_projection,
 )
@@ -112,6 +113,7 @@ def greenfield_repair_until_clean(
     for _pass in range(_MAX_COMPLETION_PASSES):
         changed = False
         changed |= repair_project_title(payload)
+        changed |= complete_intent_semantic_facts_from_apply_sources(payload)
         changed |= _complete_project_posture(payload)
         changed |= complete_project_intelligence(
             payload,
