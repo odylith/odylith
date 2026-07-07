@@ -61,11 +61,11 @@ This section captures synchronized requirement and contract signals derived from
   metadata and declared visible-result/proof-boundary metadata are rejected, and
   the semantic slop gate fails if the leaked phrase family reaches generated
   artifacts. Focused proof passed 22 affected parser/projection/quality-gate
-  regressions, and exact source-local replay of the escaped single-cell
-  perturbation atlas prompt committed 4 Radar records, 3 Registry components,
-  and 6 Atlas diagrams with post-confirm manifest passed, issue_count 0,
-  validation passed, and zero governed-source hits for the escaped
-  Atlas/platform or word-sense leak signatures.
+  regressions, and exact source-local replay of the escaped scientific Atlas
+  homonym prompt committed 4 Radar records, 3 Registry components, and 6 Atlas
+  diagrams with post-confirm manifest passed, issue_count 0, validation passed,
+  and zero governed-source hits for the escaped Atlas/platform or word-sense
+  leak signatures.
 
 - 2026-07-07: Tightened Product Intent custody after adversarial source review. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-043)
   Domain Intelligence now treats the product-facts hash as an integrity check,

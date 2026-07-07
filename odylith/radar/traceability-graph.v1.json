@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "be4a7cd98b18be27e50f3ff3491f1368f2b1ce3b625ba521b92574b45473d2aa",
+    "digest": "6d401b7e2f7bcd8584cba8cd7f2237162985ace8aabc63b9605d4df86d7b7b72",
     "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -24738,7 +24738,7 @@
       "category": "topology_conflict",
       "message": "B-142: autofix skipped `related_diagram_ids` due to metadata conflict",
       "idea_id": "B-142",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023,D-043,D-045,D-046'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023,D-043,D-045,D-046,D-047'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
@@ -24789,5 +24789,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-07-05 20:42:16Z"
+  "generated_utc": "2026-07-07 10:42:23Z"
 }

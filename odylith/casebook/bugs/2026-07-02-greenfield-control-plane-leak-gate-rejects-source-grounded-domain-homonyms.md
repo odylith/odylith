@@ -85,6 +85,16 @@
   records, 3 Registry components, 6 Atlas diagrams, and zero source-record hits
   for the escaped Atlas/platform and word-sense leak signatures.
 
+- 2026-07-07 Installed Proof Learning: The first fresh installed replay after
+  the source fix passed post-confirm creation and scored all release-quality
+  dimensions at 10/10, but failed the platform readback leakage proof because
+  the Domain Intelligence component spec repeated the exact replay domain
+  phrase. Component specs ship with the platform and are scanned as protected
+  platform custody, so concrete replay vocabulary belongs in Casebook evidence
+  or proof artifacts, not public component specs. The repair made the component
+  spec generic and added a platform-source regression for the recent replay
+  domain phrase before rebuilding the local dist.
+
 - Prevention: Do not use arbitrary top-N source-term caps for semantic leak detection. Prefer structured accepted-intent evidence and keep control-plane leakage rejection tied to whether the term is grounded in user-accepted product meaning.
 
 - Agent Guardrails: When a platform leak gate flags a word that is also ordinary domain vocabulary, first check accepted-intent grounding before adding a term exception or weakening the gate.

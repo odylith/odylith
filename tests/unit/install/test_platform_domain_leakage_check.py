@@ -435,6 +435,12 @@ def test_current_platform_source_does_not_carry_historical_conflict_domain_phras
     assert leakage.scan_repo(repo_root, terms=("conflict of interest",)) == ()
 
 
+def test_current_platform_source_does_not_carry_recent_replay_domain_phrase() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    assert leakage.scan_repo(repo_root, terms=("single cell perturbation",)) == ()
+
+
 def test_scan_repo_allows_fixture_terms_in_governance_evidence(tmp_path: Path) -> None:
     evidence_file = tmp_path / "odylith" / "casebook" / "bugs" / "repro.md"
     evidence_file.parent.mkdir(parents=True)
