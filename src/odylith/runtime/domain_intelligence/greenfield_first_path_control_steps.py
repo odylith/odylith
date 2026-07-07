@@ -40,7 +40,7 @@ _GOVERNANCE_DELIVERY_TERMS = frozenset(
         "standard",
     }
 )
-_REQUEST_CONTROL_TERMS = frozenset({"instruction", "instructions", "prompt", "request", "sentence"})
+_REQUEST_CONTROL_TERMS = frozenset({"instruction", "instructions", "prompt", "request"})
 _OUTPUT_CONTROL_TERMS = frozenset({"artifact", "artifacts", "content", "copy", "output", "outputs", "surface", "surfaces"})
 _QUALITY_CONTROL_TERMS = frozenset(
     {
@@ -468,7 +468,7 @@ def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: 
     subject = tokens[subject_index][0]
     verb = tokens[subject_index + 1][0]
     tail = [token for token, _start in tokens[subject_index + 2 : subject_index + 14]]
-    if subject in {"instruction", "instructions", "prompt", "request", "sentence"} and verb in {
+    if subject in {"instruction", "instructions", "prompt", "request"} and verb in {
         "calls",
         "describes",
         "frames",
@@ -476,47 +476,88 @@ def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: 
         "treats",
         "uses",
     }:
-        return _word_sense_tail_describes_action_object(tail)
+        return _word_sense_tail_describes_metadata(tail)
+    if subject == "sentence" and verb in {"calls", "describes", "frames", "mentions", "treats", "uses"}:
+        return _word_sense_tail_describes_metadata(tail) and _word_sense_tail_has_control_custody(tail)
     if verb in {"is", "are"}:
-        return _word_sense_tail_describes_action_object(tail)
+        return _word_sense_tail_describes_metadata(tail) and _word_sense_tail_has_control_custody(tail)
     return False
 
 
-_WORD_SENSE_ACTION_TERMS = frozenset(
+_WORD_SENSE_DESCRIPTOR_TERMS = frozenset(
     {
         "act",
         "acts",
         "action",
         "actions",
-        "operation",
-        "operations",
-        "verb",
-        "verbs",
-    }
-)
-_WORD_SENSE_OBJECT_TERMS = frozenset(
-    {
+        "adjective",
+        "adjectives",
+        "adverb",
+        "adverbs",
         "artifact",
         "artifacts",
         "entity",
         "entities",
+        "gerund",
+        "gerunds",
+        "label",
+        "labels",
+        "name",
+        "names",
         "noun",
         "nouns",
         "object",
         "objects",
+        "operation",
+        "operations",
+        "participle",
+        "participles",
+        "predicate",
+        "predicates",
         "record",
         "records",
+        "subject",
+        "subjects",
+        "term",
+        "terms",
+        "verb",
+        "verbs",
+        "word",
+        "words",
+    }
+)
+_WORD_SENSE_CONTROL_CUSTODY_TERMS = frozenset(
+    {
+        "ambiguity",
+        "ambiguous",
+        "custody",
+        "explicit",
+        "governance",
+        "governed",
+        "ownership",
+        "owned",
     }
 )
 
 
-def _word_sense_tail_describes_action_object(tokens: Sequence[str]) -> bool:
+def _word_sense_tail_describes_metadata(tokens: Sequence[str]) -> bool:
     token_set = set(tokens)
-    if not (token_set & _WORD_SENSE_ACTION_TERMS and token_set & _WORD_SENSE_OBJECT_TERMS):
+    if not ("both" in token_set or sum(1 for token in tokens if token == "as") >= 2 or ("as" in token_set and "and" in token_set)):
         return False
-    return "both" in token_set or sum(1 for token in tokens if token == "as") >= 2 or (
-        "as" in token_set and "and" in token_set
-    )
+    descriptor_tokens = _word_sense_descriptor_tail(tokens)
+    return len({token for token in descriptor_tokens if token in _WORD_SENSE_DESCRIPTOR_TERMS}) >= 2
+
+
+def _word_sense_tail_has_control_custody(tokens: Sequence[str]) -> bool:
+    return bool(set(tokens) & _WORD_SENSE_CONTROL_CUSTODY_TERMS)
+
+
+def _word_sense_descriptor_tail(tokens: Sequence[str]) -> Sequence[str]:
+    if "as" in tokens:
+        return tokens[tokens.index("as") + 1 :]
+    if "both" in tokens:
+        return tokens[tokens.index("both") + 1 :]
+    return tokens
 
 
 def _tokens_start_subject_modal_requirement(tokens: Sequence[tuple[str, int]], index: int) -> bool:

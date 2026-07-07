@@ -459,9 +459,26 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"sentence fragment leaked after understand at {location}")
         if re.search(r"\b(?:reach|use)\s+(?:a|an|the\s+)?(?:reflection|result|summary|view|readout|outcome|consequence)\b", lowered):
             issues.append(f"awkward visible-result action leaked at {location}")
+        word_sense_descriptor = (
+            r"(?:act|action|adjective|adverb|artifact|entity|gerund|label|name|noun|object|"
+            r"operation|participle|predicate|record|subject|term|verb|word)s?"
+        )
+        word_sense_article = r"(?:(?:a|an|the)\s+)?"
         if contains_word_sense_metadata_clause(text) or re.search(
-            r"\b(?:(?:reach|see|review|show|use)\s+)?(?:(?:a|an|the)\s+)?(?:act|action|operation|verb)s?\s+(?:and\s+)?(?:as\s+)?(?:(?:a|an|the)\s+)?(?:governed\s+)?(?:artifact|entity|noun|object|record)s?\b",
+            rf"\b(?:reach|see|review|show|use)\s+{word_sense_article}{word_sense_descriptor}\s+"
+            rf"(?:and\s+)?(?:as\s+)?{word_sense_article}(?:governed\s+)?{word_sense_descriptor}\b",
             lowered,
+        ) or re.search(
+            rf"\b{word_sense_article}{word_sense_descriptor}\s+(?:and\s+)?(?:as\s+)?"
+            rf"{word_sense_article}governed\s+{word_sense_descriptor}\b",
+            lowered,
+        ) or (
+            re.search(
+                rf"\b{word_sense_article}{word_sense_descriptor}\s+(?:and\s+)?(?:as\s+)?"
+                rf"{word_sense_article}{word_sense_descriptor}\b",
+                lowered,
+            )
+            and re.search(r"\b(?:ownership|custody)\b", lowered)
         ):
             issues.append(f"word-sense metadata leaked as visible result at {location}")
         if re.search(

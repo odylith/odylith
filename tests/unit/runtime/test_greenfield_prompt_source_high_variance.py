@@ -4,6 +4,7 @@ import json
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
@@ -72,13 +73,21 @@ def test_semantic_slop_gate_rejects_word_sense_metadata_as_visible_result() -> N
     issues = generated_semantic_slop_issues(
         {
             "product_view": "The computational biologist can reach an action and as a governed object.",
+            "release_note": "The reviewer can reach a noun and a governed object.",
             "registry_note": "The analyst can reach a verb and a governed object.",
             "source_note": "The request uses record both as an action and as a governed object.",
             "visible_object": "an action and as a governed object, so ownership must be explicit.",
         }
     )
 
-    assert sum("word-sense metadata leaked as visible result" in issue for issue in issues) >= 4
+    assert sum("word-sense metadata leaked as visible result" in issue for issue in issues) >= 5
+
+
+def test_word_sense_metadata_does_not_reject_grammar_product_language() -> None:
+    text = "The sentence treats record as a noun and verb in the lesson."
+
+    assert not contains_word_sense_metadata_clause(text)
+    assert generated_semantic_slop_issues({"lesson_copy": text}) == []
 
 
 def test_visible_result_object_ignores_word_sense_metadata_tail() -> None:
@@ -104,7 +113,12 @@ def test_visible_result_object_rejects_leading_word_sense_metadata() -> None:
         visible_result_object("The request uses record as both a verb and a governed object, so ownership must be explicit")
         == ""
     )
+    assert (
+        visible_result_object("The request uses record as both a noun and a governed object, so ownership must be explicit")
+        == ""
+    )
     assert visible_result_object("Record is both a verb and a governed object, so ownership must be explicit") == ""
+    assert visible_result_object("Record is both a noun and a governed object, so ownership must be explicit") == ""
     assert visible_result_object("The visible result is The request uses record both as an action and as a governed object") == ""
 
 
@@ -130,14 +144,27 @@ def test_semantic_compiler_ignores_word_sense_proof_boundary_fallback() -> None:
 
 
 def test_prompt_source_rejects_synonym_word_sense_metadata_escape() -> None:
+    _assert_prompt_word_sense_phrase_is_metadata(
+        "The request uses record as both a verb and a governed object, so ownership must be explicit.",
+        "verb and a governed object",
+    )
+
+
+def test_prompt_source_rejects_noun_object_word_sense_metadata_escape() -> None:
+    _assert_prompt_word_sense_phrase_is_metadata(
+        "The request uses record as both a noun and a governed object, so ownership must be explicit.",
+        "noun and a governed object",
+    )
+
+
+def _assert_prompt_word_sense_phrase_is_metadata(control_sentence: str, leaked_phrase: str) -> None:
     prompt = (
         "Create a greenfield proposal for pathology slide discrepancy board. Focus on a governed workflow where the "
         "pathology quality lead turns an ambiguous slide discrepancy case into a review-ready record using stain "
         "quality metrics, scanner metadata, pathologist annotations, specimen custody, explicit expert review, "
-        "auditable decision ledger, and a final discrepancy resolution recommendation. The request uses record as both "
-        "a verb and a governed object, so ownership must be explicit. An engineer must see implementable prompts, data "
-        "contracts, validations, and error states. The post-confirm create must finish all project and governance "
-        "artifacts under the standard budget."
+        f"auditable decision ledger, and a final discrepancy resolution recommendation. {control_sentence} "
+        "An engineer must see implementable prompts, data contracts, validations, and error states. The post-confirm "
+        "create must finish all project and governance artifacts under the standard budget."
     )
 
     source = prompt_intent_source(prompt)
@@ -151,10 +178,10 @@ def test_prompt_source_rejects_synonym_word_sense_metadata_escape() -> None:
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
-    assert "verb and a governed object" not in source.first_path.casefold()
-    assert "verb and a governed object" not in outcome.casefold()
-    assert "verb and a governed object" not in outcome_action_phrase(outcome).casefold()
-    assert "verb and a governed object" not in rendered
+    assert leaked_phrase not in source.first_path.casefold()
+    assert leaked_phrase not in outcome.casefold()
+    assert leaked_phrase not in outcome_action_phrase(outcome).casefold()
+    assert leaked_phrase not in rendered
     assert "word-sense metadata leaked" not in "\n".join(generated_semantic_slop_issues(proposal))
     assert greenfield_quality_issues(proposal) == []
 
