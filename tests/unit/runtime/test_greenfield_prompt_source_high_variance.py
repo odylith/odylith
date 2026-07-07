@@ -264,8 +264,35 @@ def test_prompt_source_preserves_request_framed_product_subjects_with_descriptor
         assert "the request says" not in source.first_path.casefold()
         assert "the request says" not in rendered
         assert "ownership must be explicit" not in rendered
+        assert subject in rendered or subject in source.first_path.casefold()
         assert "english grammar" in rendered or "grammar ambiguity" in rendered
         assert "noun and a governed object" not in semantic_visible_result
+        assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_preserves_sparse_request_framed_product_subjects() -> None:
+    for subject in ("record lesson", "ownership report"):
+        prompt = (
+            "Create a greenfield proposal for grammar lesson. The request says the "
+            f"{subject} shows record as both a noun and a governed object in English grammar."
+        )
+
+        source = prompt_intent_source(prompt)
+        proposal = build_confirmed_greenfield_proposal(
+            prompt=prompt,
+            title=source.title,
+            observed_source={},
+            release_selector="0.0.1",
+            confirmed_intent=parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt),
+        )
+        rendered = json.dumps(proposal, sort_keys=True).casefold()
+        semantic_visible_result = proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
+
+        assert "the request says" not in source.first_path.casefold()
+        assert "the request says" not in rendered
+        assert subject in source.first_path.casefold() or subject in rendered
+        assert "noun and a governed object" not in semantic_visible_result
+        assert "governed object in english grammar" not in rendered
         assert greenfield_quality_issues(proposal) == []
 
 
