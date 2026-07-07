@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -87,7 +88,9 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Proof boundary" in output
     assert "Next step" in output
     assert "- `Confirm`: if this interpretation is right" in output
+    assert "compile the ProductCreateTransaction" in output
     assert "- `Edit`: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
+    assert "rebuild the transaction" in output
     assert "- `Reject`: if this is not the intended product" in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
@@ -95,9 +98,13 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "No files changed." not in output
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     assert "greenfield create --repo-root ." in output
+    assert "greenfield compile-transaction --repo-root ." in output
     assert "--confirm" in output
-    assert "Confirmed CLI after confirmation" in output
+    assert "Confirmed CLI after confirmation" not in output
+    assert "Commit transaction after hash confirmation" in output
     assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
+    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
+    assert "--transaction-hash <hash>" in output
     assert "дж" not in output
     assert "soн" not in output
     assert "..." not in output
@@ -177,7 +184,7 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert rc == 0
     output = capsys.readouterr().out
     assert "Odylith greenfield proposal: Municipal Permit Review Workspace" in output
-    assert "No files changed" in output
+    assert "No governed records changed" in output
     assert "- governed proposal: built from confirmed intent, normalized, validated" in output
     assert "- mode: host_reasoned_greenfield_proposal" in output
     assert "Project requirements" in output
@@ -185,8 +192,11 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Backlog proposal" in output
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
+    assert "ProductCreateTransaction" in output
+    assert "compile-transaction" in output
     assert "greenfield create --repo-root ." in output
-    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
+    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
+    assert "--transaction-hash <hash>" in output
     assert "internal apply payload" not in output
     assert "active-proposal.v1.json" not in output
     assert "host_instruction" not in output
@@ -238,8 +248,10 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Backlog proposal" in output
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
+    assert "ProductCreateTransaction" in output
+    assert "compile-transaction" in output
     assert "odylith greenfield create --repo-root ." in output
-    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
+    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
     assert "--confirm" in output
     assert "internal apply payload" not in output
     assert ".odylith/runtime/greenfield/active-proposal.v1.json" not in output
@@ -500,8 +512,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         assert diagram["render_source_fingerprint"]
 
 
-def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monkeypatch, capsys) -> None:
-    _write_confirmed_intent(tmp_path)
+def _compiled_transaction_for_cli(tmp_path: Path):
     proposal = {
         "intent": {"title": "Municipal Permit Review Workspace"},
         "backlog": [{"title": "Prove permit review path"}],
@@ -511,6 +522,8 @@ def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monk
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
+        rendered_atlas_sources={"odylith/atlas/source/permit-flow.mmd": "flowchart TD\n"},
+        component_registry_preview=({"component_id": "permit-file-registry"},),
         backlog_result={
             "created": [{"title": "Prove permit review path", "idea_id": "B-001"}],
             "idea_files": {},
@@ -531,6 +544,12 @@ def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monk
             "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
         },
     )
+    return proposal, transaction
+
+
+def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monkeypatch, capsys) -> None:
+    _write_confirmed_intent(tmp_path)
+    proposal, transaction = _compiled_transaction_for_cli(tmp_path)
     calls: list[tuple[str, dict[str, object]]] = []
 
     def fake_build_greenfield_proposal(**kwargs):
@@ -590,6 +609,165 @@ def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monk
     assert calls[2][1]["confirm"] is True
     assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+
+
+def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _write_confirmed_intent(tmp_path)
+    proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_build_greenfield_proposal(**kwargs):
+        calls.append(("build", dict(kwargs)))
+        return proposal
+
+    def fake_compile(**kwargs):
+        calls.append(("compile", dict(kwargs)))
+        return transaction
+
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", fake_build_greenfield_proposal)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", fake_compile)
+
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--output",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0
+    assert [name for name, _call in calls] == ["build", "compile"]
+    assert calls[0][1]["require_completion_ready"] is False
+    assert calls[1][1]["proposal_ready"] is True
+    assert "ProductCreateTransaction ready" in output
+    assert transaction.transaction_hash in output
+    assert "- Confirm: commit this validated package" in output
+    assert "- Edit: treat edits as new evidence" in output
+    assert "- Reject: stop here with no governed records written" in output
+    assert "--transaction-file" in output
+    assert "--transaction-hash" in output
+    assert transaction_path.is_file()
+    saved = json.loads(transaction_path.read_text(encoding="utf-8"))
+    assert saved["transaction_hash"] == transaction.transaction_hash
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+
+
+def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _write_confirmed_intent(tmp_path)
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True, exist_ok=True)
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("transaction-file create must not build, repair, or compile")
+
+    def fake_commit(**kwargs):
+        calls.append(("commit", dict(kwargs)))
+        assert kwargs["transaction"].transaction_hash == transaction.transaction_hash
+        return {
+            "mode": "applied",
+            "validation_gate": transaction.validation_gate,
+            "backlog": [],
+            "components": [],
+            "diagrams": [],
+            "product_create_transaction": transaction.summary(),
+            "post_confirm_quality_manifest": {
+                "status": "passed",
+                "validation_status": "passed",
+                "write_transaction": {
+                    "status": "committed",
+                    "commit_only": True,
+                    "product_create_transaction_hash": transaction.transaction_hash,
+                },
+            },
+        }
+
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", fake_commit)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            transaction.transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert [name for name, _call in calls] == ["commit"]
+    assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
+    assert payload["product_create_transaction"]["verified"] is True
+    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+
+
+def test_greenfield_create_cli_requires_visible_transaction_hash(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True, exist_ok=True)
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("transaction create without --transaction-hash must fail before commit")
+
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "requires --transaction-hash" in payload["error"]
 
 
 def test_greenfield_create_cli_completes_privacy_export_lifecycle_end_to_end(tmp_path, monkeypatch, capsys) -> None:

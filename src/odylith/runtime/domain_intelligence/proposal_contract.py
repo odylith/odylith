@@ -101,22 +101,25 @@ def build_proposal_contract() -> dict[str, Any]:
         ],
         "post_confirmation_handoff": {
             "complete_authoring_surface": True,
-            "intent_confirmation_authorizes_apply_attempt": True,
+            "intent_confirmation_authorizes_apply_attempt": False,
+            "confirmation_authority": "ProductCreateTransaction hash",
             "contract_use": [
-                "Use greenfield create --confirm as the normal post-confirmation path; it owns the bounded, provider-free post-confirm repair loop before the final manifest/result.",
-                "Let Odylith normalize the confirmed Markdown into structured runtime data; use --confirm-intent --format json only when an explicit audit artifact is requested.",
+                "Use greenfield compile-transaction after Product Intent Confirmation; it owns proposal construction, repair, validation, artifact compilation, quality gates, and transaction hashing before records can be confirmed.",
+                "Use greenfield create --transaction-file --transaction-hash --confirm only to verify and commit the already compiled ProductCreateTransaction.",
+                "Let Odylith treat edited confirmation Markdown as new evidence that rebuilds the transaction; do not trust edited Markdown as product truth.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
             ],
             "forbidden_host_steps": [
                 "Do not search src/odylith, .odylith, odylith/skills, or installed bundle files for greenfield schema after intent confirmation.",
                 "Do not create a proposal by copying local examples or template fixtures.",
                 "Do not ask the operator to inspect proposal JSON as the normal approval step.",
-                "Do not write governed records unless confirmed create passes deterministic validation.",
+                "Do not write governed records unless a verified ProductCreateTransaction is ready to commit.",
             ],
             "allowed_host_steps": [
-                "Run greenfield create --confirm from the confirmed product intent and observed source posture.",
+                "Run greenfield compile-transaction from the confirmed product intent and observed source posture.",
+                "Confirm by passing the compiled transaction file or JSON plus its hash to greenfield create --confirm.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
-                "Let Odylith build and repair the governed proposal internally; the confirmed create command is the validation and final-manifest gate.",
+                "Let Odylith build and repair the governed package before confirmation; the confirmed create command is the hash verification and commit boundary.",
                 "Surface only the human-readable created-record summary or the validation issues.",
             ],
             "canonical_files": [
@@ -127,12 +130,14 @@ def build_proposal_contract() -> dict[str, Any]:
                 }
             ],
             "canonical_commands": [
-                "odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1",
-                "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
+                "odylith greenfield compile-transaction --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1",
+                "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
+                "odylith greenfield compile-transaction --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release 0.0.1",
             ],
             "failure_policy": [
-                "If final validation rejects the proposal after the bounded, provider-free post-confirm repair loop, do not write records; summarize the blocking issues in product language.",
-                "If the operator explicitly asks for a JSON audit artifact, print it; otherwise keep structured proposal data internal.",
+                "If transaction compilation or quality gates fail, do not offer confirmation yet; summarize the blocking issues in product language.",
+                "If confirmed create rejects the transaction hash, report the mismatch and write no records.",
+                "If the operator explicitly asks for a JSON audit artifact, print the transaction payload; otherwise keep structured proposal data internal.",
             ],
         },
         "minimum_content": {

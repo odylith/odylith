@@ -118,10 +118,11 @@ Visible format contract
 Original user intent
 {prompt}
 Next step
-- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm.
+- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, compile the ProductCreateTransaction, then commit the matching hash.
 - Edit: if the product story is wrong, ask for corrections.
 - Reject: stop here.
-Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+Compile transaction: odylith greenfield compile-transaction --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
+Commit transaction after hash confirmation: odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 """,
         prompt=prompt,
     )
@@ -314,10 +315,11 @@ Visible format contract
 Original user intent
 {prompt}
 Next step
-- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally.
+- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, compile the ProductCreateTransaction, then commit the matching hash.
 - Edit: ask for corrections.
 - Reject: stop here.
-Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+Compile transaction: odylith greenfield compile-transaction --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
+Commit transaction after hash confirmation: odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 """,
         prompt=prompt,
     )

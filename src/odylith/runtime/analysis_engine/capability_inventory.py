@@ -45,16 +45,16 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 kind="engine",
                 owns=(
                     "greenfield/project-shape contracts, host-narrated Product Intent confirmation, "
-                    "confirmed governed proposal construction, project-specific artifact enrichment, "
-                    "bounded, provider-free post-confirm repair loop, deterministic proposal validation, "
-                    "deterministic proposal gating, and final visible surface refresh before source exists"
+                    "ProductCreateTransaction compilation, project-specific artifact enrichment, "
+                    "pre-confirm repair and quality gates, deterministic proposal validation, "
+                    "deterministic proposal gating, hash-verified commit, and final visible surface refresh before source exists"
                 ),
                 commands=("odylith greenfield propose", "odylith greenfield create", "odylith greenfield apply"),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
                 activation=(
-                    "greenfield propose returns no-write Product Intent Confirmation; confirmed create builds "
-                    "the governed proposal, runs bounded, provider-free post-confirm repair, validates it, applies records "
-                    "after the final manifest passes, and refreshes surfaces"
+                    "greenfield propose returns no-write Product Intent Confirmation; compile-transaction builds "
+                    "and quality-gates the governed package before confirmation; confirmed create verifies the transaction "
+                    "hash, commits records atomically, validates readback, and refreshes surfaces"
                 ),
             ),
             InventoryItem(

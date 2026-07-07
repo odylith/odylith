@@ -390,13 +390,15 @@ def build_confirmed_greenfield_proposal(
             semantic_model=semantic_model,
         ),
         "apply_commands": [
-            "odylith greenfield create --repo-root . --prompt "
+            "odylith greenfield compile-transaction --repo-root . --prompt "
             + shell_quote(command_prompt)
-            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release "
+            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release "
             + shell_quote(release),
-            "# optional review-only audit: odylith greenfield propose --repo-root . --prompt "
+            "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
+            "# optional review-only audit: odylith greenfield compile-transaction --repo-root . --prompt "
             + shell_quote(command_prompt)
-            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
+            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release "
+            + shell_quote(release),
         ],
     }
     if title_normalization.changed:

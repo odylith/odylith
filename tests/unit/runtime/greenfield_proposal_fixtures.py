@@ -691,16 +691,16 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "use_when": "Use before proposal expansion so the operator can confirm, edit, or reject the interpretation.",
             },
             {
-                "path": "Create confirmed records",
-                "command": f"odylith greenfield create --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release {release}",
+                "path": "Compile create transaction",
+                "command": f"odylith greenfield compile-transaction --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release {release}",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after intent confirmation so Odylith builds, repairs, validates, gates, writes after the final manifest passes, and refreshes the proposal-owned records.",
+                "use_when": "Use after intent confirmation so Odylith builds, repairs, validates, gates, and hashes the complete create transaction before writes.",
             },
             {
-                "path": "Optional proposal review",
-                "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
+                "path": "Commit confirmed transaction",
+                "command": "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use only when a reviewer explicitly asks to inspect the governed JSON audit artifact.",
+                "use_when": "Use after hash confirmation so Odylith verifies and commits the already compiled package.",
             },
         ],
     }

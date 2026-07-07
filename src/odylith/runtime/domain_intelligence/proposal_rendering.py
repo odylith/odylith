@@ -27,19 +27,20 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     release_arg = f" --release {shell_quote(release_selector)}"
     prompt_arg = shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
     commands = [
-        "odylith greenfield create --repo-root . --prompt "
+        "odylith greenfield compile-transaction --repo-root . --prompt "
         + prompt_arg
-        + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm"
+        + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json"
         + release_arg,
-        "# optional audit artifact: `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json` prints Odylith's governed proposal",
+        "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
+        "# optional audit artifact: `greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json` prints the validated transaction payload",
     ]
     if backlog:
-        commands.append("# apply will create project workstream records after validation")
+        commands.append("# commit will create project workstream records from the validated transaction")
     if components:
-        commands.append("# apply will register planned candidate component specs with user_intent evidence")
+        commands.append("# commit will register planned candidate component specs with user_intent evidence")
     if diagrams:
-        commands.append("# apply will scaffold draft architecture topology with review-draft link state")
-    commands.append("# apply will refresh accepted product records after all artifacts are written")
+        commands.append("# commit will scaffold draft architecture topology with review-draft link state")
+    commands.append("# commit will refresh accepted product records after all artifacts are written")
     return commands
 
 
@@ -65,7 +66,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             "- generated governance artifacts: none",
             "- proposal authorship: legacy reasoning-request mode; prefer confirmed create path",
             f"- provider calls by Odylith CLI: {proposal.get('provider_calls', 0)}",
-            "- write gate: `greenfield create --confirm` builds, validates, runs the bounded, provider-free post-confirm repair loop, gates, writes after the final manifest passes, and refreshes records",
+            "- write gate: `greenfield compile-transaction` builds, repairs, validates, quality-gates, and hashes the package before confirmation; `greenfield create --transaction-file --transaction-hash --confirm` only commits it",
             "",
             "Host handoff",
         ]
@@ -75,7 +76,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.append(f"- Stop: {rule}")
         lines.extend(
             [
-                "- Use `odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1` after writing the accepted Product Intent Confirmation; let the CLI complete its bounded, provider-free post-confirm repair loop and do not search Odylith source.",
+                "- Use `odylith greenfield compile-transaction --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`, then confirm the hash with `greenfield create --transaction-file ... --transaction-hash ... --confirm`.",
                 "",
                 "Confirmed create after intent confirmation",
             ]
@@ -143,9 +144,9 @@ def _format_proposal_preview_text(
     commands = request_context.get("apply_commands", [])
     apply_json_command = ""
     if isinstance(commands, list):
-        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
+        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield compile-transaction")), "")
     if not apply_json_command:
-        apply_json_command = "odylith greenfield create --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm" + f" --release {shell_quote(release_selector)}"
+        apply_json_command = "odylith greenfield compile-transaction --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json" + f" --release {shell_quote(release_selector)}"
 
     lines = [
         f"Greenfield proposal preview: {title}",
@@ -178,11 +179,11 @@ def _format_proposal_preview_text(
         lines.append("- Architecture review views:")
         lines.extend(f"  - {line}" for line in diagram_lines)
     lines.extend(["", "Gate 4 - Choose Next Action"])
-    lines.append("- Recommended next step: confirm this Product Intent if Gate 1 and Gate 2 look right.")
-    lines.append("- Revise before confirmation: answer the Gate 2 choices that are wrong, then rerun `greenfield propose` with the sharper intent.")
-    lines.append("- First write point: `greenfield create --confirm`; no product records are written before that.")
-    lines.append("- Internal normalization: Odylith converts the confirmed intent into governed records without host-side JSON repair.")
-    lines.append("- Confirmed create after Product Intent confirmation:")
+    lines.append("- Recommended next step: compile the ProductCreateTransaction if Gate 1 and Gate 2 look right.")
+    lines.append("- Edit before confirmation: answer the Gate 2 choices that are wrong, then rebuild the transaction from the sharper intent.")
+    lines.append("- First write point: `greenfield create --transaction-file --transaction-hash --confirm`; no product records are written before that.")
+    lines.append("- Commit boundary: after hash confirmation, Odylith verifies and commits the compiled package without host-side JSON repair.")
+    lines.append("- Compile transaction after Product Intent confirmation:")
     lines.append(f"  {apply_json_command}")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -451,8 +452,9 @@ def _format_governed_proposal_text(
             elif str(item).strip():
                 lines.append(f"- {item}")
     lines.extend(["", "Write gates"])
-    lines.append("- deterministic proposal validation must pass before any source-truth writes")
-    lines.append("- final refresh publishes accepted product records after writes")
+    lines.append("- ProductCreateTransaction compilation must pass before confirmation")
+    lines.append("- confirmed create verifies the transaction hash before any source-truth writes")
+    lines.append("- final refresh publishes accepted product records after the commit-only write")
     lines.extend(["", "Assumptions"])
     for item in proposal.get("assumptions", []):
         rendered = _render_evidence_item(item, "statement")
@@ -464,15 +466,15 @@ def _format_governed_proposal_text(
         if rendered:
             lines.append(f"- Question: {rendered}")
     lines.extend(["", "Confirmed create"])
-    lines.append("No files changed. Confirmed write path:")
+    lines.append("No governed records changed. Transaction path:")
     request_commands = request_context.get("apply_commands", [])
     apply_command = ""
     if isinstance(request_commands, list):
-        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield create")), "")
+        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield compile-transaction")), "")
     if not apply_command:
         release_selector = _release_selector(release_plan)
-        apply_command = "odylith greenfield create --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm" + f" --release {shell_quote(release_selector)}"
-    lines.append("  # Odylith normalizes the confirmed intent internally before applying records")
+        apply_command = "odylith greenfield compile-transaction --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json" + f" --release {shell_quote(release_selector)}"
+    lines.append("  # Odylith compiles and validates the transaction before hash confirmation")
     lines.append("  " + apply_command)
     commands = proposal.get("apply_commands", [])
     if isinstance(commands, list) and commands:

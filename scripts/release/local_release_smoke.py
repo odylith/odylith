@@ -252,19 +252,23 @@ _STALE_GREENFIELD_GUIDANCE_TOKENS = (
     ".odylith/runtime/greenfield/active-proposal.v1.json",
 )
 _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
+    "greenfield compile-transaction",
+    "ProductCreateTransaction",
     "greenfield create",
+    "--transaction-file",
+    "--transaction-hash",
     "--intent-file",
     ".odylith/runtime/greenfield/confirmed-intent.md",
     ".odylith/runtime/greenfield/confirmed-intent.json",
     "--confirm",
     "same visible",
-    "normalizes",
+    "hash",
     "proposal JSON",
     "parser/schema retries",
 )
 _GREENFIELD_REPAIR_LOOP_GUARDS = (
-    "bounded, provider-free post-confirm repair loop",
-    "final manifest passes",
+    "quality-gates",
+    "writes atomically",
 )
 _GREENFIELD_CONFIRMATION_FORMAT_GUARDS = (
     "sectioned",

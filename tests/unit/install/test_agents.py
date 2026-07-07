@@ -80,9 +80,11 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "sectioned Markdown",
         "same visible Product Intent Confirmation",
         ".odylith/runtime/greenfield/confirmed-intent.json",
-        "Odylith normalizes it",
-        "bounded, provider-free post-confirm repair loop",
-        "final manifest passes",
+        "greenfield compile-transaction",
+        "ProductCreateTransaction",
+        "--transaction-file",
+        "--transaction-hash",
+        "writes atomically",
         "Odylith capabilities",
         "host model capability surface",
         "never prefix commentary with control-plane receipt labels",
@@ -136,7 +138,7 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "Do not inspect Odylith source" in block
     assert "hand-author/repair proposal JSON" in block
     assert "parser/schema retries" in block
-    assert "ask the operator to inspect proposal JSON or for second confirmation" in block
+    assert "Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown" in block
     assert "Surface only final summary or blockers" in block
     assert len(block.encode("utf-8")) < 11600
 

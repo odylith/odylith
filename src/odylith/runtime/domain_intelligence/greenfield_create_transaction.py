@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections.abc import Sequence
-from dataclasses import asdict
 from dataclasses import dataclass
+from dataclasses import fields
 from dataclasses import is_dataclass
 from dataclasses import replace
 import hashlib
@@ -85,6 +85,38 @@ def require_product_create_transaction_verified(transaction: ProductCreateTransa
         )
 
 
+def product_create_transaction_to_dict(transaction: ProductCreateTransaction) -> dict[str, Any]:
+    """Return the persisted transaction payload that a commit-only create can trust."""
+
+    payload = _transaction_hash_payload(transaction)
+    payload["transaction_hash"] = str(transaction.transaction_hash or "").strip()
+    return payload
+
+
+def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductCreateTransaction:
+    """Rehydrate and verify a serialized ProductCreateTransaction."""
+
+    if not isinstance(payload, Mapping):
+        raise ValueError("ProductCreateTransaction payload must be a JSON object")
+    version = str(payload.get("version", "")).strip()
+    if version != PRODUCT_CREATE_TRANSACTION_VERSION:
+        raise ValueError(
+            f"unsupported ProductCreateTransaction version {version!r}; expected {PRODUCT_CREATE_TRANSACTION_VERSION}"
+        )
+    transaction = ProductCreateTransaction(
+        version=version,
+        release_selector=str(payload.get("release_selector", "")).strip(),
+        proposal=_mapping(payload.get("proposal")),
+        validation_gate=_mapping(payload.get("validation_gate")),
+        prewrite_package=_completion_package_from_payload(_mapping(payload.get("prewrite_package"))),
+        backlog_result=_mapping(payload.get("backlog_result")),
+        quality_manifest=_mapping(payload.get("quality_manifest")),
+        transaction_hash=str(payload.get("transaction_hash", "")).strip(),
+    )
+    require_product_create_transaction_verified(transaction)
+    return transaction
+
+
 def product_create_transaction_hash(transaction: ProductCreateTransaction) -> str:
     payload = _transaction_hash_payload(transaction)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -105,7 +137,7 @@ def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str
 
 def _json_ready(value: Any) -> Any:
     if is_dataclass(value) and not isinstance(value, type):
-        return _json_ready(asdict(value))
+        return _json_ready({field.name: getattr(value, field.name) for field in fields(value)})
     if isinstance(value, Path):
         return str(value)
     if isinstance(value, Mapping):
@@ -127,10 +159,25 @@ def _json_ready(value: Any) -> Any:
     return value
 
 
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCompletionPackage:
+    allowed = {field.name for field in fields(GreenfieldCompletionPackage)}
+    kwargs = {key: payload[key] for key in allowed if key in payload}
+    for tuple_key in ("component_registry_preview", "release_workstream_ids"):
+        if tuple_key in kwargs and isinstance(kwargs[tuple_key], list):
+            kwargs[tuple_key] = tuple(kwargs[tuple_key])
+    return GreenfieldCompletionPackage(**kwargs)
+
+
 __all__ = [
     "PRODUCT_CREATE_TRANSACTION_VERSION",
     "ProductCreateTransaction",
     "build_product_create_transaction",
+    "product_create_transaction_from_dict",
     "product_create_transaction_hash",
+    "product_create_transaction_to_dict",
     "require_product_create_transaction_verified",
 ]

@@ -116,29 +116,32 @@ gate. Use short paragraphs plus bullets, not a wall of prose, and do not wrap
 ordinary product terms in code ticks or decorative bold markers. After the
 operator confirms that intent, write the
 same visible Product Intent Confirmation to
-`.odylith/runtime/greenfield/confirmed-intent.md`, then use the confirmed create
-path. Odylith normalizes that Markdown into
+`.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
+transaction. Odylith may normalize that Markdown into
 `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
-proposal from the accepted narrative, validates it, runs the Tribunal write gate,
-runs the bounded, provider-free post-confirm repair loop, writes records only
-after the final manifest passes, and refreshes readable views. Do not inspect Odylith source files,
+package from the accepted narrative, validates it, runs the Tribunal write gate,
+quality-gates the full package, and hashes the ProductCreateTransaction before
+records can be confirmed. Confirmed create then only verifies the transaction
+hash, writes atomically, validates readback, refreshes
+readable views, and reports success or an environment/IO failure. Do not inspect Odylith source files,
 `.odylith`, bundle files, Python modules, or local examples to discover schema fields.
 Do not hand-author, switch to, or repair proposal JSON
 after confirmation. Do not narrate parser/schema retries or intermediate
-create-shape failures in operator chat, and do not stop at intermediate
-repairable quality issues. The operator does not need to inspect proposal JSON
-unless they explicitly ask for an export.
+transaction-compile failures in operator chat. The operator does not need to
+inspect proposal JSON or confirm uncompiled Markdown.
 
 ```bash
-./.odylith/bin/odylith greenfield create --repo-root . --prompt "<project intent>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+./.odylith/bin/odylith greenfield compile-transaction --repo-root . --prompt "<project intent>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
+./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 ```
 
-If a reviewer explicitly asks for JSON, export the same governed proposal
-with `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json`
+If a reviewer explicitly asks for JSON, use `greenfield compile-transaction
+--intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json`
 as an audit artifact only. The normal write path stays confirmed create from
-the accepted intent file. Do not use canned domain families or scaffolds as
-product truth. Do not run confirmed create from a thin prompt without
-`--intent-file`. Do not start coding until the product gates are accepted.
+the verified transaction hash. Do not use canned domain families or scaffolds
+as product truth. Do not run confirmed create from a thin prompt without a
+verified ProductCreateTransaction. Do not start coding until the product gates
+are accepted.
 
 For the common governance authoring fast paths, use:
 

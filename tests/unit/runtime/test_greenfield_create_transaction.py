@@ -9,6 +9,8 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 
@@ -71,6 +73,22 @@ def test_product_create_transaction_hash_rejects_mutation() -> None:
         require_product_create_transaction_verified(tampered)
 
 
+def test_product_create_transaction_json_round_trips_with_hash() -> None:
+    transaction = _transaction()
+    payload = product_create_transaction_to_dict(transaction)
+
+    restored = product_create_transaction_from_dict(payload)
+
+    assert restored.transaction_hash == transaction.transaction_hash
+    assert restored.verified
+    assert restored.prewrite_package.proposal == transaction.prewrite_package.proposal
+    assert restored.quality_manifest["status"] == "passed"
+
+    payload["quality_manifest"] = {**payload["quality_manifest"], "status": "failed"}
+    with pytest.raises(ValueError, match="hash mismatch"):
+        product_create_transaction_from_dict(payload)
+
+
 def test_commit_product_create_transaction_is_commit_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -127,6 +145,8 @@ def test_commit_product_create_transaction_is_commit_only(
     assert calls[0]["backlog_result"] == transaction.backlog_result
     assert calls[0]["tribunal"] == transaction.validation_gate
     assert result["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
+    assert result["product_create_transaction"]["verified"] is True
+    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
     assert result["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
     assert (
         result["post_confirm_quality_manifest"]["write_transaction"]["product_create_transaction_hash"]

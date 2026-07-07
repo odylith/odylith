@@ -813,8 +813,11 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
-    assert "bounded, provider-free post-confirm repair loop" in guidance_text
-    assert "final manifest passes" in guidance_text
+    assert "greenfield compile-transaction" in guidance_text
+    assert "ProductCreateTransaction" in guidance_text
+    assert "--transaction-file" in guidance_text
+    assert "--transaction-hash" in guidance_text
+    assert "writes atomically" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
     assert "Treat AI slop as a regression" in guidance_text
@@ -844,35 +847,34 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Do not run `odylith context`, `odylith query`, `git status`, broad repo search, or other repo-inspection commands in parallel with that start step." in root_agents
     assert "Let `start` finish first; then narrow." in root_agents
     assert "keep startup, fallback, routing, and packet-selection internals implicit" in root_agents
-    assert "the exact file/workstream, the bug under test, or the validation in flight" in root_agents
+    assert "Describe task progress" in root_agents
     assert "never say `Startup fell back`" in root_agents
-    assert "Do not surface routine `odylith start`, `odylith context`, or `odylith query` commands in progress updates" in root_agents
     assert "never prefix commentary with control-plane receipt labels" in root_agents
-    assert "Mention Odylith during the work only when the user explicitly asks for the command, a real blocker requires it, or a consumer-versus-maintainer lane distinction matters." in root_agents
+    assert "mention Odylith only when the user asks, a real blocker requires it, or lane distinction matters" in root_agents
     assert "direct-edit and Bash PostToolUse hooks stay silent on success" in root_agents
     assert "Claude Stop is memory/logging only" in root_agents
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human;" in root_agents
     assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
-    assert "At closeout, add at most one `Odylith Assist:` or `**Odylith Assist:**` line only when it materially helps" in root_agents
+    assert "At closeout, add at most one `Odylith Assist:` line only when useful" in root_agents
     assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
     assert "Do not add Assist just because Odylith ran" in root_agents
     assert "supplies one shared prompt-visible Assist line" not in root_agents
     assert "Lead with the user win" in root_agents
-    assert "link updated governance IDs inline when they changed" in root_agents
-    assert "name affected governance-contract IDs only when no governed file moved" in root_agents
-    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "keep it crisp, authentic, clear, simple, insightful" in root_agents
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "or a concrete chat-visibility complaint" in root_agents
+    assert "changed governance IDs" in root_agents
+    assert "the `odylith_off` edge" in root_agents
+    assert "concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "Generic activity receipts are not premium interventions" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
     assert "search existing truth first" in root_agents
-    assert "bounded, provider-free post-confirm repair loop" in root_agents
-    assert "final manifest passes" in root_agents
+    assert "greenfield compile-transaction" in root_agents
+    assert "ProductCreateTransaction" in root_agents
+    assert "--transaction-file" in root_agents
+    assert "--transaction-hash" in root_agents
+    assert "writes atomically" in root_agents
     assert "repo-local launcher, truthful `odylith ... --help`" in root_agents
     assert "rerender only the owned surface" in root_agents
     assert "odylith radar refresh" in root_agents
@@ -1789,16 +1791,14 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "Describe task progress, not control-plane receipts" in root_agents
     assert "Keep normal commentary task-first and human;" in root_agents
     assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
-    assert "At closeout, add at most one `Odylith Assist:` or `**Odylith Assist:**` line only when it materially helps" in root_agents
+    assert "At closeout, add at most one `Odylith Assist:` line only when useful" in root_agents
     assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
     assert "Do not add Assist just because Odylith ran" in root_agents
     assert "supplies one shared prompt-visible Assist line" not in root_agents
     assert "Lead with the user win" in root_agents
-    assert "link updated governance IDs inline when they changed" in root_agents
-    assert "name affected governance-contract IDs only when no governed file moved" in root_agents
-    assert "frame the edge against `odylith_off` or the broader unguided path" in root_agents
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "or a concrete chat-visibility complaint" in root_agents
+    assert "changed governance IDs" in root_agents
+    assert "the `odylith_off` edge" in root_agents
+    assert "concrete observed counts, measured deltas, or validation outcomes" in root_agents
     assert "Generic activity receipts are not premium interventions" in root_agents
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents

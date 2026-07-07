@@ -18,6 +18,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
+from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
@@ -32,6 +33,8 @@ from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifa
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
@@ -361,6 +364,41 @@ def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> 
     intent = record.product_facts
     write_structured_confirmed_intent_file(path, intent, envelope=record.envelope)
     return intent
+
+
+def load_product_create_transaction_args(
+    args: argparse.Namespace,
+    *,
+    repo_root: Path,
+) -> ProductCreateTransaction | None:
+    transaction_file = str(getattr(args, "transaction_file", "") or "").strip()
+    transaction_json = str(getattr(args, "transaction_json", "") or "").strip()
+    if transaction_file and transaction_json:
+        raise ValueError("provide either --transaction-file or --transaction-json, not both")
+    if not transaction_file and not transaction_json:
+        return None
+    if transaction_file:
+        path = Path(transaction_file).expanduser()
+        if not path.is_absolute():
+            path = repo_root / path
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        payload = json.loads(transaction_json)
+    transaction = product_create_transaction_from_dict(payload)
+    expected_hash = str(getattr(args, "transaction_hash", "") or "").strip()
+    if not expected_hash:
+        raise ValueError("greenfield create with a ProductCreateTransaction requires --transaction-hash")
+    if expected_hash != transaction.transaction_hash:
+        raise ValueError("ProductCreateTransaction hash does not match --transaction-hash")
+    return transaction
+
+
+def write_product_create_transaction_file(path: Path, transaction: ProductCreateTransaction) -> Path:
+    target = Path(path).expanduser()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    payload = product_create_transaction_to_dict(transaction)
+    atomic_write_text(target, json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return target
 
 
 def _row_posture_text(row: Mapping[str, Any], proposal: Mapping[str, Any], *keys: str) -> str:

@@ -53,23 +53,25 @@ placeholder products in response to a show-me request.
    the confirmation into a wall of prose or wrap normal domain words in code
    ticks or decorative bold markers. After the operator confirms the same
    interpretation, write that same visible confirmation to
-   `.odylith/runtime/greenfield/confirmed-intent.md`, then run the confirmed
-   create path from the same confirmation:
-   `greenfield create --repo-root . --prompt "<their request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
-   Odylith normalizes that Markdown into
-   `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
-   proposal from the accepted narrative, validates it, runs the bounded,
-   provider-free post-confirm repair loop, runs Tribunal, writes records only
-   after the final manifest passes, and refreshes surfaces; do not
-   show JSON as a second approval step and do not search Odylith source,
-   `.odylith`, bundle files, or local examples for schema.
-   Do not ask the operator to inspect proposal JSON or confirm a second time unless they explicitly request a review artifact.
+   `.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
+   transaction from the same confirmation:
+   `greenfield compile-transaction --repo-root . --prompt "<their request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`.
+   Odylith may normalize that Markdown into
+   `.odylith/runtime/greenfield/confirmed-intent.json`, builds, repairs,
+   validates, quality-gates, and hashes the ProductCreateTransaction before
+   records can be confirmed. Confirm by running
+   `greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
+   Confirmed create only verifies the hash, writes atomically, validates
+   readback, refreshes surfaces, and reports success or environment/IO failure;
+   do not show proposal JSON as a second approval step and do not search
+   Odylith source, `.odylith`, bundle files, or local examples for schema.
+   Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown unless they explicitly request a review artifact.
    Do not hand-author, switch to, or repair proposal JSON after confirmation; do not use canned domain scaffolds, dump
    tool internals, or write code before the product gates are accepted. When the CLI
    returns proposal stdout directly before confirmation, do not hide the
    confirmation behind collapsed tool output. After confirmation, do not narrate
-   parser/schema retries or intermediate create-shape failures in operator chat;
-   wait for the final manifest/result and do not stop at intermediate
+   parser/schema retries or intermediate transaction-compile failures in operator chat;
+   wait for the final transaction/result and do not stop at intermediate
    repairable quality issues.
    surface only created records or final validation/Tribunal blockers.
 6. Do not create governance records unless the operator explicitly asks.

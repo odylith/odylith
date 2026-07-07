@@ -120,12 +120,13 @@ def confirmed_project_brief(
     command_prompt = _command_prompt(label=label, first=first, fallback=prompt)
     confirm_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
     create_command = (
-        f"odylith greenfield create --repo-root . --prompt {shell_quote(command_prompt)} "
-        f"--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release {release}"
+        f"odylith greenfield create --repo-root . "
+        "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
+        "--transaction-hash <hash> --confirm"
     )
     audit_command = (
-        f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)} "
-        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json"
+        f"odylith greenfield compile-transaction --repo-root . --prompt {shell_quote(command_prompt)} "
+        f"--intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release {release}"
     )
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",

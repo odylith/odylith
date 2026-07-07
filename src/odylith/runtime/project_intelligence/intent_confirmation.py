@@ -60,7 +60,7 @@ def build_product_intent_confirmation(
                 "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
                 "a clear Next step block with three separate bullet lines for Confirm, Edit, and Reject; each choice must say exactly what happens next",
-                "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it and normalize structured intent internally",
+                "for Confirm, say that Odylith compiles a validated ProductCreateTransaction from the accepted intent before any governed records are written",
             ],
             "must_not": [
                 "echo command instructions as the product name",
@@ -84,20 +84,23 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, ask the operator to confirm so Odylith can build the governed proposal, run deterministic validation, and apply accepted project records.",
-            "edit": "If anything is wrong or missing, ask the operator to reply with corrections before proposal expansion.",
+            "proceed": "If the interpretation is right, ask the operator to confirm the compiled ProductCreateTransaction hash before Odylith commits accepted project records.",
+            "edit": "If anything is wrong or missing, treat the reply as new evidence and rebuild the ProductCreateTransaction.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
         "commands": {
-            "confirmed_create_after_confirmation": (
-                "odylith greenfield create --repo-root . --prompt "
+            "compile_transaction_after_intent_confirmation": (
+                "odylith greenfield compile-transaction --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1"
+                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1"
+            ),
+            "commit_transaction_after_hash_confirmation": (
+                "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm"
             ),
             "optional_review_json_after_confirmation": (
-                "odylith greenfield propose --repo-root . --prompt "
+                "odylith greenfield compile-transaction --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json"
+                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release 0.0.1"
             ),
         },
     }
@@ -109,7 +112,8 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
     intent = _mapping(confirmation.get("intent"))
     commands = _mapping(confirmation.get("commands"))
     prompt = _clean(intent.get("prompt"))
-    confirmed_create = _clean(commands.get("confirmed_create_after_confirmation"))
+    compile_transaction = _clean(commands.get("compile_transaction_after_intent_confirmation"))
+    commit_transaction = _clean(commands.get("commit_transaction_after_hash_confirmation"))
     try:
         from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
             confirmation_from_operator_intent,
@@ -124,13 +128,15 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
     lines = [body, "", "Next step"]
     lines.extend(
         [
-            "- `Confirm`: if this interpretation is right, save this same Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm.",
-            "- `Edit`: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, revise those sections before create.",
+            "- `Confirm`: if this interpretation is right, save this same Product Intent Confirmation, compile the ProductCreateTransaction, then commit only the matching transaction hash.",
+            "- `Edit`: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, treat the edits as new evidence and rebuild the transaction.",
             "- `Reject`: if this is not the intended product, stop here and write no records.",
         ]
     )
-    if confirmed_create:
-        lines.append(f"Confirmed CLI after confirmation: {confirmed_create}")
+    if compile_transaction:
+        lines.append(f"Compile transaction: {compile_transaction}")
+    if commit_transaction:
+        lines.append(f"Commit transaction after hash confirmation: {commit_transaction}")
     return "\n".join(lines).rstrip() + "\n"
 
 

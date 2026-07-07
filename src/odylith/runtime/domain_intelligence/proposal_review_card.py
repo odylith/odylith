@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -19,8 +18,8 @@ def format_visible_proposal_card_text(
 
     This is intentionally short enough to stay visible in Claude/Codex tool
     transcripts after product intent is confirmed. The longer text gate stays
-    behind ``--confirm-intent --detail full``. The governed proposal is built
-    by Odylith from confirmed intent, then accepted through ``greenfield create``.
+    behind ``--confirm-intent --detail full``. The governed package is compiled
+    into a ProductCreateTransaction before ``greenfield create`` commits it.
     """
 
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
@@ -171,4 +170,8 @@ def _visible_apply_command(
         command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
         if command:
             return command
-    return "odylith greenfield create --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm" + f" --release {shell_quote(release_selector)}"
+    return (
+        "odylith greenfield create --repo-root . "
+        "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
+        "--transaction-hash <hash> --confirm"
+    )

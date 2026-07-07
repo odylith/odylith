@@ -48,30 +48,35 @@ mechanism-level learning.
 5. After the operator confirms or edits the intent, write the same visible
    Product Intent Confirmation to
    `.odylith/runtime/greenfield/confirmed-intent.md`, then run
-   `greenfield create --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`
-   with the original prompt. Odylith first normalizes that Markdown into
-   `.odylith/runtime/greenfield/confirmed-intent.json`, validates it, runs the
-   bounded, provider-free post-confirm repair loop, runs the Tribunal write
-   gate, writes records only after the final manifest passes, and refreshes
-   readable views. Do not search `src/odylith`.
+   `greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`
+   with the original prompt. Odylith may normalize that Markdown into
+   `.odylith/runtime/greenfield/confirmed-intent.json`, then builds, repairs,
+   validates, quality-gates, and hashes the ProductCreateTransaction before
+   records can be confirmed. Confirm by running
+   `greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
+   Confirmed create only verifies the hash, writes atomically, validates
+   readback, refreshes readable views, and reports success or environment/IO
+   failure. Do not search `src/odylith`.
    Do not search `.odylith`, `odylith/skills`, installed bundle files,
    local examples, or Python modules to discover schema fields after confirmation. Do not
    hand-author, switch to, or repair proposal JSON after confirmation. Do not
-   narrate parser/schema retries or intermediate create-shape failures in
-   operator chat. `greenfield propose --intent-file
-   .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format
-   json` is only an optional review artifact when explicitly requested.
-6. The operator's Product Intent confirmation authorizes one confirmed create
-   command and one governed write transaction; the command owns bounded
-   internal repair passes before the final manifest/result. Do not stop at
-   intermediate repairable package-quality or create-shape findings. Do not ask the operator to inspect proposal JSON or confirm a second time by default.
+   narrate parser/schema retries or intermediate transaction-compile failures in
+   operator chat. `greenfield compile-transaction --intent-file
+   .odylith/runtime/greenfield/confirmed-intent.md --format json`
+   is only an optional review artifact when explicitly requested.
+6. The operator's Product Intent confirmation authorizes transaction
+   compilation; the hash confirmation authorizes one governed write
+   transaction. Do not stop at intermediate repairable package-quality or
+   create-shape findings before the transaction is ready.
+   Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown by default.
    The normal confirmed path is
-   `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<operator request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
+   `./.odylith/bin/odylith greenfield compile-transaction --repo-root . --prompt "<operator request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`, followed by `./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
    If a reviewer asks for JSON, render
-   `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json`
+   `greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json`
    as an audit artifact only; never reconstruct it by hand and never turn it
-   into a host-side data-shaping step. If validation or Tribunal rejects the proposal,
-   show the blocking issues in product language and write no records.
+   into a host-side data-shaping step. If transaction compilation, validation,
+   or Tribunal rejects the package, show the blocking issues in product
+   language and write no records.
 7. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and

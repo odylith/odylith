@@ -1,9 +1,12 @@
 # Odylith
 
-This directory is the repo-local Odylith guidance and surface tree. Installed
-repos receive the consumer-owned subset here, while the managed runtime itself
-lives under `.odylith/`.
+This directory is the repo-local Odylith guidance and surface tree. In the
+product repo it also carries source governance; installed repos receive the
+consumer-owned subset, while the managed runtime itself lives under
+`.odylith/`.
 
+In the product repo, maintainer-only release guidance and skills live under
+`odylith/maintainer/`. That subtree is excluded from consumer bundle assets.
 Shared consumer-safe guidance lives under `odylith/agents-guidelines/` and
 `odylith/skills/`.
 
@@ -16,9 +19,9 @@ three boundaries separate:
 
 `./.odylith/bin/odylith` uses the Odylith runtime. Repo code still validates on
 the repo's own `python`, `uv`, Poetry, Conda, or equivalent toolchain.
-Consumer repos stay on pinned runtime only; detached `source-local` is outside
-the installed consumer lane. Hosted install currently supports macOS (Apple
-Silicon) and Linux (`x86_64`, `ARM64`). For trust and release details, see
+Consumer repos stay on pinned runtime only; detached `source-local` is
+maintainer-only. Hosted install currently supports macOS (Apple Silicon) and
+Linux (`x86_64`, `ARM64`). For trust and release details, see
 `SECURITY_POSTURE.md`.
 
 ## First Run
@@ -108,34 +111,37 @@ Odylith returns a no-write reasoning request. The host must write the short proj
 Product Intent Confirmation in chat from live reasoning before any proposal
 records exist. Render it as sectioned Markdown: Product story, State object,
 First complete path, Human actors, External systems, Internal product systems,
-Critical assumptions, Ambiguities, Proof boundary, and the Confirm/Edit/Reject
+Critical assumptions, Ambiguities, Proof boundary, and the proceed/edit/reject
 gate. Use short paragraphs plus bullets, not a wall of prose, and do not wrap
-normal domain nouns in code ticks or decorative bold markers. After the
-operator confirms that intent, write the same visible Product Intent
-Confirmation to
-`.odylith/runtime/greenfield/confirmed-intent.md`, then use the confirmed create
-path. Odylith normalizes that Markdown into
+ordinary product terms in code ticks or decorative bold markers. After the
+operator confirms that intent, write the
+same visible Product Intent Confirmation to
+`.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
+transaction. Odylith may normalize that Markdown into
 `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
-proposal from the accepted narrative, validates it, runs the Tribunal write gate,
-runs the bounded, provider-free post-confirm repair loop, writes records only
-after the final manifest passes, and refreshes readable views. Do not inspect Odylith source files,
+package from the accepted narrative, validates it, runs the Tribunal write gate,
+quality-gates the full package, and hashes the ProductCreateTransaction before
+records can be confirmed. Confirmed create then only verifies the transaction
+hash, writes atomically, validates readback, refreshes
+readable views, and reports success or an environment/IO failure. Do not inspect Odylith source files,
 `.odylith`, bundle files, Python modules, or local examples to discover schema fields.
 Do not hand-author, switch to, or repair proposal JSON
 after confirmation. Do not narrate parser/schema retries or intermediate
-create-shape failures in operator chat, and do not stop at intermediate
-repairable quality issues. The operator does not need to inspect proposal JSON
-unless they explicitly ask for an export.
+transaction-compile failures in operator chat. The operator does not need to
+inspect proposal JSON or confirm uncompiled Markdown.
 
 ```bash
-./.odylith/bin/odylith greenfield create --repo-root . --prompt "<project intent>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+./.odylith/bin/odylith greenfield compile-transaction --repo-root . --prompt "<project intent>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
+./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 ```
 
-If a reviewer explicitly asks for JSON, export the same governed proposal
-with `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json`
+If a reviewer explicitly asks for JSON, use `greenfield compile-transaction
+--intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json`
 as an audit artifact only. The normal write path stays confirmed create from
-the accepted intent file. Do not use canned domain families or scaffolds as
-product truth. Do not run confirmed create from a thin prompt without
-`--intent-file`. Do not start coding until the product gates are accepted.
+the verified transaction hash. Do not use canned domain families or scaffolds
+as product truth. Do not run confirmed create from a thin prompt without a
+verified ProductCreateTransaction. Do not start coding until the product gates
+are accepted.
 
 For the common governance authoring fast paths, use:
 
@@ -236,13 +242,15 @@ view changes the next move, weave that fact into the update instead of
 branding it by default; explicit `Odylith Insight:`, `Odylith History:`, or
 `Odylith Risks:` lines should feel rare and earned.
 
-If a final handoff benefits from naming Odylith directly, keep it to one short
+If a final handoff benefits from naming Odylith directly, or explicit
+visibility feedback needs a visible fallback, keep it to one short
 `Odylith Assist:` line. Prefer `**Odylith Assist:**` when Markdown formatting
 is available. Lead with the user win, link updated governance IDs inline when
 they were actually changed, and when no governed file moved, name the affected
 governance-contract IDs from bounded request or packet truth without calling
 them updated. Ground the line in concrete observed counts, measured deltas, or
-validation outcomes. When the evidence supports it, frame the edge against
+validation outcomes; visibility feedback may also ground it in a concrete
+chat-visibility complaint. When the evidence supports it, frame the edge against
 `odylith_off` or the broader unguided path. Keep it crisp, authentic, clear,
 simple, insightful, soulful, friendly, free-flowing, human, and factual.
 Explicit feedback that Odylith's ambient highlights, interventions, Assist,
@@ -273,6 +281,9 @@ Silence is better than filler.
   Shared Odylith operating guidance.
 - `skills/`
   Shared Odylith specialist skills intended to stay consumer-safe.
+- product-repo-only `maintainer/` subtree
+  Maintainer-only release guidance and skills for Odylith release work. This
+  subtree is excluded from consumer bundles.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
   Product-level reference docs for this tree.
 - `SECURITY_POSTURE.md`
