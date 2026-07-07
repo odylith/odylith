@@ -63,7 +63,10 @@ This section captures synchronized requirement and contract signals derived from
   artifacts. Reporting-verb clauses that open a product content clause remain
   product evidence, while visible-result extraction still prefers the clean
   preceding nominal outcome instead of promoting grammar evidence into awkward
-  result copy. Focused proof covers the affected parser/projection/quality-gate
+  result copy; sparse prompts that contain only request-framed word-sense
+  evidence fall back to a generic first-path result rather than treating the
+  grammar comparison as the release outcome. Focused proof covers the affected
+  parser/projection/quality-gate
   regressions, and exact source-local replay of the escaped scientific Atlas
   homonym prompt committed 4 Radar records, 3 Registry components, and 6 Atlas
   diagrams with post-confirm manifest passed, issue_count 0, validation passed,

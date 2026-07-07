@@ -143,6 +143,39 @@ def word_sense_tail_starts_content_clause(tokens: Sequence[str]) -> bool:
     return False
 
 
+def word_sense_tail_describes_comparison(tokens: Sequence[str]) -> bool:
+    token_set = set(tokens)
+    if not ("both" in token_set or sum(1 for token in tokens if token == "as") >= 2 or ("as" in token_set and "and" in token_set)):
+        return False
+    descriptor_tokens: Sequence[str]
+    if "as" in tokens:
+        descriptor_tokens = tokens[tokens.index("as") + 1 :]
+    elif "both" in tokens:
+        descriptor_tokens = tokens[tokens.index("both") + 1 :]
+    else:
+        descriptor_tokens = tokens
+    return len({token for token in descriptor_tokens if token in WORD_SENSE_DESCRIPTOR_TERMS}) >= 2
+
+
+def word_sense_content_clause_describes_comparison(tokens: Sequence[str]) -> bool:
+    index = 1 if tokens[:1] == ["that"] else 0
+    if index < len(tokens) and tokens[index] in {"a", "an", "the", "this", "that"}:
+        index += 1
+    if index + 1 >= len(tokens):
+        return False
+    for verb_index in range(index + 1, min(len(tokens), index + 5)):
+        token = tokens[verb_index]
+        if token in {"as", "both"}:
+            return False
+        if token not in WORD_SENSE_REPORTING_CONTENT_VERBS and token not in WORD_SENSE_REPORTING_CONTENT_MODALS:
+            continue
+        subject_tokens = tokens[index:verb_index]
+        if not subject_tokens:
+            return False
+        return word_sense_tail_describes_comparison(tokens[verb_index + 1 :])
+    return False
+
+
 def word_sense_tail_has_control_obligation(tokens: Sequence[str]) -> bool:
     token_set = set(tokens)
     return bool(
@@ -173,6 +206,8 @@ __all__ = [
     "WORD_SENSE_DESCRIPTOR_TERMS",
     "WORD_SENSE_REPORTING_CONTENT_VERBS",
     "strip_request_reporting_custody_tail",
+    "word_sense_content_clause_describes_comparison",
+    "word_sense_tail_describes_comparison",
     "word_sense_tail_has_control_obligation",
     "word_sense_tail_starts_content_clause",
 ]

@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import strip_request_reporting_custody_tail
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import word_sense_content_clause_describes_comparison
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import word_sense_tail_starts_content_clause
 
 
@@ -780,7 +781,15 @@ def _normalize_request_reporting_product_clauses(value: str) -> str:
     normalized: list[str] = []
     for row in rows:
         product_clause = _request_reporting_product_clause(row)
-        if product_clause and any(_looks_like_recoverable_first_path(previous) for previous in normalized):
+        row_words = _request_words(row)
+        row_tokens = [_word_key(word) for word in row_words]
+        if _request_reporting_clause_is_word_sense(row):
+            continue
+        if product_clause and (
+            any(_looks_like_recoverable_first_path(previous) for previous in normalized)
+        ):
+            continue
+        if not product_clause and normalized and word_sense_content_clause_describes_comparison(row_tokens):
             continue
         normalized.append(product_clause or row)
     return ". ".join(row for row in normalized if row).strip(" .")
@@ -804,7 +813,27 @@ def _request_reporting_product_clause(value: str) -> str:
     tail_keys = [_word_key(word) for word in tail_words]
     if not word_sense_tail_starts_content_clause(tail_keys):
         return ""
+    if word_sense_content_clause_describes_comparison(tail_keys):
+        return ""
     return strip_request_reporting_custody_tail(clean_markdown_text(" ".join(tail_words))).strip(" .")
+
+
+def _request_reporting_clause_is_word_sense(value: str) -> bool:
+    words = _request_words(value)
+    if len(words) < 5:
+        return False
+    lowered = [_word_key(word) for word in words]
+    subject_index = 1 if lowered[0] in {"a", "an", "the", "this", "that"} else 0
+    if subject_index + 2 >= len(lowered):
+        return False
+    if lowered[subject_index] not in {"instruction", "instructions", "prompt", "request"}:
+        return False
+    if lowered[subject_index + 1] not in REQUEST_REPORTING_VERBS:
+        return False
+    tail = words[subject_index + 2 :]
+    if tail and _word_key(tail[0]) == "that":
+        tail = tail[1:]
+    return word_sense_content_clause_describes_comparison([_word_key(word) for word in tail])
 
 
 def _drop_relative_use_to_action(words: list[str]) -> list[str]:

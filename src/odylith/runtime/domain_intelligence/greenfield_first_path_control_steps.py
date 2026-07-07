@@ -445,6 +445,7 @@ def _requirement_control_start(value: str) -> int:
         if (
             _tokens_start_vocabulary_metadata(tokens, index)
             or _tokens_start_subject_modal_requirement(tokens, index)
+            or _tokens_start_control_resolution_requirement(tokens, index)
         ):
             return token[1]
     return -1
@@ -560,6 +561,22 @@ def _tokens_start_subject_modal_requirement(tokens: Sequence[tuple[str, int]], i
             return False
         return True
     return bool(tail & _REQUIREMENT_ACTION_TERMS and tail & _EVIDENCE_OBLIGATION_TERMS)
+
+
+def _tokens_start_control_resolution_requirement(tokens: Sequence[tuple[str, int]], index: int) -> bool:
+    subject_index = index
+    if tokens[subject_index][0] in {"a", "an", "the", "this", "that"}:
+        subject_index += 1
+    if subject_index >= len(tokens):
+        return False
+    subject = tokens[subject_index][0]
+    if subject not in {"ambiguity", "custody", "governance", "ownership"}:
+        return False
+    modal_index = _modal_index(tokens, subject_index + 1)
+    if modal_index < 0:
+        return False
+    tail = {token for token, _start in tokens[modal_index + 1 : modal_index + 10]}
+    return bool(tail & {"explicit", "owned", "resolved"})
 
 
 def _modal_index(tokens: Sequence[tuple[str, int]], index: int) -> int:

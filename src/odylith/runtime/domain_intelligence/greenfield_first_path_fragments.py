@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import word_sense_metadata_start
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import strip_request_reporting_custody_tail
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import word_sense_content_clause_describes_comparison
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import word_sense_tail_starts_content_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominal_action_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominalize_leading_result_action
@@ -385,6 +386,10 @@ def _standalone_request_reporting_product_clause(value: str) -> str:
         return ""
     return strip_request_reporting_custody_tail(" ".join(tail_words)).strip(" .")
 
+def _standalone_word_sense_content_clause(value: str) -> bool:
+    tokens = [token.casefold() for token in re.findall(r"[A-Za-z][A-Za-z0-9'-]*", clean_visible_result_phrase(value))]
+    return word_sense_content_clause_describes_comparison(tokens)
+
 def visible_result_object(value: str) -> str:
     raw_text = clean_first_path_text(value)
     metadata_start = word_sense_metadata_start(raw_text)
@@ -408,6 +413,8 @@ def visible_result_object(value: str) -> str:
     word_sense_prefix_result = _nominal_result_before_word_sense_content_clause(raw_text)
     if word_sense_prefix_result:
         return word_sense_prefix_result
+    if _standalone_word_sense_content_clause(raw_text):
+        return ""
     display_result = display_carrier_result_object(text, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     if display_result:
         return display_result
