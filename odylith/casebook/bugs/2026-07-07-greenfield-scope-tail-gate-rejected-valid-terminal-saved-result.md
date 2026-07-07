@@ -18,15 +18,15 @@
 
 - Environment(s): Maintainer source-local v0.1.15 and local-release installed matrix, July 2026.
 
-- Detected By: Installed greenfield post-confirm release matrix scientific prediction-model case after CB-219.
+- Detected By: Installed greenfield post-confirm release matrix high-variance case after CB-219.
 
 - Failure Signature: greenfield post-confirm completion failed: greenfield scope boundary truncates the accepted first-path tail; hard_blocker owner typed_package_artifact_gate; write transaction not committed.
 
-- Trigger Path: greenfield propose for a scientific prediction model, save Product Intent Confirmation, then greenfield create --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+- Trigger Path: greenfield propose for a high-variance product intent, save Product Intent Confirmation, then greenfield create --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
 
 - Ownership: Domain Intelligence first-path projection, project-brief release-scope rendering, and typed package artifact gate.
 
-- Timeline: 2026-07-06 local-release matrix failed a scientific prediction-model case; 2026-07-07 source-local propose/create reproduced the no-write package failure; diagnosis showed semantic events preserved five steps and visible_result saved reproducible run record while project-brief cleanup and scope-tail inflection comparison rejected valid output.
+- Timeline: 2026-07-06 local-release matrix failed a high-variance case; 2026-07-07 source-local propose/create reproduced the no-write package failure; diagnosis showed semantic events preserved five steps and visible_result saved reproducible run record while project-brief cleanup and scope-tail inflection comparison rejected valid output.
 
 - Blast Radius: Any confirmed greenfield intent whose terminal action uses an inflected visible result such as saved versus save, or whose terminal action can be clipped as a noun-like record tail.
 
@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward fix only; weakening the tail gate or deleting the release-scope check would hide real projection loss.
 
-- Verification: Focused regressions passed; broader parser/projection/artifact-quality slice passed 213 tests in 408.27s after the action-split and actor-owned copy cleanup; exact source-local scientific prediction replay committed governed records with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, rollback guard enabled, 4 Radar workstreams, 3 Registry components, 6 Atlas diagrams, and zero known bad signature hits.
+- Verification: Focused regressions passed; broader parser/projection/artifact-quality slice passed 213 tests in 408.27s after the action-split and actor-owned copy cleanup; exact source-local high-variance replay committed governed records with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, rollback guard enabled, 4 Radar workstreams, 3 Registry components, 6 Atlas diagrams, and zero known bad signature hits.
 
 - Prevention: Scope-tail gates must compare typed event and visible-result variants without domain vocabulary, and project brief cleanup must only drop genuinely clipped terminal clauses.
 
