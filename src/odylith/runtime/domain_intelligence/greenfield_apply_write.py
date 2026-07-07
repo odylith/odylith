@@ -159,14 +159,16 @@ def write_greenfield_proposal(
         proposal=proposal,
         plan=traceability_plan,
     )
-    component_handoffs = greenfield_experience.build_component_handoffs(
-        proposal=proposal,
-        backlog_result=backlog_result,
-        first_release_workstreams=first_release_workstreams,
-        program_result=program_result,
-        traceability_plan=traceability_plan,
-        release_selector=release_selector,
-    )
+    component_handoffs = _precompiled_component_handoffs(prewrite_package)
+    if not component_handoffs:
+        component_handoffs = greenfield_experience.build_component_handoffs(
+            proposal=proposal,
+            backlog_result=backlog_result,
+            first_release_workstreams=first_release_workstreams,
+            program_result=program_result,
+            traceability_plan=traceability_plan,
+            release_selector=release_selector,
+        )
     component_diagram_scope = greenfield_component_registry_scope.build_component_diagram_scope(
         rows=diagram_rows,
         diagram_ids=diagram_ids,
@@ -412,6 +414,24 @@ def _prewrite_atlas_source(row: Mapping[str, Any], rendered_atlas_sources: Mappi
     if not path:
         return ""
     return str(rendered_atlas_sources.get(path, "")).strip()
+
+
+def _precompiled_component_handoffs(
+    prewrite_package: GreenfieldCompletionPackage | None,
+) -> dict[str, dict[str, Any]]:
+    if prewrite_package is None:
+        return {}
+    handoffs: dict[str, dict[str, Any]] = {}
+    for row in prewrite_package.component_registry_preview:
+        if not isinstance(row, Mapping):
+            continue
+        handoff = row.get("implementation_handoff")
+        if not isinstance(handoff, Mapping) or not handoff:
+            continue
+        key = greenfield_traceability.component_key(row)
+        if key:
+            handoffs[key] = dict(handoff)
+    return handoffs
 
 
 def _atlas_source_path_for_row(row: Mapping[str, Any]) -> str:

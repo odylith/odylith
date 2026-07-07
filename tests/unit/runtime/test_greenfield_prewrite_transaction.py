@@ -271,6 +271,11 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
 
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
     assert prewrite.package.prewrite_safety_preview["checks"]["program_dry_run"] is True
+    assert prewrite.package.component_registry_preview
+    assert all(
+        isinstance(row.get("implementation_handoff"), dict) and row["implementation_handoff"]
+        for row in prewrite.package.component_registry_preview
+    )
     assert "Current signal: existing repo language signals point to TypeScript" in first_prompt
 
 

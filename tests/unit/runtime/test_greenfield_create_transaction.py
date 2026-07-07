@@ -45,6 +45,17 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             },
         },
         prewrite_safety_preview={"status": "passed"},
+        component_registry_preview=(
+            {
+                "component_id": "supplier-risk-service",
+                "label": "Supplier Risk Service",
+                "implementation_handoff": {
+                    "workstream_id": "B-001",
+                    "workstream_title": "Prove supplier risk review path",
+                    "implementation_prompt": "Implement the accepted supplier risk review path.",
+                },
+            },
+        ),
         next_steps_preview={
             "project_workstream_id": "B-001",
             "start_workstream_id": "B-001",
@@ -125,6 +136,8 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     assert restored.verified
     assert restored.prewrite_package.proposal == transaction.prewrite_package.proposal
     assert restored.quality_manifest["status"] == "passed"
+    restored_preview = restored.prewrite_package.component_registry_preview
+    assert restored_preview[0]["implementation_handoff"]["workstream_id"] == "B-001"
     restored_specs = restored.backlog_result["_candidate_idea_specs"]
     assert isinstance(restored_specs["B-001"], backlog_contract.IdeaSpec)
     assert restored_specs["B-001"].metadata["idea_id"] == "B-001"
@@ -230,7 +243,7 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", lambda **_kwargs: {})
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", lambda **_kwargs: {"event": {}})
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda **_kwargs: None)
