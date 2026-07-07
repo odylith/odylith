@@ -477,8 +477,18 @@ def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: 
         "uses",
     }:
         return _word_sense_tail_describes_metadata(tail)
-    if subject == "sentence" and verb in {"calls", "describes", "frames", "mentions", "treats", "uses"}:
-        return _word_sense_tail_describes_metadata(tail) and _word_sense_tail_has_control_custody(tail)
+    if subject in {"instruction", "instructions", "prompt", "request"} and verb in {
+        "adds",
+        "clarifies",
+        "explains",
+        "indicates",
+        "notes",
+        "says",
+        "specifies",
+        "states",
+        "warns",
+    }:
+        return _word_sense_tail_describes_metadata(tail) or _word_sense_tail_contains_copular_metadata(tail)
     if verb in {"is", "are"}:
         return _word_sense_tail_describes_metadata(tail) and _word_sense_tail_has_control_custody(tail)
     return False
@@ -533,7 +543,6 @@ _WORD_SENSE_CONTROL_CUSTODY_TERMS = frozenset(
         "custody",
         "explicit",
         "governance",
-        "governed",
         "ownership",
         "owned",
     }
@@ -550,6 +559,16 @@ def _word_sense_tail_describes_metadata(tokens: Sequence[str]) -> bool:
 
 def _word_sense_tail_has_control_custody(tokens: Sequence[str]) -> bool:
     return bool(set(tokens) & _WORD_SENSE_CONTROL_CUSTODY_TERMS)
+
+
+def _word_sense_tail_contains_copular_metadata(tokens: Sequence[str]) -> bool:
+    for index, token in enumerate(tokens):
+        if token not in {"is", "are"}:
+            continue
+        tail = tokens[index + 1 :]
+        if _word_sense_tail_describes_metadata(tail) and _word_sense_tail_has_control_custody(tail):
+            return True
+    return False
 
 
 def _word_sense_descriptor_tail(tokens: Sequence[str]) -> Sequence[str]:

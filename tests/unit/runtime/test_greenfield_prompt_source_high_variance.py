@@ -88,6 +88,16 @@ def test_word_sense_metadata_does_not_reject_grammar_product_language() -> None:
 
     assert not contains_word_sense_metadata_clause(text)
     assert generated_semantic_slop_issues({"lesson_copy": text}) == []
+    assert not contains_word_sense_metadata_clause("The sentence treats record as both a noun and a governed object in the lesson.")
+    assert (
+        generated_semantic_slop_issues(
+            {
+                "lesson_copy": "The lesson explains noun and object ownership in English grammar.",
+                "tutorial_copy": "The tutorial reviews a noun and a governed object in the sentence.",
+            }
+        )
+        == []
+    )
 
 
 def test_visible_result_object_ignores_word_sense_metadata_tail() -> None:
@@ -115,6 +125,10 @@ def test_visible_result_object_rejects_leading_word_sense_metadata() -> None:
     )
     assert (
         visible_result_object("The request uses record as both a noun and a governed object, so ownership must be explicit")
+        == ""
+    )
+    assert (
+        visible_result_object("The request says record is both a noun and a governed object, so ownership must be explicit")
         == ""
     )
     assert visible_result_object("Record is both a verb and a governed object, so ownership must be explicit") == ""
@@ -157,7 +171,21 @@ def test_prompt_source_rejects_noun_object_word_sense_metadata_escape() -> None:
     )
 
 
-def _assert_prompt_word_sense_phrase_is_metadata(control_sentence: str, leaked_phrase: str) -> None:
+def test_prompt_source_rejects_reporting_verb_word_sense_metadata_escape() -> None:
+    _assert_prompt_word_sense_phrase_is_metadata(
+        "The request says record is both a noun and a governed object, so ownership must be explicit.",
+        "request says",
+        leaked_phrase="noun and a governed object",
+    )
+
+
+def _assert_prompt_word_sense_phrase_is_metadata(
+    control_sentence: str,
+    stub_phrase: str,
+    *,
+    leaked_phrase: str | None = None,
+) -> None:
+    leaked = leaked_phrase or stub_phrase
     prompt = (
         "Create a greenfield proposal for pathology slide discrepancy board. Focus on a governed workflow where the "
         "pathology quality lead turns an ambiguous slide discrepancy case into a review-ready record using stain "
@@ -178,10 +206,14 @@ def _assert_prompt_word_sense_phrase_is_metadata(control_sentence: str, leaked_p
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
-    assert leaked_phrase not in source.first_path.casefold()
-    assert leaked_phrase not in outcome.casefold()
-    assert leaked_phrase not in outcome_action_phrase(outcome).casefold()
-    assert leaked_phrase not in rendered
+    assert stub_phrase not in source.first_path.casefold()
+    assert leaked not in source.first_path.casefold()
+    assert stub_phrase not in outcome.casefold()
+    assert leaked not in outcome.casefold()
+    assert stub_phrase not in outcome_action_phrase(outcome).casefold()
+    assert leaked not in outcome_action_phrase(outcome).casefold()
+    assert stub_phrase not in rendered
+    assert leaked not in rendered
     assert "word-sense metadata leaked" not in "\n".join(generated_semantic_slop_issues(proposal))
     assert greenfield_quality_issues(proposal) == []
 

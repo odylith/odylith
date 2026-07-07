@@ -451,6 +451,7 @@ def test_current_platform_source_does_not_carry_request_meta_replay_phrase() -> 
                 "request uses record both as an action and as a governed object",
                 "request uses record as both a verb and a governed object",
                 "request uses record as both a noun and a governed object",
+                "request says record is both a noun and a governed object",
             ),
         )
         == ()

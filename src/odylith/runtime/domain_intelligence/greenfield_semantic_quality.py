@@ -465,20 +465,16 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
         )
         word_sense_article = r"(?:(?:a|an|the)\s+)?"
         if contains_word_sense_metadata_clause(text) or re.search(
-            rf"\b(?:reach|see|review|show|use)\s+{word_sense_article}{word_sense_descriptor}\s+"
+            rf"\b(?:reach|see|show|use)\s+{word_sense_article}{word_sense_descriptor}\s+"
             rf"(?:and\s+)?(?:as\s+)?{word_sense_article}(?:governed\s+)?{word_sense_descriptor}\b",
             lowered,
-        ) or re.search(
-            rf"\b{word_sense_article}{word_sense_descriptor}\s+(?:and\s+)?(?:as\s+)?"
-            rf"{word_sense_article}governed\s+{word_sense_descriptor}\b",
-            lowered,
         ) or (
-            re.search(
+            re.match(
                 rf"\b{word_sense_article}{word_sense_descriptor}\s+(?:and\s+)?(?:as\s+)?"
-                rf"{word_sense_article}{word_sense_descriptor}\b",
+                rf"{word_sense_article}(?:governed\s+)?{word_sense_descriptor}\b",
                 lowered,
             )
-            and re.search(r"\b(?:ownership|custody)\b", lowered)
+            and re.search(r"\b(?:ownership|custody|explicit)\b", lowered)
         ):
             issues.append(f"word-sense metadata leaked as visible result at {location}")
         if re.search(
