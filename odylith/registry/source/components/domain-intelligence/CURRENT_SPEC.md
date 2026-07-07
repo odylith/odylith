@@ -105,9 +105,13 @@ This section captures synchronized requirement and contract signals derived from
   reviewable result. Release-scope projection now opts into accepted
   system-classified source steps and preserves their source actions while the
   ordinary confirmation/action compactors keep their narrower behavior.
-  Focused source proof and exact source-local replay passed; the next gate is a
-  fresh local-release dist with exact installed failed-subset replay and
-  resumed 120/240-case discovery.
+  Focused source proof and exact source-local replay passed. Fresh local-release
+  dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-c40223a0`
+  passed the 224-term platform leakage check and the exact installed
+  failed-subset replay at hard 10/10 in 32.441s with zero issues, 4 Radar
+  workstreams, 3 Registry specs, 6 Atlas diagrams, 18 trace nodes, and all
+  expert lenses green. The next gate is resumed 120/240-case discovery plus the
+  missing document/PRD/edited-Markdown chaos tiers.
 
 - 2026-07-07: Closed the initial scope-tail rejection for valid terminal saved-result paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`; Diagram: D-045)
   Domain Intelligence now preserves complete terminal action clauses such as

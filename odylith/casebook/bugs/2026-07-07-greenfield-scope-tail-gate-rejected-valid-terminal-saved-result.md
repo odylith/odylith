@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward fix only; weakening the tail gate or deleting the release-scope check would hide real projection loss.
 
-- Verification: Focused regressions passed; broader parser/projection/artifact-quality slice passed 213 tests in 408.27s after the action-split and actor-owned copy cleanup; exact source-local high-variance replay committed governed records with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, rollback guard enabled, 4 Radar workstreams, 3 Registry components, 6 Atlas diagrams, and zero known bad signature hits. Fresh reopening evidence: installed 120-case discovery stopped at 1/120 because fd0e5a51 case 2 failed before writes with `greenfield scope boundary truncates the accepted first-path tail`; result evidence lives under `/Volumes/FREEDOM_RESEARCH/research-code/odylith-fd0e5a51-volume-120-20260707T000000Z/`. Source-local exact replay after the reopened fix passed with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, elapsed 7.561s, 4 Radar workstreams, 3 Registry components, and 6 Atlas diagrams. Remaining proof: rebuild a fresh dist, rerun the exact installed failed-subset, then resume broader 120/240-case discovery and document/PRD/edited-Markdown tiers.
+- Verification: Focused regressions passed; broader parser/projection/artifact-quality slice passed 213 tests in 408.27s after the action-split and actor-owned copy cleanup; exact source-local high-variance replay committed governed records with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, rollback guard enabled, 4 Radar workstreams, 3 Registry components, 6 Atlas diagrams, and zero known bad signature hits. Fresh reopening evidence: installed 120-case discovery stopped at 1/120 because fd0e5a51 case 2 failed before writes with `greenfield scope boundary truncates the accepted first-path tail`; result evidence lives under `/Volumes/FREEDOM_RESEARCH/research-code/odylith-fd0e5a51-volume-120-20260707T000000Z/`. Source-local exact replay after the reopened fix passed with post_confirm_quality_manifest status passed, validation_status passed, issue_count 0, write_transaction committed, elapsed 7.561s, 4 Radar workstreams, 3 Registry components, and 6 Atlas diagrams. Fresh local-release dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-c40223a0` passed platform-domain leakage across 224 fixture terms, and the exact installed failed-subset replay passed 1/1 at hard 10/10 with 32.441s create time, zero issues, 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams, 18 trace nodes, and all expert lenses green. Remaining proof: resume broader 120/240-case discovery and document/PRD/edited-Markdown tiers before release readiness.
 
 - Prevention: Scope-tail gates must compare typed event and visible-result variants without domain vocabulary, and project brief cleanup must only drop genuinely clipped terminal clauses.
 
@@ -64,7 +64,7 @@
 
 - Related Incidents/Bugs: CB-219, CB-215, B-142
 
-- GitHub Status: reopened_source_fix_pending_fresh_dist
+- GitHub Status: installed_failed_subset_passed_pending_broad_release_proof
 
 - Public Response: pending
 

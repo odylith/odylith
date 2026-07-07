@@ -106,11 +106,16 @@ vocabulary, or degraded packages.
   source-local replay of the failed prompt committed governed records with a
   passed post-confirm manifest, validation passed, issue_count 0, rollback
   guard enabled, 4 Radar workstreams, 3 Registry components, and 6 Atlas
-  diagrams. This is source-local closure only; the required next boundary is a
-  fresh local-release dist, exact installed failed-subset replay, resumed
-  120/240-case discovery, and the missing document/PRD/edited-Markdown chaos
-  tiers. Do not weaken the scope-tail gate or raise the 60-second standard
-  budget to hide this class.
+  diagrams. Fresh local-release dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-c40223a0`
+  passed platform-domain leakage across 224 fixture terms and passed the exact
+  installed failed-subset replay at hard 10/10 in 32.441s with zero issues, 4
+  Radar workstreams, 3 Registry specs, 6 Atlas diagrams, 18 trace nodes, and all
+  expert lenses green. This closes the exact installed no-write class, not
+  release readiness; the required next boundary is resumed 120/240-case
+  discovery and the missing document/PRD/edited-Markdown chaos tiers. Do not
+  weaken the scope-tail gate or raise the 60-second standard budget to hide
+  this class.
 
 - 2026-07-05 confirmed projection-custody checkpoint: the source-local repair
   for structured visible-result selection was necessary but insufficient on its
