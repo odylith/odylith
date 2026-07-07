@@ -37,6 +37,11 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     assert len(payload["components"]) == 4
     assert len(payload["diagrams"]) == 6
     transaction_package = compile_payload["transaction"]["prewrite_package"]
+    assert payload["next_steps"] == transaction_package["next_steps_preview"]
+    _assert_accepted_project_source_launch_matches_transaction(
+        accepted,
+        transaction_package["accepted_project_preview"],
+    )
     _assert_committed_program_matches_transaction(tmp_path, transaction_package["program_result"])
     _assert_committed_release_assignment_matches_transaction(
         tmp_path,
@@ -139,6 +144,13 @@ def _assert_committed_release_assignment_matches_transaction(
     ]
 
     assert matching_ids == expected_ids
+
+
+def _assert_accepted_project_source_launch_matches_transaction(
+    accepted_project: dict,
+    accepted_project_preview: dict,
+) -> None:
+    assert accepted_project["source_launch"] == accepted_project_preview["source_launch"]
 
 
 def _generated_source_payload(root: Path) -> str:

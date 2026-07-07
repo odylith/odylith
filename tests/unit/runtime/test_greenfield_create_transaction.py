@@ -45,6 +45,16 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             },
         },
         prewrite_safety_preview={"status": "passed"},
+        next_steps_preview={
+            "project_workstream_id": "B-001",
+            "start_workstream_id": "B-001",
+            "start_workstream_title": "Prove supplier risk review path",
+            "release_selector": "0.0.1",
+            "implementation_prompt": "Start B-001 from the accepted transaction package.",
+            "operator_sequence": ["Open B-001.", "Implement the first path."],
+            "coding_readiness_gates": ["Transaction package accepted."],
+            "verification_commands": ["odylith context --repo-root . B-001"],
+        },
         program_result={
             "created": True,
             "dry_run": True,
@@ -216,16 +226,12 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
             "program_count": 1,
         }
 
-    def fake_next_steps(**kwargs: Any) -> dict[str, Any]:
-        calls["first_release_workstreams"] = kwargs["first_release_workstreams"]
-        return {"status": "ok"}
-
     monkeypatch.setattr(greenfield_programs, "create_greenfield_program", forbidden)
     monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", lambda **_kwargs: {})
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", fake_next_steps)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", lambda **_kwargs: {"event": {}})
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
@@ -248,7 +254,7 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     )
 
     assert calls["materialize"]["program_result"] == package.program_result
-    assert calls["first_release_workstreams"] == ["B-001"]
+    assert result["next_steps"] == package.next_steps_preview
     assert result["program"]["program_count"] == 1
 
 

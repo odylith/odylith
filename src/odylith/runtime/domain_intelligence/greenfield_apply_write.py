@@ -233,14 +233,17 @@ def write_greenfield_proposal(
     release_id = "none"
     if isinstance(release_targeting, Mapping):
         release_id = str(release_targeting.get("release_id", "")).strip() or "none"
-    next_steps = greenfield_experience.build_next_steps(
-        proposal=proposal,
-        backlog_result=backlog_result,
-        first_release_workstreams=first_release_workstreams,
-        program_result=program_result,
-        release_selector=release_selector,
-    )
-    if source_text:
+    if prewrite_package is not None and isinstance(prewrite_package.next_steps_preview, Mapping):
+        next_steps = dict(prewrite_package.next_steps_preview)
+    else:
+        next_steps = greenfield_experience.build_next_steps(
+            proposal=proposal,
+            backlog_result=backlog_result,
+            first_release_workstreams=first_release_workstreams,
+            program_result=program_result,
+            release_selector=release_selector,
+        )
+    if source_text and not (prewrite_package is not None and isinstance(prewrite_package.next_steps_preview, Mapping)):
         restored_next_steps = greenfield_source_casing.restore_source_casing_in_public_copy(
             next_steps,
             source_text=source_text,
