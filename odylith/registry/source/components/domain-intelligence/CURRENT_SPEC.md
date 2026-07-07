@@ -59,10 +59,11 @@ This section captures synchronized requirement and contract signals derived from
   sentences without restoring broad cross-sentence leakage, with comma/then
   splitting moved into the dedicated action-split owner instead of bloating the
   parser. Actor-owned visible-result copy now preserves accepted event
-  ownership such as `shelters publish accepted assignments` without rewriting
-  it into a different supporting actor capability, while protected product
-  tokens such as `API` and `GLP-1` keep readable inline casing. Source-local replay
-  of the assay-drift confirmation completed governed records with
+  ownership such as actor-owned accepted-event statements without rewriting
+  them into different supporting actor capabilities, while protected product
+  tokens such as acronyms and scientific terms keep readable inline casing.
+  Source-local replay of the scientific prediction-model confirmation completed
+  governed records with
   `post_confirm_quality_manifest.status=passed`, `validation_status=passed`,
   `issue_count=0`, `write_transaction.status=committed`, rollback guard enabled,
   `4` Radar workstreams, `3` Registry components, `6` Atlas diagrams, and zero
