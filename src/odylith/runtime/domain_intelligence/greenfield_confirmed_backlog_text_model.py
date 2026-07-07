@@ -460,10 +460,13 @@ def problem_actor_subject(actors: str, *, fallback: str) -> str:
     lowered = text.casefold()
     article = re.match(r"^(?P<article>a|an|the|one|this|that|each)\s+(?P<body>.+)$", text, flags=re.IGNORECASE)
     if article:
-        return f"{article.group('article').capitalize()} {_lower_actor_label_start(article.group('body'))}".strip()
+        body = article.group("body")
+        label = body if _starts_with_protected_actor_label(body) else _lower_actor_label_start(body)
+        return f"{article.group('article').capitalize()} {label}".strip()
     if re.match(r"^(?:people|users|customers|operators|reviewers)\b", lowered):
         return text[:1].upper() + text[1:]
-    return f"The {_lower_actor_label_start(text)}"
+    label = text if _starts_with_protected_actor_label(text) else _lower_actor_label_start(text)
+    return f"The {label}"
 
 
 def outcome_repeats_action(*, action: str, outcome: str, outcome_action: str) -> bool:
@@ -516,6 +519,11 @@ def _lower_actor_label_start(value: str) -> str:
     return _lower_role_words(lowered)
 
 
+def _starts_with_protected_actor_label(value: str) -> bool:
+    words = str(value or "").split()
+    return bool(words and _protected_actor_label_token(words[0]))
+
+
 def _all_plain_title_label_words(value: str) -> bool:
     words = [word.strip(".,;:()[]{}") for word in str(value or "").split() if word.strip(".,;:()[]{}")]
     if not words:
@@ -539,18 +547,27 @@ def _lower_sentence_label_words(value: str) -> str:
     words = str(value or "").split()
     lowered: list[str] = []
     previous_protected = False
-    for word in words:
+    for index, word in enumerate(words):
         stripped = word.strip(".,;:()[]{}")
         if _protected_actor_label_token(stripped):
             lowered.append(word)
             previous_protected = True
-        elif previous_protected and _source_cased_actor_label_follower(stripped):
+        elif previous_protected and _source_cased_actor_label_follower(stripped) and _has_lowercase_label_tail(words[index + 1 :]):
             lowered.append(word)
             previous_protected = False
         else:
             lowered.append(word.casefold())
             previous_protected = False
     return " ".join(lowered)
+
+
+def _has_lowercase_label_tail(words: list[str]) -> bool:
+    return any(
+        (cleaned := word.strip(".,;:()[]{}"))
+        and cleaned[:1].islower()
+        and cleaned.casefold() not in _ACTOR_ROLE_WORDS
+        for word in words
+    )
 
 
 def _lower_role_words(value: str) -> str:

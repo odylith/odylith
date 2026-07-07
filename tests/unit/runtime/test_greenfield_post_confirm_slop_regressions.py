@@ -120,6 +120,7 @@ Next step
         confirmed_intent=intent,
     )
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
+FIRST_PATH_ACTION_SPLIT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_action_split.py"
 FIRST_PATH_COMMON_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_common.py"
 FIRST_PATH_FRAGMENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py"
 FIRST_PATH_VIEW_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_view.py"
@@ -189,6 +190,7 @@ def test_release_suffixed_labels_do_not_duplicate_release_across_governance_surf
 def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     parser_source = FIRST_PATH_SEMANTICS_PATH.read_text(encoding="utf-8")
     clause_source = FIRST_PATH_CLAUSES_PATH.read_text(encoding="utf-8")
+    action_split_source = FIRST_PATH_ACTION_SPLIT_PATH.read_text(encoding="utf-8")
     common_source = FIRST_PATH_COMMON_PATH.read_text(encoding="utf-8")
     fragment_source = FIRST_PATH_FRAGMENTS_PATH.read_text(encoding="utf-8")
     view_source = FIRST_PATH_VIEW_PATH.read_text(encoding="utf-8")
@@ -197,6 +199,7 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
 
     assert len(parser_source.splitlines()) < 800
     assert len(clause_source.splitlines()) < 800
+    assert len(action_split_source.splitlines()) < 800
     assert len(common_source.splitlines()) < 800
     assert len(fragment_source.splitlines()) < 800
     assert len(view_source.splitlines()) < 800
@@ -211,6 +214,14 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     ):
         assert moved not in parser_source
         assert moved in clause_source
+    for moved in (
+        "def split_action_pieces",
+        "def normalize_role_can_step",
+        "def normalize_subjectless_action_step",
+        "def connector_core_starts_action_clause",
+    ):
+        assert moved not in parser_source
+        assert moved in action_split_source
     for moved in (
         "def clean_visible_result_phrase",
         "def visible_result_object",
@@ -958,7 +969,9 @@ def test_confirmed_diagram_labels_summarize_release_proof_and_deferred_scope_bef
         "Release 0.0.1 is complete when one research lead can map claims to evidence, "
         "resolve one missing-section blocker, and see a readiness decision."
     )
-    assert diagram_text.release_proof_label(release_boundary) == "one research lead can map claims to evidence"
+    assert diagram_text.release_proof_label(release_boundary) == (
+        "one research lead can map claims to evidence, resolve one missing-section blocker"
+    )
     assert diagram_text.deferred_scope_label(release_boundary) == "beyond accepted first path"
     succeeds_boundary = (
         "Release 0.0.1 succeeds when one learner can start a practice session, receive feedback, "
@@ -1440,6 +1453,44 @@ def test_confirmed_project_brief_release_scope_keeps_first_path_tail() -> None:
     release_option = next(row for row in brief["customization_options"] if row["id"] == "D5")
 
     assert "exports provenance proof" in release_option["recommended"]
+
+
+def test_confirmed_project_brief_keeps_terminal_save_record_tail() -> None:
+    first_path = (
+        "A researcher provides source data, defines the evaluation context and target, runs the model or simulation, "
+        "reviews the prediction result with uncertainty and comparison evidence, and saves a reproducible run record."
+    )
+    brief = confirmed_project_brief(
+        label="Assay Drift Prediction Model Workspace",
+        prompt="Productize a model evaluation workspace.",
+        release="0.0.1",
+        state_object=(
+            "A model run record tracks source data, method version, parameters, uncertainty, comparison evidence, "
+            "validation status, review notes, and reproducibility evidence."
+        ),
+        evidence_record="Reproducible run record",
+        product_story="Researchers need a bounded model evaluation path with reviewable evidence.",
+        first_path=first_path,
+        proof_boundary=(
+            "Release 0.0.1 succeeds when a researcher can reproduce the saved result from the same inputs, "
+            "context, method version, and review evidence."
+        ),
+        human_actors=["Researcher"],
+        internal_systems=[
+            "Evidence intake",
+            "Method execution record",
+            "Review and reproducibility workspace",
+        ],
+        visible_result="saved reproducible run record",
+    )
+
+    rendered = json.dumps(brief, sort_keys=True)
+    release_option = next(row for row in brief["customization_options"] if row["id"] == "D5")
+    readiness_gate = next(row for row in brief["coding_readiness_gates"] if "first implementation lane" in row)
+
+    assert "save a reproducible run record" in readiness_gate
+    assert "save a reproducible run record" in release_option["recommended"]
+    assert "save a reproducible run record" in rendered
 
 
 def test_confirmed_project_brief_preserves_exact_state_object_label() -> None:

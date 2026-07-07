@@ -153,6 +153,45 @@ def test_project_judgment_accepts_visible_result_inflection_in_scope_tail() -> N
     assert greenfield_project_judgment_issues(package) == ()
 
 
+def test_project_judgment_accepts_past_tense_visible_result_in_scope_tail() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            **_proposal(),
+            "semantic_model": {
+                "first_path_contract": {
+                    "visible_result": "saved reproducible run record",
+                    "events": [
+                        {"action": "provides", "text": "A researcher provides source data"},
+                        {"action": "defines", "text": "A researcher defines the evaluation context and target"},
+                        {"action": "runs", "text": "A researcher runs the model or simulation"},
+                        {
+                            "action": "reviews",
+                            "text": (
+                                "A researcher reviews the prediction result with uncertainty and comparison evidence"
+                            ),
+                        },
+                        {"action": "saves", "text": "A researcher saves a reproducible run record"},
+                    ],
+                }
+            },
+        },
+        project_brief_preview={
+            "customization_options": [
+                {
+                    "recommended": (
+                        "Keep 0.0.1 to the accepted first path and non-goals: Do not expand beyond provide "
+                        "source data; define the evaluation context and target; run the model or simulation; "
+                        "review the prediction result with uncertainty and comparison evidence; save a reproducible "
+                        "run record until the first outcome works."
+                    )
+                }
+            ]
+        },
+    )
+
+    assert greenfield_project_judgment_issues(package) == ()
+
+
 def test_project_judgment_rejects_component_summary_missing_long_label_tails() -> None:
     long_label = (
         "Annealing Result Review Console for QUBO models, Ising models, "

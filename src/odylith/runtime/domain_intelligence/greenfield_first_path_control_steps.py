@@ -147,6 +147,7 @@ _REQUIREMENT_ACTION_TERMS = frozenset(
 )
 _EVIDENCE_OBLIGATION_TERMS = frozenset(
     {
+        "audit",
         "baseline",
         "claim",
         "claims",
@@ -167,6 +168,7 @@ _EVIDENCE_OBLIGATION_TERMS = frozenset(
         "result",
         "review",
         "source",
+        "trail",
         "tolerance",
         "uncertainty",
         "unit",
@@ -427,9 +429,11 @@ def _tokens_start_subject_modal_requirement(tokens: Sequence[tuple[str, int]], i
     modal_index = _modal_index(tokens, subject_index + 1)
     if modal_index < 0:
         return False
-    if subject in _RELEASE_BOUNDARY_SUBJECT_TERMS:
-        return True
     tail = {token for token, _start in tokens[modal_index + 1 : modal_index + 14]}
+    if subject in _RELEASE_BOUNDARY_SUBJECT_TERMS:
+        if tail & _REQUIREMENT_ACTION_TERMS and tail & _EVIDENCE_OBLIGATION_TERMS:
+            return False
+        return True
     return bool(tail & _REQUIREMENT_ACTION_TERMS and tail & _EVIDENCE_OBLIGATION_TERMS)
 
 

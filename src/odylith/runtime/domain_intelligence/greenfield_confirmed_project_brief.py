@@ -433,6 +433,8 @@ def _repair_incomplete_clause_tail(value: str, *, clipped: bool = False) -> str:
             if previous in {"a", "an", "the"} and _looks_like_unfinished_modifier(last):
                 repaired = _drop_trailing_clause_or_words(text, drop_words=2)
             elif _looks_like_incomplete_terminal_verb(last):
+                if _terminal_clause_is_complete_action(text):
+                    return text
                 repaired = _drop_trailing_clause_or_words(text, drop_words=1)
             else:
                 return text
@@ -440,6 +442,19 @@ def _repair_incomplete_clause_tail(value: str, *, clipped: bool = False) -> str:
         if not repaired or repaired == text:
             return text
         text = repaired
+
+
+def _terminal_clause_is_complete_action(value: str) -> bool:
+    text = compact_text(value).rstrip(" ,;:.")
+    separator_index = max(text.rfind(separator) for separator in (",", ";", ":"))
+    if separator_index < 0:
+        return False
+    tail = text[separator_index + 1 :].strip(" ,;:.")
+    tail = re.sub(r"^(?:and|or|then|but)\s+", "", tail, flags=re.IGNORECASE).strip(" .")
+    if _word_count(tail) < 4 or not looks_like_action_clause(tail):
+        return False
+    last = tail.split()[-1].strip(".,;:").casefold()
+    return not _looks_like_unfinished_modifier(last)
 
 
 def _drop_clipped_list_tail(value: str) -> str:

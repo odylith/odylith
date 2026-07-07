@@ -849,7 +849,7 @@ def test_atlas_box_explanations_generate_action_oriented_node_copy() -> None:
     assert "hands off" not in by_label["Care decision core"]
     assert "performs the bounded action" in by_label["Liquid dosing controller"]
     assert "hands off" not in by_label["Liquid dosing controller"]
-    assert "records the evidence needed" in by_label["Care event log"]
+    assert "keeps the evidence needed" in by_label["Care event log"]
     assert "hands off" not in by_label["Care event log"]
     assert "primary user surface" in by_label["Owner status interface"]
     assert "current state" in by_label["Owner status interface"]

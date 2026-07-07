@@ -329,7 +329,7 @@ def _action_inflection_variants(value: str) -> set[str]:
     elif text.endswith("ied") and len(text) > 5:
         roots.add(f"{text[:-3]}y")
     elif text.endswith("ed") and len(text) > 4:
-        roots.add(text[:-2])
+        roots.update(_past_tense_roots(text))
     elif text.endswith("es") and len(text) > 4:
         roots.add(text[:-2])
     elif text.endswith("s") and len(text) > 3:
@@ -340,6 +340,14 @@ def _action_inflection_variants(value: str) -> set[str]:
         variants.add(f"{root}s")
         variants.add(_regular_ing(root))
     return variants
+
+
+def _past_tense_roots(value: str) -> set[str]:
+    root = normalize_string(value).casefold()[:-2]
+    roots = {root} if root else set()
+    if root and not root.endswith("e"):
+        roots.add(f"{root}e")
+    return roots
 
 
 def _regular_ing(value: str) -> str:

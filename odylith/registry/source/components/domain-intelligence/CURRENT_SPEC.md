@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-06
+Last updated: 2026-07-07
 
 
 ## Overview
@@ -47,6 +47,27 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-07: Closed scope-tail rejection for valid terminal saved-result paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`; Diagram: D-045)
+  Domain Intelligence now preserves complete terminal action clauses such as
+  `save a reproducible run record` through project-brief readiness and
+  first-release scope projection. The typed package artifact gate compares
+  past-tense visible results such as `saved reproducible run record` against
+  accepted action text with silent-e inflection variants instead of rejecting
+  valid `save`/`saved` coverage. First-path parsing also carries actors through
+  same-sentence `then` continuations and explicit pronoun-led follow-up
+  sentences without restoring broad cross-sentence leakage, with comma/then
+  splitting moved into the dedicated action-split owner instead of bloating the
+  parser. Actor-owned visible-result copy now preserves accepted event
+  ownership such as `shelters publish accepted assignments` without rewriting
+  it into a different supporting actor capability, while protected product
+  tokens such as `API` and `GLP-1` keep readable inline casing. Source-local replay
+  of the assay-drift confirmation completed governed records with
+  `post_confirm_quality_manifest.status=passed`, `validation_status=passed`,
+  `issue_count=0`, `write_transaction.status=committed`, rollback guard enabled,
+  `4` Radar workstreams, `3` Registry components, `6` Atlas diagrams, and zero
+  hits for the known package/slop signatures. The affected runtime slice passed
+  `213` focused parser/projection/artifact-quality tests.
 
 - 2026-07-06: Closed confirmed-intent setup-prose contamination in post-confirm projection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-219`; Diagram: D-045)
   Domain Intelligence now classifies structural first-path setup sentences such

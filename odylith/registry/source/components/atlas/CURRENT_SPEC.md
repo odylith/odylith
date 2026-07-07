@@ -6,10 +6,10 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-07-04
+Last updated: 2026-07-07
 
 
-Last updated (UTC): 2026-06-30
+Last updated (UTC): 2026-07-07
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -324,6 +324,13 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-07: Cleaned generic Atlas evidence-node explanation copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`)
+  `atlas_box_explanations.py` now describes evidence/log/record nodes as
+  keeping review evidence instead of producing `record records` or
+  `evidence record records` constructions in generated diagram payloads. The
+  change keeps the renderer domain-neutral and pins the shared explanation
+  contract with the existing action-oriented node-copy test.
+
 - 2026-06-30: Tightened Atlas box-explanation custody against platform-domain leakage. `atlas_box_explanations.py` must describe generic topology, provider, ownership, and evidence cues without carrying simulation-domain triggers into platform runtime; fixture and Casebook evidence may retain concrete repro vocabulary, but Atlas runtime explanations and current component contracts stay scenario-neutral. Tracked-object phrase extraction now lives in `atlas_box_terms.py`, keeping the touched explanation owner under the source-size pressure line and pinning generic verb fallback so terms like `stays` do not become the visible domain object. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-28: Tightened Atlas workstream visibility custody after D-045 was rendered but not visible from B-142 navigation. The renderer now preserves backlog-derived `idea_id` ownership during diagram relationship attachment, and Atlas proof must check route/filter indexes such as `diagram_related_workstreams`, not only catalog rows, payload presence, or SVG/PNG assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-06-28: Added source-local static generated-flowchart visibility proof to the Atlas architecture contract. D-040 now shows static generated-flowchart fallback inside Atlas auto-update, and new diagrams D-045/D-046 were rendered with SVG/PNG assets after the browser renderer degraded. Atlas payload verification confirmed D-040, D-043, D-045, and D-046 as fresh with rendered assets present, so new architecture diagrams must prove rendered visibility, not just catalog/source creation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)

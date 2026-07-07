@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 import re
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
@@ -200,7 +202,7 @@ def _known_actor_outcome_event(*, outcome: str, outcome_action: str, known_actor
             or backlog_text.result_terms_covered(action, outcome_action)
             or backlog_text.result_terms_covered(outcome_action, action)
         ):
-            return backlog_text.inline_actor_event_fragment(label=label, action=action)
+            return _actor_owned_event_fragment(label=label, action=action)
     return ""
 
 
@@ -209,6 +211,25 @@ def _actor_row_action(value: str) -> str:
     text = re.sub(r"^(?:needs?|need)\s+(?:the\s+product\s+)?to\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and\s+keep\s+the\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
     return backlog_text.capability_action_clause(text) or action_chain_fragment(text)
+
+
+def _actor_owned_event_fragment(*, label: str, action: str) -> str:
+    actor = backlog_text.inline_actor_subject(label, fallback="")
+    action_text = backlog_text.capability_action_clause(action) or backlog_text.sentence_fragment(action)
+    if not actor or not action_text:
+        return ""
+    if re.match(r"^(?:use|uses)\s+the\s+product\s+to\b", action_text, flags=re.IGNORECASE):
+        return backlog_text.inline_actor_event_fragment(label=label, action=action_text)
+    is_plural = actor_verb(label, singular="singular", plural="plural") == "plural"
+    if is_plural:
+        actor = re.sub(r"^the\s+", "", actor, flags=re.IGNORECASE)
+    match = re.match(r"^(?P<verb>[A-Za-z]+)\b(?P<tail>.*)$", action_text)
+    if not match:
+        return backlog_text.sentence_fragment(f"{actor} {action_text}")
+    verb = base_action_clause(match.group("verb"))
+    if not is_plural:
+        verb = third_person_action_verb(verb)
+    return backlog_text.sentence_fragment(f"{actor} {verb}{match.group('tail')}")
 
 
 def _known_actor_match_terms(values: Sequence[str]) -> set[str]:

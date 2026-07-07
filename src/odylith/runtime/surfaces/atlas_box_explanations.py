@@ -461,7 +461,7 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     if _has_any(lowered, ("controller", "actuator", "executor", "execution", "worker", "runner", "adapter")):
         return f"{subject} performs the bounded action and should expose the result for verification."
     if _has_any(lowered, ("log", "record", "ledger", "evidence", "audit", "receipt", "proof", "history", "casebook")):
-        return f"{subject} records the evidence needed to review what happened and why it was allowed."
+        return f"{subject} keeps the evidence needed to review what happened and why it was allowed."
     if _has_any(lowered, ("repo", "registry", "catalog", "store", "database", "source", "memory", "bundle", "snapshot")):
         return f"{subject} stores the source information that downstream boxes read or update."
     if _has_any(lowered, ("connector", "gateway", "api", "integration", "webhook", "bridge", "rail")):
