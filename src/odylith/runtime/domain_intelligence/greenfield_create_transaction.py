@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
 PRODUCT_CREATE_TRANSACTION_VERSION = "odylith.greenfield.product_create_transaction.v1"
@@ -109,7 +110,7 @@ def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductC
         proposal=_mapping(payload.get("proposal")),
         validation_gate=_mapping(payload.get("validation_gate")),
         prewrite_package=_completion_package_from_payload(_mapping(payload.get("prewrite_package"))),
-        backlog_result=_mapping(payload.get("backlog_result")),
+        backlog_result=_backlog_result_from_payload(_mapping(payload.get("backlog_result"))),
         quality_manifest=_mapping(payload.get("quality_manifest")),
         transaction_hash=str(payload.get("transaction_hash", "")).strip(),
     )
@@ -161,6 +162,31 @@ def _json_ready(value: Any) -> Any:
 
 def _mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
+
+
+def _backlog_result_from_payload(payload: Mapping[str, Any]) -> Mapping[str, Any]:
+    result = dict(payload)
+    candidate_specs = result.get("_candidate_idea_specs")
+    if isinstance(candidate_specs, Mapping):
+        result["_candidate_idea_specs"] = {
+            str(idea_id): _idea_spec_from_payload(spec)
+            for idea_id, spec in candidate_specs.items()
+            if isinstance(spec, Mapping)
+        }
+    return result
+
+
+def _idea_spec_from_payload(payload: Mapping[str, Any]) -> backlog_contract.IdeaSpec:
+    return backlog_contract.IdeaSpec(
+        path=Path(str(payload.get("path", ""))),
+        metadata={str(key): str(value) for key, value in _mapping(payload.get("metadata")).items()},
+        sections={str(value) for value in _sequence(payload.get("sections"))},
+        section_bodies={str(key): str(value) for key, value in _mapping(payload.get("section_bodies")).items()},
+    )
+
+
+def _sequence(value: Any) -> Sequence[Any]:
+    return value if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) else ()
 
 
 def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCompletionPackage:

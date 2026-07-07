@@ -242,6 +242,13 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
                     '  "diagrams": []\n'
                     '}\n'
                 )
+            elif "compile-transaction" in command:
+                stdout = (
+                    '{\n'
+                    '  "mode": "product_create_transaction",\n'
+                    '  "product_create_transaction": {"transaction_hash": "unit-transaction-hash"}\n'
+                    '}\n'
+                )
             elif "create" in command:
                 stdout = (
                     '{\n'
@@ -289,16 +296,31 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
         (
             str(odylith),
             "greenfield",
-            "create",
+            "compile-transaction",
             "--repo-root",
             ".",
             "--prompt",
             "warehouse dispatch planning app",
             "--intent-file",
             ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm",
+            "--output",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
             "--release",
             "0.0.1",
+            "--format",
+            "json",
+        ),
+        (
+            str(odylith),
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            "unit-transaction-hash",
+            "--confirm",
             "--json",
         ),
     ]

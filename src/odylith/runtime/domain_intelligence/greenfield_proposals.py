@@ -22,6 +22,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -347,12 +348,7 @@ def load_proposal(args: argparse.Namespace) -> dict[str, Any]:
 def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
     intent_file = str(getattr(args, "intent_file", "") or "").strip()
     if not intent_file:
-        raise ValueError(
-            "confirmed greenfield create requires --intent-file with the operator-confirmed Product Intent Confirmation. "
-            "Write the same product story, actors, systems, first path, assumptions, ambiguities, and proof boundary "
-            "that the operator confirmed to .odylith/runtime/greenfield/confirmed-intent.md, then rerun with "
-            "--intent-file .odylith/runtime/greenfield/confirmed-intent.md. Odylith will not write records from a thin prompt."
-        )
+        return _confirmed_intent_from_prompt_args(args)
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
@@ -364,6 +360,37 @@ def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> 
     intent = record.product_facts
     write_structured_confirmed_intent_file(path, intent, envelope=record.envelope)
     return intent
+
+
+def _confirmed_intent_from_prompt_args(args: argparse.Namespace) -> dict[str, Any]:
+    prompt = prompt_text(str(getattr(args, "prompt", "") or ""))
+    if not prompt or prompt == "new project":
+        raise _prompt_only_material_decision_error()
+    try:
+        intent = parse_confirmed_intent_text(prompt, prompt=prompt, fallback_title=intent_title(prompt))
+    except ValueError as exc:
+        raise _prompt_only_material_decision_error() from exc
+    if _prompt_only_intent_is_generic(intent):
+        raise _prompt_only_material_decision_error()
+    return intent
+
+
+def _prompt_only_intent_is_generic(intent: Mapping[str, Any]) -> bool:
+    title = str(intent.get("title") or "").strip().casefold()
+    actors = " ".join(str(row or "") for row in intent.get("human_actors") or ()).casefold()
+    first_path = str(intent.get("first_path") or "").casefold()
+    generic_title = title in {"greenfield project", "recovered product workspace"} or title.startswith("recovered product")
+    generic_actor = "representative user" in actors or "workspace user" in actors
+    generic_path = "current status" in first_path and "blockers and evidence" in first_path
+    return generic_title or generic_actor or generic_path
+
+
+def _prompt_only_material_decision_error() -> ValueError:
+    return ValueError(
+        "Odylith needs one material product decision before compiling a transaction from prompt-only input: "
+        "who uses it, what state changes, what first path completes, and what visible proof counts. "
+        "Answer in normal product language; no Product Intent file or JSON repair is required."
+    )
 
 
 def load_product_create_transaction_args(

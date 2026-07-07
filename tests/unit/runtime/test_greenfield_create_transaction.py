@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
 def _proposal() -> dict[str, Any]:
@@ -33,7 +34,14 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             "idea_files": {"/repo/odylith/radar/source/ideas/B-001.md": "Supplier risk review path"},
             "backlog_index": "/repo/odylith/radar/source/INDEX.md",
             "backlog_index_text": "| B-001 | Prove supplier risk review path |",
-            "_candidate_idea_specs": {},
+            "_candidate_idea_specs": {
+                "B-001": backlog_contract.IdeaSpec(
+                    path=Path("/repo/odylith/radar/source/ideas/B-001.md"),
+                    metadata={"idea_id": "B-001", "status": "candidate"},
+                    sections={"Problem", "Product View"},
+                    section_bodies={"Problem": "Supplier risk is hard to review.", "Product View": "Review board."},
+                )
+            },
         },
         prewrite_safety_preview={"status": "passed"},
     )
@@ -83,6 +91,9 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     assert restored.verified
     assert restored.prewrite_package.proposal == transaction.prewrite_package.proposal
     assert restored.quality_manifest["status"] == "passed"
+    restored_specs = restored.backlog_result["_candidate_idea_specs"]
+    assert isinstance(restored_specs["B-001"], backlog_contract.IdeaSpec)
+    assert restored_specs["B-001"].metadata["idea_id"] == "B-001"
 
     payload["quality_manifest"] = {**payload["quality_manifest"], "status": "failed"}
     with pytest.raises(ValueError, match="hash mismatch"):

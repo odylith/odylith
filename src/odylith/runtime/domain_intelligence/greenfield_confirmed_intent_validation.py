@@ -99,9 +99,9 @@ def validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
     if missing:
         formatted = ", ".join(dict.fromkeys(missing))
         raise ValueError(
-            "confirmed greenfield create needs the operator-confirmed Product Intent Confirmation; "
-            f"missing or too thin: {formatted}. Write the visible confirmation to a Markdown file "
-            "and pass it with --intent-file."
+            "the provided product text does not yet identify one creation-ready product path; "
+            f"material gaps: {formatted}. Provide normal product language for the user, state object, "
+            "first completed path, visible result, and proof boundary."
         )
 
 

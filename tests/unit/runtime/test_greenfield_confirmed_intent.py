@@ -44,6 +44,52 @@ def _max_word_overlap(values: list[str]) -> float:
     return max(scores or [0.0])
 
 
+def _run_confirmed_transaction_create(
+    *,
+    repo_root: Path,
+    prompt: str,
+    capsys,
+    release: str = "0.0.1",
+    intent_file: str = ".odylith/runtime/greenfield/confirmed-intent.md",
+) -> tuple[int, str, dict[str, object]]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(repo_root),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            intent_file,
+            "--output",
+            transaction_file,
+            "--release",
+            release,
+            "--format",
+            "json",
+        ]
+    )
+    compile_output = capsys.readouterr().out
+    assert compile_rc == 0, compile_output
+    compile_payload = json.loads(compile_output)
+    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    create_rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(repo_root),
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
+            "--confirm",
+        ]
+    )
+    create_output = capsys.readouterr().out
+    return create_rc, create_output, compile_payload
+
+
 def test_confirmed_intent_prompt_wrapper_semantics_stay_in_prompt_source_owner() -> None:
     parser_source = (
         ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
@@ -866,22 +912,13 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         encoding="utf-8",
     )
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a product-first greenfield proposal for a structured review workspace.",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a structured review workspace.",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     assert "too similar" not in output
     assert "greenfield create wrote confirmed proposal" in output
@@ -1158,22 +1195,13 @@ Success means the exported package explains which records were included or exclu
         encoding="utf-8",
     )
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a product-first greenfield proposal for a structured evidence review workspace.",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a structured evidence review workspace.",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     for blocker in (
         "proof boundary needs",
@@ -1676,22 +1704,13 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
         encoding="utf-8",
     )
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a product-first greenfield proposal for a decision review workspace.",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a decision review workspace.",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     assert "greenfield create wrote confirmed proposal" in output
     assert "missing or too thin" not in output
@@ -1769,22 +1788,13 @@ def test_confirmed_greenfield_create_lifts_one_line_intent_file_before_post_conf
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(prompt + "\n", encoding="utf-8")
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt=prompt,
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     assert "greenfield create wrote confirmed proposal" in output
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
@@ -2079,7 +2089,7 @@ Proof boundary
 The community archive first workflow passes end to end with fixture-backed inputs and documented non-goals, and every release claim maps to state, validation output, reviewer decision, and evidence packet.
 """
 
-    with pytest.raises(ValueError, match="missing or too thin"):
+    with pytest.raises(ValueError, match="one material product decision"):
         parse_confirmed_intent_text(bad_intent, prompt="Create a community archive")
 
 

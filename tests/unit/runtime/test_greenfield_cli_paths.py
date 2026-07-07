@@ -55,6 +55,54 @@ def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None =
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
 
 
+def _run_confirmed_transaction_create(
+    *,
+    repo_root: Path,
+    prompt: str,
+    capsys,
+    release: str = "0.0.1",
+    intent_file: str = ".odylith/runtime/greenfield/confirmed-intent.md",
+    as_json: bool = False,
+) -> tuple[int, str, dict[str, object]]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(repo_root),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            intent_file,
+            "--output",
+            transaction_file,
+            "--release",
+            release,
+            "--format",
+            "json",
+        ]
+    )
+    compile_output = capsys.readouterr().out
+    assert compile_rc == 0, compile_output
+    compile_payload = json.loads(compile_output)
+    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    create_args = [
+        "create",
+        "--repo-root",
+        str(repo_root),
+        "--transaction-file",
+        transaction_file,
+        "--transaction-hash",
+        transaction_hash,
+        "--confirm",
+    ]
+    if as_json:
+        create_args.append("--json")
+    create_rc = greenfield_proposals.main(create_args)
+    create_output = capsys.readouterr().out
+    return create_rc, create_output, compile_payload
+
+
 def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None:
     assert normalize_domain_token("attaches") == "attach"
     assert normalize_domain_token("matches") == "match"
@@ -140,24 +188,16 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, capsys
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(confirmation, encoding="utf-8")
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm",
-            "--release",
-            "0.0.1",
-            "--json",
-        ]
+    rc, output, compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt=prompt,
+        capsys=capsys,
+        release="0.0.1",
+        as_json=True,
     )
-    output = capsys.readouterr().out
 
     assert rc == 0, output
+    assert compile_payload["confirmation"]["confirm"] == "commit this validated package"
     assert "No governed records were written" not in output
     assert "post-confirm completion failed" not in output
     assert (tmp_path / "odylith/radar/source").is_dir()
@@ -217,8 +257,39 @@ def test_greenfield_confirm_intent_without_intent_file_fails_closed(tmp_path, ca
 
     assert rc == 2
     output = capsys.readouterr().out
-    assert "requires --intent-file" in output
-    assert "will not write records from a thin prompt" in output
+    assert "one material product decision" in output
+    assert "no Product Intent file or JSON repair is required" in output
+
+
+def test_greenfield_compile_transaction_accepts_rich_prompt_without_intent_file(tmp_path, capsys) -> None:
+    prompt = (
+        "Create a greenfield product for municipal permit clerks to intake permit applications, "
+        "validate zoning attachments, route reviewer decisions, and show applicants a clear approval packet "
+        "without issuing permits or promising legal approval."
+    )
+
+    rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--format",
+            "json",
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    rendered = json.dumps(payload, sort_keys=True)
+    assert payload["mode"] == "product_create_transaction"
+    assert payload["confirmation"]["confirm"] == "commit this validated package"
+    assert payload["product_create_transaction"]["transaction_hash"]
+    assert "Municipal Permit Clerks" in rendered
+    assert "zoning attachments" in rendered
+    assert "Representative User" not in rendered
+    assert "Recovered Product Workspace" not in rendered
 
 
 def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_confirmed(tmp_path, capsys) -> None:
@@ -397,8 +468,8 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
     out = capsys.readouterr().out
 
     assert rc == 2
-    assert "requires --intent-file" in out
-    assert "will not write records from a thin prompt" in out
+    assert "one material product decision" in out
+    assert "no Product Intent file or JSON repair is required" in out
     assert "internal apply payload" not in out
     assert "active-proposal.v1.json" not in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
@@ -416,33 +487,16 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         "assert_greenfield_completion_ready",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("builder must not own final create readiness")),
     )
-    apply_ready_flags: list[bool] = []
-    original_apply = greenfield_proposals.apply_greenfield_proposal
 
-    def wrapped_apply(**kwargs):
-        apply_ready_flags.append(bool(kwargs.get("proposal_ready")))
-        return original_apply(**kwargs)
-
-    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", wrapped_apply)
-
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a municipal permit review workspace",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, out, compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    out = capsys.readouterr().out
     assert rc == 0
-    assert apply_ready_flags == [True]
+    assert compile_payload["product_create_transaction"]["verified"] is True
     assert dashboard_calls
     assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "tooling_shell")
     assert dashboard_calls[-1]["operation_label"] == "Greenfield apply dashboard visibility"
@@ -547,43 +601,20 @@ def _compiled_transaction_for_cli(tmp_path: Path):
     return proposal, transaction
 
 
-def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monkeypatch, capsys) -> None:
+def test_greenfield_create_cli_rejects_intent_file_without_compiled_transaction(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
     _write_confirmed_intent(tmp_path)
-    proposal, transaction = _compiled_transaction_for_cli(tmp_path)
-    calls: list[tuple[str, dict[str, object]]] = []
 
-    def fake_build_greenfield_proposal(**kwargs):
-        calls.append(("build", dict(kwargs)))
-        return proposal
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("intent-file create must fail before build, compile, apply, or commit")
 
-    def fake_compile(**kwargs):
-        calls.append(("compile", dict(kwargs)))
-        return transaction
-
-    def fake_commit(**kwargs):
-        calls.append(("commit", dict(kwargs)))
-        assert kwargs["transaction"] is transaction
-        return {
-            "mode": "applied",
-            "validation_gate": transaction.validation_gate,
-            "backlog": [],
-            "components": [],
-            "diagrams": [],
-            "product_create_transaction": transaction.summary(),
-            "post_confirm_quality_manifest": {
-                "status": "passed",
-                "validation_status": "passed",
-                "write_transaction": {
-                    "status": "committed",
-                    "commit_only": True,
-                    "product_create_transaction_hash": transaction.transaction_hash,
-                },
-            },
-        }
-
-    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", fake_build_greenfield_proposal)
-    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", fake_compile)
-    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", fake_commit)
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
 
     rc = greenfield_proposals.main(
         [
@@ -602,13 +633,10 @@ def test_greenfield_create_cli_uses_compiled_transaction_boundary(tmp_path, monk
     )
 
     payload = json.loads(capsys.readouterr().out)
-    assert rc == 0
-    assert [name for name, _call in calls] == ["build", "compile", "commit"]
-    assert calls[0][1]["require_completion_ready"] is False
-    assert calls[1][1]["proposal_ready"] is True
-    assert calls[2][1]["confirm"] is True
-    assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert rc == 2
+    assert "greenfield create no longer accepts --intent-file" in payload["error"]
+    assert "compile-transaction" in payload["error"]
+    assert "--transaction-file, --transaction-hash, and --confirm" in payload["error"]
 
 
 def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
@@ -819,22 +847,13 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a product-first greenfield proposal for a privacy request lifecycle console.",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Draft a product-first greenfield proposal for a privacy request lifecycle console.",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     assert "greenfield create wrote confirmed proposal" in output
     assert "- validation gate: passed" in output
@@ -926,22 +945,13 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a cooking robot controller",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a cooking robot controller",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     assert "greenfield create wrote confirmed proposal" in output
     assert "- validation gate: passed" in output
@@ -1021,22 +1031,13 @@ Release 0.0.1 succeeds when one site record can be opened, linked to source evid
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Build a field operations evidence console",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-        ]
+    rc, output, _compile_payload = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt="Build a field operations evidence console",
+        capsys=capsys,
+        release="0.0.1",
     )
 
-    output = capsys.readouterr().out
     assert rc == 0, output
     assert "greenfield create wrote confirmed proposal" in output
     assert (tmp_path / "odylith/technical-plans/INDEX.md").is_file()
@@ -1096,7 +1097,7 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
-def test_greenfield_create_cli_requires_confirmed_intent_file_before_writes(tmp_path, capsys) -> None:
+def test_greenfield_create_cli_requires_compiled_transaction_before_writes(tmp_path, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
 
     rc = greenfield_proposals.main(
@@ -1114,8 +1115,8 @@ def test_greenfield_create_cli_requires_confirmed_intent_file_before_writes(tmp_
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "requires --intent-file" in out
-    assert "will not write records from a thin prompt" in out
+    assert "requires --transaction-file or --transaction-json with --transaction-hash" in out
+    assert "post-confirm create only commits an already compiled ProductCreateTransaction" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

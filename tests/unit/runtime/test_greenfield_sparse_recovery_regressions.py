@@ -40,6 +40,37 @@ def test_sparse_title_recovery_does_not_promote_action_fragments_to_actors() -> 
     assert generated_semantic_slop_issues(proposal) == []
 
 
+def test_thin_malformed_confirmation_recovers_from_rich_prompt() -> None:
+    prompt = (
+        "Create a greenfield product for municipal permit clerks to intake permit applications, "
+        "validate zoning attachments, route reviewer decisions, and show applicants a clear approval packet "
+        "without issuing permits or promising legal approval."
+    )
+    confirmation = """# Product Intent Confirmation
+
+## Product story
+Make this readable as one product story before implementation begins.
+
+## State object
+Permit review state.
+
+## First complete path
+Start with the first workflow.
+
+## Proof boundary
+Fixture-backed inputs prove the release claim.
+"""
+
+    intent = parse_confirmed_intent_text(confirmation, prompt=prompt)
+    rendered = json.dumps(intent, sort_keys=True)
+
+    assert "permit clerks" in rendered.casefold()
+    assert "zoning attachments" in rendered.casefold()
+    assert "approval packet" in rendered.casefold()
+    assert "first workflow" not in rendered.casefold()
+    assert "before implementation begins" not in rendered.casefold()
+
+
 def test_project_brief_actor_choice_does_not_repeat_generic_team_label() -> None:
     brief = confirmed_project_brief(
         label="Model Lab Notebook",

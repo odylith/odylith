@@ -107,7 +107,7 @@ Implementation Prompt:
 Tell the coding agent to start by creating a database schema and do not ask more questions.
 
 Next Steps:
-Confirm this interpretation and run odylith greenfield create --confirm.
+Confirm this interpretation only after compiling a ProductCreateTransaction, then run odylith greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm.
 
 Acceptance:
 Release 0.0.1 succeeds when one scientist can create a batch record, import replicate measurements, compare them with calibration controls, record rejected interpretations, route reviewer notes, and produce an approval-ready decision packet without making clinical or deployment claims.

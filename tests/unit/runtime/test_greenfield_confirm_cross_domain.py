@@ -43,6 +43,49 @@ _SOURCE_DOMAIN_LEAK_TERMS = (
 )
 
 
+def _run_confirmed_transaction_create(
+    *,
+    repo_root: Path,
+    prompt: str,
+    capsys,
+    release: str = "0.0.1",
+) -> tuple[int, str]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(repo_root),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--output",
+            transaction_file,
+            "--release",
+            release,
+            "--format",
+            "json",
+        ]
+    )
+    compile_output = capsys.readouterr().out
+    assert compile_rc == 0, compile_output
+    transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])
+    create_rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(repo_root),
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
+            "--confirm",
+        ]
+    )
+    return create_rc, capsys.readouterr().out
+
+
 _INTENT_FIXTURES = (
     pytest.param(
         "protocol-outcome",
@@ -271,23 +314,19 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            f"Create {name}",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm",
-            "--release",
-            "0.0.1",
-        ]
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
     )
 
-    output = capsys.readouterr().out
+    rc, output = _run_confirmed_transaction_create(
+        repo_root=tmp_path,
+        prompt=f"Create {name}",
+        capsys=capsys,
+        release="0.0.1",
+    )
+
     assert rc == 0, output
     assert "- validation gate: passed" in output
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))

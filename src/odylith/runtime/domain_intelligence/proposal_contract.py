@@ -117,7 +117,7 @@ def build_proposal_contract() -> dict[str, Any]:
             ],
             "allowed_host_steps": [
                 "Run greenfield compile-transaction from the confirmed product intent and observed source posture.",
-                "Confirm by passing the compiled transaction file or JSON plus its hash to greenfield create --confirm.",
+                "Confirm by passing the compiled transaction file or JSON plus its hash to greenfield create with --transaction-file or --transaction-json, --transaction-hash, and --confirm.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
                 "Let Odylith build and repair the governed package before confirmation; the confirmed create command is the hash verification and commit boundary.",
                 "Surface only the human-readable created-record summary or the validation issues.",

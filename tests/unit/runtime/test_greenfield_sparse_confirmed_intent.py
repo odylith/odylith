@@ -72,17 +72,36 @@ Evidence custody and embargo decision.
         encoding="utf-8",
     )
 
-    rc = greenfield_proposals.main(
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_rc = greenfield_proposals.main(
         [
-            "create",
+            "compile-transaction",
             "--repo-root",
             str(tmp_path),
             "--prompt",
             prompt,
             "--intent-file",
             ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--output",
+            transaction_file,
             "--release",
             "0.0.1",
+            "--format",
+            "json",
+        ]
+    )
+    compile_output = capsys.readouterr().out
+    assert compile_rc == 0, compile_output
+    transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
             "--confirm",
             "--json",
         ]

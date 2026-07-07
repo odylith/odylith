@@ -66,7 +66,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         ),
     )
     apply.add_argument("--json", action="store_true", dest="as_json")
-    create = subparsers.add_parser("create", help="Create confirmed greenfield records from Product Intent.")
+    create = subparsers.add_parser("create", help="Commit a compiled ProductCreateTransaction.")
     create.add_argument("--repo-root", default=".")
     create.add_argument("--prompt", default="")
     create.add_argument(
@@ -341,36 +341,33 @@ def main(argv: Sequence[str] | None = None) -> int:
                 print(message)
             return 2
         try:
+            if str(getattr(args, "intent_file", "") or "").strip():
+                raise ValueError(
+                    "greenfield create no longer accepts --intent-file. "
+                    "Run `odylith greenfield compile-transaction --repo-root . --prompt "
+                    + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
+                    + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md "
+                    "--output .odylith/runtime/greenfield/product-create-transaction.v1.json` first, "
+                    "then run create with --transaction-file, --transaction-hash, and --confirm."
+                )
             transaction = greenfield_proposals.load_product_create_transaction_args(args, repo_root=repo_root)
-            if transaction is not None:
-                result, captured = _run_with_optional_stdout_capture(
-                    enabled=bool(args.as_json),
-                    action=lambda: greenfield_proposals.commit_greenfield_create_transaction(
-                        repo_root=repo_root,
-                        transaction=transaction,
-                        confirm=True,
-                    ),
+            if transaction is None:
+                raise ValueError(
+                    "greenfield create requires --transaction-file or --transaction-json with --transaction-hash. "
+                    "Run `odylith greenfield compile-transaction --repo-root . --prompt "
+                    + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
+                    + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md "
+                    "--output .odylith/runtime/greenfield/product-create-transaction.v1.json` first; "
+                    "post-confirm create only commits an already compiled ProductCreateTransaction."
                 )
-            else:
-                confirmed_intent = greenfield_proposals.load_confirmed_intent_args(args, repo_root=repo_root)
-                proposal = greenfield_proposals.build_greenfield_proposal(
+            result, captured = _run_with_optional_stdout_capture(
+                enabled=bool(args.as_json),
+                action=lambda: greenfield_proposals.commit_greenfield_create_transaction(
                     repo_root=repo_root,
-                    prompt=str(args.prompt),
-                    release_selector=str(args.release),
-                    confirmed_intent=confirmed_intent,
-                    require_completion_ready=False,
+                    transaction=transaction,
+                    confirm=True,
                 )
-                result, captured = _run_with_optional_stdout_capture(
-                    enabled=bool(args.as_json),
-                    action=lambda: greenfield_proposals.apply_greenfield_proposal(
-                        repo_root=repo_root,
-                        proposal=proposal,
-                        confirm=True,
-                        release_selector=str(args.release),
-                        proposal_ready=True,
-                        repair_tier=str(args.repair_tier),
-                    ),
-                )
+            )
         except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=bool(args.as_json))
             return 2

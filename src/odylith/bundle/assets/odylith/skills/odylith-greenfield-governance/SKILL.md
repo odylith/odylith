@@ -98,6 +98,7 @@ mechanism-level learning.
    Do not rush to `start B-***`; confirmed create writes accepted project
    truth, and coding begins only after the operator accepts the product gates
    and a child workstream has a technical plan.
-9. Keep latency low: rely on `greenfield create --confirm` for the
-   final batched visibility refresh instead of running separate refresh commands
+9. Keep latency low: rely on hash-confirmed `greenfield create
+   --transaction-file ... --transaction-hash ... --confirm` for the final
+   batched visibility refresh instead of running separate refresh commands
    after each artifact family.

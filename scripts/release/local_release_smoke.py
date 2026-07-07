@@ -608,6 +608,42 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     if any(token in proposal for token in ('"reasoning_contract"', '"host_instruction"', "active-proposal.v1.json")):
         raise RuntimeError("greenfield propose confirmed path still exposes host-side schema-repair contract")
     _require_no_greenfield_schema_loop(output=proposal, label="greenfield propose json")
+    transaction = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            str(odylith),
+            "greenfield",
+            "compile-transaction",
+            "--repo-root",
+            ".",
+            "--prompt",
+            "warehouse dispatch planning app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--output",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--release",
+            "0.0.1",
+            "--format",
+            "json",
+        ],
+    ).stdout
+    _require_output_contains(
+        output=transaction,
+        expected='"mode": "product_create_transaction"',
+        label="greenfield transaction json",
+    )
+    _require_output_contains(
+        output=transaction,
+        expected='"transaction_hash"',
+        label="greenfield transaction json",
+    )
+    transaction_payload = json.loads(transaction)
+    transaction_hash = str(transaction_payload["product_create_transaction"]["transaction_hash"]).strip()
+    if not transaction_hash:
+        raise RuntimeError("greenfield transaction json omitted product_create_transaction.transaction_hash")
+    _require_no_greenfield_schema_loop(output=transaction, label="greenfield transaction json")
     create = _run(
         cwd=repo_root,
         env=env,
@@ -617,13 +653,11 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             "create",
             "--repo-root",
             ".",
-            "--prompt",
-            "warehouse dispatch planning app",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            transaction_hash,
             "--confirm",
-            "--release",
-            "0.0.1",
             "--json",
         ],
     ).stdout

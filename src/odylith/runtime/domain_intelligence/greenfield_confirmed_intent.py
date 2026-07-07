@@ -237,8 +237,12 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         context_text=_intent_context_text(result, strings=confirmed_text_values),
     )
     result = _complete_confirmed_intent_before_validation(result)
-    _validate_confirmed_intent(result)
-    return result
+    return _validate_or_prompt_recover_intent(
+        result,
+        prompt=prompt,
+        fallback_title=fallback_title,
+        allow_prompt_recovery=True,
+    )
 
 
 def structured_confirmed_intent_path(path: Path) -> Path:
@@ -328,7 +332,13 @@ def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> d
     return complete_confirmed_intent(result)
 
 
-def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
+def parse_confirmed_intent_text(
+    text: str,
+    *,
+    prompt: str = "",
+    fallback_title: str = "",
+    _allow_prompt_validation_recovery: bool = True,
+) -> dict[str, Any]:
     """Parse the human Product Intent Confirmation that the host already showed."""
 
     generated_confirmation = _looks_like_host_guidance_envelope(text)
@@ -395,8 +405,49 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     )
     result = _restore_prompt_material_first_path(result, generated_confirmation=generated_confirmation)
     result = _complete_confirmed_intent_before_validation(result)
-    _validate_confirmed_intent(result)
-    return result
+    return _validate_or_prompt_recover_intent(
+        result,
+        prompt=prompt,
+        fallback_title=fallback_title,
+        allow_prompt_recovery=_allow_prompt_validation_recovery,
+    )
+
+
+def _validate_or_prompt_recover_intent(
+    intent: dict[str, Any],
+    *,
+    prompt: str,
+    fallback_title: str,
+    allow_prompt_recovery: bool,
+) -> dict[str, Any]:
+    try:
+        _validate_confirmed_intent(intent)
+    except ValueError as exc:
+        if allow_prompt_recovery:
+            source = _thin_operator_intent_source(prompt, prompt="")
+            if source:
+                try:
+                    return parse_confirmed_intent_text(
+                        confirmation_from_operator_intent(source, prefer_product_title=True),
+                        prompt=source,
+                        fallback_title=fallback_title,
+                        _allow_prompt_validation_recovery=False,
+                    )
+                except ValueError:
+                    pass
+        raise _material_intent_blocker(exc) from exc
+    return intent
+
+
+def _material_intent_blocker(error: ValueError) -> ValueError:
+    detail = _clean(str(error))
+    suffix = f" Material gaps: {detail}" if detail else ""
+    return ValueError(
+        "Odylith needs one material product decision before it can compile a create transaction: "
+        "who uses the product, what state changes, what first path completes, and what visible proof counts. "
+        "Provide that as normal text; do not repair JSON or schema fields."
+        + suffix
+    )
 
 
 def _split_embedded_ambiguity_rows(intent: dict[str, Any]) -> None:
