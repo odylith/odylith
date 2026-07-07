@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 511,
+    "explicit_event_count": 512,
     "mapped_workstream_evidence_count": 463,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 511
+    "timeline_event_count": 512
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,29 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 931,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "radar",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-07-06T18:39:47-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 3,
       "artifacts": [

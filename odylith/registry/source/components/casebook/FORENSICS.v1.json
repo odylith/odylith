@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 98,
+    "explicit_event_count": 99,
     "mapped_workstream_evidence_count": 83,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 98
+    "timeline_event_count": 99
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,6 +47,29 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 931,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "radar",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-07-06T18:39:47-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
