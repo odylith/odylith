@@ -7,6 +7,7 @@ not classify domains or infer project meaning.
 
 from __future__ import annotations
 
+from functools import lru_cache
 import re
 
 
@@ -737,7 +738,7 @@ def _repair_modal_clause_body(value: str, *, finite_pattern: str) -> str:
 def action_base_verb_pattern() -> str:
     """Return a regex alternation for base action verbs recognized by this module."""
 
-    return "|".join(re.escape(verb) for verb in sorted(_INFINITIVE_TO_FINITE, key=len, reverse=True))
+    return _action_base_verb_pattern_cached()
 
 
 def action_verb_pattern(
@@ -748,13 +749,33 @@ def action_verb_pattern(
 ) -> str:
     """Return a regex alternation for recognized base and finite action verbs."""
 
+    exclude_key = tuple(sorted(str(verb).casefold() for verb in (exclude or ()) if str(verb).strip()))
+    return _action_verb_pattern_cached(
+        include_base=bool(include_base),
+        include_finite=bool(include_finite),
+        exclude=exclude_key,
+    )
+
+
+@lru_cache(maxsize=1)
+def _action_base_verb_pattern_cached() -> str:
+    return "|".join(re.escape(verb) for verb in sorted(_INFINITIVE_TO_FINITE, key=len, reverse=True))
+
+
+@lru_cache(maxsize=32)
+def _action_verb_pattern_cached(
+    *,
+    include_base: bool,
+    include_finite: bool,
+    exclude: tuple[str, ...],
+) -> str:
     verbs: set[str] = set()
     if include_base:
         verbs.update(_INFINITIVE_TO_FINITE)
     if include_finite:
         verbs.update(_INFINITIVE_TO_FINITE.values())
     if exclude:
-        verbs.difference_update(str(verb).casefold() for verb in exclude)
+        verbs.difference_update(exclude)
     return "|".join(re.escape(verb) for verb in sorted(verbs, key=len, reverse=True))
 
 
