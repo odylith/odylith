@@ -428,6 +428,42 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
 
 
+def test_apply_semantic_input_trusts_terminal_handoff_visible_result() -> None:
+    proposal = {
+        "intent": {
+            "title": "Field Operations Evidence Console",
+            "state_object": (
+                "An operations evidence record tracks site identity, observation source, captured readings, "
+                "supporting files, readiness status, blocker reason, reviewer decision, and handoff evidence."
+            ),
+            "first_path": (
+                "An operator opens one site record, adds a source-backed observation, attaches supporting evidence, "
+                "marks missing readings as blockers when needed, reviews readiness, and hands the reviewed decision "
+                "to the next action queue."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when one site record can be opened, linked to source evidence, reviewed "
+                "for missing readings, marked ready or blocked with a reason, and handed to the next action queue "
+                "with the evidence and reviewer decision still traceable."
+            ),
+            "human_actors": ["Field operator", "Operations reviewer"],
+        },
+    }
+
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    ensured = ensure_apply_semantic_model(proposal, refresh=True)
+    source_paths = dict(compiler_input.source_paths)
+    contract = ensured["semantic_model"]["first_path_contract"]
+    joined_events = " ".join(str(row["text"]) for row in contract["events"])
+
+    assert source_paths["first_path"] == "intent.first_path"
+    assert "semantic_visible_result_fallback" not in source_paths["first_path"]
+    assert "accepted result for review" not in compiler_input.first_path
+    assert "accepted result for review" not in joined_events
+    assert contract["visible_result"] == "the decision to the next action queue"
+    assert contract["events"][-1]["visible_result"] is True
+
+
 def test_apply_semantic_input_trusts_terminal_first_path_event_visible_result() -> None:
     proposal = {
         "intent": {

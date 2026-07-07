@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds im
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import (
     drop_result_recipient,
+    handoff_visible_result_object,
     is_routing_pronoun_result,
     saved_destination_result_object,
 )
@@ -294,6 +295,9 @@ def visible_result_object(value: str) -> str:
     if transformation_object:
         return transformation_object
     text = strip_action_subject(text)
+    handoff_result = handoff_visible_result_object(text)
+    if handoff_result:
+        return handoff_result
     if _routing_action_clause(text, strip_subject=strip_action_subject):
         return ""
     nominal = nominal_visible_result_object(text)
@@ -304,7 +308,7 @@ def visible_result_object(value: str) -> str:
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
         r"(?<![A-Za-z0-9_-])(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|correlates?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|prepares?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|correlates?|decides?|delivers?|displays?|emits?|finds?|hands?|highlights?|keeps?|prepares?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)

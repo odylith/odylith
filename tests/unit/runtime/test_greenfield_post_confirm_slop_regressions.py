@@ -2995,6 +2995,20 @@ def test_first_path_capability_preserves_routed_review_actions_without_duplicate
     assert capability.count("mark the appeal final") == 1
 
 
+def test_visible_result_object_accepts_result_bearing_handoff_without_routing_fallback() -> None:
+    assert visible_result_object("A case worker sends the packet for review") == ""
+    assert visible_result_object("An operator hands a clipboard to a teammate") == ""
+    assert visible_result_object("An operator hands the reviewed decision to the next action queue") == (
+        "the decision to the next action queue"
+    )
+    assert visible_result_object("An operator hands the reviewed scorecard to the next action queue") == (
+        "the scorecard to the next action queue"
+    )
+    assert visible_result_object("An operator hands the reviewed permit bundle to the next action queue") == (
+        "the permit bundle to the next action queue"
+    )
+
+
 def test_workstream_risk_uses_compact_state_label_instead_of_field_list() -> None:
     risk = workstream_risk(
         label="Decision and Reason Publisher Service",

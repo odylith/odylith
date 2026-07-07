@@ -95,14 +95,16 @@ def _compact_first_path_scope_fragment(value: str) -> str:
         from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
     except ImportError:
         return ""
+    model = first_path_model(value)
+    max_scope_steps = min(max(6, len(model.steps)), 10)
+    scope_limit = 620 if max_scope_steps > 6 else 320
     compact = readable_action_chain_phrase(
         value,
         fallback="",
-        limit=320,
-        max_steps=6,
+        limit=scope_limit,
+        max_steps=max_scope_steps,
         include_visible_results=True,
     ).strip(" .")
-    model = first_path_model(value)
     outcome = (model.visible_outcome or first_path_outcome_phrase(value, fallback="", limit=160)).strip(" .")
     if outcome and compact and _scope_missing_terminal_outcome(compact, outcome):
         candidate = f"{compact}; outcome: {outcome}"

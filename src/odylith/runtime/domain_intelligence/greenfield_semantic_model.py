@@ -281,7 +281,7 @@ def _first_path_contract(
     model = first_path_model(first_path)
     required_fields = tuple(_required_fields(model.steps, state_object=state_object))
     material = _clean(model.material_action) or (model.steps[0] if model.steps else "")
-    visible_result = _clean(visible_result) or first_path_outcome_phrase(
+    visible_result = _clean(visible_result) or _terminal_handoff_visible_result(model.visible_outcome) or first_path_outcome_phrase(
         first_path,
         proof_boundary=proof_boundary,
         fallback=_clean(model.visible_outcome) or "the first-path result",
@@ -357,6 +357,16 @@ def _reconciled_visible_result(
     if terminal.index == len(events) and len(ordered_terms(current, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)) <= 4:
         return terminal_result
     return current
+
+
+def _terminal_handoff_visible_result(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text or not re.search(r"\bhands?\b.+\bto\b", text, flags=re.IGNORECASE):
+        return ""
+    result = visible_result_object(text)
+    if len(ordered_terms(result, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)) < 2:
+        return ""
+    return result
 
 
 def _is_supporting_evidence_result(value: str) -> bool:

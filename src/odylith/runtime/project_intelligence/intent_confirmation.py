@@ -44,7 +44,7 @@ def build_product_intent_confirmation(
                 "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
-                "Render Next step as three separate bullet lines with highlighted actions: `Confirm`, `Edit`, and `Reject`.",
+                "Render Next step as three separate bullet lines: Confirm, Edit, and Reject, with each action visually highlighted.",
                 "Use plain prose for domain nouns; do not wrap ordinary product, actor, state, or component names in code ticks or decorative bold markers.",
             ],
             "must_include": [
@@ -59,7 +59,7 @@ def build_product_intent_confirmation(
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
                 "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
-                "a clear Next step block with three separate bullet lines for `Confirm`, `Edit`, and `Reject`; each choice must say exactly what happens next",
+                "a clear Next step block with three separate bullet lines for Confirm, Edit, and Reject; each choice must say exactly what happens next",
                 "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it and normalize structured intent internally",
             ],
             "must_not": [

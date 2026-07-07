@@ -164,7 +164,9 @@ def prompt_project_title_source(value: str) -> str:
 def prompt_intent_source(value: str) -> PromptIntentSource:
     """Return shared title and first-path sources for thin prompt recovery."""
 
-    text = clean_markdown_text(_operator_original_intent_block(value) or value).strip(" .")
+    text = _strip_trailing_operator_instruction_sentences(
+        clean_markdown_text(_operator_original_intent_block(value) or value).strip(" .")
+    )
     words = _request_words(text)
     start, command_led = _request_content_start(words)
     grant_actor, grant_first_path = _path_grant_actor_action(text)
@@ -180,7 +182,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
 
 
 def _first_path_source_from_text(value: str) -> str:
-    raw_text = clean_markdown_text(value).strip(" .")
+    raw_text = _strip_trailing_operator_instruction_sentences(clean_markdown_text(value).strip(" ."))
     text = _strip_operator_request_wrapper(raw_text)
     grant_actor, grant_first_path = _path_grant_actor_action(raw_text)
     if grant_actor and word_count(grant_first_path) >= 8 and _looks_like_recoverable_first_path(grant_first_path):
@@ -628,6 +630,55 @@ def _sentence_fragments(value: str) -> list[str]:
     if current:
         rows.append(" ".join(current).strip(" ."))
     return [row for row in rows if row]
+
+
+def _strip_trailing_operator_instruction_sentences(value: str) -> str:
+    rows = _sentence_fragments(value)
+    if len(rows) <= 1:
+        return clean_markdown_text(value).strip(" .")
+    kept = list(rows)
+    while len(kept) > 1 and _looks_like_trailing_operator_instruction(kept[-1]):
+        kept.pop()
+    return clean_markdown_text(". ".join(kept)).strip(" .")
+
+
+def _looks_like_trailing_operator_instruction(value: str) -> bool:
+    text = clean_markdown_text(value).strip(" .")
+    if not text:
+        return False
+    normalized = _strip_leading_instruction_adverb(text).casefold()
+    words = [_word_key(word) for word in _request_words(normalized)]
+    if not words:
+        return False
+    command = words[0]
+    control_text = " ".join(words)
+    if normalized.startswith(("do not ", "don't ", "make sure ", "ensure ")):
+        return True
+    if command not in _REQUEST_COMMAND_WORDS | {"run", "execute", "install", "commit", "push", "edit", "reject"}:
+        return False
+    control_terms = {
+        "after confirmation",
+        "artifact",
+        "artifacts",
+        "command",
+        "commands",
+        "confirm",
+        "greenfield",
+        "implementation plan",
+        "intent file",
+        "next step",
+        "post confirm",
+        "post-confirm",
+        "proposal",
+    }
+    return any(term in normalized or term in control_text for term in control_terms)
+
+
+def _strip_leading_instruction_adverb(value: str) -> str:
+    words = _request_words(value)
+    if words and _word_key(words[0]) in {"also", "then", "next", "please"}:
+        return " ".join(words[1:]).strip(" .")
+    return clean_markdown_text(value).strip(" .")
 
 
 def _strip_release_helper_prefix(value: str) -> str:

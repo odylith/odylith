@@ -6,6 +6,39 @@ import re
 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
+_HANDOFF_RESULT_OBJECT_TERMS = frozenset(
+    "approval approvals blocker blockers decision decisions evidence handoff handoffs queue readiness record records result results review status".split()
+)
+_HANDOFF_RESULT_MODIFIER_TERMS = frozenset(
+    "accepted approved blocked captured final ready reviewed source-backed traceable validated versioned".split()
+)
+_HANDOFF_DESTINATION_TERMS = frozenset(
+    "backlog board console desk inbox list portal queue register service system view workspace".split()
+)
+
+
+def handoff_visible_result_object(value: str) -> str:
+    """Return the result object from a reviewed handoff into a product destination."""
+
+    text = clean_text(value).strip(" .")
+    match = re.search(r"\bhands?\s+(?P<object>.+?)\s+to\s+(?P<destination>[^.;,]+)$", text, flags=re.IGNORECASE)
+    if not match:
+        return ""
+    raw_result_object = clean_text(match.group("object")).strip(" .")
+    result_object = re.sub(r"^(?:(?:a|an|the)\s+)?reviewed\s+", "the ", raw_result_object, flags=re.IGNORECASE)
+    result_object = clean_text(result_object).strip(" .")
+    destination = clean_text(match.group("destination")).strip(" .")
+    if not result_object or not destination:
+        return ""
+    object_terms = _terms(result_object)
+    raw_object_terms = _terms(raw_result_object)
+    destination_terms = _terms(destination)
+    if not object_terms & _HANDOFF_RESULT_OBJECT_TERMS and not (
+        raw_object_terms & _HANDOFF_RESULT_MODIFIER_TERMS and destination_terms & _HANDOFF_DESTINATION_TERMS
+    ):
+        return ""
+    return f"the {_drop_leading_article(result_object)} to {destination}".strip(" .")
+
 
 def saved_destination_result_object(verb: str, value: str) -> str:
     """Return a readable result object for clauses like "save X to history"."""
@@ -80,6 +113,10 @@ def _drop_leading_article(value: str) -> str:
     return clean_text(value).strip(" .")
 
 
+def _terms(value: str) -> set[str]:
+    return {word.casefold() for word in re.findall(r"[A-Za-z][A-Za-z0-9'-]*", clean_text(value))}
+
+
 def _saved_as_result_object(participle: str, value: str) -> str:
     match = re.match(r"(?P<object>.+?)\s+as\s+(?P<target>.+)$", clean_text(value).strip(" ."), flags=re.IGNORECASE)
     if not match:
@@ -93,4 +130,9 @@ def _saved_as_result_object(participle: str, value: str) -> str:
     return f"{participle} {item} as {target}".strip()
 
 
-__all__ = ["drop_result_recipient", "is_routing_pronoun_result", "saved_destination_result_object"]
+__all__ = [
+    "drop_result_recipient",
+    "handoff_visible_result_object",
+    "is_routing_pronoun_result",
+    "saved_destination_result_object",
+]

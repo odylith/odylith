@@ -300,8 +300,8 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
             fallback=f"{title} helps {actor_text} complete the accepted first path",
             limit=220,
         )
-        state_fragment = _lower_initial_fragment(_short(state, fallback="the first release state"))
-        path_fragment = _lower_initial_fragment(_short(first_path, fallback="the first user journey"))
+        state_fragment = _story_state_fragment(state, title=title)
+        path_fragment = _story_path_relation_fragment(first_path)
         intent["product_story"] = _sentence(
             f"{story_head}. It keeps {state_fragment} tied to "
             f"{path_fragment} so the outcome, blockers, and evidence can be explained."
@@ -341,6 +341,31 @@ def _concise_proof_boundary_is_meaningful(value: str) -> bool:
     if _word_count(text) < 3 or _word_count(text) > 12:
         return False
     return len(_semantic_terms(text)) >= 3
+
+
+def _story_state_fragment(state: str, *, title: str) -> str:
+    label = _clean(_state_label(state, title=title)).strip(" .")
+    if label:
+        return _definite_relation_label(label)
+    return _lower_initial_fragment(_short(state, fallback="the first release state"))
+
+
+def _story_path_relation_fragment(first_path: str) -> str:
+    capability = _clean(first_path_capability_phrase(first_path, fallback="", limit=220)).strip(" .")
+    if capability and looks_like_action_clause(capability):
+        return f"the user's ability to {base_action_clause(capability)}"
+    return _lower_initial_fragment(_short(first_path, fallback="the first user journey"))
+
+
+def _definite_relation_label(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "the first release state"
+    lowered = _lower_initial_fragment(text)
+    first = lowered.split(maxsplit=1)[0].strip(".,:;").casefold()
+    if first in {"a", "an", "the", "this", "that", "one"}:
+        return lowered
+    return f"the {lowered}"
 
 
 def _completed_concise_proof_boundary(value: str, *, title: str) -> str:
@@ -757,6 +782,7 @@ def _state_label_before_detail_list(value: str) -> str:
 
 def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     text = first_path_outcome_phrase(first_path, proof_boundary=proof, fallback="a visible, useful result", limit=190).rstrip(".")
+    text = _strip_leading_outcome_connector(text)
     if re.match(r"^why\b", text, flags=re.I):
         text = f"the explanation for {text}"
     if not re.search(
@@ -768,6 +794,11 @@ def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     ):
         text = _nominal_visible_outcome_phrase(text)
     return text
+
+
+def _strip_leading_outcome_connector(value: str) -> str:
+    text = _clean(value).strip(" .")
+    return re.sub(r"^(?:and|or|then)\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .") or text
 
 
 def _nominal_visible_outcome_phrase(value: str) -> str:

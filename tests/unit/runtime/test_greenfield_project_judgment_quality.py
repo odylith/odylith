@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import inline_first_path_scope_fragment
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 
 
@@ -100,6 +103,76 @@ def test_project_judgment_accepts_full_case_label_and_tail_coverage() -> None:
     )
 
     assert greenfield_project_judgment_issues(package) == ()
+
+
+def test_scope_fragment_preserves_long_confirmed_path_tail() -> None:
+    path = (
+        "A case board member opens one agenda item, reviews the parcel map and zoning overlays, "
+        "reads the staff recommendation and impact summary, groups public comments by concern, "
+        "saves questions for staff, compares the recommendation to concerns, records a vote rationale "
+        "at the hearing, and sees claim-source traceability for the public record."
+    )
+
+    fragment = inline_first_path_scope_fragment(path)
+
+    assert "record a vote rationale" in fragment
+    assert "see claim-source traceability" in fragment
+    assert "public record" in fragment
+
+
+def test_semantic_model_preserves_terminal_handoff_visible_result() -> None:
+    semantic = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Field Operations Evidence Console",
+            state_object=(
+                "An operations evidence record tracks site identity, observation source, captured readings, "
+                "supporting files, readiness status, blocker reason, reviewer decision, and handoff evidence."
+            ),
+            first_path=(
+                "An operator opens one site record, adds a source-backed observation, attaches supporting evidence, "
+                "marks missing readings as blockers when needed, reviews readiness, and hands the reviewed decision "
+                "to the next action queue."
+            ),
+            proof_boundary=(
+                "Release 0.0.1 succeeds when one site record can be opened, linked to source evidence, reviewed "
+                "for missing readings, marked ready or blocked with a reason, and handed to the next action queue "
+                "with the evidence and reviewer decision still traceable."
+            ),
+            components=[],
+            human_actors=["Field operator", "Operations reviewer"],
+        )
+    )
+
+    contract = semantic["first_path_contract"]
+    events = contract["events"]
+    joined_events = " ".join(str(row["text"]) for row in events)
+
+    assert contract["visible_result"] == "the decision to the next action queue"
+    assert events[-1]["visible_result"] is True
+    assert "accepted result for review" not in joined_events
+
+
+def test_semantic_model_preserves_reviewed_handoff_object_without_fixed_noun_whitelist() -> None:
+    semantic = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Inspection Scorecard Console",
+            state_object="An inspection scorecard tracks site identity, readiness notes, and queue handoff status.",
+            first_path=(
+                "An operator opens one site record, reviews readiness, and hands the reviewed scorecard "
+                "to the next action queue."
+            ),
+            proof_boundary=(
+                "Release succeeds when one site record can be opened, reviewed, and handed to the next action queue."
+            ),
+            components=[],
+            human_actors=["Field operator"],
+        )
+    )
+
+    contract = semantic["first_path_contract"]
+
+    assert contract["visible_result"] == "the scorecard to the next action queue"
+    assert "one site record can be opened" not in contract["visible_result"]
 
 
 def test_project_judgment_does_not_cross_into_unrelated_scope_prose() -> None:

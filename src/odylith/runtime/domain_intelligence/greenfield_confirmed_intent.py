@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +43,24 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_title_extraction i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_extraction import (
     title_from_product_intent_line,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    PRODUCT_FACTS_HASH_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    build_product_intent_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    is_product_intent_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_from_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_hash,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_payload,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     classify_confirmed_intent_heading as _classify_heading,
 )
@@ -68,6 +87,15 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+
+
+@dataclass(frozen=True)
+class ConfirmedIntentRecord:
+    """Confirmed product facts plus their typed custody envelope."""
+
+    product_facts: dict[str, Any]
+    envelope: dict[str, Any]
+
 
 _PROMPT_MATERIAL_TERM_STOPWORDS = frozenset(
     {
@@ -100,6 +128,12 @@ _PROMPT_MATERIAL_TERM_STOPWORDS = frozenset(
 def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
     """Load a host-visible Product Intent Confirmation from Markdown/text/JSON."""
 
+    return load_confirmed_intent_record(path, prompt=prompt, fallback_title=fallback_title).product_facts
+
+
+def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title: str = "") -> ConfirmedIntentRecord:
+    """Load confirmed intent and return the typed custody envelope."""
+
     source = Path(path)
     if not source.is_file():
         raise ValueError(f"confirmed intent file was not found: {source}")
@@ -111,8 +145,34 @@ def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: 
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
             raise ValueError(f"confirmed intent JSON is invalid: {exc}") from exc
-        return normalize_confirmed_intent(payload, prompt=prompt, fallback_title=fallback_title)
-    return parse_confirmed_intent_text(text, prompt=prompt, fallback_title=fallback_title)
+        intent = normalize_confirmed_intent(payload, prompt=prompt, fallback_title=fallback_title)
+        envelope = (
+            _canonicalized_loaded_envelope(payload, intent)
+            if is_product_intent_envelope(payload)
+            else build_product_intent_envelope(
+                intent,
+                source_text=text,
+                source_path=source,
+                source_format="legacy_json",
+            )
+        )
+        return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
+    intent = parse_confirmed_intent_text(text, prompt=prompt, fallback_title=fallback_title)
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=text,
+        source_path=source,
+        source_format="markdown",
+    )
+    return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
+
+
+def confirmed_intent_product_facts(record: ConfirmedIntentRecord | Mapping[str, Any]) -> dict[str, Any]:
+    """Return canonical product facts from a record or legacy mapping."""
+
+    if isinstance(record, ConfirmedIntentRecord):
+        return dict(record.product_facts)
+    return dict(record)
 
 
 def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
@@ -122,6 +182,9 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         return parse_confirmed_intent_text(value, prompt=prompt, fallback_title=fallback_title)
     if not isinstance(value, Mapping):
         raise ValueError("confirmed intent must be Markdown text or a JSON object")
+    envelope_facts = product_facts_from_envelope(value)
+    if envelope_facts is not None:
+        return normalize_confirmed_intent(envelope_facts, prompt=prompt, fallback_title=fallback_title)
     payload = dict(value)
     raw_title = _clean(payload.get("title") or payload.get("product_title") or fallback_title)
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
@@ -177,37 +240,34 @@ def structured_confirmed_intent_path(path: Path) -> Path:
     return source.with_suffix(".json")
 
 
-def write_structured_confirmed_intent_file(path: Path, intent: Mapping[str, Any]) -> Path:
+def write_structured_confirmed_intent_file(
+    path: Path,
+    intent: Mapping[str, Any],
+    *,
+    envelope: Mapping[str, Any] | None = None,
+) -> Path:
     """Persist the normalized confirmed intent beside the human Markdown record."""
 
     target = structured_confirmed_intent_path(path)
-    if target == Path(path):
-        return target
     target.parent.mkdir(parents=True, exist_ok=True)
-    keys = (
-        "title",
-        "source_title",
-        "prompt",
-        "product_story",
-        "state_object",
-        "first_path",
-        "proof_boundary",
-        "problem",
-        "customer",
-        "opportunity",
-        "product_view",
-        "success_metrics",
-        "component_responsibilities",
-        "human_actors",
-        "external_systems",
-        "internal_systems",
-        "assumptions",
-        "ambiguities",
-        "non_goals",
-    )
-    payload = {key: intent.get(key) for key in keys if key in intent}
+    payload = dict(envelope) if isinstance(envelope, Mapping) else build_product_intent_envelope(intent)
+    facts = product_facts_payload(intent)
+    payload["product_facts"] = facts
+    decision_record = dict(payload.get("decision_record")) if isinstance(payload.get("decision_record"), Mapping) else {}
+    decision_record[PRODUCT_FACTS_HASH_KEY] = product_facts_hash(facts)
+    payload["decision_record"] = decision_record
+    payload = {**payload, **facts}
     target.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return target
+
+
+def _canonicalized_loaded_envelope(payload: Mapping[str, Any], intent: Mapping[str, Any]) -> dict[str, Any]:
+    envelope = dict(payload)
+    envelope["product_facts"] = product_facts_payload(intent)
+    decision_record = dict(envelope.get("decision_record")) if isinstance(envelope.get("decision_record"), Mapping) else {}
+    decision_record[PRODUCT_FACTS_HASH_KEY] = product_facts_hash(envelope["product_facts"])
+    envelope["decision_record"] = decision_record
+    return envelope
 
 
 def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> dict[str, Any]:
@@ -689,13 +749,21 @@ def _preamble_story(sections: Mapping[str, list[str]], title: str) -> str:
 def _product_context_paragraphs(text: str, sections: Mapping[str, list[str]], title: str) -> list[str]:
     if not _has_explicit_section_boundaries(sections):
         return _preamble_paragraphs(text, title)
+    paragraphs: list[str] = []
+    if sections.get("preamble"):
+        paragraphs.extend(_preamble_paragraphs(_raw_preamble_text(text), title))
     rows: list[str] = []
     for key, lines in sections.items():
-        if key != "preamble" and not _is_supporting_section(key):
+        if key == "preamble" or not _is_supporting_section(key):
             continue
         rows.extend(lines)
         rows.append("")
-    return _paragraphs_from_lines(rows, title, keep_list_items=True)
+    paragraphs.extend(_paragraphs_from_lines(rows, title, keep_list_items=True))
+    return _expand_narrative_cue_paragraphs(paragraphs)
+
+
+def _raw_preamble_text(text: str) -> str:
+    return re.split(r"(?m)^#{2,6}\s+", str(text or ""), maxsplit=1)[0]
 
 
 def _has_explicit_section_boundaries(sections: Mapping[str, list[str]]) -> bool:
@@ -910,6 +978,8 @@ def _looks_like_proof_or_scope_paragraph(value: str) -> bool:
             re.IGNORECASE,
         )
         or re.match(r"^(?:release\s+[0-9.]+\s+)?(?:succeeds?|is\s+proven|proven|proof)\b", text, re.IGNORECASE)
+        or re.match(r"^(?:a|an|the)\s+[^.]{1,80}\b(?:can|must|should)\s+reproduce\b", text, re.IGNORECASE)
+        or re.search(r"\breproduce\s+(?:the\s+)?(?:accepted|blocked|rejected|same)\b", text, re.IGNORECASE)
         or re.search(r"\b(?:first\s+release|release\s+[0-9.]+)\s+(?:is\s+)?(?:proven|good\s+enough|ready|succeeds?|works?)\b", text, re.IGNORECASE)
         or re.search(r"\b(?:out\s+of\s+scope|deferred|not\s+included|non[- ]goals?)\b", text, re.IGNORECASE)
     )
@@ -1004,11 +1074,14 @@ def _looks_like_operator_instruction_line(value: str) -> bool:
 
 
 __all__ = [
+    "ConfirmedIntentRecord",
     "confirmed_intent_list",
+    "confirmed_intent_product_facts",
     "confirmed_intent_summary",
     "confirmed_system_description",
     "confirmed_system_name",
     "load_confirmed_intent_file",
+    "load_confirmed_intent_record",
     "normalize_confirmed_intent",
     "parse_confirmed_intent_text",
     "structured_confirmed_intent_path",

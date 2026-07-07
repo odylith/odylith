@@ -741,6 +741,8 @@ def _is_actor_led_material_action_candidate(value: str) -> bool:
     text = clean_text(value).strip(" .")
     if not text:
         return False
+    if _is_release_readiness_result(text):
+        return False
     if visible_result_object(text) or _is_predicate_result_state(text) or _is_action_state_result(text):
         return False
     match = re.search(
@@ -756,6 +758,10 @@ def _is_actor_led_material_action_candidate(value: str) -> bool:
     if re.search(r"\b(?:result|status|summary|view|report|record|recommendation|decision|proof|evidence)\b", subject, flags=re.IGNORECASE):
         return False
     return True
+
+
+def _is_release_readiness_result(value: str) -> bool:
+    return bool(re.match(r"^release\s+readiness\s+(?:for|in|of|with)\b", clean_text(value), flags=re.IGNORECASE))
 
 
 _VISIBLE_OBJECT_RESULT_TERMS = frozenset(

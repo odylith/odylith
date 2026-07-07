@@ -26,7 +26,7 @@ from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -364,13 +364,13 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
-    intent = load_confirmed_intent_file(
+    record = load_confirmed_intent_record(
         path,
         prompt=str(getattr(args, "prompt", "") or ""),
         fallback_title=_intent_title(str(getattr(args, "prompt", "") or "")),
     )
-    if path.suffix.lower() != ".json":
-        write_structured_confirmed_intent_file(path, intent)
+    intent = record.product_facts
+    write_structured_confirmed_intent_file(path, intent, envelope=record.envelope)
     return intent
 
 

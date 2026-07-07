@@ -48,6 +48,28 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-07: Introduced the Product Intent Custody Envelope for confirmed greenfield ingress. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-215`, `CB-220`; Diagrams: D-043, D-045)
+  Domain Intelligence now writes and reads confirmed product intent through a
+  versioned `ProductIntentEnvelope` v2 with a `CustodyLedger` v1 and a
+  product-facts hash. The envelope records canonical product facts, source
+  evidence, field provenance, materiality-gate status, ignored instructions,
+  supporting evidence, and the decision record that keeps Markdown as a display
+  and ingest view rather than product authority. Confirmed intent JSON with a
+  stale hash or unversioned `product_facts` can no longer override canonical
+  facts; it is re-normalized through the same custody pipeline. Supporting
+  sections, fenced examples, host guidance, planning notes, implementation
+  prompts, and Next Step prose are ignored or routed separately unless explicit
+  canonical headings or sanctioned structural cues re-enter product truth.
+  Post-confirm creation consumes the confirmed envelope sidecar and projects
+  Radar, Registry, Atlas, project brief, proof review, and implementation
+  prompts from typed facts instead of reparsing rendered confirmation Markdown.
+  The source slice also preserves terminal handoff visible results and renders
+  confirmation next steps as highlighted `Confirm`, `Edit`, and `Reject`
+  bullets. Source proof passed `255` greenfield post-confirm/parser/projection
+  tests, `78` adjacent confirmed-intent recovery tests, and `203` broader
+  first-path/projection tests, plus py-compile and whitespace checks. Clean
+  committed-head installed release proof remains the next gate.
+
 - 2026-07-07: Closed scope-tail rejection for valid terminal saved-result paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-220`; Diagram: D-045)
   Domain Intelligence now preserves complete terminal action clauses such as
   `save a reproducible run record` through project-brief readiness and

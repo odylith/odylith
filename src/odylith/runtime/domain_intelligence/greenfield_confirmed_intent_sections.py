@@ -124,6 +124,21 @@ def _confirmed_intent_answer_row(question: str, line: str) -> str:
 def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[str, list[str]]) -> str:
     if _looks_like_operator_instruction_body(line):
         return current
+    if is_confirmed_intent_ignored_section(current) or is_confirmed_intent_supporting_section(current):
+        explicit_heading = _explicit_markdown_heading_key(line)
+        heading = explicit_heading or confirmed_intent_heading_key(line)
+        if (
+            heading
+            and is_confirmed_intent_supporting_section(current)
+            and not explicit_heading
+            and not _supporting_heading_can_reenter_product_truth(line, heading)
+        ):
+            heading = ""
+        if heading:
+            sections.setdefault(heading, [])
+            return heading
+        sections.setdefault(current, []).append(line)
+        return current
     embedded = _confirmed_intent_embedded_inline_value(line, current=current)
     if embedded:
         for heading, value in embedded:
@@ -148,18 +163,75 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
     sentence_heading = confirmed_intent_sentence_heading_value(line)
     if sentence_heading:
         heading, value = sentence_heading
+        if current == "systems" and heading in {"external_systems", "internal_systems"}:
+            sections.setdefault(current, []).append(line)
+            return current
         sections.setdefault(heading, [])
         if value:
             sections[heading].append(value)
         return heading
     heading = confirmed_intent_heading_key(line)
     if heading:
+        if current == "preamble" and is_confirmed_intent_supporting_section(heading) and _looks_like_document_title_heading(line):
+            sections.setdefault(current, []).append(line)
+            return current
         sections.setdefault(heading, [])
         return heading
     if not line.strip() and current == "preamble":
         return current
     sections.setdefault(current, []).append(line)
     return current
+
+
+def _supporting_heading_can_reenter_product_truth(line: str, heading: str) -> bool:
+    if is_confirmed_intent_ignored_section(heading):
+        return True
+    normalized = normalize_confirmed_intent_heading(line)
+    base = _section_heading_base(normalized)
+    if re.match(r"^(?:slide\s+)?[0-9]+[a-z]?\s+", normalized):
+        return heading in {"first_path", "proof_boundary", "state_object"}
+    if heading == "state_object":
+        return base in {"product object", "state", "state object", "record", "method"}
+    if heading == "first_path":
+        return base in {"contribution", "contributions", "evaluation case", "release motion"}
+    if heading == "proof_boundary":
+        return "proof" in base or "boundary" in base or base in {"acceptance", "reproducibility"}
+    return False
+
+
+def _explicit_markdown_heading_key(line: str) -> str:
+    text = str(line or "").strip()
+    if not text.startswith("#"):
+        return ""
+    return confirmed_intent_heading_key(text)
+
+
+def _looks_like_document_title_heading(line: str) -> bool:
+    text = str(line or "").strip()
+    if not re.match(r"^#(?!#)\s+\S", text):
+        return False
+    heading = clean_markdown_text(text.lstrip("#").strip())
+    normalized = normalize_confirmed_intent_heading(heading)
+    if classify_confirmed_intent_heading(heading):
+        return False
+    words = [word for word in re.split(r"\s+", normalized) if word]
+    if len(words) < 2:
+        return False
+    support_heads = {
+        "abstract",
+        "appendix",
+        "background",
+        "benchmarks",
+        "conclusion",
+        "discussion",
+        "evidence",
+        "findings",
+        "introduction",
+        "methods",
+        "references",
+        "results",
+    }
+    return not bool(set(words) & support_heads)
 
 
 def _confirmed_intent_embedded_inline_value(line: str, *, current: str) -> list[tuple[str, str]] | None:
@@ -178,7 +250,7 @@ def _confirmed_intent_embedded_inline_value(line: str, *, current: str) -> list[
     if not label_heading:
         return None
     rows: list[tuple[str, str]] = []
-    if current and not is_confirmed_intent_ignored_section(current):
+    if current and not is_confirmed_intent_ignored_section(current) and not is_confirmed_intent_supporting_section(current):
         prefix = clean_markdown_text(match.group("prefix"))
         if prefix:
             rows.append((current, prefix))
@@ -457,6 +529,8 @@ def _consume_confirmed_intent_fence(
     header: str,
     sections: dict[str, list[str]],
 ) -> str:
+    if is_confirmed_intent_ignored_section(current) or is_confirmed_intent_supporting_section(current):
+        return current
     rows = _confirmed_intent_fence_rows(lines)
     if not rows or not _fence_looks_like_product_truth(rows, header=header):
         return current
@@ -704,6 +778,8 @@ def _noncanonical_section_key(value: str) -> str:
     normalized = normalize_confirmed_intent_heading(value)
     if not normalized:
         return ""
+    if normalized in {"accepted intent begins below", "actual intent", "actual intent begins below", "product intent begins below"}:
+        return "preamble"
     if _looks_like_operator_instruction_heading(normalized):
         return _ignored_section_key(normalized)
     return _supporting_section_key(normalized)

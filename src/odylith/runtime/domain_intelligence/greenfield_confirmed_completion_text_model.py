@@ -229,20 +229,9 @@ def outcome_action_phrase(outcome: str) -> str:
     predicate_object = _predicate_result_object(text)
     if predicate_object:
         return _modal_safe_outcome_action(f"review {predicate_object}")
-    system_action = _system_generated_outcome_action(text)
-    if system_action:
-        return _modal_safe_outcome_action(system_action)
     actor_review = _actor_led_outcome_review_action(text)
     if actor_review:
         return _modal_safe_outcome_action(actor_review)
-    if _looks_like_past_result_noun(text):
-        return _modal_safe_outcome_action(f"see {_object_phrase(text)}")
-    if looks_like_action_clause(text):
-        return _modal_safe_outcome_action(base_action_clause(text, force_leading_finite=True))
-    if _looks_like_question_result(text):
-        return _modal_safe_outcome_action(f"see {text}")
-    if _looks_like_predicate_result(text):
-        return _modal_safe_outcome_action(f"see that {text}")
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
     actor, actor_action = _actor_led_base_action_parts(
         re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
@@ -252,10 +241,25 @@ def outcome_action_phrase(outcome: str) -> str:
         or _looks_like_human_actor_prefix(actor)
     ):
         return _modal_safe_outcome_action(actor_action)
+    if words & {"proof", "proven", "verified", "evidence", "audit", "ledger", "ledgers"}:
+        return _modal_safe_outcome_action(f"review {_object_phrase(text)}")
+    if _looks_like_coordinated_result_object(text):
+        return _modal_safe_outcome_action(f"see {_object_phrase(text)}")
+    system_action = _system_generated_outcome_action(text)
+    if system_action:
+        return _modal_safe_outcome_action(system_action)
+    if _looks_like_past_result_noun(text):
+        return _modal_safe_outcome_action(f"see {_object_phrase(text)}")
+    if looks_like_action_clause(text):
+        return _modal_safe_outcome_action(base_action_clause(text, force_leading_finite=True))
+    if _looks_like_question_result(text):
+        return _modal_safe_outcome_action(f"see {text}")
+    if _looks_like_predicate_result(text):
+        return _modal_safe_outcome_action(f"see that {text}")
     object_text = _object_phrase(text)
     if "status" in words and "visible" in words:
         return _modal_safe_outcome_action(f"see {object_text}")
-    if words & {"proof", "proven", "verified", "evidence", "audit", "ledger", "ledgers", "recommendation", "recommendations"}:
+    if words & {"recommendation", "recommendations"}:
         return _modal_safe_outcome_action(f"review {object_text}")
     if "readiness" in words:
         return _modal_safe_outcome_action(f"see {object_text}")
@@ -266,6 +270,29 @@ def outcome_action_phrase(outcome: str) -> str:
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
         return _modal_safe_outcome_action(f"use {object_text}")
     return _modal_safe_outcome_action(f"reach {object_text}")
+
+
+def _looks_like_coordinated_result_object(value: str) -> bool:
+    words = [word.strip(".,:;()[]{}").casefold() for word in _clean(value).replace("-", " ").split()]
+    words = [word for word in words if word]
+    if not 3 <= len(words) <= 8 or not {"and", "or"} & set(words):
+        return False
+    result_tail_terms = {
+        "approval",
+        "approvals",
+        "clearance",
+        "clearances",
+        "decision",
+        "decisions",
+        "evidence",
+        "proof",
+        "readiness",
+        "report",
+        "reports",
+        "status",
+        "summary",
+    }
+    return words[-1] in result_tail_terms
 
 
 def _modal_safe_outcome_action(value: str) -> str:
@@ -323,6 +350,8 @@ def _actor_led_outcome_review_action(value: str) -> str:
     decision_object = _decision_pair_result_object(actor_action)
     if decision_object:
         return f"review {decision_object}"
+    if _looks_like_coordinated_result_object(actor_action):
+        return f"see {_object_phrase(actor_action)}"
     return ""
 
 

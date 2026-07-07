@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-07-05
+Updated: 2026-07-07
 
 Backlog: B-142
 
@@ -14,9 +14,10 @@ vocabulary, or degraded packages.
 
 ## Architecture
 
-- Compile the accepted Product Intent Confirmation into a lossless
-  `ConfirmedIntentIR` with section IDs, source spans, content hash, and
-  provenance.
+- Compile the accepted Product Intent Confirmation into a versioned
+  `ProductIntentEnvelope` and lossless `ConfirmedIntentIR` with source
+  evidence, custody ledger entries, product-facts hash, section IDs, source
+  spans, and provenance.
 - Ask host reasoning to build `SemanticModelIR` for ambiguous human meaning:
   actors, actions, objects, state, systems, first-path events, proof
   obligations, risks, assumptions, deferred scope, decision ledger entries, and
@@ -884,17 +885,33 @@ vocabulary, or degraded packages.
   semantic/artifact-plan custody for actor casing and high-risk assumption
   coverage, plus a repair planner that can label a finding repairable without
   producing a valid patch.
+- 2026-07-07 typed product-intent custody checkpoint: the current source tree
+  introduces `ProductIntentEnvelope` v2 and `CustodyLedger` v1 for confirmed
+  greenfield ingress. The envelope stores canonical product facts, source
+  evidence, materiality status, provenance, ignored/supporting evidence, and a
+  decision record with a product-facts hash. Confirmed JSON without the v2
+  schema or with a stale hash is not trusted as product truth; it is
+  re-normalized through the same custody pipeline. Human-edited Markdown,
+  planning notes, host guidance, fenced examples, implementation prompts, and
+  Next Step prose are treated as evidence and classified before they can affect
+  product facts. The source slice also fixes terminal handoff visible-result
+  projection and confirmation next-step UX. Proof is source-local so far:
+  `255` greenfield post-confirm/parser/projection tests, `78` adjacent
+  confirmed-intent recovery tests, `203` first-path/projection tests,
+  py-compile, and whitespace checks passed. Clean committed-head installed
+  proof remains required before release readiness.
 
 ## Implementation Slices
 
-- [ ] Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,
+- [ ] Define `ProductIntentEnvelope`, `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,
       `ArtifactDraftSet`, `ReviewReport`, and `PatchSet` schemas with source
-      provenance and stable IDs. Current checkpoint defines typed
-      `ReviewReport` findings, `PatchSet` request schemas, a source-mapped
-      apply-semantic input bridge, and the first shared `ArtifactPlanIR`
-      projection contract owner. A lossless `ConfirmedIntentIR`, full
-      `ArtifactPlanIR` schema, `ArtifactDraftSet` schema, and stable source-span
-      IDs remain open.
+      provenance and stable IDs. Current checkpoint defines the versioned
+      `ProductIntentEnvelope` v2, `CustodyLedger` v1, product-facts hash
+      validation, typed `ReviewReport` findings, `PatchSet` request schemas, a
+      source-mapped apply-semantic input bridge, and the first shared
+      `ArtifactPlanIR` projection contract owner. A lossless
+      `ConfirmedIntentIR`, full `ArtifactPlanIR` schema, `ArtifactDraftSet`
+      schema, and stable source-span IDs remain open.
 - [x] Convert final package validators to emit typed finding codes, source-map
       targets, semantic node IDs, projection IDs, severity, and repairability.
       `greenfield_post_confirm_findings.py` now owns typed finding collection
@@ -1080,6 +1097,14 @@ vocabulary, or degraded packages.
       contract facts before repair. Atlas freshness, Casebook source,
       component Registry, plan/workstream binding, and plan risk/mitigation
       validation also passed after the governed surface sync.
+- [x] Product-intent envelope and edited-Markdown custody source proof:
+      greenfield post-confirm/parser/projection tests passed `255` tests in
+      `584.51s`; confirmed-intent section-boundary, recovery, and sparse
+      confirmation tests passed `78` tests in `252.19s`; first-path modal,
+      high-variance action, generated-prose, source-casing, confirmed-text,
+      product-envelope, and metamorphic confirmed-intent tests passed `203`
+      tests in `148.23s`; py-compile passed for changed source owners; and
+      `git diff --check` passed.
 - [ ] Unit tests proving `PatchSet` repair applies to `SemanticModelIR` or
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
       rendered artifacts directly. Current checkpoint proves the operation-level
