@@ -73,6 +73,7 @@ EVALUATION_EVIDENCE_FILES = frozenset(
     }
 )
 DIST_EVIDENCE_PREFIXES = (
+    "greenfield-matrix-",
     "greenfield-post-confirm-",
     "greenfield-rescue-proof-",
 )
