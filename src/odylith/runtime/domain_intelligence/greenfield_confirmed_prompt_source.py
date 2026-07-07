@@ -785,14 +785,14 @@ def _normalize_request_reporting_product_clauses(value: str) -> str:
         row_words = _request_words(row)
         row_tokens = [_word_key(word) for word in row_words]
         word_sense_subject = _request_reporting_word_sense_subject(row)
+        has_recoverable_path = any(_looks_like_recoverable_first_path(previous) for previous in normalized)
         if word_sense_subject:
-            normalized.append(word_sense_subject)
+            if not has_recoverable_path:
+                normalized.append(word_sense_subject)
             continue
         if _request_reporting_clause_is_word_sense(row):
             continue
-        if product_clause and (
-            any(_looks_like_recoverable_first_path(previous) for previous in normalized)
-        ):
+        if product_clause and has_recoverable_path:
             continue
         if not product_clause and normalized and word_sense_content_clause_describes_comparison(row_tokens):
             continue

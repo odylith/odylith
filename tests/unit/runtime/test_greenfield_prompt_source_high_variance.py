@@ -264,9 +264,10 @@ def test_prompt_source_preserves_request_framed_product_subjects_with_descriptor
         assert "the request says" not in source.first_path.casefold()
         assert "the request says" not in rendered
         assert "ownership must be explicit" not in rendered
-        assert subject in rendered or subject in source.first_path.casefold()
+        assert not source.first_path.casefold().endswith(subject)
         assert "english grammar" in rendered or "grammar ambiguity" in rendered
         assert "noun and a governed object" not in semantic_visible_result
+        assert "final lesson explanation" in semantic_visible_result
         assert greenfield_quality_issues(proposal) == []
 
 
