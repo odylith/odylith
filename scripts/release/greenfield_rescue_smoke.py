@@ -9,6 +9,8 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe im
     rescue_probe_env,
 )
 
+from greenfield_matrix_quality_scoring import required_domain_term_hits
+
 
 POST_CONFIRM_RESCUE_BUDGET_SECONDS = 90.0
 
@@ -51,7 +53,7 @@ def rescue_cli_issues(
         )
     )
     issues.extend(_count_floor_issues(counts, minimums=count_minimums, count_key=count_key))
-    required_domain_terms = max(3, int(getattr(counts, "required_domain_terms", 0) or 0))
+    required_domain_terms = required_domain_term_hits(counts)
     if int(getattr(counts, "domain_term_hits", 0) or 0) < required_domain_terms:
         issues.append(
             "auto-rescue domain term coverage too low: "

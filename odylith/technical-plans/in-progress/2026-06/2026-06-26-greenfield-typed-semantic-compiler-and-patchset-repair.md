@@ -954,6 +954,16 @@ vocabulary, or degraded packages.
   prompts still fail. Focused next-step proof and the widened high-variance/
   source-repair/slop guard passed `75` tests. Rebuilt installed failed-subset
   replay remains the next release-readiness gate.
+- 2026-07-07 sparse scoring checkpoint: exact installed replay against
+  local-release `eb284dd7` confirmed the next-step package gate was fixed and
+  post-confirm writes committed 4 Radar workstreams, 3 Registry specs, 6 Atlas
+  diagrams, and 18 trace nodes, but release scoring failed the domain-expert
+  lens because the domain-term threshold required three hits while the case
+  declared only `grammar` and `lesson` as required terms. CB-222 now owns that
+  scoring false negative. The scorer now requires all declared case terms when
+  required terms are present, keeps the three-term floor only when no required
+  terms are declared, and routes auto-rescue smoke through the same threshold
+  helper. Focused scorer proof passed; rebuilt installed replay remains required.
 
 ## Implementation Slices
 

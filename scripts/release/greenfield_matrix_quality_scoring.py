@@ -195,7 +195,10 @@ def count_key(label: str) -> str:
 
 
 def required_domain_term_hits(counts: GreenfieldArtifactCounts) -> int:
-    return max(3, int(counts.required_domain_terms or 0))
+    declared_terms = int(counts.required_domain_terms or 0)
+    if declared_terms > 0:
+        return declared_terms
+    return 3
 
 
 def write_committed(manifest: Mapping[str, Any]) -> bool:

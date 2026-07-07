@@ -2419,7 +2419,7 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
     )
     quality = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
-        package=_empty_package(),
+        package=_substantive_package(),
         counts=counts,
         create_returncode=0,
         create_seconds=20.0,
@@ -2428,6 +2428,40 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
     assert not quality.passed
     assert quality.scores["domain_expert"] == 0
     assert "domain term coverage too low: expected at least 4, found 3" in quality.issues
+
+
+def test_quality_verdict_accepts_sparse_case_when_all_declared_domain_terms_survive(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    counts = module.GreenfieldArtifactCounts(
+        radar_workstreams=4,
+        registry_component_specs=3,
+        atlas_mermaid_sources=4,
+        compass_records=1,
+        release_records=1,
+        program_records=1,
+        project_brief_records=1,
+        trace_nodes=12,
+        trace_workstreams=4,
+        rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
+        rendered_surface_payloads=len(_scoring_module().SURFACE_PAYLOAD_CONTRACTS) * 2,
+        atlas_rendered_assets=8,
+        domain_term_hits=2,
+        required_domain_terms=2,
+        project_implementation_prompts=5,
+    )
+    quality = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=_substantive_package(),
+        counts=counts,
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert quality.passed
+    assert quality.scores["domain_expert"] == 10
+    assert "domain term coverage too low: expected at least 3, found 2" not in quality.issues
 
 
 def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_path: Path) -> None:

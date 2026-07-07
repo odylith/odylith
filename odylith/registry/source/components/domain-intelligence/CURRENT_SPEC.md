@@ -48,6 +48,18 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-07: Corrected release-matrix domain-term scoring for sparse accepted intent. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-222`; Diagram: D-045)
+  Exact installed replay after the next-step preservation fix completed
+  post-confirm writes with 4 Radar workstreams, 3 Registry specs, 6 Atlas
+  diagrams, and 18 trace nodes, then failed release scoring because the
+  domain-term threshold required three hits even though the sparse case declared
+  exactly two accepted required terms and both were grounded. Release scoring now
+  requires all declared case terms when case required terms are present, retains
+  the three-term floor only when no required terms are declared, and routes
+  auto-rescue smoke through the shared threshold helper. Focused scorer proof
+  covers the dense missing-term failure and the sparse all-declared-terms pass;
+  rebuilt installed replay remains required before release readiness.
+
 - 2026-07-07: Fixed next-step first-path preservation false negatives for sparse confirmed paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-221`; Diagram: D-045)
   Installed word-sense replay against local-release `c3274ff5` exposed a
   post-confirm package-gate failure where the operator next-step prompt literally
