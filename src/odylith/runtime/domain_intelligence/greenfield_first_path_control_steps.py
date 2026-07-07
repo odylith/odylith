@@ -482,10 +482,41 @@ def _tokens_start_word_sense_metadata(tokens: Sequence[tuple[str, int]], index: 
     return False
 
 
+_WORD_SENSE_ACTION_TERMS = frozenset(
+    {
+        "act",
+        "acts",
+        "action",
+        "actions",
+        "operation",
+        "operations",
+        "verb",
+        "verbs",
+    }
+)
+_WORD_SENSE_OBJECT_TERMS = frozenset(
+    {
+        "artifact",
+        "artifacts",
+        "entity",
+        "entities",
+        "noun",
+        "nouns",
+        "object",
+        "objects",
+        "record",
+        "records",
+    }
+)
+
+
 def _word_sense_tail_describes_action_object(tokens: Sequence[str]) -> bool:
-    if "action" not in tokens or "object" not in tokens:
+    token_set = set(tokens)
+    if not (token_set & _WORD_SENSE_ACTION_TERMS and token_set & _WORD_SENSE_OBJECT_TERMS):
         return False
-    return "both" in tokens or sum(1 for token in tokens if token == "as") >= 2
+    return "both" in token_set or sum(1 for token in tokens if token == "as") >= 2 or (
+        "as" in token_set and "and" in token_set
+    )
 
 
 def _tokens_start_subject_modal_requirement(tokens: Sequence[tuple[str, int]], index: int) -> bool:

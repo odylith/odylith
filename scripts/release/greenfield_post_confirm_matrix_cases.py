@@ -293,6 +293,8 @@ def historical_domain_leakage_sentinels() -> tuple[str, ...]:
         "digestive health",
         "fifa tracker",
         "quantum tunneling",
+        "request uses record as both a verb and a governed object",
+        "request uses record both as an action and as a governed object",
         "wearable app",
         "workout",
     )

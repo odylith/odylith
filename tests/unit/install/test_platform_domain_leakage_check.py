@@ -441,6 +441,21 @@ def test_current_platform_source_does_not_carry_recent_replay_domain_phrase() ->
     assert leakage.scan_repo(repo_root, terms=("single cell perturbation",)) == ()
 
 
+def test_current_platform_source_does_not_carry_request_meta_replay_phrase() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    assert (
+        leakage.scan_repo(
+            repo_root,
+            terms=(
+                "request uses record both as an action and as a governed object",
+                "request uses record as both a verb and a governed object",
+            ),
+        )
+        == ()
+    )
+
+
 def test_scan_repo_allows_fixture_terms_in_governance_evidence(tmp_path: Path) -> None:
     evidence_file = tmp_path / "odylith" / "casebook" / "bugs" / "repro.md"
     evidence_file.parent.mkdir(parents=True)

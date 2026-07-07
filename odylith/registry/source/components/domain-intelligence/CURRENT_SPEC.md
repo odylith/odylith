@@ -54,8 +54,8 @@ This section captures synchronized requirement and contract signals derived from
   the raw prompt/title cone, while retaining hard platform-context rejection
   for `Odylith Atlas`, Atlas diagram/surface/Mermaid/catalog/dashboard
   contexts, governance-flow copy, and control-plane collocations. The same pass
-  classifies word-sense/request-meta clauses such as "the request uses record
-  both as an action and as a governed object" as requirement-control metadata:
+  classifies word-sense/request-meta clauses about a term being used in multiple
+  grammatical senses as requirement-control metadata:
   first-path projection strips them, evidence-anchor extraction ignores them,
   visible-result extraction keeps the clean leading nominal result, leading
   metadata and declared visible-result/proof-boundary metadata are rejected, and

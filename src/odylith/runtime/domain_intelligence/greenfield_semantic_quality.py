@@ -460,7 +460,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
         if re.search(r"\b(?:reach|use)\s+(?:a|an|the\s+)?(?:reflection|result|summary|view|readout|outcome|consequence)\b", lowered):
             issues.append(f"awkward visible-result action leaked at {location}")
         if contains_word_sense_metadata_clause(text) or re.search(
-            r"\b(?:(?:reach|see|review|show|use)\s+)?(?:(?:a|an|the)\s+)?action\s+(?:and\s+)?(?:as\s+)?(?:(?:a|an|the)\s+)?(?:governed\s+)?object\b",
+            r"\b(?:(?:reach|see|review|show|use)\s+)?(?:(?:a|an|the)\s+)?(?:act|action|operation|verb)s?\s+(?:and\s+)?(?:as\s+)?(?:(?:a|an|the)\s+)?(?:governed\s+)?(?:artifact|entity|noun|object|record)s?\b",
             lowered,
         ):
             issues.append(f"word-sense metadata leaked as visible result at {location}")

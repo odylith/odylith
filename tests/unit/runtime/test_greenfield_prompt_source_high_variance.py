@@ -72,12 +72,13 @@ def test_semantic_slop_gate_rejects_word_sense_metadata_as_visible_result() -> N
     issues = generated_semantic_slop_issues(
         {
             "product_view": "The computational biologist can reach an action and as a governed object.",
+            "registry_note": "The analyst can reach a verb and a governed object.",
             "source_note": "The request uses record both as an action and as a governed object.",
             "visible_object": "an action and as a governed object, so ownership must be explicit.",
         }
     )
 
-    assert sum("word-sense metadata leaked as visible result" in issue for issue in issues) >= 3
+    assert sum("word-sense metadata leaked as visible result" in issue for issue in issues) >= 4
 
 
 def test_visible_result_object_ignores_word_sense_metadata_tail() -> None:
@@ -99,6 +100,11 @@ def test_visible_result_object_rejects_leading_word_sense_metadata() -> None:
         == ""
     )
     assert visible_result_object("Record is both an action and a governed object, so ownership must be explicit") == ""
+    assert (
+        visible_result_object("The request uses record as both a verb and a governed object, so ownership must be explicit")
+        == ""
+    )
+    assert visible_result_object("Record is both a verb and a governed object, so ownership must be explicit") == ""
     assert visible_result_object("The visible result is The request uses record both as an action and as a governed object") == ""
 
 
@@ -121,6 +127,36 @@ def test_semantic_compiler_ignores_word_sense_proof_boundary_fallback() -> None:
 
     assert candidate.source_kind != "proof_boundary"
     assert "action and as" not in candidate.text
+
+
+def test_prompt_source_rejects_synonym_word_sense_metadata_escape() -> None:
+    prompt = (
+        "Create a greenfield proposal for pathology slide discrepancy board. Focus on a governed workflow where the "
+        "pathology quality lead turns an ambiguous slide discrepancy case into a review-ready record using stain "
+        "quality metrics, scanner metadata, pathologist annotations, specimen custody, explicit expert review, "
+        "auditable decision ledger, and a final discrepancy resolution recommendation. The request uses record as both "
+        "a verb and a governed object, so ownership must be explicit. An engineer must see implementable prompts, data "
+        "contracts, validations, and error states. The post-confirm create must finish all project and governance "
+        "artifacts under the standard budget."
+    )
+
+    source = prompt_intent_source(prompt)
+    outcome = first_path_outcome_phrase(source.first_path)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=source.title,
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt),
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert "verb and a governed object" not in source.first_path.casefold()
+    assert "verb and a governed object" not in outcome.casefold()
+    assert "verb and a governed object" not in outcome_action_phrase(outcome).casefold()
+    assert "verb and a governed object" not in rendered
+    assert "word-sense metadata leaked" not in "\n".join(generated_semantic_slop_issues(proposal))
+    assert greenfield_quality_issues(proposal) == []
 
 
 def test_evidence_anchors_ignore_word_sense_metadata_requirements() -> None:
