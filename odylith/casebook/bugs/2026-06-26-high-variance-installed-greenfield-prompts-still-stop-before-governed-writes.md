@@ -748,6 +748,18 @@
   `. Or` fragment, and temp cleanup. Related unit-fixture hardening also made
   no-refresh create tests explicitly bypass rendered-surface custody; live
   source-local create still exercises the real rendered-custody path.
+  A 2026-07-07 installed 120-case volume run against
+  `odylith-local-release-0.1.15-b678d1ee` reopened the same class with
+  `autonomous shuttle disengagement`. The accepted first path was a single
+  action with a long `using ...` evidence list, but `sequence_event_steps`
+  reparsed the already-normalized semantic step and treated action-word nouns
+  as new actions, rendering `... weather context. Explicit expert review,
+  auditable decision ledger. And a final disengagement review recommendation`
+  at `project_brief.blueprint_sections.1.must_capture`. The public-copy gate
+  correctly blocked the sentence connector splice before governed writes. The
+  generic fix is to trust `first_path_steps` as the canonical semantic split
+  and stop running the looser sequence expander over those typed steps; fallback
+  raw/legacy paths can still use the expander where no semantic split exists.
   Fresh current-head installed variance on 2026-06-29 reopened release quality
   again. The custom ten-case matrix against dist
   `odylith-local-release-0.1.15-af4117d8` passed nine non-reused domains with

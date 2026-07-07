@@ -291,7 +291,7 @@ def _leading_words(value: str, *, limit: int) -> list[str]:
 def _first_path_steps(value: str) -> list[str]:
     semantic_steps = list(first_path_steps(value))
     if semantic_steps:
-        return _dedupe_steps(_expand_compound_steps(semantic_steps))
+        return _dedupe_steps(_expand_semantic_action_conjunctions(semantic_steps))
     text = _compact_text(value)
     if not text:
         return []
@@ -370,6 +370,38 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
             if part
         )
     return expanded
+
+
+def _expand_semantic_action_conjunctions(values: list[str]) -> list[str]:
+    expanded: list[str] = []
+    for value in values:
+        expanded.extend(_split_semantic_action_conjunction(value))
+    return expanded
+
+
+def _split_semantic_action_conjunction(value: str) -> list[str]:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return []
+    subject = leading_subject_prefix(text)
+    action_text = strip_action_subject(text).strip(" .") if subject else text
+    parts = [
+        part.strip(" .")
+        for part in re.split(
+            rf"\s+and\s+(?=(?:{_SPLIT_ACTION_VERB_PATTERN})\b)",
+            action_text,
+            flags=re.IGNORECASE,
+        )
+        if part.strip(" .")
+    ]
+    if len(parts) <= 1 or not all(looks_like_action_clause(part) for part in parts):
+        return [text]
+    if not subject:
+        return parts
+    return [
+        f"{subject} {_subject_action_clause(subject, part)}".strip(" .")
+        for part in parts
+    ]
 
 
 def _merge_compound_object_parts(values: list[str]) -> list[str]:

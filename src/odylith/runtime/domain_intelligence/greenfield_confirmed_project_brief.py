@@ -554,6 +554,7 @@ def _first_path_step_summary(steps: list[str], *, limit: int) -> str:
         for step in steps
         if compact_text(step).strip(" .") and not is_supporting_setup_step(step)
     ]
+    rows = _merge_connector_led_summary_rows(rows)
     if not rows:
         return ""
     candidate = ". ".join(rows)
@@ -576,6 +577,22 @@ def _first_path_step_summary(steps: list[str], *, limit: int) -> str:
             if len(candidate) <= limit:
                 return candidate
     return ". ".join(rows)
+
+
+def _merge_connector_led_summary_rows(rows: list[str]) -> list[str]:
+    merged: list[str] = []
+    for row in rows:
+        text = compact_text(row).strip(" .")
+        if not text:
+            continue
+        match = re.match(r"^(?P<connector>and|or)\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
+        if merged and match:
+            connector = match.group("connector").casefold()
+            tail = match.group("tail").strip(" .")
+            merged[-1] = f"{merged[-1].rstrip(' ,;')}, {connector} {tail[:1].casefold()}{tail[1:]}".strip(" .")
+            continue
+        merged.append(text)
+    return merged
 
 
 def _story_readiness_summary(value: str, *, fallback: str, limit: int = 220) -> str:

@@ -6,6 +6,7 @@ from pathlib import Path
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import _first_path_step_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_project_brief import normalize_project_brief
@@ -405,6 +406,42 @@ def test_project_brief_renderer_preserves_lower_first_source_symbol_at_fragment_
 
     assert "mRNA Stability Batch Comparison Workspace helps" in rendered
     assert "MRNA Stability" not in rendered
+
+
+def test_confirmed_project_brief_keeps_evidence_list_out_of_sentence_splices() -> None:
+    proposal = _proposal_from_guidance_prompt(
+        "Create a greenfield proposal for autonomous shuttle disengagement. Focus on a governed workflow "
+        "where the mobility operations lead turns an ambiguous disengagement event into a review-ready record "
+        "using vehicle logs, scene annotation, remote-operator notes, weather context, explicit expert review, "
+        "auditable decision ledger, and a final disengagement review recommendation. The request uses record "
+        "both as an action and as a governed object, so ownership must be explicit. A product manager must see "
+        "the first complete path, actor value, non-goals, and success metrics. The post-confirm create must "
+        "finish all project and governance artifacts under the standard budget."
+    )
+    first_path = proposal["project_brief"]["blueprint_sections"][1]["must_capture"]
+
+    assert "using vehicle logs, scene annotation, remote-operator notes, weather context" in first_path
+    assert "explicit expert review" in first_path
+    assert "final disengagement review recommendation" in first_path
+    assert ". And" not in first_path
+    assert ". Or" not in first_path
+    assert "Explicit expert review, auditable decision ledger" not in first_path
+    assert generated_public_copy_issues("project brief preview", proposal["project_brief"]) == ()
+
+
+def test_first_path_summary_merges_connector_led_rows_before_sentence_join() -> None:
+    summary = _first_path_step_summary(
+        [
+            "A coordinator handles an accept, decline",
+            "Or more-info request",
+            "And a final recommendation",
+        ],
+        limit=240,
+    )
+
+    assert summary == "A coordinator handles an accept, decline, or more-info request, and a final recommendation"
+    assert ". Or" not in summary
+    assert ". And" not in summary
 
 
 def test_confirmed_project_brief_preserves_long_component_label_tails() -> None:

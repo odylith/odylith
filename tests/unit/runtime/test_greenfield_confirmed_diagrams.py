@@ -555,3 +555,20 @@ def test_sequence_event_steps_keep_connector_led_object_tails_with_prior_action(
     assert "Or more-info request" not in steps
     assert any("attaches subject identity" in step and "required request context" in step for step in steps)
     assert any("handles an accept" in step and "more-info request" in step for step in steps)
+
+
+def test_sequence_event_steps_keep_long_evidence_list_inside_action_step() -> None:
+    steps = sequence_event_steps(
+        "Mobility operations lead can turn an ambiguous disengagement event into a review-ready record "
+        "using vehicle logs, scene annotation, remote-operator notes, weather context, explicit expert review, "
+        "auditable decision ledger, and a final disengagement review recommendation.",
+        dedupe=True,
+    )
+
+    assert steps == [
+        "Mobility operations lead turns an ambiguous disengagement event into a review-ready record using vehicle logs, "
+        "scene annotation, remote-operator notes, weather context, explicit expert review, auditable decision ledger, "
+        "and a final disengagement review recommendation"
+    ]
+    assert "Explicit expert review, auditable decision ledger" not in steps
+    assert "And a final disengagement review recommendation" not in steps
