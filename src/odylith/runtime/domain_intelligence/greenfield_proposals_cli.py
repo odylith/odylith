@@ -68,13 +68,13 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--json", action="store_true", dest="as_json")
     create = subparsers.add_parser("create", help="Commit a compiled ProductCreateTransaction.")
     create.add_argument("--repo-root", default=".")
-    create.add_argument("--prompt", default="")
+    create.add_argument("--prompt", default="", help=argparse.SUPPRESS)
     create.add_argument(
         "--intent-file",
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
+        help=argparse.SUPPRESS,
     )
     create.add_argument(
         "--transaction-file",
@@ -92,15 +92,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Expected ProductCreateTransaction hash; required by confirmation UIs and checked before writes.",
     )
     create.add_argument("--confirm", action="store_true")
-    create.add_argument("--release", default="")
+    create.add_argument("--release", default="", help=argparse.SUPPRESS)
     create.add_argument(
         "--repair-tier",
-        choices=POST_CONFIRM_REPAIR_TIERS,
-        default=greenfield_proposals.DEFAULT_POST_CONFIRM_REPAIR_TIER,
-        help=(
-            "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
-            "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
-        ),
+        default="",
+        help=argparse.SUPPRESS,
     )
     create.add_argument("--json", action="store_true", dest="as_json")
     compile_transaction = subparsers.add_parser(
@@ -220,6 +216,21 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))
+
+
+def _post_confirm_create_overrides(args: argparse.Namespace) -> list[str]:
+    overrides: list[str] = []
+    has_transaction_ref = bool(
+        str(getattr(args, "transaction_file", "") or "").strip()
+        or str(getattr(args, "transaction_json", "") or "").strip()
+    )
+    if has_transaction_ref and str(getattr(args, "prompt", "") or "").strip():
+        overrides.append("--prompt")
+    if str(getattr(args, "release", "") or "").strip():
+        overrides.append("--release")
+    if str(getattr(args, "repair_tier", "") or "").strip():
+        overrides.append("--repair-tier")
+    return overrides
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -349,6 +360,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                     + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md "
                     "--output .odylith/runtime/greenfield/product-create-transaction.v1.json` first, "
                     "then run create with --transaction-file, --transaction-hash, and --confirm."
+                )
+            post_confirm_overrides = _post_confirm_create_overrides(args)
+            if post_confirm_overrides:
+                raise ValueError(
+                    "greenfield create cannot accept post-confirm inputs: "
+                    + ", ".join(post_confirm_overrides)
+                    + ". Edit the Product Intent evidence and rebuild the ProductCreateTransaction; "
+                    "create only verifies the hash and commits the compiled package."
                 )
             transaction = greenfield_proposals.load_product_create_transaction_args(args, repo_root=repo_root)
             if transaction is None:

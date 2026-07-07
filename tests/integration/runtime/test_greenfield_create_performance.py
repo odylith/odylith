@@ -17,6 +17,110 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_int
 POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS = 60.0
 
 
+def _run_confirmed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[int, dict, float]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--output",
+            transaction_file,
+            "--release",
+            "0.0.1",
+            "--format",
+            "json",
+        ]
+    )
+    compile_output = capsys.readouterr().out
+    assert compile_rc == 0, compile_output
+    transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    return rc, payload, elapsed
+
+
+def _run_confirmed_create_subprocess(
+    *,
+    tmp_path: Path,
+    prompt: str,
+    env: dict[str, str],
+    timeout: float,
+) -> tuple[subprocess.CompletedProcess[str], float]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "odylith.cli",
+            "greenfield",
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--output",
+            transaction_file,
+            "--release",
+            "0.0.1",
+            "--format",
+            "json",
+        ],
+        check=False,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
+    if compile_result.returncode != 0:
+        return compile_result, timeout
+    transaction_hash = str(json.loads(compile_result.stdout)["product_create_transaction"]["transaction_hash"])
+    started = time.perf_counter()
+    create_result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "odylith.cli",
+            "greenfield",
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
+            "--confirm",
+            "--json",
+        ],
+        check=False,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
+    return create_result, time.perf_counter() - started
+
+
 def _generated_source_payload(root) -> str:
     return "\n".join(
         path.read_text(encoding="utf-8")
@@ -66,32 +170,12 @@ def test_greenfield_create_cli_completes_whole_project_under_sixty_seconds(tmp_p
     repo_root = Path(__file__).resolve().parents[3]
     env = os.environ.copy()
     env["PYTHONPATH"] = str(repo_root / "src") + os.pathsep + env.get("PYTHONPATH", "")
-    started = time.perf_counter()
-    result = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "odylith.cli",
-            "greenfield",
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a municipal permit review workspace",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ],
-        check=False,
+    result, elapsed = _run_confirmed_create_subprocess(
+        tmp_path=tmp_path,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
         env=env,
-        capture_output=True,
-        text=True,
         timeout=POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS,
     )
-    elapsed = time.perf_counter() - started
 
     assert result.returncode == 0, result.stderr + result.stdout
     payload = json.loads(result.stdout)
@@ -104,24 +188,11 @@ def test_yacht_greenfield_confirm_repairs_quality_failures_and_commits_under_six
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(YACHT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a yacht servicing platform",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a yacht servicing platform",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     generated_source = _generated_source_payload(tmp_path)
 
     assert rc == 0
@@ -580,24 +651,11 @@ def test_greenfield_create_confirm_full_refresh_stays_under_thirty_seconds(tmp_p
     _seed_empty_governance_repo(tmp_path)
     _write_confirmed_intent(tmp_path)
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a municipal permit review workspace",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0
     assert elapsed < 30.0
@@ -629,24 +687,11 @@ def test_solar_greenfield_create_refreshes_semantic_model_and_stays_under_thirty
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(SOLAR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "An app that optimizes the production and consumption of solar energy",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="An app that optimizes the production and consumption of solar energy",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0
     assert elapsed < 30.0
@@ -683,24 +728,11 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(PATTERN_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a personal pattern tracker",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a personal pattern tracker",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     rendered_payload = json.dumps(payload)
     written_payload = "\n".join(
         path.read_text(encoding="utf-8")
@@ -757,24 +789,11 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a learner choice practice journal",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a learner choice practice journal",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0
     assert elapsed < 30.0
@@ -834,24 +853,11 @@ def test_narrative_greenfield_create_normalizes_action_outcome_under_thirty_seco
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(NARRATIVE_AGENCY_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a child agency practice app",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a child agency practice app",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     rendered_payload = json.dumps(payload)
     generated_payload = _generated_source_payload(tmp_path)
 
@@ -896,24 +902,11 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(GLP1_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a GLP-1 medication tracking app",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a GLP-1 medication tracking app",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     rendered_payload = json.dumps(payload)
     generated_payload = _generated_source_payload(tmp_path)
     visible_surface_payload = _generated_visible_surface_payload(tmp_path)
@@ -986,24 +979,11 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(QUANTUM_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a lab app where we are building quantum communication",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a lab app where we are building quantum communication",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     rendered_payload = json.dumps(payload)
     generated_payload = _generated_source_payload(tmp_path)
     visible_surface_payload = _generated_visible_surface_payload(tmp_path)
@@ -1056,24 +1036,11 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(SIGNAL_PROCESSING_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a real-time signal processing pipeline",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a real-time signal processing pipeline",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     generated_payload = _generated_source_payload(tmp_path)
     visible_surface_payload = _generated_visible_surface_payload(tmp_path)
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
@@ -1136,24 +1103,11 @@ def test_greenfield_create_completes_compound_public_response_path_under_sixty_s
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(PUBLIC_RESPONSE_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a regional response workspace",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    rc, payload, elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a regional response workspace",
     )
-    elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
     generated_payload = _generated_source_payload(tmp_path)
     visible_surface_payload = _generated_visible_surface_payload(tmp_path)
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
@@ -1211,24 +1165,11 @@ def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    first_started = time.perf_counter()
-    first_rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a learner choice practice journal",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    first_rc, first_payload, first_elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a learner choice practice journal",
     )
-    first_elapsed = time.perf_counter() - first_started
-    first_payload = json.loads(capsys.readouterr().out)
     old_ids = {row["idea_id"] for row in first_payload["backlog"]}
 
     revised_text = MULTI_ACTOR_CONFIRMED_INTENT_TEXT.replace(
@@ -1236,24 +1177,11 @@ def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_
         "- Child learner, a kid aged eight to ten",
     )
     intent_path.write_text(revised_text, encoding="utf-8")
-    second_started = time.perf_counter()
-    second_rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a learner choice practice journal",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    second_rc, second_payload, second_elapsed = _run_confirmed_create_main(
+        tmp_path,
+        capsys,
+        prompt="Draft a greenfield proposal for a learner choice practice journal",
     )
-    second_elapsed = time.perf_counter() - second_started
-    second_payload = json.loads(capsys.readouterr().out)
     new_ids = {row["idea_id"] for row in second_payload["backlog"]}
 
     assert first_rc == 0
@@ -1282,24 +1210,12 @@ def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(
     payloads = []
     elapsed_runs = []
     for _index in range(2):
-        started = time.perf_counter()
-        rc = greenfield_proposals.main(
-            [
-                "create",
-                "--repo-root",
-                str(tmp_path),
-                "--prompt",
-                "Draft a greenfield proposal for a learner choice practice journal",
-                "--intent-file",
-                ".odylith/runtime/greenfield/confirmed-intent.md",
-                "--release",
-                "0.0.1",
-                "--confirm",
-                "--json",
-            ]
+        rc, payload, elapsed = _run_confirmed_create_main(
+            tmp_path,
+            capsys,
+            prompt="Draft a greenfield proposal for a learner choice practice journal",
         )
-        elapsed_runs.append(time.perf_counter() - started)
-        payload = json.loads(capsys.readouterr().out)
+        elapsed_runs.append(elapsed)
         assert rc == 0
         assert elapsed_runs[-1] < 30.0
         payloads.append(payload)

@@ -15,24 +15,12 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(HIIT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started = time.perf_counter()
-    rc = greenfield_proposals.main(
-        [
-            "create",
-            "--repo-root",
-            str(tmp_path),
-            "--prompt",
-            "Draft a greenfield proposal for a guided HIIT interval training app",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--release",
-            "0.0.1",
-            "--confirm",
-            "--json",
-        ]
+    started, rc, payload, compile_payload = _run_compiled_transaction_create(
+        tmp_path,
+        prompt="Draft a greenfield proposal for a guided HIIT interval training app",
+        capsys=capsys,
     )
     elapsed = time.perf_counter() - started
-    payload = json.loads(capsys.readouterr().out)
 
     assert rc == 0
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
@@ -46,8 +34,15 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     assert payload["post_confirm_quality_manifest"]["quality_lenses"]["status"] == "passed"
     assert payload["post_confirm_quality_manifest"]["whole_project_elapsed_seconds"] < 60.0
     assert len(payload["backlog"]) == 4
-    assert len(payload["components"]) == 3
+    assert len(payload["components"]) == 4
     assert len(payload["diagrams"]) == 6
+    transaction_package = compile_payload["transaction"]["prewrite_package"]
+    _assert_committed_program_matches_transaction(tmp_path, transaction_package["program_result"])
+    _assert_committed_release_assignment_matches_transaction(
+        tmp_path,
+        release_assignment=transaction_package["release_assignment_result"],
+        release_workstream_ids=transaction_package["release_workstream_ids"],
+    )
     assert [event["action"] for event in first_path["events"]] == [
         "chooses",
         "starts",
@@ -58,7 +53,7 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     ]
     assert first_path["actor"] == "Trainee"
     assert first_path["visible_result"] == "Saved session in history with date, workout, and total time"
-    assert next(row for row in proposal["components"] if row["label"] == "Workout Builder Service")["release_scope"] == "deferred"
+    assert next(row for row in proposal["components"] if row["label"] == "Workout Builder Service")["release_scope"] == "supporting"
     for banned in (
         "history with its date",
         "session to history",
@@ -70,6 +65,80 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
         "Workout Builder Service proves one complete user path",
     ):
         assert banned not in generated_source
+
+
+def _run_compiled_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--output",
+            transaction_file,
+            "--release",
+            "0.0.1",
+            "--format",
+            "json",
+        ]
+    )
+    compile_output = capsys.readouterr().out
+    assert compile_rc == 0, compile_output
+    compile_payload = json.loads(compile_output)
+    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    return started, rc, payload, compile_payload
+
+
+def _assert_committed_program_matches_transaction(tmp_path: Path, program_result: dict) -> None:
+    umbrella_id = str(program_result["umbrella_id"]).strip().upper()
+    program_path = tmp_path / "odylith/radar/source/programs" / f"{umbrella_id}.execution-waves.v1.json"
+    committed = json.loads(program_path.read_text(encoding="utf-8"))
+
+    assert committed["umbrella_id"] == umbrella_id
+    assert committed["waves"] == program_result["waves"]
+
+
+def _assert_committed_release_assignment_matches_transaction(
+    tmp_path: Path,
+    *,
+    release_assignment: dict,
+    release_workstream_ids: list[str],
+) -> None:
+    event_log = tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
+    committed_events = [
+        json.loads(line)
+        for line in event_log.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    expected_release_id = str(release_assignment["release"]["release_id"])
+    expected_ids = [str(item).strip().upper() for item in release_workstream_ids]
+    matching_ids = [
+        str(event.get("workstream_id", "")).strip().upper()
+        for event in committed_events
+        if str(event.get("action", "")).strip() == "add"
+        and str(event.get("release_id", "")).strip() == expected_release_id
+    ]
+
+    assert matching_ids == expected_ids
 
 
 def _generated_source_payload(root: Path) -> str:

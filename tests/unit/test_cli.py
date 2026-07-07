@@ -370,17 +370,21 @@ def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
     assert "--release" in output
 
 
-def test_greenfield_create_help_forwards_backend_flags(capsys) -> None:
+def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
         cli.main(["greenfield", "create", "--help"])
 
     output = capsys.readouterr().out
     assert excinfo.value.code == 0
     assert "usage: odylith greenfield create" in output
-    assert "--prompt" in output
-    assert "--intent-file" in output
     assert "--confirm" in output
-    assert "--release" in output
+    assert "--transaction-file" in output
+    assert "--transaction-json" in output
+    assert "--transaction-hash" in output
+    assert "--prompt" not in output
+    assert "--intent-file" not in output
+    assert "--release" not in output
+    assert "--repair-tier" not in output
 
 
 def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> None:

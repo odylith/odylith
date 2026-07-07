@@ -102,15 +102,26 @@ def write_greenfield_proposal(
     backlog_index_path = Path(backlog_result["backlog_index"])
     backlog_index_path.parent.mkdir(parents=True, exist_ok=True)
     backlog_index_path.write_text(str(backlog_result["backlog_index_text"]), encoding="utf-8")
-    program_result = greenfield_programs.create_greenfield_program(
-        repo_root=root,
-        proposal=proposal,
-        backlog_result=backlog_result,
-    )
-    first_release_workstreams = greenfield_programs.first_release_workstream_ids(
-        proposal=proposal,
-        created_backlog=backlog_result["created"],
-        program_result=program_result,
+    if prewrite_package is not None and isinstance(prewrite_package.program_result, Mapping):
+        program_result = greenfield_programs.materialize_compiled_greenfield_program(
+            repo_root=root,
+            backlog_result=backlog_result,
+            program_result=prewrite_package.program_result,
+        )
+    else:
+        program_result = greenfield_programs.create_greenfield_program(
+            repo_root=root,
+            proposal=proposal,
+            backlog_result=backlog_result,
+        )
+    first_release_workstreams = (
+        [str(item).strip().upper() for item in prewrite_package.release_workstream_ids if str(item).strip()]
+        if prewrite_package is not None and prewrite_package.release_workstream_ids
+        else greenfield_programs.first_release_workstream_ids(
+            proposal=proposal,
+            created_backlog=backlog_result["created"],
+            program_result=program_result,
+        )
     )
     if release_selector:
         release_targeting = release_planning_authoring.add_workstreams_to_release(

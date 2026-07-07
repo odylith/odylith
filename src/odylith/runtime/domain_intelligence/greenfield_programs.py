@@ -180,6 +180,57 @@ def create_greenfield_program(
     }
 
 
+def materialize_compiled_greenfield_program(
+    *,
+    repo_root: Path,
+    backlog_result: Mapping[str, Any],
+    program_result: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Write a precompiled greenfield program without recomputing wave topology."""
+
+    compiled = dict(program_result or {})
+    if not compiled.get("created"):
+        return compiled or {"created": False, "reason": "compiled transaction has no umbrella program"}
+    umbrella_id = str(compiled.get("umbrella_id", "")).strip().upper()
+    waves = [dict(row) for row in compiled.get("waves", []) if isinstance(row, Mapping)]
+    if not umbrella_id or not waves:
+        raise ValueError("compiled greenfield program is missing umbrella_id or waves")
+    idea_specs = backlog_result.get("_candidate_idea_specs", {})
+    if not isinstance(idea_specs, Mapping) or umbrella_id not in idea_specs:
+        raise ValueError(f"compiled greenfield program references unknown umbrella `{umbrella_id}`")
+    umbrella_spec = idea_specs[umbrella_id]
+    document = {
+        "umbrella_id": umbrella_id,
+        "version": str(compiled.get("version", "v1") or "v1"),
+        "waves": waves,
+    }
+    program_wave_authoring._update_idea_metadata(  # noqa: SLF001
+        umbrella_spec.path,
+        {"execution_model": execution_wave_contract.EXECUTION_MODEL_UMBRELLA_WAVES},
+    )
+    path = program_wave_authoring._write_program_document(repo_root, umbrella_id, document)  # noqa: SLF001
+    mutable_specs = dict(idea_specs)
+    updated_metadata = dict(umbrella_spec.metadata)
+    updated_metadata["execution_model"] = execution_wave_contract.EXECUTION_MODEL_UMBRELLA_WAVES
+    mutable_specs[umbrella_id] = type(umbrella_spec)(
+        path=umbrella_spec.path,
+        metadata=updated_metadata,
+        sections=set(umbrella_spec.sections),
+        section_bodies=dict(umbrella_spec.section_bodies),
+    )
+    programs, errors = execution_wave_contract.collect_execution_programs(
+        repo_root=repo_root,
+        idea_specs=mutable_specs,
+    )
+    if errors:
+        raise ValueError("; ".join(errors))
+    result = dict(compiled)
+    result.pop("dry_run", None)
+    result["program_path"] = str(path)
+    result["program_count"] = len(programs)
+    return result
+
+
 def first_release_workstream_ids(
     *,
     proposal: Mapping[str, Any],

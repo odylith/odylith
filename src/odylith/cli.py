@@ -169,6 +169,13 @@ _CODEX_HOST_COMMAND_MODULES = {
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
 _GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals"
+_GREENFIELD_COMMANDS = (
+    ("propose", "Draft a provider-free greenfield governance proposal."),
+    ("apply", "Apply a confirmed greenfield governance proposal."),
+    ("create", "Commit a compiled ProductCreateTransaction."),
+    ("compile-transaction", "Compile and quality-gate a ProductCreateTransaction without governed writes."),
+)
+_GREENFIELD_COMMAND_NAMES = frozenset(command for command, _help_text in _GREENFIELD_COMMANDS)
 _CAPABILITY_INVENTORY_MODULE = "odylith.runtime.analysis_engine.capability_inventory"
 _COMPONENT_AUTHORING_MODULE = "odylith.runtime.governance.component_authoring"
 _BUG_AUTHORING_MODULE = "odylith.runtime.governance.bug_authoring"
@@ -3334,11 +3341,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Draft or apply confirmation-gated greenfield governance proposals.",
     )
     greenfield_subparsers = greenfield.add_subparsers(dest="greenfield_command", required=True)
-    for command, help_text in (
-        ("propose", "Draft a provider-free greenfield governance proposal."),
-        ("apply", "Apply a confirmed greenfield governance proposal."),
-        ("create", "Build and apply a confirmed greenfield governance proposal in one command."),
-    ):
+    for command, help_text in _GREENFIELD_COMMANDS:
         child_parser = greenfield_subparsers.add_parser(command, help=help_text)
         child_parser.add_argument("--repo-root", default=".", help="Consumer repository root.")
         child_parser.add_argument("forwarded", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
@@ -3682,7 +3685,7 @@ def main(argv: list[str] | None = None) -> int:
                 args = parser.parse_args(tokens)
                 return _cmd_show(args)
             return _cmd_show(argparse.Namespace(repo_root=repo_root, forwarded=forwarded))
-        if tokens[0] == "greenfield" and len(tokens) >= 2 and tokens[1] in {"propose", "apply", "create"}:
+        if tokens[0] == "greenfield" and len(tokens) >= 2 and tokens[1] in _GREENFIELD_COMMAND_NAMES:
             repo_root, forwarded = _extract_repo_root(tokens[2:])
             return _cmd_greenfield(
                 argparse.Namespace(repo_root=repo_root, greenfield_command=tokens[1], forwarded=forwarded)

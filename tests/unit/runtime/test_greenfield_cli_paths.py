@@ -5,6 +5,8 @@ import os
 import re
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -758,6 +760,60 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert payload["product_create_transaction"]["verified"] is True
     assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+
+
+@pytest.mark.parametrize(
+    ("flag", "value"),
+    (
+        ("--prompt", "Draft a different product after confirmation"),
+        ("--release", "0.0.2"),
+        ("--repair-tier", "deep"),
+    ),
+)
+def test_greenfield_create_cli_rejects_post_confirm_overrides(
+    tmp_path,
+    monkeypatch,
+    capsys,
+    flag,
+    value,
+) -> None:
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True, exist_ok=True)
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("post-confirm create overrides must fail before compile or commit")
+
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            transaction.transaction_hash,
+            flag,
+            value,
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "greenfield create cannot accept post-confirm inputs" in payload["error"]
+    assert flag in payload["error"]
+    assert "rebuild the ProductCreateTransaction" in payload["error"]
 
 
 def test_greenfield_create_cli_requires_visible_transaction_hash(
