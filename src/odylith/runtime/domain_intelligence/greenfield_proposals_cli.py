@@ -210,6 +210,7 @@ def _transaction_confirmation_text(
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
+        "- commands: CONFIRM commits this transaction hash; EDIT rebuilds from new evidence; REJECT stops with no writes",
         "",
         *format_confirmation_choice_lines(
             (
@@ -217,7 +218,8 @@ def _transaction_confirmation_text(
                     "CONFIRM",
                     "Commit this exact validated package now. Odylith verifies the hash and writes the transaction atomically with "
                     f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
-                    f"--transaction-hash {summary['transaction_hash']} --confirm`.",
+                    f"--transaction-hash {summary['transaction_hash']} --confirm`. "
+                    "No product reinterpretation, repair, or generation runs after CONFIRM.",
                 ),
                 (
                     "EDIT",
@@ -343,6 +345,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
                         "first_word_rule": "Only the first command counts. Do not paste Odylith system commands in your reply.",
                         "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
+                        "post_confirm_contract": (
+                            "CONFIRM commits only this hash-bound transaction; post-confirm create verifies the hash, "
+                            "writes atomically, validates readback, and reports success or environment/IO failure."
+                        ),
                         "choices": [
                             {
                                 "command": "CONFIRM",

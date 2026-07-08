@@ -45,7 +45,7 @@ def build_product_intent_confirmation(
                 "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Choose one command.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
-                "Render Choose one command with a visible exact-command rail `Allowed first words: CONFIRM | EDIT | REJECT`, the `Start your reply with exactly one command: CONFIRM, EDIT, or REJECT` rule, and three visually separate command sections headed `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`.",
+                "Render Choose one command with a visible decision rail `Decision rail: CONFIRM | EDIT | REJECT`, the exact `Start your reply with exactly one command: CONFIRM, EDIT, or REJECT` rule, and three visually separate command sections headed `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`.",
                 "For EDIT, tell the operator to put corrections after the command so Odylith can treat the reply as new evidence and rebuild.",
                 "Use plain prose for domain nouns; do not wrap ordinary product, actor, state, or component names in code ticks or decorative bold markers.",
             ],
@@ -61,8 +61,8 @@ def build_product_intent_confirmation(
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
                 "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
-                "a clear Choose one command block that tells the operator to start with exactly one command, CONFIRM, EDIT, or REJECT, shows the allowed first words as CONFIRM | EDIT | REJECT, then three visually separate command sections for CONFIRM, EDIT, and REJECT; each choice must say exactly what happens next",
-                "for Confirm, say that Odylith compiles a validated ProductCreateTransaction from the accepted intent before any governed records are written",
+                "a clear Choose one command block that tells the operator to start with exactly one command, CONFIRM, EDIT, or REJECT, shows the decision rail as CONFIRM | EDIT | REJECT, then three visually separate command sections for CONFIRM, EDIT, and REJECT; each choice must say exactly what happens next",
+                "for Confirm, say that Odylith does pre-confirm compile/validate work, produces a validated ProductCreateTransaction, and shows the hash-ready commit-only gate before any governed records are written",
             ],
             "must_not": [
                 "echo command instructions as the product name",
@@ -86,8 +86,8 @@ def build_product_intent_confirmation(
         },
         "confirmation_gate": {
             "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, ask the operator to confirm the compiled ProductCreateTransaction hash before Odylith commits accepted project records.",
-            "edit": "If anything is wrong or missing, treat the reply as new evidence and rebuild the ProductCreateTransaction.",
+            "proceed": "If the interpretation is right, compile and validate the ProductCreateTransaction, then show the hash-ready commit-only gate before Odylith writes accepted project records.",
+            "edit": "If anything is wrong or missing, treat the reply as new Product Intent evidence and rebuild the ProductCreateTransaction.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
         "commands": {
@@ -133,11 +133,11 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             (
                 (
                     "CONFIRM",
-                    "Accept this interpretation. Odylith compiles and quality-gates a ProductCreateTransaction, then shows its hash before any governed records are written.",
+                    "Accept this interpretation. Odylith starts pre-confirm compile/validate work, builds the ProductCreateTransaction, and shows the hash-ready commit-only gate before any governed records are written.",
                 ),
                 (
                     "EDIT",
-                    "Correct the interpretation. Put the correction after EDIT; Odylith treats it as new evidence and rebuilds before asking again.",
+                    "Correct the interpretation. Put the correction after EDIT; Odylith treats it as new Product Intent evidence and rebuilds before asking again.",
                 ),
                 ("REJECT", "Stop. Odylith writes no governed records."),
             )
@@ -149,6 +149,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
                 "",
                 "Odylith system action after **CONFIRM**",
                 "- Do not paste this command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT.",
+                "- CONFIRM here only starts pre-confirm compile/validate; governed records wait for the hash-ready commit-only gate.",
                 f"- Compile transaction: {compile_transaction}",
                 "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
             ]
@@ -162,7 +163,7 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
     lines = [
         "## Choose one command",
         "",
-        "**Allowed first words - choose exactly one:** `CONFIRM` | `EDIT` | `REJECT`.",
+        "**Decision rail:** `CONFIRM` | `EDIT` | `REJECT`.",
         "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`.",
         "Do not write anything before the command.",
         "Only the first command counts. Do not paste Odylith system commands in your reply.",

@@ -67,9 +67,6 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_planner 
     enrich_rescue_patchset_with_structured_plan,
 )
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
-    materialize_prompt_confirmed_intent,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.common import display_text
@@ -395,7 +392,13 @@ def load_proposal(args: argparse.Namespace) -> dict[str, Any]:
 def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
     intent_file = str(getattr(args, "intent_file", "") or "").strip()
     if not intent_file:
-        return _confirmed_intent_from_prompt_args(args, repo_root=repo_root)
+        raise ValueError(
+            "confirmed Product Intent file is required before proposal preview or ProductCreateTransaction compile. "
+            "Run `odylith greenfield propose --repo-root . --prompt <request>`, save the accepted visible "
+            "Product Intent Confirmation to `.odylith/runtime/greenfield/confirmed-intent.md`, then rerun "
+            "`odylith greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md`. "
+            "Prompt-only transaction compilation is disabled so raw prompts cannot become product truth after confirmation."
+        )
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
@@ -415,16 +418,6 @@ def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> 
     intent = dict(record.product_facts)
     intent[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     return intent
-
-
-def _confirmed_intent_from_prompt_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
-    prompt = prompt_text(str(getattr(args, "prompt", "") or ""))
-    return materialize_prompt_confirmed_intent(
-        prompt=prompt,
-        repo_root=repo_root,
-        fallback_title=intent_title(prompt),
-    )
-
 
 def _confirmed_intent_markdown_source_path(envelope: Mapping[str, Any], *, fallback: Path) -> Path:
     source_evidence = envelope.get("source_evidence") if isinstance(envelope.get("source_evidence"), Mapping) else {}

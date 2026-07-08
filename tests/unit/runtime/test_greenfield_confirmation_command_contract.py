@@ -12,7 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import writ
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
+from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
+from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 
 
 _VALID_EDITED_CONFIRMATION = """# Lab Evidence Review Workspace - Product Intent Confirmation
@@ -78,13 +80,31 @@ def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
     )
     rendered = "\n".join(lines)
 
-    assert rendered.index("**Allowed first words - choose exactly one:** `CONFIRM` | `EDIT` | `REJECT`.") < (
+    assert rendered.index("**Decision rail:** `CONFIRM` | `EDIT` | `REJECT`.") < (
         rendered.index("### Command: `CONFIRM`")
     )
     assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in rendered
     assert "Do not write anything before the command." in rendered
+    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in rendered
     assert rendered.count("**Reply starts with:**") == 3
     assert rendered.count("**What happens:**") == 3
+    assert "### Command: `CONFIRM`" in rendered
+    assert "### Command: `EDIT`" in rendered
+    assert "### Command: `REJECT`" in rendered
+
+
+def test_product_intent_confirmation_describes_pre_confirm_compile_and_commit_only_gate() -> None:
+    confirmation = build_product_intent_confirmation(
+        prompt="Create a review workspace for field inspectors to record findings and publish approval packets.",
+        title="Field Inspection Review Workspace",
+        repo_name="field-inspection",
+    )
+
+    rendered = format_product_intent_confirmation_text(confirmation)
+
+    assert "pre-confirm compile/validate" in rendered
+    assert "hash-ready commit-only gate" in rendered
+    assert "ProductCreateTransaction" in rendered
     assert "### Command: `CONFIRM`" in rendered
     assert "### Command: `EDIT`" in rendered
     assert "### Command: `REJECT`" in rendered

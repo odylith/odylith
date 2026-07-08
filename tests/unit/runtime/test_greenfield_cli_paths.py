@@ -193,7 +193,8 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "### Command: `CONFIRM`" in output
     assert "**Reply starts with:** `CONFIRM`" in output
     assert "Accept this interpretation." in output
-    assert "compiles and quality-gates a ProductCreateTransaction" in output
+    assert "pre-confirm compile/validate" in output
+    assert "hash-ready commit-only gate" in output
     assert "### Command: `EDIT`" in output
     assert "**Reply starts with:** `EDIT`" in output
     assert "Correct the interpretation." in output
@@ -363,11 +364,12 @@ def test_greenfield_confirm_intent_without_intent_file_fails_closed(tmp_path, ca
 
     assert rc == 2
     output = capsys.readouterr().out
-    assert "one material product decision" in output
-    assert "no Product Intent file or JSON repair is required" in output
+    assert "confirmed Product Intent file is required" in output
+    assert "Prompt-only transaction compilation is disabled" in output
+    assert "compile-transaction --intent-file" in output
 
 
-def test_greenfield_compile_transaction_accepts_rich_prompt_without_intent_file(tmp_path, capsys) -> None:
+def test_greenfield_compile_transaction_rejects_prompt_without_intent_file(tmp_path, capsys) -> None:
     prompt = (
         "Create a greenfield product for municipal permit clerks to intake permit applications, "
         "validate zoning attachments, route reviewer decisions, and show applicants a clear approval packet "
@@ -386,23 +388,16 @@ def test_greenfield_compile_transaction_accepts_rich_prompt_without_intent_file(
         ]
     )
 
-    assert rc == 0
+    assert rc == 2
     payload = json.loads(capsys.readouterr().out)
-    rendered = json.dumps(payload, sort_keys=True)
-    assert payload["mode"] == "product_create_transaction"
-    assert payload["confirmation"]["command_rule"] == "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
-    assert payload["confirmation"]["first_word_rule"].startswith("Only the first command counts")
-    assert payload["confirmation"]["edit_rule"].startswith("For EDIT, put corrections after the command")
-    assert payload["confirmation"]["confirm"].startswith("CONFIRM -")
-    assert [choice["command"] for choice in payload["confirmation"]["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
-    assert payload["confirmation"]["choices"][0]["description"] == "Commit this exact validated package now."
-    assert "odylith greenfield create --repo-root ." in payload["confirmation"]["choices"][0]["commit_command"]
-    assert "--transaction-hash" in payload["confirmation"]["choices"][0]["commit_command"]
-    assert payload["product_create_transaction"]["transaction_hash"]
-    assert "Municipal Permit Clerks" in rendered
-    assert "zoning attachments" in rendered
-    assert "Representative User" not in rendered
-    assert "Recovered Product Workspace" not in rendered
+    assert payload["mode"] == "error"
+    assert "confirmed Product Intent file is required" in payload["error"]
+    assert "Prompt-only transaction compilation is disabled" in payload["error"]
+    assert "compile-transaction --intent-file" in payload["error"]
+    assert not (tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_confirmed(tmp_path, capsys) -> None:
@@ -618,8 +613,8 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
     out = capsys.readouterr().out
 
     assert rc == 2
-    assert "one material product decision" in out
-    assert "no Product Intent file or JSON repair is required" in out
+    assert "confirmed Product Intent file is required" in out
+    assert "Prompt-only transaction compilation is disabled" in out
     assert "internal apply payload" not in out
     assert "active-proposal.v1.json" not in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
