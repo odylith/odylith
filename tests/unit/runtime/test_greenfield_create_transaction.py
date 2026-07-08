@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
@@ -18,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
+from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
@@ -204,6 +206,36 @@ def _record_compiled_memory_for_readback(**kwargs: Any) -> dict[str, Any]:
         encoding="utf-8",
     )
     return {"event": {"ts_iso": accepted_at}}
+
+
+def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
+    sections = {
+        section: f"{title} keeps the first release path concrete and reviewable."
+        for section in backlog_contract._REQUIRED_SECTIONS
+    }
+    return backlog_authoring._render_idea_text(  # noqa: SLF001
+        metadata={
+            "status": "queued",
+            "idea_id": idea_id,
+            "title": title,
+            "date": "2026-07-07",
+            "priority": "P1",
+            "commercial_value": "3",
+            "product_impact": "3",
+            "market_value": "3",
+            "impacted_parts": "odylith",
+            "sizing": "M",
+            "complexity": "Medium",
+            "ordering_score": "100",
+            "ordering_rationale": "Compiled greenfield transaction replay fixture.",
+            "confidence": "medium",
+            "founder_override": "no",
+            "promoted_to_plan": "",
+            "execution_model": "standard",
+            "workstream_type": "standalone",
+        },
+        sections=sections,
+    )
 
 
 def _transaction() -> Any:
@@ -618,6 +650,202 @@ def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repa
 
     assert result["next_steps"] == package.next_steps_preview
     assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
+
+
+def test_write_greenfield_proposal_compiled_path_replays_release_payloads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = _proposal()
+    package = _package(proposal)
+    backlog_result = dict(package.backlog_result or {})
+    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-release-replay-path.md"
+    idea_title = "Prove supplier risk release replay path"
+    backlog_result["created"] = [
+        {**dict(row), "title": idea_title, "idea_path": str(idea_path)}
+        for row in backlog_result.get("created", [])
+        if isinstance(row, dict)
+    ]
+    backlog_result["idea_files"] = {str(idea_path): _valid_idea_file_text(idea_id="B-001", title=idea_title)}
+    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
+    backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk release replay path |\n"
+    compiled_release = {
+        "release_id": "release-0-0-1",
+        "status": "planning",
+        "version": "0.0.1",
+        "tag": "v0.0.1",
+        "name": "0.0.1",
+        "notes": "Compiled release plan for Supplier Risk Board.",
+        "created_utc": "2026-07-07",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": ["0.0.1", "current"],
+    }
+    compiled_event = {
+        "action": "add",
+        "workstream_id": "B-001",
+        "release_id": "release-0-0-1",
+        "recorded_at": "2026-07-07T00:00:00Z",
+        "note": "Compiled assignment note.",
+    }
+    package = replace(
+        package,
+        backlog_result=backlog_result,
+        traceability_plan=greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=backlog_result["created"],
+            diagram_ids=(),
+        ),
+        release_target_result={
+            "command": "ensure",
+            "created": True,
+            "dry_run": True,
+            "release": compiled_release,
+            "registry_path": str(tmp_path / "odylith/radar/source/releases/releases.v1.json"),
+        },
+        release_assignment_result={
+            "command": "add",
+            "dry_run": True,
+            "events": [compiled_event],
+            "workstream_ids": ["B-001"],
+            "new_workstream_ids": ["B-001"],
+            "existing_workstream_ids": [],
+            "release": compiled_release,
+            "event_log_path": str(tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl"),
+        },
+    )
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("compiled create must not recompute release writes after confirmation")
+
+    def fake_materialize(**_kwargs: Any) -> dict[str, Any]:
+        return {
+            "created": True,
+            "umbrella_id": "B-001",
+            "program_path": str(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json"),
+            "waves": list(package.program_result["waves"]),
+            "program_count": 1,
+        }
+
+    monkeypatch.setattr(greenfield_apply_write.greenfield_apply_prewrite, "ensure_release_target", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.release_planning_authoring, "add_workstreams_to_release", forbidden)
+    monkeypatch.setattr(greenfield_programs, "create_greenfield_program", forbidden)
+    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
+    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "record_compiled_greenfield_acceptance",
+        _record_compiled_memory_for_readback,
+    )
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
+
+    result = greenfield_apply_write.write_greenfield_proposal(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        tribunal={"status": "passed", "issues": []},
+        backlog_result=backlog_result,
+        prewrite_package=package,
+    )
+
+    release_registry = json.loads(
+        (tmp_path / "odylith/radar/source/releases/releases.v1.json").read_text(encoding="utf-8")
+    )
+    event_log = (tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl").read_text(
+        encoding="utf-8"
+    )
+    committed_events = [json.loads(line) for line in event_log.splitlines() if line.strip()]
+    assert release_registry["aliases"]["0.0.1"] == "release-0-0-1"
+    assert release_registry["aliases"]["current"] == "release-0-0-1"
+    assert release_registry["releases"][0] == {key: compiled_release[key] for key in release_registry["releases"][0]}
+    assert committed_events == [compiled_event]
+    assert result["release_bootstrap"]["dry_run"] is False
+    assert result["release_target"]["dry_run"] is False
+    assert result["release_target"]["events"] == [compiled_event]
+
+
+def test_compiled_release_assignment_replay_is_idempotent(tmp_path: Path) -> None:
+    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-release-replay-path.md"
+    idea_title = "Prove supplier risk release replay path"
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text(_valid_idea_file_text(idea_id="B-001", title=idea_title), encoding="utf-8")
+    compiled_release = {
+        "release_id": "release-0-0-1",
+        "status": "planning",
+        "version": "0.0.1",
+        "tag": "v0.0.1",
+        "name": "0.0.1",
+        "notes": "Compiled release plan for Supplier Risk Board.",
+        "created_utc": "2026-07-07",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": ["0.0.1", "current"],
+    }
+    compiled_event = {
+        "action": "add",
+        "workstream_id": "B-001",
+        "release_id": "release-0-0-1",
+        "recorded_at": "2026-07-07T00:00:00Z",
+        "note": "Compiled assignment note.",
+    }
+    target_result = {
+        "command": "ensure",
+        "created": True,
+        "dry_run": True,
+        "release": compiled_release,
+    }
+    assignment_result = {
+        "command": "add",
+        "dry_run": True,
+        "events": [compiled_event],
+        "workstream_ids": ["B-001"],
+        "new_workstream_ids": ["B-001"],
+        "existing_workstream_ids": [],
+        "release": compiled_release,
+    }
+
+    first_target = greenfield_release_commit.materialize_compiled_release_target(
+        repo_root=tmp_path,
+        release_selector="0.0.1",
+        release_target_result=target_result,
+    )
+    first_assignment = greenfield_release_commit.materialize_compiled_release_assignment(
+        repo_root=tmp_path,
+        release_assignment_result=assignment_result,
+    )
+    second_target = greenfield_release_commit.materialize_compiled_release_target(
+        repo_root=tmp_path,
+        release_selector="0.0.1",
+        release_target_result=target_result,
+    )
+    second_assignment = greenfield_release_commit.materialize_compiled_release_assignment(
+        repo_root=tmp_path,
+        release_assignment_result=assignment_result,
+    )
+
+    event_log = (tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl").read_text(
+        encoding="utf-8"
+    )
+    committed_events = [json.loads(line) for line in event_log.splitlines() if line.strip()]
+    assert first_target["created"] is True
+    assert second_target["created"] is False
+    assert first_assignment["replayed_event_count"] == 1
+    assert second_assignment["replayed_event_count"] == 0
+    assert committed_events == [compiled_event]
 
 
 def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceability(

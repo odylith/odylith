@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
@@ -88,13 +89,11 @@ def write_greenfield_proposal(
         if path.is_file():
             path.unlink()
     greenfield_apply_prewrite.remove_stale_workstream_artifacts(root=root, stale_ids=backlog_result.get("stale_idea_ids", []))
-    if release_selector:
-        release_bootstrap = greenfield_apply_prewrite.ensure_release_target(
-            repo_root=root,
-            proposal=proposal,
-            selector=release_selector,
-        )
+    if release_selector and prewrite_package is None:
+        release_bootstrap = greenfield_apply_prewrite.ensure_release_target(repo_root=root, proposal=proposal, selector=release_selector)
     greenfield_backlog_commit.write_backlog_files(backlog_result)
+    if release_selector and prewrite_package is not None:
+        release_bootstrap = greenfield_release_commit.materialize_compiled_release_target(repo_root=root, release_selector=release_selector, release_target_result=prewrite_package.release_target_result or {})
     if prewrite_package is not None and isinstance(prewrite_package.program_result, Mapping):
         program_result = greenfield_programs.materialize_compiled_greenfield_program(
             repo_root=root,
@@ -116,7 +115,9 @@ def write_greenfield_proposal(
             program_result=program_result,
         )
     )
-    if release_selector:
+    if release_selector and prewrite_package is not None:
+        release_targeting = greenfield_release_commit.materialize_compiled_release_assignment(repo_root=root, release_assignment_result=prewrite_package.release_assignment_result or {})
+    elif release_selector:
         release_targeting = release_planning_authoring.add_workstreams_to_release(
             repo_root=root,
             workstream_ids=first_release_workstreams,
@@ -126,8 +127,8 @@ def write_greenfield_proposal(
             allow_existing=True,
             dry_run=False,
         )
-        if isinstance(release_targeting, dict) and isinstance(release_targeting.get("release"), Mapping):
-            release_targeting.setdefault("release_id", str(release_targeting["release"].get("release_id", "")).strip())
+    if isinstance(release_targeting, dict) and isinstance(release_targeting.get("release"), Mapping):
+        release_targeting.setdefault("release_id", str(release_targeting["release"].get("release_id", "")).strip())
     diagrams_created: list[str] = []
     atlas_scaffold_logs: list[str] = []
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
