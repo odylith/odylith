@@ -140,6 +140,7 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Ambiguities" in output
     assert "Proof boundary" in output
     assert "**Choose one command**" in output
+    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
     assert "- **CONFIRM** - Accept this interpretation." in output
     assert "compiles a validated ProductCreateTransaction" in output
     assert "- **EDIT** - Correct the interpretation." in output
@@ -213,7 +214,11 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, capsys
     )
 
     assert rc == 0, output
-    assert compile_payload["confirmation"]["confirm"] == "commit this validated package"
+    assert compile_payload["confirmation"]["command_rule"] == "Reply with exactly one command: CONFIRM, EDIT, or REJECT."
+    assert compile_payload["confirmation"]["confirm"].startswith("CONFIRM -")
+    assert [choice["command"] for choice in compile_payload["confirmation"]["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
+    assert ".odylith/runtime/greenfield/product-create-transaction.v1.json" in compile_payload["confirmation"]["choices"][0]["commit_command"]
+    assert "--transaction-hash" in compile_payload["confirmation"]["choices"][0]["commit_command"]
     assert "No governed records were written" not in output
     assert "post-confirm completion failed" not in output
     assert (tmp_path / "odylith/radar/source").is_dir()
@@ -250,6 +255,7 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
     assert "**Choose one command**" in output
+    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
     assert "- **CONFIRM** - Compile the ProductCreateTransaction from this proposal" in output
     assert "- **EDIT** - Correct the proposal evidence" in output
     assert "- **REJECT** - Stop. No governed records are written." in output
@@ -311,7 +317,12 @@ def test_greenfield_compile_transaction_accepts_rich_prompt_without_intent_file(
     payload = json.loads(capsys.readouterr().out)
     rendered = json.dumps(payload, sort_keys=True)
     assert payload["mode"] == "product_create_transaction"
-    assert payload["confirmation"]["confirm"] == "commit this validated package"
+    assert payload["confirmation"]["command_rule"] == "Reply with exactly one command: CONFIRM, EDIT, or REJECT."
+    assert payload["confirmation"]["confirm"].startswith("CONFIRM -")
+    assert [choice["command"] for choice in payload["confirmation"]["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
+    assert payload["confirmation"]["choices"][0]["description"] == "Commit this exact validated package now."
+    assert "odylith greenfield create --repo-root ." in payload["confirmation"]["choices"][0]["commit_command"]
+    assert "--transaction-hash" in payload["confirmation"]["choices"][0]["commit_command"]
     assert payload["product_create_transaction"]["transaction_hash"]
     assert "Municipal Permit Clerks" in rendered
     assert "zoning attachments" in rendered
@@ -348,6 +359,7 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
     assert "**Choose one command**" in output
+    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
     assert "- **CONFIRM** - Compile the ProductCreateTransaction from this proposal" in output
     assert "- **EDIT** - Correct the proposal evidence" in output
     assert "- **REJECT** - Stop. No governed records are written." in output
@@ -404,6 +416,10 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert "visually highlighted command labels: CONFIRM, EDIT, and REJECT" in " ".join(
         payload["host_reasoning_task"]["format_contract"]
     )
+    assert "Reply with exactly one command: CONFIRM, EDIT, or REJECT" in " ".join(
+        payload["host_reasoning_task"]["format_contract"]
+    )
+    assert "reply with exactly one command" in " ".join(payload["host_reasoning_task"]["must_include"])
     assert "three separate bullet lines for CONFIRM, EDIT, and REJECT" in " ".join(payload["host_reasoning_task"]["must_include"])
     assert "dump a generic template or domain catalog" in payload["host_reasoning_task"]["must_not"]
     assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
@@ -723,7 +739,7 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert calls[1][1]["proposal_ready"] is True
     assert "ProductCreateTransaction ready for final command" in output
     assert transaction.transaction_hash in output
-    assert "- command rule: choose exactly one of CONFIRM, EDIT, or REJECT" in output
+    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
     assert "- **CONFIRM** - Commit this exact validated package now." in output
     assert "Odylith verifies the hash and writes the transaction atomically" in output
     assert "- **EDIT** - Do not commit. Treat edits as new evidence" in output

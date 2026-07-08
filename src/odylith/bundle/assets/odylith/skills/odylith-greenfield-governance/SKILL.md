@@ -24,9 +24,11 @@ mechanism-level learning.
    Markdown, not one large paragraph and never a wall of prose: title, Product
    story, State object, First complete path, Human actors, External systems,
    Internal product systems, Critical assumptions, Ambiguities, Proof boundary,
-   and a clear next-step block:
-   confirm to expand into the proposal contract, edit to correct the
-   interpretation, or reject to stop with no records written.
+   and a clear `**Choose one command**` block:
+   `- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.`
+   `- **CONFIRM** - Accept this interpretation and compile the validated transaction.`
+   `- **EDIT** - Correct the interpretation; treat edits as new evidence and rebuild.`
+   `- **REJECT** - Stop with no governed records written.`
    Use short paragraphs for the story, state object, first path, and proof
    boundary. Use bullets for actors, systems, assumptions, and ambiguities.
    Do not wrap ordinary product, actor, state, or component names in code ticks
@@ -52,7 +54,7 @@ mechanism-level learning.
    with the original prompt. Odylith may normalize that Markdown into
    `.odylith/runtime/greenfield/confirmed-intent.json`, then builds, repairs,
    validates, quality-gates, and hashes the ProductCreateTransaction before
-   records can be confirmed. Confirm by running
+   records can be confirmed. After **CONFIRM**, run
    `greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
    Confirmed create only verifies the hash, writes atomically, validates
    readback, refreshes readable views, and reports success or environment/IO

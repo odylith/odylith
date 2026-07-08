@@ -9,14 +9,15 @@ from typing import Any
 from odylith.runtime.common.value_coercion import dedupe_strings
 
 
-def write_backlog_files(backlog_result: Mapping[str, Any]) -> None:
+def write_backlog_files(backlog_result: Mapping[str, Any], *, repo_root: Path | None = None) -> None:
     """Materialize already-rendered Radar backlog files into the target repo."""
 
+    root = Path(repo_root).expanduser().resolve() if repo_root is not None else None
     for raw_path, text in _mapping(backlog_result.get("existing_idea_files")).items():
-        _write_text_path(raw_path, text)
+        _write_text_path(raw_path, text, repo_root=root)
     for raw_path, text in _mapping(backlog_result.get("idea_files")).items():
-        _write_text_path(raw_path, text)
-    backlog_index_path = Path(str(backlog_result["backlog_index"]))
+        _write_text_path(raw_path, text, repo_root=root)
+    backlog_index_path = _resolve_path(backlog_result["backlog_index"], repo_root=root)
     backlog_index_path.parent.mkdir(parents=True, exist_ok=True)
     backlog_index_path.write_text(str(backlog_result["backlog_index_text"]), encoding="utf-8")
 
@@ -32,10 +33,25 @@ def compiled_backlog_traceability_paths(*, repo_root: Path, backlog_result: Mapp
     return dedupe_strings(_repo_relative(repo_root=repo_root, path=path) for path in paths if path)
 
 
-def _write_text_path(raw_path: object, text: object) -> None:
-    path = Path(str(raw_path))
+def _write_text_path(raw_path: object, text: object, *, repo_root: Path | None = None) -> None:
+    path = _resolve_path(raw_path, repo_root=repo_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(str(text), encoding="utf-8")
+
+
+def _resolve_path(raw_path: object, *, repo_root: Path | None = None) -> Path:
+    path = Path(str(raw_path))
+    if repo_root is None:
+        return path
+    candidate = path.expanduser()
+    if not candidate.is_absolute():
+        candidate = repo_root / candidate
+    resolved = candidate.resolve()
+    try:
+        resolved.relative_to(repo_root)
+    except ValueError as exc:
+        raise ValueError(f"compiled backlog path escapes repo root: {resolved}") from exc
+    return resolved
 
 
 def _mapping(value: object) -> Mapping[Any, Any]:

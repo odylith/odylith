@@ -281,6 +281,12 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
             or "do not search odylith source" in compact_text.casefold()
         ), path
         assert "ProductCreateTransaction" in compact_text, path
+        assert "`**Choose one command**`" in text or "**Choose one command**" in text, path
+        assert "Reply with exactly one command" in compact_text, path
+        assert "**CONFIRM**" in text and "**EDIT**" in text and "**REJECT**" in text, path
+        assert "Confirm/Edit/Reject" not in text, path
+        assert "confirm to expand" not in text.casefold(), path
+        assert "Confirm by running" not in text, path
         assert "greenfield compile-transaction" in compact_text, path
         assert "--transaction-file" in compact_text, path
         assert "--transaction-hash" in compact_text, path
@@ -303,6 +309,7 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
             or "does not need to inspect proposal JSON" in compact_text
             or "without a second confirmation" in text
             or "Do not ask the operator to inspect proposal JSON" in text
+            or "Do not ask operator to inspect proposal JSON" in text
         ), path
         for token in forbidden:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
@@ -347,6 +354,12 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         assert ".odylith/runtime/greenfield/confirmed-intent.json" in normalized, path
         assert "--confirm" in normalized, path
         assert "ProductCreateTransaction" in normalized, path
+        assert "**Choose one command**" in normalized, path
+        assert "Reply with exactly one command" in normalized, path
+        assert "**CONFIRM**" in text and "**EDIT**" in text and "**REJECT**" in text, path
+        assert "Confirm/Edit/Reject" not in text, path
+        assert "confirm to expand" not in text.casefold(), path
+        assert "Confirm by running" not in text, path
         assert "greenfield compile-transaction" in normalized, path
         assert "--transaction-file" in normalized, path
         assert "--transaction-hash" in normalized, path

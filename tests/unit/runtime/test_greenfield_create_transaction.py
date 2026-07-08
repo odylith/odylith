@@ -8,19 +8,26 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_backlog_commit
+from odylith.runtime.domain_intelligence import greenfield_compiled_readback
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
+from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
 def _proposal() -> dict[str, Any]:
@@ -542,6 +549,14 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
+    def fake_compiled_readback(**kwargs: Any) -> None:
+        calls["compiled_readback"] = kwargs
+
+    monkeypatch.setattr(
+        greenfield_apply_write.greenfield_compiled_readback,
+        "raise_for_compiled_backlog_and_atlas_readback",
+        fake_compiled_readback,
+    )
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
@@ -560,9 +575,105 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     )
 
     assert calls["materialize"]["program_result"] == package.program_result
+    assert calls["compiled_readback"]["package"] is package
     assert result["next_steps"] == package.next_steps_preview
     assert result["program"]["program_count"] == 1
     assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
+
+
+def test_compiled_backlog_atlas_readback_rejects_backlog_drift(tmp_path: Path) -> None:
+    proposal = _proposal()
+    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
+    index_path = tmp_path / "odylith/radar/source/INDEX.md"
+    package = _package(proposal)
+    package = replace(
+        package,
+        backlog_result={
+            **dict(package.backlog_result or {}),
+            "idea_files": {str(idea_path): "compiled backlog text\n"},
+            "backlog_index": str(index_path),
+            "backlog_index_text": "| compiled backlog index |\n",
+        },
+    )
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text("drifted backlog text\n", encoding="utf-8")
+    index_path.write_text("| compiled backlog index |\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="compiled backlog idea file readback does not match"):
+        greenfield_compiled_readback.raise_for_compiled_backlog_and_atlas_readback(root=tmp_path, package=package)
+
+
+def test_compiled_backlog_atlas_readback_rejects_atlas_drift(tmp_path: Path) -> None:
+    proposal = _proposal()
+    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
+    index_path = tmp_path / "odylith/radar/source/INDEX.md"
+    atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
+    package = _package(proposal)
+    package = replace(
+        package,
+        backlog_result={
+            **dict(package.backlog_result or {}),
+            "idea_files": {str(idea_path): "compiled backlog text\n"},
+            "backlog_index": str(index_path),
+            "backlog_index_text": "| compiled backlog index |\n",
+        },
+        rendered_atlas_sources={
+            "odylith/atlas/source/supplier-risk-flow.mmd": "flowchart TD\n  A[\"Compiled\"] --> B[\"Flow\"]\n",
+        },
+    )
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    atlas_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text("compiled backlog text\n", encoding="utf-8")
+    index_path.write_text("| compiled backlog index |\n", encoding="utf-8")
+    atlas_path.write_text("flowchart TD\n  A[\"Drifted\"] --> B[\"Flow\"]\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="compiled Atlas source readback does not match"):
+        greenfield_compiled_readback.raise_for_compiled_backlog_and_atlas_readback(root=tmp_path, package=package)
+
+
+def test_compiled_backlog_writer_rejects_path_escape(tmp_path: Path) -> None:
+    escaped_path = tmp_path.parent / "escaped-greenfield-backlog.md"
+
+    with pytest.raises(ValueError, match="compiled backlog path escapes repo root"):
+        greenfield_backlog_commit.write_backlog_files(
+            {
+                "idea_files": {str(escaped_path): "escaped text\n"},
+                "backlog_index": "odylith/radar/source/INDEX.md",
+                "backlog_index_text": "| index |\n",
+            },
+            repo_root=tmp_path,
+        )
+
+
+def test_prewrite_compiled_backlog_includes_final_program_metadata(tmp_path: Path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    prompt = "Draft a greenfield proposal for a municipal permit review workspace"
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(CONFIRMED_INTENT_TEXT, prompt=prompt),
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+
+    program_result = prewrite.package.program_result or {}
+    umbrella_id = str(program_result["umbrella_id"])
+    umbrella_row = next(row for row in prewrite.backlog_result["created"] if row["idea_id"] == umbrella_id)
+    umbrella_text = prewrite.backlog_result["idea_files"][umbrella_row["idea_path"]]
+
+    assert program_result["dry_run"] is True
+    assert "execution_model: umbrella_waves" in umbrella_text
 
 
 def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repair(

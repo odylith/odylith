@@ -111,17 +111,19 @@ Odylith returns a no-write reasoning request. The host must write the short proj
 Product Intent Confirmation in chat from live reasoning before any proposal
 records exist. Render it as sectioned Markdown: Product story, State object,
 First complete path, Human actors, External systems, Internal product systems,
-Critical assumptions, Ambiguities, Proof boundary, and the proceed/edit/reject
-gate. Use short paragraphs plus bullets, not a wall of prose, and do not wrap
-ordinary product terms in code ticks or decorative bold markers. After the
-operator confirms that intent, write the
+Critical assumptions, Ambiguities, Proof boundary, and `**Choose one command**`.
+The command block must include `- Reply with exactly one command: **CONFIRM**,
+**EDIT**, or **REJECT**.`, then separate `- **CONFIRM**`, `- **EDIT**`, and
+`- **REJECT**` bullet lines. Use short paragraphs plus bullets, not a wall of
+prose, and do not wrap ordinary product terms in code ticks or decorative bold
+markers. After the operator chooses **CONFIRM**, write the
 same visible Product Intent Confirmation to
 `.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
 transaction. Odylith may normalize that Markdown into
 `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
 package from the accepted narrative, validates it, runs the Tribunal write gate,
 quality-gates the full package, and hashes the ProductCreateTransaction before
-records can be confirmed. Confirmed create then only verifies the transaction
+records can be confirmed. After **CONFIRM**, create only verifies the transaction
 hash, writes atomically, validates readback, refreshes
 readable views, and reports success or an environment/IO failure. Do not inspect Odylith source files,
 `.odylith`, bundle files, Python modules, or local examples to discover schema fields.

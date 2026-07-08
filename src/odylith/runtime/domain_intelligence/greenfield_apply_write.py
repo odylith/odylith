@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
+from odylith.runtime.domain_intelligence import greenfield_compiled_readback
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_release_commit
@@ -91,7 +92,7 @@ def write_greenfield_proposal(
     greenfield_apply_prewrite.remove_stale_workstream_artifacts(root=root, stale_ids=backlog_result.get("stale_idea_ids", []))
     if release_selector and prewrite_package is None:
         release_bootstrap = greenfield_apply_prewrite.ensure_release_target(repo_root=root, proposal=proposal, selector=release_selector)
-    greenfield_backlog_commit.write_backlog_files(backlog_result)
+    greenfield_backlog_commit.write_backlog_files(backlog_result, repo_root=root)
     if release_selector and prewrite_package is not None:
         release_bootstrap = greenfield_release_commit.materialize_compiled_release_target(repo_root=root, release_selector=release_selector, release_target_result=prewrite_package.release_target_result or {})
     if prewrite_package is not None and isinstance(prewrite_package.program_result, Mapping):
@@ -170,6 +171,8 @@ def write_greenfield_proposal(
             plan=traceability_plan,
         )
     )
+    if has_compiled_package:
+        greenfield_compiled_readback.raise_for_compiled_backlog_and_atlas_readback(root=root, package=prewrite_package)
     component_handoffs = greenfield_component_commit.precompiled_component_handoffs(prewrite_package)
     if not component_handoffs:
         component_handoffs = greenfield_experience.build_component_handoffs(

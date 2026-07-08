@@ -67,6 +67,7 @@ def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_r
     assert "Internal product systems" in output
     assert "Proof boundary" in output
     assert "**Choose one command**" in output
+    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
     assert "- **CONFIRM** - Accept this interpretation." in output
     assert "- **EDIT** - Correct the interpretation." in output
     assert "- **REJECT** - Stop. Odylith writes no governed records." in output

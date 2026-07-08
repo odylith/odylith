@@ -155,6 +155,11 @@ def build_prewrite_completion_package(
             proposal=proposal,
             plan=traceability_plan,
         )
+        greenfield_programs.materialize_compiled_greenfield_program(
+            repo_root=prewrite_root,
+            backlog_result=staged_backlog_result,
+            program_result=preview_program_result,
+        )
         staged_backlog_result = refresh_prewrite_backlog_result(staged_backlog_result)
         backlog_result = remap_prewrite_backlog_result(
             staged_backlog_result,

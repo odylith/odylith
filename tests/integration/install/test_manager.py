@@ -815,6 +815,11 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
     assert "greenfield compile-transaction" in guidance_text
     assert "ProductCreateTransaction" in guidance_text
+    assert "`**Choose one command**`" in guidance_text
+    assert "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**" in guidance_text
+    assert "`- **CONFIRM**`" in guidance_text
+    assert "`- **EDIT**`" in guidance_text
+    assert "`- **REJECT**`" in guidance_text
     assert "--transaction-file" in guidance_text
     assert "--transaction-hash" in guidance_text
     assert "writes atomically" in guidance_text
@@ -872,6 +877,11 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing truth first" in root_agents
     assert "greenfield compile-transaction" in root_agents
     assert "ProductCreateTransaction" in root_agents
+    assert "`**Choose one command**`" in root_agents
+    assert "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**" in root_agents
+    assert "`- **CONFIRM**`" in root_agents
+    assert "`- **EDIT**`" in root_agents
+    assert "`- **REJECT**`" in root_agents
     assert "--transaction-file" in root_agents
     assert "--transaction-hash" in root_agents
     assert "writes atomically" in root_agents

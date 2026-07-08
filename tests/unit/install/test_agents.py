@@ -78,6 +78,11 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "Discipline hot paths must not call host models",
         "project-first Product Intent Confirmation",
         "sectioned Markdown",
+        "`**Choose one command**`",
+        "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**",
+        "`- **CONFIRM**`",
+        "`- **EDIT**`",
+        "`- **REJECT**`",
         "same visible Product Intent Confirmation",
         ".odylith/runtime/greenfield/confirmed-intent.json",
         "greenfield compile-transaction",
@@ -116,7 +121,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "Odylith didn't return immediately",
         "literal commands",
         "supplies one shared prompt-visible Assist line",
-        "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`.",
+        "Product repo release/benchmark publishing uses `odylith/maintainer/AGENTS.md`.",
     )
     for snippet in forbidden:
         assert snippet not in block
@@ -127,10 +132,10 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     block = managed_block(repo_role="product_repo")
 
-    assert "In the Odylith product repo, maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`." in block
+    assert "Product repo release/benchmark publishing uses `odylith/maintainer/AGENTS.md`." in block
     assert "the consumer lane and the Odylith product repo's maintainer mode" in block
     assert "pinned dogfood and detached `source-local` maintainer-dev posture" in block
-    assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
+    assert "pinned dogfood is default proof; detached `source-local` is explicit dev" in block
     assert "Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract" in block
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
@@ -138,8 +143,10 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "Do not inspect Odylith source" in block
     assert "hand-author/repair proposal JSON" in block
     assert "parser/schema retries" in block
-    assert "Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown" in block
+    assert "Do not ask operator to inspect proposal JSON or confirm a second time around uncompiled Markdown" in block
     assert "Surface only final summary or blockers" in block
+    assert "Confirm/Edit/Reject" not in block
+    assert "confirm to expand" not in block
     assert len(block.encode("utf-8")) < 11600
 
 

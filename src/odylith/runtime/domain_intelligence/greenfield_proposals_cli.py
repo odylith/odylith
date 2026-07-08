@@ -194,7 +194,6 @@ def _transaction_confirmation_text(
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
-        "- command rule: choose exactly one of CONFIRM, EDIT, or REJECT",
         "",
         *format_confirmation_choice_lines(
             (
@@ -323,14 +322,37 @@ def main(argv: Sequence[str] | None = None) -> int:
                 greenfield_proposals.write_product_create_transaction_file(path, transaction)
                 output_path = str(path)
             if args.output_format == "json":
+                summary = transaction.summary()
+                transaction_ref = output_path or "<compiled-transaction.json>"
+                commit_command = (
+                    "odylith greenfield create --repo-root . "
+                    f"--transaction-file {transaction_ref} "
+                    f"--transaction-hash {summary['transaction_hash']} --confirm"
+                )
                 payload = {
                     "mode": "product_create_transaction",
-                    "product_create_transaction": transaction.summary(),
+                    "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
                     "confirmation": {
-                        "confirm": "commit this validated package",
-                        "edit": "treat edits as new evidence and rebuild the transaction",
-                        "reject": "stop with no governed records written",
+                        "command_rule": "Reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+                        "choices": [
+                            {
+                                "command": "CONFIRM",
+                                "description": "Commit this exact validated package now.",
+                                "commit_command": commit_command,
+                            },
+                            {
+                                "command": "EDIT",
+                                "description": "Do not commit. Treat edits as new evidence, rebuild the package, and use the new hash.",
+                            },
+                            {
+                                "command": "REJECT",
+                                "description": "Stop. No governed records are written.",
+                            },
+                        ],
+                        "confirm": "CONFIRM - commit this exact validated package now",
+                        "edit": "EDIT - treat edits as new evidence and rebuild the transaction",
+                        "reject": "REJECT - stop with no governed records written",
                     },
                 }
                 if output_path:
