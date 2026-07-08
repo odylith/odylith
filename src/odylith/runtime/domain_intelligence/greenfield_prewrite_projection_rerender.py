@@ -111,6 +111,27 @@ def rerender_prewrite_package_projections(
         updates["project_brief_preview"] = (
             package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         )
+        diagram_rows = [row for row in package_proposal.get("diagrams", []) if isinstance(row, Mapping)]
+        updates["project_brief_record_text"] = greenfield_apply_prewrite.build_project_brief_source_markdown(
+            proposal=package_proposal,
+            backlog_items=[
+                dict(row)
+                for row in backlog_result.get("created", ())
+                if isinstance(row, Mapping)
+            ],
+            component_items=component_preview,
+            diagram_ids=greenfield_apply_diagrams.allocated_diagram_ids(
+                target_root,
+                len(diagram_rows),
+                rows=diagram_rows,
+            ),
+            release_selector=release_selector,
+            release_id=greenfield_apply_prewrite._prewrite_release_id(  # noqa: SLF001
+                release_target_result,
+                release_assignment_result,
+            ),
+            accepted_at="prewrite",
+        )
 
     next_steps_context = (
         greenfield_experience.build_next_steps(

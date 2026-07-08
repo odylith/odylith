@@ -38,9 +38,15 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     assert len(payload["diagrams"]) == 6
     transaction_package = compile_payload["transaction"]["prewrite_package"]
     assert payload["next_steps"] == transaction_package["next_steps_preview"]
-    _assert_accepted_project_source_launch_matches_transaction(
+    _assert_accepted_project_matches_transaction(
         accepted,
         transaction_package["accepted_project_preview"],
+    )
+    _assert_project_brief_matches_transaction(tmp_path, transaction_package["project_brief_record_text"], accepted_at=accepted["accepted_at"])
+    _assert_compass_event_matches_transaction(
+        tmp_path,
+        payload["memory"]["event"],
+        transaction_package["compass_memory_preview"],
     )
     _assert_committed_program_matches_transaction(tmp_path, transaction_package["program_result"])
     _assert_committed_release_assignment_matches_transaction(
@@ -146,11 +152,56 @@ def _assert_committed_release_assignment_matches_transaction(
     assert matching_ids == expected_ids
 
 
-def _assert_accepted_project_source_launch_matches_transaction(
+def _assert_accepted_project_matches_transaction(
     accepted_project: dict,
     accepted_project_preview: dict,
 ) -> None:
-    assert accepted_project["source_launch"] == accepted_project_preview["source_launch"]
+    expected = dict(accepted_project_preview)
+    expected["accepted_at"] = accepted_project["accepted_at"]
+    assert accepted_project == expected
+
+
+def _assert_project_brief_matches_transaction(tmp_path: Path, project_brief_record_text: str, *, accepted_at: str) -> None:
+    project_brief = (tmp_path / "odylith/runtime/source/project-brief.v1.md").read_text(encoding="utf-8")
+    assert project_brief == _record_text_with_accepted_at(project_brief_record_text, accepted_at=accepted_at)
+
+
+def _record_text_with_accepted_at(text: str, *, accepted_at: str) -> str:
+    lines = str(text).rstrip().splitlines()
+    return "\n".join(
+        f"- accepted_at: {accepted_at}" if line.startswith("- accepted_at: ") else line
+        for line in lines
+    ).rstrip() + "\n"
+
+
+def _assert_compass_event_matches_transaction(tmp_path: Path, event: dict, compass_memory_preview: dict) -> None:
+    for key in (
+        "kind",
+        "summary",
+        "author",
+        "source",
+        "workstreams",
+        "context",
+        "headline_hint",
+        "evidence_tier",
+        "work_category",
+    ):
+        if key in compass_memory_preview:
+            assert event[key] == compass_memory_preview[key]
+    assert event["components"]
+    assert event["artifacts"] == _repo_relative_artifacts(tmp_path, compass_memory_preview.get("artifacts", []))
+    assert event["ts_iso"] != "prewrite"
+
+
+def _repo_relative_artifacts(tmp_path: Path, artifacts: list[str]) -> list[str]:
+    normalized = []
+    for artifact in artifacts:
+        path = Path(str(artifact))
+        if path.is_absolute():
+            normalized.append(str(path.resolve().relative_to(tmp_path)))
+        else:
+            normalized.append(str(artifact)[2:] if str(artifact).startswith("./") else str(artifact))
+    return normalized
 
 
 def _generated_source_payload(root: Path) -> str:

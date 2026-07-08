@@ -496,6 +496,100 @@ def _write_project_brief_source(
     return path
 
 
+def record_compiled_greenfield_acceptance(
+    *,
+    repo_root: Path,
+    accepted_project_preview: Mapping[str, Any],
+    project_brief_record_text: str,
+    compass_memory_preview: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Persist precompiled greenfield memory without rebuilding product truth."""
+
+    root = Path(repo_root).expanduser().resolve()
+    event_preview = dict(compass_memory_preview or {})
+    stream_path = root / agent_runtime_contract.AGENT_STREAM_PATH
+    existing_payload = _matching_acceptance_event(repo_root=root, stream_path=stream_path, event_preview=event_preview)
+    reused_existing = existing_payload is not None
+    payload = existing_payload or log_compass_timeline_event.append_event(
+        repo_root=root,
+        stream_path=stream_path,
+        kind=str(event_preview.get("kind", "decision") or "decision"),
+        summary=str(event_preview.get("summary", "")),
+        workstream_values=[str(item) for item in event_preview.get("workstreams", [])],
+        artifact_values=[str(item) for item in event_preview.get("artifacts", [])],
+        component_values=[str(item) for item in event_preview.get("components", [])],
+        author=str(event_preview.get("author", "odylith") or "odylith"),
+        source=str(event_preview.get("source", "domain-intelligence") or "domain-intelligence"),
+        context=str(event_preview.get("context", "")),
+        headline_hint=str(event_preview.get("headline_hint", "")),
+        evidence_tier=str(event_preview.get("evidence_tier", "user_intent") or "user_intent"),
+        work_category=str(event_preview.get("work_category", "governance") or "governance"),
+    )
+    accepted_project_path = _write_compiled_accepted_project_source(
+        repo_root=root,
+        accepted_project_preview=accepted_project_preview,
+        event=payload,
+    )
+    project_brief_path = _write_compiled_project_brief_source(
+        repo_root=root,
+        project_brief_record_text=project_brief_record_text,
+        event=payload,
+    )
+    return {
+        "recorded": True,
+        "reused_existing": reused_existing,
+        "stream": str(stream_path),
+        "accepted_project": str(accepted_project_path),
+        "project_brief": str(project_brief_path),
+        "event": payload,
+    }
+
+
+def _write_compiled_accepted_project_source(
+    *,
+    repo_root: Path,
+    accepted_project_preview: Mapping[str, Any],
+    event: Mapping[str, Any],
+) -> Path:
+    path = _accepted_project_source_path(repo_root)
+    payload = dict(accepted_project_preview)
+    payload["accepted_at"] = _clean(event.get("ts_iso"))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
+    return path
+
+
+def _write_compiled_project_brief_source(
+    *,
+    repo_root: Path,
+    project_brief_record_text: str,
+    event: Mapping[str, Any],
+) -> Path:
+    path = _project_brief_source_path(repo_root)
+    rendered = _project_brief_with_accepted_at(
+        project_brief_record_text,
+        accepted_at=_clean(event.get("ts_iso")),
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(rendered, encoding="utf-8")
+    return path
+
+
+def _project_brief_with_accepted_at(text: str, *, accepted_at: str) -> str:
+    lines = str(text or "").rstrip().splitlines()
+    updated: list[str] = []
+    replaced = False
+    for line in lines:
+        if line.startswith("- accepted_at: "):
+            updated.append(f"- accepted_at: {accepted_at or 'prewrite'}")
+            replaced = True
+        else:
+            updated.append(line)
+    if not replaced:
+        updated.insert(0, f"- accepted_at: {accepted_at or 'prewrite'}")
+    return "\n".join(updated).rstrip() + "\n"
+
+
 def record_greenfield_acceptance(
     *,
     repo_root: Path,

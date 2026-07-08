@@ -272,6 +272,8 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
     assert prewrite.package.prewrite_safety_preview["checks"]["program_dry_run"] is True
     assert prewrite.package.component_registry_preview
+    assert prewrite.package.project_brief_record_text.startswith("# Municipal Permit Review Workspace Project Brief")
+    assert "- accepted_at: prewrite" in prewrite.package.project_brief_record_text
     assert all(
         isinstance(row.get("implementation_handoff"), dict) and row["implementation_handoff"]
         for row in prewrite.package.component_registry_preview

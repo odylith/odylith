@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
+from odylith.runtime.domain_intelligence.proposal_memory import build_project_brief_source_markdown
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_authoring
@@ -230,6 +231,15 @@ def build_prewrite_completion_package(
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
         )
+        project_brief_record_text = build_project_brief_source_markdown(
+            proposal=package_proposal,
+            backlog_items=mapping_rows(backlog_result.get("created")),
+            component_items=component_registry_preview,
+            diagram_ids=diagram_ids,
+            release_selector=release_selector,
+            release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
+            accepted_at="prewrite",
+        )
         package = GreenfieldCompletionPackage(
             proposal=package_proposal,
             release_selector=release_selector,
@@ -237,6 +247,7 @@ def build_prewrite_completion_package(
             rendered_atlas_sources=rendered_atlas_sources,
             component_registry_preview=component_registry_preview,
             project_brief_preview=project_brief,
+            project_brief_record_text=project_brief_record_text,
             tribunal_preview=validation_gate,
             accepted_project_preview=accepted_project_preview,
             project_dashboard_preview=project_dashboard_preview,

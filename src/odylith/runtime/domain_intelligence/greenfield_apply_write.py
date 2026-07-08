@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
+from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import component_authoring
@@ -257,17 +258,25 @@ def write_greenfield_proposal(
         completion_priority_write_policy=completion_priority_write_policy,
         completion_quality_debt=completion_quality_debt,
     )
-    memory_record = record_greenfield_acceptance(
-        repo_root=root,
-        proposal=proposal,
-        backlog_items=backlog_result["created"],
-        component_items=components_created,
-        diagram_ids=diagrams_created,
-        release_selector=release_selector,
-        release_id=release_id,
-        validation_gate=validation_gate,
-        source_launch_context=next_steps,
-    )
+    if _has_compiled_memory_package(prewrite_package):
+        memory_record = record_compiled_greenfield_acceptance(
+            repo_root=root,
+            accepted_project_preview=prewrite_package.accepted_project_preview or {},
+            project_brief_record_text=prewrite_package.project_brief_record_text,
+            compass_memory_preview=prewrite_package.compass_memory_preview or {},
+        )
+    else:
+        memory_record = record_greenfield_acceptance(
+            repo_root=root,
+            proposal=proposal,
+            backlog_items=backlog_result["created"],
+            component_items=components_created,
+            diagram_ids=diagrams_created,
+            release_selector=release_selector,
+            release_id=release_id,
+            validation_gate=validation_gate,
+            source_launch_context=next_steps,
+        )
     _raise_for_final_package_quality(
         root=root,
         proposal=proposal,
@@ -432,6 +441,15 @@ def _precompiled_component_handoffs(
         if key:
             handoffs[key] = dict(handoff)
     return handoffs
+
+
+def _has_compiled_memory_package(prewrite_package: GreenfieldCompletionPackage | None) -> bool:
+    return bool(
+        prewrite_package is not None
+        and isinstance(prewrite_package.accepted_project_preview, Mapping)
+        and str(prewrite_package.project_brief_record_text or "").strip()
+        and isinstance(prewrite_package.compass_memory_preview, Mapping)
+    )
 
 
 def _atlas_source_path_for_row(row: Mapping[str, Any]) -> str:

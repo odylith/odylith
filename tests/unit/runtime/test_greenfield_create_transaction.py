@@ -49,6 +49,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             {
                 "component_id": "supplier-risk-service",
                 "label": "Supplier Risk Service",
+                "spec_path": "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md",
                 "implementation_handoff": {
                     "workstream_id": "B-001",
                     "workstream_title": "Prove supplier risk review path",
@@ -56,6 +57,30 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
                 },
             },
         ),
+        project_brief_record_text="# Supplier Risk Board Project Brief\n\n- accepted_at: prewrite\n",
+        accepted_project_preview={
+            "schema_version": "odylith.accepted_project.v1",
+            "origin": "greenfield",
+            "evidence_tier": "user_intent",
+            "accepted_at": "prewrite",
+            "title": "Supplier Risk Board",
+            "source_launch": {"implementation_prompt": "Start B-001 from the accepted transaction package."},
+            "created": {"workstreams": [{"idea_id": "B-001"}], "components": [], "diagrams": []},
+            "validation_gate": {"status": "passed", "issues": []},
+        },
+        compass_memory_preview={
+            "version": "v1",
+            "kind": "decision",
+            "summary": "Accepted greenfield proposal for Supplier Risk Board.",
+            "ts_iso": "prewrite",
+            "author": "odylith",
+            "source": "domain-intelligence",
+            "workstreams": ["B-001"],
+            "artifacts": ["odylith/runtime/source/project-brief.v1.md"],
+            "components": ["supplier-risk-service"],
+            "evidence_tier": "user_intent",
+            "work_category": "governance",
+        },
         next_steps_preview={
             "project_workstream_id": "B-001",
             "start_workstream_id": "B-001",
@@ -138,6 +163,8 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     assert restored.quality_manifest["status"] == "passed"
     restored_preview = restored.prewrite_package.component_registry_preview
     assert restored_preview[0]["implementation_handoff"]["workstream_id"] == "B-001"
+    assert restored.prewrite_package.accepted_project_preview["accepted_at"] == "prewrite"
+    assert restored.prewrite_package.project_brief_record_text.startswith("# Supplier Risk Board Project Brief")
     restored_specs = restored.backlog_result["_candidate_idea_specs"]
     assert isinstance(restored_specs["B-001"], backlog_contract.IdeaSpec)
     assert restored_specs["B-001"].metadata["idea_id"] == "B-001"
@@ -245,7 +272,12 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", lambda **_kwargs: {"event": {}})
+    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "record_compiled_greenfield_acceptance",
+        lambda **_kwargs: {"event": {"ts_iso": "2026-07-07T00:00:00-07:00"}},
+    )
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda **_kwargs: None)

@@ -261,6 +261,35 @@ def test_scoped_projection_rerender_passes_fresh_source_launch_to_accepted_proje
     assert result.package.next_steps_preview == {"implementation_prompt": "stale"}
 
 
+def test_scoped_projection_rerender_refreshes_project_brief_record_text(tmp_path: Any) -> None:
+    previous = GreenfieldPrewriteBuild(
+        package=GreenfieldCompletionPackage(
+            proposal={"intent": {"title": "Old Brief"}},
+            release_selector="0.0.1",
+            project_brief_record_text="# Old Brief Project Brief\n- accepted_at: prewrite\n",
+            backlog_result={"created": []},
+        ),
+        backlog_result={"created": []},
+    )
+
+    result = greenfield_prewrite_projection_rerender.rerender_prewrite_package_projections(
+        root=tmp_path,
+        previous_prewrite_build=previous,
+        proposal={
+            "intent": {"title": "Fresh Brief"},
+            "project_brief": {"project_outcome": "Fresh brief outcome."},
+        },
+        release_selector="0.0.1",
+        validation_gate={"status": "passed"},
+        projections=("project_brief",),
+        release_assignment_note="release assignment",
+    )
+
+    assert result.package.project_brief_record_text.startswith("# Fresh Brief Project Brief")
+    assert "- accepted_at: prewrite" in result.package.project_brief_record_text
+    assert "Fresh brief outcome." in result.package.project_brief_record_text
+
+
 def test_post_confirm_engine_requires_rerender_callback_for_projection_rerender(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
