@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
@@ -30,24 +31,37 @@ def _proposal() -> dict[str, Any]:
 
 
 def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
+    idea_path = Path("/repo/odylith/radar/source/ideas/B-001.md")
+    created_backlog = [{"title": "Prove supplier risk review path", "idea_id": "B-001", "idea_path": str(idea_path)}]
+    backlog_result = {
+        "created": created_backlog,
+        "idea_files": {str(idea_path): "Supplier risk review path"},
+        "backlog_index": "/repo/odylith/radar/source/INDEX.md",
+        "backlog_index_text": "| B-001 | Prove supplier risk review path |",
+        "_candidate_idea_specs": {
+            "B-001": backlog_contract.IdeaSpec(
+                path=idea_path,
+                metadata={"idea_id": "B-001", "status": "candidate"},
+                sections={"Problem", "Product View"},
+                section_bodies={"Problem": "Supplier risk is hard to review.", "Product View": "Review board."},
+            )
+        },
+    }
+    diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, dict)]
+    diagram_ids = tuple(f"D-{index:03d}" for index, _row in enumerate(diagram_rows, start=1))
+    rendered_atlas_sources = {
+        f"odylith/atlas/source/{str(row.get('slug', f'diagram-{index}')).strip() or f'diagram-{index}'}.mmd": (
+            "flowchart TD\n  A[\"Accepted input\"] --> B[\"Review result\"]\n"
+        )
+        for index, row in enumerate(diagram_rows, start=1)
+    }
     return GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
+        rendered_atlas_sources=rendered_atlas_sources,
         atlas_review_date="2026-07-07",
-        backlog_result={
-            "created": [{"title": "Prove supplier risk review path", "idea_id": "B-001"}],
-            "idea_files": {"/repo/odylith/radar/source/ideas/B-001.md": "Supplier risk review path"},
-            "backlog_index": "/repo/odylith/radar/source/INDEX.md",
-            "backlog_index_text": "| B-001 | Prove supplier risk review path |",
-            "_candidate_idea_specs": {
-                "B-001": backlog_contract.IdeaSpec(
-                    path=Path("/repo/odylith/radar/source/ideas/B-001.md"),
-                    metadata={"idea_id": "B-001", "status": "candidate"},
-                    sections={"Problem", "Product View"},
-                    section_bodies={"Problem": "Supplier risk is hard to review.", "Product View": "Review board."},
-                )
-            },
-        },
+        atlas_diagram_ids=diagram_ids,
+        backlog_result=backlog_result,
         prewrite_safety_preview={"status": "passed"},
         component_registry_preview=(
             {
@@ -162,6 +176,11 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             ],
             "program_count": 0,
         },
+        traceability_plan=greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=created_backlog,
+            diagram_ids=diagram_ids,
+        ),
         release_workstream_ids=("B-001",),
     )
 
@@ -289,6 +308,8 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     assert restored_preview[0]["implementation_handoff"]["workstream_id"] == "B-001"
     assert restored_preview[0]["authoring_input"]["workstreams"] == ["B-001"]
     assert restored.prewrite_package.accepted_project_preview["accepted_at"] == "prewrite"
+    assert isinstance(restored.prewrite_package.traceability_plan, greenfield_traceability.GreenfieldTraceabilityPlan)
+    assert restored.prewrite_package.traceability_plan.workstreams[0].idea_id == "B-001"
     assert restored.prewrite_package.project_brief_record_text.startswith("# Supplier Risk Board Project Brief")
     restored_specs = restored.backlog_result["_candidate_idea_specs"]
     assert isinstance(restored_specs["B-001"], backlog_contract.IdeaSpec)
@@ -297,6 +318,42 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     payload["quality_manifest"] = {**payload["quality_manifest"], "status": "failed"}
     with pytest.raises(ValueError, match="hash mismatch"):
         product_create_transaction_from_dict(payload)
+
+
+def test_product_create_transaction_json_round_trips_traceability_diagram_links() -> None:
+    proposal = {
+        **_proposal(),
+        "diagrams": [
+            {
+                "slug": "supplier-risk-flow",
+                "title": "Supplier Risk Flow",
+                "summary": "Supplier risk review path traceability.",
+                "kind": "flowchart",
+            }
+        ],
+    }
+    package = _package(proposal)
+    transaction = build_product_create_transaction(
+        proposal=proposal,
+        release_selector="0.0.1",
+        validation_gate={"status": "passed", "issues": []},
+        prewrite_package=package,
+        backlog_result=package.backlog_result or {},
+        quality_manifest={
+            "status": "passed",
+            "validation_status": "passed",
+            "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
+        },
+    )
+
+    restored = product_create_transaction_from_dict(product_create_transaction_to_dict(transaction))
+    plan = restored.prewrite_package.traceability_plan
+
+    assert isinstance(plan, greenfield_traceability.GreenfieldTraceabilityPlan)
+    assert isinstance(plan.workstreams[0].path, Path)
+    assert plan.diagram_links[0].diagram_id == "D-001"
+    assert plan.diagram_links[0].related_workstream_ids == ("B-001",)
+    assert plan.diagram_links[0].related_backlog_paths == ("/repo/odylith/radar/source/ideas/B-001.md",)
 
 
 def test_commit_product_create_transaction_is_commit_only(
@@ -405,10 +462,23 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     package = _package(proposal)
     backlog_result = dict(package.backlog_result or {})
     idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
+    backlog_result["created"] = [
+        {**dict(row), "idea_path": str(idea_path)}
+        for row in backlog_result.get("created", [])
+        if isinstance(row, dict)
+    ]
     backlog_result["idea_files"] = {str(idea_path): "Supplier risk review path\n"}
     backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
     backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk review path |\n"
-    package = replace(package, backlog_result=backlog_result)
+    package = replace(
+        package,
+        backlog_result=backlog_result,
+        traceability_plan=greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=backlog_result["created"],
+            diagram_ids=(),
+        ),
+    )
     calls: dict[str, Any] = {}
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
@@ -427,6 +497,7 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_programs, "create_greenfield_program", forbidden)
     monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
@@ -475,7 +546,17 @@ def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceabilit
         "backlog_index_text": "| B-001 | Prove supplier risk review path |\n",
         "_candidate_idea_specs": {},
     }
+    sentinel_plan = greenfield_traceability.build_traceability_plan(
+        proposal=proposal,
+        created_backlog=backlog_result["created"],
+        diagram_ids=(),
+    )
+    build_calls: list[dict[str, Any]] = []
     traceability_calls: list[dict[str, Any]] = []
+
+    def fake_build_traceability(**kwargs: Any) -> greenfield_traceability.GreenfieldTraceabilityPlan:
+        build_calls.append(kwargs)
+        return sentinel_plan
 
     def fake_apply_traceability(**kwargs: Any) -> list[str]:
         traceability_calls.append(kwargs)
@@ -487,6 +568,7 @@ def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceabilit
         lambda **_kwargs: {"created": True, "program_count": 1, "waves": []},
     )
     monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", lambda **_kwargs: ["B-001"])
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", fake_build_traceability)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", fake_apply_traceability)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
@@ -508,7 +590,9 @@ def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceabilit
         backlog_result=backlog_result,
     )
 
+    assert len(build_calls) == 1
     assert len(traceability_calls) == 1
+    assert traceability_calls[0]["plan"] is sentinel_plan
     assert result["backlog_topology"] == ["legacy-traceability-applied"]
 
 
@@ -525,6 +609,64 @@ def test_write_greenfield_proposal_rejects_incomplete_compiled_package_before_fa
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
 
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
+        greenfield_apply_write.write_greenfield_proposal(
+            root=tmp_path,
+            proposal=proposal,
+            release_selector="",
+            tribunal={"status": "passed", "issues": []},
+            backlog_result=package.backlog_result or {},
+            prewrite_package=package,
+        )
+
+
+def test_write_greenfield_proposal_rejects_missing_compiled_traceability_plan_before_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = _proposal()
+    package = replace(_package(proposal), traceability_plan=None)
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("post-confirm write must not rebuild missing traceability")
+
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
+
+    with pytest.raises(ValueError, match="missing compiled traceability_plan"):
+        greenfield_apply_write.write_greenfield_proposal(
+            root=tmp_path,
+            proposal=proposal,
+            release_selector="",
+            tribunal={"status": "passed", "issues": []},
+            backlog_result=package.backlog_result or {},
+            prewrite_package=package,
+        )
+
+
+def test_write_greenfield_proposal_rejects_compiled_traceability_without_diagram_links(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = {
+        **_proposal(),
+        "diagrams": [
+            {
+                "slug": "supplier-risk-flow",
+                "title": "Supplier Risk Flow",
+                "summary": "Supplier risk review path traceability.",
+                "kind": "flowchart",
+            }
+        ],
+    }
+    package = _package(proposal)
+    traceability_plan = replace(package.traceability_plan, diagram_links=())
+    package = replace(package, traceability_plan=traceability_plan)
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("post-confirm write must not rebuild missing diagram traceability")
+
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
+
+    with pytest.raises(ValueError, match="missing compiled traceability diagram links"):
         greenfield_apply_write.write_greenfield_proposal(
             root=tmp_path,
             proposal=proposal,
@@ -555,6 +697,11 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
     package = _package(proposal)
     backlog_result = dict(package.backlog_result or {})
     idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
+    backlog_result["created"] = [
+        {**dict(row), "idea_path": str(idea_path)}
+        for row in backlog_result.get("created", [])
+        if isinstance(row, dict)
+    ]
     backlog_result["idea_files"] = {str(idea_path): "Supplier risk review path\n"}
     backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
     backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk review path |\n"
@@ -585,6 +732,11 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
         proposal=proposal,
         backlog_result=backlog_result,
         component_registry_preview=component_preview,
+        traceability_plan=greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=backlog_result["created"],
+            diagram_ids=(),
+        ),
         rendered_component_specs={
             "Compiled Registry Service": "# Compiled Registry Service\n\nCompiled registry service spec.\n"
         },
@@ -602,6 +754,7 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
         }
 
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
     monkeypatch.setattr(greenfield_component_commit, "component_authoring_responsibility", forbidden)

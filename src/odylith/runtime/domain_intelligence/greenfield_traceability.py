@@ -104,6 +104,57 @@ class GreenfieldTraceabilityPlan:
     backlog_diagrams: dict[str, tuple[str, ...]]
 
 
+def traceability_plan_from_payload(value: Any) -> GreenfieldTraceabilityPlan:
+    """Rehydrate a serialized prewrite traceability plan."""
+
+    payload = value if isinstance(value, Mapping) else {}
+    return GreenfieldTraceabilityPlan(
+        workstreams=tuple(_created_workstream_from_payload(row) for row in _rows(payload.get("workstreams"))),
+        component_workstreams=_tuple_map(payload.get("component_workstreams")),
+        component_diagrams=_tuple_map(payload.get("component_diagrams")),
+        diagram_links=tuple(_diagram_link_from_payload(row) for row in _rows(payload.get("diagram_links"))),
+        backlog_diagrams=_tuple_map(payload.get("backlog_diagrams")),
+    )
+
+
+def _created_workstream_from_payload(value: Mapping[str, Any]) -> CreatedWorkstream:
+    return CreatedWorkstream(
+        idea_id=str(value.get("idea_id", "")).strip().upper(),
+        title=str(value.get("title", "")).strip(),
+        path=Path(str(value.get("path", ""))).expanduser(),
+        row=_mapping(value.get("row")),
+    )
+
+
+def _diagram_link_from_payload(value: Mapping[str, Any]) -> DiagramLink:
+    return DiagramLink(
+        row=_mapping(value.get("row")),
+        diagram_id=str(value.get("diagram_id", "")).strip(),
+        related_workstream_ids=tuple(str(item).strip().upper() for item in _sequence(value.get("related_workstream_ids")) if str(item).strip()),
+        related_backlog_paths=tuple(str(item).strip() for item in _sequence(value.get("related_backlog_paths")) if str(item).strip()),
+    )
+
+
+def _tuple_map(value: Any) -> dict[str, tuple[str, ...]]:
+    source = value if isinstance(value, Mapping) else {}
+    return {
+        str(key): tuple(str(item).strip() for item in _sequence(items) if str(item).strip())
+        for key, items in source.items()
+    }
+
+
+def _mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _rows(value: Any) -> tuple[Mapping[str, Any], ...]:
+    return tuple(row for row in _sequence(value) if isinstance(row, Mapping))
+
+
+def _sequence(value: Any) -> Sequence[Any]:
+    return value if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) else ()
+
+
 def component_key(row: Mapping[str, Any]) -> str:
     """Return the stable proposal-local key for a component row."""
 

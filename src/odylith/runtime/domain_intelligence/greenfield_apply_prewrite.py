@@ -258,6 +258,7 @@ def build_prewrite_completion_package(
             next_steps_preview=next_steps_preview,
             backlog_result=backlog_result,
             program_result=preview_program_result,
+            traceability_plan=traceability_plan,
             prewrite_safety_preview=prewrite_safety_preview,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,

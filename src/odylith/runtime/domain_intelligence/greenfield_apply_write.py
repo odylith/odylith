@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lookup_for
 from odylith.runtime.domain_intelligence.greenfield_apply_components import first_release_component_rows
 from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
@@ -137,10 +138,14 @@ def write_greenfield_proposal(
         if has_compiled_package
         else allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
     )
-    traceability_plan = greenfield_traceability.build_traceability_plan(
-        proposal=proposal,
-        created_backlog=backlog_result["created"],
-        diagram_ids=diagram_ids,
+    traceability_plan = (
+        greenfield_traceability_commit.compiled_traceability_plan(getattr(prewrite_package, "traceability_plan", None))
+        if has_compiled_package
+        else greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=backlog_result["created"],
+            diagram_ids=diagram_ids,
+        )
     )
     for row, diagram_id in zip(diagram_rows, diagram_ids, strict=False):
         _scaffold_proposal_diagram(
@@ -483,6 +488,11 @@ def _raise_for_incomplete_compiled_write_package(
     issues: list[str] = []
     if not isinstance(prewrite_package.program_result, Mapping) or not prewrite_package.program_result:
         issues.append("missing compiled program_result")
+    traceability_plan = greenfield_traceability_commit.compiled_traceability_plan(
+        getattr(prewrite_package, "traceability_plan", None), required=False
+    )
+    if traceability_plan is None or not traceability_plan.workstreams:
+        issues.append("missing compiled traceability_plan")
     if not prewrite_package.release_workstream_ids:
         issues.append("missing compiled release_workstream_ids")
     if not isinstance(prewrite_package.next_steps_preview, Mapping) or not prewrite_package.next_steps_preview:
@@ -526,19 +536,23 @@ def _raise_for_incomplete_compiled_write_package(
 
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     if diagram_rows:
-        atlas_sources = (
-            prewrite_package.rendered_atlas_sources
-            if isinstance(prewrite_package.rendered_atlas_sources, Mapping)
-            else {}
-        )
+        atlas_sources = prewrite_package.rendered_atlas_sources if isinstance(prewrite_package.rendered_atlas_sources, Mapping) else {}
         if len(atlas_sources) != len(diagram_rows):
             issues.append("missing compiled rendered_atlas_sources")
         if not str(prewrite_package.atlas_review_date or "").strip():
             issues.append("missing compiled atlas_review_date")
+        compiled_diagram_ids: tuple[str, ...] = ()
         try:
-            _compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
+            compiled_diagram_ids = _compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
         except ValueError as exc:
             issues.append(str(exc))
+        if traceability_plan is not None:
+            issues.extend(
+                greenfield_traceability_commit.compiled_traceability_diagram_issues(
+                    traceability_plan=traceability_plan,
+                    diagram_ids=compiled_diagram_ids,
+                )
+            )
 
     if str(release_selector or "").strip():
         if not isinstance(prewrite_package.release_target_result, Mapping) or not prewrite_package.release_target_result:

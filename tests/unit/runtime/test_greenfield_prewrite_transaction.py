@@ -273,6 +273,10 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
     assert prewrite.package.prewrite_safety_preview["checks"]["program_dry_run"] is True
     assert prewrite.package.component_registry_preview
+    assert prewrite.package.traceability_plan is not None
+    assert prewrite.package.traceability_plan.workstreams
+    assert prewrite.package.traceability_plan.workstreams[0].idea_id == "B-001"
+    assert prewrite.package.traceability_plan.component_workstreams
     assert len(prewrite.package.atlas_review_date) == len("2026-07-07")
     assert len(prewrite.package.atlas_diagram_ids) == len(prewrite.package.rendered_atlas_sources)
     assert prewrite.package.project_brief_record_text.startswith("# Municipal Permit Review Workspace Project Brief")

@@ -98,6 +98,7 @@ class GreenfieldCompletionPackage:
     next_steps_preview: Mapping[str, Any] | None = None
     backlog_result: Mapping[str, Any] | None = None
     program_result: Mapping[str, Any] | None = None
+    traceability_plan: Any = None
     prewrite_safety_preview: Mapping[str, Any] | None = None
     release_target_result: Mapping[str, Any] | None = None
     release_assignment_result: Mapping[str, Any] | None = None

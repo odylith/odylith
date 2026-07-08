@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
@@ -195,6 +196,10 @@ def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCo
     for tuple_key in ("component_registry_preview", "atlas_diagram_ids", "release_workstream_ids"):
         if tuple_key in kwargs and isinstance(kwargs[tuple_key], list):
             kwargs[tuple_key] = tuple(kwargs[tuple_key])
+    if isinstance(kwargs.get("traceability_plan"), Mapping):
+        kwargs["traceability_plan"] = greenfield_traceability.traceability_plan_from_payload(
+            kwargs["traceability_plan"]
+        )
     return GreenfieldCompletionPackage(**kwargs)
 
 
