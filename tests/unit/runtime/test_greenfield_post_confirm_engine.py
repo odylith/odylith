@@ -11,6 +11,7 @@ import pytest
 
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
@@ -56,8 +57,8 @@ class _PassingTribunal:
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {
             "status": "passed",
             "atlas_surface_count": 3,
@@ -70,7 +71,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

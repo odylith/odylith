@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_compiled_readback
@@ -590,8 +591,8 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped"},
     )
 
@@ -775,8 +776,8 @@ def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repa
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped"},
     )
 
@@ -889,8 +890,8 @@ def test_write_greenfield_proposal_compiled_path_replays_release_payloads(
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped"},
     )
 
@@ -1032,8 +1033,8 @@ def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceabilit
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped"},
     )
     monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", lambda **_kwargs: {"event": {}})
@@ -1229,8 +1230,8 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped"},
     )
 

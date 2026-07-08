@@ -24,11 +24,11 @@ mechanism-level learning.
    Markdown, not one large paragraph and never a wall of prose: title, Product
    story, State object, First complete path, Human actors, External systems,
    Internal product systems, Critical assumptions, Ambiguities, Proof boundary,
-   and a clear `**Choose one command**` block:
-   `- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.`
-   `- **CONFIRM** - Accept this interpretation and compile the validated transaction.`
-   `- **EDIT** - Correct the interpretation; treat edits as new evidence and rebuild.`
-   `- **REJECT** - Stop with no governed records written.`
+   and a clear `## Choose one command` block:
+   `Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.`
+   - **Command: `CONFIRM`** - Accept this interpretation and compile the validated transaction.
+   - **Command: `EDIT`** - Correct the interpretation; treat edits as new evidence and rebuild.
+   - **Command: `REJECT`** - Stop with no governed records written.
    Use short paragraphs for the story, state object, first path, and proof
    boundary. Use bullets for actors, systems, assumptions, and ambiguities.
    Do not wrap ordinary product, actor, state, or component names in code ticks

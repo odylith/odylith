@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -34,13 +35,13 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {},
     )
     proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")

@@ -1439,13 +1439,13 @@ def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped_in_unit_test"},
     )
     monkeypatch.setattr(
@@ -1458,23 +1458,16 @@ def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting
         },
     )
 
-    result = greenfield_proposals.apply_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=proposal,
-        confirm=True,
-        release_selector="0.0.1",
-    )
+    with pytest.raises(ValueError, match="ProductCreateTransaction quality manifest is not approved"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
 
-    manifest = result["post_confirm_quality_manifest"]
-    assert manifest["status"] == "passed_with_quality_debt"
-    assert manifest["validation_status"] == "failed"
-    assert manifest["write_transaction"]["status"] == "committed"
-    assert manifest["write_transaction"]["prewrite_clean_before_commit"] is False
-    assert manifest["completion_priority"]["status"] == "write_allowed_with_projection_quality_debt"
-    assert "component_contract_quality" in manifest["issue_codes"]
-    assert "safe_package_repair" not in json.dumps(manifest, sort_keys=True)
-    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert not list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
 
 
 def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_projection(
@@ -1491,13 +1484,13 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped_in_unit_test"},
     )
     monkeypatch.setattr(
@@ -1512,7 +1505,7 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
 
     def final_copy_issues(scope: str, _value: object) -> tuple[str, ...]:
         if scope == "operator next-steps final memory":
-            return ("operator next-steps final memory leaked adjacent duplicate word prose",)
+            raise AssertionError("compiled commit must not run final next-steps quality after confirmation")
         return ()
 
     monkeypatch.setattr(greenfield_apply_write, "generated_public_copy_issues", final_copy_issues)
@@ -1525,12 +1518,10 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
     )
 
     manifest = result["post_confirm_quality_manifest"]
-    assert manifest["status"] == "passed_with_quality_debt"
+    assert manifest["status"] == "passed"
     assert manifest["validation_status"] == "passed"
     assert manifest["write_transaction"]["status"] == "committed"
-    assert manifest["completion_priority"]["final_write_quality_debt"] == [
-        "final next steps quality: operator next-steps final memory leaked adjacent duplicate word prose"
-    ]
+    assert "completion_priority" not in manifest
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
 
@@ -1620,13 +1611,13 @@ def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registr
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped_in_unit_test"},
     )
     proposal = _pain_relief_tracking_proposal(tmp_path)

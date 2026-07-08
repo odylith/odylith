@@ -45,7 +45,7 @@ def build_product_intent_confirmation(
                 "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Choose one command.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
-                "Render Choose one command with `Reply with exactly one command: CONFIRM, EDIT, or REJECT`, then three separate bullet lines with visually highlighted command labels: CONFIRM, EDIT, and REJECT.",
+                "Render Choose one command with a visible `Reply with exactly one command: CONFIRM, EDIT, or REJECT` rule, then three separate command rows labeled `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`.",
                 "Use plain prose for domain nouns; do not wrap ordinary product, actor, state, or component names in code ticks or decorative bold markers.",
             ],
             "must_include": [
@@ -60,7 +60,7 @@ def build_product_intent_confirmation(
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
                 "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
-                "a clear Choose one command block that tells the operator to reply with exactly one command, then three separate bullet lines for CONFIRM, EDIT, and REJECT; each choice must say exactly what happens next",
+                "a clear Choose one command block that tells the operator to reply with exactly one command, then three separate command rows for CONFIRM, EDIT, and REJECT; each choice must say exactly what happens next",
                 "for Confirm, say that Odylith compiles a validated ProductCreateTransaction from the accepted intent before any governed records are written",
             ],
             "must_not": [
@@ -155,14 +155,15 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
     """Return the canonical visible command block for greenfield confirmations."""
 
     lines = [
-        "**Choose one command**",
-        "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.",
+        "## Choose one command",
+        "",
+        "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.",
     ]
     for label, detail in choices:
         command = _clean(label).upper()
         text = _clean(detail)
         if command and text:
-            lines.append(f"- **{command}** - {text}")
+            lines.extend(["", f"- **Command: `{command}`**", f"  {text}"])
     return lines
 
 

@@ -291,8 +291,8 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "passed", "test_refresh_stub": True},
     )
     monkeypatch.setattr(
@@ -301,7 +301,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -1768,28 +1768,42 @@ def test_greenfield_apply_rerenders_prewrite_package_after_repairable_package_fa
 def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+    )
+    original_allocated_diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids
+    target_allocation_calls = 0
+
+    def fail_after_prewrite_allocation(*args, **kwargs):
+        nonlocal target_allocation_calls
+        call_root = Path(args[0]).resolve() if args else Path()
+        if call_root == tmp_path.resolve():
+            target_allocation_calls += 1
+            raise AssertionError("post-confirm write must consume compiled diagram ids")
+        return original_allocated_diagram_ids(*args, **kwargs)
+
     monkeypatch.setattr(
-        greenfield_apply_write,
+        greenfield_apply_diagrams,
         "validated_mermaid_source",
         lambda _row: 'flowchart LR\n  external1["Optional"]\n',
     )
     monkeypatch.setattr(
-        greenfield_apply_write,
+        greenfield_apply_diagrams,
         "allocated_diagram_ids",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(
-            AssertionError("post-confirm write must consume compiled diagram ids")
-        ),
+        fail_after_prewrite_allocation,
     )
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = greenfield_proposals.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        proposal=proposal,
+        transaction=transaction,
         confirm=True,
-        release_selector="0.0.1",
     )
 
     atlas_text = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
     assert result["post_confirm_quality_manifest"]["status"] == "passed"
+    assert target_allocation_calls == 0
     assert '["Optional"]' not in atlas_text
 
 

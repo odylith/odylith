@@ -5,6 +5,7 @@ import json
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -808,7 +809,7 @@ def test_greenfield_rendered_surface_custody_requires_atlas_assets_and_fingerpri
     )
 
     with pytest.raises(RuntimeError) as exc_info:
-        greenfield_apply_write._raise_for_greenfield_rendered_surface_custody(  # noqa: SLF001
+        greenfield_apply_diagrams.raise_for_greenfield_rendered_surface_custody(  # noqa: SLF001
             repo_root=tmp_path,
             diagram_ids=("D-001",),
         )

@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
@@ -139,13 +140,16 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Critical assumptions" in output
     assert "Ambiguities" in output
     assert "Proof boundary" in output
-    assert "**Choose one command**" in output
-    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
-    assert "- **CONFIRM** - Accept this interpretation." in output
+    assert "## Choose one command" in output
+    assert "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "- **Command: `CONFIRM`**" in output
+    assert "Accept this interpretation." in output
     assert "compiles a validated ProductCreateTransaction" in output
-    assert "- **EDIT** - Correct the interpretation." in output
+    assert "- **Command: `EDIT`**" in output
+    assert "Correct the interpretation." in output
     assert "rebuilds before asking again" in output
-    assert "- **REJECT** - Stop. Odylith writes no governed records." in output
+    assert "- **Command: `REJECT`**" in output
+    assert "Stop. Odylith writes no governed records." in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
     assert "Original user intent" not in output
@@ -153,14 +157,14 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     intent = parse_confirmed_intent_text(output, prompt="Build a mathematics research workspace for spectral graph theory")
     assert intent["external_systems"] == []
-    choose_index = output.index("**Choose one command**")
-    confirm_index = output.index("- **CONFIRM**", choose_index)
-    edit_index = output.index("- **EDIT**", confirm_index)
-    reject_index = output.index("- **REJECT**", edit_index)
+    choose_index = output.index("## Choose one command")
+    confirm_index = output.index("- **Command: `CONFIRM`**", choose_index)
+    edit_index = output.index("- **Command: `EDIT`**", confirm_index)
+    reject_index = output.index("- **Command: `REJECT`**", edit_index)
     command_index = output.index("Command after **CONFIRM**", reject_index)
     compile_index = output.index("- Compile transaction:", command_index)
     assert choose_index < confirm_index < edit_index < reject_index < command_index < compile_index
-    assert output.count("**Choose one command**") == 1
+    assert output.count("## Choose one command") == 1
     assert "greenfield compile-transaction --repo-root ." in output
     assert "greenfield create --repo-root ." not in output
     assert "--confirm" not in output
@@ -254,18 +258,21 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
-    assert "**Choose one command**" in output
-    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
-    assert "- **CONFIRM** - Compile the ProductCreateTransaction from this proposal" in output
-    assert "- **EDIT** - Correct the proposal evidence" in output
-    assert "- **REJECT** - Stop. No governed records are written." in output
-    choose_index = output.index("**Choose one command**")
-    confirm_index = output.index("- **CONFIRM**", choose_index)
-    edit_index = output.index("- **EDIT**", confirm_index)
-    reject_index = output.index("- **REJECT**", edit_index)
+    assert "## Choose one command" in output
+    assert "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "- **Command: `CONFIRM`**" in output
+    assert "Compile the ProductCreateTransaction from this proposal" in output
+    assert "- **Command: `EDIT`**" in output
+    assert "Correct the proposal evidence" in output
+    assert "- **Command: `REJECT`**" in output
+    assert "Stop. No governed records are written." in output
+    choose_index = output.index("## Choose one command")
+    confirm_index = output.index("- **Command: `CONFIRM`**", choose_index)
+    edit_index = output.index("- **Command: `EDIT`**", confirm_index)
+    reject_index = output.index("- **Command: `REJECT`**", edit_index)
     transaction_index = output.index("Transaction path", reject_index)
     assert choose_index < confirm_index < edit_index < reject_index < transaction_index
-    assert output.count("**Choose one command**") == 1
+    assert output.count("## Choose one command") == 1
     assert "compile-transaction" in output
     assert "greenfield create --repo-root ." not in output
     assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
@@ -358,18 +365,21 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
-    assert "**Choose one command**" in output
-    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
-    assert "- **CONFIRM** - Compile the ProductCreateTransaction from this proposal" in output
-    assert "- **EDIT** - Correct the proposal evidence" in output
-    assert "- **REJECT** - Stop. No governed records are written." in output
-    choose_index = output.index("**Choose one command**")
-    confirm_index = output.index("- **CONFIRM**", choose_index)
-    edit_index = output.index("- **EDIT**", confirm_index)
-    reject_index = output.index("- **REJECT**", edit_index)
+    assert "## Choose one command" in output
+    assert "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "- **Command: `CONFIRM`**" in output
+    assert "Compile the ProductCreateTransaction from this proposal" in output
+    assert "- **Command: `EDIT`**" in output
+    assert "Correct the proposal evidence" in output
+    assert "- **Command: `REJECT`**" in output
+    assert "Stop. No governed records are written." in output
+    choose_index = output.index("## Choose one command")
+    confirm_index = output.index("- **Command: `CONFIRM`**", choose_index)
+    edit_index = output.index("- **Command: `EDIT`**", confirm_index)
+    reject_index = output.index("- **Command: `REJECT`**", edit_index)
     transaction_index = output.index("Transaction path", reject_index)
     assert choose_index < confirm_index < edit_index < reject_index < transaction_index
-    assert output.count("**Choose one command**") == 1
+    assert output.count("## Choose one command") == 1
     assert "compile-transaction" in output
     assert "odylith greenfield create --repo-root ." not in output
     assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
@@ -413,14 +423,16 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert payload["host_reasoning_task"]["format_contract"]
     assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
     assert "Product story; State object; First complete path; Human actors" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "visually highlighted command labels: CONFIRM, EDIT, and REJECT" in " ".join(
+    assert "command rows labeled `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`" in " ".join(
         payload["host_reasoning_task"]["format_contract"]
     )
     assert "Reply with exactly one command: CONFIRM, EDIT, or REJECT" in " ".join(
         payload["host_reasoning_task"]["format_contract"]
     )
     assert "reply with exactly one command" in " ".join(payload["host_reasoning_task"]["must_include"])
-    assert "three separate bullet lines for CONFIRM, EDIT, and REJECT" in " ".join(payload["host_reasoning_task"]["must_include"])
+    assert "three separate command rows for CONFIRM, EDIT, and REJECT" in " ".join(
+        payload["host_reasoning_task"]["must_include"]
+    )
     assert "dump a generic template or domain catalog" in payload["host_reasoning_task"]["must_not"]
     assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
     assert "use Markdown emphasis or code formatting around normal domain words" in payload["host_reasoning_task"]["must_not"]
@@ -544,7 +556,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     dashboard_calls: list[dict[str, object]] = []
     _stub_dashboard_refresh(monkeypatch, dashboard_calls)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_proposals,
         "assert_greenfield_completion_ready",
@@ -746,17 +758,20 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert calls[1][1]["proposal_ready"] is True
     assert "ProductCreateTransaction ready for final command" in output
     assert transaction.transaction_hash in output
-    assert "- Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
-    assert "- **CONFIRM** - Commit this exact validated package now." in output
+    assert "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "- **Command: `CONFIRM`**" in output
+    assert "Commit this exact validated package now." in output
     assert "Odylith verifies the hash and writes the transaction atomically" in output
-    assert "- **EDIT** - Do not commit. Treat edits as new evidence" in output
-    assert "- **REJECT** - Stop. No governed records are written" in output
-    choose_index = output.index("**Choose one command**")
-    confirm_index = output.index("- **CONFIRM**", choose_index)
-    edit_index = output.index("- **EDIT**", confirm_index)
-    reject_index = output.index("- **REJECT**", edit_index)
+    assert "- **Command: `EDIT`**" in output
+    assert "Do not commit. Treat edits as new evidence" in output
+    assert "- **Command: `REJECT`**" in output
+    assert "Stop. No governed records are written" in output
+    choose_index = output.index("## Choose one command")
+    confirm_index = output.index("- **Command: `CONFIRM`**", choose_index)
+    edit_index = output.index("- **Command: `EDIT`**", confirm_index)
+    reject_index = output.index("- **Command: `REJECT`**", edit_index)
     assert choose_index < confirm_index < edit_index < reject_index
-    assert output.count("**Choose one command**") == 1
+    assert output.count("## Choose one command") == 1
     assert "Compile transaction:" not in output
     assert "compile a validated ProductCreateTransaction" not in output
     assert "compiles a validated ProductCreateTransaction" not in output
@@ -1023,7 +1038,7 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
     )
     _stub_dashboard_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
@@ -1121,7 +1136,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     )
     _stub_dashboard_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
@@ -1207,7 +1222,7 @@ Release 0.0.1 succeeds when one site record can be opened, linked to source evid
     )
     _stub_dashboard_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,

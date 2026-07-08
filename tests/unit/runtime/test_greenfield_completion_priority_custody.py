@@ -9,6 +9,7 @@ import pytest
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_cli_output
 from odylith.runtime.domain_intelligence import greenfield_component_contract as component_contract
@@ -46,13 +47,13 @@ def _stub_apply_refreshes(monkeypatch) -> None:
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write,
-        "_raise_for_greenfield_rendered_surface_custody",
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped_in_unit_test"},
     )
     monkeypatch.setattr(
@@ -63,6 +64,24 @@ def _stub_apply_refreshes(monkeypatch) -> None:
             "surfaces": ["radar", "registry", "atlas", "compass", "tooling_shell"],
             "view": "odylith/index.html?tab=project",
         },
+    )
+
+
+def _compile_transaction(tmp_path: Path, proposal: dict[str, object] | None = None):
+    completed = greenfield_proposals.complete_confirmed_proposal(
+        proposal or _proposal(tmp_path),
+        release_selector="0.0.1",
+    )
+    completed = greenfield_proposals.complete_greenfield_semantic_apply_payload(
+        completed,
+        release_selector="0.0.1",
+    )
+    greenfield_proposals.validate_host_reasoned_proposal(completed)
+    return greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=completed,
+        release_selector="0.0.1",
+        proposal_ready=True,
     )
 
 
@@ -112,50 +131,46 @@ def test_component_contract_completion_promotes_required_proof_floor_before_rend
     ]
 
 
-def test_completion_priority_final_write_debt_is_persisted_and_printed(
+def test_compiled_commit_skips_final_next_steps_quality_after_confirm(
     tmp_path: Path,
     monkeypatch,
     capsys,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
+    transaction = _compile_transaction(tmp_path)
 
     def final_copy_issues(scope: str, _value: object) -> tuple[str, ...]:
         if scope == "operator next-steps final memory":
-            return ("operator next-steps final memory leaked adjacent duplicate word prose",)
+            raise AssertionError("compiled commit must not run final next-steps quality after confirmation")
         return ()
 
     monkeypatch.setattr(greenfield_apply_write, "generated_public_copy_issues", final_copy_issues)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = greenfield_proposals.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        proposal=_proposal(tmp_path),
+        transaction=transaction,
         confirm=True,
-        release_selector="0.0.1",
     )
 
     manifest = result["post_confirm_quality_manifest"]
     assert manifest["write_transaction"]["status"] == "committed"
-    assert manifest["completion_priority"]["final_write_quality_debt"] == [
-        "final next steps quality: operator next-steps final memory leaked adjacent duplicate word prose"
-    ]
+    assert "completion_priority" not in manifest
     accepted_project = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text())
-    debt_ledger = accepted_project["completion_priority_quality_debt"]
-    assert debt_ledger["guard"] == "typed_noncritical_projection_debt_only"
-    assert debt_ledger["items"] == manifest["completion_priority"]["final_write_quality_debt"]
-    assert accepted_project["source_launch"]["completion_priority_quality_debt"]["count"] == 1
+    assert "completion_priority_quality_debt" not in accepted_project
 
     greenfield_cli_output.print_apply_result(result, verb="create")
     closeout = capsys.readouterr().out
-    assert "- quality debt: 1 non-critical projection issue(s) recorded after governed write" in closeout
+    assert "- quality debt:" not in closeout
 
 
-def test_completion_priority_final_write_records_package_repetition_debt(
+def test_compiled_commit_skips_final_package_quality_after_confirm(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
+    transaction = _compile_transaction(tmp_path)
     message = (
         "greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 3 occurrence(s): "
         "`It should carry state from one step to the next with visible progress`"
@@ -185,29 +200,27 @@ def test_completion_priority_final_write_records_package_repetition_debt(
         ],
     )
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = greenfield_proposals.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        proposal=_proposal(tmp_path),
+        transaction=transaction,
         confirm=True,
-        release_selector="0.0.1",
     )
 
     manifest = result["post_confirm_quality_manifest"]
     assert manifest["write_transaction"]["status"] == "committed"
-    assert manifest["completion_priority"]["final_write_quality_debt"] == [f"final write quality: {message}"]
+    assert "completion_priority" not in manifest
     accepted_project = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text())
-    assert accepted_project["completion_priority_quality_debt"]["items"] == [
-        f"final write quality: {message}"
-    ]
+    assert "completion_priority_quality_debt" not in accepted_project
 
 
-def test_completion_priority_write_rolls_back_source_truth_package_repetition(
+def test_compiled_commit_does_not_roll_back_on_late_source_truth_package_repetition(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
     proposal = _proposal(tmp_path)
+    transaction = _compile_transaction(tmp_path, proposal=proposal)
     repeated = str(proposal["project_brief"]["project_outcome"])
     message = (
         "greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 3 occurrence(s): "
@@ -237,24 +250,25 @@ def test_completion_priority_write_rolls_back_source_truth_package_repetition(
             )
         ],
     )
-    with pytest.raises(ValueError, match="greenfield post-confirm final write quality failed"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
 
-    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert not (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
+    result = greenfield_proposals.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+    )
+
+    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
 
 
-def test_completion_priority_write_rolls_back_substantive_final_quality_failure(
+def test_compiled_commit_does_not_roll_back_on_late_substantive_quality_finding(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
+    transaction = _compile_transaction(tmp_path)
     monkeypatch.setattr(
         greenfield_apply_write,
         "greenfield_rendered_package_quality_findings",
@@ -274,24 +288,24 @@ def test_completion_priority_write_rolls_back_substantive_final_quality_failure(
         ],
     )
 
-    with pytest.raises(ValueError, match="greenfield post-confirm final write quality failed"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=_proposal(tmp_path),
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = greenfield_proposals.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+    )
 
-    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert not (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
+    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
 
 
-def test_completion_priority_write_rolls_back_nonmechanical_generated_prose_failure(
+def test_compiled_commit_does_not_roll_back_on_late_generated_prose_finding(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
+    transaction = _compile_transaction(tmp_path)
     monkeypatch.setattr(
         greenfield_apply_write,
         "greenfield_rendered_package_quality_findings",
@@ -311,16 +325,15 @@ def test_completion_priority_write_rolls_back_nonmechanical_generated_prose_fail
         ],
     )
 
-    with pytest.raises(ValueError, match="greenfield post-confirm final write quality failed"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=_proposal(tmp_path),
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = greenfield_proposals.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+    )
 
-    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert not (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
+    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
 
 
 def test_completion_priority_debt_guard_rejects_nonmechanical_generated_prose_labels() -> None:

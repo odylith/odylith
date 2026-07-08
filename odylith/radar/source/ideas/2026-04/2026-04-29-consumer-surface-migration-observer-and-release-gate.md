@@ -2021,7 +2021,7 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   covered by `migration-observer:0.1.15:guidance-and-skills:49fd40c7e0c8` and
   `migration-observer:0.1.15:install-managed-assets:c5018beeb120`. The pass
   changes only managed host guidance and the install-managed mirror so Confirm,
-  Edit, and Reject render as three separate bullet lines instead of one
+  Edit, and Reject render as distinct visible command choices instead of one
   paragraph. Existing consumer-owned governance records do not need migration;
   upgraded installs receive the clearer guidance through normal install,
   upgrade, doctor, or managed asset refresh.

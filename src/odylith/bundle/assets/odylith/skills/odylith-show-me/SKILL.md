@@ -48,10 +48,10 @@ placeholder products in response to a show-me request.
    Product Intent Confirmation in chat from live reasoning as sectioned
    Markdown so the operator sees Product story, State object, First complete
    path, Human actors, External systems, Internal product systems, Critical
-   assumptions, Ambiguities, Proof boundary, and `**Choose one command**`.
-   The command block must include `- Reply with exactly one command: **CONFIRM**,
-   **EDIT**, or **REJECT**.`, then separate `- **CONFIRM**`, `- **EDIT**`,
-   and `- **REJECT**` bullet lines. Use bullets for actors, systems,
+   assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
+   The command block must show `Reply with exactly one command: **CONFIRM**,
+   **EDIT**, or **REJECT**.`, then separate rows labeled **Command: `CONFIRM`**,
+   **Command: `EDIT`**, and **Command: `REJECT`**. Use bullets for actors, systems,
    assumptions, and ambiguities; do not collapse the confirmation into a wall
    of prose or wrap normal domain words in code ticks or decorative bold
    markers. After the operator chooses **CONFIRM** for the same

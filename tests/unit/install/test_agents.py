@@ -78,11 +78,11 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "Discipline hot paths must not call host models",
         "project-first Product Intent Confirmation",
         "sectioned Markdown",
-        "`**Choose one command**`",
+        "`## Choose one command`",
         "Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**",
-        "`- **CONFIRM**`",
-        "`- **EDIT**`",
-        "`- **REJECT**`",
+        "Command: `CONFIRM`",
+        "Command: `EDIT`",
+        "Command: `REJECT`",
         "same visible Product Intent Confirmation",
         ".odylith/runtime/greenfield/confirmed-intent.json",
         "greenfield compile-transaction",
@@ -143,7 +143,7 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "Do not inspect Odylith source" in block
     assert "hand-author/repair proposal JSON" in block
     assert "parser/schema retries" in block
-    assert "Do not ask operator to inspect proposal JSON or confirm a second time around uncompiled Markdown" in block
+    assert "Do not ask operator to inspect proposal JSON or add a second confirmation" in block
     assert "Surface only final summary or blockers" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block

@@ -94,10 +94,16 @@ A resident submits a permit request, staff review it, and the case closes with a
 ## Proof boundary
 Prove that one submitted permit case can move through review and final decision with durable state.
 
-## Choose one
-- **CONFIRM** - Accept this interpretation.
-- **EDIT** - Reply with corrections.
-- **REJECT** - Stop here.
+## Choose one command
+
+Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.
+
+- **Command: `CONFIRM`**
+  Accept this interpretation.
+- **Command: `EDIT`**
+  Reply with corrections.
+- **Command: `REJECT`**
+  Stop here.
 """,
         prompt=prompt,
     )

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import datetime as dt
 import json
-import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -17,6 +15,7 @@ from odylith.runtime.artifact_quality.greenfield_package_repetition import (
 )
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
@@ -29,7 +28,6 @@ from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lookup_for
 from odylith.runtime.domain_intelligence.greenfield_apply_components import first_release_component_rows
-from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
 from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import operator_component_spec_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -37,12 +35,10 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
-from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.surfaces import brand_assets
-from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
 def release_assignment_note(*, selector: str) -> str:
@@ -84,7 +80,7 @@ def write_greenfield_proposal(
     has_compiled_package = prewrite_package is not None
     rendered_atlas_sources = dict(prewrite_package.rendered_atlas_sources or {}) if prewrite_package else {}
     rendered_component_specs = dict(prewrite_package.rendered_component_specs or {}) if prewrite_package else {}
-    atlas_review_date = _atlas_review_date(prewrite_package)
+    atlas_review_date = greenfield_apply_diagrams.atlas_review_date(prewrite_package)
     for raw_path in backlog_result.get("stale_idea_files", []):
         path = Path(str(raw_path))
         if path.is_file():
@@ -130,13 +126,11 @@ def write_greenfield_proposal(
         )
     if isinstance(release_targeting, dict) and isinstance(release_targeting.get("release"), Mapping):
         release_targeting.setdefault("release_id", str(release_targeting["release"].get("release_id", "")).strip())
-    diagrams_created: list[str] = []
-    atlas_scaffold_logs: list[str] = []
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     diagram_ids = (
-        _compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
+        greenfield_apply_diagrams.compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
         if has_compiled_package
-        else allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
+        else greenfield_apply_diagrams.allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
     )
     traceability_plan = (
         greenfield_traceability_commit.compiled_traceability_plan(getattr(prewrite_package, "traceability_plan", None))
@@ -147,21 +141,17 @@ def write_greenfield_proposal(
             diagram_ids=diagram_ids,
         )
     )
-    for row, diagram_id in zip(diagram_rows, diagram_ids, strict=False):
-        _scaffold_proposal_diagram(
-            root=root,
-            row=row,
-            diagram_id=diagram_id,
-            traceability_plan=traceability_plan,
-            atlas_scaffold_logs=atlas_scaffold_logs,
-            starter_source=_prewrite_atlas_source(
-                row,
-                rendered_atlas_sources,
-                required=has_compiled_package,
-            ),
-            review_date=atlas_review_date,
-        )
-        diagrams_created.append(diagram_id)
+    diagram_write = greenfield_apply_diagrams.materialize_apply_diagrams(
+        root=root,
+        rows=diagram_rows,
+        diagram_ids=diagram_ids,
+        traceability_plan=traceability_plan,
+        rendered_atlas_sources=rendered_atlas_sources,
+        review_date=atlas_review_date,
+        require_compiled_sources=has_compiled_package,
+    )
+    diagrams_created = list(diagram_write.diagram_ids)
+    atlas_scaffold_logs = list(diagram_write.scaffold_logs)
     touched_backlog_paths = (
         greenfield_backlog_commit.compiled_backlog_traceability_paths(repo_root=root, backlog_result=backlog_result)
         if has_compiled_package
@@ -327,7 +317,7 @@ def write_greenfield_proposal(
             "warning": str(exc),
         }
     else:
-        dashboard_refresh["rendered_surface_custody"] = _raise_for_greenfield_rendered_surface_custody(
+        dashboard_refresh["rendered_surface_custody"] = greenfield_apply_diagrams.raise_for_greenfield_rendered_surface_custody(
             repo_root=root,
             diagram_ids=diagrams_created,
         )
@@ -388,97 +378,6 @@ def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
         "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
         "view": view,
     }
-
-
-def _raise_for_greenfield_rendered_surface_custody(*, repo_root: Path, diagram_ids: Sequence[str]) -> dict[str, Any]:
-    root = Path(repo_root).resolve()
-    issues: list[str] = []
-    required_surfaces = (
-        "odylith/atlas/atlas.html",
-        "odylith/atlas/mermaid-payload.v1.js",
-        "odylith/atlas/mermaid-app.v1.js",
-    )
-    for relative_path in required_surfaces:
-        path = root / relative_path
-        if not path.is_file() or path.stat().st_size <= 0:
-            issues.append(f"missing rendered Atlas surface: {relative_path}")
-    catalog_path = root / "odylith/atlas/source/catalog/diagrams.v1.json"
-    catalog = _read_json_mapping(catalog_path)
-    rows = catalog.get("diagrams") if isinstance(catalog.get("diagrams"), list) else []
-    by_id = {
-        str(row.get("diagram_id", "")).strip(): row
-        for row in rows
-        if isinstance(row, Mapping) and str(row.get("diagram_id", "")).strip()
-    }
-    checked_ids: list[str] = []
-    for diagram_id in [str(value).strip() for value in diagram_ids if str(value).strip()]:
-        checked_ids.append(diagram_id)
-        row = by_id.get(diagram_id)
-        if not isinstance(row, Mapping):
-            issues.append(f"missing Atlas catalog entry for greenfield diagram: {diagram_id}")
-            continue
-        for field in ("source_svg", "source_png"):
-            relative_asset = str(row.get(field, "")).strip()
-            asset_path = root / relative_asset if relative_asset else None
-            if not relative_asset or asset_path is None or not asset_path.is_file() or asset_path.stat().st_size <= 0:
-                issues.append(f"{diagram_id}: missing rendered Atlas {field}: {relative_asset or '<empty>'}")
-        if not str(row.get("render_source_fingerprint", "")).strip():
-            issues.append(f"{diagram_id}: missing Atlas render_source_fingerprint")
-        fingerprints = row.get("reviewed_watch_fingerprints")
-        if not isinstance(fingerprints, Mapping) or not fingerprints:
-            issues.append(f"{diagram_id}: missing Atlas reviewed_watch_fingerprints")
-    if issues:
-        detail = "\n".join(f"- {issue}" for issue in issues)
-        raise RuntimeError(f"greenfield post-confirm rendered surface custody failed with {len(issues)} issue(s):\n{detail}")
-    return {
-        "status": "passed",
-        "atlas_surface_count": len(required_surfaces),
-        "atlas_diagram_count": len(checked_ids),
-    }
-
-
-def _prewrite_atlas_source(
-    row: Mapping[str, Any],
-    rendered_atlas_sources: Mapping[str, str],
-    *,
-    required: bool = False,
-) -> str:
-    path = _atlas_source_path_for_row(row)
-    if not path:
-        if required:
-            raise ValueError("compiled greenfield Atlas source missing source path")
-        return ""
-    source = str(rendered_atlas_sources.get(path, "")).strip()
-    if required and not source:
-        raise ValueError(f"compiled greenfield Atlas source missing for {path}")
-    return source
-
-
-def _atlas_review_date(prewrite_package: GreenfieldCompletionPackage | None) -> str:
-    if prewrite_package is not None:
-        review_date = str(getattr(prewrite_package, "atlas_review_date", "") or "").strip()
-        if not review_date:
-            raise ValueError("compiled greenfield Atlas review date missing")
-        return review_date
-    return dt.date.today().isoformat()
-
-
-def _compiled_atlas_diagram_ids(
-    prewrite_package: GreenfieldCompletionPackage | None,
-    *,
-    expected_count: int,
-) -> list[str]:
-    raw_ids = prewrite_package.atlas_diagram_ids if prewrite_package is not None else ()
-    diagram_ids = [str(item).strip().upper() for item in raw_ids if str(item).strip()]
-    if len(diagram_ids) != expected_count:
-        raise ValueError(
-            "compiled greenfield Atlas diagram ids missing or incomplete "
-            f"(expected {expected_count}, found {len(diagram_ids)})"
-        )
-    invalid = next((item for item in diagram_ids if not re.fullmatch(r"D-\d{3,}", item)), "")
-    if invalid:
-        raise ValueError(f"compiled greenfield Atlas diagram id is invalid: {invalid}")
-    return diagram_ids
 
 
 def _raise_for_incomplete_compiled_write_package(
@@ -545,7 +444,12 @@ def _raise_for_incomplete_compiled_write_package(
             issues.append("missing compiled atlas_review_date")
         compiled_diagram_ids: tuple[str, ...] = ()
         try:
-            compiled_diagram_ids = _compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
+            compiled_diagram_ids = tuple(
+                greenfield_apply_diagrams.compiled_atlas_diagram_ids(
+                    prewrite_package,
+                    expected_count=len(diagram_rows),
+                )
+            )
         except ValueError as exc:
             issues.append(str(exc))
         if traceability_plan is not None:
@@ -614,13 +518,6 @@ def _json_comparable_mapping(value: Mapping[str, Any]) -> Mapping[str, Any]:
     return normalized if isinstance(normalized, Mapping) else {}
 
 
-def _atlas_source_path_for_row(row: Mapping[str, Any]) -> str:
-    slug = str(row.get("slug", "")).strip()
-    if not slug:
-        return ""
-    return f"odylith/atlas/source/{slug}.mmd"
-
-
 def _raise_for_final_package_quality(
     *,
     root: Path,
@@ -651,7 +548,7 @@ def _raise_for_final_package_quality(
         proposal=proposal,
         release_selector=release_selector,
         rendered_component_specs=_actual_component_specs(root=root, components=component_rows),
-        rendered_atlas_sources=_actual_atlas_sources(root=root, rows=diagram_rows),
+        rendered_atlas_sources=greenfield_apply_diagrams.actual_atlas_sources(root=root, rows=diagram_rows),
         atlas_review_date=atlas_review_date,
         atlas_diagram_ids=tuple(diagram_ids),
         component_registry_preview=tuple(dict(row) for row in component_rows),
@@ -746,18 +643,6 @@ def _actual_component_specs(*, root: Path, components: Sequence[Mapping[str, Any
     return specs
 
 
-def _actual_atlas_sources(*, root: Path, rows: Sequence[Mapping[str, Any]]) -> dict[str, str]:
-    sources: dict[str, str] = {}
-    for row in rows:
-        path = _atlas_source_path_for_row(row)
-        if not path:
-            continue
-        source_path = root / path
-        if source_path.is_file():
-            sources[path] = source_path.read_text(encoding="utf-8")
-    return sources
-
-
 def _read_json_mapping(path: Path) -> Mapping[str, Any]:
     if not path.is_file():
         return {}
@@ -772,185 +657,6 @@ def _read_text(path: Path) -> str:
     if not path.is_file():
         return ""
     return path.read_text(encoding="utf-8")
-
-
-def _scaffold_proposal_diagram(
-    *,
-    root: Path,
-    row: Mapping[str, Any],
-    diagram_id: str,
-    traceability_plan: Any,
-    atlas_scaffold_logs: list[str],
-    review_date: str,
-    starter_source: str = "",
-) -> None:
-    components: list[dict[str, str]] = []
-    for component in row.get("components", []):
-        if not isinstance(component, Mapping):
-            continue
-        name = str(component.get("name", "")).strip()
-        description = str(component.get("description", "")).strip()
-        if name and description:
-            components.append({"name": name, "description": description})
-    link = next((item for item in traceability_plan.diagram_links if item.diagram_id == diagram_id), None)
-    related_backlog = list(link.related_backlog_paths) if link is not None else []
-    watch_paths: list[str] = []
-    for path in row.get("watch_paths", []):
-        token = str(path).strip()
-        if not token:
-            continue
-        candidate = (root / token).resolve() if not Path(token).is_absolute() else Path(token).resolve()
-        try:
-            candidate.relative_to(root)
-        except ValueError:
-            continue
-        if candidate.exists():
-            watch_paths.append(token)
-    rc, log_lines = scaffold_mermaid_diagram.scaffold_diagram(
-        repo_root=root,
-        catalog="odylith/atlas/source/catalog/diagrams.v1.json",
-        diagram_id=diagram_id,
-        slug=str(row.get("slug", "")).strip(),
-        title=str(row.get("title", "")).strip(),
-        kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
-        owner=str(row.get("owner", "repo")).strip() or "repo",
-        summary=str(row.get("summary", "")).strip(),
-        read_guide=str(row.get("read_guide", "")).strip(),
-        components=components,
-        related_backlog=related_backlog,
-        related_plans=[],
-        related_docs=[],
-        related_code=[],
-        watch_paths=watch_paths,
-        review_date=review_date,
-        starter_source=starter_source or validated_mermaid_source(row),
-        refresh=False,
-    )
-    log_text = "\n".join(log_lines).strip()
-    if log_text:
-        atlas_scaffold_logs.append(log_text)
-    if rc != 0:
-        if _upsert_existing_proposal_diagram(
-            root=root,
-            row=row,
-            diagram_id=diagram_id,
-            components=components,
-            related_backlog=related_backlog,
-            watch_paths=watch_paths,
-            review_date=review_date,
-            log_text=log_text,
-            atlas_scaffold_logs=atlas_scaffold_logs,
-            starter_source=starter_source,
-        ):
-            _update_scaffolded_diagram_link_state(
-                root=root,
-                slug=str(row.get("slug", "")).strip(),
-                link_state=str(row.get("link_state", "")).strip(),
-            )
-            return
-        detail = f": {log_text}" if log_text else ""
-        raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
-    _update_scaffolded_diagram_link_state(
-        root=root,
-        slug=str(row.get("slug", "")).strip(),
-        link_state=str(row.get("link_state", "")).strip(),
-    )
-
-
-def _upsert_existing_proposal_diagram(
-    *,
-    root: Path,
-    row: Mapping[str, Any],
-    diagram_id: str,
-    components: list[dict[str, str]],
-    related_backlog: list[str],
-    watch_paths: list[str],
-    review_date: str,
-    log_text: str,
-    atlas_scaffold_logs: list[str],
-    starter_source: str = "",
-) -> bool:
-    if "already exists" not in log_text:
-        return False
-    slug = str(row.get("slug", "")).strip()
-    if not slug and not diagram_id:
-        return False
-    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    if not catalog_path.is_file():
-        return False
-    try:
-        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return False
-    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
-    if not isinstance(diagrams, list):
-        return False
-    entry = next(
-        (
-            item
-            for item in diagrams
-            if isinstance(item, dict)
-            and (
-                (slug and str(item.get("slug", "")).strip() == slug)
-                or (diagram_id and str(item.get("diagram_id", "")).strip() == diagram_id)
-            )
-        ),
-        None,
-    )
-    if entry is None:
-        return False
-    source_mmd = str(entry.get("source_mmd") or f"odylith/atlas/source/{slug}.mmd").strip()
-    source_svg = str(entry.get("source_svg") or f"odylith/atlas/source/{slug}.svg").strip()
-    source_png = str(entry.get("source_png") or f"odylith/atlas/source/{slug}.png").strip()
-    entry.update(
-        {
-            "diagram_id": str(entry.get("diagram_id") or diagram_id).strip(),
-            "slug": str(entry.get("slug") or slug).strip(),
-            "title": str(row.get("title", "")).strip(),
-            "kind": str(row.get("kind", "flowchart")).strip() or "flowchart",
-            "owner": str(row.get("owner", "repo")).strip() or "repo",
-            "last_reviewed_utc": review_date,
-            "source_mmd": source_mmd,
-            "source_svg": source_svg,
-            "source_png": source_png,
-            "summary": str(row.get("summary", "")).strip(),
-            "read_guide": str(row.get("read_guide", "")).strip(),
-            "components": components,
-            "related_backlog": dedupe_strings(related_backlog),
-            "change_watch_paths": dedupe_strings(watch_paths) or [source_mmd],
-        }
-    )
-    catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
-    source_path = root / source_mmd
-    source_path.parent.mkdir(parents=True, exist_ok=True)
-    source_path.write_text((starter_source or validated_mermaid_source(row)).rstrip() + "\n", encoding="utf-8")
-    atlas_scaffold_logs.append(f"updated existing diagram: {entry['slug']}")
-    return True
-
-def _update_scaffolded_diagram_link_state(*, root: Path, slug: str, link_state: str) -> None:
-    if not slug or not link_state:
-        return
-    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    if not catalog_path.is_file():
-        return
-    try:
-        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return
-    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
-    if not isinstance(diagrams, list):
-        return
-    changed = False
-    for item in diagrams:
-        if not isinstance(item, dict):
-            continue
-        if str(item.get("slug", "")).strip() != slug:
-            continue
-        if str(item.get("link_state", "")).strip() != link_state:
-            item["link_state"] = link_state
-            changed = True
-    if changed:
-        catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
 
 
 def _raise_for_component_spec_quality(
