@@ -42,10 +42,16 @@
   },
   "digest": {
     "24h": [
-      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "Completed in this window: The greenfield transaction-file commit path is now in place. It turns greenfield intent into a concrete, reviewable artifact path instead of a looser handoff. | Greenfield product-intent custody was hardened. The intent trail is now tighter, which makes later backlog and planning handoffs less ambiguous.",
+      "Current execution: Universal greenfield domain intelligence (B-142) is in active implementation. This is the lane where most of the concrete movement is currently anchored. | ETA is still around two days with high confidence. That keeps the window focused and gives a near-term expectation for when proof should be in. | Movement is strongest in B-142, Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005). Some active lanes still have no new progress evidence captured yet, so they lag the story.",
+      "Next planned: Next priority is B-022: expand the benchmark corpus beyond the current 30 scenarios with deeper weak-case coverage. That directly tests integrity instead of just expanding surface count. | The next proof rerun must pass both cache profiles and keep stability. That rerun is now the gate for the next confidence lift.",
+      "Risks to watch: A live P1 remains on the greenfield scope tail gate rejecting valid terminal saved results. That rejection can still invalidate otherwise clean completion."
     ],
     "48h": [
-      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+      "Completed in this window: Hardened greenfield post-confirm structural custody is now in place. That removes a soft edge in the intent-to-action path and reduces the chance of late structural drift after confirm. | The greenfield transaction file commit path has been added. That gives this lane a concrete handoff artifact instead of an implied or manual transition.",
+      "Current execution: Universal greenfield domain intelligence (B-142) is actively being implemented and is the main locus of visible progress. | ETA is holding at roughly two days with high confidence. That keeps the window focused and gives room for early validation catch points. | Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) still show movement, but several active lanes still lack captured progress evidence.",
+      "Next planned: Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is driving corpus growth past the current 30-scenario suite, with stronger weak-case depth. | The next proof rerun needs to pass both cache profiles and stay stable through the rerun. That rerun is the gate before the next meaningful checkpoint.",
+      "Risks to watch: Greenfield scope tail gate still rejects a valid terminal-saved result, still open at P1. If unresolved, this can still block end-to-end greenfield progression."
     ]
   },
   "digest_scoped": {
@@ -54,7 +60,7 @@
         "Nothing moved in this window: B-021 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-022": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-025": [
         "Nothing moved in this window: B-025 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -63,7 +69,7 @@
         "Nothing moved in this window: B-033 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-038": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-040": [
         "Nothing moved in this window: B-040 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -189,7 +195,10 @@
         "Nothing moved in this window: B-019 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-020": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Completed in this window: Product Intent Confirmation now renders a cleaner Choose one block with separate CONFIRM, EDIT, and REJECT actions, and parser guarding excludes the new action heading from content parsing.",
+        "Current execution: Benchmark integrity work is marked complete: the full benchmark lane now runs both warm and cold cache profiles by default and emits a conservative published summary.",
+        "Next planned: The next checkpoint is to capture the next verified milestone so the completed lane can be referenced as stable proof instead of a one-off claim.",
+        "Risks to watch: No critical blockers are surfaced right now, so the short-term risk is more about preserving that state than unblocking a known hard dependency."
       ],
       "B-023": [
         "Nothing moved in this window: B-023 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -488,7 +497,7 @@
         "Nothing moved in this window: B-021 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-022": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-025": [
         "Nothing moved in this window: B-025 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -497,7 +506,7 @@
         "Nothing moved in this window: B-033 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-038": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-040": [
         "Nothing moved in this window: B-040 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -623,7 +632,10 @@
         "Nothing moved in this window: B-019 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-020": [
-        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
+        "Completed in this window: The UI/parse improvement on Product Intent Confirmation remains in place, with the distinct Choose one actions and heading guard preventing action-label parsing errors.",
+        "Current execution: B-020 is completed in this window: default full benchmark runs now cover warm and cold cache profiles and publish a conservative summary.",
+        "Next planned: Next is to log the next verified checkpoint for B-020 so this completion stays reusable proof instead of a one-off milestone note.",
+        "Risks to watch: No critical blockers are currently surfaced; the risk is mostly maintaining this posture as checks continue."
       ],
       "B-023": [
         "Nothing moved in this window: B-023 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -921,51 +933,298 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "unavailable",
-      "source": "unavailable",
+      "status": "ready",
+      "source": "provider",
       "fingerprint": "65a2e948bc9d654b914264177099dc24aa09559766600d1e59d4fb6522562980",
-      "substrate_fingerprint": "65a2e948bc9d654b914264177099dc24aa09559766600d1e59d4fb6522562980",
-      "bundle_fingerprint": "",
-      "provider_decision": "provider_deferred",
-      "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-07-08T02:38:39Z",
-      "sections": [],
-      "diagnostics": {
-        "reason": "provider_deferred",
-        "title": "Fresh brief still warming",
-        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-        "fallback_title": "Local runtime facts",
-        "fallback_digest": [
-          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "Next: Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
-          "Watch: Greenfield scope tail gate rejected valid terminal saved result. It is still open at P1."
-        ]
+      "sections": [
+        {
+          "key": "completed",
+          "label": "Completed in this window",
+          "bullets": [
+            {
+              "text": "The greenfield transaction-file commit path is now in place. It turns greenfield intent into a concrete, reviewable artifact path instead of a looser handoff.",
+              "fact_ids": [
+                "F-001"
+              ]
+            },
+            {
+              "text": "Greenfield product-intent custody was hardened. The intent trail is now tighter, which makes later backlog and planning handoffs less ambiguous.",
+              "fact_ids": [
+                "F-002"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "current_execution",
+          "label": "Current execution",
+          "bullets": [
+            {
+              "text": "Universal greenfield domain intelligence (B-142) is in active implementation. This is the lane where most of the concrete movement is currently anchored.",
+              "fact_ids": [
+                "F-004"
+              ]
+            },
+            {
+              "text": "ETA is still around two days with high confidence. That keeps the window focused and gives a near-term expectation for when proof should be in.",
+              "fact_ids": [
+                "F-005"
+              ]
+            },
+            {
+              "text": "Movement is strongest in B-142, Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005). Some active lanes still have no new progress evidence captured yet, so they lag the story.",
+              "fact_ids": [
+                "F-006"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "next_planned",
+          "label": "Next planned",
+          "bullets": [
+            {
+              "text": "Next priority is B-022: expand the benchmark corpus beyond the current 30 scenarios with deeper weak-case coverage. That directly tests integrity instead of just expanding surface count.",
+              "fact_ids": [
+                "F-008"
+              ]
+            },
+            {
+              "text": "The next proof rerun must pass both cache profiles and keep stability. That rerun is now the gate for the next confidence lift.",
+              "fact_ids": [
+                "F-009"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "risks_to_watch",
+          "label": "Risks to watch",
+          "bullets": [
+            {
+              "text": "A live P1 remains on the greenfield scope tail gate rejecting valid terminal saved results. That rejection can still invalidate otherwise clean completion.",
+              "fact_ids": [
+                "F-010"
+              ]
+            }
+          ]
+        }
+      ],
+      "evidence_lookup": {
+        "F-001": {
+          "text": "Added greenfield transaction file commit path.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-002": {
+          "text": "Harden greenfield product intent custody.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-003": {
+          "text": "Nothing fully closed across the portfolio in the last 24 hours.",
+          "section_key": "completed",
+          "kind": "window_summary"
+        },
+        "F-004": {
+          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "section_key": "current_execution",
+          "kind": "direction",
+          "workstreams": [
+            "B-142"
+          ]
+        },
+        "F-005": {
+          "text": "ETA is projected at roughly 2 days (high confidence).",
+          "section_key": "current_execution",
+          "kind": "timeline"
+        },
+        "F-006": {
+          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142), Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+          "section_key": "current_execution",
+          "kind": "portfolio_posture"
+        },
+        "F-007": {
+          "text": "Work moved across 5 workstreams: B-142, B-005, B-020, B-022, and B-038.",
+          "section_key": "current_execution",
+          "kind": "window_coverage",
+          "workstreams": [
+            "B-142",
+            "B-005",
+            "B-020",
+            "B-022",
+            "B-038"
+          ]
+        },
+        "F-008": {
+          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
+          "section_key": "next_planned",
+          "kind": "forcing_function"
+        },
+        "F-009": {
+          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The next proof rerun must clear both cache profiles, keep.",
+          "section_key": "next_planned",
+          "kind": "follow_on"
+        },
+        "F-010": {
+          "text": "Greenfield scope tail gate rejected valid terminal saved result. It is still open at P1.",
+          "section_key": "risks_to_watch",
+          "kind": "bug"
+        }
       },
-      "evidence_lookup": {}
+      "substrate_fingerprint": "65a2e948bc9d654b914264177099dc24aa09559766600d1e59d4fb6522562980",
+      "bundle_fingerprint": "77456bd0238c92d2416b8dd8d4d9226cd026fd99e86f98ab98e9bc64b690e131",
+      "provider_decision": "provider_called",
+      "last_successful_narration_fingerprint": "65a2e948bc9d654b914264177099dc24aa09559766600d1e59d4fb6522562980"
     },
     "48h": {
       "schema_version": "v25",
-      "status": "unavailable",
-      "source": "unavailable",
+      "status": "ready",
+      "source": "provider",
       "fingerprint": "d96de496939a91f9b1a4e657ed02ea6ca8976931ba3e0a8ebc1c720cc060cb0c",
-      "substrate_fingerprint": "d96de496939a91f9b1a4e657ed02ea6ca8976931ba3e0a8ebc1c720cc060cb0c",
-      "bundle_fingerprint": "",
-      "provider_decision": "provider_deferred",
-      "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-07-08T02:38:39Z",
-      "sections": [],
-      "diagnostics": {
-        "reason": "provider_deferred",
-        "title": "Fresh brief still warming",
-        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-        "fallback_title": "Local runtime facts",
-        "fallback_digest": [
-          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "Next: Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
-          "Watch: Greenfield scope tail gate rejected valid terminal saved result. It is still open at P1."
-        ]
+      "sections": [
+        {
+          "key": "completed",
+          "label": "Completed in this window",
+          "bullets": [
+            {
+              "text": "Hardened greenfield post-confirm structural custody is now in place. That removes a soft edge in the intent-to-action path and reduces the chance of late structural drift after confirm.",
+              "fact_ids": [
+                "F-001"
+              ]
+            },
+            {
+              "text": "The greenfield transaction file commit path has been added. That gives this lane a concrete handoff artifact instead of an implied or manual transition.",
+              "fact_ids": [
+                "F-002"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "current_execution",
+          "label": "Current execution",
+          "bullets": [
+            {
+              "text": "Universal greenfield domain intelligence (B-142) is actively being implemented and is the main locus of visible progress.",
+              "fact_ids": [
+                "F-004",
+                "F-006"
+              ]
+            },
+            {
+              "text": "ETA is holding at roughly two days with high confidence. That keeps the window focused and gives room for early validation catch points.",
+              "fact_ids": [
+                "F-005"
+              ]
+            },
+            {
+              "text": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005) still show movement, but several active lanes still lack captured progress evidence.",
+              "fact_ids": [
+                "F-006"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "next_planned",
+          "label": "Next planned",
+          "bullets": [
+            {
+              "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is driving corpus growth past the current 30-scenario suite, with stronger weak-case depth.",
+              "fact_ids": [
+                "F-008"
+              ]
+            },
+            {
+              "text": "The next proof rerun needs to pass both cache profiles and stay stable through the rerun. That rerun is the gate before the next meaningful checkpoint.",
+              "fact_ids": [
+                "F-009"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "risks_to_watch",
+          "label": "Risks to watch",
+          "bullets": [
+            {
+              "text": "Greenfield scope tail gate still rejects a valid terminal-saved result, still open at P1. If unresolved, this can still block end-to-end greenfield progression.",
+              "fact_ids": [
+                "F-010"
+              ]
+            }
+          ]
+        }
+      ],
+      "evidence_lookup": {
+        "F-001": {
+          "text": "Harden greenfield post-confirm structural custody.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-002": {
+          "text": "Added greenfield transaction file commit path.",
+          "section_key": "completed",
+          "kind": "execution_highlight"
+        },
+        "F-003": {
+          "text": "Nothing fully closed across the portfolio in the last 48 hours.",
+          "section_key": "completed",
+          "kind": "window_summary"
+        },
+        "F-004": {
+          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "section_key": "current_execution",
+          "kind": "direction",
+          "workstreams": [
+            "B-142"
+          ]
+        },
+        "F-005": {
+          "text": "ETA is projected at roughly 2 days (high confidence).",
+          "section_key": "current_execution",
+          "kind": "timeline"
+        },
+        "F-006": {
+          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142), Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof (B-005).",
+          "section_key": "current_execution",
+          "kind": "portfolio_posture"
+        },
+        "F-007": {
+          "text": "Work moved across 5 workstreams: B-142, B-005, B-020, B-022, and B-038.",
+          "section_key": "current_execution",
+          "kind": "window_coverage",
+          "workstreams": [
+            "B-142",
+            "B-005",
+            "B-020",
+            "B-022",
+            "B-038"
+          ]
+        },
+        "F-008": {
+          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The corpus grows beyond the current 30-scenario suite with deeper weak.",
+          "section_key": "next_planned",
+          "kind": "forcing_function"
+        },
+        "F-009": {
+          "text": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022): The next proof rerun must clear both cache profiles, keep.",
+          "section_key": "next_planned",
+          "kind": "follow_on"
+        },
+        "F-010": {
+          "text": "Greenfield scope tail gate rejected valid terminal saved result. It is still open at P1.",
+          "section_key": "risks_to_watch",
+          "kind": "bug"
+        }
       },
-      "evidence_lookup": {}
+      "substrate_fingerprint": "d96de496939a91f9b1a4e657ed02ea6ca8976931ba3e0a8ebc1c720cc060cb0c",
+      "bundle_fingerprint": "a0e8680f2daa6ab539a7153d88ee7859ba01a9eb4e5129bfe0185e09e807ee90",
+      "provider_decision": "provider_called",
+      "last_successful_narration_fingerprint": "d96de496939a91f9b1a4e657ed02ea6ca8976931ba3e0a8ebc1c720cc060cb0c"
     }
   },
   "standup_brief_scoped": {
@@ -987,23 +1246,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "8099b26a2299180ae9d4de343443d784a97dc83c54a5efb511cd7fdc5de033af",
-        "substrate_fingerprint": "8099b26a2299180ae9d4de343443d784a97dc83c54a5efb511cd7fdc5de033af",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-08T02:38:39Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Land re-scope B-022 as the umbrella workstream for honest benchmark improvement; Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active.",
-            "Next: Immediate forcing function is to land The corpus grows beyond the current 30-scenario suite with deeper weak so if Odylith treats anti-gaming and honest product improvement as the same.",
-            "Watch: Primary watch item is closure discipline: 8 plan items remain open for Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022)."
-          ]
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -1037,23 +1292,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "7b2ff5ce615978d2ca53df2800a6c114345f0a48935935fca2c049f6f59df803",
-        "substrate_fingerprint": "7b2ff5ce615978d2ca53df2800a6c114345f0a48935935fca2c049f6f59df803",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-08T02:38:39Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Land The fastest honest benchmark improvement is not narrative tuning; Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) is in active implementation.",
-            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) so odylith will not.",
-            "Watch: Primary watch item is closure discipline: 8 plan items remain open for Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038)."
-          ]
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -1704,27 +1955,130 @@
       },
       "B-020": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "35af79842bdc95c728034c1193448131f2a4d857eea00cb24c1a1194b5ab8993",
-        "substrate_fingerprint": "35af79842bdc95c728034c1193448131f2a4d857eea00cb24c1a1194b5ab8993",
-        "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-08T02:38:39Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary; Benchmark Integrity, Conservative.",
-            "Next: Immediate forcing function is to capture the next verified checkpoint for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
-            "Watch: No critical blockers are currently surfaced."
-          ]
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "Product Intent Confirmation now renders a cleaner Choose one block with separate CONFIRM, EDIT, and REJECT actions, and parser guarding excludes the new action heading from content parsing.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "Benchmark integrity work is marked complete: the full benchmark lane now runs both warm and cold cache profiles by default and emits a conservative published summary.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "The next checkpoint is to capture the next verified milestone so the completed lane can be referenced as stable proof instead of a one-off claim.",
+                "fact_ids": [
+                  "F-007"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "No critical blockers are surfaced right now, so the short-term risk is more about preserving that state than unblocking a known hard dependency.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Product Intent Confirmation now renders a clear Choose one block with visually distinct CONFIRM, EDIT, and REJECT commands; parser guards exclude the new action heading from.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-002": {
+            "text": "Product Intent Confirmation now renders a clear Choose one block with visually distinct CONFIRM, EDIT, and REJECT commands; parser guards exclude the new action heading from product truth, and benchmark graph syntax.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-003": {
+            "text": "Nothing fully closed for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) in the last 24 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-004": {
+            "text": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary; Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) is completed.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-005": {
+            "text": "Checklist is 24/24; execution checklist closure is complete for the scoped plan.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-006": {
+            "text": "ETA is projected at roughly 0 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-007": {
+            "text": "Immediate forcing function is to capture the next verified checkpoint for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-008": {
+            "text": "No critical blockers are currently surfaced.",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-020"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "35af79842bdc95c728034c1193448131f2a4d857eea00cb24c1a1194b5ab8993",
+        "bundle_fingerprint": "cd47f59f9a0021c9c3f92f9661361cd35ce42abb930f5cd517a61c11e82d8667",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "35af79842bdc95c728034c1193448131f2a4d857eea00cb24c1a1194b5ab8993"
       },
       "B-023": {
         "status": "unavailable",
@@ -3006,23 +3360,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "b4dfd46d8b76c460389c3508ff24458d3b8c677496305bb24ffaecdc4dec8bd6",
-        "substrate_fingerprint": "b4dfd46d8b76c460389c3508ff24458d3b8c677496305bb24ffaecdc4dec8bd6",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-08T02:38:39Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Land re-scope B-022 as the umbrella workstream for honest benchmark improvement; Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022) is in active.",
-            "Next: Immediate forcing function is to land The corpus grows beyond the current 30-scenario suite with deeper weak so if Odylith treats anti-gaming and honest product improvement as the same.",
-            "Watch: Primary watch item is closure discipline: 8 plan items remain open for Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof (B-022)."
-          ]
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -3056,23 +3406,19 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "98cf725875739ae95bdcb0daa97533f4351dfac1625e2fd05a2c8faf0a093616",
-        "substrate_fingerprint": "98cf725875739ae95bdcb0daa97533f4351dfac1625e2fd05a2c8faf0a093616",
+        "fingerprint": "",
+        "substrate_fingerprint": "",
         "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
+        "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-08T02:38:39Z",
         "sections": [],
         "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Land The fastest honest benchmark improvement is not narrative tuning; Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) is in active implementation.",
-            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038) so odylith will not.",
-            "Watch: Primary watch item is closure discipline: 8 plan items remain open for Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement (B-038)."
-          ]
+          "reason": "skipped_not_worth_calling",
+          "title": "Brief reused last validated narration",
+          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
+          "provider_decision": "skipped_not_worth_calling",
+          "skip_reason": "deferred_to_background"
         },
         "evidence_lookup": {}
       },
@@ -3725,27 +4071,130 @@
       },
       "B-020": {
         "schema_version": "v25",
-        "status": "unavailable",
-        "source": "unavailable",
+        "status": "ready",
+        "source": "provider",
         "fingerprint": "fa89b6a4dd272c86bd46150acb18128e9bc2f2565912da61b11e394927429924",
-        "substrate_fingerprint": "fa89b6a4dd272c86bd46150acb18128e9bc2f2565912da61b11e394927429924",
-        "bundle_fingerprint": "",
-        "provider_decision": "provider_deferred",
-        "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-08T02:38:39Z",
-        "sections": [],
-        "diagnostics": {
-          "reason": "provider_deferred",
-          "title": "Fresh brief still warming",
-          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
-          "fallback_title": "Local runtime facts",
-          "fallback_digest": [
-            "Current: Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary; Benchmark Integrity, Conservative.",
-            "Next: Immediate forcing function is to capture the next verified checkpoint for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
-            "Watch: No critical blockers are currently surfaced."
-          ]
+        "sections": [
+          {
+            "key": "completed",
+            "label": "Completed in this window",
+            "bullets": [
+              {
+                "text": "The UI/parse improvement on Product Intent Confirmation remains in place, with the distinct Choose one actions and heading guard preventing action-label parsing errors.",
+                "fact_ids": [
+                  "F-001"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "current_execution",
+            "label": "Current execution",
+            "bullets": [
+              {
+                "text": "B-020 is completed in this window: default full benchmark runs now cover warm and cold cache profiles and publish a conservative summary.",
+                "fact_ids": [
+                  "F-004"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "next_planned",
+            "label": "Next planned",
+            "bullets": [
+              {
+                "text": "Next is to log the next verified checkpoint for B-020 so this completion stays reusable proof instead of a one-off milestone note.",
+                "fact_ids": [
+                  "F-007"
+                ]
+              }
+            ]
+          },
+          {
+            "key": "risks_to_watch",
+            "label": "Risks to watch",
+            "bullets": [
+              {
+                "text": "No critical blockers are currently surfaced; the risk is mostly maintaining this posture as checks continue.",
+                "fact_ids": [
+                  "F-008"
+                ]
+              }
+            ]
+          }
+        ],
+        "evidence_lookup": {
+          "F-001": {
+            "text": "Product Intent Confirmation now renders a clear Choose one block with visually distinct CONFIRM, EDIT, and REJECT commands; parser guards exclude the new action heading from.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-002": {
+            "text": "Product Intent Confirmation now renders a clear Choose one block with visually distinct CONFIRM, EDIT, and REJECT commands; parser guards exclude the new action heading from product truth, and benchmark graph syntax.",
+            "section_key": "completed",
+            "kind": "execution_highlight",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-003": {
+            "text": "Nothing fully closed for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) in the last 48 hours.",
+            "section_key": "completed",
+            "kind": "window_summary",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-004": {
+            "text": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary; Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020) is completed.",
+            "section_key": "current_execution",
+            "kind": "direction",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-005": {
+            "text": "Checklist is 24/24; execution checklist closure is complete for the scoped plan.",
+            "section_key": "current_execution",
+            "kind": "checklist",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-006": {
+            "text": "ETA is projected at roughly 0 days (high confidence).",
+            "section_key": "current_execution",
+            "kind": "timeline",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-007": {
+            "text": "Immediate forcing function is to capture the next verified checkpoint for Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening (B-020).",
+            "section_key": "next_planned",
+            "kind": "fallback_next",
+            "workstreams": [
+              "B-020"
+            ]
+          },
+          "F-008": {
+            "text": "No critical blockers are currently surfaced.",
+            "section_key": "risks_to_watch",
+            "kind": "risk_posture",
+            "workstreams": [
+              "B-020"
+            ]
+          }
         },
-        "evidence_lookup": {}
+        "substrate_fingerprint": "fa89b6a4dd272c86bd46150acb18128e9bc2f2565912da61b11e394927429924",
+        "bundle_fingerprint": "cd47f59f9a0021c9c3f92f9661361cd35ce42abb930f5cd517a61c11e82d8667",
+        "provider_decision": "provider_called",
+        "last_successful_narration_fingerprint": "fa89b6a4dd272c86bd46150acb18128e9bc2f2565912da61b11e394927429924"
       },
       "B-023": {
         "status": "unavailable",
