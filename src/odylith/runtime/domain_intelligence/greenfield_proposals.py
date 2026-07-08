@@ -285,6 +285,41 @@ def _confirmed_intent_source_evidence(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _accepted_intent_shaping_prompt(confirmed_intent: Mapping[str, Any], *, fallback_title: str) -> str:
+    """Return proposal-shaping text from accepted intent facts only."""
+
+    rows: list[str] = []
+    for key, label in (
+        ("title", "Product"),
+        ("product_story", "Product story"),
+        ("state_object", "State object"),
+        ("first_path", "First complete path"),
+        ("proof_boundary", "Proof boundary"),
+        ("problem", "Problem"),
+        ("customer", "Customer"),
+        ("opportunity", "Opportunity"),
+        ("product_view", "Product view"),
+    ):
+        value = " ".join(str(confirmed_intent.get(key) or "").split()).strip()
+        if value:
+            rows.append(f"{label}: {value}")
+    for key, label in (
+        ("human_actors", "Human actors"),
+        ("external_systems", "External systems"),
+        ("internal_systems", "Internal product systems"),
+        ("assumptions", "Critical assumptions"),
+        ("non_goals", "Non-goals"),
+        ("success_metrics", "Success metrics"),
+        ("evidence_requirements", "Evidence requirements"),
+    ):
+        values = confirmed_intent.get(key)
+        if isinstance(values, Sequence) and not isinstance(values, (str, bytes)):
+            text = "; ".join(" ".join(str(item).split()).strip() for item in values if str(item).strip())
+            if text:
+                rows.append(f"{label}: {text}")
+    return ". ".join(rows).strip() or fallback_title
+
+
 def build_greenfield_proposal(
     *,
     repo_root: Path,
@@ -309,7 +344,7 @@ def build_greenfield_proposal(
             "prompt-only confirmed proposal construction is disabled."
         )
     intent_title = str(confirmed_intent.get("title") or "").strip() or "Greenfield Project"
-    intent_prompt = str(prompt or confirmed_intent.get("prompt") or intent_title).strip() or intent_title
+    intent_prompt = _accepted_intent_shaping_prompt(confirmed_intent, fallback_title=intent_title)
     evidence = _confirmed_intent_source_evidence(root)
     proposal = build_confirmed_greenfield_proposal(
         prompt=intent_prompt,

@@ -3,12 +3,9 @@
 from __future__ import annotations
 
 import copy
-import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
-from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_confirmed_completion_text_model as completion_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
@@ -23,8 +20,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_domain_intelligenc
     repair_domain_intelligence_sentence_lists,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import (
-    project_specific_actor_labels,
     value_starts_with_generic_actor_label,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_label_repair import (
+    repair_generic_actor_labels as _repair_generic_actor_labels,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
@@ -50,6 +49,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_projection import (
     refresh_confirmed_diagram_projection as _refresh_confirmed_diagram_projection,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_modal_grammar_repair import (
+    repair_generated_modal_grammar as _repair_generated_modal_grammar,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import (
     proof_boundary_is_weak as _proof_boundary_is_weak,
 )
@@ -69,7 +71,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
@@ -542,82 +543,6 @@ def _repair_preflight_issues(
     return changed
 
 
-_MODAL_GRAMMAR_SKIP_KEYS = frozenset(
-    {
-        "actor_id",
-        "component_id",
-        "diagram_id",
-        "id",
-        "kind",
-        "link_state",
-        "owner",
-        "path",
-        "prompt",
-        "prompt_source",
-        "raw_prompt",
-        "release_id",
-        "slug",
-        "source",
-        "source_path",
-        "source_text",
-        "target_workstream_titles",
-        "title",
-        "watch_paths",
-        "workstream_id",
-        "workstream_ids",
-        "workstream_titles",
-    }
-)
-
-
-def _repair_generated_modal_grammar(value: Any, *, parent_key: str = "") -> bool:
-    """Repair modal and infinitive verb-form drift in generated prose leaves."""
-
-    if isinstance(value, dict):
-        changed = False
-        for key, child in list(value.items()):
-            key_text = str(key)
-            if _skip_modal_grammar_repair_key(key_text):
-                continue
-            if isinstance(child, str):
-                repaired = _repair_modal_grammar_text(child)
-                if repaired != child:
-                    value[key] = repaired
-                    changed = True
-                continue
-            if _repair_generated_modal_grammar(child, parent_key=key_text):
-                changed = True
-        return changed
-    if isinstance(value, list):
-        changed = False
-        for index, child in enumerate(list(value)):
-            if isinstance(child, str):
-                repaired = _repair_modal_grammar_text(child)
-                if repaired != child:
-                    value[index] = repaired
-                    changed = True
-                continue
-            if _repair_generated_modal_grammar(child, parent_key=parent_key):
-                changed = True
-        return changed
-    if isinstance(value, str):
-        return False
-    return False
-
-
-def _skip_modal_grammar_repair_key(key: str) -> bool:
-    text = key.casefold().strip()
-    if text in _MODAL_GRAMMAR_SKIP_KEYS:
-        return True
-    return text.endswith(("_id", "_ids", "_slug", "_path", "_paths"))
-
-
-def _repair_modal_grammar_text(value: str) -> str:
-    repaired = repair_modal_base_form_drift(value)
-    repaired = repair_infinitive_base_form_drift(repaired)
-    return repaired
-
-
 def _repair_release_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
@@ -862,54 +787,6 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             "summary",
             fallback=f"Shows how {completion_text.project_title(proposal)} preserves first-path state, evidence, and proof.",
         )
-    return changed
-
-
-def _repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    actor_rows = text_values(intent.get("human_actors")) if isinstance(intent, Mapping) else []
-    labels = project_specific_actor_labels(intent if isinstance(intent, Mapping) else {})
-    if not labels:
-        labels = project_specific_actor_labels(
-            {
-                "title": completion_text.project_title(proposal),
-                "human_actors": proposal.get("human_actors"),
-            }
-        )
-    if not labels:
-        return False
-    actor_rows = actor_rows or labels
-    fallback = labels[0]
-    summary = "; ".join(labels[:2])
-    changed = False
-    project_focus = completion_text.project_title(proposal)
-    for row in dict_rows(proposal.get("risks")):
-        for key in ("statement", "mitigation"):
-            value = row.get(key)
-            repaired = localize_leading_actor_reference(
-                str(value or ""),
-                actor_rows=actor_rows,
-                project_focus=project_focus,
-                fallback=fallback,
-                sentence_context=True,
-            )
-            if repaired and repaired != _clean(value):
-                row[key] = repaired
-                changed = True
-    for row in dict_rows(proposal.get("backlog")):
-        if value_starts_with_generic_actor_label(row.get("customer")):
-            row["customer"] = summary
-            changed = True
-        intelligence = row.get("domain_intelligence")
-        if not isinstance(intelligence, dict):
-            continue
-        actors = list(text_values(intelligence.get("actors")))
-        if actors and any(value_starts_with_generic_actor_label(value) for value in actors):
-            intelligence["actors"] = labels[:3]
-            changed = True
-        elif not actors:
-            intelligence["actors"] = labels[:2]
-            changed = True
     return changed
 
 

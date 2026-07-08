@@ -146,7 +146,12 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
         verified_markdown = _verified_markdown_source_for_json(source, payload)
         if verified_markdown:
             markdown_path, markdown_text = verified_markdown
-            intent = parse_confirmed_intent_text(markdown_text, prompt=prompt, fallback_title=fallback_title)
+            intent = parse_confirmed_intent_text(
+                markdown_text,
+                prompt=prompt,
+                fallback_title=fallback_title,
+                _allow_prompt_validation_recovery=False,
+            )
             envelope = build_product_intent_envelope(
                 intent,
                 source_text=markdown_text,
@@ -162,6 +167,7 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
             _json_projection_payload(payload),
             prompt=prompt,
             fallback_title=fallback_title,
+            allow_prompt_validation_recovery=False,
         )
         envelope = build_product_intent_envelope(
             intent,
@@ -170,7 +176,12 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
             source_format="json",
         )
         return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
-    intent = parse_confirmed_intent_text(text, prompt=prompt, fallback_title=fallback_title)
+    intent = parse_confirmed_intent_text(
+        text,
+        prompt=prompt,
+        fallback_title=fallback_title,
+        _allow_prompt_validation_recovery=False,
+    )
     envelope = build_product_intent_envelope(
         intent,
         source_text=text,
@@ -188,11 +199,22 @@ def confirmed_intent_product_facts(record: ConfirmedIntentRecord | Mapping[str, 
     return dict(record)
 
 
-def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
+def normalize_confirmed_intent(
+    value: object,
+    *,
+    prompt: str = "",
+    fallback_title: str = "",
+    allow_prompt_validation_recovery: bool = True,
+) -> dict[str, Any]:
     """Normalize JSON or already parsed confirmation data into the builder contract."""
 
     if isinstance(value, str):
-        return parse_confirmed_intent_text(value, prompt=prompt, fallback_title=fallback_title)
+        return parse_confirmed_intent_text(
+            value,
+            prompt=prompt,
+            fallback_title=fallback_title,
+            _allow_prompt_validation_recovery=allow_prompt_validation_recovery,
+        )
     if not isinstance(value, Mapping):
         raise ValueError("confirmed intent must be Markdown text or a JSON object")
     payload = _json_projection_payload(value) if is_product_intent_envelope(value) else dict(value)
@@ -241,7 +263,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         result,
         prompt=prompt,
         fallback_title=fallback_title,
-        allow_prompt_recovery=True,
+        allow_prompt_recovery=allow_prompt_validation_recovery,
     )
 
 
