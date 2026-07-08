@@ -647,11 +647,21 @@ def render_quality_frontier_svg(report: Mapping[str, Any]) -> str:
     if spotlight_pairs:
         for index, row in enumerate(spotlight_pairs):
             y = spotlight_y + spotlight_row_top + index * spotlight_row_step
+            if live_proof:
+                spotlight_value = (
+                    f"R {_fmt_delta(float(row['delta_recall']), digits=3)} | "
+                    f"{_signed_human_duration_label(float(row['delta_latency']))}"
+                )
+            else:
+                spotlight_value = (
+                    f"R {_fmt_delta(float(row['delta_recall']), digits=3)} | "
+                    f"{float(row['delta_latency']):+.1f} ms"
+                )
             body.extend(
                 [
                     f'<rect x="{right_x + 24}" y="{y - 18}" width="{right_w - 48}" height="34" rx="10" fill="{_PANEL}" stroke="{_GRID}" stroke-width="1"/>',
                     f'<text x="{right_x + 38}" y="{y + 2}" class="label">{_esc(_short_label(str(row["label"]), limit=22))}</text>',
-                    f'<text x="{right_inner_right - 16}" y="{y + 2}" class="small" text-anchor="end">{_esc((f"R {_fmt_delta(float(row['delta_recall']), digits=3)} | {_signed_human_duration_label(float(row['delta_latency']))}") if live_proof else (f"R {_fmt_delta(float(row['delta_recall']), digits=3)} | {float(row['delta_latency']):+.1f} ms"))}</text>',
+                    f'<text x="{right_inner_right - 16}" y="{y + 2}" class="small" text-anchor="end">{_esc(spotlight_value)}</text>',
                 ]
             )
 

@@ -45,6 +45,7 @@ def looks_like_confirmation_action(value: object) -> bool:
             "reject ",
             "confirmed cli after confirmation:",
             "next step",
+            "choose one",
         )
     )
 

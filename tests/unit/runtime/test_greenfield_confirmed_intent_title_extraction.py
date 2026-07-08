@@ -75,3 +75,40 @@ Prove that a submitted permit case can move through triage, review, supervisor t
     assert "confirm-create-the-governed-project-records" not in rendered
     assert "permit intake workspace" in rendered.casefold()
     assert greenfield_quality_issues(proposal) == []
+
+
+def test_confirmed_intent_parser_does_not_promote_choose_one_actions_to_title() -> None:
+    prompt = "Create a greenfield project for a municipal permit intake and review workspace."
+    intent = parse_confirmed_intent_text(
+        """# Municipal Permit Intake and Review Workspace
+
+## Product story
+Residents need a clear way to submit permit requests, and municipal staff need a shared workspace to review them.
+
+## State object
+A permit case records applicant details, property information, status, blockers, review comments, and decision history.
+
+## First complete path
+A resident submits a permit request, staff review it, and the case closes with an approval or revision request.
+
+## Proof boundary
+Prove that one submitted permit case can move through review and final decision with durable state.
+
+## Choose one
+- **CONFIRM** - Accept this interpretation.
+- **EDIT** - Reply with corrections.
+- **REJECT** - Stop here.
+""",
+        prompt=prompt,
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=ROOT,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Municipal Permit Intake and Review Workspace"
+    assert "CONFIRM" not in rendered
+    assert "Municipal Permit Intake and Review Workspace" in rendered

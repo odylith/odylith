@@ -136,12 +136,12 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Critical assumptions" in output
     assert "Ambiguities" in output
     assert "Proof boundary" in output
-    assert "Next step" in output
-    assert "- `Confirm`: if this interpretation is right" in output
-    assert "compile the ProductCreateTransaction" in output
-    assert "- `Edit`: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
-    assert "rebuild the transaction" in output
-    assert "- `Reject`: if this is not the intended product" in output
+    assert "Choose one" in output
+    assert "- **CONFIRM** - Accept this interpretation." in output
+    assert "compile a validated ProductCreateTransaction" in output
+    assert "- **EDIT** - Reply with corrections." in output
+    assert "rebuilds before asking again" in output
+    assert "- **REJECT** - Stop here." in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
     assert "Original user intent" not in output
@@ -365,8 +365,10 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert payload["host_reasoning_task"]["format_contract"]
     assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
     assert "Product story; State object; First complete path; Human actors" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "three separate bullet lines: Confirm, Edit, and Reject" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "three separate bullet lines for Confirm, Edit, and Reject" in " ".join(payload["host_reasoning_task"]["must_include"])
+    assert "visually highlighted command labels: CONFIRM, EDIT, and REJECT" in " ".join(
+        payload["host_reasoning_task"]["format_contract"]
+    )
+    assert "three separate bullet lines for CONFIRM, EDIT, and REJECT" in " ".join(payload["host_reasoning_task"]["must_include"])
     assert "dump a generic template or domain catalog" in payload["host_reasoning_task"]["must_not"]
     assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
     assert "use Markdown emphasis or code formatting around normal domain words" in payload["host_reasoning_task"]["must_not"]
@@ -1171,8 +1173,8 @@ def test_greenfield_create_cli_requires_compiled_transaction_before_writes(tmp_p
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "requires --transaction-file or --transaction-json with --transaction-hash" in out
-    assert "post-confirm create only commits an already compiled ProductCreateTransaction" in out
+    assert "greenfield create cannot accept post-confirm inputs: --release" in out
+    assert "create only verifies the hash and commits the compiled package" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
