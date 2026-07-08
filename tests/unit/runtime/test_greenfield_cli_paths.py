@@ -142,9 +142,9 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "**Choose one command**" in output
     assert "- **CONFIRM** - Accept this interpretation." in output
     assert "compiles a validated ProductCreateTransaction" in output
-    assert "- **EDIT** - Reply with corrections." in output
+    assert "- **EDIT** - Correct the interpretation." in output
     assert "rebuilds before asking again" in output
-    assert "- **REJECT** - Stop here." in output
+    assert "- **REJECT** - Stop. Odylith writes no governed records." in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
     assert "Original user intent" not in output
@@ -249,6 +249,17 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
+    assert "**Choose one command**" in output
+    assert "- **CONFIRM** - Compile the ProductCreateTransaction from this proposal" in output
+    assert "- **EDIT** - Correct the proposal evidence" in output
+    assert "- **REJECT** - Stop. No governed records are written." in output
+    choose_index = output.index("**Choose one command**")
+    confirm_index = output.index("- **CONFIRM**", choose_index)
+    edit_index = output.index("- **EDIT**", confirm_index)
+    reject_index = output.index("- **REJECT**", edit_index)
+    transaction_index = output.index("Transaction path", reject_index)
+    assert choose_index < confirm_index < edit_index < reject_index < transaction_index
+    assert output.count("**Choose one command**") == 1
     assert "compile-transaction" in output
     assert "greenfield create --repo-root ." not in output
     assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
@@ -336,6 +347,17 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Planned components" in output
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
+    assert "**Choose one command**" in output
+    assert "- **CONFIRM** - Compile the ProductCreateTransaction from this proposal" in output
+    assert "- **EDIT** - Correct the proposal evidence" in output
+    assert "- **REJECT** - Stop. No governed records are written." in output
+    choose_index = output.index("**Choose one command**")
+    confirm_index = output.index("- **CONFIRM**", choose_index)
+    edit_index = output.index("- **EDIT**", confirm_index)
+    reject_index = output.index("- **REJECT**", edit_index)
+    transaction_index = output.index("Transaction path", reject_index)
+    assert choose_index < confirm_index < edit_index < reject_index < transaction_index
+    assert output.count("**Choose one command**") == 1
     assert "compile-transaction" in output
     assert "odylith greenfield create --repo-root ." not in output
     assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
@@ -699,11 +721,13 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert [name for name, _call in calls] == ["build", "compile"]
     assert calls[0][1]["require_completion_ready"] is False
     assert calls[1][1]["proposal_ready"] is True
-    assert "ProductCreateTransaction ready" in output
+    assert "ProductCreateTransaction ready for final command" in output
     assert transaction.transaction_hash in output
-    assert "- **CONFIRM** - Commit this exact validated package" in output
-    assert "- **EDIT** - Treat edits as new evidence" in output
-    assert "- **REJECT** - Stop here. No governed records are written" in output
+    assert "- command rule: choose exactly one of CONFIRM, EDIT, or REJECT" in output
+    assert "- **CONFIRM** - Commit this exact validated package now." in output
+    assert "Odylith verifies the hash and writes the transaction atomically" in output
+    assert "- **EDIT** - Do not commit. Treat edits as new evidence" in output
+    assert "- **REJECT** - Stop. No governed records are written" in output
     choose_index = output.index("**Choose one command**")
     confirm_index = output.index("- **CONFIRM**", choose_index)
     edit_index = output.index("- **EDIT**", confirm_index)

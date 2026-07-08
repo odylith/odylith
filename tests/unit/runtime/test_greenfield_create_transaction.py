@@ -533,6 +533,93 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
 
 
+def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repair(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = {
+        **_proposal(),
+        "intent": {
+            "title": "GLP-1 Companion",
+            "prompt": "Build a GLP-1 companion that keeps GLP-1 medication tracking reviewable.",
+        },
+        "confirmed_intent": {
+            "product_story": "GLP-1 patients need a reviewable medication tracking path.",
+        },
+    }
+    package = _package(proposal)
+    backlog_result = dict(package.backlog_result or {})
+    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
+    backlog_result["created"] = [
+        {**dict(row), "idea_path": str(idea_path)}
+        for row in backlog_result.get("created", [])
+        if isinstance(row, dict)
+    ]
+    backlog_result["idea_files"] = {str(idea_path): "GLP-1 companion review path\n"}
+    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
+    backlog_result["backlog_index_text"] = "| B-001 | Prove GLP-1 companion review path |\n"
+    package = replace(
+        package,
+        backlog_result=backlog_result,
+        traceability_plan=greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=backlog_result["created"],
+            diagram_ids=(),
+        ),
+    )
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("compiled create must not repair source casing after confirmation")
+
+    def fake_materialize(**_kwargs: Any) -> dict[str, Any]:
+        return {
+            "created": True,
+            "umbrella_id": "B-001",
+            "program_path": str(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json"),
+            "waves": list(package.program_result["waves"]),
+            "program_count": 1,
+        }
+
+    monkeypatch.setattr(greenfield_apply_write.greenfield_source_casing, "proposal_source_casing_text", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_source_casing, "restore_source_casing_in_public_copy", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_source_casing, "package_with_source_casing", forbidden)
+    monkeypatch.setattr(greenfield_programs, "create_greenfield_program", forbidden)
+    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
+    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "record_compiled_greenfield_acceptance",
+        _record_compiled_memory_for_readback,
+    )
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
+
+    result = greenfield_apply_write.write_greenfield_proposal(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="",
+        tribunal={"status": "passed", "issues": []},
+        backlog_result=backlog_result,
+        prewrite_package=package,
+    )
+
+    assert result["next_steps"] == package.next_steps_preview
+    assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
+
+
 def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceability(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

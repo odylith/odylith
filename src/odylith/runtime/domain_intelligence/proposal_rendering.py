@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
+from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 _PROJECT_REQUIREMENTS_TEXT_PREVIEW_LIMIT = 90
@@ -178,13 +179,27 @@ def _format_proposal_preview_text(
     if diagram_lines:
         lines.append("- Architecture review views:")
         lines.extend(f"  - {line}" for line in diagram_lines)
-    lines.extend(["", "Gate 4 - Choose One"])
-    lines.append("- **CONFIRM** - Compile the ProductCreateTransaction if Gate 1 and Gate 2 look right.")
-    lines.append("- **EDIT** - Answer the Gate 2 choices that are wrong, then rebuild from the sharper intent.")
-    lines.append("- **REJECT** - Stop here with no governed records written.")
-    lines.append("- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.")
-    lines.append("- Command after **CONFIRM**:")
-    lines.append(f"  {apply_json_command}")
+    lines.extend(
+        [
+            "",
+            *format_confirmation_choice_lines(
+                (
+                    (
+                        "CONFIRM",
+                        "Compile the ProductCreateTransaction if the interpretation and clarification choices are right.",
+                    ),
+                    (
+                        "EDIT",
+                        "Correct the choices that are wrong, then rebuild from the sharper intent.",
+                    ),
+                    ("REJECT", "Stop. No governed records are written."),
+                )
+            ),
+            "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
+            "Command after **CONFIRM**",
+            f"- Compile transaction: {apply_json_command}",
+        ]
+    )
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -465,6 +480,21 @@ def _format_governed_proposal_text(
         rendered = _render_evidence_item(item, "question")
         if rendered:
             lines.append(f"- Question: {rendered}")
+    lines.extend(
+        [
+            "",
+            *format_confirmation_choice_lines(
+                (
+                    (
+                        "CONFIRM",
+                        "Compile the ProductCreateTransaction from this proposal; Odylith shows the hash-ready final command before any records are written.",
+                    ),
+                    ("EDIT", "Correct the proposal evidence, then rebuild before compiling a transaction."),
+                    ("REJECT", "Stop. No governed records are written."),
+                )
+            ),
+        ]
+    )
     lines.extend(["", "Transaction path"])
     lines.append("No governed records changed. Transaction path:")
     request_commands = request_context.get("apply_commands", [])

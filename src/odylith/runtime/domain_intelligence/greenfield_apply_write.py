@@ -60,7 +60,7 @@ def write_greenfield_proposal(
     """Apply accepted Radar, Registry, Atlas, release, and memory records."""
 
     completion_quality_debt: list[str] = []
-    source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
+    source_text = "" if prewrite_package is not None else greenfield_source_casing.proposal_source_casing_text(proposal)
     if source_text:
         restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
             proposal,
@@ -74,8 +74,6 @@ def write_greenfield_proposal(
         )
         if isinstance(restored_backlog_result, Mapping):
             backlog_result = restored_backlog_result
-        if prewrite_package is not None:
-            prewrite_package = greenfield_source_casing.package_with_source_casing(prewrite_package)
     if prewrite_package is not None:
         _raise_for_incomplete_compiled_write_package(prewrite_package, release_selector=release_selector)
     validation_gate = _source_cased_validation_gate(tribunal, source_text=source_text)

@@ -189,22 +189,23 @@ def _transaction_confirmation_text(
     diagrams = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
     transaction_ref = output_path or "<compiled-transaction.json>"
     lines = [
-        "ProductCreateTransaction ready",
+        "ProductCreateTransaction ready for final command",
         f"- transaction hash: {summary['transaction_hash']}",
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
+        "- command rule: choose exactly one of CONFIRM, EDIT, or REJECT",
         "",
         *format_confirmation_choice_lines(
             (
                 (
                     "CONFIRM",
-                    "Commit this exact validated package with "
+                    "Commit this exact validated package now. Odylith verifies the hash and writes the transaction atomically with "
                     f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
                     f"--transaction-hash {summary['transaction_hash']} --confirm`.",
                 ),
-                ("EDIT", "Treat edits as new evidence, rebuild the package, and use the new hash."),
-                ("REJECT", "Stop here. No governed records are written."),
+                ("EDIT", "Do not commit. Treat edits as new evidence, rebuild the package, and use the new hash."),
+                ("REJECT", "Stop. No governed records are written."),
             )
         ),
     ]

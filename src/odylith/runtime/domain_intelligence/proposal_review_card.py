@@ -71,8 +71,8 @@ def format_visible_proposal_card_text(
                         "CONFIRM",
                         "Compile the ProductCreateTransaction from this preview; Odylith will show the transaction hash before any records are written.",
                     ),
-                    ("EDIT", "Answer the decisions above, then rerun greenfield propose."),
-                    ("REJECT", "Stop here. No governed records are written."),
+                    ("EDIT", "Correct the decisions above, then rerun greenfield propose."),
+                    ("REJECT", "Stop. No governed records are written."),
                 )
             ),
             "",

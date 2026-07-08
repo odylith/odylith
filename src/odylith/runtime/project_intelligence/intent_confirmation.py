@@ -132,10 +132,10 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             (
                 (
                     "CONFIRM",
-                    "Accept this interpretation. Odylith compiles a validated ProductCreateTransaction and shows its hash before any governed records are written.",
+                    "Accept this interpretation. Odylith compiles a validated ProductCreateTransaction, then shows its hash before any governed records are written.",
                 ),
-                ("EDIT", "Reply with corrections. Odylith treats edits as new evidence and rebuilds before asking again."),
-                ("REJECT", "Stop here. Odylith writes no governed records."),
+                ("EDIT", "Correct the interpretation. Odylith treats edits as new evidence and rebuilds before asking again."),
+                ("REJECT", "Stop. Odylith writes no governed records."),
             )
         ),
     ]
