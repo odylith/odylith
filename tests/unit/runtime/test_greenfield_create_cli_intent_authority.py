@@ -7,7 +7,7 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
-from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
@@ -53,6 +53,7 @@ def _compiled_transaction(repo_root: Path) -> Any:
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
+        baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(repo_root),
         backlog_result={
             "created": [{"title": "Prove permit review path", "idea_id": "B-001"}],
             "idea_files": {},
@@ -74,19 +75,14 @@ def _compiled_transaction(repo_root: Path) -> Any:
 
 
 @pytest.mark.parametrize(
-    ("damage", "expected_error"),
-    (
-        ("missing_sidecar", "structured sidecar is not readable"),
-        ("invalid_sidecar", "structured sidecar is invalid"),
-        ("source_drift", "source hash changed"),
-    ),
+    "damage",
+    ("missing_sidecar", "invalid_sidecar", "source_drift"),
 )
-def test_greenfield_create_cli_rejects_intent_authority_drift_before_writes(
+def test_greenfield_create_cli_uses_transaction_authority_not_mutable_intent_files(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
     damage: str,
-    expected_error: str,
 ) -> None:
     transaction = _compiled_transaction(tmp_path)
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
@@ -108,22 +104,16 @@ def test_greenfield_create_cli_rejects_intent_authority_drift_before_writes(
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         calls.append("forbidden")
-        raise AssertionError("authority drift must fail before build, compile, repair, transaction, or write")
+        raise AssertionError("create must not build, compile, repair, or apply proposal artifacts")
 
-    class ForbiddenTransaction:
-        def __init__(self, *_args: Any, **_kwargs: Any) -> None:
-            forbidden()
+    def fake_compiled_write(**_kwargs: Any) -> dict[str, Any]:
+        calls.append("compiled_write")
+        return {"status": "created"}
 
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "materialize_precompiled_greenfield_create_baseline",
-        forbidden,
-    )
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", ForbiddenTransaction)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", fake_compiled_write)
 
     rc = greenfield_proposals.main(
         [
@@ -140,10 +130,11 @@ def test_greenfield_create_cli_rejects_intent_authority_drift_before_writes(
     )
 
     payload = json.loads(capsys.readouterr().out)
-    assert rc == 2
-    assert expected_error in payload["error"]
+    assert rc == 0
+    assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
+    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
     assert "commit_failure" not in payload
-    assert calls == []
+    assert calls == ["compiled_write"]
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

@@ -434,18 +434,12 @@ def load_product_create_transaction_args(
     repo_root: Path,
 ) -> ProductCreateTransaction | None:
     transaction_file = str(getattr(args, "transaction_file", "") or "").strip()
-    transaction_json = str(getattr(args, "transaction_json", "") or "").strip()
-    if transaction_file and transaction_json:
-        raise ValueError("provide either --transaction-file or --transaction-json, not both")
-    if not transaction_file and not transaction_json:
+    if not transaction_file:
         return None
-    if transaction_file:
-        path = Path(transaction_file).expanduser()
-        if not path.is_absolute():
-            path = repo_root / path
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    else:
-        payload = json.loads(transaction_json)
+    path = Path(transaction_file).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    payload = json.loads(path.read_text(encoding="utf-8"))
     transaction = product_create_transaction_from_dict(payload)
     expected_hash = str(getattr(args, "transaction_hash", "") or "").strip()
     if not expected_hash:

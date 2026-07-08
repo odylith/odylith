@@ -88,11 +88,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="JSON ProductCreateTransaction compiled before confirmation.",
     )
     create.add_argument(
-        "--transaction-json",
-        default="",
-        help="Inline JSON ProductCreateTransaction compiled before confirmation.",
-    )
-    create.add_argument(
         "--transaction-hash",
         default="",
         help="Expected ProductCreateTransaction hash; required by confirmation UIs and checked before writes.",
@@ -248,10 +243,7 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
 
 def _post_confirm_create_overrides(args: argparse.Namespace) -> list[str]:
     overrides: list[str] = []
-    has_transaction_ref = bool(
-        str(getattr(args, "transaction_file", "") or "").strip()
-        or str(getattr(args, "transaction_json", "") or "").strip()
-    )
+    has_transaction_ref = bool(str(getattr(args, "transaction_file", "") or "").strip())
     if has_transaction_ref and str(getattr(args, "prompt", "") or "").strip():
         overrides.append("--prompt")
     if str(getattr(args, "release", "") or "").strip():
@@ -414,7 +406,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             transaction = greenfield_proposals.load_product_create_transaction_args(args, repo_root=repo_root)
             if transaction is None:
                 raise ValueError(
-                    "greenfield create requires --transaction-file or --transaction-json with --transaction-hash. "
+                    "greenfield create requires --transaction-file with --transaction-hash. "
                     "Run `odylith greenfield compile-transaction --repo-root . --prompt "
                     + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
                     + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md "

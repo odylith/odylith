@@ -383,8 +383,8 @@ def test_greenfield_create_help_forwards_commit_only_backend_flags(capsys) -> No
     assert "usage: odylith greenfield create" in output
     assert "--confirm" in output
     assert "--transaction-file" in output
-    assert "--transaction-json" in output
     assert "--transaction-hash" in output
+    assert "--transaction-json" not in output
     assert "--prompt" not in output
     assert "--intent-file" not in output
     assert "--release" not in output

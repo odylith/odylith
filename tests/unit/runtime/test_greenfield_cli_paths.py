@@ -1066,7 +1066,7 @@ def test_greenfield_create_cli_requires_visible_transaction_hash(
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
-def test_greenfield_create_cli_rejects_transaction_json_without_compiler_provenance(
+def test_greenfield_create_cli_rejects_transaction_file_without_compiler_provenance(
     tmp_path,
     monkeypatch,
     capsys,
@@ -1074,7 +1074,12 @@ def test_greenfield_create_cli_rejects_transaction_json_without_compiler_provena
     _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
     candidate = replace(transaction, compiler_provenance={})
     forged = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
-    raw_transaction = json.dumps(product_create_transaction_to_dict(forged), sort_keys=True)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True, exist_ok=True)
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(forged), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     def forbidden(*_args, **_kwargs):
         raise AssertionError("unapproved transaction provenance must fail before governed writes")
@@ -1092,8 +1097,8 @@ def test_greenfield_create_cli_rejects_transaction_json_without_compiler_provena
             "create",
             "--repo-root",
             str(tmp_path),
-            "--transaction-json",
-            raw_transaction,
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
             "--transaction-hash",
             forged.transaction_hash,
             "--confirm",

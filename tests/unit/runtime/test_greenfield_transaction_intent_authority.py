@@ -8,8 +8,6 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_create_commit
-from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
@@ -191,68 +189,29 @@ def test_product_create_transaction_rejects_inferred_material_custody(tmp_path: 
         _transaction(tmp_path, authority=mutated)
 
 
-def test_create_rejects_confirmed_intent_source_drift_before_write(
+@pytest.mark.parametrize("damage", ("missing_sidecar", "invalid_sidecar", "source_drift", "envelope_drift"))
+def test_product_create_transaction_intent_authority_uses_sealed_snapshot(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
+    damage: str,
 ) -> None:
     path, _facts, authority = _recorded_authority(tmp_path)
     transaction = _transaction(tmp_path, authority=authority)
-    path.write_text(_CONFIRMED_INTENT + "\n## Product story\nDrifted after compile.\n", encoding="utf-8")
-    write_calls: list[str] = []
-
-    def _baseline_should_not_run(_root: Path) -> None:
-        write_calls.append("baseline")
-        raise AssertionError("baseline creation must not run after intent authority drift")
-
-    class _TransactionShouldNotRun:
-        def __init__(self, _root: Path) -> None:
-            write_calls.append("transaction")
-            raise AssertionError("write transaction must not open after intent authority drift")
-
-    def _write_should_not_run(**_kwargs: Any) -> dict[str, Any]:
-        write_calls.append("write")
-        raise AssertionError("write path must not run after intent authority drift")
-
-    monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "materialize_precompiled_greenfield_create_baseline",
-        _baseline_should_not_run,
-    )
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", _TransactionShouldNotRun)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", _write_should_not_run)
-
-    with pytest.raises(ValueError, match="source hash changed"):
-        greenfield_create_commit.commit_greenfield_create_transaction(
-            repo_root=tmp_path,
-            transaction=transaction,
-            confirm=True,
-        )
-
-    assert write_calls == []
-
-
-def test_create_rejects_missing_structured_intent_sidecar_before_write(tmp_path: Path) -> None:
-    path, _facts, authority = _recorded_authority(tmp_path)
-    transaction = _transaction(tmp_path, authority=authority)
-    path.with_suffix(".json").unlink()
-
-    with pytest.raises(ValueError, match="structured sidecar is not readable"):
-        require_product_create_transaction_intent_authority(transaction, repo_root=tmp_path)
-
-
-def test_create_rejects_structured_envelope_drift_with_unchanged_markdown(tmp_path: Path) -> None:
-    path, _facts, authority = _recorded_authority(tmp_path)
-    transaction = _transaction(tmp_path, authority=authority)
     structured_path = path.with_suffix(".json")
-    payload = json.loads(structured_path.read_text(encoding="utf-8"))
-    payload["decision_record"] = {
-        **dict(payload["decision_record"]),
-        "fact_authority": "markdown_projection",
-    }
-    structured_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if damage == "missing_sidecar":
+        structured_path.unlink()
+    elif damage == "invalid_sidecar":
+        structured_path.write_text("{not-json", encoding="utf-8")
+    elif damage == "source_drift":
+        path.write_text(_CONFIRMED_INTENT + "\n## Product story\nDrifted after compile.\n", encoding="utf-8")
+    elif damage == "envelope_drift":
+        payload = json.loads(structured_path.read_text(encoding="utf-8"))
+        payload["decision_record"] = {
+            **dict(payload["decision_record"]),
+            "fact_authority": "markdown_projection",
+        }
+        structured_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="invalid|structured envelope changed"):
-        require_product_create_transaction_intent_authority(transaction, repo_root=tmp_path)
+    require_product_create_transaction_intent_authority(transaction, repo_root=tmp_path)
 
 
 def test_product_create_transaction_hash_rejects_intent_authority_mutation(tmp_path: Path) -> None:

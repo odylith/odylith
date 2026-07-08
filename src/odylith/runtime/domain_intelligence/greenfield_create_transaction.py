@@ -19,12 +19,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    is_product_intent_envelope,
-)
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    product_intent_authority_from_envelope,
-)
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     require_product_intent_authority,
 )
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -201,66 +195,15 @@ def require_product_create_transaction_intent_authority(
     *,
     repo_root: Path,
 ) -> None:
-    """Verify typed Product Intent custody before commit-only writes run."""
+    """Verify the typed Product Intent custody sealed inside the transaction.
 
+    The post-confirm commit path must not reread mutable confirmation Markdown
+    or sidecar JSON. Edits after compilation are new evidence for rebuilding a
+    transaction; they are not live authority for an already confirmed hash.
+    """
+
+    _ = repo_root
     require_product_intent_authority(transaction.intent_authority)
-    root = Path(repo_root).expanduser().resolve()
-    structured_path = _resolve_authority_path(
-        root,
-        str(transaction.intent_authority.get("structured_intent_path", "")).strip(),
-    )
-    markdown_path = _resolve_authority_path(
-        root,
-        str(transaction.intent_authority.get("markdown_source_path", "")).strip(),
-    )
-    if not structured_path.is_file():
-        raise ValueError(
-            "ProductCreateTransaction confirmed Product Intent authority structured sidecar is not readable; "
-            "rebuild the pre-confirm transaction before committing governed records"
-        )
-    if not markdown_path.is_file():
-        raise ValueError(
-            "ProductCreateTransaction confirmed Product Intent authority source file is not readable; "
-            "rebuild the pre-confirm transaction before committing governed records"
-        )
-    try:
-        envelope = json.loads(structured_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise ValueError(
-            "ProductCreateTransaction confirmed Product Intent authority structured sidecar is invalid; "
-            "rebuild the pre-confirm transaction before committing governed records"
-        ) from exc
-    if not is_product_intent_envelope(envelope):
-        raise ValueError(
-            "ProductCreateTransaction confirmed Product Intent authority structured sidecar is not a typed envelope; "
-            "rebuild the pre-confirm transaction before committing governed records"
-        )
-    actual_markdown_hash = hashlib.sha256(markdown_path.read_bytes()).hexdigest()
-    source_evidence = envelope.get("source_evidence") if isinstance(envelope.get("source_evidence"), Mapping) else {}
-    expected_markdown_hash = str(source_evidence.get("source_sha256", "")).strip()
-    if actual_markdown_hash != expected_markdown_hash:
-        raise ValueError(
-            "ProductCreateTransaction confirmed Product Intent authority source hash changed; "
-            "treat the edit as new evidence and rebuild the transaction"
-        )
-    actual_authority = product_intent_authority_from_envelope(
-        envelope,
-        structured_intent_path=structured_path,
-        markdown_source_path=markdown_path,
-    )
-    require_product_intent_authority(actual_authority)
-    if dict(actual_authority) != dict(transaction.intent_authority):
-        raise ValueError(
-            "ProductCreateTransaction confirmed Product Intent authority structured envelope changed; "
-            "treat the edit as new evidence and rebuild the transaction"
-        )
-
-
-def _resolve_authority_path(repo_root: Path, value: str) -> Path:
-    path = Path(value).expanduser()
-    if not path.is_absolute():
-        path = repo_root / path
-    return path
 
 
 def product_create_transaction_to_dict(transaction: ProductCreateTransaction) -> dict[str, Any]:
