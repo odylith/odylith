@@ -15,6 +15,7 @@ from typing import Any
 
 from odylith import __version__
 from odylith.runtime.common import derivation_provenance
+from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -33,6 +34,7 @@ PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "hash_verified_commit_only"
 _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_apply_prewrite.py",
     "runtime/domain_intelligence/greenfield_apply_write.py",
+    "runtime/domain_intelligence/greenfield_compiled_package_contract.py",
     "runtime/domain_intelligence/greenfield_compiled_write.py",
     "runtime/domain_intelligence/greenfield_completion_types.py",
     "runtime/domain_intelligence/greenfield_create_baseline.py",
@@ -113,9 +115,14 @@ def build_product_create_transaction(
 
     authority = dict(intent_authority) if isinstance(intent_authority, Mapping) else _authority_from_proposal(proposal)
     require_product_intent_authority(authority)
+    release_text = str(release_selector or "").strip()
+    greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
+        prewrite_package,
+        release_selector=release_text,
+    )
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
-        release_selector=str(release_selector or "").strip(),
+        release_selector=release_text,
         proposal=proposal,
         validation_gate=validation_gate,
         prewrite_package=prewrite_package,
@@ -272,6 +279,10 @@ def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductC
         transaction_hash=str(payload.get("transaction_hash", "")).strip(),
     )
     require_product_create_transaction_verified(transaction)
+    greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
+        transaction.prewrite_package,
+        release_selector=transaction.release_selector,
+    )
     return transaction
 
 

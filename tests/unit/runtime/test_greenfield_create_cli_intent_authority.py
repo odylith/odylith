@@ -11,11 +11,12 @@ from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
+from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
@@ -50,17 +51,11 @@ def _compiled_transaction(repo_root: Path) -> Any:
         "components": [],
         "diagrams": [],
     }
-    package = GreenfieldCompletionPackage(
+    package = compiled_greenfield_package_fixture(
         proposal=proposal,
-        release_selector="0.0.1",
+        repo_root=repo_root,
         baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(repo_root),
-        backlog_result={
-            "created": [{"title": "Prove permit review path", "idea_id": "B-001"}],
-            "idea_files": {},
-            "backlog_index": str(repo_root / "odylith/radar/source/INDEX.md"),
-            "backlog_index_text": "",
-            "_candidate_idea_specs": {},
-        },
+        brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=repo_root),
     )
     return build_product_create_transaction(
         proposal=proposal,

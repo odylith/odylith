@@ -3,14 +3,18 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
+from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
 def _write(path: Path, text: str) -> None:
@@ -141,6 +145,138 @@ def confirmed_intent_with_authority(
         markdown_source_path=markdown_path,
     )
     return intent
+
+
+def compiled_greenfield_package_fixture(
+    proposal: dict[str, Any],
+    *,
+    repo_root: Path,
+    release_selector: str = "0.0.1",
+    baseline_writes: dict[str, str] | None = None,
+    brand_asset_writes: dict[str, dict[str, str]] | None = None,
+) -> GreenfieldCompletionPackage:
+    idea_id = "B-001"
+    title = "Prove first accepted path"
+    idea_path = Path(repo_root) / "odylith/radar/source/ideas/B-001.md"
+    created_backlog = [{"title": title, "idea_id": idea_id, "idea_path": str(idea_path)}]
+    diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, dict)]
+    diagram_ids = tuple(f"D-{index:03d}" for index, _row in enumerate(diagram_rows, start=1))
+    rendered_atlas_sources = {
+        f"odylith/atlas/source/{str(row.get('slug', f'diagram-{index}')).strip() or f'diagram-{index}'}.mmd": (
+            "flowchart TD\n  A[\"Accepted input\"] --> B[\"Reviewed result\"]\n"
+        )
+        for index, row in enumerate(diagram_rows, start=1)
+    }
+    backlog_result = {
+        "created": created_backlog,
+        "idea_files": {str(idea_path): f"{title}\n"},
+        "backlog_index": str(Path(repo_root) / "odylith/radar/source/INDEX.md"),
+        "backlog_index_text": f"| {idea_id} | {title} |\n",
+        "_candidate_idea_specs": {
+            idea_id: backlog_contract.IdeaSpec(
+                path=idea_path,
+                metadata={"idea_id": idea_id, "status": "candidate"},
+                sections={"Problem", "Product View"},
+                section_bodies={
+                    "Problem": "The first accepted path needs a durable proof record.",
+                    "Product View": "The product exposes the accepted first path.",
+                },
+            )
+        },
+    }
+    release_id = "release-0-0-1"
+    return GreenfieldCompletionPackage(
+        proposal=proposal,
+        release_selector=release_selector,
+        rendered_atlas_sources=rendered_atlas_sources,
+        atlas_review_date="2026-07-07",
+        atlas_diagram_ids=diagram_ids,
+        backlog_result=backlog_result,
+        project_brief_record_text="# Compiled Greenfield Project Brief\n\n- accepted_at: prewrite\n",
+        accepted_project_preview={
+            "schema_version": "odylith.accepted_project.v1",
+            "origin": "greenfield",
+            "evidence_tier": "user_intent",
+            "accepted_at": "prewrite",
+            "title": str(proposal.get("intent", {}).get("title", "Compiled Greenfield Project")),
+            "source_launch": {"implementation_prompt": f"Start {idea_id} from the compiled transaction package."},
+            "created": {"workstreams": [{"idea_id": idea_id}], "components": [], "diagrams": list(diagram_ids)},
+            "validation_gate": {"status": "passed", "issues": []},
+        },
+        compass_memory_preview={
+            "version": "v1",
+            "kind": "decision",
+            "summary": "Accepted compiled greenfield transaction package.",
+            "ts_iso": "prewrite",
+            "author": "odylith",
+            "source": "domain-intelligence",
+            "workstreams": [idea_id],
+            "artifacts": ["odylith/runtime/source/project-brief.v1.md"],
+            "components": [],
+            "evidence_tier": "user_intent",
+            "work_category": "governance",
+        },
+        next_steps_preview={
+            "project_workstream_id": idea_id,
+            "start_workstream_id": idea_id,
+            "start_workstream_title": title,
+            "release_selector": release_selector,
+            "implementation_prompt": f"Start {idea_id} from the compiled transaction package.",
+            "operator_sequence": [f"Open {idea_id}.", "Implement the first accepted path."],
+            "coding_readiness_gates": ["Transaction package accepted."],
+            "verification_commands": [f"odylith context --repo-root . {idea_id}"],
+        },
+        program_result={
+            "created": True,
+            "dry_run": True,
+            "umbrella_id": idea_id,
+            "program_path": str(Path(repo_root) / f"odylith/radar/source/programs/{idea_id}.execution-waves.v1.json"),
+            "waves": [
+                {
+                    "wave_id": "W1",
+                    "label": "First accepted path",
+                    "status": "active",
+                    "summary": "Deliver the first accepted path.",
+                    "exit_gate": "The first accepted path is proven.",
+                    "validation": [],
+                    "depends_on": [],
+                    "primary_workstreams": [idea_id],
+                    "carried_workstreams": [],
+                    "in_band_workstreams": [],
+                    "gate_refs": [],
+                }
+            ],
+            "program_count": 0,
+        },
+        traceability_plan=greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=created_backlog,
+            diagram_ids=diagram_ids,
+        ),
+        baseline_writes=baseline_writes,
+        brand_asset_writes=brand_asset_writes,
+        prewrite_safety_preview={"status": "passed"},
+        release_target_result={
+            "dry_run": True,
+            "selector": release_selector,
+            "release": {
+                "release_id": release_id,
+                "status": "planning",
+                "version": release_selector,
+                "tag": f"v{release_selector}",
+                "name": f"Release {release_selector}",
+                "notes": "First compiled greenfield release.",
+                "created_utc": "2026-07-07T00:00:00Z",
+            },
+        },
+        release_assignment_result={
+            "dry_run": True,
+            "workstream_ids": [idea_id],
+            "events": [],
+            "release": {"release_id": release_id},
+        },
+        release_workstream_ids=(idea_id,),
+    )
 
 
 def _write_confirmed_intent(repo_root: Path) -> Path:

@@ -15,7 +15,6 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_intent_authority
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
@@ -26,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_snapshot_hash,
 )
+from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 
 
 _CONFIRMED_INTENT = """# Lab Evidence Review Workspace - Product Intent Confirmation
@@ -101,11 +101,9 @@ def _transaction(tmp_path: Path, *, authority: dict[str, Any] | None = None) -> 
         "components": [],
         "diagrams": [],
     }
-    package = GreenfieldCompletionPackage(
+    package = compiled_greenfield_package_fixture(
         proposal=proposal,
-        release_selector="0.0.1",
-        backlog_result={"created": []},
-        prewrite_safety_preview={"status": "passed"},
+        repo_root=tmp_path,
     )
     return build_product_create_transaction(
         proposal=proposal,

@@ -237,6 +237,25 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             created_backlog=created_backlog,
             diagram_ids=diagram_ids,
         ),
+        release_target_result={
+            "dry_run": True,
+            "selector": "0.0.1",
+            "release": {
+                "release_id": "release-0-0-1",
+                "status": "planning",
+                "version": "0.0.1",
+                "tag": "v0.0.1",
+                "name": "Release 0.0.1",
+                "notes": "First compiled greenfield release.",
+                "created_utc": "2026-07-07T00:00:00Z",
+            },
+        },
+        release_assignment_result={
+            "dry_run": True,
+            "workstream_ids": ["B-001"],
+            "events": [],
+            "release": {"release_id": "release-0-0-1"},
+        },
         release_workstream_ids=("B-001",),
     )
 
@@ -1395,49 +1414,41 @@ def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceabilit
     assert result["backlog_topology"] == ["legacy-traceability-applied"]
 
 
-def test_write_greenfield_proposal_rejects_incomplete_compiled_package_before_fallback(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_product_create_transaction_rejects_incomplete_compiled_package_before_confirm(tmp_path: Path) -> None:
     proposal = _proposal()
+    authority = _intent_authority(tmp_path, write_files=True)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = replace(_package(proposal), next_steps_preview=None)
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("post-confirm write must not regenerate missing transaction artifacts")
-
-    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
-
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
-        greenfield_apply_write.write_greenfield_proposal(
-            root=tmp_path,
+        build_product_create_transaction(
             proposal=proposal,
             release_selector="",
-            tribunal={"status": "passed", "issues": []},
+            validation_gate={"status": "passed", "issues": []},
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
         )
 
 
-def test_write_greenfield_proposal_rejects_missing_compiled_traceability_plan_before_fallback(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_product_create_transaction_rejects_missing_compiled_traceability_before_confirm(tmp_path: Path) -> None:
     proposal = _proposal()
+    authority = _intent_authority(tmp_path, write_files=True)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = replace(_package(proposal), traceability_plan=None)
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("post-confirm write must not rebuild missing traceability")
-
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
-
     with pytest.raises(ValueError, match="missing compiled traceability_plan"):
-        greenfield_apply_write.write_greenfield_proposal(
-            root=tmp_path,
+        build_product_create_transaction(
             proposal=proposal,
             release_selector="",
-            tribunal={"status": "passed", "issues": []},
+            validation_gate={"status": "passed", "issues": []},
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
         )
 
 
@@ -1456,23 +1467,22 @@ def test_write_greenfield_proposal_rejects_compiled_traceability_without_diagram
             }
         ],
     }
+    authority = _intent_authority(tmp_path, write_files=True)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = _package(proposal)
     traceability_plan = replace(package.traceability_plan, diagram_links=())
     package = replace(package, traceability_plan=traceability_plan)
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("post-confirm write must not rebuild missing diagram traceability")
-
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
-
     with pytest.raises(ValueError, match="missing compiled traceability diagram links"):
-        greenfield_apply_write.write_greenfield_proposal(
-            root=tmp_path,
+        build_product_create_transaction(
             proposal=proposal,
             release_selector="",
-            tribunal={"status": "passed", "issues": []},
+            validation_gate={"status": "passed", "issues": []},
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
         )
 
 

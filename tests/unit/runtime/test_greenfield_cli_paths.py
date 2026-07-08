@@ -13,7 +13,6 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
@@ -21,13 +20,16 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import _markdown_section
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
+from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 
 
 def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
@@ -721,18 +723,11 @@ def _compiled_transaction_for_cli(tmp_path: Path):
         "components": [],
         "diagrams": [],
     }
-    package = GreenfieldCompletionPackage(
+    package = compiled_greenfield_package_fixture(
         proposal=proposal,
-        release_selector="0.0.1",
-        rendered_atlas_sources={"odylith/atlas/source/permit-flow.mmd": "flowchart TD\n"},
-        component_registry_preview=({"component_id": "permit-file-registry"},),
-        backlog_result={
-            "created": [{"title": "Prove permit review path", "idea_id": "B-001"}],
-            "idea_files": {},
-            "backlog_index": str(tmp_path / "odylith/radar/source/INDEX.md"),
-            "backlog_index_text": "",
-            "_candidate_idea_specs": {},
-        },
+        repo_root=tmp_path,
+        baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(tmp_path),
+        brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=tmp_path),
     )
     transaction = build_product_create_transaction(
         proposal=proposal,

@@ -1,28 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
+from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_create_commit
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-    PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-    product_create_transaction_compiler_identity,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    POST_CONFIRM_QUALITY_MANIFEST_VERSION,
-)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
@@ -62,6 +52,8 @@ def _transaction(repo_root: Path) -> Any:
     package = compiled_greenfield_package_fixture(
         proposal=proposal,
         repo_root=repo_root,
+        baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(repo_root),
+        brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=repo_root),
     )
     return build_product_create_transaction(
         proposal=proposal,
@@ -75,57 +67,30 @@ def _transaction(repo_root: Path) -> Any:
     )
 
 
-def _replace_compiler_identity(transaction: Any, identity: Mapping[str, Any]) -> Any:
-    candidate = replace(
-        transaction,
-        compiler_provenance={
-            **dict(transaction.compiler_provenance),
-            "compiler_identity": dict(identity),
-        },
-    )
-    return replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
-
-
-def test_product_create_transaction_provenance_carries_compiler_identity(tmp_path: Path) -> None:
-    transaction = _transaction(tmp_path)
-
-    assert transaction.compiler_provenance["compiler_identity"] == product_create_transaction_compiler_identity()
-    assert (
-        transaction.compiler_provenance["compiler_identity"]["version"]
-        == PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
-    )
-
-
-@pytest.mark.parametrize(
-    "identity",
-    (
-        {},
-        {**product_create_transaction_compiler_identity(), "odylith_version": "0.0.0-stale"},
-        {**product_create_transaction_compiler_identity(), "source_files_sha256": "stale"},
-    ),
-)
-def test_commit_rejects_stale_compiler_identity_before_write(
+def test_commit_product_create_transaction_rolls_back_when_compiled_write_raises(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    identity: Mapping[str, Any],
 ) -> None:
-    transaction = _replace_compiler_identity(_transaction(tmp_path), identity)
+    transaction = _transaction(tmp_path)
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("stale compiler identity must fail before governed writes")
+    def fail_after_precompiled_writes(**_kwargs: Any) -> dict[str, Any]:
+        raise OSError("simulated compiled write failure")
 
     monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "materialize_precompiled_greenfield_create_baseline",
-        forbidden,
+        greenfield_compiled_write,
+        "write_compiled_greenfield_package",
+        fail_after_precompiled_writes,
     )
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
-    with pytest.raises(ValueError, match="compiler identity"):
+    with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc:
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
             transaction=transaction,
             confirm=True,
+            started_at=0.0,
         )
+
+    assert exc.value.rollback_status == "rolled_back"
+    assert not (tmp_path / "odylith/radar/source/INDEX.md").exists()
+    assert not (tmp_path / "odylith/technical-plans/INDEX.md").exists()
+    assert not (tmp_path / "odylith/surfaces/brand/manifest.json").exists()
