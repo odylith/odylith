@@ -652,6 +652,7 @@ def commit_greenfield_create_transaction(
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     require_product_create_transaction_verified(transaction)
+    _raise_for_unapproved_product_create_transaction(transaction)
     root = Path(repo_root).expanduser().resolve()
     started = time.perf_counter() if started_at is None else float(started_at)
     completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(
@@ -696,6 +697,19 @@ def commit_greenfield_create_transaction(
     result["post_confirm_quality_manifest"] = final_manifest
     result["product_create_transaction"] = transaction.summary()
     return result
+
+
+def _raise_for_unapproved_product_create_transaction(transaction: ProductCreateTransaction) -> None:
+    quality_status = str(transaction.quality_manifest.get("status", "")).strip()
+    validation_status = str(transaction.quality_manifest.get("validation_status", "")).strip()
+    hard_blocker = transaction.quality_manifest.get("hard_blocker")
+    issue_count = int(transaction.quality_manifest.get("issue_count", 0) or 0)
+    if quality_status == "passed" and validation_status in {"", "passed"} and not hard_blocker and issue_count == 0:
+        return
+    raise ValueError(
+        "ProductCreateTransaction quality manifest is not approved for commit; "
+        "rebuild the transaction before committing governed records"
+    )
 
 
 def _repair_confirmed_apply_payload(

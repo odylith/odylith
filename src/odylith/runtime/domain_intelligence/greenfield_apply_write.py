@@ -235,13 +235,14 @@ def write_greenfield_proposal(
             previews=compiled_component_previews,
             rendered_component_specs=rendered_component_specs,
         )
-    _raise_for_component_spec_quality(
-        root=root,
-        proposal=proposal,
-        components=components_created,
-        completion_priority_write_policy=completion_priority_write_policy,
-        completion_quality_debt=completion_quality_debt,
-    )
+    if not has_compiled_package:
+        _raise_for_component_spec_quality(
+            root=root,
+            proposal=proposal,
+            components=components_created,
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+        )
 
     release_id = "none"
     if isinstance(release_targeting, Mapping):
@@ -263,11 +264,12 @@ def write_greenfield_proposal(
         )
         if isinstance(restored_next_steps, Mapping):
             next_steps = restored_next_steps
-    _raise_for_final_next_steps_quality(
-        next_steps,
-        completion_priority_write_policy=completion_priority_write_policy,
-        completion_quality_debt=completion_quality_debt,
-    )
+    if not has_compiled_package:
+        _raise_for_final_next_steps_quality(
+            next_steps,
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+        )
     if _has_compiled_memory_package(prewrite_package):
         memory_record = record_compiled_greenfield_acceptance(
             repo_root=root,
@@ -287,26 +289,27 @@ def write_greenfield_proposal(
             validation_gate=validation_gate,
             source_launch_context=next_steps,
         )
-    _raise_for_final_package_quality(
-        root=root,
-        proposal=proposal,
-        release_selector=release_selector,
-        tribunal=tribunal,
-        backlog_result=backlog_result,
-        program_result=program_result,
-        release_bootstrap=release_bootstrap,
-        release_targeting=release_targeting,
-        first_release_workstreams=first_release_workstreams,
-        component_rows=components_created,
-        diagram_rows=diagram_rows,
-        diagram_ids=diagram_ids,
-        atlas_review_date=atlas_review_date,
-        memory_record=memory_record,
-        next_steps=next_steps,
-        validation_gate=validation_gate,
-        completion_priority_write_policy=completion_priority_write_policy,
-        completion_quality_debt=completion_quality_debt,
-    )
+    if not has_compiled_package:
+        _raise_for_final_package_quality(
+            root=root,
+            proposal=proposal,
+            release_selector=release_selector,
+            tribunal=tribunal,
+            backlog_result=backlog_result,
+            program_result=program_result,
+            release_bootstrap=release_bootstrap,
+            release_targeting=release_targeting,
+            first_release_workstreams=first_release_workstreams,
+            component_rows=components_created,
+            diagram_rows=diagram_rows,
+            diagram_ids=diagram_ids,
+            atlas_review_date=atlas_review_date,
+            memory_record=memory_record,
+            next_steps=next_steps,
+            validation_gate=validation_gate,
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+        )
     if completion_quality_debt:
         _persist_completion_quality_debt(root=root, debt=completion_quality_debt)
     brand_asset_paths = brand_assets.ensure_brand_assets(repo_root=root)

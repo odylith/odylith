@@ -288,6 +288,39 @@ def test_commit_product_create_transaction_is_commit_only(
     )
 
 
+def test_commit_product_create_transaction_rejects_unapproved_manifest_before_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base = _transaction()
+    transaction = build_product_create_transaction(
+        proposal=base.proposal,
+        release_selector=base.release_selector,
+        validation_gate=base.validation_gate,
+        prewrite_package=base.prewrite_package,
+        backlog_result=base.backlog_result,
+        quality_manifest={
+            "status": "failed",
+            "validation_status": "failed",
+            "issue_count": 1,
+            "hard_blocker": "component spec quality failed",
+        },
+    )
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("unapproved ProductCreateTransaction must not enter the write path")
+
+    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+
+    with pytest.raises(ValueError, match="quality manifest is not approved"):
+        greenfield_proposals.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=True,
+            started_at=0.0,
+        )
+
+
 def test_write_greenfield_proposal_uses_precompiled_program_plan(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -327,9 +360,9 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
         "record_compiled_greenfield_acceptance",
         lambda **_kwargs: {"event": {"ts_iso": "2026-07-07T00:00:00-07:00"}},
     )
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
@@ -454,9 +487,9 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
         "record_compiled_greenfield_acceptance",
         lambda **_kwargs: {"event": {"ts_iso": "2026-07-07T00:00:00-07:00"}},
     )
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
