@@ -778,6 +778,10 @@ def _passing_create_payload() -> dict[str, object]:
     }
 
 
+def _compiled_transaction_payload() -> dict[str, object]:
+    return {"product_create_transaction": {"transaction_hash": "compiled-hash"}}
+
+
 def _passing_package_lens_report() -> dict[str, object]:
     return {
         "version": "greenfield-quality-lenses-v1",
@@ -865,6 +869,8 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
     monkeypatch.setattr(module, "browser_surface_proof_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "compile-transaction" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_compiled_transaction_payload()), "")
         if "create" in command:
             create_envs.append(dict(env))
             payload = _passing_create_payload()
@@ -906,6 +912,8 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         commands.append(list(command))
+        if "compile-transaction" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_compiled_transaction_payload()), "")
         if "create" in command:
             create_envs.append(dict(env))
             payload = _passing_create_payload()
@@ -934,6 +942,9 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
     assert result.status == "passed"
     assert "## State object\nReport." in intent_text
     assert all("propose" not in command for command in commands)
+    assert any("compile-transaction" in command for command in commands)
+    assert any("--transaction-hash" in command for command in commands if "create" in command)
+    assert all("--intent-file" not in command for command in commands if "create" in command)
     assert len(create_envs) == 1
     assert RESCUE_PROBE_ENV not in create_envs[0]
 
@@ -948,6 +959,8 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "compile-transaction" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_compiled_transaction_payload()), "")
         if "create" in command:
             create_envs.append(dict(env))
             manifest = _passing_manifest()

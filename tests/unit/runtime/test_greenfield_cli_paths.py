@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import os
 import re
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -50,6 +52,22 @@ def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
         diagram["reviewed_watch_fingerprints"] = {path: "stubbed-official-refresh" for path in watched}
         diagram["render_source_fingerprint"] = "stubbed-official-refresh"
     catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _approved_quality_manifest() -> dict[str, object]:
+    return {
+        "version": greenfield_create_commit.POST_CONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": greenfield_create_commit.POST_CONFIRM_ENGINE_VERSION,
+        "status": "passed",
+        "validation_status": "passed",
+        "issue_count": 0,
+        "hard_blocker": None,
+        "write_transaction": {
+            "status": "not_started",
+            "rollback_guard": "enabled",
+            "prewrite_clean_before_commit": True,
+        },
+    }
 
 
 def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None = None) -> None:
@@ -696,11 +714,8 @@ def _compiled_transaction_for_cli(tmp_path: Path):
         validation_gate={"status": "passed", "issues": []},
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
-        quality_manifest={
-            "status": "passed",
-            "validation_status": "passed",
-            "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
-        },
+        quality_manifest=_approved_quality_manifest(),
+        repo_root=tmp_path,
     )
     return proposal, transaction
 
@@ -1019,6 +1034,45 @@ def test_greenfield_create_cli_requires_visible_transaction_hash(
     assert "requires --transaction-hash" in payload["error"]
     assert "Product Intent Confirmation" not in payload["error"]
     assert "post-confirm completion" not in payload["error"]
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+
+
+def test_greenfield_create_cli_rejects_transaction_json_without_compiler_provenance(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    candidate = replace(transaction, compiler_provenance={})
+    forged = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
+    raw_transaction = json.dumps(product_create_transaction_to_dict(forged), sort_keys=True)
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("unapproved transaction provenance must fail before governed writes")
+
+    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-json",
+            raw_transaction,
+            "--transaction-hash",
+            forged.transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "compiler provenance is not approved for this repo" in payload["error"]
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

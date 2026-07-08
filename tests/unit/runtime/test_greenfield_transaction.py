@@ -29,7 +29,7 @@ def test_greenfield_apply_transaction_rolls_back_tooling_shell_outputs(tmp_path)
 
 
 def test_commit_transaction_rolls_back_partial_writes_when_write_boundary_fails(tmp_path, monkeypatch) -> None:
-    transaction = _transaction()
+    transaction = _transaction(repo_root=tmp_path)
 
     def partial_write_then_fail(**_kwargs: object) -> dict[str, object]:
         (tmp_path / "odylith/radar/source").mkdir(parents=True, exist_ok=True)

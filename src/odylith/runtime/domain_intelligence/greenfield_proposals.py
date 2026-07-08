@@ -630,6 +630,7 @@ def compile_greenfield_create_transaction(
         prewrite_package=prewrite_build.package,
         backlog_result=prewrite_build.backlog_result,
         quality_manifest=quality_manifest,
+        repo_root=root,
     )
     require_product_create_transaction_verified(transaction)
     return transaction

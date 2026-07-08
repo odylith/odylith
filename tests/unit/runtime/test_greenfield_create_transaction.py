@@ -22,8 +22,11 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import PRODUCT_CREATE_TRANSACTION_COMPILER
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_repo_fingerprint
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -237,6 +240,25 @@ def _write_compass_memory_event(root: Path, event: Mapping[str, Any]) -> Path:
     return stream_path
 
 
+def _approved_quality_manifest(**overrides: Any) -> dict[str, Any]:
+    manifest: dict[str, Any] = {
+        "version": greenfield_create_commit.POST_CONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": greenfield_create_commit.POST_CONFIRM_ENGINE_VERSION,
+        "status": "passed",
+        "validation_status": "passed",
+        "issue_count": 0,
+        "hard_blocker": None,
+        "elapsed_seconds": 12.3,
+        "write_transaction": {
+            "status": "not_started",
+            "rollback_guard": "enabled",
+            "prewrite_clean_before_commit": True,
+        },
+    }
+    manifest.update(overrides)
+    return manifest
+
+
 def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
     sections = {
         section: f"{title} keeps the first release path concrete and reviewable."
@@ -267,7 +289,7 @@ def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
     )
 
 
-def _transaction() -> Any:
+def _transaction(repo_root: Path | None = None) -> Any:
     proposal = _proposal()
     package = _package(proposal)
     return build_product_create_transaction(
@@ -276,12 +298,8 @@ def _transaction() -> Any:
         validation_gate={"status": "passed", "issues": []},
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
-        quality_manifest={
-            "status": "passed",
-            "validation_status": "passed",
-            "elapsed_seconds": 12.3,
-            "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
-        },
+        quality_manifest=_approved_quality_manifest(),
+        repo_root=repo_root or Path("/repo"),
     )
 
 
@@ -447,6 +465,8 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
 
     assert restored.transaction_hash == transaction.transaction_hash
     assert restored.verified
+    assert restored.compiler_provenance["compiler"] == PRODUCT_CREATE_TRANSACTION_COMPILER
+    assert restored.summary()["compiler_phase"] == "pre_confirm_compile"
     assert restored.prewrite_package.proposal == transaction.prewrite_package.proposal
     assert restored.quality_manifest["status"] == "passed"
     restored_preview = restored.prewrite_package.component_registry_preview
@@ -484,11 +504,8 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         validation_gate={"status": "passed", "issues": []},
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
-        quality_manifest={
-            "status": "passed",
-            "validation_status": "passed",
-            "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
-        },
+        quality_manifest=_approved_quality_manifest(),
+        repo_root=Path("/repo"),
     )
 
     restored = product_create_transaction_from_dict(product_create_transaction_to_dict(transaction))
@@ -528,7 +545,7 @@ def test_commit_product_create_transaction_is_commit_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = _transaction()
+    transaction = _transaction(repo_root=tmp_path)
     calls: list[dict[str, Any]] = []
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
@@ -591,7 +608,7 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = replace(_transaction(), transaction_hash="not-the-compiled-hash")
+    transaction = replace(_transaction(repo_root=tmp_path), transaction_hash="not-the-compiled-hash")
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
@@ -634,12 +651,80 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
 
 
 @pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        (lambda transaction, _tmp_path: replace(transaction, compiler_provenance={}), "compiler provenance"),
+        (
+            lambda transaction, tmp_path: replace(
+                transaction,
+                compiler_provenance={
+                    **dict(transaction.compiler_provenance),
+                    "repo_root_fingerprint": product_create_transaction_repo_fingerprint(tmp_path / "other-repo"),
+                },
+            ),
+            "compiler provenance",
+        ),
+    ),
+)
+def test_commit_product_create_transaction_rejects_unapproved_provenance_before_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation,
+    message: str,
+) -> None:
+    base = _transaction(repo_root=tmp_path)
+    candidate = mutation(base, tmp_path)
+    transaction = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("unapproved ProductCreateTransaction provenance must fail before write")
+
+    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match=message):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=True,
+            started_at=0.0,
+        )
+
+
+@pytest.mark.parametrize(
     "quality_manifest",
     (
         {"status": "failed", "validation_status": "passed", "issue_count": 0},
         {"status": "passed", "validation_status": "failed", "issue_count": 0},
         {"status": "passed", "validation_status": "passed", "issue_count": 0, "hard_blocker": "component spec"},
         {"status": "passed", "validation_status": "passed", "issue_count": 1},
+        _approved_quality_manifest(version=""),
+        _approved_quality_manifest(engine=""),
+        _approved_quality_manifest(write_transaction={"status": "committed", "rollback_guard": "enabled"}),
+        _approved_quality_manifest(
+            write_transaction={
+                "status": "not_started",
+                "rollback_guard": "disabled",
+                "prewrite_clean_before_commit": True,
+            }
+        ),
+        _approved_quality_manifest(
+            write_transaction={
+                "status": "not_started",
+                "rollback_guard": "enabled",
+                "prewrite_clean_before_commit": False,
+            }
+        ),
+        _approved_quality_manifest(
+            write_transaction={
+                "status": "not_started",
+                "rollback_guard": "enabled",
+                "prewrite_clean_before_commit": True,
+                "commit_only": True,
+            }
+        ),
     ),
 )
 def test_commit_product_create_transaction_rejects_unapproved_manifest_before_write(
@@ -647,7 +732,7 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
     monkeypatch: pytest.MonkeyPatch,
     quality_manifest: Mapping[str, Any],
 ) -> None:
-    base = _transaction()
+    base = _transaction(repo_root=tmp_path)
     transaction = build_product_create_transaction(
         proposal=base.proposal,
         release_selector=base.release_selector,
@@ -655,6 +740,7 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
         prewrite_package=base.prewrite_package,
         backlog_result=base.backlog_result,
         quality_manifest=quality_manifest,
+        repo_root=tmp_path,
     )
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:

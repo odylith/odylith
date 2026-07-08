@@ -678,28 +678,12 @@ def _run_case(
     intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(confirmed_intent, encoding="utf-8")
-    started = time.perf_counter()
-    create = _run(
-        cwd=repo_root,
+    create, create_seconds = _run_compiled_greenfield_create(
+        repo_root=repo_root,
         env=env,
-        command=[
-            "./.odylith/bin/odylith",
-            "greenfield",
-            "create",
-            "--repo-root",
-            ".",
-            "--prompt",
-            case.prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm",
-            "--release",
-            "0.0.1",
-            "--json",
-        ],
+        prompt=case.prompt,
         timeout=120,
     )
-    create_seconds = round(time.perf_counter() - started, 3)
     payload = _parse_json_object(create.stdout)
     manifest = _as_mapping(payload.get("post_confirm_quality_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
@@ -754,6 +738,77 @@ def _run_case(
             browser_surface_issues=browser_surface_issues,
         ),
     )
+
+
+def _run_compiled_greenfield_create(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    prompt: str,
+    timeout: int,
+    repair_tier: str = "",
+) -> tuple[Any, float]:
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    compile_command = [
+        "./.odylith/bin/odylith",
+        "greenfield",
+        "compile-transaction",
+        "--repo-root",
+        ".",
+        "--prompt",
+        prompt,
+        "--intent-file",
+        ".odylith/runtime/greenfield/confirmed-intent.md",
+        "--output",
+        transaction_file,
+        "--release",
+        "0.0.1",
+        "--format",
+        "json",
+    ]
+    if repair_tier:
+        compile_command.extend(["--repair-tier", repair_tier])
+    started = time.perf_counter()
+    compiled = _run(cwd=repo_root, env=env, command=compile_command, timeout=timeout)
+    if compiled.returncode != 0:
+        return compiled, round(time.perf_counter() - started, 3)
+    compiled_payload = _parse_json_object(compiled.stdout)
+    transaction_summary = _as_mapping(compiled_payload.get("product_create_transaction"))
+    transaction_hash = str(transaction_summary.get("transaction_hash") or "").strip()
+    if not transaction_hash:
+        return (
+            SimpleNamespace(
+                returncode=2,
+                stdout=json.dumps(
+                    {
+                        "mode": "error",
+                        "error": "compile-transaction did not return a ProductCreateTransaction hash",
+                    },
+                    sort_keys=True,
+                ),
+                stderr="",
+            ),
+            round(time.perf_counter() - started, 3),
+        )
+    create = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            "./.odylith/bin/odylith",
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--transaction-file",
+            transaction_file,
+            "--transaction-hash",
+            transaction_hash,
+            "--confirm",
+            "--json",
+        ],
+        timeout=timeout,
+    )
+    return create, round(time.perf_counter() - started, 3)
 
 
 def _case_evidence_manifest(
@@ -1051,30 +1106,13 @@ def _run_rescue_smoke_case(
     intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(propose.stdout, encoding="utf-8")
-    started = time.perf_counter()
-    create = _run(
-        cwd=repo_root,
+    create, create_seconds = _run_compiled_greenfield_create(
+        repo_root=repo_root,
         env=installed_auto_rescue_env(env),
-        command=[
-            "./.odylith/bin/odylith",
-            "greenfield",
-            "create",
-            "--repo-root",
-            ".",
-            "--prompt",
-            case.prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm",
-            "--release",
-            "0.0.1",
-            "--repair-tier",
-            "auto",
-            "--json",
-        ],
+        prompt=case.prompt,
+        repair_tier="auto",
         timeout=150,
     )
-    create_seconds = round(time.perf_counter() - started, 3)
     payload = _parse_json_object(create.stdout)
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
@@ -1142,30 +1180,13 @@ def _run_natural_rescue_case(
     intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(propose.stdout, encoding="utf-8")
-    started = time.perf_counter()
-    create = _run(
-        cwd=repo_root,
+    create, create_seconds = _run_compiled_greenfield_create(
+        repo_root=repo_root,
         env=_installed_structured_rescue_env(env),
-        command=[
-            "./.odylith/bin/odylith",
-            "greenfield",
-            "create",
-            "--repo-root",
-            ".",
-            "--prompt",
-            case.prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm",
-            "--release",
-            "0.0.1",
-            "--repair-tier",
-            "auto",
-            "--json",
-        ],
+        prompt=case.prompt,
+        repair_tier="auto",
         timeout=150,
     )
-    create_seconds = round(time.perf_counter() - started, 3)
     payload = _parse_json_object(create.stdout)
     manifest = _as_mapping(payload.get("post_confirm_quality_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
