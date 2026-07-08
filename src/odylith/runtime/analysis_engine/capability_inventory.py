@@ -49,7 +49,11 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                     "pre-confirm repair and quality gates, deterministic proposal validation, "
                     "deterministic proposal gating, hash-verified commit, and final visible surface refresh before source exists"
                 ),
-                commands=("odylith greenfield propose", "odylith greenfield create", "odylith greenfield apply"),
+                commands=(
+                    "odylith greenfield propose",
+                    "odylith greenfield compile-transaction",
+                    "odylith greenfield create",
+                ),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
                 activation=(
                     "greenfield propose returns no-write Product Intent Confirmation; compile-transaction builds "

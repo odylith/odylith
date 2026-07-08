@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -460,9 +461,41 @@ def test_commit_product_create_transaction_is_commit_only(
     )
 
 
+def test_commit_product_create_transaction_rejects_bad_hash_before_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = replace(_transaction(), transaction_hash="not-the-compiled-hash")
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
+
+    monkeypatch.setattr(greenfield_proposals, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+
+    with pytest.raises(ValueError, match="ProductCreateTransaction hash mismatch"):
+        greenfield_proposals.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=True,
+            started_at=0.0,
+        )
+
+
+@pytest.mark.parametrize(
+    "quality_manifest",
+    (
+        {"status": "failed", "validation_status": "passed", "issue_count": 0},
+        {"status": "passed", "validation_status": "failed", "issue_count": 0},
+        {"status": "passed", "validation_status": "passed", "issue_count": 0, "hard_blocker": "component spec"},
+        {"status": "passed", "validation_status": "passed", "issue_count": 1},
+    ),
+)
 def test_commit_product_create_transaction_rejects_unapproved_manifest_before_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    quality_manifest: Mapping[str, Any],
 ) -> None:
     base = _transaction()
     transaction = build_product_create_transaction(
@@ -471,17 +504,14 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
         validation_gate=base.validation_gate,
         prewrite_package=base.prewrite_package,
         backlog_result=base.backlog_result,
-        quality_manifest={
-            "status": "failed",
-            "validation_status": "failed",
-            "issue_count": 1,
-            "hard_blocker": "component spec quality failed",
-        },
+        quality_manifest=quality_manifest,
     )
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("unapproved ProductCreateTransaction must not enter the write path")
 
+    monkeypatch.setattr(greenfield_proposals, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
 
     with pytest.raises(ValueError, match="quality manifest is not approved"):

@@ -1498,27 +1498,31 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Contract
 
-- `greenfield_proposals.py` owns the no-write Product Intent request and the
-  confirmed create/apply path. It must not infer final project boundaries from a
-  fixed in-code domain list or push private schema repair onto the host.
+- `greenfield_proposals.py` owns the no-write Product Intent request, the
+  pre-confirm ProductCreateTransaction compiler, and the hash-verified confirmed
+  create path. It must not infer final project boundaries from a fixed in-code
+  domain list or push private schema repair onto the host.
 - `proposal_normalization.py` owns compatibility normalization for reasonable
   host-authored proposal shapes before strict validation. It may repair field
   spelling, release-plan shape, proof-field aliases, generic diagram
   slugs, Mermaid sequence message punctuation, and missing umbrella program
   parents, but it must not invent source-backed implementation evidence.
 - `greenfield_transaction.py` owns retry-safe source-truth rollback for failed
-  greenfield apply runs. It snapshots the greenfield-owned Radar, Registry,
+  confirmed create commits. It snapshots the greenfield-owned Radar, Registry,
   Atlas, and Compass acceptance source paths before writes and restores them on
   failure so a retry cannot be blocked by duplicate ideas, stale catalog rows,
-  stale component dossiers, or release events from a rejected apply.
-- `proposal_rendering.py` owns operator-facing text and apply-command rendering
-  so proposal compilation, planning, and presentation stay decoupled.
+  stale component dossiers, or release events from a rejected commit.
+- `proposal_rendering.py` owns operator-facing text so proposal compilation,
+  planning, and presentation stay decoupled.
 - Default `greenfield propose` text is a no-write Product Intent Confirmation
   request, not the durable record dump. It must prompt the host to narrate the
   product, user, problem, first workflow, proof boundary, and confirm/edit/reject
-  gate before any writes. After confirmation, `greenfield create --confirm`
-  builds and applies the durable record; `propose --confirm-intent --format json`
-  is the optional review artifact for the same apply-ready object.
+  gate before any writes. Before final confirmation, `greenfield
+  compile-transaction` builds and quality-gates the durable package; after
+  confirmation, `greenfield create --confirm` only verifies the transaction
+  hash, commits the compiled package, validates readback, refreshes surfaces,
+  and reports success. `propose --confirm-intent --format json` is the optional
+  review artifact before transaction compilation.
 - Default text `greenfield propose` output must itself be a concrete,
   confirmable Product Intent Confirmation. It must not render host instruction
   envelopes, implementation guidance, CLI next steps, or proposal-authoring
@@ -2243,10 +2247,11 @@ This section captures synchronized requirement and contract signals derived from
   `artifact_enrichment.py` may preserve complete validation predicates during
   compaction. Neither owner may rely on post-render package cleanup to make
   Radar workstreams grammatical.
-- `greenfield apply --json` and `greenfield create --json` must keep stdout
-  machine-clean. Internal progress from refresh, scaffold, or renderer helpers
-  may be captured into the JSON payload, but it must not precede or follow the
-  JSON document on stdout.
+- `greenfield create --json` must keep stdout machine-clean. Internal progress
+  from refresh or renderer helpers may be captured into the JSON payload, but it
+  must not precede or follow the JSON document on stdout. Legacy `greenfield
+  apply --json` must return a machine-clean error before loading proposal JSON,
+  compiling, repairing, or writing governed records.
 - Provider-free default scaffolds must produce a multi-view Atlas architecture
   suite before apply: topology, first-slice sequence, component ownership,
   state/data contract, and validation/release topology. Domain-specific

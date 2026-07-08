@@ -215,7 +215,9 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Topology Integrity" in output
     assert "Taxonomies and FSMs" in output
     assert "Operator Experience" in output
-    assert "odylith greenfield apply" in output
+    assert "odylith greenfield compile-transaction" in output
+    assert "odylith greenfield create" in output
+    assert "odylith greenfield apply" not in output
     assert "Activation:" in output
     assert "attach the normalized execution handshake" in output
     assert "deterministic proposal gating" in output
@@ -365,6 +367,8 @@ def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
     output = capsys.readouterr().out
     assert excinfo.value.code == 0
     assert "usage: odylith greenfield apply" in output
+    assert "Legacy proposal apply is disabled" in output
+    assert "compile-transaction" in output
     assert "--proposal-file" in output
     assert "--confirm" in output
     assert "--release" in output

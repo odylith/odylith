@@ -464,30 +464,37 @@ def test_greenfield_cli_json_is_governed_audit_after_intent_confirmation(tmp_pat
     assert len(payload["diagrams"]) >= 6
 
 
-def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
+def test_greenfield_apply_cli_rejects_legacy_confirm_path_before_compile(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
-    _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal_path = tmp_path / "proposal.json"
-    proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("legacy apply must fail before proposal load, compile, or commit")
+
+    monkeypatch.setattr(greenfield_proposals, "load_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
 
     rc = greenfield_proposals.main(
-        ["apply", "--repo-root", str(tmp_path), "--proposal-file", str(proposal_path), "--confirm", "--release", "0.0.1"]
+        [
+            "apply",
+            "--repo-root",
+            str(tmp_path),
+            "--proposal-json",
+            "{not-json",
+            "--confirm",
+            "--release",
+            "0.0.1",
+        ]
     )
 
     out = capsys.readouterr().out
-    assert rc == 0
-    assert "- project-first workstream: B-001 Govern Commerce Launch System" in out
-    assert "- project story: odylith/index.html?tab=project" in out
-    assert "- workstream detail: odylith/radar/radar.html?view=plan&workstream=B-001" in out
-    assert "- project gate: review direction choices and readiness gates before opening a technical plan; do not edit source from this closeout" in out
-    assert "- current project lane: wave Checkout spine | release 0.0.1" in out
-    assert "- choose before coding:" in out
-    assert "- coding readiness gates:" in out
-    assert "- future first implementation lane after gates: B-002 Define Storefront boundary" in out
-    assert "- operator handoff:" in out
-    assert "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ." in out
+    assert rc == 2
+    assert "greenfield apply is disabled for confirmed writes" in out
+    assert "Confirm now commits only an already compiled ProductCreateTransaction" in out
+    assert "greenfield compile-transaction" in out
+    assert "greenfield create" in out
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_path, capsys) -> None:
@@ -881,6 +888,51 @@ def test_greenfield_create_cli_rejects_post_confirm_overrides(
     assert "rebuild the ProductCreateTransaction" in payload["error"]
 
 
+def test_greenfield_create_cli_rejects_intent_file_even_with_compiled_transaction(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _write_confirmed_intent(tmp_path)
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True, exist_ok=True)
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("intent-file create must fail before loading, compiling, or committing")
+
+    monkeypatch.setattr(greenfield_proposals, "load_product_create_transaction_args", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            transaction.transaction_hash,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "greenfield create no longer accepts --intent-file" in payload["error"]
+    assert "compile-transaction" in payload["error"]
+
+
 def test_greenfield_create_cli_requires_visible_transaction_hash(
     tmp_path,
     monkeypatch,
@@ -917,6 +969,11 @@ def test_greenfield_create_cli_requires_visible_transaction_hash(
     payload = json.loads(capsys.readouterr().out)
     assert rc == 2
     assert "requires --transaction-hash" in payload["error"]
+    assert "Product Intent Confirmation" not in payload["error"]
+    assert "post-confirm completion" not in payload["error"]
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 def test_greenfield_create_cli_completes_privacy_export_lifecycle_end_to_end(tmp_path, monkeypatch, capsys) -> None:
@@ -1245,46 +1302,31 @@ def test_greenfield_create_cli_requires_compiled_transaction_before_writes(tmp_p
 
 def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
-    def noisy_refresh(**_kwargs: object) -> None:
-        print("refresh progress that must not contaminate JSON stdout", flush=True)
-        os.write(1, b"fd-level refresh progress must not contaminate JSON stdout\n")
-        _write_stubbed_atlas_render_outputs(Path(str(_kwargs["repo_root"])))
 
-    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", noisy_refresh)
-    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal_path = tmp_path / "proposal.json"
-    proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("legacy JSON apply must fail before proposal load, compile, or commit")
+
+    monkeypatch.setattr(greenfield_proposals, "load_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
 
     rc = greenfield_proposals.main(
         [
             "apply",
             "--repo-root",
             str(tmp_path),
-            "--proposal-file",
-            str(proposal_path),
+            "--proposal-json",
+            "{not-json",
             "--confirm",
             "--json",
         ]
     )
     payload = json.loads(capsys.readouterr().out)
 
-    assert rc == 0
-    assert payload["mode"] == "applied"
-    assert payload["atlas_scaffold_logs"]
-    assert payload["memory"]["recorded"] is True
-    assert payload["memory"]["event"]["source"] == "domain-intelligence"
-    assert payload["validation_gate"]["status"] == "passed"
-    assert "tribunal" not in payload
-    assert all("tribunal" not in line.casefold() for line in payload["atlas_scaffold_logs"])
-    assert all("validation_gate" in row and "tribunal" not in row for row in payload["components"])
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
-    assert payload["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
-    assert payload["release_target"]["release_id"] == "release-commerce-launch-first"
-    assert payload["operator_output"] == [
-        "refresh progress that must not contaminate JSON stdout",
-        "fd-level refresh progress must not contaminate JSON stdout",
-    ]
+    assert rc == 2
+    assert payload["mode"] == "error"
+    assert "greenfield apply is disabled for confirmed writes" in payload["error"]
+    assert "ProductCreateTransaction" in payload["error"]
+    assert "operator_output" not in payload
 
 
 def test_greenfield_apply_json_error_is_machine_clean(tmp_path, capsys) -> None:
@@ -1305,4 +1347,5 @@ def test_greenfield_apply_json_error_is_machine_clean(tmp_path, capsys) -> None:
 
     assert rc == 2
     assert payload["mode"] == "error"
-    assert "Expecting property name enclosed in double quotes" in payload["error"]
+    assert "greenfield apply is disabled for confirmed writes" in payload["error"]
+    assert "greenfield compile-transaction" in payload["error"]

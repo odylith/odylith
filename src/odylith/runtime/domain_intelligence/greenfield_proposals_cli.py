@@ -26,7 +26,7 @@ from odylith.runtime.project_intelligence.intent_confirmation import format_prod
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith greenfield",
-        description="Preview and apply confirmation-gated greenfield product records.",
+        description="Preview and commit confirmation-gated greenfield product records.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     propose = subparsers.add_parser("propose", help="Preview a confirmation-gated greenfield product proposal.")
@@ -51,7 +51,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         dest="intent_file",
         help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
     )
-    apply = subparsers.add_parser("apply", help="Apply a confirmed greenfield product proposal.")
+    apply = subparsers.add_parser(
+        "apply",
+        help="Legacy proposal apply is disabled; use compile-transaction, then create.",
+        description="Legacy proposal apply is disabled; use compile-transaction, then create.",
+    )
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
     apply.add_argument("--proposal-json", default="")
@@ -175,6 +179,17 @@ def _with_operator_output(result: Mapping[str, Any], captured: Sequence[str]) ->
     return payload
 
 
+def _legacy_apply_disabled_error() -> str:
+    return (
+        "greenfield apply is disabled for confirmed writes. Confirm now commits only an already compiled "
+        "ProductCreateTransaction. Run `odylith greenfield compile-transaction --repo-root . --prompt <request> "
+        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --output "
+        ".odylith/runtime/greenfield/product-create-transaction.v1.json`, then run `odylith greenfield create "
+        "--repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
+        "--transaction-hash <hash> --confirm`. No governed records were written."
+    )
+
+
 def _transaction_confirmation_text(
     *,
     transaction: Any,
@@ -270,27 +285,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(format_proposal_text(proposal, detail=str(args.detail)), end="")
         return 0
     if args.command == "apply":
-        try:
-            proposal = greenfield_proposals.load_proposal(args)
-            result, captured = _run_with_optional_stdout_capture(
-                enabled=bool(args.as_json),
-                action=lambda: greenfield_proposals.apply_greenfield_proposal(
-                    repo_root=repo_root,
-                    proposal=proposal,
-                    confirm=bool(args.confirm),
-                    release_selector=str(args.release),
-                    repair_tier=str(args.repair_tier),
-                ),
-            )
-        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
-            _print_greenfield_error(exc, as_json=bool(args.as_json))
-            return 2
+        message = _legacy_apply_disabled_error()
         if args.as_json:
-            result = _with_operator_output(result, captured)
-            print(json.dumps(result, indent=2, sort_keys=True))
+            print(json.dumps({"mode": "error", "error": message}, indent=2, sort_keys=True))
         else:
-            print_apply_result(result, verb="apply")
-        return 0
+            print(message)
+        return 2
     if args.command == "compile-transaction":
         try:
             confirmed_intent = greenfield_proposals.load_confirmed_intent_args(args, repo_root=repo_root)

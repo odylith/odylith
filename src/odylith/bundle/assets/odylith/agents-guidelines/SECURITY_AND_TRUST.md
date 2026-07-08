@@ -58,9 +58,12 @@
 ## Consumer Greenfield Rules
 - Greenfield Domain Intelligence may reason from user intent, but it must keep
   observed source, user intent, and Odylith assumptions separate.
-- `odylith greenfield apply` must remain confirmation-gated and must reject
-  missing host-authored Atlas Mermaid source, duplicated topology, invalid
-  evidence tiers, and incomplete proposal sections before any governed write.
+- `odylith greenfield compile-transaction` must build and quality-gate the full
+  ProductCreateTransaction before confirmation; `odylith greenfield create`
+  must only verify the hash, commit, validate readback, refresh surfaces, and
+  report success.
+- Legacy proposal `apply` must not become a confirmed write path; edited
+  confirmation text is new evidence and requires a rebuilt transaction.
 - The deterministic greenfield proposal Tribunal must reject disconnected child
   topology, shallow component ownership, and invisible release/program
   structures before durable source truth changes.

@@ -83,8 +83,8 @@ External ecosystem checks argue against a narrow canned project taxonomy. GitHub
   Ambiguities, Proof boundary, and Confirm/Edit/Reject. Do not allow one large
   prose block, decorative Markdown around normal domain nouns, or hidden
   structure that only the host model can infer.
-- Add confirmed `odylith greenfield create --confirm` for Odylith-owned apply-ready proposal generation and governed writes.
-- Keep `odylith greenfield apply` as the lower-level validated proposal-file path, not the default host workflow.
+- Add confirmed `odylith greenfield create --confirm` for Odylith-owned hash-verified transaction commits.
+- Disable `odylith greenfield apply` as a confirmed write path; operators must compile a ProductCreateTransaction before final confirmation.
 - Keep host adapters thin; every supported host routes to the same CLI/runtime path.
 - Let the host model reason over any product, science, math, research,
   infrastructure, art, education, policy, device, data, or mixed project shape;
@@ -596,8 +596,9 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 
 ## Interface Changes
 - New CLI family: `odylith greenfield propose`.
+- New pre-confirm CLI path: `odylith greenfield compile-transaction`.
 - New confirmed CLI path: `odylith greenfield create --confirm`.
-- Lower-level validated proposal-file path: `odylith greenfield apply --confirm`.
+- Legacy proposal-file apply path returns a clear no-write error before proposal parsing, compilation, repair, or governed writes.
 - New CLI path: `odylith program adopt <umbrella> <workstream>` sets the
   reciprocal parent/child topology required before wave assignment.
 - `odylith wave assign` accepts `--adopt` for the common orphan-child case.
@@ -612,12 +613,11 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 ## Migration/Compatibility
 - Existing consumer repos need no source-truth migration for greenfield behavior. Upgrading to v0.1.14 installs the additive CLI/runtime path, managed guidance, host skill shims, greenfield `0.0.1` default release targeting, program/wave authoring, and Atlas render polish. Existing source-backed governance remains unchanged; greenfield proposals are additive and confirmation-gated.
 - v0.1.14 greenfield behavior remains backward compatible: accepted proposals that name a release selector keep using that selector, while omitted selectors default to the first project release `0.0.1`. Apply now creates the umbrella execution-wave program document when child workstreams exist and targets the first wave plus umbrella to the first release so Compass can show program and release power without over-targeting every child workstream.
-- v0.1.15 greenfield apply is still confirmation-gated and backward-compatible
-  for already-written consumer truth, but newly accepted proposal JSON must meet
-  the stricter Tribunal quality bar before Odylith writes source truth. This is
-  intentional: missing topology, shallow component ownership, or invisible
-  release/program structure should fail before durable governance artifacts are
-  created.
+- v0.1.15 greenfield acceptance is transaction-gated: proposal JSON is not a
+  confirmed write input, and newly accepted intent must compile into a
+  ProductCreateTransaction before final confirmation. Missing topology, shallow
+  component ownership, invisible release/program structure, or quality defects
+  fail before durable governance artifacts are created.
 - v0.1.15 project-first greenfield UX is additive for consumers. Existing
   greenfield records remain readable, while new proposals add `project_brief`
   direction options and coding-readiness gates before implementation handoff.
