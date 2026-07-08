@@ -219,7 +219,10 @@ def _transaction_confirmation_text(
                     f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
                     f"--transaction-hash {summary['transaction_hash']} --confirm`.",
                 ),
-                ("EDIT", "Do not commit. Treat edits as new evidence, rebuild the package, and use the new hash."),
+                (
+                    "EDIT",
+                    "Do not commit. Put corrections after EDIT; Odylith treats them as new evidence, rebuilds the package, and uses the new hash.",
+                ),
                 ("REJECT", "Stop. No governed records are written."),
             )
         ),
@@ -335,7 +338,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
                     "confirmation": {
-                        "command_rule": "Reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+                        "command_rule": "Start your reply with one clear command: CONFIRM, EDIT, or REJECT.",
+                        "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
                         "choices": [
                             {
                                 "command": "CONFIRM",
@@ -344,7 +348,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             },
                             {
                                 "command": "EDIT",
-                                "description": "Do not commit. Treat edits as new evidence, rebuild the package, and use the new hash.",
+                                "description": "Do not commit. Put corrections after EDIT; Odylith treats them as new evidence, rebuilds the package, and uses the new hash.",
                             },
                             {
                                 "command": "REJECT",
@@ -352,7 +356,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             },
                         ],
                         "confirm": "CONFIRM - commit this exact validated package now",
-                        "edit": "EDIT - treat edits as new evidence and rebuild the transaction",
+                        "edit": "EDIT - add corrections after the command and rebuild the transaction",
                         "reject": "REJECT - stop with no governed records written",
                     },
                 }

@@ -19,6 +19,9 @@ class GreenfieldApplyTransaction:
         "odylith/surfaces/brand",
         "odylith/runtime/source",
         "odylith/runtime/delivery_intelligence.v4.json",
+        "odylith/index.html",
+        "odylith/tooling-payload.v1.js",
+        "odylith/tooling-app.v1.js",
     )
 
     def __init__(self, repo_root: Path) -> None:

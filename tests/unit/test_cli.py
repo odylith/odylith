@@ -414,10 +414,10 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     assert payload["host_reasoning_task"]["must_not"]
     assert payload["host_reasoning_task"]["format_contract"]
     assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "command rows labeled `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`" in " ".join(
+    assert "visually separate command sections headed `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`" in " ".join(
         payload["host_reasoning_task"]["format_contract"]
     )
-    assert "three separate command rows for CONFIRM, EDIT, and REJECT" in " ".join(
+    assert "three visually separate command sections for CONFIRM, EDIT, and REJECT" in " ".join(
         payload["host_reasoning_task"]["must_include"]
     )
     assert "echo command instructions" in " ".join(payload["host_reasoning_task"]["must_not"])

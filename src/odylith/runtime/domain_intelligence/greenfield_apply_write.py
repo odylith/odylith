@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_compiled_readback
+from odylith.runtime.domain_intelligence import greenfield_compiled_memory_readback
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_release_commit
@@ -34,7 +35,6 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
-from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
@@ -270,7 +270,11 @@ def write_greenfield_proposal(
             project_brief_record_text=prewrite_package.project_brief_record_text,
             compass_memory_preview=prewrite_package.compass_memory_preview or {},
         )
-        _raise_for_compiled_memory_readback(root=root, prewrite_package=prewrite_package, memory_record=memory_record)
+        greenfield_compiled_memory_readback.raise_for_compiled_memory_readback(
+            root=root,
+            prewrite_package=prewrite_package,
+            memory_record=memory_record,
+        )
     else:
         memory_record = record_greenfield_acceptance(
             repo_root=root,
@@ -481,41 +485,6 @@ def _has_compiled_memory_package(prewrite_package: GreenfieldCompletionPackage |
         and str(prewrite_package.project_brief_record_text or "").strip()
         and isinstance(prewrite_package.compass_memory_preview, Mapping)
     )
-
-
-def _raise_for_compiled_memory_readback(
-    *,
-    root: Path,
-    prewrite_package: GreenfieldCompletionPackage,
-    memory_record: Mapping[str, Any],
-) -> None:
-    event = memory_record.get("event") if isinstance(memory_record.get("event"), Mapping) else {}
-    accepted_at = str(event.get("ts_iso", "")).strip()
-    expected_accepted_project = dict(prewrite_package.accepted_project_preview or {})
-    expected_accepted_project["accepted_at"] = accepted_at
-    expected_accepted_project = _json_comparable_mapping(expected_accepted_project)
-    actual_accepted_project = _read_json_mapping(root / "odylith/runtime/source/accepted-project.v1.json")
-    expected_project_brief = compiled_project_brief_record_text(
-        prewrite_package.project_brief_record_text,
-        accepted_at=accepted_at,
-    )
-    actual_project_brief = _read_text(root / "odylith/runtime/source/project-brief.v1.md")
-    issues: list[str] = []
-    if actual_accepted_project != expected_accepted_project:
-        issues.append("accepted project record does not match compiled transaction preview")
-    if actual_project_brief != expected_project_brief:
-        issues.append("project brief record does not match compiled transaction text")
-    if issues:
-        detail = "\n".join(f"- {issue}" for issue in dedupe_strings(issues))
-        raise ValueError(f"greenfield post-confirm compiled memory readback failed with {len(issues)} issue(s):\n{detail}")
-
-
-def _json_comparable_mapping(value: Mapping[str, Any]) -> Mapping[str, Any]:
-    try:
-        normalized = json.loads(json.dumps(value, sort_keys=True))
-    except (TypeError, ValueError) as exc:
-        raise ValueError("compiled memory preview is not JSON-serializable for readback") from exc
-    return normalized if isinstance(normalized, Mapping) else {}
 
 
 def _raise_for_final_package_quality(

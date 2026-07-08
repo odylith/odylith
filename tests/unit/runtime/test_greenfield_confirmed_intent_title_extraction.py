@@ -96,14 +96,19 @@ Prove that one submitted permit case can move through review and final decision 
 
 ## Choose one command
 
-Reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**.
+Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**.
 
-- **Command: `CONFIRM`**
-  Accept this interpretation.
-- **Command: `EDIT`**
-  Reply with corrections.
-- **Command: `REJECT`**
-  Stop here.
+### Command: `CONFIRM`
+
+Accept this interpretation.
+
+### Command: `EDIT`
+
+Reply with corrections.
+
+### Command: `REJECT`
+
+Stop here.
 """,
         prompt=prompt,
     )

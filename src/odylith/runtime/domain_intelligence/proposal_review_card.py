@@ -69,14 +69,15 @@ def format_visible_proposal_card_text(
                 (
                     (
                         "CONFIRM",
-                        "Compile the ProductCreateTransaction from this preview; Odylith will show the transaction hash before any records are written.",
+                        "Accept this preview so Odylith can compile the ProductCreateTransaction and show the transaction hash before any records are written.",
                     ),
-                    ("EDIT", "Correct the decisions above, then rerun greenfield propose."),
+                    ("EDIT", "Put corrections after EDIT; Odylith treats them as new evidence before rerunning greenfield propose."),
                     ("REJECT", "Stop. No governed records are written."),
                 )
             ),
             "",
-            "Command after **CONFIRM**",
+            "Odylith system action after **CONFIRM**",
+            "- Do not paste this command in your reply. Reply only with CONFIRM, EDIT, or REJECT.",
             f"- Compile transaction: {_visible_compile_command(proposal, request_context=request_context, release_selector=release_selector)}",
             "- Full review: add --confirm-intent --detail full for the long contract; export JSON only when explicitly requested.",
         ]

@@ -49,8 +49,8 @@ placeholder products in response to a show-me request.
    Markdown so the operator sees Product story, State object, First complete
    path, Human actors, External systems, Internal product systems, Critical
    assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
-   The command block must show `Reply with exactly one command: **CONFIRM**,
-   **EDIT**, or **REJECT**.`, then separate rows labeled **Command: `CONFIRM`**,
+   The command block must show `Start your reply with one clear command: **CONFIRM**,
+   **EDIT**, or **REJECT**.`, then visually separate sections headed **Command: `CONFIRM`**,
    **Command: `EDIT`**, and **Command: `REJECT`**. Use bullets for actors, systems,
    assumptions, and ambiguities; do not collapse the confirmation into a wall
    of prose or wrap normal domain words in code ticks or decorative bold

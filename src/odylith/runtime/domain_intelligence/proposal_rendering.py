@@ -186,17 +186,18 @@ def _format_proposal_preview_text(
                 (
                     (
                         "CONFIRM",
-                        "Compile the ProductCreateTransaction if the interpretation and clarification choices are right.",
+                        "Accept this preview so Odylith can compile the ProductCreateTransaction and show the final hash confirmation before records are written.",
                     ),
                     (
                         "EDIT",
-                        "Correct the choices that are wrong, then rebuild from the sharper intent.",
+                        "Put corrections after EDIT; Odylith treats them as new evidence and rebuilds from the sharper intent.",
                     ),
                     ("REJECT", "Stop. No governed records are written."),
                 )
             ),
             "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
-            "Command after **CONFIRM**",
+            "Odylith system action after **CONFIRM**",
+            "- Do not paste this command in your reply. Reply only with CONFIRM, EDIT, or REJECT.",
             f"- Compile transaction: {apply_json_command}",
         ]
     )
@@ -487,9 +488,12 @@ def _format_governed_proposal_text(
                 (
                     (
                         "CONFIRM",
-                        "Compile the ProductCreateTransaction from this proposal; Odylith shows the hash-ready final command before any records are written.",
+                        "Accept this proposal so Odylith can compile the ProductCreateTransaction and show the hash-ready final command before any records are written.",
                     ),
-                    ("EDIT", "Correct the proposal evidence, then rebuild before compiling a transaction."),
+                    (
+                        "EDIT",
+                        "Put corrections after EDIT; Odylith treats them as new evidence and rebuilds before compiling a transaction.",
+                    ),
                     ("REJECT", "Stop. No governed records are written."),
                 )
             ),
@@ -497,6 +501,7 @@ def _format_governed_proposal_text(
     )
     lines.extend(["", "Transaction path"])
     lines.append("No governed records changed. Transaction path:")
+    lines.append("- Do not paste the transaction command in your reply. Reply only with CONFIRM, EDIT, or REJECT.")
     request_commands = request_context.get("apply_commands", [])
     apply_command = ""
     if isinstance(request_commands, list):

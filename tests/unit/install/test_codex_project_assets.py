@@ -282,7 +282,7 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
         ), path
         assert "ProductCreateTransaction" in compact_text, path
         assert "`## Choose one command`" in text or "## Choose one command" in text, path
-        assert "Reply with exactly one command" in compact_text, path
+        assert "Start your reply with one clear command" in compact_text, path
         assert "Command: `CONFIRM`" in text and "Command: `EDIT`" in text and "Command: `REJECT`" in text, path
         assert "Confirm/Edit/Reject" not in text, path
         assert "confirm to expand" not in text.casefold(), path
@@ -355,7 +355,7 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         assert "--confirm" in normalized, path
         assert "ProductCreateTransaction" in normalized, path
         assert "## Choose one command" in normalized, path
-        assert "Reply with exactly one command" in normalized, path
+        assert "Start your reply with one clear command" in normalized, path
         assert "Command: `CONFIRM`" in text and "Command: `EDIT`" in text and "Command: `REJECT`" in text, path
         assert "Confirm/Edit/Reject" not in text, path
         assert "confirm to expand" not in text.casefold(), path

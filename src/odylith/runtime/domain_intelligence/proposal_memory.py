@@ -682,7 +682,7 @@ def _matching_acceptance_event(
 ) -> dict[str, Any] | None:
     if not stream_path.is_file():
         return None
-    expected = _acceptance_event_signature(repo_root=repo_root, event=event_preview)
+    expected = acceptance_event_signature(repo_root=repo_root, event=event_preview)
     for line in stream_path.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
@@ -692,19 +692,24 @@ def _matching_acceptance_event(
             continue
         if not isinstance(event, Mapping):
             continue
-        if _acceptance_event_signature(repo_root=repo_root, event=event) == expected:
+        if acceptance_event_signature(repo_root=repo_root, event=event) == expected:
             return dict(event)
     return None
 
 
-def _acceptance_event_signature(*, repo_root: Path, event: Mapping[str, Any]) -> tuple[Any, ...]:
+def acceptance_event_signature(*, repo_root: Path, event: Mapping[str, Any]) -> tuple[Any, ...]:
+    """Return the deterministic Compass acceptance-event fields used for replay/readback."""
+
     return (
         _clean(event.get("kind")) or "decision",
         _clean(event.get("summary")),
         tuple(sorted(_clean(value).upper() for value in event.get("workstreams", []) if _clean(value))),
         tuple(sorted(_artifact_signature(repo_root=repo_root, value=value) for value in event.get("artifacts", []) if _clean(value))),
-        tuple(sorted(_clean(value) for value in event.get("components", []) if _clean(value))),
+        tuple(sorted(_clean(value).casefold() for value in event.get("components", []) if _clean(value))),
+        _clean(event.get("author")) or "odylith",
         _clean(event.get("source")) or "domain-intelligence",
+        _clean(event.get("context")),
+        _clean(event.get("headline_hint")),
         _clean(event.get("evidence_tier")) or "user_intent",
         _clean(event.get("work_category")) or "governance",
     )

@@ -5,8 +5,6 @@ product repo it also carries source governance; installed repos receive the
 consumer-owned subset, while the managed runtime itself lives under
 `.odylith/`.
 
-In the product repo, maintainer-only release guidance and skills live under
-`odylith/maintainer/`. That subtree is excluded from consumer bundle assets.
 Shared consumer-safe guidance lives under `odylith/agents-guidelines/` and
 `odylith/skills/`.
 
@@ -19,10 +17,10 @@ three boundaries separate:
 
 `./.odylith/bin/odylith` uses the Odylith runtime. Repo code still validates on
 the repo's own `python`, `uv`, Poetry, Conda, or equivalent toolchain.
-Consumer repos stay on pinned runtime only; detached `source-local` is
-maintainer-only. Hosted install currently supports macOS (Apple Silicon) and
-Linux (`x86_64`, `ARM64`). For trust and release details, see
-`SECURITY_POSTURE.md`.
+Consumer repos stay on pinned runtime only; detached `source-local` is not
+available in consumer installs. Hosted install currently supports macOS
+(Apple Silicon) and Linux (`x86_64`, `ARM64`). For trust and release details,
+see `SECURITY_POSTURE.md`.
 
 ## First Run
 
@@ -112,8 +110,8 @@ Product Intent Confirmation in chat from live reasoning before any proposal
 records exist. Render it as sectioned Markdown: Product story, State object,
 First complete path, Human actors, External systems, Internal product systems,
 Critical assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
-The command block must show `Reply with exactly one command: **CONFIRM**,
-**EDIT**, or **REJECT**.`, then separate rows labeled **Command: `CONFIRM`**,
+The command block must show `Start your reply with one clear command: **CONFIRM**,
+**EDIT**, or **REJECT**.`, then visually separate sections headed **Command: `CONFIRM`**,
 **Command: `EDIT`**, and **Command: `REJECT`**. Use short paragraphs plus bullets, not a wall of
 prose, and do not wrap ordinary product terms in code ticks or decorative bold
 markers. After the operator chooses **CONFIRM**, write the
@@ -283,9 +281,6 @@ Silence is better than filler.
   Shared Odylith operating guidance.
 - `skills/`
   Shared Odylith specialist skills intended to stay consumer-safe.
-- product-repo-only `maintainer/` subtree
-  Maintainer-only release guidance and skills for Odylith release work. This
-  subtree is excluded from consumer bundles.
 - `FAQ.md`, `INSTALL.md`, `OPERATING_MODEL.md`, `PRODUCT_COMPONENTS.md`
   Product-level reference docs for this tree.
 - `SECURITY_POSTURE.md`
