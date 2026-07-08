@@ -542,6 +542,8 @@ def _project_path_lines(value: Any) -> list[str]:
         path = clean_text(row.get("path"))
         command = clean_text(row.get("command"))
         works_in = clean_text(row.get("works_in"))
+        if command.startswith("odylith greenfield create"):
+            continue
         if path and command:
             lines.append(f"{path}: `{command}` ({works_in})")
     return lines

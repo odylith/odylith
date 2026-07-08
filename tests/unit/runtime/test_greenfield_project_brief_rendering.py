@@ -144,11 +144,8 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
         ".odylith/runtime/greenfield/confirmed-intent.md --output "
         ".odylith/runtime/greenfield/product-create-transaction.v1.json` (Codex and Claude Code)"
     ) in lines
-    assert (
-        "  - Commit confirmed transaction: `odylith greenfield create --transaction-file "
-        ".odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm` "
-        "(Codex and Claude Code)"
-    ) in lines
+    assert not any("Commit confirmed transaction" in line for line in lines)
+    assert not any("odylith greenfield create" in line for line in lines)
     assert all("not a row" not in line for line in lines)
 
 

@@ -11,6 +11,7 @@ import pytest
 
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -64,7 +65,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         },
     )
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

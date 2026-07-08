@@ -394,7 +394,7 @@ def build_confirmed_greenfield_proposal(
             + shell_quote(command_prompt)
             + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release "
             + shell_quote(release),
-            "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
+            "# after compile, confirm or reject the transaction-ready screen that shows the real hash",
             "# optional review-only audit: odylith greenfield compile-transaction --repo-root . --prompt "
             + shell_quote(command_prompt)
             + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release "

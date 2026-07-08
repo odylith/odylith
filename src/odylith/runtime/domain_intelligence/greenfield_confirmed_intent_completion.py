@@ -82,12 +82,16 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
         rows = confirmed_text_values(intent.get(key))
         if rows:
             intent[key] = [_sentence(_normalize_visible_result_language(_normalize_open_clause(row))) for row in rows]
-    if external_systems := confirmed_text_values(intent.get("external_systems")):
+    if external_systems := [
+        row for row in confirmed_text_values(intent.get("external_systems")) if not _is_no_external_systems_placeholder(row)
+    ]:
         intent["external_systems"] = [
             normalized
             for row in external_systems
             if (normalized := _boundary_clause_item(_normalize_external_system_language(row), limit=180))
         ]
+    else:
+        intent["external_systems"] = []
 
 
 def _complete_external_boundary(intent: dict[str, Any]) -> None:
@@ -139,6 +143,18 @@ def _normalize_external_system_language(value: str) -> str:
         flags=re.IGNORECASE,
     )
     return _clean(text)
+
+
+def _is_no_external_systems_placeholder(value: str) -> bool:
+    text = clean_text(value).casefold().strip(" .")
+    if text in {"no", "none", "not any", "not required"}:
+        return True
+    if text.startswith("required for the first proof path"):
+        return True
+    return bool(
+        re.match(r"^(?:no|none|not any)\s+external systems?\b", text)
+        or re.match(r"^external systems?\s*:\s*(?:no|none|not any)\b", text)
+    )
 
 
 def _strip_prompt_prefixes(value: str) -> str:

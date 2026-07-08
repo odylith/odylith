@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -61,12 +62,22 @@ def format_visible_proposal_card_text(
     lines.extend(
         [
             "",
-            "Records after confirmation",
+            "Records after transaction commit",
             f"- {_visible_records_line(proposal, release_display=release_display)}",
             "",
-            "Next",
-            f"- Confirm as-is: {_visible_apply_command(proposal, request_context=request_context, release_selector=release_selector)}",
-            "- Revise: answer the decisions above, then rerun greenfield propose.",
+            *format_confirmation_choice_lines(
+                (
+                    (
+                        "CONFIRM",
+                        "Compile the ProductCreateTransaction from this preview; Odylith will show the transaction hash before any records are written.",
+                    ),
+                    ("EDIT", "Answer the decisions above, then rerun greenfield propose."),
+                    ("REJECT", "Stop here. No governed records are written."),
+                )
+            ),
+            "",
+            "Command after **CONFIRM**",
+            f"- Compile transaction: {_visible_compile_command(proposal, request_context=request_context, release_selector=release_selector)}",
             "- Full review: add --confirm-intent --detail full for the long contract; export JSON only when explicitly requested.",
         ]
     )
@@ -159,7 +170,7 @@ def _visible_records_line(proposal: Mapping[str, Any], *, release_display: str) 
     return ", ".join(pieces) + f", release {release_display}."
 
 
-def _visible_apply_command(
+def _visible_compile_command(
     proposal: Mapping[str, Any],
     *,
     request_context: Mapping[str, Any],
@@ -167,11 +178,12 @@ def _visible_apply_command(
 ) -> str:
     commands = request_context.get("apply_commands", [])
     if isinstance(commands, list):
-        command = next((str(item) for item in commands if str(item).startswith("odylith greenfield create")), "")
+        command = next((str(item) for item in commands if str(item).startswith("odylith greenfield compile-transaction")), "")
         if command:
             return command
     return (
-        "odylith greenfield create --repo-root . "
-        "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
-        "--transaction-hash <hash> --confirm"
+        "odylith greenfield compile-transaction --repo-root . --prompt '<confirmed request>' "
+        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md "
+        "--output .odylith/runtime/greenfield/product-create-transaction.v1.json "
+        f"--release {release_selector}"
     )

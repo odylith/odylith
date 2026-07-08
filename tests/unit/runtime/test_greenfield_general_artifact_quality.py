@@ -11,6 +11,7 @@ from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenf
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
@@ -1433,7 +1434,7 @@ def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting
     monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", corrupt_rendered_copy)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -1485,7 +1486,7 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -1614,7 +1615,7 @@ def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registr
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

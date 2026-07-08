@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -291,7 +292,7 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         lambda **_kwargs: {"status": "passed", "test_refresh_stub": True},
     )
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

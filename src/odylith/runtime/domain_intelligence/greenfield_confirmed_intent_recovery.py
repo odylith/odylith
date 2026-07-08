@@ -328,7 +328,7 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
             "State object\n" + state,
             "First complete path\n" + first_path.rstrip(".") + ".",
             "Human actors\n" + actor_lines,
-            "External systems\n",
+            "External systems\n- No external systems are required for the first proof path unless the operator adds one during edit.",
             "Internal product systems\n" + system_lines,
             "Problem\n" + problem,
             "Opportunity\n" + f"Prove the smallest complete {title.lower()} path before broader automation expands.",

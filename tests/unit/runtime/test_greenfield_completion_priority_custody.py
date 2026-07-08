@@ -9,6 +9,7 @@ import pytest
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_cli_output
 from odylith.runtime.domain_intelligence import greenfield_component_contract as component_contract
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -40,7 +41,7 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
 def _stub_apply_refreshes(monkeypatch) -> None:
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import (
     _host_reasoned_ecommerce_proposal,
@@ -98,7 +99,7 @@ def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -
 def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_apply_write,

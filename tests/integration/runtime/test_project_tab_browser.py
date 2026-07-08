@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.project_intelligence import assets
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
@@ -28,7 +29,7 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        greenfield_component_commit.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

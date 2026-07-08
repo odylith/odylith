@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
+from collections.abc import Sequence
 from typing import Any
 
 
@@ -113,7 +114,6 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
     commands = _mapping(confirmation.get("commands"))
     prompt = _clean(intent.get("prompt"))
     compile_transaction = _clean(commands.get("compile_transaction_after_intent_confirmation"))
-    commit_transaction = _clean(commands.get("commit_transaction_after_hash_confirmation"))
     try:
         from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
             confirmation_from_operator_intent,
@@ -125,19 +125,42 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
         body = _fallback_confirmation_markdown(prompt=prompt, title=title)
     else:
         body = confirmation_from_operator_intent(prompt, prefer_product_title=True).rstrip()
-    lines = [body, "", "Choose one"]
-    lines.extend(
-        [
-            "- **CONFIRM** - Accept this interpretation. Odylith will compile a validated ProductCreateTransaction, show the hash, then commit only that matching transaction.",
-            "- **EDIT** - Reply with corrections. Odylith treats the edits as new evidence and rebuilds before asking again.",
-            "- **REJECT** - Stop here. Odylith writes no governed records.",
-        ]
-    )
+    lines = [
+        body,
+        "",
+        *format_confirmation_choice_lines(
+            (
+                (
+                    "CONFIRM",
+                    "Accept this interpretation. Odylith compiles a validated ProductCreateTransaction and shows its hash before any governed records are written.",
+                ),
+                ("EDIT", "Reply with corrections. Odylith treats edits as new evidence and rebuilds before asking again."),
+                ("REJECT", "Stop here. Odylith writes no governed records."),
+            )
+        ),
+    ]
     if compile_transaction:
-        lines.append(f"Compile transaction: {compile_transaction}")
-    if commit_transaction:
-        lines.append(f"Commit transaction after hash confirmation: {commit_transaction}")
+        lines.extend(
+            [
+                "",
+                "Command after **CONFIRM**",
+                f"- Compile transaction: {compile_transaction}",
+                "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
+            ]
+        )
     return "\n".join(lines).rstrip() + "\n"
+
+
+def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list[str]:
+    """Return the canonical visible command block for greenfield confirmations."""
+
+    lines = ["Choose one"]
+    for label, detail in choices:
+        command = _clean(label).upper()
+        text = _clean(detail)
+        if command and text:
+            lines.append(f"- **{command}** - {text}")
+    return lines
 
 
 def _fallback_confirmation_markdown(*, prompt: str, title: str) -> str:
@@ -158,7 +181,7 @@ def _fallback_confirmation_markdown(*, prompt: str, title: str) -> str:
         f"- Primary user: completes the first {title.lower()} path and reviews the result.",
         "",
         "External systems",
-        "",
+        "- No external systems are required for the first proof path unless the operator adds one during edit.",
         "",
         "Internal product systems",
         f"- {title} Intake Register — records source input, owner, status, blocker, and version history.",

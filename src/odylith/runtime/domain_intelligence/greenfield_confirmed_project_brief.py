@@ -119,10 +119,11 @@ def confirmed_project_brief(
     assumption_summary = boundary_clause_text(assumptions) or "accepted first-release assumptions"
     command_prompt = _command_prompt(label=label, first=first, fallback=prompt)
     confirm_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
-    create_command = (
-        f"odylith greenfield create --repo-root . "
-        "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
-        "--transaction-hash <hash> --confirm"
+    compile_command = (
+        f"odylith greenfield compile-transaction --repo-root . --prompt {shell_quote(command_prompt)} "
+        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md "
+        "--output .odylith/runtime/greenfield/product-create-transaction.v1.json "
+        f"--release {release}"
     )
     audit_command = (
         f"odylith greenfield compile-transaction --repo-root . --prompt {shell_quote(command_prompt)} "
@@ -264,12 +265,12 @@ def confirmed_project_brief(
                 "use_when": "Use before records are written while the accepted interpretation can still be confirmed or edited.",
             },
             {
-                "path": "Create confirmed records",
-                "command": create_command,
+                "path": "Compile transaction",
+                "command": compile_command,
                 "works_in": "shell, Codex, Claude Code",
                 "use_when": (
-                    "Use after writing the already-shown confirmation to the intent file so the records build from "
-                    "the accepted narrative."
+                    "Use after writing the already-shown confirmation to the intent file. Odylith shows the hash "
+                    "and commit-only confirmation screen before records are written."
                 ),
             },
             {

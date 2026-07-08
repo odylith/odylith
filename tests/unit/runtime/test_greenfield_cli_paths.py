@@ -9,9 +9,11 @@ import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
@@ -132,13 +134,14 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "First complete path" in output
     assert "Human actors" in output
     assert "External systems" in output
+    assert "- No external systems are required for the first proof path" in output
     assert "Internal product systems" in output
     assert "Critical assumptions" in output
     assert "Ambiguities" in output
     assert "Proof boundary" in output
     assert "Choose one" in output
     assert "- **CONFIRM** - Accept this interpretation." in output
-    assert "compile a validated ProductCreateTransaction" in output
+    assert "compiles a validated ProductCreateTransaction" in output
     assert "- **EDIT** - Reply with corrections." in output
     assert "rebuilds before asking again" in output
     assert "- **REJECT** - Stop here." in output
@@ -147,14 +150,25 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Original user intent" not in output
     assert "No files changed." not in output
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
-    assert "greenfield create --repo-root ." in output
+    intent = parse_confirmed_intent_text(output, prompt="Build a mathematics research workspace for spectral graph theory")
+    assert intent["external_systems"] == []
+    choose_index = output.index("Choose one")
+    confirm_index = output.index("- **CONFIRM**", choose_index)
+    edit_index = output.index("- **EDIT**", confirm_index)
+    reject_index = output.index("- **REJECT**", edit_index)
+    command_index = output.index("Command after **CONFIRM**", reject_index)
+    compile_index = output.index("- Compile transaction:", command_index)
+    assert choose_index < confirm_index < edit_index < reject_index < command_index < compile_index
+    assert output.count("Choose one") == 1
     assert "greenfield compile-transaction --repo-root ." in output
-    assert "--confirm" in output
+    assert "greenfield create --repo-root ." not in output
+    assert "--confirm" not in output
     assert "Confirmed CLI after confirmation" not in output
-    assert "Commit transaction after hash confirmation" in output
+    assert "Commit transaction after hash confirmation" not in output
     assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in output
-    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
-    assert "--transaction-hash <hash>" in output
+    assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
+    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" not in output
+    assert "--transaction-hash <hash>" not in output
     assert "дж" not in output
     assert "soн" not in output
     assert "..." not in output
@@ -236,9 +250,9 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
     assert "compile-transaction" in output
-    assert "greenfield create --repo-root ." in output
-    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
-    assert "--transaction-hash <hash>" in output
+    assert "greenfield create --repo-root ." not in output
+    assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
+    assert "--transaction-hash <hash>" not in output
     assert "internal apply payload" not in output
     assert "active-proposal.v1.json" not in output
     assert "host_instruction" not in output
@@ -323,9 +337,9 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
     assert "compile-transaction" in output
-    assert "odylith greenfield create --repo-root ." in output
-    assert "--transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
-    assert "--confirm" in output
+    assert "odylith greenfield create --repo-root ." not in output
+    assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in output
+    assert "--transaction-hash <hash>" not in output
     assert "internal apply payload" not in output
     assert ".odylith/runtime/greenfield/active-proposal.v1.json" not in output
     assert len(output.splitlines()) <= 270
@@ -415,7 +429,7 @@ def test_greenfield_cli_json_is_governed_audit_after_intent_confirmation(tmp_pat
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
     proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")
@@ -484,7 +498,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     _write_confirmed_intent(tmp_path)
     dashboard_calls: list[dict[str, object]] = []
     _stub_dashboard_refresh(monkeypatch, dashboard_calls)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_proposals,
@@ -687,9 +701,18 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert calls[1][1]["proposal_ready"] is True
     assert "ProductCreateTransaction ready" in output
     assert transaction.transaction_hash in output
-    assert "- Confirm: commit this validated package" in output
-    assert "- Edit: treat edits as new evidence" in output
-    assert "- Reject: stop here with no governed records written" in output
+    assert "- **CONFIRM** - Commit this exact validated package" in output
+    assert "- **EDIT** - Treat edits as new evidence" in output
+    assert "- **REJECT** - Stop here. No governed records are written" in output
+    choose_index = output.index("Choose one")
+    confirm_index = output.index("- **CONFIRM**", choose_index)
+    edit_index = output.index("- **EDIT**", confirm_index)
+    reject_index = output.index("- **REJECT**", edit_index)
+    assert choose_index < confirm_index < edit_index < reject_index
+    assert output.count("Choose one") == 1
+    assert "Compile transaction:" not in output
+    assert "compile a validated ProductCreateTransaction" not in output
+    assert "compiles a validated ProductCreateTransaction" not in output
     assert "--transaction-file" in output
     assert "--transaction-hash" in output
     assert transaction_path.is_file()
@@ -902,7 +925,7 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
         encoding="utf-8",
     )
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
@@ -1000,7 +1023,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
         encoding="utf-8",
     )
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
@@ -1086,7 +1109,7 @@ Release 0.0.1 succeeds when one site record can be opened, linked to source evid
         encoding="utf-8",
     )
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
@@ -1188,7 +1211,7 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
         _write_stubbed_atlas_render_outputs(Path(str(_kwargs["repo_root"])))
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", noisy_refresh)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
     proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")

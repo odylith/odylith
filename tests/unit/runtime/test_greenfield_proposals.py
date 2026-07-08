@@ -8,6 +8,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import artifact_enrichment
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
@@ -257,11 +258,13 @@ def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None
     assert proposal["project_intelligence"]["intent"]
     assert proposal["observed_source"]["source_posture"] == "confirmed_intent_only"
     assert proposal["intent"]["prompt"] == ""
-    assert "greenfield create" in proposal["apply_commands"][0]
+    assert "greenfield compile-transaction" in proposal["apply_commands"][0]
     assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in proposal["apply_commands"][0]
-    assert "--confirm" in proposal["apply_commands"][0]
+    assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in proposal["apply_commands"][0]
     assert "--release '0.0.1'" in proposal["apply_commands"][0]
-    assert "review-only" in proposal["apply_commands"][1]
+    assert not any(str(command).startswith("odylith greenfield create") for command in proposal["apply_commands"])
+    assert "real hash" in proposal["apply_commands"][1]
+    assert "review-only" in proposal["apply_commands"][2]
     assert "internal apply payload" not in encoded
     assert "active-proposal.v1.json" not in encoded
     assert "Make product-owned systems explicit:" not in encoded
@@ -838,7 +841,7 @@ def test_artifact_enrichment_projects_domain_graph_into_native_artifact_shapes(t
 def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
     proposal["intent"]["summary"] = "**Primary reviewer** can compare the accepted path, state, and evidence."
@@ -919,7 +922,7 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
 def test_greenfield_apply_replaces_child_copies_of_parent_risk(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _governed_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
     parent_risk = proposal["risks"][0]
@@ -946,7 +949,7 @@ def test_greenfield_apply_replaces_child_copies_of_parent_risk(tmp_path, monkeyp
 def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     prompt = "Build an ecommerce site with checkout recovery"
     proposal = _governed_greenfield_fixture(tmp_path, prompt)
@@ -1059,7 +1062,7 @@ def test_greenfield_project_tab_participants_prefer_project_actors_over_internal
 def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     original = greenfield_apply_write.scaffold_mermaid_diagram.artifact_tribunal.run_governed_artifact_tribunal
@@ -1184,7 +1187,7 @@ def test_greenfield_normalization_splits_scalar_quality_fields() -> None:
 def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _host_reasoned_ecommerce_proposal()
     identity = proposal["backlog"][1]
@@ -1342,7 +1345,8 @@ def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> N
     assert "Project requirements" in rendered
     assert "Coding starts only after the accepted project story" in rendered
     assert rendered.index("Project requirements") < rendered.index("Backlog proposal")
-    assert "greenfield create --repo-root ." in rendered
+    assert "greenfield compile-transaction --repo-root ." in rendered
+    assert "greenfield create --repo-root ." not in rendered
     assert "Warehouse Dispatch Planning App Operator Workspace" not in rendered
 
 
@@ -1415,7 +1419,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
         "raise_for_failed_refreshes",
         lambda **kwargs: refresh_calls.append(dict(kwargs)),
     )
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["release_plan"].pop("selector")
@@ -1549,7 +1553,7 @@ def test_greenfield_apply_reuses_existing_diagram_ids_for_backlog_traceability(t
         encoding="utf-8",
     )
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     result = greenfield_proposals.apply_greenfield_proposal(
@@ -1577,7 +1581,7 @@ def test_greenfield_apply_reuses_existing_diagram_ids_for_backlog_traceability(t
 def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_project_intelligence(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|program parent"):
@@ -1595,7 +1599,7 @@ def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_proj
 def test_greenfield_apply_rejects_missing_host_authored_program_parent(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     with pytest.raises(ValueError, match="program parent|project_intelligence|domain_intelligence"):
@@ -1614,7 +1618,7 @@ def test_greenfield_apply_rejects_missing_host_authored_program_parent(tmp_path,
 def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _governed_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
 
@@ -1736,7 +1740,7 @@ def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffo
         encoding="utf-8",
     )
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["diagrams"][0]["slug"] = "checkout-flow"
@@ -1794,7 +1798,7 @@ def test_greenfield_apply_commits_records_with_dashboard_warning_when_refresh_fa
         raise RuntimeError("synthetic dashboard refresh failure")
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", fail_refreshes)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     result = greenfield_proposals.apply_greenfield_proposal(

@@ -410,8 +410,10 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
     assert payload["host_reasoning_task"]["must_not"]
     assert payload["host_reasoning_task"]["format_contract"]
     assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "three separate bullet lines: Confirm, Edit, and Reject" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "three separate bullet lines for Confirm, Edit, and Reject" in " ".join(payload["host_reasoning_task"]["must_include"])
+    assert "visually highlighted command labels: CONFIRM, EDIT, and REJECT" in " ".join(
+        payload["host_reasoning_task"]["format_contract"]
+    )
+    assert "three separate bullet lines for CONFIRM, EDIT, and REJECT" in " ".join(payload["host_reasoning_task"]["must_include"])
     assert "echo command instructions" in " ".join(payload["host_reasoning_task"]["must_not"])
     assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
     assert "backlog" not in payload

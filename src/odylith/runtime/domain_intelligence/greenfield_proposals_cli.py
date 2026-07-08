@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import G
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_REPAIR_TIERS
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
+from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 
 
@@ -194,14 +195,18 @@ def _transaction_confirmation_text(
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
         "",
-        "Next step",
-        (
-            "- Confirm: commit this validated package with "
-            f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
-            f"--transaction-hash {summary['transaction_hash']} --confirm`."
+        *format_confirmation_choice_lines(
+            (
+                (
+                    "CONFIRM",
+                    "Commit this exact validated package with "
+                    f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
+                    f"--transaction-hash {summary['transaction_hash']} --confirm`.",
+                ),
+                ("EDIT", "Treat edits as new evidence, rebuild the package, and use the new hash."),
+                ("REJECT", "Stop here. No governed records are written."),
+            )
         ),
-        "- Edit: treat edits as new evidence, rebuild the transaction, and use the new hash.",
-        "- Reject: stop here with no governed records written.",
     ]
     if output_path:
         lines.insert(1, f"- transaction file: {output_path}")
