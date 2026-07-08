@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -55,6 +56,32 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
                     "workstream_id": "B-001",
                     "workstream_title": "Prove supplier risk review path",
                     "implementation_prompt": "Implement the accepted supplier risk review path.",
+                },
+                "authoring_input": {
+                    "component_id": "supplier-risk-service",
+                    "label": "Supplier Risk Service",
+                    "path": "src/supplier_risk",
+                    "kind": "service",
+                    "category": "application",
+                    "qualification": "candidate",
+                    "owner": "repo",
+                    "status": "planned",
+                    "product_layer": "application",
+                    "sources": ("user_intent",),
+                    "workstreams": ("B-001",),
+                    "diagrams": (),
+                    "responsibility": "Supplier Risk Service keeps supplier review state attached.",
+                    "boundary": "Supplier review state only.",
+                    "dependencies": (),
+                    "interfaces": (),
+                    "validation": (),
+                    "risks": (),
+                    "implementation_handoff": {
+                        "workstream_id": "B-001",
+                        "workstream_title": "Prove supplier risk review path",
+                        "implementation_prompt": "Implement the accepted supplier risk review path.",
+                    },
+                    "component_contract": {},
                 },
             },
         ),
@@ -164,6 +191,7 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     assert restored.quality_manifest["status"] == "passed"
     restored_preview = restored.prewrite_package.component_registry_preview
     assert restored_preview[0]["implementation_handoff"]["workstream_id"] == "B-001"
+    assert restored_preview[0]["authoring_input"]["workstreams"] == ["B-001"]
     assert restored.prewrite_package.accepted_project_preview["accepted_at"] == "prewrite"
     assert restored.prewrite_package.project_brief_record_text.startswith("# Supplier Risk Board Project Brief")
     restored_specs = restored.backlog_result["_candidate_idea_specs"]
@@ -325,6 +353,119 @@ def test_write_greenfield_proposal_rejects_incomplete_compiled_package_before_fa
             backlog_result=package.backlog_result or {},
             prewrite_package=package,
         )
+
+
+def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = {
+        **_proposal(),
+        "components": [
+            {
+                "component_id": "supplier-risk-service",
+                "label": "Proposal Recomputed Label",
+                "intended_path": "src/proposal",
+                "kind": "service",
+                "release_scope": "first_release",
+                "responsibility": "This proposal value must not be used after confirmation.",
+            }
+        ],
+    }
+    package = _package(proposal)
+    backlog_result = dict(package.backlog_result or {})
+    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
+    backlog_result["idea_files"] = {str(idea_path): "Supplier risk review path\n"}
+    backlog_result["backlog_index"] = str(tmp_path / "odylith/radar/source/INDEX.md")
+    backlog_result["backlog_index_text"] = "| B-001 | Prove supplier risk review path |\n"
+    authoring_input = {
+        **package.component_registry_preview[0]["authoring_input"],
+        "label": "Compiled Registry Service",
+        "path": "src/compiled",
+        "responsibility": "Compiled Registry Service keeps accepted supplier review state attached.",
+        "workstreams": ("B-001", "B-099"),
+    }
+    component_preview = (
+        {
+            **package.component_registry_preview[0],
+            "label": "Compiled Registry Service",
+            "authoring_input": authoring_input,
+        },
+    )
+    package = replace(
+        package,
+        proposal=proposal,
+        backlog_result=backlog_result,
+        component_registry_preview=component_preview,
+        rendered_component_specs={
+            "Compiled Registry Service": "# Compiled Registry Service\n\nCompiled registry service spec.\n"
+        },
+    )
+    calls: dict[str, Any] = {}
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("post-confirm write must not recompute component authoring inputs")
+
+    def fake_register_component(**kwargs: Any) -> Any:
+        calls["register"] = kwargs
+        spec_path = tmp_path / "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md"
+        return SimpleNamespace(
+            as_dict=lambda: {
+                "component_id": kwargs["component_id"],
+                "label": kwargs["label"],
+                "path": kwargs["path"],
+                "spec_path": str(spec_path),
+                "registry_path": str(tmp_path / "odylith/registry/source/component_registry.v1.json"),
+                "validation_gate": {"status": "passed"},
+                }
+            )
+
+    def fake_materialize(**_kwargs: Any) -> dict[str, Any]:
+        return {
+            "created": True,
+            "umbrella_id": "B-001",
+            "program_path": str(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json"),
+            "waves": list(package.program_result["waves"]),
+            "program_count": 1,
+        }
+
+    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "component_authoring_responsibility", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "component_dependency_lines", forbidden)
+    monkeypatch.setattr(greenfield_apply_write, "component_risk_lines", forbidden)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring, "register_component", fake_register_component)
+    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "record_compiled_greenfield_acceptance",
+        lambda **_kwargs: {"event": {"ts_iso": "2026-07-07T00:00:00-07:00"}},
+    )
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
+
+    result = greenfield_apply_write.write_greenfield_proposal(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="",
+        tribunal={"status": "passed", "issues": []},
+        backlog_result=backlog_result,
+        prewrite_package=package,
+    )
+
+    assert calls["register"]["label"] == "Compiled Registry Service"
+    assert calls["register"]["path"] == "src/compiled"
+    assert calls["register"]["workstreams"] == ("B-001", "B-099")
+    assert result["components"][0]["label"] == "Compiled Registry Service"
 
 
 def test_materialize_compiled_greenfield_program_does_not_recompute_governance(

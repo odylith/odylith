@@ -309,6 +309,11 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             gate = row.get("validation_gate") if isinstance(row.get("validation_gate"), Mapping) else {}
             if clean_text(gate.get("status")) != "passed":
                 issues.append("prewrite component authoring preview validation gate did not pass")
+            authoring_input = row.get("authoring_input") if isinstance(row.get("authoring_input"), Mapping) else {}
+            if not authoring_input:
+                issues.append("prewrite component authoring preview missing compiled authoring input")
+            elif clean_text(authoring_input.get("component_id")) != clean_text(row.get("component_id")):
+                issues.append("prewrite component authoring input drifted from Registry preview component id")
         issues.extend(generated_public_copy_issues("prewrite Registry preview", component_preview))
     if backlog_result and not project_brief_preview:
         issues.append("prewrite package must include project brief preview")

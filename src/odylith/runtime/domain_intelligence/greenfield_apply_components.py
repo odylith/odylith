@@ -110,6 +110,7 @@ def preview_prewrite_components(
         created_payload = created.as_dict()
         if isinstance(row["implementation_handoff"], Mapping):
             created_payload["implementation_handoff"] = dict(row["implementation_handoff"])
+        created_payload["authoring_input"] = dict(row)
         created_payload["what_it_is"] = component_authoring._public_what_it_is(  # noqa: SLF001 - prewrite mirrors component_authoring output.
             label=str(row["label"]),
             kind=str(row["kind"]),
@@ -178,8 +179,11 @@ def component_authoring_prewrite_inputs(
                 "label": label,
                 "path": str(row.get("intended_path", "")).strip(),
                 "kind": str(row.get("kind", "service")).strip() or "service",
+                "category": "application",
                 "status": str(row.get("status", "planned")).strip() or "planned",
                 "qualification": str(row.get("qualification", "candidate")).strip() or "candidate",
+                "owner": "repo",
+                "product_layer": "application",
                 "sources": ("user_intent",),
                 "workstreams": greenfield_component_registry_scope.registry_component_workstreams(
                     handoff=handoff,
