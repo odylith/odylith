@@ -1795,22 +1795,23 @@ def test_greenfield_apply_rolls_back_when_final_component_spec_drifts_after_prew
 ) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
-    original = greenfield_apply_write._write_repaired_component_spec
+    original = greenfield_component_commit.materialize_compiled_component_from_preview
 
     def corrupt_final_spec(**kwargs):
-        original(**kwargs)
-        created = kwargs["created"]
-        spec_path = Path(str(created["spec_path"]))
+        created = original(**kwargs)
+        created_payload = created.as_dict()
+        spec_path = Path(str(created_payload["spec_path"]))
         if not spec_path.is_absolute():
             spec_path = kwargs["root"] / spec_path
         spec_path.write_text(
-            f"{spec_path.read_text(encoding='utf-8')}\n\n{created['label']} owns maintains state.\n",
+            f"{spec_path.read_text(encoding='utf-8')}\n\n{created_payload['label']} owns maintains state.\n",
             encoding="utf-8",
         )
+        return created
 
-    monkeypatch.setattr(greenfield_apply_write, "_write_repaired_component_spec", corrupt_final_spec)
+    monkeypatch.setattr(greenfield_component_commit, "materialize_compiled_component_from_preview", corrupt_final_spec)
 
-    with pytest.raises(ValueError, match="component spec quality|post-confirm final write quality"):
+    with pytest.raises(ValueError, match="compiled Registry readback"):
         greenfield_proposals.apply_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
@@ -1843,7 +1844,7 @@ def test_greenfield_apply_final_gate_reads_persisted_project_brief_record(
 
     monkeypatch.setattr(proposal_memory, "_write_compiled_project_brief_source", write_bad_project_brief)
 
-    with pytest.raises(ValueError, match="Project brief.*coordinated modal grammar drift"):
+    with pytest.raises(ValueError, match="compiled memory readback"):
         greenfield_proposals.apply_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,

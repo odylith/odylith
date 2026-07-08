@@ -566,13 +566,17 @@ def _write_compiled_project_brief_source(
     event: Mapping[str, Any],
 ) -> Path:
     path = _project_brief_source_path(repo_root)
-    rendered = _project_brief_with_accepted_at(
+    rendered = compiled_project_brief_record_text(
         project_brief_record_text,
         accepted_at=_clean(event.get("ts_iso")),
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(rendered, encoding="utf-8")
     return path
+
+
+def compiled_project_brief_record_text(text: str, *, accepted_at: str) -> str:
+    return _project_brief_with_accepted_at(text, accepted_at=accepted_at)
 
 
 def _project_brief_with_accepted_at(text: str, *, accepted_at: str) -> str:

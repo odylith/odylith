@@ -139,7 +139,7 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Critical assumptions" in output
     assert "Ambiguities" in output
     assert "Proof boundary" in output
-    assert "Choose one" in output
+    assert "**Choose one command**" in output
     assert "- **CONFIRM** - Accept this interpretation." in output
     assert "compiles a validated ProductCreateTransaction" in output
     assert "- **EDIT** - Reply with corrections." in output
@@ -152,14 +152,14 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     intent = parse_confirmed_intent_text(output, prompt="Build a mathematics research workspace for spectral graph theory")
     assert intent["external_systems"] == []
-    choose_index = output.index("Choose one")
+    choose_index = output.index("**Choose one command**")
     confirm_index = output.index("- **CONFIRM**", choose_index)
     edit_index = output.index("- **EDIT**", confirm_index)
     reject_index = output.index("- **REJECT**", edit_index)
     command_index = output.index("Command after **CONFIRM**", reject_index)
     compile_index = output.index("- Compile transaction:", command_index)
     assert choose_index < confirm_index < edit_index < reject_index < command_index < compile_index
-    assert output.count("Choose one") == 1
+    assert output.count("**Choose one command**") == 1
     assert "greenfield compile-transaction --repo-root ." in output
     assert "greenfield create --repo-root ." not in output
     assert "--confirm" not in output
@@ -704,12 +704,12 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert "- **CONFIRM** - Commit this exact validated package" in output
     assert "- **EDIT** - Treat edits as new evidence" in output
     assert "- **REJECT** - Stop here. No governed records are written" in output
-    choose_index = output.index("Choose one")
+    choose_index = output.index("**Choose one command**")
     confirm_index = output.index("- **CONFIRM**", choose_index)
     edit_index = output.index("- **EDIT**", confirm_index)
     reject_index = output.index("- **REJECT**", edit_index)
     assert choose_index < confirm_index < edit_index < reject_index
-    assert output.count("Choose one") == 1
+    assert output.count("**Choose one command**") == 1
     assert "Compile transaction:" not in output
     assert "compile a validated ProductCreateTransaction" not in output
     assert "compiles a validated ProductCreateTransaction" not in output

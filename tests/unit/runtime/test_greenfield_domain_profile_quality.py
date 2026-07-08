@@ -66,7 +66,7 @@ def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_r
     assert "External systems" in output
     assert "Internal product systems" in output
     assert "Proof boundary" in output
-    assert "Choose one" in output
+    assert "**Choose one command**" in output
     assert "- **CONFIRM** - Accept this interpretation." in output
     assert "- **EDIT** - Reply with corrections." in output
     assert "- **REJECT** - Stop here." in output

@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
@@ -165,6 +166,27 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
     )
 
 
+def _record_compiled_memory_for_readback(**kwargs: Any) -> dict[str, Any]:
+    repo_root = Path(kwargs["repo_root"])
+    accepted_at = "2026-07-07T00:00:00-07:00"
+    source_root = repo_root / "odylith/runtime/source"
+    source_root.mkdir(parents=True, exist_ok=True)
+    accepted_project = dict(kwargs.get("accepted_project_preview") or {})
+    accepted_project["accepted_at"] = accepted_at
+    (source_root / "accepted-project.v1.json").write_text(
+        json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (source_root / "project-brief.v1.md").write_text(
+        compiled_project_brief_record_text(
+            str(kwargs.get("project_brief_record_text") or ""),
+            accepted_at=accepted_at,
+        ),
+        encoding="utf-8",
+    )
+    return {"event": {"ts_iso": accepted_at}}
+
+
 def _transaction() -> Any:
     proposal = _proposal()
     package = _package(proposal)
@@ -180,6 +202,60 @@ def _transaction() -> Any:
             "elapsed_seconds": 12.3,
             "write_transaction": {"status": "not_started", "rollback_guard": "enabled"},
         },
+    )
+
+
+def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path) -> None:
+    package = _package(_proposal())
+    accepted_at = "2026-07-07T00:00:00-07:00"
+    source_root = tmp_path / "odylith/runtime/source"
+    source_root.mkdir(parents=True, exist_ok=True)
+    accepted_project = dict(package.accepted_project_preview or {})
+    accepted_project["accepted_at"] = accepted_at
+    accepted_project["title"] = "Drifted Project"
+    (source_root / "accepted-project.v1.json").write_text(
+        json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (source_root / "project-brief.v1.md").write_text(
+        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="accepted project record does not match compiled transaction preview"):
+        greenfield_apply_write._raise_for_compiled_memory_readback(
+            root=tmp_path,
+            prewrite_package=package,
+            memory_record={"event": {"ts_iso": accepted_at}},
+        )
+
+
+def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp_path: Path) -> None:
+    package = _package(_proposal())
+    accepted_at = "2026-07-07T00:00:00-07:00"
+    preview = dict(package.accepted_project_preview or {})
+    preview["created"] = {
+        **dict(preview.get("created") or {}),
+        "components": [{"component_id": "supplier-risk-service", "dependencies": ("B-001",)}],
+    }
+    package = replace(package, accepted_project_preview=preview)
+    source_root = tmp_path / "odylith/runtime/source"
+    source_root.mkdir(parents=True, exist_ok=True)
+    accepted_project = json.loads(json.dumps(preview))
+    accepted_project["accepted_at"] = accepted_at
+    (source_root / "accepted-project.v1.json").write_text(
+        json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (source_root / "project-brief.v1.md").write_text(
+        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        encoding="utf-8",
+    )
+
+    greenfield_apply_write._raise_for_compiled_memory_readback(
+        root=tmp_path,
+        prewrite_package=package,
+        memory_record={"event": {"ts_iso": accepted_at}},
     )
 
 
@@ -351,14 +427,14 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_programs, "create_greenfield_program", forbidden)
     monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
     monkeypatch.setattr(
         greenfield_apply_write,
         "record_compiled_greenfield_acceptance",
-        lambda **_kwargs: {"event": {"ts_iso": "2026-07-07T00:00:00-07:00"}},
+        _record_compiled_memory_for_readback,
     )
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
@@ -383,6 +459,57 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     assert calls["materialize"]["program_result"] == package.program_result
     assert result["next_steps"] == package.next_steps_preview
     assert result["program"]["program_count"] == 1
+    assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
+
+
+def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceability(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = _proposal()
+    idea_path = tmp_path / "odylith/radar/source/ideas/B-001.md"
+    backlog_result: dict[str, Any] = {
+        "created": [{"title": "Prove supplier risk review path", "idea_id": "B-001", "idea_path": str(idea_path)}],
+        "idea_files": {str(idea_path): "Supplier risk review path\n"},
+        "backlog_index": str(tmp_path / "odylith/radar/source/INDEX.md"),
+        "backlog_index_text": "| B-001 | Prove supplier risk review path |\n",
+        "_candidate_idea_specs": {},
+    }
+    traceability_calls: list[dict[str, Any]] = []
+
+    def fake_apply_traceability(**kwargs: Any) -> list[str]:
+        traceability_calls.append(kwargs)
+        return ["legacy-traceability-applied"]
+
+    monkeypatch.setattr(
+        greenfield_programs,
+        "create_greenfield_program",
+        lambda **_kwargs: {"created": True, "program_count": 1, "waves": []},
+    )
+    monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", lambda **_kwargs: ["B-001"])
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", fake_apply_traceability)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
+    monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", lambda **_kwargs: {"event": {}})
+
+    result = greenfield_apply_write.write_greenfield_proposal(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="",
+        tribunal={"status": "passed", "issues": []},
+        backlog_result=backlog_result,
+    )
+
+    assert len(traceability_calls) == 1
+    assert result["backlog_topology"] == ["legacy-traceability-applied"]
 
 
 def test_write_greenfield_proposal_rejects_incomplete_compiled_package_before_fallback(
@@ -475,7 +602,7 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
         }
 
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
-    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
+    monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
     monkeypatch.setattr(greenfield_component_commit, "component_authoring_responsibility", forbidden)
     monkeypatch.setattr(greenfield_component_commit, "component_dependency_lines", forbidden)
@@ -485,7 +612,7 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
     monkeypatch.setattr(
         greenfield_apply_write,
         "record_compiled_greenfield_acceptance",
-        lambda **_kwargs: {"event": {"ts_iso": "2026-07-07T00:00:00-07:00"}},
+        _record_compiled_memory_for_readback,
     )
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
@@ -517,6 +644,7 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
     ).read_text(encoding="utf-8")
     assert committed_spec == "# Compiled Registry Service\n\nCompiled registry service spec.\n"
     assert result["components"][0]["label"] == "Compiled Registry Service"
+    assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
 
 
 def test_materialize_compiled_greenfield_program_does_not_recompute_governance(

@@ -17,6 +17,7 @@ from odylith.runtime.artifact_quality.greenfield_package_repetition import (
 )
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
@@ -32,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
+from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
@@ -93,17 +95,7 @@ def write_greenfield_proposal(
             proposal=proposal,
             selector=release_selector,
         )
-    for raw_path, text in backlog_result.get("existing_idea_files", {}).items():
-        path = Path(raw_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(str(text), encoding="utf-8")
-    for raw_path, text in backlog_result["idea_files"].items():
-        path = Path(raw_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(str(text), encoding="utf-8")
-    backlog_index_path = Path(backlog_result["backlog_index"])
-    backlog_index_path.parent.mkdir(parents=True, exist_ok=True)
-    backlog_index_path.write_text(str(backlog_result["backlog_index_text"]), encoding="utf-8")
+    greenfield_backlog_commit.write_backlog_files(backlog_result)
     if prewrite_package is not None and isinstance(prewrite_package.program_result, Mapping):
         program_result = greenfield_programs.materialize_compiled_greenfield_program(
             repo_root=root,
@@ -165,10 +157,14 @@ def write_greenfield_proposal(
             review_date=atlas_review_date,
         )
         diagrams_created.append(diagram_id)
-    touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
-        repo_root=root,
-        proposal=proposal,
-        plan=traceability_plan,
+    touched_backlog_paths = (
+        greenfield_backlog_commit.compiled_backlog_traceability_paths(repo_root=root, backlog_result=backlog_result)
+        if has_compiled_package
+        else greenfield_traceability.apply_backlog_traceability(
+            repo_root=root,
+            proposal=proposal,
+            plan=traceability_plan,
+        )
     )
     component_handoffs = greenfield_component_commit.precompiled_component_handoffs(prewrite_package)
     if not component_handoffs:
@@ -277,6 +273,7 @@ def write_greenfield_proposal(
             project_brief_record_text=prewrite_package.project_brief_record_text,
             compass_memory_preview=prewrite_package.compass_memory_preview or {},
         )
+        _raise_for_compiled_memory_readback(root=root, prewrite_package=prewrite_package, memory_record=memory_record)
     else:
         memory_record = record_greenfield_acceptance(
             repo_root=root,
@@ -564,6 +561,41 @@ def _has_compiled_memory_package(prewrite_package: GreenfieldCompletionPackage |
         and str(prewrite_package.project_brief_record_text or "").strip()
         and isinstance(prewrite_package.compass_memory_preview, Mapping)
     )
+
+
+def _raise_for_compiled_memory_readback(
+    *,
+    root: Path,
+    prewrite_package: GreenfieldCompletionPackage,
+    memory_record: Mapping[str, Any],
+) -> None:
+    event = memory_record.get("event") if isinstance(memory_record.get("event"), Mapping) else {}
+    accepted_at = str(event.get("ts_iso", "")).strip()
+    expected_accepted_project = dict(prewrite_package.accepted_project_preview or {})
+    expected_accepted_project["accepted_at"] = accepted_at
+    expected_accepted_project = _json_comparable_mapping(expected_accepted_project)
+    actual_accepted_project = _read_json_mapping(root / "odylith/runtime/source/accepted-project.v1.json")
+    expected_project_brief = compiled_project_brief_record_text(
+        prewrite_package.project_brief_record_text,
+        accepted_at=accepted_at,
+    )
+    actual_project_brief = _read_text(root / "odylith/runtime/source/project-brief.v1.md")
+    issues: list[str] = []
+    if actual_accepted_project != expected_accepted_project:
+        issues.append("accepted project record does not match compiled transaction preview")
+    if actual_project_brief != expected_project_brief:
+        issues.append("project brief record does not match compiled transaction text")
+    if issues:
+        detail = "\n".join(f"- {issue}" for issue in dedupe_strings(issues))
+        raise ValueError(f"greenfield post-confirm compiled memory readback failed with {len(issues)} issue(s):\n{detail}")
+
+
+def _json_comparable_mapping(value: Mapping[str, Any]) -> Mapping[str, Any]:
+    try:
+        normalized = json.loads(json.dumps(value, sort_keys=True))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("compiled memory preview is not JSON-serializable for readback") from exc
+    return normalized if isinstance(normalized, Mapping) else {}
 
 
 def _atlas_source_path_for_row(row: Mapping[str, Any]) -> str:
