@@ -197,7 +197,7 @@ def _format_proposal_preview_text(
             ),
             "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
             "Odylith system action after **CONFIRM**",
-            "- Do not paste this command in your reply. Reply only with CONFIRM, EDIT, or REJECT.",
+            "- Do not paste this command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT.",
             f"- Compile transaction: {apply_json_command}",
         ]
     )
@@ -501,7 +501,9 @@ def _format_governed_proposal_text(
     )
     lines.extend(["", "Transaction path"])
     lines.append("No governed records changed. Transaction path:")
-    lines.append("- Do not paste the transaction command in your reply. Reply only with CONFIRM, EDIT, or REJECT.")
+    lines.append(
+        "- Do not paste the transaction command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT."
+    )
     request_commands = request_context.get("apply_commands", [])
     apply_command = ""
     if isinstance(request_commands, list):

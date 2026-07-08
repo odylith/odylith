@@ -96,17 +96,21 @@ Prove that one submitted permit case can move through review and final decision 
 
 ## Choose one command
 
-Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**.
+**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`.
+Only the first command counts. Do not paste Odylith system commands in your reply.
 
 ### Command: `CONFIRM`
+**Reply starts with:** `CONFIRM`
 
 Accept this interpretation.
 
 ### Command: `EDIT`
+**Reply starts with:** `EDIT`
 
 Reply with corrections.
 
 ### Command: `REJECT`
+**Reply starts with:** `REJECT`
 
 Stop here.
 """,

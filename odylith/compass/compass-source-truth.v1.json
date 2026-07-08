@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-07-08T09:59:03Z",
+  "generated_utc": "2026-07-08T10:30:59Z",
   "release_summary": {
     "catalog": [
       {
@@ -318,19 +318,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 35,
+            "commit_count": 36,
             "local_change_count": 6,
             "file_touch_count": 171
           },
           "48h": {
-            "commit_count": 49,
+            "commit_count": 50,
             "local_change_count": 6,
             "file_touch_count": 429
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-08T02:58:00-07:00",
+          "last_activity_iso": "2026-07-08T03:30:44-07:00",
           "age_days": 12,
           "eta_days": 2,
           "eta_confidence": "high"
@@ -762,19 +762,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 95
+            "file_touch_count": 99
           },
           "48h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 113
+            "file_touch_count": 117
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 89,
           "eta_days": null,
           "eta_confidence": "low"
@@ -933,19 +933,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 95
+            "file_touch_count": 99
           },
           "48h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 113
+            "file_touch_count": 117
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 90,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1107,19 +1107,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 1,
-            "file_touch_count": 113
+            "file_touch_count": 117
           },
           "48h": {
-            "commit_count": 16,
+            "commit_count": 17,
             "local_change_count": 1,
-            "file_touch_count": 151
+            "file_touch_count": 155
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-07-08T02:39:49-07:00",
+          "last_activity_iso": "2026-07-08T03:13:28-07:00",
           "age_days": 102,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1465,19 +1465,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 74
+            "file_touch_count": 78
           },
           "48h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 86
+            "file_touch_count": 90
           }
         },
         "timeline": {
           "start_date": "2026-04-25",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 74,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1493,11 +1493,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           }
         },
@@ -1652,19 +1652,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 2,
-            "file_touch_count": 74
-          },
-          "48h": {
             "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 129
+            "file_touch_count": 78
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 133
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 82,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1680,11 +1680,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 52,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -2840,19 +2840,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 74
-          },
-          "48h": {
             "commit_count": 4,
             "local_change_count": 1,
-            "file_touch_count": 132
+            "file_touch_count": 78
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 1,
+            "file_touch_count": 136
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:09:07-07:00",
           "age_days": 82,
           "eta_days": null,
           "eta_confidence": "low"
@@ -2868,11 +2868,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 96,
+            "index": 99,
             "band": "High"
           },
           "48h": {
-            "index": 99,
+            "index": 100,
             "band": "High"
           }
         },
@@ -29769,19 +29769,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 35,
+            "commit_count": 36,
             "local_change_count": 6,
             "file_touch_count": 171
           },
           "48h": {
-            "commit_count": 49,
+            "commit_count": 50,
             "local_change_count": 6,
             "file_touch_count": 429
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-08T02:58:00-07:00",
+          "last_activity_iso": "2026-07-08T03:30:44-07:00",
           "age_days": 12,
           "eta_days": 2,
           "eta_confidence": "high"
@@ -30185,19 +30185,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 11,
+            "commit_count": 12,
             "local_change_count": 1,
-            "file_touch_count": 113
+            "file_touch_count": 117
           },
           "48h": {
-            "commit_count": 16,
+            "commit_count": 17,
             "local_change_count": 1,
-            "file_touch_count": 151
+            "file_touch_count": 155
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-07-08T02:39:49-07:00",
+          "last_activity_iso": "2026-07-08T03:13:28-07:00",
           "age_days": 102,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30385,19 +30385,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 95
+            "file_touch_count": 99
           },
           "48h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 113
+            "file_touch_count": 117
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 89,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30556,19 +30556,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 95
+            "file_touch_count": 99
           },
           "48h": {
-            "commit_count": 9,
+            "commit_count": 10,
             "local_change_count": 5,
-            "file_touch_count": 113
+            "file_touch_count": 117
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 90,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30658,6 +30658,193 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-069"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-117",
+        "title": "Discipline Surfaces And Release Proof",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "B-110 needs explicit child execution slices so Odylith Discipline can land through governed waves instead of collapsing governance, runtime, learning, host parity, benchmarks, and release proof into one unbounded record.",
+          "customer": "Odylith maintainers and host-lane operators who need v0.1.11 Odylith Discipline work to stay decomposed, auditable, benchmark-proved, low-latency, and credit-safe across Codex, Claude, dogfood, and consumer lanes.",
+          "proposed_solution": "Keep the governed surfaces truthful while the runtime and host contracts move: refresh Atlas, Compass, Radar, Registry, Casebook, and shell artifacts through owned lanes, add the topology diagrams that explain the release-proof path, and prove the rendered browser states before claiming the surface contract is clean.",
+          "opportunity": "Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith Discipline loop.",
+          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+          "founder_pov": "Each child slice should strengthen the same Odylith Discipline platform: deterministic hard laws, adaptive stance, zero-credit hot paths, compact learning, subsystem integration, host parity, benchmark sovereignty, and public surface accountability."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [
+          {
+            "umbrella_id": "B-110",
+            "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
+            "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
+            "wave_count": 1,
+            "wave_span_label": "W7",
+            "role_label": "Primary",
+            "has_active_wave": false,
+            "has_next_wave": false,
+            "active_wave_labels": [],
+            "next_wave_labels": [],
+            "program_active_labels": [],
+            "program_next_label": "",
+            "refs": [
+              {
+                "umbrella_id": "B-110",
+                "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
+                "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
+                "wave_id": "W7",
+                "wave_label": "Adaptive Discipline Surfaces And Release Proof",
+                "wave_status": "complete",
+                "wave_status_label": "Complete",
+                "wave_status_tone": "wave-complete",
+                "sequence": 7,
+                "role": "primary",
+                "role_label": "Primary",
+                "is_active_wave": false,
+                "is_next_wave": false
+              }
+            ]
+          }
+        ],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-17",
+          "updated": "2026-04-25",
+          "all_total_tasks": 0,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 78
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 133
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-17",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
+          "age_days": 82,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 52,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 55,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [
+            "discipline",
+            "release-0-1-11"
+          ],
+          "state": "ambiguous"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 21,
+            "decision_evidence": true,
+            "explicit_count": 520,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 354,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 429,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-117"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-117"
           }
         ],
         "proof_summary_lines": []
@@ -30837,193 +31024,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-117",
-        "title": "Discipline Surfaces And Release Proof",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "B-110 needs explicit child execution slices so Odylith Discipline can land through governed waves instead of collapsing governance, runtime, learning, host parity, benchmarks, and release proof into one unbounded record.",
-          "customer": "Odylith maintainers and host-lane operators who need v0.1.11 Odylith Discipline work to stay decomposed, auditable, benchmark-proved, low-latency, and credit-safe across Codex, Claude, dogfood, and consumer lanes.",
-          "proposed_solution": "Keep the governed surfaces truthful while the runtime and host contracts move: refresh Atlas, Compass, Radar, Registry, Casebook, and shell artifacts through owned lanes, add the topology diagrams that explain the release-proof path, and prove the rendered browser states before claiming the surface contract is clean.",
-          "opportunity": "Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith Discipline loop.",
-          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-          "founder_pov": "Each child slice should strengthen the same Odylith Discipline platform: deterministic hard laws, adaptive stance, zero-credit hot paths, compact learning, subsystem integration, host parity, benchmark sovereignty, and public surface accountability."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [
-          {
-            "umbrella_id": "B-110",
-            "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
-            "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
-            "wave_count": 1,
-            "wave_span_label": "W7",
-            "role_label": "Primary",
-            "has_active_wave": false,
-            "has_next_wave": false,
-            "active_wave_labels": [],
-            "next_wave_labels": [],
-            "program_active_labels": [],
-            "program_next_label": "",
-            "refs": [
-              {
-                "umbrella_id": "B-110",
-                "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
-                "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
-                "wave_id": "W7",
-                "wave_label": "Adaptive Discipline Surfaces And Release Proof",
-                "wave_status": "complete",
-                "wave_status_label": "Complete",
-                "wave_status_tone": "wave-complete",
-                "sequence": 7,
-                "role": "primary",
-                "role_label": "Primary",
-                "is_active_wave": false,
-                "is_next_wave": false
-              }
-            ]
-          }
-        ],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-17",
-          "updated": "2026-04-25",
-          "all_total_tasks": 0,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 3,
-            "local_change_count": 2,
-            "file_touch_count": 74
-          },
-          "48h": {
-            "commit_count": 4,
-            "local_change_count": 2,
-            "file_touch_count": 129
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-17",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
-          "age_days": 82,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 48,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 52,
-            "band": "Medium"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [
-            "discipline",
-            "release-0-1-11"
-          ],
-          "state": "ambiguous"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 21,
-            "decision_evidence": true,
-            "explicit_count": 520,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 354,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 429,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-117"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-117"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-115",
         "title": "Discipline Tooling And Host Parity",
         "status": "finished",
@@ -31103,19 +31103,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 74
+            "file_touch_count": 78
           },
           "48h": {
-            "commit_count": 3,
+            "commit_count": 4,
             "local_change_count": 2,
-            "file_touch_count": 86
+            "file_touch_count": 90
           }
         },
         "timeline": {
           "start_date": "2026-04-25",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:17:22-07:00",
           "age_days": 74,
           "eta_days": null,
           "eta_confidence": "low"
@@ -31131,11 +31131,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 48,
+            "index": 52,
             "band": "Medium"
           }
         },
@@ -32291,19 +32291,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 74
-          },
-          "48h": {
             "commit_count": 4,
             "local_change_count": 1,
-            "file_touch_count": 132
+            "file_touch_count": 78
+          },
+          "48h": {
+            "commit_count": 5,
+            "local_change_count": 1,
+            "file_touch_count": 136
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-07-08T02:58:52-07:00",
+          "last_activity_iso": "2026-07-08T03:09:07-07:00",
           "age_days": 82,
           "eta_days": null,
           "eta_confidence": "low"
@@ -32319,11 +32319,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 96,
+            "index": 99,
             "band": "High"
           },
           "48h": {
-            "index": 99,
+            "index": 100,
             "band": "High"
           }
         },
@@ -59221,19 +59221,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 35,
+          "commit_count": 36,
           "local_change_count": 6,
           "file_touch_count": 171
         },
         "48h": {
-          "commit_count": 49,
+          "commit_count": 50,
           "local_change_count": 6,
           "file_touch_count": 429
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-08T02:58:00-07:00",
+        "last_activity_iso": "2026-07-08T03:30:44-07:00",
         "age_days": 12,
         "eta_days": 2,
         "eta_confidence": "high"
@@ -59637,19 +59637,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 1,
-          "file_touch_count": 113
+          "file_touch_count": 117
         },
         "48h": {
-          "commit_count": 16,
+          "commit_count": 17,
           "local_change_count": 1,
-          "file_touch_count": 151
+          "file_touch_count": 155
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-07-08T02:39:49-07:00",
+        "last_activity_iso": "2026-07-08T03:13:28-07:00",
         "age_days": 102,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -59837,19 +59837,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 95
+          "file_touch_count": 99
         },
         "48h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 113
+          "file_touch_count": 117
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 89,
         "eta_days": null,
         "eta_confidence": "low"
@@ -60008,19 +60008,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 95
+          "file_touch_count": 99
         },
         "48h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 113
+          "file_touch_count": 117
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 90,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60110,6 +60110,193 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-069"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-117",
+      "title": "Discipline Surfaces And Release Proof",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "B-110 needs explicit child execution slices so Odylith Discipline can land through governed waves instead of collapsing governance, runtime, learning, host parity, benchmarks, and release proof into one unbounded record.",
+        "customer": "Odylith maintainers and host-lane operators who need v0.1.11 Odylith Discipline work to stay decomposed, auditable, benchmark-proved, low-latency, and credit-safe across Codex, Claude, dogfood, and consumer lanes.",
+        "proposed_solution": "Keep the governed surfaces truthful while the runtime and host contracts move: refresh Atlas, Compass, Radar, Registry, Casebook, and shell artifacts through owned lanes, add the topology diagrams that explain the release-proof path, and prove the rendered browser states before claiming the surface contract is clean.",
+        "opportunity": "Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith Discipline loop.",
+        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+        "founder_pov": "Each child slice should strengthen the same Odylith Discipline platform: deterministic hard laws, adaptive stance, zero-credit hot paths, compact learning, subsystem integration, host parity, benchmark sovereignty, and public surface accountability."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [
+        {
+          "umbrella_id": "B-110",
+          "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
+          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
+          "wave_count": 1,
+          "wave_span_label": "W7",
+          "role_label": "Primary",
+          "has_active_wave": false,
+          "has_next_wave": false,
+          "active_wave_labels": [],
+          "next_wave_labels": [],
+          "program_active_labels": [],
+          "program_next_label": "",
+          "refs": [
+            {
+              "umbrella_id": "B-110",
+              "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
+              "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
+              "wave_id": "W7",
+              "wave_label": "Adaptive Discipline Surfaces And Release Proof",
+              "wave_status": "complete",
+              "wave_status_label": "Complete",
+              "wave_status_tone": "wave-complete",
+              "sequence": 7,
+              "role": "primary",
+              "role_label": "Primary",
+              "is_active_wave": false,
+              "is_next_wave": false
+            }
+          ]
+        }
+      ],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.11",
+      "plan": {
+        "created": "2026-04-17",
+        "updated": "2026-04-25",
+        "all_total_tasks": 0,
+        "all_done_tasks": 0,
+        "total_tasks": 0,
+        "done_tasks": 0,
+        "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 78
+        },
+        "48h": {
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 133
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-17",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
+        "age_days": 82,
+        "eta_days": null,
+        "eta_confidence": "low"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 52,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 55,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [
+          "discipline",
+          "release-0-1-11"
+        ],
+        "state": "ambiguous"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 21,
+          "decision_evidence": true,
+          "explicit_count": 520,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 354,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 429,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-117"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-117"
         }
       ],
       "proof_summary_lines": []
@@ -60289,193 +60476,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-117",
-      "title": "Discipline Surfaces And Release Proof",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "B-110 needs explicit child execution slices so Odylith Discipline can land through governed waves instead of collapsing governance, runtime, learning, host parity, benchmarks, and release proof into one unbounded record.",
-        "customer": "Odylith maintainers and host-lane operators who need v0.1.11 Odylith Discipline work to stay decomposed, auditable, benchmark-proved, low-latency, and credit-safe across Codex, Claude, dogfood, and consumer lanes.",
-        "proposed_solution": "Keep the governed surfaces truthful while the runtime and host contracts move: refresh Atlas, Compass, Radar, Registry, Casebook, and shell artifacts through owned lanes, add the topology diagrams that explain the release-proof path, and prove the rendered browser states before claiming the surface contract is clean.",
-        "opportunity": "Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith Discipline loop.",
-        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-        "founder_pov": "Each child slice should strengthen the same Odylith Discipline platform: deterministic hard laws, adaptive stance, zero-credit hot paths, compact learning, subsystem integration, host parity, benchmark sovereignty, and public surface accountability."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-17-adaptive-discipline-surfaces-and-release-proof.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [
-        {
-          "umbrella_id": "B-110",
-          "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
-          "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
-          "wave_count": 1,
-          "wave_span_label": "W7",
-          "role_label": "Primary",
-          "has_active_wave": false,
-          "has_next_wave": false,
-          "active_wave_labels": [],
-          "next_wave_labels": [],
-          "program_active_labels": [],
-          "program_next_label": "",
-          "refs": [
-            {
-              "umbrella_id": "B-110",
-              "umbrella_title": "Discipline, Credit-Safe And Benchmark-Proved",
-              "source_file": "odylith/radar/source/programs/B-110.execution-waves.v1.json",
-              "wave_id": "W7",
-              "wave_label": "Adaptive Discipline Surfaces And Release Proof",
-              "wave_status": "complete",
-              "wave_status_label": "Complete",
-              "wave_status_tone": "wave-complete",
-              "sequence": 7,
-              "role": "primary",
-              "role_label": "Primary",
-              "is_active_wave": false,
-              "is_next_wave": false
-            }
-          ]
-        }
-      ],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.11",
-      "plan": {
-        "created": "2026-04-17",
-        "updated": "2026-04-25",
-        "all_total_tasks": 0,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 74
-        },
-        "48h": {
-          "commit_count": 4,
-          "local_change_count": 2,
-          "file_touch_count": 129
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-17",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
-        "age_days": 82,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 48,
-          "band": "Medium"
-        },
-        "48h": {
-          "index": 52,
-          "band": "Medium"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [
-          "discipline",
-          "release-0-1-11"
-        ],
-        "state": "ambiguous"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 21,
-          "decision_evidence": true,
-          "explicit_count": 520,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 354,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 429,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-117"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-117"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-115",
       "title": "Discipline Tooling And Host Parity",
       "status": "finished",
@@ -60555,19 +60555,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 74
+          "file_touch_count": 78
         },
         "48h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 86
+          "file_touch_count": 90
         }
       },
       "timeline": {
         "start_date": "2026-04-25",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 74,
         "eta_days": null,
         "eta_confidence": "low"
@@ -60583,11 +60583,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         }
       },
@@ -61743,19 +61743,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 74
-        },
-        "48h": {
           "commit_count": 4,
           "local_change_count": 1,
-          "file_touch_count": 132
+          "file_touch_count": 78
+        },
+        "48h": {
+          "commit_count": 5,
+          "local_change_count": 1,
+          "file_touch_count": 136
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:09:07-07:00",
         "age_days": 82,
         "eta_days": null,
         "eta_confidence": "low"
@@ -61771,11 +61771,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 96,
+          "index": 99,
           "band": "High"
         },
         "48h": {
-          "index": 99,
+          "index": 100,
           "band": "High"
         }
       },
@@ -90634,19 +90634,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 95
+          "file_touch_count": 99
         },
         "48h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 113
+          "file_touch_count": 117
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 89,
         "eta_days": null,
         "eta_confidence": "low"
@@ -93360,19 +93360,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 35,
+          "commit_count": 36,
           "local_change_count": 6,
           "file_touch_count": 171
         },
         "48h": {
-          "commit_count": 49,
+          "commit_count": 50,
           "local_change_count": 6,
           "file_touch_count": 429
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-08T02:58:00-07:00",
+        "last_activity_iso": "2026-07-08T03:30:44-07:00",
         "age_days": 12,
         "eta_days": 2,
         "eta_confidence": "high"
@@ -94287,19 +94287,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 11,
+          "commit_count": 12,
           "local_change_count": 1,
-          "file_touch_count": 113
+          "file_touch_count": 117
         },
         "48h": {
-          "commit_count": 16,
+          "commit_count": 17,
           "local_change_count": 1,
-          "file_touch_count": 151
+          "file_touch_count": 155
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-07-08T02:39:49-07:00",
+        "last_activity_iso": "2026-07-08T03:13:28-07:00",
         "age_days": 102,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103328,19 +103328,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 95
+          "file_touch_count": 99
         },
         "48h": {
-          "commit_count": 9,
+          "commit_count": 10,
           "local_change_count": 5,
-          "file_touch_count": 113
+          "file_touch_count": 117
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 90,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -111927,19 +111927,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 74
-        },
-        "48h": {
           "commit_count": 4,
           "local_change_count": 1,
-          "file_touch_count": 132
+          "file_touch_count": 78
+        },
+        "48h": {
+          "commit_count": 5,
+          "local_change_count": 1,
+          "file_touch_count": 136
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:09:07-07:00",
         "age_days": 82,
         "eta_days": null,
         "eta_confidence": "low"
@@ -111955,11 +111955,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 96,
+          "index": 99,
           "band": "High"
         },
         "48h": {
-          "index": 99,
+          "index": 100,
           "band": "High"
         }
       },
@@ -113014,19 +113014,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 74
+          "file_touch_count": 78
         },
         "48h": {
-          "commit_count": 3,
+          "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 86
+          "file_touch_count": 90
         }
       },
       "timeline": {
         "start_date": "2026-04-25",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 74,
         "eta_days": null,
         "eta_confidence": "low"
@@ -113042,11 +113042,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         }
       },
@@ -113426,19 +113426,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 2,
-          "file_touch_count": 74
-        },
-        "48h": {
           "commit_count": 4,
           "local_change_count": 2,
-          "file_touch_count": 129
+          "file_touch_count": 78
+        },
+        "48h": {
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 133
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-07-08T02:58:52-07:00",
+        "last_activity_iso": "2026-07-08T03:17:22-07:00",
         "age_days": 82,
         "eta_days": null,
         "eta_confidence": "low"
@@ -113454,11 +113454,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 48,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 52,
+          "index": 55,
           "band": "Medium"
         }
       },

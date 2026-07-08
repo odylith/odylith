@@ -77,7 +77,7 @@ def format_visible_proposal_card_text(
             ),
             "",
             "Odylith system action after **CONFIRM**",
-            "- Do not paste this command in your reply. Reply only with CONFIRM, EDIT, or REJECT.",
+            "- Do not paste this command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT.",
             f"- Compile transaction: {_visible_compile_command(proposal, request_context=request_context, release_selector=release_selector)}",
             "- Full review: add --confirm-intent --detail full for the long contract; export JSON only when explicitly requested.",
         ]

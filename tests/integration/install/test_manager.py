@@ -816,7 +816,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "greenfield compile-transaction" in guidance_text
     assert "ProductCreateTransaction" in guidance_text
     assert "`## Choose one command`" in guidance_text
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**" in guidance_text
+    assert "Start your reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**" in guidance_text
+    assert "Reply starts with: CONFIRM" in guidance_text
     assert "Command: `CONFIRM`" in guidance_text
     assert "Command: `EDIT`" in guidance_text
     assert "Command: `REJECT`" in guidance_text
@@ -878,7 +879,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "greenfield compile-transaction" in root_agents
     assert "ProductCreateTransaction" in root_agents
     assert "`## Choose one command`" in root_agents
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**" in root_agents
+    assert "Start your reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**" in root_agents
+    assert "Reply starts with: CONFIRM" in root_agents
     assert "Command: `CONFIRM`" in root_agents
     assert "Command: `EDIT`" in root_agents
     assert "Command: `REJECT`" in root_agents

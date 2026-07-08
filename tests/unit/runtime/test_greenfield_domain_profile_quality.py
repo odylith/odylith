@@ -67,12 +67,16 @@ def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_r
     assert "Internal product systems" in output
     assert "Proof boundary" in output
     assert "## Choose one command" in output
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
+    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
+    assert "**Reply starts with:** `CONFIRM`" in output
     assert "Accept this interpretation." in output
     assert "### Command: `EDIT`" in output
+    assert "**Reply starts with:** `EDIT`" in output
     assert "Correct the interpretation." in output
     assert "### Command: `REJECT`" in output
+    assert "**Reply starts with:** `REJECT`" in output
     assert "Stop. Odylith writes no governed records." in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output

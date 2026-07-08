@@ -49,12 +49,14 @@ placeholder products in response to a show-me request.
    Markdown so the operator sees Product story, State object, First complete
    path, Human actors, External systems, Internal product systems, Critical
    assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
-   The command block must show `Start your reply with one clear command: **CONFIRM**,
+   The command block must show `Start your reply with exactly one command: **CONFIRM**,
    **EDIT**, or **REJECT**.`, then visually separate sections headed **Command: `CONFIRM`**,
-   **Command: `EDIT`**, and **Command: `REJECT`**. Use bullets for actors, systems,
+   **Command: `EDIT`**, and **Command: `REJECT`** plus `Reply starts with: CONFIRM`,
+   `Reply starts with: EDIT`, and `Reply starts with: REJECT`. Use bullets for actors, systems,
    assumptions, and ambiguities; do not collapse the confirmation into a wall
    of prose or wrap normal domain words in code ticks or decorative bold
-   markers. After the operator chooses **CONFIRM** for the same
+   markers. The first **CONFIRM** compiles and hash-gates the transaction before any
+   governed records are written. After the operator chooses **CONFIRM** for the same
    interpretation, write that same visible confirmation to
    `.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
    transaction from the same confirmation:

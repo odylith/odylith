@@ -112,11 +112,13 @@ Product Intent Confirmation in chat from live reasoning before any proposal
 records exist. Render it as sectioned Markdown: Product story, State object,
 First complete path, Human actors, External systems, Internal product systems,
 Critical assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
-The command block must show `Start your reply with one clear command: **CONFIRM**,
+The command block must show `Start your reply with exactly one command: **CONFIRM**,
 **EDIT**, or **REJECT**.`, then visually separate sections headed **Command: `CONFIRM`**,
-**Command: `EDIT`**, and **Command: `REJECT`**. Use short paragraphs plus bullets, not a wall of
+**Command: `EDIT`**, and **Command: `REJECT`** with `Reply starts with: CONFIRM`,
+`Reply starts with: EDIT`, and `Reply starts with: REJECT`. Use short paragraphs plus bullets, not a wall of
 prose, and do not wrap ordinary product terms in code ticks or decorative bold
-markers. After the operator chooses **CONFIRM**, write the
+markers. The first **CONFIRM** compiles and hash-gates the transaction before any
+governed records are written. After the operator chooses **CONFIRM**, write the
 same visible Product Intent Confirmation to
 `.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
 transaction. Odylith may normalize that Markdown into

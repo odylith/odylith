@@ -29,6 +29,22 @@ class GreenfieldApplyTransaction:
         self._tmp: tempfile.TemporaryDirectory[str] | None = None
         self._snapshot_root: Path | None = None
         self._committed = False
+        self._rolled_back = False
+        self._rollback_error = ""
+
+    @property
+    def rollback_status(self) -> str:
+        if self._committed:
+            return "committed"
+        if self._rolled_back:
+            return "rolled_back"
+        if self._rollback_error:
+            return "rollback_failed"
+        return "not_started"
+
+    @property
+    def rollback_error(self) -> str:
+        return self._rollback_error
 
     def __enter__(self) -> "GreenfieldApplyTransaction":
         self._tmp = tempfile.TemporaryDirectory(prefix="odylith-greenfield-rollback-")
@@ -50,7 +66,12 @@ class GreenfieldApplyTransaction:
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> bool:
         try:
             if exc_type is not None and not self._committed:
-                self._restore()
+                try:
+                    self._restore()
+                except Exception as rollback_exc:
+                    self._rollback_error = f"{type(rollback_exc).__name__}: {rollback_exc}"
+                    raise
+                self._rolled_back = True
         finally:
             if self._tmp is not None:
                 self._tmp.cleanup()

@@ -237,6 +237,8 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
         payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
         if isinstance(exc, GreenfieldPostConfirmEngineError):
             payload["post_confirm_quality_manifest"] = exc.manifest
+        if isinstance(exc, greenfield_create_commit.GreenfieldCreateCommitError):
+            payload["commit_failure"] = exc.to_dict()
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))
@@ -338,7 +340,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
                     "confirmation": {
-                        "command_rule": "Start your reply with one clear command: CONFIRM, EDIT, or REJECT.",
+                        "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+                        "first_word_rule": "Only the first command counts. Do not paste Odylith system commands in your reply.",
                         "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
                         "choices": [
                             {

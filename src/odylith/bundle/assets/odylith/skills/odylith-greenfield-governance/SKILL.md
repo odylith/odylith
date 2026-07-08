@@ -25,8 +25,11 @@ mechanism-level learning.
    story, State object, First complete path, Human actors, External systems,
    Internal product systems, Critical assumptions, Ambiguities, Proof boundary,
    and a clear `## Choose one command` block:
-   `Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**.`
-   - **Command: `CONFIRM`** - Accept this interpretation and compile the validated transaction.
+   `Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.`
+   Include `Reply starts with: CONFIRM`, `Reply starts with: EDIT`, and
+   `Reply starts with: REJECT` in the three command sections so the operator
+   can see the exact first word to use.
+   - **Command: `CONFIRM`** - Accept this interpretation, compile the validated transaction, and show its hash before any governed records are written.
    - **Command: `EDIT`** - Put corrections after EDIT; treat them as new evidence and rebuild.
    - **Command: `REJECT`** - Stop with no governed records written.
    Use short paragraphs for the story, state object, first path, and proof

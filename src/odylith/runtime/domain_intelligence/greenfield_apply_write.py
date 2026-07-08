@@ -141,6 +141,11 @@ def write_greenfield_proposal(
             diagram_ids=diagram_ids,
         )
     )
+    if has_compiled_package:
+        traceability_plan = greenfield_traceability_commit.rebase_compiled_traceability_plan(
+            traceability_plan,
+            backlog_result=backlog_result,
+        )
     diagram_write = greenfield_apply_diagrams.materialize_apply_diagrams(
         root=root,
         rows=diagram_rows,
@@ -311,20 +316,11 @@ def write_greenfield_proposal(
     if completion_quality_debt:
         _persist_completion_quality_debt(root=root, debt=completion_quality_debt)
     brand_asset_paths = brand_assets.ensure_brand_assets(repo_root=root)
-    try:
-        dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
-    except RuntimeError as exc:
-        dashboard_refresh = {
-            "status": "warning",
-            "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
-            "view": owned_surface_refresh.dashboard_handoff(surface="project"),
-            "warning": str(exc),
-        }
-    else:
-        dashboard_refresh["rendered_surface_custody"] = greenfield_apply_diagrams.raise_for_greenfield_rendered_surface_custody(
-            repo_root=root,
-            diagram_ids=diagrams_created,
-        )
+    dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
+    dashboard_refresh["rendered_surface_custody"] = greenfield_apply_diagrams.raise_for_greenfield_rendered_surface_custody(
+        repo_root=root,
+        diagram_ids=diagrams_created,
+    )
     dashboard_refresh["managed_brand_assets"] = {
         "status": "passed",
         "seeded_count": len(brand_asset_paths),

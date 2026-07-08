@@ -18,6 +18,33 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 
 
+class GreenfieldCreateCommitError(RuntimeError):
+    """Post-confirm commit failure after the compiled transaction entered the write boundary."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        rollback_status: str,
+        rollback_error: str = "",
+        root_cause: BaseException | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.rollback_status = rollback_status
+        self.rollback_error = rollback_error
+        self.root_cause_type = type(root_cause).__name__ if root_cause is not None else ""
+
+    def to_dict(self) -> dict[str, str]:
+        payload = {
+            "failure_kind": "post_confirm_commit_environment_or_runtime_failure",
+            "rollback_status": self.rollback_status,
+            "root_cause_type": self.root_cause_type,
+        }
+        if self.rollback_error:
+            payload["rollback_error"] = self.rollback_error
+        return payload
+
+
 def commit_greenfield_create_transaction(
     *,
     repo_root: Path,
@@ -36,14 +63,33 @@ def commit_greenfield_create_transaction(
     completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(
         transaction.quality_manifest
     )
-    with GreenfieldApplyTransaction(root) as write_transaction:
-        ensure_greenfield_create_baseline(root)
-        result = greenfield_compiled_write.write_compiled_greenfield_package(
-            root=root,
-            transaction=transaction,
-            completion_priority_write_policy=completion_priority_write_policy,
+    write_transaction = GreenfieldApplyTransaction(root)
+    try:
+        with write_transaction:
+            ensure_greenfield_create_baseline(root)
+            result = greenfield_compiled_write.write_compiled_greenfield_package(
+                root=root,
+                transaction=transaction,
+                completion_priority_write_policy=completion_priority_write_policy,
+            )
+            write_transaction.commit()
+    except (OSError, RuntimeError) as exc:
+        if isinstance(exc, GreenfieldCreateCommitError):
+            raise
+        rollback_status = write_transaction.rollback_status
+        rollback_phrase = (
+            "rollback completed; no governed records were committed"
+            if rollback_status == "rolled_back"
+            else f"rollback_status={rollback_status}; commit did not complete"
         )
-        write_transaction.commit()
+        raise GreenfieldCreateCommitError(
+            "greenfield create failed while committing the verified ProductCreateTransaction; "
+            f"{rollback_phrase}. "
+            f"Root cause: {exc}",
+            rollback_status=rollback_status,
+            rollback_error=write_transaction.rollback_error,
+            root_cause=exc,
+        ) from exc
     final_manifest = finalize_greenfield_post_confirm_manifest(
         transaction.quality_manifest,
         whole_project_elapsed_seconds=time.perf_counter() - started,
@@ -87,6 +133,7 @@ def raise_for_unapproved_product_create_transaction(transaction: ProductCreateTr
 
 
 __all__ = [
+    "GreenfieldCreateCommitError",
     "commit_greenfield_create_transaction",
     "raise_for_unapproved_product_create_transaction",
 ]

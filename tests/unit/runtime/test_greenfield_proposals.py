@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence import artifact_enrichment
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
@@ -69,7 +70,8 @@ def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
     )
 
     assert len(parent_source.splitlines()) < 800
-    assert "greenfield_apply_write.write_greenfield_proposal" in parent_source
+    assert "greenfield_create_commit.commit_greenfield_create_transaction" in parent_source
+    assert "greenfield_apply_write.write_greenfield_proposal" not in parent_source
     assert "greenfield_apply_write.release_assignment_note" in parent_source
     for moved in (
         "def write_greenfield_proposal",
@@ -1798,8 +1800,9 @@ def test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails(tmp_pat
     assert not (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").exists()
 
 
-def test_greenfield_apply_commits_records_with_dashboard_warning_when_refresh_fails(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_rolls_back_partial_writes_when_dashboard_refresh_fails(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
+    original_index = (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
 
     def fail_refreshes(**_kwargs: object) -> None:
         _write(tmp_path / "odylith/radar/radar.html", "partial dashboard\n")
@@ -1810,20 +1813,21 @@ def test_greenfield_apply_commits_records_with_dashboard_warning_when_refresh_fa
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=_host_reasoned_ecommerce_proposal(),
-        confirm=True,
-        release_selector="0.0.1",
-    )
+    with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc_info:
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=_host_reasoned_ecommerce_proposal(),
+            confirm=True,
+            release_selector="0.0.1",
+        )
 
-    assert result["mode"] == "applied"
-    assert result["dashboard_refresh"]["status"] == "warning"
-    assert "synthetic dashboard refresh failure" in result["dashboard_refresh"]["warning"]
-    assert (tmp_path / "odylith/radar/radar.html").is_file()
-    assert (tmp_path / "odylith/runtime/delivery_intelligence.v4.json").is_file()
-    assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
-    assert (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").is_file()
+    assert exc_info.value.rollback_status == "rolled_back"
+    assert "synthetic dashboard refresh failure" in str(exc_info.value)
+    assert (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8") == original_index
+    assert not (tmp_path / "odylith/radar/radar.html").exists()
+    assert not (tmp_path / "odylith/runtime/delivery_intelligence.v4.json").exists()
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").exists()
 
 
 def test_greenfield_transaction_restores_symlinked_snapshot_root_without_traversal(tmp_path) -> None:

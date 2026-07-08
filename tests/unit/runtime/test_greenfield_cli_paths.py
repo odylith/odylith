@@ -142,15 +142,19 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert "Ambiguities" in output
     assert "Proof boundary" in output
     assert "## Choose one command" in output
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
+    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
+    assert "**Reply starts with:** `CONFIRM`" in output
     assert "Accept this interpretation." in output
     assert "compiles and quality-gates a ProductCreateTransaction" in output
     assert "### Command: `EDIT`" in output
+    assert "**Reply starts with:** `EDIT`" in output
     assert "Correct the interpretation." in output
     assert "Put the correction after EDIT" in output
     assert "rebuilds before asking again" in output
     assert "### Command: `REJECT`" in output
+    assert "**Reply starts with:** `REJECT`" in output
     assert "Stop. Odylith writes no governed records." in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
@@ -197,7 +201,7 @@ def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) ->
     assert len(output) <= 6400
 
 
-def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, capsys) -> None:
+def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, monkeypatch, capsys) -> None:
     prompt = (
         "Create a greenfield proposal for a flood shelter intake system that helps city staff register displaced "
         "residents, match household needs to shelter capacity, track medical and accessibility constraints, "
@@ -211,6 +215,9 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, capsys
     intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(confirmation, encoding="utf-8")
+    _stub_dashboard_refresh(monkeypatch)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc, output, compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
@@ -221,7 +228,11 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, capsys
     )
 
     assert rc == 0, output
-    assert compile_payload["confirmation"]["command_rule"] == "Start your reply with one clear command: CONFIRM, EDIT, or REJECT."
+    assert (
+        compile_payload["confirmation"]["command_rule"]
+        == "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
+    )
+    assert compile_payload["confirmation"]["first_word_rule"].startswith("Only the first command counts")
     assert compile_payload["confirmation"]["edit_rule"].startswith("For EDIT, put corrections after the command")
     assert compile_payload["confirmation"]["confirm"].startswith("CONFIRM -")
     assert [choice["command"] for choice in compile_payload["confirmation"]["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
@@ -263,12 +274,16 @@ def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) 
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
     assert "## Choose one command" in output
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
+    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
+    assert "**Reply starts with:** `CONFIRM`" in output
     assert "Accept this proposal so Odylith can compile the ProductCreateTransaction" in output
     assert "### Command: `EDIT`" in output
+    assert "**Reply starts with:** `EDIT`" in output
     assert "Put corrections after EDIT" in output
     assert "### Command: `REJECT`" in output
+    assert "**Reply starts with:** `REJECT`" in output
     assert "Stop. No governed records are written." in output
     choose_index = output.index("## Choose one command")
     confirm_index = output.index("### Command: `CONFIRM`", choose_index)
@@ -329,7 +344,8 @@ def test_greenfield_compile_transaction_accepts_rich_prompt_without_intent_file(
     payload = json.loads(capsys.readouterr().out)
     rendered = json.dumps(payload, sort_keys=True)
     assert payload["mode"] == "product_create_transaction"
-    assert payload["confirmation"]["command_rule"] == "Start your reply with one clear command: CONFIRM, EDIT, or REJECT."
+    assert payload["confirmation"]["command_rule"] == "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
+    assert payload["confirmation"]["first_word_rule"].startswith("Only the first command counts")
     assert payload["confirmation"]["edit_rule"].startswith("For EDIT, put corrections after the command")
     assert payload["confirmation"]["confirm"].startswith("CONFIRM -")
     assert [choice["command"] for choice in payload["confirmation"]["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
@@ -372,12 +388,16 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "Draft architecture diagrams" in output
     assert "ProductCreateTransaction" in output
     assert "## Choose one command" in output
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
+    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
+    assert "**Reply starts with:** `CONFIRM`" in output
     assert "Accept this proposal so Odylith can compile the ProductCreateTransaction" in output
     assert "### Command: `EDIT`" in output
+    assert "**Reply starts with:** `EDIT`" in output
     assert "Put corrections after EDIT" in output
     assert "### Command: `REJECT`" in output
+    assert "**Reply starts with:** `REJECT`" in output
     assert "Stop. No governed records are written." in output
     choose_index = output.index("## Choose one command")
     confirm_index = output.index("### Command: `CONFIRM`", choose_index)
@@ -393,7 +413,7 @@ def test_greenfield_text_full_detail_keeps_apply_path_available_after_intent_con
     assert "--transaction-hash <hash>" not in output
     assert "internal apply payload" not in output
     assert ".odylith/runtime/greenfield/active-proposal.v1.json" not in output
-    assert len(output.splitlines()) <= 270
+    assert len(output.splitlines()) <= 275
 
 
 def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -> None:
@@ -433,10 +453,12 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert "visually separate command sections headed `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`" in " ".join(
         payload["host_reasoning_task"]["format_contract"]
     )
-    assert "Start your reply with one clear command: CONFIRM, EDIT, or REJECT" in " ".join(
+    assert "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT" in " ".join(
         payload["host_reasoning_task"]["format_contract"]
     )
-    assert "start with CONFIRM, EDIT, or REJECT" in " ".join(payload["host_reasoning_task"]["must_include"])
+    assert "start with exactly one command, CONFIRM, EDIT, or REJECT" in " ".join(
+        payload["host_reasoning_task"]["must_include"]
+    )
     assert "three visually separate command sections for CONFIRM, EDIT, and REJECT" in " ".join(
         payload["host_reasoning_task"]["must_include"]
     )
@@ -765,13 +787,17 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert calls[1][1]["proposal_ready"] is True
     assert "ProductCreateTransaction ready for final command" in output
     assert transaction.transaction_hash in output
-    assert "Start your reply with one clear command: **CONFIRM**, **EDIT**, or **REJECT**." in output
+    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
+    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
+    assert "**Reply starts with:** `CONFIRM`" in output
     assert "Commit this exact validated package now." in output
     assert "Odylith verifies the hash and writes the transaction atomically" in output
     assert "### Command: `EDIT`" in output
+    assert "**Reply starts with:** `EDIT`" in output
     assert "Do not commit. Put corrections after EDIT" in output
     assert "### Command: `REJECT`" in output
+    assert "**Reply starts with:** `REJECT`" in output
     assert "Stop. No governed records are written" in output
     choose_index = output.index("## Choose one command")
     confirm_index = output.index("### Command: `CONFIRM`", choose_index)
