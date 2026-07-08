@@ -1079,7 +1079,11 @@ def test_greenfield_create_cli_rejects_transaction_json_without_compiler_provena
     def forbidden(*_args, **_kwargs):
         raise AssertionError("unapproved transaction provenance must fail before governed writes")
 
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(
+        greenfield_create_commit.greenfield_create_baseline,
+        "materialize_precompiled_greenfield_create_baseline",
+        forbidden,
+    )
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
 

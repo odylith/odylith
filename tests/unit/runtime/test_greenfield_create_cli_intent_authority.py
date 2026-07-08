@@ -117,7 +117,11 @@ def test_greenfield_create_cli_rejects_intent_authority_drift_before_writes(
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(
+        greenfield_create_commit.greenfield_create_baseline,
+        "materialize_precompiled_greenfield_create_baseline",
+        forbidden,
+    )
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", ForbiddenTransaction)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 

@@ -213,7 +213,11 @@ def test_create_rejects_confirmed_intent_source_drift_before_write(
         write_calls.append("write")
         raise AssertionError("write path must not run after intent authority drift")
 
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", _baseline_should_not_run)
+    monkeypatch.setattr(
+        greenfield_create_commit.greenfield_create_baseline,
+        "materialize_precompiled_greenfield_create_baseline",
+        _baseline_should_not_run,
+    )
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", _TransactionShouldNotRun)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", _write_should_not_run)
 

@@ -34,6 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
 class _PassingTribunal:
@@ -82,9 +83,11 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(
+        confirmed_intent=confirmed_intent_with_authority(
             CONFIRMED_INTENT_TEXT,
             prompt="Draft a greenfield proposal for a municipal permit review workspace",
+            repo_root=tmp_path,
+            write_files=True,
         ),
     )
 
@@ -2159,7 +2162,12 @@ def test_confirmed_create_ignores_cli_prompt_after_intent_confirmation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    intent = parse_confirmed_intent_text(CONFIRMED_INTENT_TEXT)
+    intent = confirmed_intent_with_authority(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+        repo_root=tmp_path,
+        write_files=True,
+    )
     monkeypatch.setattr(
         greenfield_proposals.repo_analysis,
         "summarize_source_inventory",

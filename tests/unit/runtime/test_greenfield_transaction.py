@@ -39,7 +39,11 @@ def test_commit_transaction_rolls_back_partial_writes_when_write_boundary_fails(
         (tmp_path / "odylith/index.html").write_text("partial shell\n", encoding="utf-8")
         raise RuntimeError("synthetic commit-boundary failure")
 
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", lambda _root: None)
+    monkeypatch.setattr(
+        greenfield_create_commit.greenfield_create_baseline,
+        "materialize_precompiled_greenfield_create_baseline",
+        lambda **_kwargs: None,
+    )
     monkeypatch.setattr(
         greenfield_create_commit.greenfield_compiled_write,
         "write_compiled_greenfield_package",

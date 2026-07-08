@@ -12,13 +12,11 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from odylith.install.bootstrap_assets import customer_backlog_index_source
-from odylith.install.bootstrap_assets import customer_diagram_catalog_source
-from odylith.install.bootstrap_assets import customer_plan_index_source
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
+from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
@@ -44,25 +42,7 @@ class GreenfieldPrewriteBuild:
 def ensure_greenfield_create_baseline(root: Path) -> None:
     """Create missing governance indexes needed by the confirmed-create refresh path."""
 
-    paths = (
-        root / "odylith/radar/source/ideas",
-        root / "odylith/technical-plans/in-progress",
-        root / "odylith/technical-plans/done",
-        root / "odylith/technical-plans/parked",
-        root / "odylith/atlas/source/catalog",
-        root / "odylith/registry/source/components",
-    )
-    for path in paths:
-        path.mkdir(parents=True, exist_ok=True)
-    backlog_index = root / "odylith/radar/source/INDEX.md"
-    if not backlog_index.exists():
-        atomic_write_text(backlog_index, customer_backlog_index_source(repo_root=root), encoding="utf-8")
-    plan_index = root / "odylith/technical-plans/INDEX.md"
-    if not plan_index.exists():
-        atomic_write_text(plan_index, customer_plan_index_source(), encoding="utf-8")
-    diagram_catalog = root / "odylith/atlas/source/catalog/diagrams.v1.json"
-    if not diagram_catalog.exists():
-        atomic_write_text(diagram_catalog, customer_diagram_catalog_source(), encoding="utf-8")
+    greenfield_create_baseline.ensure_greenfield_create_baseline(root)
 
 
 @contextmanager
@@ -264,6 +244,7 @@ def build_prewrite_completion_package(
             backlog_result=backlog_result,
             program_result=preview_program_result,
             traceability_plan=traceability_plan,
+            baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
             prewrite_safety_preview=prewrite_safety_preview,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,

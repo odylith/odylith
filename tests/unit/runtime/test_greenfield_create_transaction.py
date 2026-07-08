@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_compiled_memory_readback
 from odylith.runtime.domain_intelligence import greenfield_compiled_readback
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_programs
@@ -331,7 +332,10 @@ def _transaction(repo_root: Path | None = None) -> Any:
     proposal = _proposal()
     authority = _intent_authority(root, write_files=repo_root is not None)
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
-    package = _package(proposal)
+    package = replace(
+        _package(proposal),
+        baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
+    )
     return build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -570,6 +574,8 @@ def test_product_create_commit_owner_stays_separate_from_proposal_generation() -
     assert "GreenfieldApplyTransaction" not in proposal_source
     assert "greenfield_compiled_write" in commit_source
     assert "write_compiled_greenfield_package" in commit_source
+    assert "materialize_precompiled_greenfield_create_baseline" in commit_source
+    assert "ensure_greenfield_create_baseline" not in commit_source
     assert "write_greenfield_proposal" not in commit_source
     forbidden_commit_tokens = (
         "run_greenfield_post_confirm_engine",
@@ -594,6 +600,9 @@ def test_commit_product_create_transaction_is_commit_only(
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("commit must not run product interpretation, repair, or package compilation")
+
+    def forbidden_baseline_generation(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("commit must not generate baseline files after confirmation")
 
     class _RollbackGuard:
         def __init__(self, repo_root: Path) -> None:
@@ -625,7 +634,11 @@ def test_commit_product_create_transaction_is_commit_only(
     monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", _RollbackGuard)
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", lambda _root: None)
+    monkeypatch.setattr(
+        greenfield_create_commit.greenfield_create_baseline,
+        "ensure_greenfield_create_baseline",
+        forbidden_baseline_generation,
+    )
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", fake_compiled_write)
 
@@ -646,6 +659,9 @@ def test_commit_product_create_transaction_is_commit_only(
         result["post_confirm_quality_manifest"]["write_transaction"]["product_create_transaction_hash"]
         == transaction.transaction_hash
     )
+    assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
+    assert (tmp_path / "odylith/technical-plans/INDEX.md").is_file()
+    assert (tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").is_file()
 
 
 def test_commit_product_create_transaction_rejects_bad_hash_before_write(
@@ -657,7 +673,7 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
 
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
@@ -681,7 +697,7 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
         raise AssertionError("missing confirm must fail before hash verification, rollback guard, or write path")
 
     monkeypatch.setattr(greenfield_create_commit, "require_product_create_transaction_verified", forbidden)
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
@@ -723,7 +739,7 @@ def test_commit_product_create_transaction_rejects_unapproved_provenance_before_
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("unapproved ProductCreateTransaction provenance must fail before write")
 
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
@@ -791,7 +807,7 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("unapproved ProductCreateTransaction must not enter the write path")
 
-    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)

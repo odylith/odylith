@@ -9,7 +9,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
-from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import ensure_greenfield_create_baseline
+from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_compiler_provenance,
@@ -73,6 +73,10 @@ def commit_greenfield_create_transaction(
     require_product_create_transaction_intent_authority(transaction, repo_root=root)
     require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
     raise_for_unapproved_product_create_transaction(transaction)
+    greenfield_create_baseline.require_precompiled_greenfield_create_baseline(
+        root,
+        transaction.prewrite_package.baseline_writes or {},
+    )
     started = time.perf_counter() if started_at is None else float(started_at)
     completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(
         transaction.quality_manifest
@@ -80,7 +84,10 @@ def commit_greenfield_create_transaction(
     write_transaction = GreenfieldApplyTransaction(root)
     try:
         with write_transaction:
-            ensure_greenfield_create_baseline(root)
+            greenfield_create_baseline.materialize_precompiled_greenfield_create_baseline(
+                root=root,
+                baseline_writes=transaction.prewrite_package.baseline_writes or {},
+            )
             result = greenfield_compiled_write.write_compiled_greenfield_package(
                 root=root,
                 transaction=transaction,
