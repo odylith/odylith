@@ -15,6 +15,18 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    is_product_intent_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_intent_authority_from_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    require_product_intent_authority,
+)
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
@@ -43,7 +55,6 @@ _VOLATILE_HASH_KEYS = {
     "whole_project_elapsed_seconds",
 }
 
-
 @dataclass(frozen=True)
 class ProductCreateTransaction:
     """Validated package that post-confirm code may only verify and commit."""
@@ -54,6 +65,7 @@ class ProductCreateTransaction:
     validation_gate: Mapping[str, Any]
     prewrite_package: GreenfieldCompletionPackage
     backlog_result: Mapping[str, Any]
+    intent_authority: Mapping[str, Any]
     quality_manifest: Mapping[str, Any]
     compiler_provenance: Mapping[str, Any]
     transaction_hash: str
@@ -72,6 +84,8 @@ class ProductCreateTransaction:
             "validation_status": str(self.quality_manifest.get("validation_status", "")).strip(),
             "compiler": str(self.compiler_provenance.get("compiler", "")).strip(),
             "compiler_phase": str(self.compiler_provenance.get("phase", "")).strip(),
+            "product_facts_sha256": str(self.intent_authority.get("product_facts_sha256", "")).strip(),
+            "intent_authority_version": str(self.intent_authority.get("version", "")).strip(),
         }
 
 
@@ -82,11 +96,14 @@ def build_product_create_transaction(
     validation_gate: Mapping[str, Any],
     prewrite_package: GreenfieldCompletionPackage,
     backlog_result: Mapping[str, Any],
+    intent_authority: Mapping[str, Any] | None = None,
     quality_manifest: Mapping[str, Any],
     repo_root: Path,
 ) -> ProductCreateTransaction:
     """Build a hash-bound transaction from an already validated prewrite package."""
 
+    authority = dict(intent_authority) if isinstance(intent_authority, Mapping) else _authority_from_proposal(proposal)
+    require_product_intent_authority(authority)
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=str(release_selector or "").strip(),
@@ -94,6 +111,7 @@ def build_product_create_transaction(
         validation_gate=validation_gate,
         prewrite_package=prewrite_package,
         backlog_result=backlog_result,
+        intent_authority=authority,
         quality_manifest=quality_manifest,
         compiler_provenance=build_product_create_transaction_provenance(
             repo_root=repo_root,
@@ -104,9 +122,17 @@ def build_product_create_transaction(
     return replace(transaction, transaction_hash=product_create_transaction_hash(transaction))
 
 
+def _authority_from_proposal(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
+    authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    if isinstance(authority, Mapping):
+        return dict(authority)
+    raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
+
+
 def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:
     """Fail closed when a commit request does not match the compiled package hash."""
 
+    require_product_intent_authority(transaction.intent_authority)
     expected = product_create_transaction_hash(transaction)
     if transaction.transaction_hash != expected:
         raise ValueError(
@@ -170,6 +196,73 @@ def require_product_create_transaction_compiler_provenance(
         )
 
 
+def require_product_create_transaction_intent_authority(
+    transaction: ProductCreateTransaction,
+    *,
+    repo_root: Path,
+) -> None:
+    """Verify typed Product Intent custody before commit-only writes run."""
+
+    require_product_intent_authority(transaction.intent_authority)
+    root = Path(repo_root).expanduser().resolve()
+    structured_path = _resolve_authority_path(
+        root,
+        str(transaction.intent_authority.get("structured_intent_path", "")).strip(),
+    )
+    markdown_path = _resolve_authority_path(
+        root,
+        str(transaction.intent_authority.get("markdown_source_path", "")).strip(),
+    )
+    if not structured_path.is_file():
+        raise ValueError(
+            "ProductCreateTransaction confirmed Product Intent authority structured sidecar is not readable; "
+            "rebuild the pre-confirm transaction before committing governed records"
+        )
+    if not markdown_path.is_file():
+        raise ValueError(
+            "ProductCreateTransaction confirmed Product Intent authority source file is not readable; "
+            "rebuild the pre-confirm transaction before committing governed records"
+        )
+    try:
+        envelope = json.loads(structured_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            "ProductCreateTransaction confirmed Product Intent authority structured sidecar is invalid; "
+            "rebuild the pre-confirm transaction before committing governed records"
+        ) from exc
+    if not is_product_intent_envelope(envelope):
+        raise ValueError(
+            "ProductCreateTransaction confirmed Product Intent authority structured sidecar is not a typed envelope; "
+            "rebuild the pre-confirm transaction before committing governed records"
+        )
+    actual_markdown_hash = hashlib.sha256(markdown_path.read_bytes()).hexdigest()
+    source_evidence = envelope.get("source_evidence") if isinstance(envelope.get("source_evidence"), Mapping) else {}
+    expected_markdown_hash = str(source_evidence.get("source_sha256", "")).strip()
+    if actual_markdown_hash != expected_markdown_hash:
+        raise ValueError(
+            "ProductCreateTransaction confirmed Product Intent authority source hash changed; "
+            "treat the edit as new evidence and rebuild the transaction"
+        )
+    actual_authority = product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=structured_path,
+        markdown_source_path=markdown_path,
+    )
+    require_product_intent_authority(actual_authority)
+    if dict(actual_authority) != dict(transaction.intent_authority):
+        raise ValueError(
+            "ProductCreateTransaction confirmed Product Intent authority structured envelope changed; "
+            "treat the edit as new evidence and rebuild the transaction"
+        )
+
+
+def _resolve_authority_path(repo_root: Path, value: str) -> Path:
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    return path
+
+
 def product_create_transaction_to_dict(transaction: ProductCreateTransaction) -> dict[str, Any]:
     """Return the persisted transaction payload that a commit-only create can trust."""
 
@@ -195,6 +288,7 @@ def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductC
         validation_gate=_mapping(payload.get("validation_gate")),
         prewrite_package=_completion_package_from_payload(_mapping(payload.get("prewrite_package"))),
         backlog_result=_backlog_result_from_payload(_mapping(payload.get("backlog_result"))),
+        intent_authority=_mapping(payload.get("intent_authority")),
         quality_manifest=_mapping(payload.get("quality_manifest")),
         compiler_provenance=_mapping(payload.get("compiler_provenance")),
         transaction_hash=str(payload.get("transaction_hash", "")).strip(),
@@ -217,6 +311,7 @@ def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str
         "validation_gate": _json_ready(transaction.validation_gate),
         "prewrite_package": _json_ready(transaction.prewrite_package),
         "backlog_result": _json_ready(transaction.backlog_result),
+        "intent_authority": _json_ready(transaction.intent_authority),
         "quality_manifest": _json_ready(transaction.quality_manifest),
         "compiler_provenance": _json_ready(transaction.compiler_provenance),
     }
@@ -299,5 +394,6 @@ __all__ = [
     "product_create_transaction_repo_fingerprint",
     "product_create_transaction_to_dict",
     "require_product_create_transaction_compiler_provenance",
+    "require_product_create_transaction_intent_authority",
     "require_product_create_transaction_verified",
 ]

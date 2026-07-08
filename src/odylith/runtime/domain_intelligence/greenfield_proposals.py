@@ -21,7 +21,6 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -37,6 +36,11 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_intent_authority_from_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -63,6 +67,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_planner 
     enrich_rescue_patchset_with_structured_plan,
 )
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+    materialize_prompt_confirmed_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.common import display_text
@@ -342,9 +349,14 @@ def build_greenfield_proposal(
         raise ValueError(
             "confirmed greenfield proposal requires accepted Product Intent Confirmation data; "
             "prompt-only confirmed proposal construction is disabled."
-        )
+    )
     intent_title = str(confirmed_intent.get("title") or "").strip() or "Greenfield Project"
     intent_prompt = _accepted_intent_shaping_prompt(confirmed_intent, fallback_title=intent_title)
+    intent_authority = confirmed_intent.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    if not isinstance(intent_authority, Mapping):
+        raise ValueError("confirmed Product Intent authority is missing; rebuild from a typed custody envelope")
+    intent_authority = dict(intent_authority)
+    require_product_intent_authority(intent_authority)
     evidence = _confirmed_intent_source_evidence(root)
     proposal = build_confirmed_greenfield_proposal(
         prompt=intent_prompt,
@@ -353,10 +365,15 @@ def build_greenfield_proposal(
         release_selector=release_selector,
         confirmed_intent=confirmed_intent,
     )
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     proposal = complete_greenfield_semantic_apply_payload(proposal, release_selector=release_selector)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
@@ -378,7 +395,7 @@ def load_proposal(args: argparse.Namespace) -> dict[str, Any]:
 def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
     intent_file = str(getattr(args, "intent_file", "") or "").strip()
     if not intent_file:
-        return _confirmed_intent_from_prompt_args(args)
+        return _confirmed_intent_from_prompt_args(args, repo_root=repo_root)
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
@@ -387,40 +404,35 @@ def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> 
         prompt=str(getattr(args, "prompt", "") or ""),
         fallback_title=intent_title(str(getattr(args, "prompt", "") or "")),
     )
-    intent = record.product_facts
-    write_structured_confirmed_intent_file(path, intent, envelope=record.envelope)
-    return intent
-
-
-def _confirmed_intent_from_prompt_args(args: argparse.Namespace) -> dict[str, Any]:
-    prompt = prompt_text(str(getattr(args, "prompt", "") or ""))
-    if not prompt or prompt == "new project":
-        raise _prompt_only_material_decision_error()
-    try:
-        intent = parse_confirmed_intent_text(prompt, prompt=prompt, fallback_title=intent_title(prompt))
-    except ValueError as exc:
-        raise _prompt_only_material_decision_error() from exc
-    if _prompt_only_intent_is_generic(intent):
-        raise _prompt_only_material_decision_error()
-    return intent
-
-
-def _prompt_only_intent_is_generic(intent: Mapping[str, Any]) -> bool:
-    title = str(intent.get("title") or "").strip().casefold()
-    actors = " ".join(str(row or "") for row in intent.get("human_actors") or ()).casefold()
-    first_path = str(intent.get("first_path") or "").casefold()
-    generic_title = title in {"greenfield project", "recovered product workspace"} or title.startswith("recovered product")
-    generic_actor = "representative user" in actors or "workspace user" in actors
-    generic_path = "current status" in first_path and "blockers and evidence" in first_path
-    return generic_title or generic_actor or generic_path
-
-
-def _prompt_only_material_decision_error() -> ValueError:
-    return ValueError(
-        "Odylith needs one material product decision before compiling a transaction from prompt-only input: "
-        "who uses it, what state changes, what first path completes, and what visible proof counts. "
-        "Answer in normal product language; no Product Intent file or JSON repair is required."
+    structured_path = write_structured_confirmed_intent_file(path, record.product_facts, envelope=record.envelope)
+    markdown_path = _confirmed_intent_markdown_source_path(record.envelope, fallback=path)
+    authority = product_intent_authority_from_envelope(
+        record.envelope,
+        structured_intent_path=structured_path,
+        markdown_source_path=markdown_path,
     )
+    require_product_intent_authority(authority)
+    intent = dict(record.product_facts)
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    return intent
+
+
+def _confirmed_intent_from_prompt_args(args: argparse.Namespace, *, repo_root: Path) -> dict[str, Any]:
+    prompt = prompt_text(str(getattr(args, "prompt", "") or ""))
+    return materialize_prompt_confirmed_intent(
+        prompt=prompt,
+        repo_root=repo_root,
+        fallback_title=intent_title(prompt),
+    )
+
+
+def _confirmed_intent_markdown_source_path(envelope: Mapping[str, Any], *, fallback: Path) -> Path:
+    source_evidence = envelope.get("source_evidence") if isinstance(envelope.get("source_evidence"), Mapping) else {}
+    source_path = str(source_evidence.get("source_path", "")).strip()
+    if not source_path:
+        return fallback
+    candidate = Path(source_path).expanduser()
+    return candidate if candidate.is_absolute() else fallback.parent / candidate
 
 
 def load_product_create_transaction_args(
@@ -648,6 +660,11 @@ def compile_greenfield_create_transaction(
 
     root = Path(repo_root).expanduser().resolve()
     release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    intent_authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    if not isinstance(intent_authority, Mapping):
+        raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
+    intent_authority = dict(intent_authority)
+    require_product_intent_authority(intent_authority)
     proposal, tribunal, prewrite_build, quality_manifest = _build_repaired_prewrite_package(
         root=root,
         proposal=proposal,
@@ -657,13 +674,15 @@ def compile_greenfield_create_transaction(
     )
     package_proposal = prewrite_build.package.proposal
     if isinstance(package_proposal, Mapping):
-        proposal = package_proposal
+        proposal = dict(package_proposal)
+        proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector=release_selector,
         validation_gate=tribunal.to_dict() if hasattr(tribunal, "to_dict") else {},
         prewrite_package=prewrite_build.package,
         backlog_result=prewrite_build.backlog_result,
+        intent_authority=intent_authority,
         quality_manifest=quality_manifest,
         repo_root=root,
     )

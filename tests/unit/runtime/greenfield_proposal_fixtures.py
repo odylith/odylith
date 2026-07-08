@@ -6,6 +6,10 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 
 
@@ -102,10 +106,41 @@ Release 0.0.1 succeeds when a trainee can choose a preset interval workout, star
 
 
 def _confirmed_intent() -> dict[str, object]:
-    return parse_confirmed_intent_text(
+    return confirmed_intent_with_authority(
         CONFIRMED_INTENT_TEXT,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
     )
+
+
+def confirmed_intent_with_authority(
+    text: str,
+    *,
+    prompt: str,
+    repo_root: Path | None = None,
+    write_files: bool = False,
+) -> dict[str, object]:
+    intent = parse_confirmed_intent_text(
+        text,
+        prompt=prompt,
+    )
+    root = Path("/repo") if repo_root is None else Path(repo_root)
+    markdown_path = root / ".odylith/runtime/greenfield/confirmed-intent.md"
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=text,
+        source_path=markdown_path,
+        source_format="markdown",
+    )
+    if write_files:
+        markdown_path.parent.mkdir(parents=True, exist_ok=True)
+        markdown_path.write_text(text, encoding="utf-8")
+        write_structured_confirmed_intent_file(markdown_path, intent, envelope=envelope)
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=markdown_path.with_suffix(".json"),
+        markdown_source_path=markdown_path,
+    )
+    return intent
 
 
 def _write_confirmed_intent(repo_root: Path) -> Path:

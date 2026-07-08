@@ -132,7 +132,7 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
             and is_confirmed_intent_supporting_section(current)
             and not is_confirmed_intent_ignored_section(heading)
             and (not explicit_heading or _explicit_markdown_heading_depth(line) > 2)
-            and not _supporting_heading_can_reenter_product_truth(line, heading)
+            and not _supporting_heading_can_reenter_product_truth(line, heading, current=current)
         ):
             heading = ""
         if (
@@ -192,7 +192,7 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
     return current
 
 
-def _supporting_heading_can_reenter_product_truth(line: str, heading: str) -> bool:
+def _supporting_heading_can_reenter_product_truth(line: str, heading: str, *, current: str) -> bool:
     if is_confirmed_intent_ignored_section(heading):
         return True
     normalized = normalize_confirmed_intent_heading(line)
@@ -201,11 +201,37 @@ def _supporting_heading_can_reenter_product_truth(line: str, heading: str) -> bo
         return heading in {"first_path", "proof_boundary", "state_object"}
     if heading == "state_object":
         return base in {"product object", "state", "state object", "record", "method"}
+    if heading == "product_story":
+        if _explicit_markdown_heading_depth(line) > 2 and not _supporting_section_is_title_like(current):
+            return False
+        return base in {"product story", "story", "product narrative"}
     if heading == "first_path":
         return base in {"contribution", "contributions", "evaluation case", "release motion"}
     if heading == "proof_boundary":
         return "proof" in base or "boundary" in base or base in {"acceptance", "reproducibility"}
     return False
+
+
+def _supporting_section_is_title_like(current: str) -> bool:
+    if not is_confirmed_intent_supporting_section(current):
+        return False
+    label = str(current).removeprefix("__supporting__:").replace("_", " ")
+    support_heads = {
+        "abstract",
+        "appendix",
+        "background",
+        "benchmarks",
+        "conclusion",
+        "discussion",
+        "evidence",
+        "findings",
+        "introduction",
+        "methods",
+        "references",
+        "results",
+        "speaker notes",
+    }
+    return bool(label) and not bool(set(label.split()) & support_heads)
 
 
 def _explicit_markdown_heading_key(line: str) -> str:

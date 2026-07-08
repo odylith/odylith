@@ -5,9 +5,28 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def _with_authority(intent: dict[str, object], source_text: str) -> dict[str, object]:
+    path = ROOT / ".odylith/runtime/greenfield/confirmed-intent.md"
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=source_text,
+        source_path=path,
+        source_format="markdown",
+    )
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=path.with_suffix(".json"),
+        markdown_source_path=path,
+    )
+    return intent
 
 
 def test_confirmed_intent_parser_does_not_promote_next_step_confirm_bullet_to_title() -> None:
@@ -16,8 +35,7 @@ def test_confirmed_intent_parser_does_not_promote_next_step_confirm_bullet_to_ti
         "Residents submit permit requests with property details, staff triage completeness, "
         "reviewers coordinate comments, and supervisors track service-level commitments through approval or revision."
     )
-    intent = parse_confirmed_intent_text(
-        """# Municipal Permit Intake and Review Workspace
+    source_text = """# Municipal Permit Intake and Review Workspace
 
 ## Product story
 Residents need a clear way to submit permit requests with property details, and municipal staff need a shared workspace to triage completeness, coordinate review comments, and keep service commitments visible. The first release should make the permit case state explicit from intake through approval or revision.
@@ -59,9 +77,8 @@ Prove that a submitted permit case can move through triage, review, supervisor t
 - Confirm: create the governed project records from this accepted Product Intent Confirmation.
 - Edit: revise the product story, actors, systems, assumptions, first path, or proof boundary before creating records.
 - Reject: stop without writing governed records.
-""",
-        prompt=prompt,
-    )
+"""
+    intent = _with_authority(parse_confirmed_intent_text(source_text, prompt=prompt), source_text)
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=ROOT,
         prompt=prompt,
@@ -79,8 +96,7 @@ Prove that a submitted permit case can move through triage, review, supervisor t
 
 def test_confirmed_intent_parser_does_not_promote_choose_one_actions_to_title() -> None:
     prompt = "Create a greenfield project for a municipal permit intake and review workspace."
-    intent = parse_confirmed_intent_text(
-        """# Municipal Permit Intake and Review Workspace
+    source_text = """# Municipal Permit Intake and Review Workspace
 
 ## Product story
 Residents need a clear way to submit permit requests, and municipal staff need a shared workspace to review them.
@@ -90,6 +106,14 @@ A permit case records applicant details, property information, status, blockers,
 
 ## First complete path
 A resident submits a permit request, staff review it, and the case closes with an approval or revision request.
+
+## Human actors
+- Resident applicant
+- Permit staff reviewer
+
+## Internal product systems
+- Permit intake workspace
+- Permit review board
 
 ## Proof boundary
 Prove that one submitted permit case can move through review and final decision with durable state.
@@ -113,9 +137,8 @@ Reply with corrections.
 **Reply starts with:** `REJECT`
 
 Stop here.
-""",
-        prompt=prompt,
-    )
+"""
+    intent = _with_authority(parse_confirmed_intent_text(source_text, prompt=prompt), source_text)
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=ROOT,
         prompt=prompt,

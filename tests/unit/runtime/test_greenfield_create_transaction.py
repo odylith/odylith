@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import PRODUCT_CREATE_TRANSACTION_COMPILER
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
@@ -30,6 +31,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import backlog_authoring
@@ -45,6 +49,39 @@ def _proposal() -> dict[str, Any]:
         "components": [],
         "diagrams": [],
     }
+
+
+def _intent_authority(repo_root: Path, *, write_files: bool = False) -> dict[str, Any]:
+    markdown_path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    structured_path = markdown_path.with_suffix(".json")
+    intent = parse_confirmed_intent_text(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+    )
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=CONFIRMED_INTENT_TEXT,
+        source_path=markdown_path,
+        source_format="markdown",
+    )
+    if write_files:
+        markdown_path.parent.mkdir(parents=True, exist_ok=True)
+        markdown_path.write_text(CONFIRMED_INTENT_TEXT, encoding="utf-8")
+        write_structured_confirmed_intent_file(markdown_path, intent, envelope=envelope)
+    return product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=structured_path,
+        markdown_source_path=markdown_path,
+    )
+
+
+def _confirmed_intent_with_authority(repo_root: Path) -> dict[str, Any]:
+    intent = parse_confirmed_intent_text(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+    )
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = _intent_authority(repo_root, write_files=True)
+    return intent
 
 
 def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
@@ -290,7 +327,10 @@ def _valid_idea_file_text(*, idea_id: str, title: str) -> str:
 
 
 def _transaction(repo_root: Path | None = None) -> Any:
+    root = repo_root or Path("/repo")
     proposal = _proposal()
+    authority = _intent_authority(root, write_files=repo_root is not None)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     package = _package(proposal)
     return build_product_create_transaction(
         proposal=proposal,
@@ -298,8 +338,9 @@ def _transaction(repo_root: Path | None = None) -> Any:
         validation_gate={"status": "passed", "issues": []},
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
+        intent_authority=authority,
         quality_manifest=_approved_quality_manifest(),
-        repo_root=repo_root or Path("/repo"),
+        repo_root=root,
     )
 
 
@@ -486,8 +527,10 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
 
 
 def test_product_create_transaction_json_round_trips_traceability_diagram_links() -> None:
+    authority = _intent_authority(Path("/repo"))
     proposal = {
         **_proposal(),
+        PRODUCT_INTENT_AUTHORITY_KEY: authority,
         "diagrams": [
             {
                 "slug": "supplier-risk-flow",
@@ -504,6 +547,7 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
         validation_gate={"status": "passed", "issues": []},
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
+        intent_authority=authority,
         quality_manifest=_approved_quality_manifest(),
         repo_root=Path("/repo"),
     )
@@ -739,6 +783,7 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
         validation_gate=base.validation_gate,
         prewrite_package=base.prewrite_package,
         backlog_result=base.backlog_result,
+        intent_authority=base.intent_authority,
         quality_manifest=quality_manifest,
         repo_root=tmp_path,
     )
@@ -949,7 +994,7 @@ def test_prewrite_compiled_backlog_includes_final_program_metadata(tmp_path: Pat
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(CONFIRMED_INTENT_TEXT, prompt=prompt),
+        confirmed_intent=_confirmed_intent_with_authority(tmp_path),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
 

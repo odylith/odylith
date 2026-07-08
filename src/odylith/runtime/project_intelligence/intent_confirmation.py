@@ -162,7 +162,7 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
     lines = [
         "## Choose one command",
         "",
-        "**Allowed first words:** `CONFIRM` | `EDIT` | `REJECT`.",
+        "**Allowed first words - choose exactly one:** `CONFIRM` | `EDIT` | `REJECT`.",
         "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`.",
         "Do not write anything before the command.",
         "Only the first command counts. Do not paste Odylith system commands in your reply.",
@@ -171,7 +171,14 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
         command = _clean(label).upper()
         text = _clean(detail)
         if command and text:
-            lines.extend(["", f"### Command: `{command}`", f"**Reply starts with:** `{command}`", f"**What happens:** {text}"])
+            lines.extend(
+                [
+                    "",
+                    f"### Command: `{command}`",
+                    f"**Reply starts with:** `{command}`",
+                    f"**What happens:** {text}",
+                ]
+            )
     return lines
 
 

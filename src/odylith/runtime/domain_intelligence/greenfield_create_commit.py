@@ -14,6 +14,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import Pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_compiler_provenance,
 )
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    require_product_create_transaction_intent_authority,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     POST_CONFIRM_ENGINE_VERSION,
@@ -67,6 +70,7 @@ def commit_greenfield_create_transaction(
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
     require_product_create_transaction_verified(transaction)
+    require_product_create_transaction_intent_authority(transaction, repo_root=root)
     require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
     raise_for_unapproved_product_create_transaction(transaction)
     started = time.perf_counter() if started_at is None else float(started_at)

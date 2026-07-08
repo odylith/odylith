@@ -18,7 +18,6 @@ from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     build_greenfield_package_report,
     GreenfieldCompletionPackage,
@@ -29,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import sem
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
 
@@ -174,15 +174,17 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(
+        confirmed_intent=confirmed_intent_with_authority(
             CONFIRMED_INTENT_TEXT,
             prompt="Draft a greenfield proposal for a municipal permit review workspace",
+            repo_root=tmp_path,
+            write_files=True,
         ),
     )
 
 
 def test_confirmed_completion_reconciles_release_plan_to_repaired_backlog_titles(tmp_path: Path) -> None:
-    confirmed_intent = parse_confirmed_intent_text(
+    confirmed_intent = confirmed_intent_with_authority(
         """# Product Intent Confirmation: Breakeven Solver Evaluation Workspace
 
 ## Product Story
@@ -201,6 +203,8 @@ One evaluator can create a solver evaluation case, add neural and classical runs
 Release 0.0.1 succeeds when one benchmark case can be created, reviewed, blocked for invalid assumptions, and exported with replayable evidence without claiming universal solver superiority.
 """,
         prompt="Productize the PDE solver evaluation paper.",
+        repo_root=tmp_path,
+        write_files=True,
     )
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -218,7 +222,7 @@ Release 0.0.1 succeeds when one benchmark case can be created, reviewed, blocked
 
 
 def test_confirmed_completion_repairs_slide_style_proof_metric_projection(tmp_path: Path) -> None:
-    confirmed_intent = parse_confirmed_intent_text(
+    confirmed_intent = confirmed_intent_with_authority(
         """Slide 1 - Breakeven Solver Evaluation Workspace
 - Why: PDE researchers need one reviewable workspace for turning neural and classical solver evidence into a bounded release decision without spreading assumptions across notes, spreadsheets, and ad hoc messages.
 - People: Evaluation researcher; benchmark reviewer; release decision owner.
@@ -235,6 +239,8 @@ Speaker Notes
 Make it beautiful; this note is not product truth.
 """,
         prompt="Productize the PDE solver evaluation slide deck.",
+        repo_root=tmp_path,
+        write_files=True,
     )
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -572,7 +578,12 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(CALORIE_BURN_CONFIRMED_INTENT_TEXT, prompt=prompt),
+        confirmed_intent=confirmed_intent_with_authority(
+            CALORIE_BURN_CONFIRMED_INTENT_TEXT,
+            prompt=prompt,
+            repo_root=tmp_path,
+            write_files=True,
+        ),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
@@ -656,7 +667,12 @@ def test_greenfield_prewrite_package_passes_sun_burn_quality_regression(tmp_path
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(SUN_BURN_CONFIRMED_INTENT_TEXT, prompt=prompt),
+        confirmed_intent=confirmed_intent_with_authority(
+            SUN_BURN_CONFIRMED_INTENT_TEXT,
+            prompt=prompt,
+            repo_root=tmp_path,
+            write_files=True,
+        ),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(

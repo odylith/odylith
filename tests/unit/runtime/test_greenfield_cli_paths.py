@@ -12,14 +12,18 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import bu
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
+from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import _markdown_section
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -68,6 +72,30 @@ def _approved_quality_manifest() -> dict[str, object]:
             "prewrite_clean_before_commit": True,
         },
     }
+
+
+def _confirmed_intent_with_authority(repo_root: Path) -> dict[str, object]:
+    markdown_path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    structured_path = markdown_path.with_suffix(".json")
+    intent = parse_confirmed_intent_text(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+    )
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=CONFIRMED_INTENT_TEXT,
+        source_path=markdown_path,
+        source_format="markdown",
+    )
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_path.write_text(CONFIRMED_INTENT_TEXT, encoding="utf-8")
+    write_structured_confirmed_intent_file(markdown_path, intent, envelope=envelope)
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=structured_path,
+        markdown_source_path=markdown_path,
+    )
+    return intent
 
 
 def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None = None) -> None:
@@ -438,7 +466,7 @@ def test_greenfield_title_preserves_meaningful_trailing_domain_terms(tmp_path) -
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="field inspection evidence workspace for municipal building permits",
-        confirmed_intent=_confirmed_intent(),
+        confirmed_intent=_confirmed_intent_with_authority(tmp_path),
     )
 
     assert proposal["intent"]["title"] == "Municipal Permit Review Workspace"
@@ -689,8 +717,11 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
 
 
 def _compiled_transaction_for_cli(tmp_path: Path):
+    intent = _confirmed_intent_with_authority(tmp_path)
+    authority = dict(intent[PRODUCT_INTENT_AUTHORITY_KEY])
     proposal = {
         "intent": {"title": "Municipal Permit Review Workspace"},
+        PRODUCT_INTENT_AUTHORITY_KEY: authority,
         "backlog": [{"title": "Prove permit review path"}],
         "components": [],
         "diagrams": [],
@@ -714,6 +745,7 @@ def _compiled_transaction_for_cli(tmp_path: Path):
         validation_gate={"status": "passed", "issues": []},
         prewrite_package=package,
         backlog_result=package.backlog_result or {},
+        intent_authority=authority,
         quality_manifest=_approved_quality_manifest(),
         repo_root=tmp_path,
     )

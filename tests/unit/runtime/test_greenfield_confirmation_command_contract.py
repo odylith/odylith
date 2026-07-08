@@ -8,6 +8,10 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 
@@ -45,6 +49,25 @@ Release 0.0.1 is proven only when the same lab evidence package can be opened, r
 """
 
 
+def _accepted_intent_with_authority(tmp_path: Path, *, prompt: str) -> dict[str, object]:
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(_VALID_EDITED_CONFIRMATION, encoding="utf-8")
+    intent = parse_confirmed_intent_text(_VALID_EDITED_CONFIRMATION, prompt=prompt)
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=_VALID_EDITED_CONFIRMATION,
+        source_path=path,
+        source_format="markdown",
+    )
+    structured_path = write_structured_confirmed_intent_file(path, intent, envelope=envelope)
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=structured_path,
+        markdown_source_path=path,
+    )
+    return intent
+
+
 def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
     lines = format_confirmation_choice_lines(
         (
@@ -55,8 +78,8 @@ def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
     )
     rendered = "\n".join(lines)
 
-    assert rendered.index("**Allowed first words:** `CONFIRM` | `EDIT` | `REJECT`.") < rendered.index(
-        "### Command: `CONFIRM`"
+    assert rendered.index("**Allowed first words - choose exactly one:** `CONFIRM` | `EDIT` | `REJECT`.") < (
+        rendered.index("### Command: `CONFIRM`")
     )
     assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in rendered
     assert "Do not write anything before the command." in rendered
@@ -111,7 +134,7 @@ def test_confirmed_proposal_uses_edited_intent_not_stale_prompt_terms(tmp_path: 
         "Create an orthopedic implant fatigue-test measurement console with wear-cycle telemetry, "
         "implant crack propagation readings, and orthopedic approval evidence."
     )
-    accepted_intent = parse_confirmed_intent_text(_VALID_EDITED_CONFIRMATION, prompt=stale_prompt)
+    accepted_intent = _accepted_intent_with_authority(tmp_path, prompt=stale_prompt)
 
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
