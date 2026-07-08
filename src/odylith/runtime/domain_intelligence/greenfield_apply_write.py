@@ -38,7 +38,6 @@ from odylith.runtime.domain_intelligence.proposal_memory import record_greenfiel
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
-from odylith.runtime.surfaces import brand_assets
 
 
 def release_assignment_note(*, selector: str) -> str:
@@ -315,7 +314,6 @@ def write_greenfield_proposal(
         )
     if completion_quality_debt:
         _persist_completion_quality_debt(root=root, debt=completion_quality_debt)
-    brand_asset_paths = brand_assets.ensure_brand_assets(repo_root=root)
     dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
     dashboard_refresh["rendered_surface_custody"] = greenfield_apply_diagrams.raise_for_greenfield_rendered_surface_custody(
         repo_root=root,
@@ -323,7 +321,7 @@ def write_greenfield_proposal(
     )
     dashboard_refresh["managed_brand_assets"] = {
         "status": "passed",
-        "seeded_count": len(brand_asset_paths),
+        "seeded_count": len(prewrite_package.brand_asset_writes or {}) if prewrite_package else 0,
     }
 
     return {

@@ -55,6 +55,7 @@ class GreenfieldCompletionPackage:
     program_result: Mapping[str, Any] | None = None
     traceability_plan: Any = None
     baseline_writes: Mapping[str, str] | None = None
+    brand_asset_writes: Mapping[str, Mapping[str, str]] | None = None
     prewrite_safety_preview: Mapping[str, Any] | None = None
     release_target_result: Mapping[str, Any] | None = None
     release_assignment_result: Mapping[str, Any] | None = None

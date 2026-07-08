@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
 import html
-from importlib import resources
 import os
+from collections.abc import Mapping
+from importlib import resources
 from pathlib import Path
 
 _BRAND_ROOT = Path("odylith/surfaces/brand")
@@ -12,6 +15,7 @@ _FAVICON_ROOT = _BRAND_ROOT / "favicon"
 _ICON_ROOT = _BRAND_ROOT / "icon"
 _LOCKUP_ROOT = _BRAND_ROOT / "lockup"
 _PACKAGED_BRAND_ROOT = "bundle/assets/odylith/surfaces/brand"
+_BRAND_PAYLOAD_ENCODING = "base64"
 
 
 def asset_href(*, repo_root: Path, output_path: Path, asset_path: str | Path) -> str:
@@ -76,6 +80,118 @@ def ensure_brand_assets(*, repo_root: Path) -> tuple[Path, ...]:
     return tuple(copied)
 
 
+def precompiled_brand_asset_writes(*, repo_root: Path) -> dict[str, dict[str, str]]:
+    """Return missing managed brand asset writes for ProductCreateTransaction sealing."""
+
+    root = Path(repo_root).expanduser().resolve()
+    writes: dict[str, dict[str, str]] = {}
+    for token, payload in _packaged_brand_asset_payloads().items():
+        target = root / token
+        if not target.is_file() or target.stat().st_size <= 0:
+            writes[token] = payload
+    return writes
+
+
+def require_precompiled_brand_assets(*, repo_root: Path, brand_asset_writes: object) -> None:
+    """Fail before the write boundary when required brand assets were not sealed."""
+
+    root = Path(repo_root).expanduser().resolve()
+    writes = _brand_asset_write_mapping(brand_asset_writes)
+    packaged = _packaged_brand_asset_payloads()
+    for token, payload in writes.items():
+        if token not in packaged:
+            raise ValueError(
+                f"ProductCreateTransaction contains an unapproved brand asset write {token!r}; "
+                "rebuild the pre-confirm transaction before committing governed records"
+            )
+        _brand_asset_bytes(token=token, payload=payload, packaged_payload=packaged[token])
+    missing = [
+        token
+        for token in packaged
+        if (not (root / token).is_file() or (root / token).stat().st_size <= 0) and token not in writes
+    ]
+    if missing:
+        raise ValueError(
+            "ProductCreateTransaction is missing precompiled brand asset writes for "
+            + ", ".join(missing)
+            + "; rebuild the pre-confirm transaction before committing governed records"
+        )
+
+
+def materialize_precompiled_brand_assets(*, repo_root: Path, brand_asset_writes: object) -> tuple[Path, ...]:
+    """Write only managed brand assets already sealed inside the transaction."""
+
+    root = Path(repo_root).expanduser().resolve()
+    writes = _brand_asset_write_mapping(brand_asset_writes)
+    packaged = _packaged_brand_asset_payloads()
+    require_precompiled_brand_assets(repo_root=root, brand_asset_writes=writes)
+    materialized: list[Path] = []
+    for token, payload in writes.items():
+        target = _brand_asset_target(root=root, token=token)
+        data = _brand_asset_bytes(token=token, payload=payload, packaged_payload=packaged[token])
+        if target.is_file() and target.stat().st_size > 0:
+            if target.read_bytes() != data:
+                raise RuntimeError(f"compiled brand asset target changed after confirmation: {token}")
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        materialized.append(target)
+    return tuple(materialized)
+
+
+def _packaged_brand_asset_payloads() -> dict[str, dict[str, str]]:
+    source_root = resources.files("odylith").joinpath(_PACKAGED_BRAND_ROOT)
+    payloads: dict[str, dict[str, str]] = {}
+    for relative, source in _resource_files(source_root):
+        if relative.name == ".DS_Store":
+            continue
+        data = source.read_bytes()
+        token = (_BRAND_ROOT / relative).as_posix()
+        payloads[token] = {
+            "encoding": _BRAND_PAYLOAD_ENCODING,
+            "sha256": hashlib.sha256(data).hexdigest(),
+            "content_base64": base64.b64encode(data).decode("ascii"),
+        }
+    return payloads
+
+
+def _brand_asset_write_mapping(value: object) -> dict[str, dict[str, str]]:
+    if not isinstance(value, Mapping):
+        return {}
+    writes: dict[str, dict[str, str]] = {}
+    for raw_token, raw_payload in value.items():
+        if isinstance(raw_payload, Mapping):
+            writes[str(raw_token)] = {str(key): str(item) for key, item in raw_payload.items()}
+        else:
+            raise ValueError(f"ProductCreateTransaction brand asset write {raw_token!r} is not a payload")
+    return writes
+
+
+def _brand_asset_bytes(*, token: str, payload: dict[str, str], packaged_payload: dict[str, str]) -> bytes:
+    if payload.get("encoding") != _BRAND_PAYLOAD_ENCODING:
+        raise ValueError(f"ProductCreateTransaction brand asset write has unsupported encoding: {token}")
+    try:
+        data = base64.b64decode(payload.get("content_base64", ""), validate=True)
+    except ValueError as exc:
+        raise ValueError(f"ProductCreateTransaction brand asset write is not valid base64: {token}") from exc
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != payload.get("sha256") or digest != packaged_payload.get("sha256"):
+        raise ValueError(f"ProductCreateTransaction brand asset write hash mismatch: {token}")
+    return data
+
+
+def _brand_asset_target(*, root: Path, token: str) -> Path:
+    relative = Path(token)
+    if relative.is_absolute() or ".." in relative.parts or not token.startswith(_BRAND_ROOT.as_posix() + "/"):
+        raise RuntimeError(f"compiled brand asset write escapes managed brand root: {token}")
+    target = (root / relative).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError as exc:
+        raise RuntimeError(f"compiled brand asset write escapes repo root: {token}") from exc
+    return target
+
+
 def _resource_files(
     root: resources.abc.Traversable,
     prefix: Path = Path(),
@@ -93,6 +209,9 @@ def _resource_files(
 __all__ = [
     "asset_href",
     "ensure_brand_assets",
+    "materialize_precompiled_brand_assets",
+    "precompiled_brand_asset_writes",
     "render_brand_head_html",
+    "require_precompiled_brand_assets",
     "tooling_shell_brand_payload",
 ]

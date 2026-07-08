@@ -31,12 +31,16 @@ PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1
 PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v1"
 PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "hash_verified_commit_only"
 _COMPILER_IDENTITY_SOURCE_FILES = (
-    "greenfield_create_transaction.py",
-    "greenfield_create_commit.py",
-    "greenfield_create_baseline.py",
-    "greenfield_proposals.py",
-    "greenfield_proposals_cli.py",
-    "greenfield_compiled_write.py",
+    "runtime/domain_intelligence/greenfield_apply_prewrite.py",
+    "runtime/domain_intelligence/greenfield_apply_write.py",
+    "runtime/domain_intelligence/greenfield_compiled_write.py",
+    "runtime/domain_intelligence/greenfield_completion_types.py",
+    "runtime/domain_intelligence/greenfield_create_baseline.py",
+    "runtime/domain_intelligence/greenfield_create_commit.py",
+    "runtime/domain_intelligence/greenfield_create_transaction.py",
+    "runtime/domain_intelligence/greenfield_proposals.py",
+    "runtime/domain_intelligence/greenfield_proposals_cli.py",
+    "runtime/surfaces/brand_assets.py",
 )
 _POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
@@ -165,7 +169,7 @@ def build_product_create_transaction_provenance(
 
 
 def product_create_transaction_compiler_identity() -> dict[str, Any]:
-    source_root = Path(__file__).resolve().parent
+    source_root = Path(__file__).resolve().parents[2]
     paths = tuple(source_root / name for name in _COMPILER_IDENTITY_SOURCE_FILES)
     return {
         "version": PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,

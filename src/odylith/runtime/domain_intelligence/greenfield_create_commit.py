@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     finalize_greenfield_post_confirm_manifest,
 )
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
+from odylith.runtime.surfaces import brand_assets
 
 
 class GreenfieldCreateCommitError(RuntimeError):
@@ -77,6 +78,10 @@ def commit_greenfield_create_transaction(
         root,
         transaction.prewrite_package.baseline_writes or {},
     )
+    brand_assets.require_precompiled_brand_assets(
+        repo_root=root,
+        brand_asset_writes=transaction.prewrite_package.brand_asset_writes or {},
+    )
     started = time.perf_counter() if started_at is None else float(started_at)
     completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(
         transaction.quality_manifest
@@ -87,6 +92,10 @@ def commit_greenfield_create_transaction(
             greenfield_create_baseline.materialize_precompiled_greenfield_create_baseline(
                 root=root,
                 baseline_writes=transaction.prewrite_package.baseline_writes or {},
+            )
+            brand_assets.materialize_precompiled_brand_assets(
+                repo_root=root,
+                brand_asset_writes=transaction.prewrite_package.brand_asset_writes or {},
             )
             result = greenfield_compiled_write.write_compiled_greenfield_package(
                 root=root,

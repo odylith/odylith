@@ -39,6 +39,7 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield
 from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
+from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
@@ -335,6 +336,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
     package = replace(
         _package(proposal),
         baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
+        brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
     )
     return build_product_create_transaction(
         proposal=proposal,
@@ -604,6 +606,9 @@ def test_commit_product_create_transaction_is_commit_only(
     def forbidden_baseline_generation(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("commit must not generate baseline files after confirmation")
 
+    def forbidden_brand_asset_generation(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("commit must not dynamically seed brand assets after confirmation")
+
     class _RollbackGuard:
         def __init__(self, repo_root: Path) -> None:
             self.repo_root = repo_root
@@ -629,6 +634,13 @@ def test_commit_product_create_transaction_is_commit_only(
             "diagrams": [],
         }
 
+    brand_materialize_calls: list[dict[str, Any]] = []
+    real_materialize_brand_assets = greenfield_create_commit.brand_assets.materialize_precompiled_brand_assets
+
+    def fake_materialize_brand_assets(**kwargs: Any) -> tuple[Path, ...]:
+        brand_materialize_calls.append(kwargs)
+        return real_materialize_brand_assets(**kwargs)
+
     monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
     monkeypatch.setattr(greenfield_proposals, "run_greenfield_post_confirm_engine", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
@@ -638,6 +650,12 @@ def test_commit_product_create_transaction_is_commit_only(
         greenfield_create_commit.greenfield_create_baseline,
         "ensure_greenfield_create_baseline",
         forbidden_baseline_generation,
+    )
+    monkeypatch.setattr(greenfield_create_commit.brand_assets, "ensure_brand_assets", forbidden_brand_asset_generation)
+    monkeypatch.setattr(
+        greenfield_create_commit.brand_assets,
+        "materialize_precompiled_brand_assets",
+        fake_materialize_brand_assets,
     )
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", fake_compiled_write)
@@ -653,6 +671,8 @@ def test_commit_product_create_transaction_is_commit_only(
     assert calls[0]["transaction"] is transaction
     assert result["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert result["product_create_transaction"]["verified"] is True
+    assert len(brand_materialize_calls) == 1
+    assert brand_materialize_calls[0]["brand_asset_writes"] == transaction.prewrite_package.brand_asset_writes
     assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
     assert result["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
     assert (
@@ -662,6 +682,7 @@ def test_commit_product_create_transaction_is_commit_only(
     assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
     assert (tmp_path / "odylith/technical-plans/INDEX.md").is_file()
     assert (tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").is_file()
+    assert (tmp_path / "odylith/surfaces/brand/manifest.json").is_file()
 
 
 def test_commit_product_create_transaction_rejects_bad_hash_before_write(
@@ -913,7 +934,6 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
         "raise_for_compiled_backlog_and_atlas_readback",
         fake_compiled_readback,
     )
-    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
         greenfield_apply_diagrams,
@@ -1098,7 +1118,6 @@ def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repa
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
         greenfield_apply_diagrams,
@@ -1212,7 +1231,6 @@ def test_write_greenfield_proposal_compiled_path_replays_release_payloads(
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
         greenfield_apply_diagrams,
@@ -1355,7 +1373,6 @@ def test_write_greenfield_proposal_legacy_path_still_applies_backlog_traceabilit
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", lambda *_args, **_kwargs: None)
-    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
         greenfield_apply_diagrams,
@@ -1552,7 +1569,6 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.brand_assets, "ensure_brand_assets", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write, "_refresh_greenfield_dashboard", lambda **_kwargs: {"status": "passed"})
     monkeypatch.setattr(
         greenfield_apply_diagrams,

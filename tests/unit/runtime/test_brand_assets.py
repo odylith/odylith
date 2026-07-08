@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.surfaces import brand_assets
 
 
@@ -58,3 +60,45 @@ def test_ensure_brand_assets_preserves_existing_nonempty_local_assets(tmp_path: 
 
     assert manifest.read_text(encoding="utf-8") == '{"custom": true}\n'
     assert (tmp_path / "odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg").is_file()
+
+
+def test_precompiled_brand_asset_writes_materialize_missing_assets(tmp_path: Path) -> None:
+    writes = brand_assets.precompiled_brand_asset_writes(repo_root=tmp_path)
+
+    assert "odylith/surfaces/brand/manifest.json" in writes
+    assert writes["odylith/surfaces/brand/manifest.json"]["encoding"] == "base64"
+
+    materialized = brand_assets.materialize_precompiled_brand_assets(
+        repo_root=tmp_path,
+        brand_asset_writes=writes,
+    )
+
+    assert materialized
+    assert (tmp_path / "odylith/surfaces/brand/manifest.json").is_file()
+    assert (tmp_path / "odylith/surfaces/brand/icon/odylith-icon.svg").is_file()
+
+
+def test_precompiled_brand_assets_reject_missing_required_payload(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="missing precompiled brand asset writes"):
+        brand_assets.require_precompiled_brand_assets(repo_root=tmp_path, brand_asset_writes={})
+
+
+def test_precompiled_brand_assets_preserve_nonempty_local_asset(tmp_path: Path) -> None:
+    manifest = tmp_path / "odylith/surfaces/brand/manifest.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text('{"custom": true}\n', encoding="utf-8")
+
+    writes = brand_assets.precompiled_brand_asset_writes(repo_root=tmp_path)
+    assert "odylith/surfaces/brand/manifest.json" not in writes
+
+
+def test_precompiled_brand_assets_reject_hash_mismatch(tmp_path: Path) -> None:
+    writes = brand_assets.precompiled_brand_asset_writes(repo_root=tmp_path)
+    payload = dict(writes["odylith/surfaces/brand/manifest.json"])
+    payload["sha256"] = "not-the-asset-hash"
+
+    with pytest.raises(ValueError, match="hash mismatch"):
+        brand_assets.materialize_precompiled_brand_assets(
+            repo_root=tmp_path,
+            brand_asset_writes={"odylith/surfaces/brand/manifest.json": payload},
+        )

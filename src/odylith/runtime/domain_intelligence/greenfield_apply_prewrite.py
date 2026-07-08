@@ -31,6 +31,7 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
+from odylith.runtime.surfaces import brand_assets
 
 
 @dataclass(frozen=True)
@@ -245,6 +246,7 @@ def build_prewrite_completion_package(
             program_result=preview_program_result,
             traceability_plan=traceability_plan,
             baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
+            brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
             prewrite_safety_preview=prewrite_safety_preview,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
