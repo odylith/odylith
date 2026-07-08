@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -1795,7 +1796,7 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
         fail_after_prewrite_allocation,
     )
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,

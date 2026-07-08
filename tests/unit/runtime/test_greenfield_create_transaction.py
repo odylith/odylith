@@ -14,6 +14,8 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_compiled_readback
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_compiled_write
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
@@ -397,6 +399,29 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
     assert plan.diagram_links[0].related_backlog_paths == ("/repo/odylith/radar/source/ideas/B-001.md",)
 
 
+def test_product_create_commit_owner_stays_separate_from_proposal_generation() -> None:
+    commit_source = Path(greenfield_create_commit.__file__).read_text(encoding="utf-8")
+    proposal_source = Path(greenfield_proposals.__file__).read_text(encoding="utf-8")
+
+    assert "def commit_greenfield_create_transaction" not in proposal_source
+    assert "GreenfieldApplyTransaction" not in proposal_source
+    assert "greenfield_compiled_write" in commit_source
+    assert "write_compiled_greenfield_package" in commit_source
+    assert "write_greenfield_proposal" not in commit_source
+    forbidden_commit_tokens = (
+        "run_greenfield_post_confirm_engine",
+        "complete_confirmed_proposal",
+        "complete_greenfield_semantic_apply_payload",
+        "apply_greenfield_patchset_repairs",
+        "build_product_create_transaction",
+        "compile_greenfield_create_transaction",
+        "normalize_host_reasoned_proposal",
+        "validate_host_reasoned_proposal",
+    )
+    for token in forbidden_commit_tokens:
+        assert token not in commit_source
+
+
 def test_commit_product_create_transaction_is_commit_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -422,11 +447,11 @@ def test_commit_product_create_transaction_is_commit_only(
             assert self.committed
             return False
 
-    def fake_write(**kwargs: Any) -> dict[str, Any]:
+    def fake_compiled_write(**kwargs: Any) -> dict[str, Any]:
         calls.append(kwargs)
         return {
             "mode": "applied",
-            "validation_gate": kwargs["tribunal"],
+            "validation_gate": kwargs["transaction"].validation_gate,
             "backlog": [],
             "components": [],
             "diagrams": [],
@@ -436,11 +461,12 @@ def test_commit_product_create_transaction_is_commit_only(
     monkeypatch.setattr(greenfield_proposals, "run_greenfield_post_confirm_engine", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "GreenfieldApplyTransaction", _RollbackGuard)
-    monkeypatch.setattr(greenfield_proposals, "ensure_greenfield_create_baseline", lambda _root: None)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", fake_write)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", _RollbackGuard)
+    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", lambda _root: None)
+    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", fake_compiled_write)
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,
@@ -448,10 +474,7 @@ def test_commit_product_create_transaction_is_commit_only(
     )
 
     assert len(calls) == 1
-    assert calls[0]["proposal"] == transaction.proposal
-    assert calls[0]["prewrite_package"] == transaction.prewrite_package
-    assert calls[0]["backlog_result"] == transaction.backlog_result
-    assert calls[0]["tribunal"] == transaction.validation_gate
+    assert calls[0]["transaction"] is transaction
     assert result["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert result["product_create_transaction"]["verified"] is True
     assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
@@ -471,15 +494,39 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
 
-    monkeypatch.setattr(greenfield_proposals, "ensure_greenfield_create_baseline", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
     with pytest.raises(ValueError, match="ProductCreateTransaction hash mismatch"):
-        greenfield_proposals.commit_greenfield_create_transaction(
+        greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
             transaction=transaction,
             confirm=True,
+            started_at=0.0,
+        )
+
+
+def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_or_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = replace(_transaction(), transaction_hash="not-the-compiled-hash")
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("missing confirm must fail before hash verification, rollback guard, or write path")
+
+    monkeypatch.setattr(greenfield_create_commit, "require_product_create_transaction_verified", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="--confirm is required"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=False,
             started_at=0.0,
         )
 
@@ -511,17 +558,46 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("unapproved ProductCreateTransaction must not enter the write path")
 
-    monkeypatch.setattr(greenfield_proposals, "ensure_greenfield_create_baseline", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "ensure_greenfield_create_baseline", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
     with pytest.raises(ValueError, match="quality manifest is not approved"):
-        greenfield_proposals.commit_greenfield_create_transaction(
+        greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
             transaction=transaction,
             confirm=True,
             started_at=0.0,
         )
+
+
+def test_write_compiled_greenfield_package_passes_transaction_package(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction()
+    calls: list[dict[str, Any]] = []
+
+    def fake_write(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        return {"mode": "applied", "completion_priority_quality_debt": []}
+
+    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", fake_write)
+
+    result = greenfield_compiled_write.write_compiled_greenfield_package(
+        root=tmp_path,
+        transaction=transaction,
+        completion_priority_write_policy={"status": "write_allowed_with_projection_quality_debt"},
+    )
+
+    assert result["mode"] == "applied"
+    assert len(calls) == 1
+    assert calls[0]["proposal"] == transaction.proposal
+    assert calls[0]["release_selector"] == transaction.release_selector
+    assert calls[0]["tribunal"] == transaction.validation_gate
+    assert calls[0]["backlog_result"] == transaction.backlog_result
+    assert calls[0]["prewrite_package"] is transaction.prewrite_package
 
 
 def test_write_greenfield_proposal_uses_precompiled_program_plan(

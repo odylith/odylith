@@ -13,6 +13,7 @@ import sys
 import tempfile
 from typing import Any, Mapping
 
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmEngineError
@@ -409,7 +410,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
             result, captured = _run_with_optional_stdout_capture(
                 enabled=bool(args.as_json),
-                action=lambda: greenfield_proposals.commit_greenfield_create_transaction(
+                action=lambda: greenfield_create_commit.commit_greenfield_create_transaction(
                     repo_root=repo_root,
                     transaction=transaction,
                     confirm=True,

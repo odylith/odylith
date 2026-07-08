@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
@@ -689,7 +690,7 @@ def test_greenfield_create_cli_rejects_intent_file_without_compiled_transaction(
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
 
     rc = greenfield_proposals.main(
         [
@@ -825,7 +826,7 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", fake_commit)
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", fake_commit)
 
     rc = greenfield_proposals.main(
         [
@@ -878,7 +879,7 @@ def test_greenfield_create_cli_rejects_post_confirm_overrides(
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
 
     rc = greenfield_proposals.main(
         [
@@ -924,7 +925,7 @@ def test_greenfield_create_cli_rejects_intent_file_even_with_compiled_transactio
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
 
     rc = greenfield_proposals.main(
         [
@@ -967,7 +968,7 @@ def test_greenfield_create_cli_requires_visible_transaction_hash(
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "commit_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
 
     rc = greenfield_proposals.main(
         [

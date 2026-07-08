@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_cli_output
 from odylith.runtime.domain_intelligence import greenfield_component_contract as component_contract
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 from tests.unit.runtime.greenfield_proposal_fixtures import _governed_greenfield_fixture
@@ -147,7 +148,7 @@ def test_compiled_commit_skips_final_next_steps_quality_after_confirm(
 
     monkeypatch.setattr(greenfield_apply_write, "generated_public_copy_issues", final_copy_issues)
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,
@@ -200,7 +201,7 @@ def test_compiled_commit_skips_final_package_quality_after_confirm(
         ],
     )
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,
@@ -251,7 +252,7 @@ def test_compiled_commit_does_not_roll_back_on_late_source_truth_package_repetit
         ],
     )
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,
@@ -288,7 +289,7 @@ def test_compiled_commit_does_not_roll_back_on_late_substantive_quality_finding(
         ],
     )
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,
@@ -325,7 +326,7 @@ def test_compiled_commit_does_not_roll_back_on_late_generated_prose_finding(
         ],
     )
 
-    result = greenfield_proposals.commit_greenfield_create_transaction(
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
         transaction=transaction,
         confirm=True,
