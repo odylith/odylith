@@ -13,6 +13,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith import __version__
+from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -26,7 +28,16 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 
 PRODUCT_CREATE_TRANSACTION_VERSION = "odylith.greenfield.product_create_transaction.v1"
 PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1"
+PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v1"
 PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "hash_verified_commit_only"
+_COMPILER_IDENTITY_SOURCE_FILES = (
+    "greenfield_create_transaction.py",
+    "greenfield_create_commit.py",
+    "greenfield_create_baseline.py",
+    "greenfield_proposals.py",
+    "greenfield_proposals_cli.py",
+    "greenfield_compiled_write.py",
+)
 _POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
     "verify_compiler_provenance",
@@ -147,8 +158,20 @@ def build_product_create_transaction_provenance(
         "repo_root_fingerprint": product_create_transaction_repo_fingerprint(repo_root),
         "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
         "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
+        "compiler_identity": product_create_transaction_compiler_identity(),
         "post_confirm_allowed_operations": list(_POST_CONFIRM_ALLOWED_OPERATIONS),
         "post_confirm_forbidden_operations": list(_POST_CONFIRM_FORBIDDEN_OPERATIONS),
+    }
+
+
+def product_create_transaction_compiler_identity() -> dict[str, Any]:
+    source_root = Path(__file__).resolve().parent
+    paths = tuple(source_root / name for name in _COMPILER_IDENTITY_SOURCE_FILES)
+    return {
+        "version": PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
+        "odylith_version": __version__,
+        "source_files_sha256": derivation_provenance.fingerprint_source_files(paths),
+        "source_file_count": len(paths),
     }
 
 
@@ -176,6 +199,14 @@ def require_product_create_transaction_compiler_provenance(
         if str(provenance.get(key, "")).strip() != expected_value:
             raise ValueError(
                 "ProductCreateTransaction compiler provenance is not approved for this repo; "
+                "rebuild the pre-confirm transaction before committing governed records"
+            )
+    identity = provenance.get("compiler_identity") if isinstance(provenance.get("compiler_identity"), Mapping) else {}
+    expected_identity = product_create_transaction_compiler_identity()
+    for key, expected_value in expected_identity.items():
+        if identity.get(key) != expected_value:
+            raise ValueError(
+                "ProductCreateTransaction compiler identity does not match this runtime; "
                 "rebuild the pre-confirm transaction before committing governed records"
             )
     if tuple(provenance.get("post_confirm_allowed_operations") or ()) != _POST_CONFIRM_ALLOWED_OPERATIONS:
@@ -329,9 +360,11 @@ def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCo
 __all__ = [
     "PRODUCT_CREATE_TRANSACTION_VERSION",
     "PRODUCT_CREATE_TRANSACTION_COMPILER",
+    "PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION",
     "ProductCreateTransaction",
     "build_product_create_transaction",
     "build_product_create_transaction_provenance",
+    "product_create_transaction_compiler_identity",
     "product_create_transaction_from_dict",
     "product_create_transaction_hash",
     "product_create_transaction_repo_fingerprint",
