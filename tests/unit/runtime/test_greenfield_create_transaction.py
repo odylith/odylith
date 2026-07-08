@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any
 
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
@@ -82,6 +83,25 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
                         "implementation_prompt": "Implement the accepted supplier risk review path.",
                     },
                     "component_contract": {},
+                },
+                "registry_entry": {
+                    "component_id": "supplier-risk-service",
+                    "name": "Supplier Risk Service",
+                    "kind": "service",
+                    "category": "application",
+                    "qualification": "candidate",
+                    "aliases": [],
+                    "path_prefixes": ["src/supplier_risk"],
+                    "workstreams": ["B-001"],
+                    "diagrams": [],
+                    "owner": "repo",
+                    "status": "planned",
+                    "what_it_is": "Supplier Risk Service defines the planned service ownership boundary for supplier review state.",
+                    "why_tracked": "Tracked from user-stated intent because this named ownership boundary must stay understandable before source-backed behavior promotes it.",
+                    "spec_ref": "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md",
+                    "sources": ["user_intent"],
+                    "subcomponents": [],
+                    "product_layer": "application",
                 },
             },
         ),
@@ -385,11 +405,19 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
         "responsibility": "Compiled Registry Service keeps accepted supplier review state attached.",
         "workstreams": ("B-001", "B-099"),
     }
+    registry_entry = {
+        **package.component_registry_preview[0]["registry_entry"],
+        "name": "Compiled Registry Service",
+        "path_prefixes": ["src/compiled"],
+        "workstreams": ["B-001", "B-099"],
+        "what_it_is": "Compiled Registry Service defines the planned service ownership boundary for accepted supplier review state.",
+    }
     component_preview = (
         {
             **package.component_registry_preview[0],
             "label": "Compiled Registry Service",
             "authoring_input": authoring_input,
+            "registry_entry": registry_entry,
         },
     )
     package = replace(
@@ -401,24 +429,8 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
             "Compiled Registry Service": "# Compiled Registry Service\n\nCompiled registry service spec.\n"
         },
     )
-    calls: dict[str, Any] = {}
-
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("post-confirm write must not recompute component authoring inputs")
-
-    def fake_register_component(**kwargs: Any) -> Any:
-        calls["register"] = kwargs
-        spec_path = tmp_path / "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md"
-        return SimpleNamespace(
-            as_dict=lambda: {
-                "component_id": kwargs["component_id"],
-                "label": kwargs["label"],
-                "path": kwargs["path"],
-                "spec_path": str(spec_path),
-                "registry_path": str(tmp_path / "odylith/registry/source/component_registry.v1.json"),
-                "validation_gate": {"status": "passed"},
-                }
-            )
 
     def fake_materialize(**_kwargs: Any) -> dict[str, Any]:
         return {
@@ -432,10 +444,10 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
     monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", lambda **_kwargs: [])
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "component_authoring_responsibility", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "component_dependency_lines", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "component_risk_lines", forbidden)
-    monkeypatch.setattr(greenfield_apply_write.component_authoring, "register_component", fake_register_component)
+    monkeypatch.setattr(greenfield_component_commit, "component_authoring_responsibility", forbidden)
+    monkeypatch.setattr(greenfield_component_commit, "component_dependency_lines", forbidden)
+    monkeypatch.setattr(greenfield_component_commit, "component_risk_lines", forbidden)
+    monkeypatch.setattr(greenfield_component_commit.component_authoring, "register_component", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "record_greenfield_acceptance", forbidden)
     monkeypatch.setattr(
         greenfield_apply_write,
@@ -462,9 +474,15 @@ def test_write_greenfield_proposal_uses_precompiled_component_authoring_input(
         prewrite_package=package,
     )
 
-    assert calls["register"]["label"] == "Compiled Registry Service"
-    assert calls["register"]["path"] == "src/compiled"
-    assert calls["register"]["workstreams"] == ("B-001", "B-099")
+    registry = json.loads(
+        (tmp_path / "odylith/registry/source/component_registry.v1.json").read_text(encoding="utf-8")
+    )
+    committed_entry = registry["components"][0]
+    assert committed_entry == registry_entry
+    committed_spec = (
+        tmp_path / "odylith/registry/source/components/supplier-risk-service/CURRENT_SPEC.md"
+    ).read_text(encoding="utf-8")
+    assert committed_spec == "# Compiled Registry Service\n\nCompiled registry service spec.\n"
     assert result["components"][0]["label"] == "Compiled Registry Service"
 
 

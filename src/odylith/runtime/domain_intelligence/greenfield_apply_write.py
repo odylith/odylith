@@ -17,26 +17,22 @@ from odylith.runtime.artifact_quality.greenfield_package_repetition import (
 )
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_apply_components import component_authoring_responsibility
-from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lookup_for
-from odylith.runtime.domain_intelligence.greenfield_apply_components import component_risk_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_components import first_release_component_rows
 from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
 from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import operator_component_spec_issues
-from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
-from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
@@ -174,8 +170,7 @@ def write_greenfield_proposal(
         proposal=proposal,
         plan=traceability_plan,
     )
-    component_handoffs = _precompiled_component_handoffs(prewrite_package)
-    compiled_component_inputs = _precompiled_component_authoring_inputs(prewrite_package)
+    component_handoffs = greenfield_component_commit.precompiled_component_handoffs(prewrite_package)
     if not component_handoffs:
         component_handoffs = greenfield_experience.build_component_handoffs(
             proposal=proposal,
@@ -195,16 +190,28 @@ def write_greenfield_proposal(
     )
 
     component_rows = first_release_component_rows(proposal)
+    compiled_component_previews = greenfield_component_commit.compiled_component_previews_for_rows(
+        prewrite_package,
+        component_rows,
+    )
     component_dependency_lookup = {} if has_compiled_package else component_dependency_lookup_for(component_rows)
     components_created: list[dict[str, Any]] = []
     for row in component_rows:
         if not isinstance(row, Mapping):
             continue
         key = greenfield_traceability.component_key(row)
-        authoring_input = compiled_component_inputs.get(key)
-        if not authoring_input:
+        if has_compiled_package:
+            preview = compiled_component_previews.get(key)
+            if not preview:
+                raise ValueError(f"compiled component registry preview missing for {key or '<unknown component>'}")
+            created = greenfield_component_commit.materialize_compiled_component_from_preview(
+                root=root,
+                preview=preview,
+                rendered_component_specs=rendered_component_specs,
+            )
+        else:
             handoff = component_handoffs.get(key, {})
-            authoring_input = _legacy_component_authoring_input(
+            authoring_input = greenfield_component_commit.legacy_component_authoring_input(
                 row=row,
                 handoff=handoff,
                 traceability_plan=traceability_plan,
@@ -212,16 +219,22 @@ def write_greenfield_proposal(
                 component_dependency_lookup=component_dependency_lookup,
                 proposal=proposal,
             )
-        created = _register_component_from_authoring_input(
+            created = greenfield_component_commit.register_component_from_authoring_input(
+                root=root,
+                authoring_input=authoring_input,
+            )
+            greenfield_component_commit.write_repaired_component_spec(
+                root=root,
+                created=created.as_dict(),
+                rendered_component_specs=rendered_component_specs,
+            )
+        components_created.append(created.as_dict())
+    if has_compiled_package:
+        greenfield_component_commit.raise_for_compiled_component_registry_readback(
             root=root,
-            authoring_input=authoring_input,
-        )
-        _write_repaired_component_spec(
-            root=root,
-            created=created.as_dict(),
+            previews=compiled_component_previews,
             rendered_component_specs=rendered_component_specs,
         )
-        components_created.append(created.as_dict())
     _raise_for_component_spec_quality(
         root=root,
         proposal=proposal,
@@ -483,8 +496,9 @@ def _raise_for_incomplete_compiled_write_package(
             issues.append("missing compiled rendered_component_specs")
         if not prewrite_package.component_registry_preview:
             issues.append("missing compiled component_registry_preview")
-        handoffs = _precompiled_component_handoffs(prewrite_package)
-        authoring_inputs = _precompiled_component_authoring_inputs(prewrite_package)
+        component_previews = greenfield_component_commit.precompiled_component_previews(prewrite_package)
+        handoffs = greenfield_component_commit.precompiled_component_handoffs(prewrite_package)
+        authoring_inputs = greenfield_component_commit.precompiled_component_authoring_inputs(prewrite_package)
         missing_handoffs = [
             greenfield_traceability.component_key(row)
             for row in component_rows
@@ -499,6 +513,16 @@ def _raise_for_incomplete_compiled_write_package(
         ]
         if missing_authoring_inputs:
             issues.append("missing compiled component authoring inputs")
+        missing_registry_entries = [
+            greenfield_traceability.component_key(row)
+            for row in component_rows
+            if greenfield_traceability.component_key(row) not in component_previews
+            or not isinstance(component_previews[greenfield_traceability.component_key(row)].get("registry_entry"), Mapping)
+        ]
+        if missing_registry_entries:
+            issues.append("missing compiled component registry entries")
+        for key, preview in component_previews.items():
+            issues.extend(greenfield_component_commit.compiled_component_registry_entry_issues(key=key, preview=preview))
 
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     if diagram_rows:
@@ -530,42 +554,6 @@ def _raise_for_incomplete_compiled_write_package(
         )
 
 
-def _precompiled_component_handoffs(
-    prewrite_package: GreenfieldCompletionPackage | None,
-) -> dict[str, dict[str, Any]]:
-    if prewrite_package is None:
-        return {}
-    handoffs: dict[str, dict[str, Any]] = {}
-    for row in prewrite_package.component_registry_preview:
-        if not isinstance(row, Mapping):
-            continue
-        handoff = row.get("implementation_handoff")
-        if not isinstance(handoff, Mapping) or not handoff:
-            continue
-        key = greenfield_traceability.component_key(row)
-        if key:
-            handoffs[key] = dict(handoff)
-    return handoffs
-
-
-def _precompiled_component_authoring_inputs(
-    prewrite_package: GreenfieldCompletionPackage | None,
-) -> dict[str, dict[str, Any]]:
-    if prewrite_package is None:
-        return {}
-    inputs: dict[str, dict[str, Any]] = {}
-    for row in prewrite_package.component_registry_preview:
-        if not isinstance(row, Mapping):
-            continue
-        authoring_input = row.get("authoring_input")
-        if not isinstance(authoring_input, Mapping) or not authoring_input:
-            continue
-        key = greenfield_traceability.component_key(authoring_input)
-        if key:
-            inputs[key] = dict(authoring_input)
-    return inputs
-
-
 def _has_compiled_memory_package(prewrite_package: GreenfieldCompletionPackage | None) -> bool:
     return bool(
         prewrite_package is not None
@@ -580,114 +568,6 @@ def _atlas_source_path_for_row(row: Mapping[str, Any]) -> str:
     if not slug:
         return ""
     return f"odylith/atlas/source/{slug}.mmd"
-
-
-def _legacy_component_authoring_input(
-    *,
-    row: Mapping[str, Any],
-    handoff: Mapping[str, Any],
-    traceability_plan: Any,
-    component_diagram_scope: Mapping[str, Sequence[str]],
-    component_dependency_lookup: Mapping[str, str],
-    proposal: Mapping[str, Any],
-) -> dict[str, Any]:
-    key = greenfield_traceability.component_key(row)
-    return {
-        "component_id": str(row.get("component_id", "")).strip(),
-        "label": str(row.get("label", "")).strip(),
-        "path": str(row.get("intended_path", "")).strip(),
-        "kind": str(row.get("kind", "service")).strip() or "service",
-        "category": "application",
-        "qualification": str(row.get("qualification", "candidate")).strip() or "candidate",
-        "owner": "repo",
-        "status": str(row.get("status", "planned")).strip() or "planned",
-        "product_layer": "application",
-        "sources": ("user_intent",),
-        "workstreams": greenfield_component_registry_scope.registry_component_workstreams(
-            handoff=handoff,
-            fallback=traceability_plan.component_workstreams.get(key, ()),
-        ),
-        "diagrams": greenfield_component_registry_scope.registry_component_diagrams(
-            row=row,
-            diagram_scope=component_diagram_scope,
-            fallback=traceability_plan.component_diagrams.get(key, ()),
-        ),
-        "responsibility": component_authoring_responsibility(row),
-        "boundary": str(row.get("boundary", "")).strip(),
-        "dependencies": component_dependency_lines(
-            row_text_tuple(row, "dependencies", "depends_on"),
-            lookup=component_dependency_lookup,
-        ),
-        "interfaces": row_text_tuple(row, "interfaces", "interface_changes"),
-        "validation": row_text_tuple(row, "validation", "test_strategy"),
-        "risks": component_risk_lines(row, proposal),
-        "implementation_handoff": handoff,
-        "component_contract": row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else None,
-    }
-
-
-def _register_component_from_authoring_input(
-    *,
-    root: Path,
-    authoring_input: Mapping[str, Any],
-) -> Any:
-    return component_authoring.register_component(
-        repo_root=root,
-        component_id=str(authoring_input.get("component_id", "")).strip(),
-        label=str(authoring_input.get("label", "")).strip(),
-        path=str(authoring_input.get("path", "")).strip(),
-        kind=str(authoring_input.get("kind", "service")).strip() or "service",
-        category=str(authoring_input.get("category", "application")).strip() or "application",
-        qualification=str(authoring_input.get("qualification", "candidate")).strip() or "candidate",
-        owner=str(authoring_input.get("owner", "repo")).strip() or "repo",
-        status=str(authoring_input.get("status", "planned")).strip() or "planned",
-        product_layer=str(authoring_input.get("product_layer", "application")).strip() or "application",
-        sources=_string_tuple(authoring_input.get("sources")) or ("user_intent",),
-        workstreams=_string_tuple(authoring_input.get("workstreams")),
-        diagrams=_string_tuple(authoring_input.get("diagrams")),
-        responsibility=str(authoring_input.get("responsibility", "")).strip(),
-        boundary=str(authoring_input.get("boundary", "")).strip(),
-        dependencies=_string_tuple(authoring_input.get("dependencies")),
-        interfaces=_string_tuple(authoring_input.get("interfaces")),
-        validation=_string_tuple(authoring_input.get("validation")),
-        risks=_string_tuple(authoring_input.get("risks")),
-        implementation_handoff=authoring_input.get("implementation_handoff")
-        if isinstance(authoring_input.get("implementation_handoff"), Mapping)
-        else None,
-        component_contract=authoring_input.get("component_contract")
-        if isinstance(authoring_input.get("component_contract"), Mapping)
-        else None,
-        dry_run=False,
-        update_existing=True,
-        refresh=False,
-    )
-
-
-def _string_tuple(value: Any) -> tuple[str, ...]:
-    if isinstance(value, str):
-        values: Sequence[Any] = (value,)
-    elif isinstance(value, Sequence):
-        values = value
-    else:
-        values = ()
-    return tuple(str(item).strip() for item in values if str(item).strip())
-
-
-def _write_repaired_component_spec(
-    *,
-    root: Path,
-    created: Mapping[str, Any],
-    rendered_component_specs: Mapping[str, str],
-) -> None:
-    label = str(created.get("label", "")).strip()
-    rendered = str(rendered_component_specs.get(label, "")).rstrip()
-    if not rendered:
-        return
-    spec_path = Path(str(created.get("spec_path", "")))
-    if not spec_path.is_absolute():
-        spec_path = root / spec_path
-    spec_path.parent.mkdir(parents=True, exist_ok=True)
-    spec_path.write_text(f"{rendered}\n", encoding="utf-8")
 
 
 def _raise_for_final_package_quality(

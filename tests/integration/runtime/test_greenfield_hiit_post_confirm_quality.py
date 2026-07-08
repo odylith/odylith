@@ -51,6 +51,7 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
         transaction_package["compass_memory_preview"],
     )
     _assert_committed_program_matches_transaction(tmp_path, transaction_package["program_result"])
+    _assert_committed_registry_matches_transaction(tmp_path, transaction_package)
     _assert_committed_release_assignment_matches_transaction(
         tmp_path,
         release_assignment=transaction_package["release_assignment_result"],
@@ -144,6 +145,25 @@ def _assert_committed_atlas_matches_transaction(tmp_path: Path, transaction_pack
     for relative_path, source in atlas_sources.items():
         assert (tmp_path / relative_path).read_text(encoding="utf-8") == source
         assert by_source[relative_path]["last_reviewed_utc"] == review_date
+
+
+def _assert_committed_registry_matches_transaction(tmp_path: Path, transaction_package: dict) -> None:
+    registry_path = tmp_path / "odylith/registry/source/component_registry.v1.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    by_id = {
+        str(row.get("component_id", "")): row
+        for row in registry.get("components", [])
+        if isinstance(row, dict)
+    }
+    rendered_specs = transaction_package["rendered_component_specs"]
+    for preview in transaction_package["component_registry_preview"]:
+        authoring_input = preview["authoring_input"]
+        registry_entry = preview["registry_entry"]
+        component_id = str(authoring_input["component_id"])
+        label = str(authoring_input["label"])
+        assert by_id[component_id] == registry_entry
+        spec_path = tmp_path / registry_entry["spec_ref"]
+        assert spec_path.read_text(encoding="utf-8") == rendered_specs[label].rstrip() + "\n"
 
 
 def _assert_committed_release_assignment_matches_transaction(

@@ -50,6 +50,17 @@ def test_source_casing_custody_repairs_visible_copy_without_rewriting_structural
         rendered_atlas_sources={
             "odylith/atlas/source/crispr-review.mmd": 'flowchart LR\n    review["Review cRISPR perturbation evidence"]'
         },
+        component_registry_preview=(
+            {
+                "registry_entry": {
+                    "component_id": "crispr-review",
+                    "name": "cRISPR Review Service",
+                    "path_prefixes": ["src/crispr/review"],
+                    "spec_ref": "odylith/registry/source/components/crispr-review/CURRENT_SPEC.md",
+                    "what_it_is": "cRISPR Review Service defines the planned service ownership boundary.",
+                }
+            },
+        ),
         project_brief_preview={
             "project_outcome": "The cRISPR review explains perturbation evidence and keeps reviewers aligned.",
         },
@@ -71,6 +82,11 @@ def test_source_casing_custody_repairs_visible_copy_without_rewriting_structural
     assert restored.proposal["components"][0]["label"] == "CRISPR Review Service"
     assert restored.proposal["backlog"][0]["component_focus"] == ["crispr-review"]
     assert restored.proposal["semantic_model"]["diagram_event_graph"]["component_sequence"] == ["crispr-review"]
+    restored_registry_entry = restored.component_registry_preview[0]["registry_entry"]
+    assert restored_registry_entry["name"] == "CRISPR Review Service"
+    assert restored_registry_entry["path_prefixes"] == ["src/crispr/review"]
+    assert restored_registry_entry["spec_ref"] == "odylith/registry/source/components/crispr-review/CURRENT_SPEC.md"
+    assert "CRISPR Review Service" in restored_registry_entry["what_it_is"]
     assert "CRISPR review" in restored.project_brief_preview["project_outcome"]
     assert "cRISPR" not in "\n".join(restored.rendered_atlas_sources.values())
     assert "/tmp/crispr-review.md" in restored.backlog_result["idea_files"]

@@ -111,6 +111,7 @@ def preview_prewrite_components(
         if isinstance(row["implementation_handoff"], Mapping):
             created_payload["implementation_handoff"] = dict(row["implementation_handoff"])
         created_payload["authoring_input"] = dict(row)
+        created_payload["registry_entry"] = component_authoring.registry_entry_from_authoring_input(row)
         created_payload["what_it_is"] = component_authoring._public_what_it_is(  # noqa: SLF001 - prewrite mirrors component_authoring output.
             label=str(row["label"]),
             kind=str(row["kind"]),
