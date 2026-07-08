@@ -15,7 +15,7 @@ from odylith.runtime.surfaces import surface_path_helpers
 
 _DEFAULT_FILL = "#FFFFFF"
 _DEFAULT_STROKE = "#CBD5E1"
-_DEFAULT_TEXT = "#17233A"
+_DEFAULT_TEXT = "#132033"
 _EDGE_COLOR = "#B9C7D8"
 
 
@@ -411,7 +411,7 @@ def _render_svg_groups(model: FlowchartModel, layout: FlowchartLayout) -> list[s
             f'<g class="flowchart-group"><rect x="{x1}" y="{y1}" width="{x2 - x1}" height="{y2 - y1}" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />'
         )
         rendered.append(
-            f'<text x="{x1 + 16}" y="{y1 + 22}" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">{html.escape(labels.get(group_id, group_id))}</text></g>'
+            f'<text x="{x1 + 16}" y="{y1 + 22}" fill="#293D52" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">{html.escape(labels.get(group_id, group_id))}</text></g>'
         )
     return rendered
 
@@ -509,7 +509,7 @@ def _render_png(model: FlowchartModel, layout: FlowchartLayout) -> bytes:
             bar_width = min(box.width - 36, max(42, len(rendered_line) * 5))
             bar_x = box.x + (box.width - bar_width) // 2
             bar_y = box.y + 22 + index * 14
-            rect(bar_x, bar_y, bar_width, 4, _rgb("#334155"), _rgb("#334155"))
+            rect(bar_x, bar_y, bar_width, 4, _rgb("#293D52"), _rgb("#293D52"))
     return _png_bytes(width, height, bytes(canvas))
 
 

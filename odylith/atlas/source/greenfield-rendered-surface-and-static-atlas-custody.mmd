@@ -73,17 +73,17 @@ flowchart LR
     surface_health --> exact_blockers
     exact_blockers --> no_release_claim
 
-    classDef write fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;
-    classDef atlas fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;
-    classDef surface fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;
-    classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;
+    classDef write fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
+    classDef atlas fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
+    classDef surface fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
+    classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
     class final_manifest,prewrite_safety,governed_write,rollback_guard,dashboard_refresh,brand_assets write;
     class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
     class matrix_seed,rendered_package,typed_units,projection_surface_scan,structural_metadata,source_address_gate,governed_readback,evidence_readback,retained_evidence,cleanup_proof,surface_health,browser_state,hard_score surface;
     class exact_blockers,no_release_claim,proof_checkpoint blocker;
 
-    style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
-    style atlas_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#334155
-    style surface_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#334155
-    style blocker_lane fill:#FFF8F7,stroke:#F7B4AE,stroke-width:1px,color:#334155
+    style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
+    style atlas_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
+    style surface_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
+    style blocker_lane fill:#FFF8F7,stroke:#F7B4AE,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

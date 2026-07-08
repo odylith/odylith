@@ -254,8 +254,8 @@ async function main() {
             opacity: 0.65;
           }
           .edgeLabel {
-            color: #334155;
-            fill: #334155;
+            color: #293D52;
+            fill: #293D52;
           }
           .edgeLabel rect,
           .edgeLabel background {
@@ -269,15 +269,15 @@ async function main() {
           }
         `;
         svg.insertBefore(style, svg.firstChild);
-        const BODY_TEXT = '#17233A';
-        const STRUCTURE_LABEL = '#334155';
+        const BODY_TEXT = '#132033';
+        const STRUCTURE_LABEL = '#293D52';
         const nodePalette = {
-          neutral: { fill: '#FBFDFF', stroke: '#D8E5F4', label: BODY_TEXT, title: '#334155' },
-          primary: { fill: '#EFF6FF', stroke: '#BFD7FE', label: BODY_TEXT, title: '#1D4ED8' },
-          execution: { fill: '#ECFDFB', stroke: '#A7E9E3', label: BODY_TEXT, title: '#0F766E' },
-          governance: { fill: '#F5F3FF', stroke: '#DDD6FE', label: BODY_TEXT, title: '#6D28D9' },
-          constraint: { fill: '#FFF8E6', stroke: '#F6D98B', label: BODY_TEXT, title: '#B7791F' },
-          invalid: { fill: '#FFF1F0', stroke: '#F7B4AE', label: BODY_TEXT, title: '#B42318' },
+          neutral: { fill: '#FBFDFF', stroke: '#D8E5F4', label: BODY_TEXT },
+          primary: { fill: '#EFF6FF', stroke: '#BFD7FE', label: BODY_TEXT },
+          execution: { fill: '#ECFDFB', stroke: '#A7E9E3', label: BODY_TEXT },
+          governance: { fill: '#F5F3FF', stroke: '#DDD6FE', label: BODY_TEXT },
+          constraint: { fill: '#FFF8E6', stroke: '#F6D98B', label: BODY_TEXT },
+          invalid: { fill: '#FFF1F0', stroke: '#F7B4AE', label: BODY_TEXT },
         };
         const clusterPalette = [
           { bucket: 'neutral', fill: '#FBFDFF', stroke: '#D8E5F4', label: STRUCTURE_LABEL },
@@ -375,6 +375,17 @@ async function main() {
           const dash = tone.dash ? `stroke-dasharray:${tone.dash} !important;` : 'stroke-dasharray:none !important;';
           return `${retainedStyle ? `${retainedStyle};` : ''}stroke:${tone.stroke} !important;stroke-width:${tone.width} !important;opacity:${tone.opacity} !important;${dash}`;
         };
+        const stripManagedTextStyle = styleText => (
+          String(styleText || '')
+            .split(';')
+            .map(part => part.trim())
+            .filter(part => part && !/^(color|fill)\s*:/i.test(part))
+            .join(';')
+        );
+        const managedTextStyle = (authoredStyle, color) => {
+          const retainedStyle = stripManagedTextStyle(authoredStyle);
+          return `${retainedStyle ? `${retainedStyle};` : ''}color:${color} !important;fill:${color} !important`;
+        };
         const bucketForText = text => {
           const normalized = String(text || '').toLowerCase();
           if (/\b(denied?|reject(?:ed|ion)?|invalid|security violation|policy rejection|destructive failure|unrecoverable)\b/.test(normalized)) {
@@ -448,7 +459,7 @@ async function main() {
             ),
           );
           for (const label of cluster.querySelectorAll('.cluster-label, .cluster-label span, .cluster-label text, .cluster-label p')) {
-            label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
+            label.setAttribute('style', managedTextStyle(label.getAttribute('style') || '', tone.label));
           }
         }
         const nodeShape = node => (
@@ -473,8 +484,8 @@ async function main() {
               `fill:${tone.fill} !important;stroke:${tone.stroke} !important;stroke-width:1.35px !important`,
             ),
           );
-          for (const label of node.querySelectorAll('.label, .nodeLabel, .label span, .label text, .label p, .label div')) {
-            label.setAttribute('style', `${label.getAttribute('style') || ''};color:${tone.label} !important;fill:${tone.label} !important`);
+          for (const label of node.querySelectorAll('.label, .nodeLabel, .label text, .label p, .label div')) {
+            label.setAttribute('style', managedTextStyle(label.getAttribute('style') || '', tone.label));
           }
         }
         const bucketForEdge = edge => {
@@ -504,7 +515,7 @@ async function main() {
           edge.setAttribute('style', managedEdgeStyle(edge.getAttribute('style') || '', tone));
         }
         for (const label of svg.querySelectorAll('.edgeLabel, .edgeLabel span, .edgeLabel text, .edgeLabel p, .edgeLabel div')) {
-          label.setAttribute('style', `${label.getAttribute('style') || ''};color:${STRUCTURE_LABEL} !important;fill:${STRUCTURE_LABEL} !important`);
+          label.setAttribute('style', managedTextStyle(label.getAttribute('style') || '', STRUCTURE_LABEL));
         }
         for (const labelBackground of svg.querySelectorAll('.edgeLabel rect, .edgeLabel background')) {
           labelBackground.setAttribute('style', `${labelBackground.getAttribute('style') || ''};fill:#FFFFFF !important;opacity:0.96 !important`);

@@ -214,6 +214,12 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
+    assert "const BODY_TEXT = '#132033';" in worker_source
+    assert "const STRUCTURE_LABEL = '#293D52';" in worker_source
+    assert "#17233A" not in worker_source
+    assert "#334155" not in worker_source
+    assert "stripManagedTextStyle" in worker_source
+    assert "managedTextStyle(label.getAttribute('style') || '', tone.label)" in worker_source
     assert "--no-sandbox" in worker_source
     assert "--disable-setuid-sandbox" in worker_source
     assert "--disable-dev-shm-usage" in worker_source
@@ -243,6 +249,19 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     assert "styleDeclares(authoredStyle, 'fill')" not in worker_source
     assert "styleDeclares(authoredStyle, 'stroke')" not in worker_source
     assert "clusterNodeToneForNode" not in worker_source
+
+
+def test_atlas_source_diagrams_use_current_readability_palette() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    source_dir = repo_root / "odylith" / "atlas" / "source"
+    retired_colors = ("#17233A", "#334155")
+    offenders: list[str] = []
+    for path in sorted(source_dir.glob("*.mmd")):
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if any(color in line for color in retired_colors):
+                offenders.append(f"{path.relative_to(repo_root)}:{line_number}")
+
+    assert offenders == []
 
 
 def test_mermaid_worker_container_wash_is_lighter_than_matching_node_tone() -> None:
