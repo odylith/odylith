@@ -141,6 +141,7 @@ def build_prewrite_completion_package(
             target_root=root,
         )
         rendered_atlas_sources = greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
+        atlas_review_date = dt.date.today().isoformat()
         materialize_prewrite_backlog_result(staged_backlog_result)
         diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
         diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids(prewrite_root, len(diagram_rows), rows=diagram_rows)
@@ -245,6 +246,8 @@ def build_prewrite_completion_package(
             release_selector=release_selector,
             rendered_component_specs=rendered_component_specs,
             rendered_atlas_sources=rendered_atlas_sources,
+            atlas_review_date=atlas_review_date,
+            atlas_diagram_ids=tuple(diagram_ids),
             component_registry_preview=component_registry_preview,
             project_brief_preview=project_brief,
             project_brief_record_text=project_brief_record_text,

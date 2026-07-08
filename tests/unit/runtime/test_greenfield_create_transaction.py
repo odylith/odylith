@@ -30,6 +30,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
     return GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
+        atlas_review_date="2026-07-07",
         backlog_result={
             "created": [{"title": "Prove supplier risk review path", "idea_id": "B-001"}],
             "idea_files": {"/repo/odylith/radar/source/ideas/B-001.md": "Supplier risk review path"},
@@ -301,6 +302,29 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     assert calls["materialize"]["program_result"] == package.program_result
     assert result["next_steps"] == package.next_steps_preview
     assert result["program"]["program_count"] == 1
+
+
+def test_write_greenfield_proposal_rejects_incomplete_compiled_package_before_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal = _proposal()
+    package = replace(_package(proposal), next_steps_preview=None)
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("post-confirm write must not regenerate missing transaction artifacts")
+
+    monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_next_steps", forbidden)
+
+    with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
+        greenfield_apply_write.write_greenfield_proposal(
+            root=tmp_path,
+            proposal=proposal,
+            release_selector="",
+            tribunal={"status": "passed", "issues": []},
+            backlog_result=package.backlog_result or {},
+            prewrite_package=package,
+        )
 
 
 def test_materialize_compiled_greenfield_program_does_not_recompute_governance(

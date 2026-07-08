@@ -38,11 +38,13 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     assert len(payload["diagrams"]) == 6
     transaction_package = compile_payload["transaction"]["prewrite_package"]
     assert payload["next_steps"] == transaction_package["next_steps_preview"]
+    assert payload["diagrams"] == transaction_package["atlas_diagram_ids"]
     _assert_accepted_project_matches_transaction(
         accepted,
         transaction_package["accepted_project_preview"],
     )
     _assert_project_brief_matches_transaction(tmp_path, transaction_package["project_brief_record_text"], accepted_at=accepted["accepted_at"])
+    _assert_committed_atlas_matches_transaction(tmp_path, transaction_package)
     _assert_compass_event_matches_transaction(
         tmp_path,
         payload["memory"]["event"],
@@ -126,6 +128,22 @@ def _assert_committed_program_matches_transaction(tmp_path: Path, program_result
 
     assert committed["umbrella_id"] == umbrella_id
     assert committed["waves"] == program_result["waves"]
+
+
+def _assert_committed_atlas_matches_transaction(tmp_path: Path, transaction_package: dict) -> None:
+    atlas_sources = transaction_package["rendered_atlas_sources"]
+    review_date = transaction_package["atlas_review_date"]
+    catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    by_source = {
+        str(row.get("source_mmd", "")): row
+        for row in catalog.get("diagrams", [])
+        if isinstance(row, dict)
+    }
+
+    for relative_path, source in atlas_sources.items():
+        assert (tmp_path / relative_path).read_text(encoding="utf-8") == source
+        assert by_source[relative_path]["last_reviewed_utc"] == review_date
 
 
 def _assert_committed_release_assignment_matches_transaction(

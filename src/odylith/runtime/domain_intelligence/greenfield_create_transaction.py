@@ -192,7 +192,7 @@ def _sequence(value: Any) -> Sequence[Any]:
 def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCompletionPackage:
     allowed = {field.name for field in fields(GreenfieldCompletionPackage)}
     kwargs = {key: payload[key] for key in allowed if key in payload}
-    for tuple_key in ("component_registry_preview", "release_workstream_ids"):
+    for tuple_key in ("component_registry_preview", "atlas_diagram_ids", "release_workstream_ids"):
         if tuple_key in kwargs and isinstance(kwargs[tuple_key], list):
             kwargs[tuple_key] = tuple(kwargs[tuple_key])
     return GreenfieldCompletionPackage(**kwargs)

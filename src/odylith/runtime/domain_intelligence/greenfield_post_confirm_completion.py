@@ -86,6 +86,8 @@ class GreenfieldCompletionPackage:
     release_selector: str = ""
     rendered_component_specs: Mapping[str, str] | None = None
     rendered_atlas_sources: Mapping[str, str] | None = None
+    atlas_review_date: str = ""
+    atlas_diagram_ids: tuple[str, ...] = ()
     component_registry_preview: tuple[Mapping[str, Any], ...] = ()
     project_brief_preview: Mapping[str, Any] | None = None
     project_brief_record_text: str = ""
@@ -270,6 +272,13 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     if backlog_result and not atlas_sources:
         issues.append("prewrite package must include rendered Atlas Mermaid sources")
     if atlas_sources:
+        if len(package.atlas_diagram_ids) != len(atlas_sources):
+            issues.append("prewrite Atlas package must include one compiled diagram id per Mermaid source")
+        for diagram_id in package.atlas_diagram_ids:
+            if not re.fullmatch(r"D-\d{3,}", clean_text(diagram_id)):
+                issues.append("prewrite Atlas package contains an invalid compiled diagram id")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", clean_text(package.atlas_review_date)):
+            issues.append("prewrite Atlas package must include a compiled review date")
         diagram_rows = mapping_rows(package.proposal.get("diagrams"))
         if len(atlas_sources) != len(diagram_rows):
             issues.append("prewrite Atlas package must render one Mermaid source per DiagramEventGraph diagram")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -76,11 +77,15 @@ def write_greenfield_proposal(
             backlog_result = restored_backlog_result
         if prewrite_package is not None:
             prewrite_package = greenfield_source_casing.package_with_source_casing(prewrite_package)
+    if prewrite_package is not None:
+        _raise_for_incomplete_compiled_write_package(prewrite_package, release_selector=release_selector)
     validation_gate = _source_cased_validation_gate(tribunal, source_text=source_text)
     release_bootstrap = None
     release_targeting = None
+    has_compiled_package = prewrite_package is not None
     rendered_atlas_sources = dict(prewrite_package.rendered_atlas_sources or {}) if prewrite_package else {}
     rendered_component_specs = dict(prewrite_package.rendered_component_specs or {}) if prewrite_package else {}
+    atlas_review_date = _atlas_review_date(prewrite_package)
     for raw_path in backlog_result.get("stale_idea_files", []):
         path = Path(str(raw_path))
         if path.is_file():
@@ -139,7 +144,11 @@ def write_greenfield_proposal(
     diagrams_created: list[str] = []
     atlas_scaffold_logs: list[str] = []
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    diagram_ids = allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
+    diagram_ids = (
+        _compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
+        if has_compiled_package
+        else allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)
+    )
     traceability_plan = greenfield_traceability.build_traceability_plan(
         proposal=proposal,
         created_backlog=backlog_result["created"],
@@ -152,7 +161,12 @@ def write_greenfield_proposal(
             diagram_id=diagram_id,
             traceability_plan=traceability_plan,
             atlas_scaffold_logs=atlas_scaffold_logs,
-            starter_source=_prewrite_atlas_source(row, rendered_atlas_sources),
+            starter_source=_prewrite_atlas_source(
+                row,
+                rendered_atlas_sources,
+                required=has_compiled_package,
+            ),
+            review_date=atlas_review_date,
         )
         diagrams_created.append(diagram_id)
     touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
@@ -289,6 +303,8 @@ def write_greenfield_proposal(
         first_release_workstreams=first_release_workstreams,
         component_rows=components_created,
         diagram_rows=diagram_rows,
+        diagram_ids=diagram_ids,
+        atlas_review_date=atlas_review_date,
         memory_record=memory_record,
         next_steps=next_steps,
         validation_gate=validation_gate,
@@ -418,11 +434,109 @@ def _raise_for_greenfield_rendered_surface_custody(*, repo_root: Path, diagram_i
     }
 
 
-def _prewrite_atlas_source(row: Mapping[str, Any], rendered_atlas_sources: Mapping[str, str]) -> str:
+def _prewrite_atlas_source(
+    row: Mapping[str, Any],
+    rendered_atlas_sources: Mapping[str, str],
+    *,
+    required: bool = False,
+) -> str:
     path = _atlas_source_path_for_row(row)
     if not path:
+        if required:
+            raise ValueError("compiled greenfield Atlas source missing source path")
         return ""
-    return str(rendered_atlas_sources.get(path, "")).strip()
+    source = str(rendered_atlas_sources.get(path, "")).strip()
+    if required and not source:
+        raise ValueError(f"compiled greenfield Atlas source missing for {path}")
+    return source
+
+
+def _atlas_review_date(prewrite_package: GreenfieldCompletionPackage | None) -> str:
+    if prewrite_package is not None:
+        review_date = str(getattr(prewrite_package, "atlas_review_date", "") or "").strip()
+        if not review_date:
+            raise ValueError("compiled greenfield Atlas review date missing")
+        return review_date
+    return dt.date.today().isoformat()
+
+
+def _compiled_atlas_diagram_ids(
+    prewrite_package: GreenfieldCompletionPackage | None,
+    *,
+    expected_count: int,
+) -> list[str]:
+    raw_ids = prewrite_package.atlas_diagram_ids if prewrite_package is not None else ()
+    diagram_ids = [str(item).strip().upper() for item in raw_ids if str(item).strip()]
+    if len(diagram_ids) != expected_count:
+        raise ValueError(
+            "compiled greenfield Atlas diagram ids missing or incomplete "
+            f"(expected {expected_count}, found {len(diagram_ids)})"
+        )
+    invalid = next((item for item in diagram_ids if not re.fullmatch(r"D-\d{3,}", item)), "")
+    if invalid:
+        raise ValueError(f"compiled greenfield Atlas diagram id is invalid: {invalid}")
+    return diagram_ids
+
+
+def _raise_for_incomplete_compiled_write_package(
+    prewrite_package: GreenfieldCompletionPackage,
+    *,
+    release_selector: str,
+) -> None:
+    proposal = prewrite_package.proposal if isinstance(prewrite_package.proposal, Mapping) else {}
+    issues: list[str] = []
+    if not isinstance(prewrite_package.program_result, Mapping) or not prewrite_package.program_result:
+        issues.append("missing compiled program_result")
+    if not prewrite_package.release_workstream_ids:
+        issues.append("missing compiled release_workstream_ids")
+    if not isinstance(prewrite_package.next_steps_preview, Mapping) or not prewrite_package.next_steps_preview:
+        issues.append("missing compiled next_steps_preview")
+    if not _has_compiled_memory_package(prewrite_package):
+        issues.append("missing compiled accepted-project, project brief, or Compass memory preview")
+
+    component_rows = [row for row in first_release_component_rows(proposal) if isinstance(row, Mapping)]
+    if component_rows:
+        if not isinstance(prewrite_package.rendered_component_specs, Mapping) or not prewrite_package.rendered_component_specs:
+            issues.append("missing compiled rendered_component_specs")
+        if not prewrite_package.component_registry_preview:
+            issues.append("missing compiled component_registry_preview")
+        handoffs = _precompiled_component_handoffs(prewrite_package)
+        missing_handoffs = [
+            greenfield_traceability.component_key(row)
+            for row in component_rows
+            if greenfield_traceability.component_key(row) not in handoffs
+        ]
+        if missing_handoffs:
+            issues.append("missing compiled component implementation handoffs")
+
+    diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
+    if diagram_rows:
+        atlas_sources = (
+            prewrite_package.rendered_atlas_sources
+            if isinstance(prewrite_package.rendered_atlas_sources, Mapping)
+            else {}
+        )
+        if len(atlas_sources) != len(diagram_rows):
+            issues.append("missing compiled rendered_atlas_sources")
+        if not str(prewrite_package.atlas_review_date or "").strip():
+            issues.append("missing compiled atlas_review_date")
+        try:
+            _compiled_atlas_diagram_ids(prewrite_package, expected_count=len(diagram_rows))
+        except ValueError as exc:
+            issues.append(str(exc))
+
+    if str(release_selector or "").strip():
+        if not isinstance(prewrite_package.release_target_result, Mapping) or not prewrite_package.release_target_result:
+            issues.append("missing compiled release_target_result")
+        if not isinstance(prewrite_package.release_assignment_result, Mapping) or not prewrite_package.release_assignment_result:
+            issues.append("missing compiled release_assignment_result")
+
+    if issues:
+        detail = "; ".join(dedupe_strings(issues))
+        raise ValueError(
+            "compiled greenfield package is incomplete; rebuild the ProductCreateTransaction before commit: "
+            f"{detail}"
+        )
 
 
 def _precompiled_component_handoffs(
@@ -489,6 +603,8 @@ def _raise_for_final_package_quality(
     first_release_workstreams: Sequence[str],
     component_rows: Sequence[Mapping[str, Any]],
     diagram_rows: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    atlas_review_date: str,
     memory_record: Mapping[str, Any],
     next_steps: Mapping[str, Any],
     validation_gate: Mapping[str, Any] | None = None,
@@ -505,6 +621,8 @@ def _raise_for_final_package_quality(
         release_selector=release_selector,
         rendered_component_specs=_actual_component_specs(root=root, components=component_rows),
         rendered_atlas_sources=_actual_atlas_sources(root=root, rows=diagram_rows),
+        atlas_review_date=atlas_review_date,
+        atlas_diagram_ids=tuple(diagram_ids),
         component_registry_preview=tuple(dict(row) for row in component_rows),
         project_brief_preview=proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {},
         project_brief_record_text=_read_text(root / "odylith/runtime/source/project-brief.v1.md"),
@@ -632,6 +750,7 @@ def _scaffold_proposal_diagram(
     diagram_id: str,
     traceability_plan: Any,
     atlas_scaffold_logs: list[str],
+    review_date: str,
     starter_source: str = "",
 ) -> None:
     components: list[dict[str, str]] = []
@@ -672,7 +791,7 @@ def _scaffold_proposal_diagram(
         related_docs=[],
         related_code=[],
         watch_paths=watch_paths,
-        review_date=dt.date.today().isoformat(),
+        review_date=review_date,
         starter_source=starter_source or validated_mermaid_source(row),
         refresh=False,
     )
@@ -687,7 +806,7 @@ def _scaffold_proposal_diagram(
             components=components,
             related_backlog=related_backlog,
             watch_paths=watch_paths,
-            review_date=dt.date.today().isoformat(),
+            review_date=review_date,
             log_text=log_text,
             atlas_scaffold_logs=atlas_scaffold_logs,
             starter_source=starter_source,

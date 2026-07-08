@@ -272,6 +272,8 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
     assert prewrite.package.prewrite_safety_preview["checks"]["program_dry_run"] is True
     assert prewrite.package.component_registry_preview
+    assert len(prewrite.package.atlas_review_date) == len("2026-07-07")
+    assert len(prewrite.package.atlas_diagram_ids) == len(prewrite.package.rendered_atlas_sources)
     assert prewrite.package.project_brief_record_text.startswith("# Municipal Permit Review Workspace Project Brief")
     assert "- accepted_at: prewrite" in prewrite.package.project_brief_record_text
     assert all(
@@ -479,6 +481,12 @@ def _package_for_quality_report(
     values: dict[str, object] = {
         "release_selector": "0.0.1",
         "rendered_atlas_sources": greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
+        "atlas_review_date": "2026-07-07",
+        "atlas_diagram_ids": tuple(
+            f"D-{index:03d}"
+            for index, row in enumerate(proposal.get("diagrams", []), start=1)
+            if isinstance(row, dict)
+        ),
         "component_registry_preview": _prewrite_component_preview(proposal),
         "project_brief_preview": proposal["project_brief"],
         "tribunal_preview": _tribunal_preview(),
@@ -1366,6 +1374,17 @@ def test_greenfield_package_gate_rejects_disconnected_mermaid_nodes(tmp_path: Pa
     assert "disconnected Mermaid node `C`" in "\n".join(report.issues)
 
 
+def test_greenfield_package_gate_requires_compiled_atlas_review_date(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, atlas_review_date="")
+    )
+
+    assert not report.passed
+    assert "prewrite Atlas package must include a compiled review date" in "\n".join(report.issues)
+
+
 def test_greenfield_package_gate_rejects_repeated_noncanonical_rendered_sentences(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     repeated = (
@@ -1717,6 +1736,13 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
         "validated_mermaid_source",
         lambda _row: 'flowchart LR\n  external1["Optional"]\n',
     )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "allocated_diagram_ids",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("post-confirm write must consume compiled diagram ids")
+        ),
+    )
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,
@@ -1782,7 +1808,7 @@ def test_greenfield_apply_final_gate_reads_persisted_project_brief_record(
         )
         return path
 
-    monkeypatch.setattr(proposal_memory, "_write_project_brief_source", write_bad_project_brief)
+    monkeypatch.setattr(proposal_memory, "_write_compiled_project_brief_source", write_bad_project_brief)
 
     with pytest.raises(ValueError, match="Project brief.*coordinated modal grammar drift"):
         greenfield_proposals.apply_greenfield_proposal(
