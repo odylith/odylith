@@ -46,6 +46,7 @@ from odylith.runtime.domain_intelligence.proposal_normalization import _normaliz
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -1459,7 +1460,7 @@ def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting
     )
 
     with pytest.raises(ValueError, match="ProductCreateTransaction quality manifest is not approved"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1510,7 +1511,7 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
 
     monkeypatch.setattr(greenfield_apply_write, "generated_public_copy_issues", final_copy_issues)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1622,7 +1623,7 @@ def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registr
     )
     proposal = _pain_relief_tracking_proposal(tmp_path)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,

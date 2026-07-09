@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-07-04
+Last updated: 2026-07-09
 
 
 Last updated (UTC): 2026-04-14
@@ -165,12 +165,15 @@ Public docs should describe these commands, not direct module entrypoints.
   `odylith component register --help`, `odylith atlas scaffold --help`, and
   `odylith compass log --help` must expose backend help instead of shim-only
   parser surfaces.
-- Greenfield consumer-lane governance should also stay one direct CLI hop when
-  the operator wants Odylith to own the whole path. `odylith greenfield
-  create --prompt ... --release ... --confirm` must build the canonical
-  proposal, validate it, run the greenfield Tribunal, apply source truth,
-  refresh visible surfaces, and print the first coding handoff without asking
-  the host to hand-write proposal JSON.
+- Greenfield consumer-lane governance must keep confirmation deterministic.
+  `odylith greenfield propose --prompt ...` shows the Product Intent
+  Confirmation, `odylith greenfield compile-transaction --prompt ...
+  --intent-file ... --output ...` builds and quality-gates the complete
+  `ProductCreateTransaction`, and `odylith greenfield create
+  --transaction-file ... --transaction-hash ... --confirm` only verifies and
+  commits that compiled transaction. Post-confirm create must not rebuild
+  proposals, repair product semantics, or accept prompt/intent edits; edits are
+  new evidence that require a rebuilt transaction.
 - Consumer-facing narration must keep `.agents/skills` lookup, missing-shim,
   and fallback-source-path details implicit unless they change the next
   user-visible action.
@@ -641,6 +644,8 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 tracked artifact references retained.
+  - Evidence: 7 tracked artifact references retained
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-141
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
@@ -652,9 +657,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-090
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-089
-- **2026-04-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
-  - Scope: B-021, B-022
-  - Evidence: 5 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

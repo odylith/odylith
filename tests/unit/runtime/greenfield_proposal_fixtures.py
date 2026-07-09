@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
@@ -116,6 +117,48 @@ def _confirmed_intent() -> dict[str, object]:
         CONFIRMED_INTENT_TEXT,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
     )
+
+
+def commit_precompiled_greenfield_proposal(
+    *,
+    repo_root: Path,
+    proposal: dict[str, object],
+    confirm: bool,
+    release_selector: str = "",
+    proposal_ready: bool = False,
+    repair_tier: str = greenfield_proposals.DEFAULT_POST_CONFIRM_REPAIR_TIER,
+) -> dict[str, Any]:
+    """Test helper that models pre-confirm compile followed by commit-only create."""
+
+    if not confirm:
+        raise ValueError("--confirm is required before greenfield apply writes accepted product records")
+    root = Path(repo_root).expanduser().resolve()
+    proposal = _with_test_product_intent_authority(proposal, repo_root=root)
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=root,
+        proposal=proposal,
+        release_selector=release_selector,
+        proposal_ready=proposal_ready,
+        repair_tier=repair_tier,
+    )
+    return greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=root,
+        transaction=transaction,
+        confirm=True,
+    )
+
+
+def _with_test_product_intent_authority(proposal: dict[str, object], *, repo_root: Path) -> dict[str, object]:
+    if isinstance(proposal.get(PRODUCT_INTENT_AUTHORITY_KEY), dict):
+        return proposal
+    prepared = dict(proposal)
+    prepared[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent_with_authority(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a governed ecommerce launch proposal",
+        repo_root=repo_root,
+        write_files=True,
+    )[PRODUCT_INTENT_AUTHORITY_KEY]
+    return prepared
 
 
 def confirmed_intent_with_authority(
@@ -349,6 +392,12 @@ def _seed_empty_governance_repo(repo_root: Path) -> None:
 def _governed_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
     _ = repo_root
     proposal = copy.deepcopy(_host_reasoned_ecommerce_proposal())
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent_with_authority(
+        CONFIRMED_INTENT_TEXT,
+        prompt=prompt,
+        repo_root=repo_root,
+        write_files=True,
+    )[PRODUCT_INTENT_AUTHORITY_KEY]
     title = " ".join(part[:1].upper() + part[1:] for part in greenfield_proposals.slugify(prompt).split("-"))
     title = title or "Host Authored Greenfield Project"
     slug = greenfield_proposals.slugify(title)
@@ -384,7 +433,10 @@ def _governed_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, obje
                     row_title=str(row.get("title") or title),
                     actors=actor_lines,
                 )
-    return greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+    proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+    proposal = greenfield_proposals.complete_confirmed_proposal(proposal, release_selector="0.0.1")
+    proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+    return greenfield_proposals.complete_greenfield_semantic_apply_payload(proposal, release_selector="0.0.1")
 
 
 _apply_ready_greenfield_fixture = _governed_greenfield_fixture

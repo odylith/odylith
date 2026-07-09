@@ -13,6 +13,7 @@ from odylith.runtime.artifact_quality.greenfield_package_quality import greenfie
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -35,6 +36,8 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import r
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 class _PassingTribunal:
@@ -56,6 +59,11 @@ class _PassingTribunal:
 
 
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        greenfield_prewrite_surface_stage,
+        "build_staged_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
+    )
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_apply_diagrams,
@@ -2122,7 +2130,7 @@ def test_greenfield_apply_result_carries_post_confirm_quality_manifest(
     _seed_empty_governance_repo(tmp_path)
     _disable_refreshes(monkeypatch)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=_proposal(tmp_path),
         confirm=True,

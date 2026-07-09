@@ -19,6 +19,7 @@ from tests.integration.runtime.surface_browser_test_support import (
 from tests.unit.runtime.greenfield_proposal_fixtures import (
     _apply_ready_greenfield_fixture,
     _seed_empty_governance_repo,
+    commit_precompiled_greenfield_proposal,
 )
 
 
@@ -45,7 +46,7 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         lambda **_kwargs: {},
     )
     proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
-    greenfield_proposals.apply_greenfield_proposal(
+    commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,

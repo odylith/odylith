@@ -14,6 +14,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
     CONFIRMED_INTENT_TEXT,
     _host_reasoned_ecommerce_proposal,
     _seed_empty_governance_repo,
+    commit_precompiled_greenfield_proposal,
     confirmed_intent_with_authority,
 )
 
@@ -318,7 +319,7 @@ def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -
     )
 
     with pytest.raises(ValueError, match="semantic classDef/style colors"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -349,7 +350,7 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
         "    class checkout,payment service;\n"
     )
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -372,7 +373,7 @@ def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) 
     )
 
     with pytest.raises(ValueError, match="wrap long labels"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -386,7 +387,7 @@ def test_greenfield_apply_rejects_missing_host_authored_diagram_source(tmp_path)
     proposal["diagrams"][0].pop("mermaid_source")
 
     with pytest.raises(ValueError, match="missing proposal mermaid_source"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -400,7 +401,7 @@ def test_greenfield_apply_rejects_identical_diagram_sources(tmp_path) -> None:
     proposal["diagrams"][1]["mermaid_source"] = proposal["diagrams"][0]["mermaid_source"]
 
     with pytest.raises(ValueError, match="must not reuse identical Mermaid source"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -415,7 +416,7 @@ def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
     proposal["backlog"][1].pop("related_diagram_slugs")
 
     with pytest.raises(ValueError, match="greenfield proposal validation gate failed"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -429,7 +430,7 @@ def test_greenfield_apply_rejects_component_without_ownership_contract(tmp_path)
     proposal["components"][0].pop("interfaces")
 
     with pytest.raises(ValueError, match="component `commerce-storefront` must describe planned interfaces"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -443,7 +444,7 @@ def test_greenfield_apply_rejects_diagram_without_workstream_traceability(tmp_pa
     proposal["diagrams"][0].pop("related_workstream_titles")
 
     with pytest.raises(ValueError, match="diagram `commerce-launch-system-context` must name related workstream"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,

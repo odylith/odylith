@@ -718,34 +718,18 @@ def apply_greenfield_proposal(
     proposal: Mapping[str, Any],
     confirm: bool,
     release_selector: str = "",
-    proposal_ready: bool = False,
+    proposal_ready: bool = True,
     repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
 ) -> dict[str, Any]:
-    """Apply a confirmed proposal using owned governance authoring paths."""
+    """Reject the removed post-confirm proposal-apply path."""
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
-    if not proposal_ready:
-        proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-        proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
-        proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-        proposal = complete_greenfield_semantic_apply_payload(proposal, release_selector=release_selector)
-        validate_host_reasoned_proposal(proposal)
-    root = Path(repo_root).expanduser().resolve()
-    backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    if not backlog_rows:
-        raise ValueError("proposal has no backlog records")
-    transaction = compile_greenfield_create_transaction(
-        repo_root=root,
-        proposal=proposal,
-        release_selector=release_selector,
-        proposal_ready=proposal_ready,
-        repair_tier=repair_tier,
-    )
-    return greenfield_create_commit.commit_greenfield_create_transaction(
-        repo_root=root,
-        transaction=transaction,
-        confirm=True,
+    _ = (repo_root, proposal, release_selector, proposal_ready, repair_tier)
+    raise ValueError(
+        "greenfield apply is disabled for confirmed writes. "
+        "Run greenfield compile-transaction before confirmation, then commit the verified "
+        "ProductCreateTransaction with greenfield create --transaction-file --transaction-hash --confirm."
     )
 
 def main(argv: Sequence[str] | None = None) -> int:

@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-07-04
+Last updated: 2026-07-09
 
 
 Last updated (UTC): 2026-07-01
@@ -325,6 +325,8 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 6 tracked artifact references retained.
+  - Evidence: 6 tracked artifact references retained
 - **2026-06-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 5 tracked artifact references retained
@@ -339,9 +341,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: 4 tracked artifact references retained
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-141
-  - Evidence: 3 tracked artifact references retained
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
-  - Scope: B-140, B-141
   - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 

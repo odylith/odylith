@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
@@ -27,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection i
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _role_suffixed_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
+from odylith.runtime.common import display_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
@@ -40,6 +42,8 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecomm
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_recipe_legacy_shape
 from tests.unit.runtime.greenfield_proposal_fixtures import _ontology_term_labels
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -55,6 +59,11 @@ GREENFIELD_PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/
 
 @pytest.fixture(autouse=True)
 def _stub_rendered_surface_custody_for_legacy_proposal_units(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        greenfield_prewrite_surface_stage,
+        "build_staged_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
+    )
     monkeypatch.setattr(
         greenfield_apply_diagrams,
         "raise_for_greenfield_rendered_surface_custody",
@@ -858,8 +867,9 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     proposal["intent"]["summary"] = "**Primary reviewer** can compare the accepted path, state, and evidence."
     proposal["backlog"][1]["customer"] = "**Primary reviewer** and __source reviewer__"
     proposal["diagrams"][0]["components"][0]["description"] = "__Surface reviewer__ checks the visible behavior boundary."
+    proposal = display_text.strip_inline_markdown_emphasis_tree(proposal)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -943,7 +953,7 @@ def test_greenfield_apply_replaces_child_copies_of_parent_risk(tmp_path, monkeyp
     proposal["backlog"][2]["domain_risk"] = parent_risk_line
     proposal["backlog"][2]["risks"] = [parent_risk_line]
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -965,7 +975,7 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     prompt = "Build an ecommerce site with checkout recovery"
     proposal = _governed_greenfield_fixture(tmp_path, prompt)
 
-    greenfield_proposals.apply_greenfield_proposal(
+    commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1090,7 +1100,7 @@ def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path
         capture_tribunal,
     )
 
-    greenfield_proposals.apply_greenfield_proposal(
+    commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1217,7 +1227,7 @@ def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path,
         "Failed-payment recovery proof passes",
     ]
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1246,16 +1256,11 @@ def test_greenfield_release_target_label_extracts_numeric_selector_from_custom_t
 
 def test_greenfield_apply_rejects_shallow_child_backlog_metrics(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _governed_greenfield_fixture(tmp_path, "checkout recovery")
     proposal["backlog"][1]["success_metrics"] = ["Component linked."]
 
     with pytest.raises(ValueError, match="at least two success_metrics"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
 def test_greenfield_apply_rejects_control_plane_terms_in_consumer_product_fields(tmp_path) -> None:
@@ -1265,7 +1270,7 @@ def test_greenfield_apply_rejects_control_plane_terms_in_consumer_product_fields
     proposal["components"][0]["description"] = "The storefront succeeds when Radar and Compass expose the work."
 
     with pytest.raises(ValueError) as excinfo:
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1304,18 +1309,13 @@ def test_greenfield_quality_gate_allows_control_plane_homonym_from_accepted_inte
 
 def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _governed_greenfield_fixture(tmp_path, "checkout recovery")
     proposal["backlog"][1].pop("problem")
     proposal["backlog"][2]["success_metrics"] = ["Too shallow."]
     proposal["components"][0]["responsibility"] = "UI"
 
     with pytest.raises(ValueError) as excinfo:
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
     message = str(excinfo.value)
     assert "greenfield proposal validation failed with" in message
@@ -1363,16 +1363,11 @@ def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> N
 
 def test_greenfield_apply_rejects_shallow_component_responsibility(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _governed_greenfield_fixture(tmp_path, "checkout recovery")
     proposal["components"][0]["responsibility"] = "UI stuff."
 
     with pytest.raises(ValueError, match="responsibility"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
 
 
 def test_greenfield_apply_rejects_missing_security_compliance_posture(tmp_path) -> None:
@@ -1381,7 +1376,7 @@ def test_greenfield_apply_rejects_missing_security_compliance_posture(tmp_path) 
     proposal.pop("security_compliance")
 
     with pytest.raises(ValueError, match="security_compliance"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1435,7 +1430,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["release_plan"].pop("selector")
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1567,7 +1562,7 @@ def test_greenfield_apply_reuses_existing_diagram_ids_for_backlog_traceability(t
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=_host_reasoned_ecommerce_proposal(),
         confirm=True,
@@ -1596,7 +1591,7 @@ def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_proj
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|program parent"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_recipe_legacy_shape(),
             confirm=True,
@@ -1614,7 +1609,7 @@ def test_greenfield_apply_rejects_missing_host_authored_program_parent(tmp_path,
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     with pytest.raises(ValueError, match="program parent|project_intelligence|domain_intelligence"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_crispr_without_parent(),
             confirm=True,
@@ -1633,7 +1628,7 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _governed_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1762,7 +1757,7 @@ def test_greenfield_apply_namespaces_partial_project_diagram_slugs_before_scaffo
                 for value in row["related_diagram_slugs"]
             ]
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1786,7 +1781,7 @@ def test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails(tmp_pat
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram, "scaffold_diagram", fail_scaffold)
 
     with pytest.raises(RuntimeError, match="synthetic scaffold failure"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_ecommerce_proposal(),
             confirm=True,
@@ -1814,7 +1809,7 @@ def test_greenfield_apply_rolls_back_partial_writes_when_dashboard_refresh_fails
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc_info:
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_ecommerce_proposal(),
             confirm=True,
@@ -1891,7 +1886,7 @@ def test_greenfield_apply_requires_confirmation(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
 
     with pytest.raises(ValueError, match="--confirm is required"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_ecommerce_proposal(),
             confirm=False,

@@ -31,6 +31,7 @@ from odylith.runtime.project_intelligence.greenfield import build_greenfield_pay
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
@@ -1782,7 +1783,7 @@ def test_greenfield_apply_blocks_bad_rendered_specs_before_governed_writes(tmp_p
     _force_bad_rendered_specs(monkeypatch)
 
     with pytest.raises(ValueError, match="post-confirm completion"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1812,7 +1813,7 @@ def test_greenfield_apply_rerenders_prewrite_package_after_repairable_package_fa
 
     monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", flaky_render)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1890,7 +1891,7 @@ def test_greenfield_apply_rolls_back_when_final_component_spec_drifts_after_prew
     monkeypatch.setattr(greenfield_component_commit, "materialize_compiled_component_from_preview", corrupt_final_spec)
 
     with pytest.raises(ValueError, match="compiled Registry readback"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1923,7 +1924,7 @@ def test_greenfield_apply_final_gate_reads_persisted_project_brief_record(
     monkeypatch.setattr(proposal_memory, "_write_compiled_project_brief_source", write_bad_project_brief)
 
     with pytest.raises(ValueError, match="compiled memory readback"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1936,7 +1937,7 @@ def test_greenfield_apply_prewrite_failure_does_not_bootstrap_target_repo(tmp_pa
     _force_bad_rendered_specs(monkeypatch)
 
     with pytest.raises(ValueError, match="post-confirm completion"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1955,7 +1956,7 @@ def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_wr
     )
 
     with pytest.raises(ValueError, match="post-confirm completion"):
-        greenfield_proposals.apply_greenfield_proposal(
+        commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
             confirm=True,
@@ -1977,7 +1978,7 @@ def test_greenfield_apply_uses_dry_run_release_target_preview_before_target_writ
 
     monkeypatch.setattr(greenfield_apply_prewrite.release_planning_authoring, "ensure_release_selector", capture_release_selector)
 
-    greenfield_proposals.apply_greenfield_proposal(
+    commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1991,7 +1992,7 @@ def test_greenfield_apply_bootstraps_target_repo_only_after_package_gate(tmp_pat
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,

@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-07
+Last updated: 2026-07-09
 
 
 ## Overview
@@ -26,23 +26,20 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
-  - Scope: B-142
-  - Evidence: 4 tracked artifact references retained
-- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+- **2026-07-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 2 tracked artifact references retained
-- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: 4 tracked artifact references retained
-- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: 4 tracked artifact references retained
-- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 tracked artifact references retained.
-  - Scope: B-142
-  - Evidence: 6 tracked artifact references retained
-- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
-  - Scope: B-142
+  - Evidence: 2 tracked artifact references retained
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
+  - Evidence: 2 tracked artifact references retained
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 5 tracked artifact references retained.
+  - Evidence: 5 tracked artifact references retained
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
   - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
@@ -1519,10 +1516,11 @@ This section captures synchronized requirement and contract signals derived from
   product, user, problem, first workflow, proof boundary, and confirm/edit/reject
   gate before any writes. Before final confirmation, `greenfield
   compile-transaction` builds and quality-gates the durable package; after
-  confirmation, `greenfield create --confirm` only verifies the transaction
-  hash, commits the compiled package, validates readback, refreshes surfaces,
-  and reports success. `propose --confirm-intent --format json` is the optional
-  review artifact before transaction compilation.
+  confirmation, `greenfield create --transaction-file ... --transaction-hash
+  ... --confirm` only verifies the transaction hash, commits the compiled
+  package, validates readback, refreshes surfaces, and reports success.
+  `propose --confirm-intent --format json` is the optional review artifact
+  before transaction compilation.
 - Default text `greenfield propose` output must itself be a concrete,
   confirmable Product Intent Confirmation. It must not render host instruction
   envelopes, implementation guidance, CLI next steps, or proposal-authoring
@@ -2146,11 +2144,14 @@ This section captures synchronized requirement and contract signals derived from
   writes, program wave creation, Atlas scaffold/upsert helpers, Registry
   component authoring, accepted-project memory recording, dashboard refresh, or
   next-step shaping.
-- Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
-  or reconstruct proposal JSON. Proposal review uses the canonical object from
-  `greenfield propose`; confirmation uses `greenfield create --confirm` unless an
-  explicit file workflow is needed, in which case the file comes from
-  `greenfield propose --format json`.
+- Installed greenfield guidance must not ask Codex or Claude hosts to
+  hand-author or reconstruct proposal JSON. Proposal review uses Product Intent
+  Confirmation from `greenfield propose`; full package review uses
+  `greenfield compile-transaction --intent-file ... --output ...`, which emits
+  a hashed `ProductCreateTransaction`; confirmation uses
+  `greenfield create --transaction-file ... --transaction-hash ... --confirm`
+  and cannot accept prompt, intent-file, repair-tier, or generated-proposal
+  inputs after confirmation.
 - `proposal_validation.py` owns confirmed proposal validation, required
   Mermaid source checks, evidence-tier checks, and duplicate-topology rejection.
   Generic Atlas scaffold remains the low-level catalog/source writer; Domain

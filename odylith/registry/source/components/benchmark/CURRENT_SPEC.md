@@ -30,7 +30,7 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-07-04
+Last updated: 2026-07-09
 
 
 Last updated (UTC): 2026-04-28
@@ -825,6 +825,8 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-07 · Implementation:** Implementation evidence linked this component to governed work with 7 tracked artifact references retained.
+  - Evidence: 7 tracked artifact references retained
 - **2026-04-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-093
   - Evidence: 3 tracked artifact references retained

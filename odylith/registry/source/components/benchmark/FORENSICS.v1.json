@@ -23,12 +23,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 136,
+    "explicit_event_count": 137,
     "mapped_workstream_evidence_count": 136,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 136
+    "timeline_event_count": 138
   },
   "name": "Benchmark",
   "path_prefixes": [
@@ -41,6 +41,50 @@
   ],
   "spec_ref": "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 975,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "benchmark"
+      ],
+      "meaningful": true,
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-09T16:32:59-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 7,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4",
+        "tracked_artifact_5",
+        "tracked_artifact_6",
+        "tracked_artifact_7"
+      ],
+      "confidence": "high",
+      "event_index": 941,
+      "explicit_components": [
+        "benchmark",
+        "domain-intelligence"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "benchmark",
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 7 tracked artifact references retained.",
+      "ts_iso": "2026-07-07T19:38:38-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 4,
       "artifacts": [

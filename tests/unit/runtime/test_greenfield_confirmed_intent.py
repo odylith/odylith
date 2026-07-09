@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -806,7 +807,7 @@ Release 0.0.1 succeeds when a request packet can be created with subject identit
     for component in proposal["components"]:
         assert set(CONTRACT_KEYS) <= set(component["component_contract"])
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
@@ -1075,7 +1076,7 @@ Release 0.0.1 succeeds when a board member can open one civic case, inspect map 
     assert "Public comment portal" in context
     assert "component4" in context
 
-    result = greenfield_proposals.apply_greenfield_proposal(
+    result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,

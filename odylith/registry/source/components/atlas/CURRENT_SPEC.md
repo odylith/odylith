@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-07-07
+Last updated: 2026-07-09
 
 
 Last updated (UTC): 2026-07-07
@@ -308,6 +308,10 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
 - **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 5 tracked artifact references retained
@@ -318,8 +322,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-142
   - Evidence: 5 tracked artifact references retained
 - **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
   - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
