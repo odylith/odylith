@@ -115,11 +115,14 @@ def test_render_diagrams_batch_uses_static_generated_flowchart_renderer_when_bro
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text(
         "\n".join(
-            [
-                "flowchart LR",
-                '  actor["Resident"] --> S1["Submit request"]',
-                '  S1 --> component1["Review queue"]',
-                '  component1 --> proof["Proof result<br/>decision stays visible"]',
+                [
+                    "flowchart LR",
+                    '  subgraph ops["Operations"]',
+                    '    component1["Review queue"]',
+                    "  end",
+                    '  actor["Resident"] --> S1["Submit request"]',
+                    "  S1 --> component1",
+                    '  component1 --> proof["Proof result<br/>decision stays visible"]',
                 "  classDef personStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
                 "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
                 "  class actor personStyle;",
@@ -147,7 +150,14 @@ def test_render_diagrams_batch_uses_static_generated_flowchart_renderer_when_bro
 
     output = capsys.readouterr().out
     assert "rendered Odylith-generated flowchart with static renderer" in output
-    assert svg.read_text(encoding="utf-8").startswith("<svg")
+    svg_text = svg.read_text(encoding="utf-8")
+    assert svg_text.startswith("<svg")
+    assert "#0B1726" in svg_text
+    assert "#1F3144" in svg_text
+    assert "#17233A" not in svg_text
+    assert "#334155" not in svg_text
+    assert "#0F1D30" not in svg_text
+    assert "#24384A" not in svg_text
     assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
 
@@ -214,11 +224,13 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
-    assert "const BODY_TEXT = '#0F1D30';" in worker_source
-    assert "const STRUCTURE_LABEL = '#24384A';" in worker_source
+    assert "const BODY_TEXT = '#0B1726';" in worker_source
+    assert "const STRUCTURE_LABEL = '#1F3144';" in worker_source
     assert "rewriteManagedTextColors" in worker_source
     assert "#17233A" not in worker_source
     assert "#334155" not in worker_source
+    assert "#0F1D30" not in worker_source
+    assert "#24384A" not in worker_source
     assert "stripManagedTextStyle" in worker_source
     assert "managedTextStyle(label.getAttribute('style') || '', tone.label)" in worker_source
     assert "--no-sandbox" in worker_source

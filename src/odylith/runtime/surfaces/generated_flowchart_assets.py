@@ -15,8 +15,8 @@ from odylith.runtime.surfaces import surface_path_helpers
 
 _DEFAULT_FILL = "#FFFFFF"
 _DEFAULT_STROKE = "#CBD5E1"
-_DEFAULT_TEXT = "#0F1D30"
-_STRUCTURE_LABEL_TEXT = "#24384A"
+_DEFAULT_TEXT = "#0B1726"
+_STRUCTURE_LABEL_TEXT = "#1F3144"
 _EDGE_COLOR = "#B9C7D8"
 
 
@@ -445,7 +445,8 @@ def _node_colors(node: FlowchartNode, class_styles: Mapping[str, Mapping[str, st
             continue
         fill = style.get("fill", fill)
         stroke = style.get("stroke", stroke)
-        text = style.get("color", text)
+        # Atlas owns rendered text contrast; authored Mermaid color is legacy topology input.
+        text = _DEFAULT_TEXT
     return fill, stroke, text
 
 

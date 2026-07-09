@@ -254,8 +254,8 @@ async function main() {
             opacity: 0.65;
           }
           .edgeLabel {
-            color: #24384A;
-            fill: #24384A;
+            color: #1F3144;
+            fill: #1F3144;
           }
           .edgeLabel rect,
           .edgeLabel background {
@@ -269,8 +269,8 @@ async function main() {
           }
         `;
         svg.insertBefore(style, svg.firstChild);
-        const BODY_TEXT = '#0F1D30';
-        const STRUCTURE_LABEL = '#24384A';
+        const BODY_TEXT = '#0B1726';
+        const STRUCTURE_LABEL = '#1F3144';
         const rewriteManagedTextColors = () => {
           for (const styleNode of svg.querySelectorAll('style')) {
             styleNode.textContent = String(styleNode.textContent || '')
