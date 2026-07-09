@@ -111,12 +111,25 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         )
         for index, row in enumerate(diagram_rows, start=1)
     }
+    traceability_plan = greenfield_traceability.build_traceability_plan(
+        proposal=proposal,
+        created_backlog=created_backlog,
+        diagram_ids=diagram_ids,
+    )
+    atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+        root=Path("/repo"),
+        rows=diagram_rows,
+        diagram_ids=diagram_ids,
+        traceability_plan=traceability_plan,
+        review_date="2026-07-07",
+    )
     return GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
         rendered_atlas_sources=rendered_atlas_sources,
         atlas_review_date="2026-07-07",
         atlas_diagram_ids=diagram_ids,
+        atlas_catalog_rows=atlas_catalog_rows,
         backlog_result=backlog_result,
         prewrite_safety_preview={"status": "passed"},
         component_registry_preview=(
@@ -232,11 +245,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             ],
             "program_count": 0,
         },
-        traceability_plan=greenfield_traceability.build_traceability_plan(
-            proposal=proposal,
-            created_backlog=created_backlog,
-            diagram_ids=diagram_ids,
-        ),
+        traceability_plan=traceability_plan,
         release_target_result={
             "dry_run": True,
             "selector": "0.0.1",
@@ -585,6 +594,9 @@ def test_product_create_transaction_json_round_trips_traceability_diagram_links(
     assert plan.diagram_links[0].diagram_id == "D-001"
     assert plan.diagram_links[0].related_workstream_ids == ("B-001",)
     assert plan.diagram_links[0].related_backlog_paths == ("/repo/odylith/radar/source/ideas/B-001.md",)
+    assert restored.prewrite_package.atlas_diagram_ids == transaction.prewrite_package.atlas_diagram_ids
+    assert restored.prewrite_package.rendered_atlas_sources == transaction.prewrite_package.rendered_atlas_sources
+    assert restored.prewrite_package.atlas_catalog_rows == transaction.prewrite_package.atlas_catalog_rows
 
 
 def test_product_create_commit_owner_stays_separate_from_proposal_generation() -> None:
@@ -1028,6 +1040,92 @@ def test_compiled_backlog_atlas_readback_rejects_atlas_drift(tmp_path: Path) -> 
         greenfield_compiled_readback.raise_for_compiled_backlog_and_atlas_readback(root=tmp_path, package=package)
 
 
+def test_compiled_backlog_atlas_readback_accepts_exact_atlas_catalog_rows(tmp_path: Path) -> None:
+    proposal = {
+        **_proposal(),
+        "diagrams": [
+            {
+                "slug": "supplier-risk-flow",
+                "title": "Supplier Risk Flow",
+                "summary": "Supplier risk review path traceability.",
+                "kind": "flowchart",
+            }
+        ],
+    }
+    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
+    index_path = tmp_path / "odylith/radar/source/INDEX.md"
+    atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
+    catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
+    package = _package(proposal)
+    package = replace(
+        package,
+        backlog_result={
+            **dict(package.backlog_result or {}),
+            "idea_files": {str(idea_path): "compiled backlog text\n"},
+            "backlog_index": str(index_path),
+            "backlog_index_text": "| compiled backlog index |\n",
+        },
+    )
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    atlas_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text("compiled backlog text\n", encoding="utf-8")
+    index_path.write_text("| compiled backlog index |\n", encoding="utf-8")
+    atlas_path.write_text(package.rendered_atlas_sources["odylith/atlas/source/supplier-risk-flow.mmd"], encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps({"schema_version": "odylith.diagrams.v1", "diagrams": [dict(package.atlas_catalog_rows[0])]}, indent=2)
+        + "\n",
+        encoding="utf-8",
+    )
+
+    greenfield_compiled_readback.raise_for_compiled_backlog_and_atlas_readback(root=tmp_path, package=package)
+
+
+def test_compiled_backlog_atlas_readback_rejects_atlas_catalog_drift(tmp_path: Path) -> None:
+    proposal = {
+        **_proposal(),
+        "diagrams": [
+            {
+                "slug": "supplier-risk-flow",
+                "title": "Supplier Risk Flow",
+                "summary": "Supplier risk review path traceability.",
+                "kind": "flowchart",
+            }
+        ],
+    }
+    idea_path = tmp_path / "odylith/radar/source/ideas/2026-07/2026-07-07-supplier-risk-readback-path.md"
+    index_path = tmp_path / "odylith/radar/source/INDEX.md"
+    atlas_path = tmp_path / "odylith/atlas/source/supplier-risk-flow.mmd"
+    catalog_path = tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json"
+    package = _package(proposal)
+    package = replace(
+        package,
+        backlog_result={
+            **dict(package.backlog_result or {}),
+            "idea_files": {str(idea_path): "compiled backlog text\n"},
+            "backlog_index": str(index_path),
+            "backlog_index_text": "| compiled backlog index |\n",
+        },
+    )
+    catalog_row = dict(package.atlas_catalog_rows[0])
+    catalog_row["title"] = "Drifted Supplier Risk Flow"
+    idea_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    atlas_path.parent.mkdir(parents=True, exist_ok=True)
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    idea_path.write_text("compiled backlog text\n", encoding="utf-8")
+    index_path.write_text("| compiled backlog index |\n", encoding="utf-8")
+    atlas_path.write_text(package.rendered_atlas_sources["odylith/atlas/source/supplier-risk-flow.mmd"], encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps({"schema_version": "odylith.diagrams.v1", "diagrams": [catalog_row]}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"compiled Atlas catalog row readback does not match.*D-001.title"):
+        greenfield_compiled_readback.raise_for_compiled_backlog_and_atlas_readback(root=tmp_path, package=package)
+
+
 def test_compiled_backlog_writer_rejects_path_escape(tmp_path: Path) -> None:
     escaped_path = tmp_path.parent / "escaped-greenfield-backlog.md"
 
@@ -1421,6 +1519,37 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
     package = replace(_package(proposal), next_steps_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
+        build_product_create_transaction(
+            proposal=proposal,
+            release_selector="",
+            validation_gate={"status": "passed", "issues": []},
+            backlog_result=package.backlog_result or {},
+            prewrite_package=package,
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
+        )
+
+
+def test_product_create_transaction_rejects_missing_compiled_atlas_catalog_rows_before_confirm(
+    tmp_path: Path,
+) -> None:
+    proposal = {
+        **_proposal(),
+        "diagrams": [
+            {
+                "slug": "supplier-risk-flow",
+                "title": "Supplier Risk Flow",
+                "summary": "Supplier risk review path traceability.",
+                "kind": "flowchart",
+            }
+        ],
+    }
+    authority = _intent_authority(tmp_path, write_files=True)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    package = replace(_package(proposal), atlas_catalog_rows=())
+
+    with pytest.raises(ValueError, match="Atlas catalog rows missing or incomplete"):
         build_product_create_transaction(
             proposal=proposal,
             release_selector="",

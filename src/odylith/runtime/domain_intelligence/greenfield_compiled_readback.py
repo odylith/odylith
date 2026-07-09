@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,48 @@ def raise_for_compiled_backlog_and_atlas_readback(
         values=_mapping(package.rendered_atlas_sources),
         label="compiled Atlas source",
     )
+    _raise_for_atlas_catalog_rows_readback(
+        repo_root=repo_root,
+        rows=getattr(package, "atlas_catalog_rows", ()),
+    )
+
+
+def _raise_for_atlas_catalog_rows_readback(
+    *,
+    repo_root: Path,
+    rows: Any,
+) -> None:
+    expected_rows = [row for row in rows if isinstance(row, Mapping)] if isinstance(rows, (list, tuple)) else []
+    if not expected_rows:
+        return
+    catalog_path = repo_root / "odylith/atlas/source/catalog/diagrams.v1.json"
+    if not catalog_path.is_file():
+        raise ValueError(f"compiled Atlas catalog readback missing: {catalog_path}")
+    try:
+        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise ValueError(f"compiled Atlas catalog readback is malformed: {catalog_path}") from exc
+    actual_rows = payload.get("diagrams") if isinstance(payload, Mapping) else None
+    if not isinstance(actual_rows, list):
+        raise ValueError(f"compiled Atlas catalog readback has no diagrams list: {catalog_path}")
+    actual_by_id = {
+        str(row.get("diagram_id", "")).strip().upper(): row
+        for row in actual_rows
+        if isinstance(row, Mapping) and str(row.get("diagram_id", "")).strip()
+    }
+    for expected in expected_rows:
+        diagram_id = str(expected.get("diagram_id", "")).strip().upper()
+        if not diagram_id:
+            raise ValueError("compiled Atlas catalog row readback expected row is missing diagram_id")
+        actual = actual_by_id.get(diagram_id)
+        if not isinstance(actual, Mapping):
+            raise ValueError(f"compiled Atlas catalog row readback missing: {diagram_id}")
+        for key, expected_value in expected.items():
+            if actual.get(key) != expected_value:
+                raise ValueError(
+                    "compiled Atlas catalog row readback does not match compiled transaction payload: "
+                    f"{diagram_id}.{key}"
+                )
 
 
 def _raise_for_text_map_readback(

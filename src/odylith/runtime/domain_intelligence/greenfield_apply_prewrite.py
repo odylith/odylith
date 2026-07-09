@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
@@ -147,6 +148,17 @@ def build_prewrite_completion_package(
             source_root=prewrite_root,
             target_root=root,
         )
+        traceability_plan = greenfield_traceability_commit.rebase_compiled_traceability_plan(
+            traceability_plan,
+            backlog_result=backlog_result,
+        )
+        atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+            root=root,
+            rows=diagram_rows,
+            diagram_ids=diagram_ids,
+            traceability_plan=traceability_plan,
+            review_date=atlas_review_date,
+        )
         first_release_workstreams = greenfield_programs.first_release_workstream_ids(
             proposal=proposal,
             created_backlog=backlog_result["created"],
@@ -234,6 +246,7 @@ def build_prewrite_completion_package(
             rendered_atlas_sources=rendered_atlas_sources,
             atlas_review_date=atlas_review_date,
             atlas_diagram_ids=tuple(diagram_ids),
+            atlas_catalog_rows=atlas_catalog_rows,
             component_registry_preview=component_registry_preview,
             project_brief_preview=project_brief,
             project_brief_record_text=project_brief_record_text,

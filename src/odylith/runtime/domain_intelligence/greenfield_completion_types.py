@@ -43,6 +43,7 @@ class GreenfieldCompletionPackage:
     rendered_atlas_sources: Mapping[str, str] | None = None
     atlas_review_date: str = ""
     atlas_diagram_ids: tuple[str, ...] = ()
+    atlas_catalog_rows: tuple[Mapping[str, Any], ...] = ()
     component_registry_preview: tuple[Mapping[str, Any], ...] = ()
     project_brief_preview: Mapping[str, Any] | None = None
     project_brief_record_text: str = ""

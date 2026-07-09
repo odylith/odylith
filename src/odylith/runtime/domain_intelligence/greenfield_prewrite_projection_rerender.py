@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.governance import release_planning_authoring
 
 
@@ -53,7 +54,27 @@ def rerender_prewrite_package_projections(
     updates: dict[str, Any] = {"proposal": package_proposal, "tribunal_preview": validation_gate}
 
     if "atlas" in scope:
+        diagram_rows = [row for row in package_proposal.get("diagrams", []) if isinstance(row, Mapping)]
+        diagram_ids = (
+            package.atlas_diagram_ids
+            if len(package.atlas_diagram_ids) == len(diagram_rows)
+            else tuple(greenfield_apply_diagrams.allocated_diagram_ids(target_root, len(diagram_rows), rows=diagram_rows))
+        )
+        traceability_plan = greenfield_traceability.build_traceability_plan(
+            proposal=package_proposal,
+            created_backlog=backlog_result.get("created", ()),
+            diagram_ids=diagram_ids,
+        )
+        updates["atlas_diagram_ids"] = tuple(diagram_ids)
+        updates["traceability_plan"] = traceability_plan
         updates["rendered_atlas_sources"] = greenfield_apply_diagrams.render_prewrite_atlas_sources(package_proposal)
+        updates["atlas_catalog_rows"] = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+            root=target_root,
+            rows=diagram_rows,
+            diagram_ids=diagram_ids,
+            traceability_plan=traceability_plan,
+            review_date=package.atlas_review_date,
+        )
 
     if "release" in scope and release_selector:
         release_workstream_ids = tuple(

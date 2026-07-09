@@ -157,6 +157,7 @@ def write_greenfield_proposal(
         rendered_atlas_sources=rendered_atlas_sources,
         review_date=atlas_review_date,
         require_compiled_sources=has_compiled_package,
+        compiled_catalog_rows=prewrite_package.atlas_catalog_rows if prewrite_package is not None else (),
     )
     diagrams_created = list(diagram_write.diagram_ids)
     atlas_scaffold_logs = list(diagram_write.scaffold_logs)
@@ -424,6 +425,7 @@ def _raise_for_final_package_quality(
         rendered_atlas_sources=greenfield_apply_diagrams.actual_atlas_sources(root=root, rows=diagram_rows),
         atlas_review_date=atlas_review_date,
         atlas_diagram_ids=tuple(diagram_ids),
+        atlas_catalog_rows=(),
         component_registry_preview=tuple(dict(row) for row in component_rows),
         project_brief_preview=proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {},
         project_brief_record_text=_read_text(root / "odylith/runtime/source/project-brief.v1.md"),

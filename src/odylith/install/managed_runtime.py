@@ -5,6 +5,7 @@ from __future__ import annotations
 import platform
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypeVar
 
 
 MANAGED_RUNTIME_SCHEMA_VERSION = "odylith-runtime-bundle.v1"
@@ -20,6 +21,7 @@ MANAGED_PYTHON_BASE_URL = (
     f"/{MANAGED_PYTHON_RELEASE}"
 )
 CONTEXT_ENGINE_FEATURE_PACK_ID = "odylith-context-engine-memory"
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -125,7 +127,7 @@ def supported_managed_runtime_feature_packs() -> tuple[ManagedRuntimeFeaturePack
     return SUPPORTED_MANAGED_RUNTIME_FEATURE_PACKS
 
 
-def _lookup_supported_item[T](
+def _lookup_supported_item(
     token: str,
     *,
     candidates: tuple[T, ...],

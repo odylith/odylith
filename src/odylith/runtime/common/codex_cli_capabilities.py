@@ -67,7 +67,8 @@ class CodexCliCapabilitySnapshot:
 
 def _resolve_repo_root(repo_root: Path | str) -> Path:
     """Normalize repo-root inputs onto a resolved filesystem path."""
-    return Path(repo_root).resolve()
+    token = str(repo_root or "").strip() or "."
+    return Path(token).resolve()
 
 
 def _run_codex_command(

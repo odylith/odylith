@@ -122,6 +122,7 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
             **report.artifact_counts,
             "rendered_workstream_files": mapping_count((package.backlog_result or {}).get("idea_files")),
             "rendered_atlas_sources": mapping_count(package.rendered_atlas_sources),
+            "atlas_catalog_rows": len(package.atlas_catalog_rows),
             "component_registry_previews": len(package.component_registry_preview),
             "project_brief_previews": 1 if isinstance(package.project_brief_preview, Mapping) else 0,
             "tribunal_previews": 1 if isinstance(package.tribunal_preview, Mapping) else 0,
@@ -190,6 +191,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     backlog_result = package.backlog_result if isinstance(package.backlog_result, Mapping) else {}
     program_result = package.program_result if isinstance(package.program_result, Mapping) else {}
     atlas_sources = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
+    atlas_catalog_rows = [row for row in package.atlas_catalog_rows if isinstance(row, Mapping)]
     component_preview = [row for row in package.component_registry_preview if isinstance(row, Mapping)]
     project_brief_preview = package.project_brief_preview if isinstance(package.project_brief_preview, Mapping) else {}
     tribunal_preview = package.tribunal_preview if isinstance(package.tribunal_preview, Mapping) else {}
@@ -232,6 +234,16 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
         diagram_rows = mapping_rows(package.proposal.get("diagrams"))
         if len(atlas_sources) != len(diagram_rows):
             issues.append("prewrite Atlas package must render one Mermaid source per DiagramEventGraph diagram")
+        if len(atlas_catalog_rows) != len(diagram_rows):
+            issues.append("prewrite Atlas package must include one compiled catalog row per DiagramEventGraph diagram")
+        catalog_ids = {clean_text(row.get("diagram_id")).upper() for row in atlas_catalog_rows if clean_text(row.get("diagram_id"))}
+        diagram_ids = {clean_text(diagram_id).upper() for diagram_id in package.atlas_diagram_ids if clean_text(diagram_id)}
+        if catalog_ids != diagram_ids:
+            issues.append("prewrite Atlas catalog rows drifted from compiled diagram ids")
+        source_paths = {clean_text(path) for path in atlas_sources if clean_text(path)}
+        catalog_source_paths = {clean_text(row.get("source_mmd")) for row in atlas_catalog_rows if clean_text(row.get("source_mmd"))}
+        if catalog_source_paths != source_paths:
+            issues.append("prewrite Atlas catalog rows drifted from rendered Mermaid source paths")
         for raw_path, source in atlas_sources.items():
             path = clean_text(raw_path)
             text = str(source or "").strip()

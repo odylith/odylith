@@ -95,6 +95,61 @@ def compiled_atlas_diagram_ids(
     return diagram_ids
 
 
+def render_prewrite_atlas_catalog_rows(
+    *,
+    root: Path,
+    rows: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    traceability_plan: Any,
+    review_date: str,
+) -> tuple[dict[str, Any], ...]:
+    """Compile Atlas catalog rows before confirmation."""
+
+    if len(diagram_ids) != len(rows):
+        raise ValueError(
+            "compiled greenfield Atlas catalog rows missing diagram ids "
+            f"(expected {len(rows)}, found {len(diagram_ids)})"
+        )
+    compiled_rows: list[dict[str, Any]] = []
+    for row, diagram_id in zip(rows, diagram_ids, strict=False):
+        slug = str(row.get("slug", "")).strip()
+        if not slug:
+            raise ValueError("compiled greenfield Atlas catalog row missing slug")
+        entry = scaffold_mermaid_diagram.build_catalog_entry(
+            diagram_id=str(diagram_id).strip().upper(),
+            slug=slug,
+            title=str(row.get("title", "")).strip(),
+            kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
+            owner=str(row.get("owner", "repo")).strip() or "repo",
+            summary=str(row.get("summary", "")).strip(),
+            read_guide=str(row.get("read_guide", "")).strip(),
+            components=_proposal_diagram_components(row),
+            related_backlog=_diagram_related_backlog(traceability_plan, str(diagram_id).strip().upper()),
+            related_plans=[],
+            related_docs=[],
+            related_code=[],
+            watch_paths=_existing_watch_paths(root, row),
+            review_date=review_date,
+        )
+        link_state = str(row.get("link_state", "")).strip()
+        if link_state:
+            entry["link_state"] = link_state
+        compiled_rows.append(dict(entry))
+    return tuple(compiled_rows)
+
+
+def compiled_atlas_catalog_rows(
+    prewrite_package: Any | None,
+    *,
+    expected_ids: Sequence[str],
+) -> list[dict[str, Any]]:
+    """Return catalog rows hash-bound to the prewrite package in expected id order."""
+
+    expected = tuple(str(item).strip().upper() for item in expected_ids if str(item).strip())
+    raw_rows = getattr(prewrite_package, "atlas_catalog_rows", ()) if prewrite_package is not None else ()
+    return _compiled_atlas_catalog_rows_for_ids(raw_rows, expected)
+
+
 def materialize_apply_diagrams(
     *,
     root: Path,
@@ -104,11 +159,31 @@ def materialize_apply_diagrams(
     rendered_atlas_sources: Mapping[str, str],
     review_date: str,
     require_compiled_sources: bool,
+    compiled_catalog_rows: Sequence[Mapping[str, Any]] | None = None,
 ) -> GreenfieldDiagramWriteResult:
     """Materialize Atlas source and catalog rows for greenfield apply/create."""
 
     atlas_scaffold_logs: list[str] = []
     diagrams_created: list[str] = []
+    if require_compiled_sources:
+        catalog_rows = _compiled_atlas_catalog_rows_for_ids(compiled_catalog_rows or (), diagram_ids)
+        for catalog_row in catalog_rows:
+            _materialize_compiled_proposal_diagram(
+                root=root,
+                catalog_row=catalog_row,
+                atlas_scaffold_logs=atlas_scaffold_logs,
+                starter_source=compiled_atlas_source(
+                    catalog_row,
+                    rendered_atlas_sources,
+                    required=True,
+                ),
+            )
+            diagrams_created.append(str(catalog_row.get("diagram_id", "")).strip().upper())
+        return GreenfieldDiagramWriteResult(
+            diagram_ids=tuple(diagrams_created),
+            scaffold_logs=tuple(atlas_scaffold_logs),
+        )
+
     for row, diagram_id in zip(rows, diagram_ids, strict=False):
         _scaffold_proposal_diagram(
             root=root,
@@ -206,6 +281,23 @@ def prewrite_atlas_source(
     return source
 
 
+def compiled_atlas_source(
+    catalog_row: Mapping[str, Any],
+    rendered_atlas_sources: Mapping[str, str],
+    *,
+    required: bool = False,
+) -> str:
+    source_mmd = str(catalog_row.get("source_mmd", "")).strip()
+    if not source_mmd:
+        if required:
+            raise ValueError("compiled greenfield Atlas catalog row missing source_mmd")
+        return ""
+    source = str(rendered_atlas_sources.get(source_mmd, "")).strip()
+    if required and not source:
+        raise ValueError(f"compiled greenfield Atlas source missing for {source_mmd}")
+    return source
+
+
 def atlas_source_path_for_row(row: Mapping[str, Any]) -> str:
     slug = str(row.get("slug", "")).strip()
     if not slug:
@@ -260,6 +352,144 @@ def _read_json_mapping(path: Path) -> Mapping[str, Any]:
     return payload if isinstance(payload, Mapping) else {}
 
 
+def _compiled_atlas_catalog_rows_for_ids(
+    rows: Sequence[Mapping[str, Any]],
+    expected_ids: Sequence[str],
+) -> list[dict[str, Any]]:
+    expected = tuple(str(item).strip().upper() for item in expected_ids if str(item).strip())
+    by_id: dict[str, dict[str, Any]] = {}
+    duplicates: list[str] = []
+    for raw_row in rows:
+        if not isinstance(raw_row, Mapping):
+            continue
+        row = dict(raw_row)
+        diagram_id = str(row.get("diagram_id", "")).strip().upper()
+        if not diagram_id:
+            continue
+        if diagram_id in by_id:
+            duplicates.append(diagram_id)
+        row["diagram_id"] = diagram_id
+        by_id[diagram_id] = row
+    missing = [diagram_id for diagram_id in expected if diagram_id not in by_id]
+    extra = [diagram_id for diagram_id in by_id if diagram_id not in set(expected)]
+    if duplicates or missing or extra or len(by_id) != len(expected):
+        details = []
+        if missing:
+            details.append(f"missing {', '.join(missing)}")
+        if extra:
+            details.append(f"unexpected {', '.join(extra)}")
+        if duplicates:
+            details.append(f"duplicate {', '.join(dedupe_strings(duplicates))}")
+        detail = f": {'; '.join(details)}" if details else ""
+        raise ValueError(
+            "compiled greenfield Atlas catalog rows missing or incomplete "
+            f"(expected {len(expected)}, found {len(by_id)}){detail}"
+        )
+    return [by_id[diagram_id] for diagram_id in expected]
+
+
+def _materialize_compiled_proposal_diagram(
+    *,
+    root: Path,
+    catalog_row: Mapping[str, Any],
+    atlas_scaffold_logs: list[str],
+    starter_source: str,
+) -> None:
+    diagram_id = str(catalog_row.get("diagram_id", "")).strip().upper()
+    slug = str(catalog_row.get("slug", "")).strip()
+    source_mmd = str(catalog_row.get("source_mmd", "")).strip()
+    if not diagram_id or not slug or not source_mmd:
+        raise ValueError("compiled greenfield Atlas catalog row missing diagram_id, slug, or source_mmd")
+    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
+    if not catalog_path.is_file():
+        raise RuntimeError(f"compiled greenfield Atlas catalog baseline missing: {catalog_path}")
+    try:
+        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"compiled greenfield Atlas catalog is malformed: {catalog_path}") from exc
+    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
+    if not isinstance(diagrams, list):
+        raise RuntimeError(f"compiled greenfield Atlas catalog has no diagrams list: {catalog_path}")
+
+    compiled_entry = json.loads(json.dumps(dict(catalog_row), ensure_ascii=True))
+    entry = next(
+        (
+            item
+            for item in diagrams
+            if isinstance(item, dict)
+            and (
+                str(item.get("diagram_id", "")).strip().upper() == diagram_id
+                or str(item.get("slug", "")).strip() == slug
+            )
+        ),
+        None,
+    )
+    if entry is None:
+        diagrams.append(compiled_entry)
+    else:
+        entry.update(compiled_entry)
+    catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
+
+    source_path = _resolve_repo_path(root=root, token=source_mmd)
+    source_path.parent.mkdir(parents=True, exist_ok=True)
+    source_path.write_text(starter_source.rstrip() + "\n", encoding="utf-8")
+    atlas_scaffold_logs.append(f"materialized compiled diagram: {slug}")
+
+
+def _resolve_repo_path(*, root: Path, token: str) -> Path:
+    path = Path(str(token or "").strip())
+    if not path.is_absolute():
+        path = root / path
+    resolved = path.resolve()
+    try:
+        resolved.relative_to(root.resolve())
+    except ValueError as exc:
+        raise ValueError(f"compiled greenfield Atlas path escapes repo root: {resolved}") from exc
+    return resolved
+
+
+def _proposal_diagram_components(row: Mapping[str, Any]) -> list[dict[str, str]]:
+    components: list[dict[str, str]] = []
+    for component in row.get("components", []):
+        if not isinstance(component, Mapping):
+            continue
+        name = str(component.get("name", "")).strip()
+        description = str(component.get("description", "")).strip()
+        if name and description:
+            components.append({"name": name, "description": description})
+    return components
+
+
+def _diagram_related_backlog(traceability_plan: Any, diagram_id: str) -> list[str]:
+    links = getattr(traceability_plan, "diagram_links", ())
+    link = next(
+        (
+            item
+            for item in links
+            if str(getattr(item, "diagram_id", "")).strip().upper() == str(diagram_id).strip().upper()
+        ),
+        None,
+    )
+    return list(getattr(link, "related_backlog_paths", ())) if link is not None else []
+
+
+def _existing_watch_paths(root: Path, row: Mapping[str, Any]) -> list[str]:
+    watch_paths: list[str] = []
+    repo_root = Path(root).resolve()
+    for path in row.get("watch_paths", []):
+        token = str(path).strip()
+        if not token:
+            continue
+        candidate = (repo_root / token).resolve() if not Path(token).is_absolute() else Path(token).resolve()
+        try:
+            candidate.relative_to(repo_root)
+        except ValueError:
+            continue
+        if candidate.exists():
+            watch_paths.append(token)
+    return watch_paths
+
+
 def _scaffold_proposal_diagram(
     *,
     root: Path,
@@ -270,28 +500,9 @@ def _scaffold_proposal_diagram(
     review_date: str,
     starter_source: str = "",
 ) -> None:
-    components: list[dict[str, str]] = []
-    for component in row.get("components", []):
-        if not isinstance(component, Mapping):
-            continue
-        name = str(component.get("name", "")).strip()
-        description = str(component.get("description", "")).strip()
-        if name and description:
-            components.append({"name": name, "description": description})
-    link = next((item for item in traceability_plan.diagram_links if item.diagram_id == diagram_id), None)
-    related_backlog = list(link.related_backlog_paths) if link is not None else []
-    watch_paths: list[str] = []
-    for path in row.get("watch_paths", []):
-        token = str(path).strip()
-        if not token:
-            continue
-        candidate = (root / token).resolve() if not Path(token).is_absolute() else Path(token).resolve()
-        try:
-            candidate.relative_to(root)
-        except ValueError:
-            continue
-        if candidate.exists():
-            watch_paths.append(token)
+    components = _proposal_diagram_components(row)
+    related_backlog = _diagram_related_backlog(traceability_plan, diagram_id)
+    watch_paths = _existing_watch_paths(root, row)
     rc, log_lines = scaffold_mermaid_diagram.scaffold_diagram(
         repo_root=root,
         catalog="odylith/atlas/source/catalog/diagrams.v1.json",
@@ -446,9 +657,12 @@ __all__ = [
     "allocated_diagram_ids",
     "atlas_review_date",
     "atlas_source_path_for_row",
+    "compiled_atlas_catalog_rows",
     "compiled_atlas_diagram_ids",
+    "compiled_atlas_source",
     "materialize_apply_diagrams",
     "prewrite_atlas_source",
     "raise_for_greenfield_rendered_surface_custody",
+    "render_prewrite_atlas_catalog_rows",
     "render_prewrite_atlas_sources",
 ]

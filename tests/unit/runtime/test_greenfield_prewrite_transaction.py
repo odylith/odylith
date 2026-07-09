@@ -286,6 +286,12 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
     assert prewrite.package.traceability_plan.component_workstreams
     assert len(prewrite.package.atlas_review_date) == len("2026-07-07")
     assert len(prewrite.package.atlas_diagram_ids) == len(prewrite.package.rendered_atlas_sources)
+    assert len(prewrite.package.atlas_catalog_rows) == len(prewrite.package.rendered_atlas_sources)
+    assert {
+        str(row.get("diagram_id", "")).strip()
+        for row in prewrite.package.atlas_catalog_rows
+    } == set(prewrite.package.atlas_diagram_ids)
+    assert "odylith-greenfield-prewrite" not in json.dumps(prewrite.package.atlas_catalog_rows)
     assert prewrite.package.project_brief_record_text.startswith("# Municipal Permit Review Workspace Project Brief")
     assert "- accepted_at: prewrite" in prewrite.package.project_brief_record_text
     assert all(
@@ -548,6 +554,13 @@ def _package_for_quality_report(
         "release_assignment_result": {"dry_run": True, "workstream_ids": ["B-001"]},
         "release_workstream_ids": ("B-001",),
     }
+    values["atlas_catalog_rows"] = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+        root=ROOT,
+        rows=tuple(row for row in proposal.get("diagrams", []) if isinstance(row, dict)),
+        diagram_ids=values["atlas_diagram_ids"],  # type: ignore[arg-type]
+        traceability_plan=SimpleNamespace(diagram_links=()),
+        review_date=str(values["atlas_review_date"]),
+    )
     values.update(overrides)
     if "project_dashboard_preview" not in overrides:
         values["project_dashboard_preview"] = _project_dashboard_preview(

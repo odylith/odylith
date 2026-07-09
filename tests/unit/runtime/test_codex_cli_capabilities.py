@@ -14,6 +14,10 @@ def _seed_repo(repo_root: Path) -> None:
     (repo_root / ".codex").mkdir(parents=True, exist_ok=True)
 
 
+def test_codex_cli_capability_repo_root_accepts_empty_token() -> None:
+    assert codex_cli_capabilities._resolve_repo_root("").is_dir()  # noqa: SLF001
+
+
 def test_write_effective_codex_hooks_merges_existing_hooks(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
     codex_cli_capabilities.clear_codex_cli_capability_cache()

@@ -9,9 +9,12 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from tests.unit.runtime.greenfield_proposal_fixtures import (
+    CONFIRMED_INTENT_TEXT,
     _host_reasoned_ecommerce_proposal,
     _seed_empty_governance_repo,
+    confirmed_intent_with_authority,
 )
 
 
@@ -50,6 +53,18 @@ def _assert_greenfield_text_does_not_leak_odylith_surfaces(text: str) -> None:
         "refreshed surfaces",
     ):
         assert token not in text, f"proposal text leaked {token!r} into project review"
+
+
+def _proposal_with_confirmed_authority(tmp_path) -> dict[str, object]:
+    proposal = _host_reasoned_ecommerce_proposal()
+    confirmed_intent = confirmed_intent_with_authority(
+        CONFIRMED_INTENT_TEXT,
+        prompt="Draft a governed ecommerce launch proposal",
+        repo_root=tmp_path,
+        write_files=True,
+    )
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent[PRODUCT_INTENT_AUTHORITY_KEY]
+    return proposal
 
 
 def test_greenfield_diagram_owner_validates_rendered_surface_custody(tmp_path) -> None:
@@ -134,9 +149,19 @@ def test_greenfield_diagram_owner_reports_rendered_surface_custody_failures(tmp_
 
 
 def test_greenfield_diagram_owner_validates_compiled_ids_and_sources() -> None:
-    package = SimpleNamespace(atlas_diagram_ids=("d-001", " D-002 "))
+    package = SimpleNamespace(
+        atlas_diagram_ids=("d-001", " D-002 "),
+        atlas_catalog_rows=(
+            {"diagram_id": "D-001", "source_mmd": "odylith/atlas/source/one.mmd"},
+            {"diagram_id": "D-002", "source_mmd": "odylith/atlas/source/two.mmd"},
+        ),
+    )
 
     assert greenfield_apply_diagrams.compiled_atlas_diagram_ids(package, expected_count=2) == ["D-001", "D-002"]
+    assert [
+        row["source_mmd"]
+        for row in greenfield_apply_diagrams.compiled_atlas_catalog_rows(package, expected_ids=("D-001", "D-002"))
+    ] == ["odylith/atlas/source/one.mmd", "odylith/atlas/source/two.mmd"]
     assert (
         greenfield_apply_diagrams.prewrite_atlas_source(
             {"slug": "demo"},
@@ -154,6 +179,8 @@ def test_greenfield_diagram_owner_validates_compiled_ids_and_sources() -> None:
         )
     with pytest.raises(ValueError, match="missing for odylith/atlas/source/demo.mmd"):
         greenfield_apply_diagrams.prewrite_atlas_source({"slug": "demo"}, {}, required=True)
+    with pytest.raises(ValueError, match="catalog rows missing or incomplete"):
+        greenfield_apply_diagrams.compiled_atlas_catalog_rows(package, expected_ids=("D-001", "D-003"))
 
 
 def test_greenfield_diagram_owner_materializes_existing_diagram_from_compiled_source(
@@ -182,23 +209,44 @@ def test_greenfield_diagram_owner_materializes_existing_diagram_from_compiled_so
     watch_path.write_text("print('demo')\n", encoding="utf-8")
 
     def fake_scaffold_diagram(**_kwargs):
-        return 1, ["diagram already exists: demo"]
+        raise AssertionError("compiled Atlas commit path must not scaffold diagrams")
 
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram, "scaffold_diagram", fake_scaffold_diagram)
+    compiled_row = {
+        "diagram_id": "D-001",
+        "slug": "demo",
+        "title": "Compiled Demo Flow",
+        "kind": "flowchart",
+        "status": "draft",
+        "owner": "repo",
+        "last_reviewed_utc": "2026-07-08",
+        "source_mmd": "odylith/atlas/source/demo.mmd",
+        "source_svg": "odylith/atlas/source/demo.svg",
+        "source_png": "odylith/atlas/source/demo.png",
+        "change_watch_paths": ["src/demo.py"],
+        "summary": "Compiled row owns the demo flow.",
+        "read_guide": "Read the compiled row.",
+        "components": [{"name": "Compiled Demo", "description": "Owns the compiled demo flow."}],
+        "related_backlog": ["odylith/radar/source/ideas/demo.md"],
+        "related_plans": [],
+        "related_docs": [],
+        "related_code": [],
+        "link_state": "fresh",
+    }
 
     result = greenfield_apply_diagrams.materialize_apply_diagrams(
         root=tmp_path,
         rows=(
             {
                 "slug": "demo",
-                "title": "Demo Flow",
+                "title": "Ignored Proposal Flow",
                 "kind": "flowchart",
                 "owner": "repo",
-                "summary": "Shows the demo flow.",
-                "read_guide": "Read from left to right.",
-                "components": [{"name": "Demo", "description": "Runs the demo flow."}],
-                "watch_paths": ["src/demo.py"],
-                "link_state": "fresh",
+                "summary": "This proposal row must not be used.",
+                "read_guide": "Ignored.",
+                "components": [{"name": "Ignored", "description": "Must not be materialized."}],
+                "watch_paths": [],
+                "link_state": "ignored",
             },
         ),
         diagram_ids=("D-001",),
@@ -208,14 +256,20 @@ def test_greenfield_diagram_owner_materializes_existing_diagram_from_compiled_so
         rendered_atlas_sources={"odylith/atlas/source/demo.mmd": "flowchart LR\n  compiled --> source\n"},
         review_date="2026-07-08",
         require_compiled_sources=True,
+        compiled_catalog_rows=(compiled_row,),
     )
 
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     row = catalog["diagrams"][0]
     assert result.diagram_ids == ("D-001",)
-    assert any("updated existing diagram: demo" in item for item in result.scaffold_logs)
-    assert row["title"] == "Demo Flow"
-    assert row["components"] == [{"name": "Demo", "description": "Runs the demo flow."}]
+    assert any("materialized compiled diagram: demo" in item for item in result.scaffold_logs)
+    assert row["title"] == "Compiled Demo Flow"
+    assert row["summary"] == "Compiled row owns the demo flow."
+    assert row["read_guide"] == "Read the compiled row."
+    assert row["source_mmd"] == "odylith/atlas/source/demo.mmd"
+    assert row["source_svg"] == "odylith/atlas/source/demo.svg"
+    assert row["source_png"] == "odylith/atlas/source/demo.png"
+    assert row["components"] == [{"name": "Compiled Demo", "description": "Owns the compiled demo flow."}]
     assert row["related_backlog"] == ["odylith/radar/source/ideas/demo.md"]
     assert row["change_watch_paths"] == ["src/demo.py"]
     assert row["link_state"] == "fresh"
@@ -255,7 +309,7 @@ def test_greenfield_tribunal_rejects_project_title_prefixed_diagram_titles() -> 
 
 def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0]["mermaid_source"] = (
         "flowchart LR\n"
         "    shopper[Shopper]\n"
@@ -282,7 +336,7 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
         "raise_for_greenfield_rendered_surface_custody",
         lambda **_kwargs: {"status": "skipped-unit-render"},
     )
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0]["mermaid_source"] = (
         "flowchart LR\n"
         "    shopper[\"Shopper\"]\n"
@@ -307,7 +361,7 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
 
 def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0]["mermaid_source"] = (
         "flowchart LR\n"
         "    subgraph transaction_lane[\"Transaction lane\"]\n"
@@ -328,7 +382,7 @@ def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) 
 
 def test_greenfield_apply_rejects_missing_host_authored_diagram_source(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0].pop("mermaid_source")
 
     with pytest.raises(ValueError, match="missing proposal mermaid_source"):
@@ -342,7 +396,7 @@ def test_greenfield_apply_rejects_missing_host_authored_diagram_source(tmp_path)
 
 def test_greenfield_apply_rejects_identical_diagram_sources(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][1]["mermaid_source"] = proposal["diagrams"][0]["mermaid_source"]
 
     with pytest.raises(ValueError, match="must not reuse identical Mermaid source"):
@@ -356,7 +410,7 @@ def test_greenfield_apply_rejects_identical_diagram_sources(tmp_path) -> None:
 
 def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["backlog"][1].pop("component_focus")
     proposal["backlog"][1].pop("related_diagram_slugs")
 
@@ -371,7 +425,7 @@ def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
 
 def test_greenfield_apply_rejects_component_without_ownership_contract(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["components"][0].pop("interfaces")
 
     with pytest.raises(ValueError, match="component `commerce-storefront` must describe planned interfaces"):
@@ -385,7 +439,7 @@ def test_greenfield_apply_rejects_component_without_ownership_contract(tmp_path)
 
 def test_greenfield_apply_rejects_diagram_without_workstream_traceability(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
-    proposal = _host_reasoned_ecommerce_proposal()
+    proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0].pop("related_workstream_titles")
 
     with pytest.raises(ValueError, match="diagram `commerce-launch-system-context` must name related workstream"):

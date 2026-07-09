@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
@@ -185,12 +186,25 @@ def compiled_greenfield_package_fixture(
         },
     }
     release_id = "release-0-0-1"
+    traceability_plan = greenfield_traceability.build_traceability_plan(
+        proposal=proposal,
+        created_backlog=created_backlog,
+        diagram_ids=diagram_ids,
+    )
+    atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+        root=repo_root,
+        rows=diagram_rows,
+        diagram_ids=diagram_ids,
+        traceability_plan=traceability_plan,
+        review_date="2026-07-07",
+    )
     return GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector=release_selector,
         rendered_atlas_sources=rendered_atlas_sources,
         atlas_review_date="2026-07-07",
         atlas_diagram_ids=diagram_ids,
+        atlas_catalog_rows=atlas_catalog_rows,
         backlog_result=backlog_result,
         project_brief_record_text="# Compiled Greenfield Project Brief\n\n- accepted_at: prewrite\n",
         accepted_project_preview={
@@ -248,11 +262,7 @@ def compiled_greenfield_package_fixture(
             ],
             "program_count": 0,
         },
-        traceability_plan=greenfield_traceability.build_traceability_plan(
-            proposal=proposal,
-            created_backlog=created_backlog,
-            diagram_ids=diagram_ids,
-        ),
+        traceability_plan=traceability_plan,
         baseline_writes=baseline_writes,
         brand_asset_writes=brand_asset_writes,
         prewrite_safety_preview={"status": "passed"},

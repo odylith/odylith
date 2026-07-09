@@ -62,6 +62,7 @@ _PROJECTION_ALIASES = {
     "registry": "registry",
     "release": "release",
     "release_plan": "release",
+    "atlas_catalog_rows": "atlas",
     "rendered_atlas_sources": "atlas",
     "rendered_component_specs": "registry",
     "risks": "project_brief",
@@ -97,6 +98,7 @@ _PREWRITE_PACKAGE_ROUTE_ALIASES = {
     "release": "release",
     "release_assignment_result": "release",
     "release_target_result": "release",
+    "atlas_catalog_rows": "atlas",
     "rendered_atlas_sources": "atlas",
     "rendered_component_specs": "registry",
 }

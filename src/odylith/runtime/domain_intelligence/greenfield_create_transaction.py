@@ -32,9 +32,11 @@ PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1
 PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v1"
 PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "hash_verified_commit_only"
 _COMPILER_IDENTITY_SOURCE_FILES = (
+    "runtime/domain_intelligence/greenfield_apply_diagrams.py",
     "runtime/domain_intelligence/greenfield_apply_prewrite.py",
     "runtime/domain_intelligence/greenfield_apply_write.py",
     "runtime/domain_intelligence/greenfield_compiled_package_contract.py",
+    "runtime/domain_intelligence/greenfield_compiled_readback.py",
     "runtime/domain_intelligence/greenfield_compiled_write.py",
     "runtime/domain_intelligence/greenfield_completion_types.py",
     "runtime/domain_intelligence/greenfield_create_baseline.py",
@@ -43,6 +45,7 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_proposals.py",
     "runtime/domain_intelligence/greenfield_proposals_cli.py",
     "runtime/surfaces/brand_assets.py",
+    "runtime/surfaces/scaffold_mermaid_diagram.py",
 )
 _POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
@@ -362,7 +365,12 @@ def _sequence(value: Any) -> Sequence[Any]:
 def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCompletionPackage:
     allowed = {field.name for field in fields(GreenfieldCompletionPackage)}
     kwargs = {key: payload[key] for key in allowed if key in payload}
-    for tuple_key in ("component_registry_preview", "atlas_diagram_ids", "release_workstream_ids"):
+    for tuple_key in (
+        "component_registry_preview",
+        "atlas_diagram_ids",
+        "atlas_catalog_rows",
+        "release_workstream_ids",
+    ):
         if tuple_key in kwargs and isinstance(kwargs[tuple_key], list):
             kwargs[tuple_key] = tuple(kwargs[tuple_key])
     if isinstance(kwargs.get("traceability_plan"), Mapping):

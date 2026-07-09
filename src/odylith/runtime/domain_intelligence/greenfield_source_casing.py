@@ -153,6 +153,10 @@ def package_with_source_casing(package: GreenfieldCompletionPackage) -> Greenfie
             package.rendered_atlas_sources,
             source_text=source_text,
         ),
+        atlas_catalog_rows=tuple(
+            restore_source_casing_in_public_copy(row, source_text=source_text)
+            for row in package.atlas_catalog_rows
+        ),
         component_registry_preview=tuple(
             restore_source_casing_in_public_copy(row, source_text=source_text)
             for row in package.component_registry_preview

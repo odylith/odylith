@@ -236,6 +236,64 @@ def _default_read_guide(*, title: str, kind: str, components: list[dict[str, str
     )
 
 
+def build_catalog_entry(
+    *,
+    diagram_id: str,
+    slug: str,
+    title: str,
+    kind: str,
+    owner: str,
+    summary: str,
+    read_guide: str,
+    components: list[dict[str, str]],
+    related_backlog: list[str],
+    related_plans: list[str],
+    related_docs: list[str],
+    related_code: list[str],
+    watch_paths: list[str],
+    review_date: str,
+) -> dict[str, object]:
+    """Return the canonical Atlas catalog row for a Mermaid diagram."""
+
+    source_mmd = f"odylith/atlas/source/{str(slug).strip()}.mmd"
+    source_svg = f"odylith/atlas/source/{str(slug).strip()}.svg"
+    source_png = f"odylith/atlas/source/{str(slug).strip()}.png"
+    related_backlog = _unique(related_backlog)
+    related_plans = _unique(related_plans)
+    related_docs = _unique(related_docs)
+    related_code = _unique(related_code)
+    has_governance_links = bool(related_backlog and related_plans and related_docs)
+    watch_paths = _unique(watch_paths)
+    if not watch_paths:
+        watch_paths = _unique(related_docs + related_plans + related_code)
+    if not watch_paths:
+        watch_paths = [source_mmd]
+    entry: dict[str, object] = {
+        "diagram_id": str(diagram_id).strip(),
+        "slug": str(slug).strip(),
+        "title": str(title).strip(),
+        "kind": str(kind).strip(),
+        "status": "active" if has_governance_links else "draft",
+        "owner": str(owner).strip(),
+        "last_reviewed_utc": str(review_date).strip(),
+        "source_mmd": source_mmd,
+        "source_svg": source_svg,
+        "source_png": source_png,
+        "change_watch_paths": watch_paths,
+        "summary": str(summary).strip(),
+        "read_guide": str(read_guide).strip()
+        or _default_read_guide(title=str(title).strip(), kind=str(kind).strip(), components=components),
+        "components": components,
+        "related_backlog": related_backlog,
+        "related_plans": related_plans,
+        "related_docs": related_docs,
+        "related_code": related_code,
+    }
+    if not has_governance_links:
+        entry["link_state"] = "atlas_first_draft"
+    return entry
+
+
 def scaffold_diagram(
     *,
     repo_root: Path,
@@ -280,50 +338,30 @@ def scaffold_diagram(
         if str(item.get("slug", "")).strip() == slug:
             return 2, [f"FAILED: slug already exists: {slug}"]
 
-    source_mmd = f"odylith/atlas/source/{slug}.mmd"
-    source_svg = f"odylith/atlas/source/{slug}.svg"
-    source_png = f"odylith/atlas/source/{slug}.png"
-
-    related_backlog = _unique(related_backlog)
-    related_plans = _unique(related_plans)
-    related_docs = _unique(related_docs)
-    related_code = _unique(related_code)
-
-    has_governance_links = bool(related_backlog and related_plans and related_docs)
-    if require_links and not has_governance_links:
+    entry = build_catalog_entry(
+        diagram_id=diagram_id,
+        slug=slug,
+        title=title,
+        kind=kind,
+        owner=owner,
+        summary=summary,
+        read_guide=read_guide,
+        components=components,
+        related_backlog=related_backlog,
+        related_plans=related_plans,
+        related_docs=related_docs,
+        related_code=related_code,
+        watch_paths=watch_paths,
+        review_date=review_date,
+    )
+    if require_links and str(entry.get("status", "")).strip() != "active":
         return 2, ["FAILED: radar, technical-plan, and doc links are required (at least one each)"]
-
-    watch_paths = _unique(watch_paths)
-    if not watch_paths:
-        watch_paths = _unique(related_docs + related_plans + related_code)
-    if not watch_paths:
-        watch_paths = [source_mmd]
-    if not watch_paths:
-        return 2, ["FAILED: change_watch_paths resolved empty; provide --watch or related links"]
-
-    entry = {
-        "diagram_id": diagram_id,
-        "slug": slug,
-        "title": str(title).strip(),
-        "kind": str(kind).strip(),
-        "status": "active" if has_governance_links else "draft",
-        "owner": str(owner).strip(),
-        "last_reviewed_utc": str(review_date).strip(),
-        "source_mmd": source_mmd,
-        "source_svg": source_svg,
-        "source_png": source_png,
-        "change_watch_paths": watch_paths,
-        "summary": str(summary).strip(),
-        "read_guide": str(read_guide).strip()
-        or _default_read_guide(title=str(title).strip(), kind=str(kind).strip(), components=components),
-        "components": components,
-        "related_backlog": related_backlog,
-        "related_plans": related_plans,
-        "related_docs": related_docs,
-        "related_code": related_code,
-    }
-    if not has_governance_links:
-        entry["link_state"] = "atlas_first_draft"
+    source_mmd = str(entry["source_mmd"])
+    watch_paths = [str(item) for item in entry.get("change_watch_paths", []) if str(item).strip()]
+    related_backlog = [str(item) for item in entry.get("related_backlog", []) if str(item).strip()]
+    related_plans = [str(item) for item in entry.get("related_plans", []) if str(item).strip()]
+    related_docs = [str(item) for item in entry.get("related_docs", []) if str(item).strip()]
+    related_code = [str(item) for item in entry.get("related_code", []) if str(item).strip()]
     tribunal = artifact_tribunal.run_governed_artifact_tribunal(
         artifact_kind="atlas_diagram",
         payload={

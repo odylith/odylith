@@ -290,6 +290,14 @@ def _generated_copy_routes(package: Any) -> tuple[dict[str, Any], ...]:
             owner="atlas_renderer",
         ),
         _copy_route(
+            scope="compiled Atlas catalog rows",
+            value=getattr(package, "atlas_catalog_rows", ()) or (),
+            surface="atlas",
+            target_path="prewrite_package.atlas.catalog_rows",
+            projection_id="atlas",
+            owner="atlas_renderer",
+        ),
+        _copy_route(
             scope="project brief preview",
             value=getattr(package, "project_brief_preview", None) or {},
             surface="project_brief",

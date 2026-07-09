@@ -46,6 +46,7 @@ def test_artifact_plan_ir_maps_paths_to_projection_ids_without_surface_guessing(
     assert artifact_plan_projection_for_path("diagrams[0].summary") == "atlas"
     assert artifact_plan_projection_for_path("rendered_component_specs") == "registry"
     assert artifact_plan_projection_for_path("rendered_atlas_sources") == "atlas"
+    assert artifact_plan_projection_for_path("atlas_catalog_rows") == "atlas"
     assert artifact_plan_projection_for_path("proposal.backlog") == "radar"
     assert artifact_plan_projection_for_path("proposal.assumptions") == "project_brief"
     assert artifact_plan_projection_for_path("ArtifactPlanIR.assumptions") == "project_brief"
@@ -111,6 +112,7 @@ def test_artifact_plan_ir_source_addresses_are_exact_source_facts() -> None:
 def test_artifact_plan_ir_normalizes_artifact_draft_repair_projection_ids() -> None:
     assert artifact_draft_repair_projection("rendered_component_specs") == "registry"
     assert artifact_draft_repair_projection("rendered_atlas_sources") == "atlas"
+    assert artifact_draft_repair_projection("atlas_catalog_rows") == "atlas"
     assert artifact_draft_repair_projection("artifact_draft_set") == "artifact_draft_set"
     assert artifact_draft_repair_projection("unknown_projection") == ""
 

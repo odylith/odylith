@@ -91,6 +91,22 @@ def require_complete_compiled_greenfield_package(
             )
         except ValueError as exc:
             issues.append(str(exc))
+        try:
+            compiled_catalog_rows = greenfield_apply_diagrams.compiled_atlas_catalog_rows(
+                prewrite_package,
+                expected_ids=compiled_diagram_ids,
+            )
+        except ValueError as exc:
+            compiled_catalog_rows = []
+            issues.append(str(exc))
+        source_paths = {str(path).strip() for path in atlas_sources}
+        missing_catalog_sources = [
+            str(row.get("source_mmd", "")).strip()
+            for row in compiled_catalog_rows
+            if str(row.get("source_mmd", "")).strip() not in source_paths
+        ]
+        if missing_catalog_sources:
+            issues.append("compiled Atlas catalog rows drifted from rendered_atlas_sources")
         if traceability_plan is not None:
             issues.extend(
                 greenfield_traceability_commit.compiled_traceability_diagram_issues(
