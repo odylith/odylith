@@ -43,7 +43,7 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
         accepted,
         transaction_package["accepted_project_preview"],
     )
-    _assert_project_brief_matches_transaction(tmp_path, transaction_package["project_brief_record_text"], accepted_at=accepted["accepted_at"])
+    _assert_project_brief_matches_transaction(tmp_path, transaction_package["project_brief_record_text"])
     _assert_committed_atlas_matches_transaction(tmp_path, transaction_package)
     _assert_compass_event_matches_transaction(
         tmp_path,
@@ -194,52 +194,23 @@ def _assert_accepted_project_matches_transaction(
     accepted_project: dict,
     accepted_project_preview: dict,
 ) -> None:
-    expected = dict(accepted_project_preview)
-    expected["accepted_at"] = accepted_project["accepted_at"]
-    assert accepted_project == expected
+    assert accepted_project == accepted_project_preview
 
 
-def _assert_project_brief_matches_transaction(tmp_path: Path, project_brief_record_text: str, *, accepted_at: str) -> None:
+def _assert_project_brief_matches_transaction(tmp_path: Path, project_brief_record_text: str) -> None:
     project_brief = (tmp_path / "odylith/runtime/source/project-brief.v1.md").read_text(encoding="utf-8")
-    assert project_brief == _record_text_with_accepted_at(project_brief_record_text, accepted_at=accepted_at)
-
-
-def _record_text_with_accepted_at(text: str, *, accepted_at: str) -> str:
-    lines = str(text).rstrip().splitlines()
-    return "\n".join(
-        f"- accepted_at: {accepted_at}" if line.startswith("- accepted_at: ") else line
-        for line in lines
-    ).rstrip() + "\n"
+    assert project_brief == project_brief_record_text
 
 
 def _assert_compass_event_matches_transaction(tmp_path: Path, event: dict, compass_memory_preview: dict) -> None:
-    for key in (
-        "kind",
-        "summary",
-        "author",
-        "source",
-        "workstreams",
-        "context",
-        "headline_hint",
-        "evidence_tier",
-        "work_category",
-    ):
-        if key in compass_memory_preview:
-            assert event[key] == compass_memory_preview[key]
-    assert event["components"]
-    assert event["artifacts"] == _repo_relative_artifacts(tmp_path, compass_memory_preview.get("artifacts", []))
-    assert event["ts_iso"] != "prewrite"
-
-
-def _repo_relative_artifacts(tmp_path: Path, artifacts: list[str]) -> list[str]:
-    normalized = []
-    for artifact in artifacts:
-        path = Path(str(artifact))
-        if path.is_absolute():
-            normalized.append(str(path.resolve().relative_to(tmp_path)))
-        else:
-            normalized.append(str(artifact)[2:] if str(artifact).startswith("./") else str(artifact))
-    return normalized
+    assert event == compass_memory_preview
+    stream_path = tmp_path / "odylith/compass/runtime/agent-stream.v1.jsonl"
+    stream_events = [
+        json.loads(line)
+        for line in stream_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert compass_memory_preview in stream_events
 
 
 def _generated_source_payload(root: Path) -> str:

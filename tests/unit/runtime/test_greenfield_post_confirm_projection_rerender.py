@@ -258,6 +258,7 @@ def test_scoped_projection_rerender_passes_fresh_source_launch_to_accepted_proje
         "source_launch": {"implementation_prompt": "fresh accepted-project launch prompt"},
     }
     assert calls[0]["source_launch_context"] == {"implementation_prompt": "fresh accepted-project launch prompt"}
+    assert calls[0]["accepted_at"] == "old"
     assert result.package.next_steps_preview == {"implementation_prompt": "stale"}
 
 

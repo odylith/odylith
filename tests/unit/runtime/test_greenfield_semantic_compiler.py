@@ -57,6 +57,19 @@ def test_semantic_compiler_accepts_release_readiness_as_first_path_result() -> N
     assert candidate.text == "Release readiness for shared cultural records"
 
 
+def test_semantic_compiler_preserves_state_update_visible_result() -> None:
+    first_path = (
+        "A regional coordinator opens the dashboard, sees an area where signal growth and capacity pressure "
+        "are accelerating past a threshold, drills into the trend, allocates additional response supply and "
+        "flags a public advisory, and the incident record updates to reflect the new interventions and a revised projection."
+    )
+
+    candidate = select_visible_result_candidate(first_path)
+
+    assert candidate.source_path == "first_path.visible_result"
+    assert candidate.text == "the incident record updates to reflect the new interventions and a revised projection"
+
+
 def test_semantic_compiler_nominalizes_terse_terminal_result_before_proof_boundary() -> None:
     first_path = "Reporter submits a report; owner reviews it; council publishes proof."
     proof = "Evidence custody and embargo decision."

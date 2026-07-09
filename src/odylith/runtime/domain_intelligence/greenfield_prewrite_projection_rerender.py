@@ -43,6 +43,7 @@ def rerender_prewrite_package_projections(
     release_assignment_result = package.release_assignment_result
     release_workstream_ids = package.release_workstream_ids
     prewrite_safety_preview = package.prewrite_safety_preview
+    accepted_at = _package_accepted_at(package)
     source_text = greenfield_source_casing.proposal_source_casing_text(package_proposal)
     if source_text:
         restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
@@ -151,7 +152,7 @@ def rerender_prewrite_package_projections(
                 release_target_result,
                 release_assignment_result,
             ),
-            accepted_at="prewrite",
+            accepted_at=accepted_at,
         )
 
     next_steps_context = (
@@ -177,6 +178,7 @@ def rerender_prewrite_package_projections(
             release_assignment_result=release_assignment_result,
             validation_gate=validation_gate,
             source_launch_context=next_steps_context if isinstance(next_steps_context, Mapping) else None,
+            accepted_at=accepted_at,
         )
 
     if "next_steps" in scope:
@@ -209,12 +211,14 @@ def rerender_prewrite_package_projections(
     if "compass" in scope:
         updates["compass_memory_preview"] = greenfield_apply_prewrite.preview_compass_acceptance_event(
             root=target_root,
+            target_root=target_root,
             proposal=package_proposal,
             backlog_result=backlog_result,
             component_items=component_preview,
             release_selector=release_selector,
             release_target_result=release_target_result,
             release_assignment_result=release_assignment_result,
+            accepted_at=accepted_at,
         )
 
     restored_package = greenfield_source_casing.package_with_source_casing(replace(package, **updates))
@@ -223,6 +227,16 @@ def rerender_prewrite_package_projections(
         package=restored_package,
         backlog_result=restored_package.backlog_result or backlog_result,
     )
+
+
+def _package_accepted_at(package: Any) -> str:
+    accepted_project = package.accepted_project_preview if isinstance(package.accepted_project_preview, Mapping) else {}
+    token = str(accepted_project.get("accepted_at", "")).strip()
+    if token:
+        return token
+    compass = package.compass_memory_preview if isinstance(package.compass_memory_preview, Mapping) else {}
+    token = str(compass.get("ts_iso", "")).strip()
+    return token or "prewrite"
 
 
 __all__ = ["rerender_prewrite_package_projections"]

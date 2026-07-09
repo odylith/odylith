@@ -197,17 +197,19 @@ def build_greenfield_acceptance_event_preview(
     release_selector: str,
     release_id: str,
     accepted_at: str = "prewrite",
+    repo_root: Path | None = None,
 ) -> dict[str, Any]:
     """Build the Compass acceptance event shape without appending the stream."""
 
     workstream_ids = [_clean(row.get("idea_id")).upper() for row in backlog_items if _clean(row.get("idea_id"))]
     component_ids = [_clean(row.get("component_id")) for row in component_items if _clean(row.get("component_id"))]
+    raw_artifacts = [
+        PROJECT_BRIEF_SOURCE_PATH,
+        *[str(row.get("idea_path", "")) for row in backlog_items if _clean(row.get("idea_path"))],
+        *[str(row.get("spec_path", "")) for row in component_items if _clean(row.get("spec_path"))],
+    ]
     artifacts = _first_nonempty(
-        [
-            PROJECT_BRIEF_SOURCE_PATH,
-            *[str(row.get("idea_path", "")) for row in backlog_items if _clean(row.get("idea_path"))],
-            *[str(row.get("spec_path", "")) for row in component_items if _clean(row.get("spec_path"))],
-        ],
+        [_event_artifact_token(repo_root=repo_root, value=value) for value in raw_artifacts],
         limit=12,
         structural=True,
     )
@@ -506,34 +508,18 @@ def record_compiled_greenfield_acceptance(
     """Persist precompiled greenfield memory without rebuilding product truth."""
 
     root = Path(repo_root).expanduser().resolve()
-    event_preview = dict(compass_memory_preview or {})
+    event_preview = _json_ready_mapping(compass_memory_preview, label="compiled Compass memory preview")
     stream_path = root / agent_runtime_contract.AGENT_STREAM_PATH
-    existing_payload = _matching_acceptance_event(repo_root=root, stream_path=stream_path, event_preview=event_preview)
+    existing_payload = _matching_exact_acceptance_event(stream_path=stream_path, event_preview=event_preview)
     reused_existing = existing_payload is not None
-    payload = existing_payload or log_compass_timeline_event.append_event(
-        repo_root=root,
-        stream_path=stream_path,
-        kind=str(event_preview.get("kind", "decision") or "decision"),
-        summary=str(event_preview.get("summary", "")),
-        workstream_values=[str(item) for item in event_preview.get("workstreams", [])],
-        artifact_values=[str(item) for item in event_preview.get("artifacts", [])],
-        component_values=[str(item) for item in event_preview.get("components", [])],
-        author=str(event_preview.get("author", "odylith") or "odylith"),
-        source=str(event_preview.get("source", "domain-intelligence") or "domain-intelligence"),
-        context=str(event_preview.get("context", "")),
-        headline_hint=str(event_preview.get("headline_hint", "")),
-        evidence_tier=str(event_preview.get("evidence_tier", "user_intent") or "user_intent"),
-        work_category=str(event_preview.get("work_category", "governance") or "governance"),
-    )
+    payload = existing_payload or _append_compiled_acceptance_event(stream_path=stream_path, event_preview=event_preview)
     accepted_project_path = _write_compiled_accepted_project_source(
         repo_root=root,
         accepted_project_preview=accepted_project_preview,
-        event=payload,
     )
     project_brief_path = _write_compiled_project_brief_source(
         repo_root=root,
         project_brief_record_text=project_brief_record_text,
-        event=payload,
     )
     return {
         "recorded": True,
@@ -549,11 +535,9 @@ def _write_compiled_accepted_project_source(
     *,
     repo_root: Path,
     accepted_project_preview: Mapping[str, Any],
-    event: Mapping[str, Any],
 ) -> Path:
     path = _accepted_project_source_path(repo_root)
-    payload = dict(accepted_project_preview)
-    payload["accepted_at"] = _clean(event.get("ts_iso"))
+    payload = _json_ready_mapping(accepted_project_preview, label="compiled accepted-project preview")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
     return path
@@ -563,15 +547,10 @@ def _write_compiled_project_brief_source(
     *,
     repo_root: Path,
     project_brief_record_text: str,
-    event: Mapping[str, Any],
 ) -> Path:
     path = _project_brief_source_path(repo_root)
-    rendered = compiled_project_brief_record_text(
-        project_brief_record_text,
-        accepted_at=_clean(event.get("ts_iso")),
-    )
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(rendered, encoding="utf-8")
+    path.write_text(str(project_brief_record_text or ""), encoding="utf-8")
     return path
 
 
@@ -697,6 +676,52 @@ def _matching_acceptance_event(
     return None
 
 
+def _matching_exact_acceptance_event(
+    *,
+    stream_path: Path,
+    event_preview: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    if not stream_path.is_file():
+        return None
+    expected = _json_ready_mapping(event_preview, label="compiled Compass memory preview")
+    for line in stream_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, Mapping):
+            continue
+        actual = _json_ready_mapping(event, label="persisted Compass memory event")
+        if actual == expected:
+            return dict(actual)
+    return None
+
+
+def _append_compiled_acceptance_event(
+    *,
+    stream_path: Path,
+    event_preview: Mapping[str, Any],
+) -> dict[str, Any]:
+    payload = _json_ready_mapping(event_preview, label="compiled Compass memory preview")
+    for key in ("kind", "summary", "ts_iso"):
+        if not str(payload.get(key, "")).strip():
+            raise ValueError(f"compiled Compass memory preview is missing {key}")
+    stream_path.parent.mkdir(parents=True, exist_ok=True)
+    with stream_path.open("a", encoding="utf-8") as handle:
+        handle.write(f"{json.dumps(payload, sort_keys=True)}\n")
+    return dict(payload)
+
+
+def _json_ready_mapping(value: Mapping[str, Any], *, label: str) -> dict[str, Any]:
+    try:
+        normalized = json.loads(json.dumps(dict(value or {}), sort_keys=True))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{label} is not JSON-serializable") from exc
+    return normalized if isinstance(normalized, dict) else {}
+
+
 def acceptance_event_signature(*, repo_root: Path, event: Mapping[str, Any]) -> tuple[Any, ...]:
     """Return the deterministic Compass acceptance-event fields used for replay/readback."""
 
@@ -726,3 +751,12 @@ def _artifact_signature(*, repo_root: Path, value: Any) -> str:
         except ValueError:
             return str(path.resolve())
     return token[2:] if token.startswith("./") else token
+
+
+def _event_artifact_token(*, repo_root: Path | None, value: Any) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    if repo_root is None:
+        return token
+    return _artifact_signature(repo_root=Path(repo_root).expanduser().resolve(), value=token)

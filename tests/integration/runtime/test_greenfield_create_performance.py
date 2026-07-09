@@ -1141,7 +1141,7 @@ def test_greenfield_create_completes_compound_public_response_path_under_sixty_s
         ("updates", True),
     ]
     assert "A regional coordinator drills into the trend" in json.dumps(first_path["events"])
-    for term in ("allocates", "flags", "revised projection"):
+    for term in ("allocate additional response", "flag a public advisory", "revised projection"):
         assert term in sequence_source
     assert "decision support" in generated_payload.casefold()
     for required_file in (

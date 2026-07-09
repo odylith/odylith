@@ -36,12 +36,13 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
-from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+
+COMPILED_ACCEPTED_AT = "2026-07-07T00:00:00-07:00"
 
 
 def _proposal() -> dict[str, Any]:
@@ -189,12 +190,12 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
                 },
             },
         ),
-        project_brief_record_text="# Supplier Risk Board Project Brief\n\n- accepted_at: prewrite\n",
+        project_brief_record_text=f"# Supplier Risk Board Project Brief\n\n- accepted_at: {COMPILED_ACCEPTED_AT}\n",
         accepted_project_preview={
             "schema_version": "odylith.accepted_project.v1",
             "origin": "greenfield",
             "evidence_tier": "user_intent",
-            "accepted_at": "prewrite",
+            "accepted_at": COMPILED_ACCEPTED_AT,
             "title": "Supplier Risk Board",
             "source_launch": {"implementation_prompt": "Start B-001 from the accepted transaction package."},
             "created": {"workstreams": [{"idea_id": "B-001"}], "components": [], "diagrams": []},
@@ -204,7 +205,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
             "version": "v1",
             "kind": "decision",
             "summary": "Accepted greenfield proposal for Supplier Risk Board.",
-            "ts_iso": "prewrite",
+            "ts_iso": COMPILED_ACCEPTED_AT,
             "author": "odylith",
             "source": "domain-intelligence",
             "workstreams": ["B-001"],
@@ -271,33 +272,25 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
 
 def _record_compiled_memory_for_readback(**kwargs: Any) -> dict[str, Any]:
     repo_root = Path(kwargs["repo_root"])
-    accepted_at = "2026-07-07T00:00:00-07:00"
     source_root = repo_root / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(kwargs.get("accepted_project_preview") or {})
-    accepted_project["accepted_at"] = accepted_at
     (source_root / "accepted-project.v1.json").write_text(
         json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (source_root / "project-brief.v1.md").write_text(
-        compiled_project_brief_record_text(
-            str(kwargs.get("project_brief_record_text") or ""),
-            accepted_at=accepted_at,
-        ),
+        str(kwargs.get("project_brief_record_text") or ""),
         encoding="utf-8",
     )
     event = dict(kwargs.get("compass_memory_preview") or {})
-    event["ts_iso"] = accepted_at
     stream_path = repo_root / "odylith/compass/runtime/agent-stream.v1.jsonl"
     _write_compass_memory_event(repo_root, event)
     return {"stream": str(stream_path), "event": event}
 
 
-def _compiled_memory_event(package: GreenfieldCompletionPackage, *, accepted_at: str) -> dict[str, Any]:
-    event = dict(package.compass_memory_preview or {})
-    event["ts_iso"] = accepted_at
-    return event
+def _compiled_memory_event(package: GreenfieldCompletionPackage) -> dict[str, Any]:
+    return dict(package.compass_memory_preview or {})
 
 
 def _write_compass_memory_event(root: Path, event: Mapping[str, Any]) -> Path:
@@ -380,21 +373,19 @@ def _transaction(repo_root: Path | None = None) -> Any:
 
 def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path) -> None:
     package = _package(_proposal())
-    accepted_at = "2026-07-07T00:00:00-07:00"
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
-    accepted_project["accepted_at"] = accepted_at
     accepted_project["title"] = "Drifted Project"
     (source_root / "accepted-project.v1.json").write_text(
         json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (source_root / "project-brief.v1.md").write_text(
-        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        package.project_brief_record_text,
         encoding="utf-8",
     )
-    event = _compiled_memory_event(package, accepted_at=accepted_at)
+    event = _compiled_memory_event(package)
     stream_path = _write_compass_memory_event(tmp_path, event)
 
     with pytest.raises(ValueError, match="accepted project record does not match compiled transaction preview"):
@@ -407,7 +398,6 @@ def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path)
 
 def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp_path: Path) -> None:
     package = _package(_proposal())
-    accepted_at = "2026-07-07T00:00:00-07:00"
     preview = dict(package.accepted_project_preview or {})
     preview["created"] = {
         **dict(preview.get("created") or {}),
@@ -417,16 +407,15 @@ def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = json.loads(json.dumps(preview))
-    accepted_project["accepted_at"] = accepted_at
     (source_root / "accepted-project.v1.json").write_text(
         json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (source_root / "project-brief.v1.md").write_text(
-        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        package.project_brief_record_text,
         encoding="utf-8",
     )
-    event = _compiled_memory_event(package, accepted_at=accepted_at)
+    event = _compiled_memory_event(package)
     stream_path = _write_compass_memory_event(tmp_path, event)
 
     greenfield_compiled_memory_readback.raise_for_compiled_memory_readback(
@@ -436,51 +425,48 @@ def test_compiled_memory_readback_accepts_json_round_trip_equivalent_preview(tmp
     )
 
 
-def test_compiled_memory_readback_accepts_canonicalized_compass_component_ids(tmp_path: Path) -> None:
+def test_compiled_memory_readback_rejects_canonicalized_compass_component_ids(tmp_path: Path) -> None:
     package = _package(_proposal())
-    accepted_at = "2026-07-07T00:00:00-07:00"
     preview = dict(package.compass_memory_preview or {})
     preview["components"] = ["Supplier-Risk-Service"]
     package = replace(package, compass_memory_preview=preview)
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
-    accepted_project["accepted_at"] = accepted_at
     (source_root / "accepted-project.v1.json").write_text(
         json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (source_root / "project-brief.v1.md").write_text(
-        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        package.project_brief_record_text,
         encoding="utf-8",
     )
-    event = _compiled_memory_event(package, accepted_at=accepted_at)
+    event = _compiled_memory_event(package)
     event["components"] = ["supplier-risk-service"]
     stream_path = _write_compass_memory_event(tmp_path, event)
 
-    greenfield_compiled_memory_readback.raise_for_compiled_memory_readback(
-        root=tmp_path,
-        prewrite_package=package,
-        memory_record={"stream": str(stream_path), "event": event},
-    )
+    with pytest.raises(ValueError, match="Compass memory event does not match compiled transaction preview"):
+        greenfield_compiled_memory_readback.raise_for_compiled_memory_readback(
+            root=tmp_path,
+            prewrite_package=package,
+            memory_record={"stream": str(stream_path), "event": event},
+        )
 
 
 def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) -> None:
     package = _package(_proposal())
-    accepted_at = "2026-07-07T00:00:00-07:00"
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
-    accepted_project["accepted_at"] = accepted_at
     (source_root / "accepted-project.v1.json").write_text(
         json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (source_root / "project-brief.v1.md").write_text(
-        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        package.project_brief_record_text,
         encoding="utf-8",
     )
-    event = _compiled_memory_event(package, accepted_at=accepted_at)
+    event = _compiled_memory_event(package)
     event["summary"] = "Accepted a different greenfield proposal."
     stream_path = _write_compass_memory_event(tmp_path, event)
 
@@ -494,17 +480,15 @@ def test_compiled_memory_readback_rejects_compass_event_drift(tmp_path: Path) ->
 
 def test_compiled_memory_readback_rejects_missing_compass_stream_event(tmp_path: Path) -> None:
     package = _package(_proposal())
-    accepted_at = "2026-07-07T00:00:00-07:00"
     source_root = tmp_path / "odylith/runtime/source"
     source_root.mkdir(parents=True, exist_ok=True)
     accepted_project = dict(package.accepted_project_preview or {})
-    accepted_project["accepted_at"] = accepted_at
     (source_root / "accepted-project.v1.json").write_text(
         json.dumps(accepted_project, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     (source_root / "project-brief.v1.md").write_text(
-        compiled_project_brief_record_text(package.project_brief_record_text, accepted_at=accepted_at),
+        package.project_brief_record_text,
         encoding="utf-8",
     )
 
@@ -512,7 +496,7 @@ def test_compiled_memory_readback_rejects_missing_compass_stream_event(tmp_path:
         greenfield_compiled_memory_readback.raise_for_compiled_memory_readback(
             root=tmp_path,
             prewrite_package=package,
-            memory_record={"event": _compiled_memory_event(package, accepted_at=accepted_at)},
+            memory_record={"event": _compiled_memory_event(package)},
         )
 
 
@@ -547,7 +531,7 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     restored_preview = restored.prewrite_package.component_registry_preview
     assert restored_preview[0]["implementation_handoff"]["workstream_id"] == "B-001"
     assert restored_preview[0]["authoring_input"]["workstreams"] == ["B-001"]
-    assert restored.prewrite_package.accepted_project_preview["accepted_at"] == "prewrite"
+    assert restored.prewrite_package.accepted_project_preview["accepted_at"] == COMPILED_ACCEPTED_AT
     assert isinstance(restored.prewrite_package.traceability_plan, greenfield_traceability.GreenfieldTraceabilityPlan)
     assert restored.prewrite_package.traceability_plan.workstreams[0].idea_id == "B-001"
     assert restored.prewrite_package.project_brief_record_text.startswith("# Supplier Risk Board Project Brief")

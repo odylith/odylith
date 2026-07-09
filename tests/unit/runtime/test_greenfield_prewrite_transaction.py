@@ -292,8 +292,12 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
         for row in prewrite.package.atlas_catalog_rows
     } == set(prewrite.package.atlas_diagram_ids)
     assert "odylith-greenfield-prewrite" not in json.dumps(prewrite.package.atlas_catalog_rows)
+    accepted_at = str(prewrite.package.accepted_project_preview.get("accepted_at", "")).strip()
+    assert accepted_at and accepted_at != "prewrite"
+    assert prewrite.package.compass_memory_preview["ts_iso"] == accepted_at
     assert prewrite.package.project_brief_record_text.startswith("# Municipal Permit Review Workspace Project Brief")
-    assert "- accepted_at: prewrite" in prewrite.package.project_brief_record_text
+    assert f"- accepted_at: {accepted_at}" in prewrite.package.project_brief_record_text
+    assert all(not Path(str(token)).is_absolute() for token in prewrite.package.compass_memory_preview["artifacts"])
     assert all(
         isinstance(row.get("implementation_handoff"), dict) and row["implementation_handoff"]
         for row in prewrite.package.component_registry_preview

@@ -342,6 +342,9 @@ def _product_result_from_visible_outcome(value: Any) -> str:
         text = clean_first_path_text(strip_requirement_control_tail(text))
         if not text or is_declarative_visible_result_prefix(text):
             return ""
+    state_update = _finite_state_update_visible_result(text)
+    if state_update:
+        return state_update
     visible_object = visible_result_object(text)
     if _starts_with_connector(visible_object) and _is_visible_object_list_result(text):
         visible_object = text
@@ -357,6 +360,26 @@ def _product_result_from_visible_outcome(value: Any) -> str:
     candidate = nominal_visible_result_object(candidate) or candidate
     candidate = normalize_visible_result_language(candidate) or candidate
     return lowercase_leading_article(candidate).strip(" .")
+
+
+def _finite_state_update_visible_result(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if not text or _has_human_subject_signal(text):
+        return ""
+    match = re.match(
+        r"^(?P<subject>(?:(?:a|an|the|this|that|one)\s+)?(?:[A-Za-z][A-Za-z0-9/&'-]*\s+){1,7})"
+        r"(?P<verb>changes?|clears?|closes?|completes?|confirms?|displays?|emits?|establishes?|finishes?|"
+        r"keeps?|passes?|publishes?|refreshes?|resolves?|settles?|shows?|surfaces?|updates?)\b"
+        r"(?P<tail>\s+.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    subject = clean_text(match.group("subject")).casefold()
+    if not any(term in subject.split() for term in _NON_HUMAN_WORKFLOW_SUBJECT_TERMS):
+        return ""
+    return lowercase_leading_article(text).strip(" .")
 
 
 def _product_result_from_proof_boundary(value: Any) -> str:

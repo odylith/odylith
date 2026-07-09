@@ -73,6 +73,7 @@ def build_prewrite_completion_package(
     """Render the full confirmed-create package in a staged repo before writes."""
 
     source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
+    accepted_at = _compiled_acceptance_timestamp()
     if source_text:
         restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
             proposal,
@@ -214,6 +215,7 @@ def build_prewrite_completion_package(
             release_assignment_result=preview_release_assignment,
             validation_gate=validation_gate,
             source_launch_context=next_steps_preview,
+            accepted_at=accepted_at,
         )
         project_dashboard_preview = preview_project_dashboard_payload(
             root=root,
@@ -223,12 +225,14 @@ def build_prewrite_completion_package(
         )
         compass_memory_preview = preview_compass_acceptance_event(
             root=prewrite_root,
+            target_root=root,
             proposal=package_proposal,
             backlog_result=backlog_result,
             component_items=component_registry_preview,
             release_selector=release_selector,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
+            accepted_at=accepted_at,
         )
         project_brief_record_text = build_project_brief_source_markdown(
             proposal=package_proposal,
@@ -237,7 +241,7 @@ def build_prewrite_completion_package(
             diagram_ids=diagram_ids,
             release_selector=release_selector,
             release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
-            accepted_at="prewrite",
+            accepted_at=accepted_at,
         )
         package = GreenfieldCompletionPackage(
             proposal=package_proposal,
@@ -600,6 +604,7 @@ def preview_accepted_project_memory(
     release_assignment_result: Mapping[str, Any] | None,
     validation_gate: Mapping[str, Any] | None,
     source_launch_context: Mapping[str, Any] | None = None,
+    accepted_at: str = "prewrite",
 ) -> dict[str, Any]:
     """Build the accepted-project memory record before target writes begin."""
 
@@ -613,7 +618,7 @@ def preview_accepted_project_memory(
         release_id=_prewrite_release_id(release_target_result, release_assignment_result),
         validation_gate=validation_gate,
         source_launch_context=source_launch_context,
-        accepted_at="prewrite",
+        accepted_at=accepted_at,
     )
 
 
@@ -652,12 +657,14 @@ def preview_project_dashboard_payload(
 def preview_compass_acceptance_event(
     *,
     root: Path,
+    target_root: Path | None = None,
     proposal: Mapping[str, Any],
     backlog_result: Mapping[str, Any],
     component_items: Sequence[Mapping[str, Any]],
     release_selector: str,
     release_target_result: Mapping[str, Any] | None,
     release_assignment_result: Mapping[str, Any] | None,
+    accepted_at: str = "prewrite",
 ) -> dict[str, Any]:
     """Build the Compass acceptance event before the target stream is appended."""
 
@@ -669,7 +676,13 @@ def preview_compass_acceptance_event(
         diagram_ids=greenfield_apply_diagrams.allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows),
         release_selector=release_selector,
         release_id=_prewrite_release_id(release_target_result, release_assignment_result),
+        accepted_at=accepted_at,
+        repo_root=target_root or root,
     )
+
+
+def _compiled_acceptance_timestamp() -> str:
+    return dt.datetime.now().astimezone().replace(microsecond=0).isoformat()
 
 
 def _prewrite_release_id(*sources: Mapping[str, Any] | None) -> str:
