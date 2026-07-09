@@ -58,6 +58,7 @@ class GreenfieldCompletionPackage:
     baseline_writes: Mapping[str, str] | None = None
     brand_asset_writes: Mapping[str, Mapping[str, str]] | None = None
     prewrite_safety_preview: Mapping[str, Any] | None = None
+    surface_refresh_preview: Mapping[str, Any] | None = None
     release_target_result: Mapping[str, Any] | None = None
     release_assignment_result: Mapping[str, Any] | None = None
     release_workstream_ids: tuple[str, ...] = ()

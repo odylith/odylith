@@ -41,6 +41,7 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 COMPILED_ACCEPTED_AT = "2026-07-07T00:00:00-07:00"
 
@@ -133,6 +134,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         atlas_catalog_rows=atlas_catalog_rows,
         backlog_result=backlog_result,
         prewrite_safety_preview={"status": "passed"},
+        surface_refresh_preview=surface_refresh_preview_fixture(),
         component_registry_preview=(
             {
                 "component_id": "supplier-risk-service",
@@ -535,9 +537,19 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     assert isinstance(restored.prewrite_package.traceability_plan, greenfield_traceability.GreenfieldTraceabilityPlan)
     assert restored.prewrite_package.traceability_plan.workstreams[0].idea_id == "B-001"
     assert restored.prewrite_package.project_brief_record_text.startswith("# Supplier Risk Board Project Brief")
+    assert payload["prewrite_package"]["surface_refresh_preview"]["status"] == "passed"
+    assert (
+        restored.prewrite_package.surface_refresh_preview
+        == transaction.prewrite_package.surface_refresh_preview
+    )
     restored_specs = restored.backlog_result["_candidate_idea_specs"]
     assert isinstance(restored_specs["B-001"], backlog_contract.IdeaSpec)
     assert restored_specs["B-001"].metadata["idea_id"] == "B-001"
+
+    tampered_surface = json.loads(json.dumps(payload))
+    tampered_surface["prewrite_package"]["surface_refresh_preview"]["status"] = "failed"
+    with pytest.raises(ValueError, match="hash mismatch"):
+        product_create_transaction_from_dict(tampered_surface)
 
     payload["quality_manifest"] = {**payload["quality_manifest"], "status": "failed"}
     with pytest.raises(ValueError, match="hash mismatch"):
@@ -1475,6 +1487,25 @@ def test_product_create_transaction_rejects_incomplete_compiled_package_before_c
     package = replace(_package(proposal), next_steps_preview=None)
 
     with pytest.raises(ValueError, match="missing compiled next_steps_preview"):
+        build_product_create_transaction(
+            proposal=proposal,
+            release_selector="",
+            validation_gate={"status": "passed", "issues": []},
+            backlog_result=package.backlog_result or {},
+            prewrite_package=package,
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
+        )
+
+
+def test_product_create_transaction_rejects_missing_surface_refresh_proof_before_confirm(tmp_path: Path) -> None:
+    proposal = _proposal()
+    authority = _intent_authority(tmp_path, write_files=True)
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    package = replace(_package(proposal), surface_refresh_preview=None)
+
+    with pytest.raises(ValueError, match="missing compiled pre-confirm surface refresh proof"):
         build_product_create_transaction(
             proposal=proposal,
             release_selector="",

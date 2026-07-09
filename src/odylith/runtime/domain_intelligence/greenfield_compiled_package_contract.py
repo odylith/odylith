@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_apply_components import first_release_component_rows
@@ -35,6 +36,11 @@ def require_complete_compiled_greenfield_package(
         issues.append("missing compiled next_steps_preview")
     if not _has_compiled_memory_package(prewrite_package):
         issues.append("missing compiled accepted-project, project brief, or Compass memory preview")
+    issues.extend(
+        greenfield_surface_refresh_proof.surface_refresh_preview_issues(
+            prewrite_package.surface_refresh_preview,
+        )
+    )
 
     component_rows = [row for row in first_release_component_rows(proposal) if isinstance(row, Mapping)]
     if component_rows:

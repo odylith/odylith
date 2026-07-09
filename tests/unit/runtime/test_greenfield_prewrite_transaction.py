@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     build_greenfield_package_report,
@@ -30,6 +31,7 @@ from odylith.runtime.project_intelligence.greenfield import build_greenfield_pay
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -279,6 +281,14 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
 
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
     assert prewrite.package.prewrite_safety_preview["checks"]["program_dry_run"] is True
+    assert prewrite.package.surface_refresh_preview["status"] == "passed"
+    assert prewrite.package.surface_refresh_preview["surfaces"] == [
+        "radar",
+        "registry",
+        "atlas",
+        "compass",
+        "tooling_shell",
+    ]
     assert prewrite.package.component_registry_preview
     assert prewrite.package.traceability_plan is not None
     assert prewrite.package.traceability_plan.workstreams
@@ -306,6 +316,11 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
 
 
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
+    )
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_apply_diagrams,
@@ -554,6 +569,7 @@ def _package_for_quality_report(
         "next_steps_preview": next_steps_preview,
         "backlog_result": _prewrite_backlog_result(proposal),
         "program_result": {"created": True, "dry_run": True},
+        "surface_refresh_preview": surface_refresh_preview_fixture(),
         "release_target_result": {"dry_run": True, "release": {"release_id": "release-test"}},
         "release_assignment_result": {"dry_run": True, "workstream_ids": ["B-001"]},
         "release_workstream_ids": ("B-001",),
@@ -587,6 +603,16 @@ def test_confirmed_completion_varies_success_proof_metrics_before_package_gate(t
     assert "The proof record explains blocked, missing, or invalid input before a result is presented" not in rendered
     assert "State responsibility, actor, source, status, result, and recovery context stay attached" not in rendered
     assert "repeats a noncanonical sentence" not in "\n".join(report.issues)
+
+
+def test_greenfield_package_report_rejects_missing_surface_refresh_proof(tmp_path: Path) -> None:
+    proposal = complete_confirmed_proposal(_proposal(tmp_path), release_selector="0.0.1")
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, surface_refresh_preview=None)
+    )
+
+    assert report.status == "failed"
+    assert "missing compiled pre-confirm surface refresh proof" in report.issues
 
 
 def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_path: Path) -> None:

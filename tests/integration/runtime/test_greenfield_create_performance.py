@@ -147,6 +147,14 @@ def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float
     assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
     assert payload["product_create_transaction"]["verified"] is True
+    assert payload["product_create_transaction"]["surface_refresh_preview"]["status"] == "passed"
+    assert payload["product_create_transaction"]["surface_refresh_preview"]["surfaces"] == [
+        "radar",
+        "registry",
+        "atlas",
+        "compass",
+        "tooling_shell",
+    ]
     assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"

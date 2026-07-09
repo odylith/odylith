@@ -193,6 +193,20 @@ def _project_title(proposal: Mapping[str, Any]) -> str:
 
 
 def _legacy_package_issue_finding(message: str) -> GreenfieldReviewFinding:
+    text = clean_text(message)
+    if text.startswith("compiled surface refresh proof did not pass"):
+        return review_finding(
+            code="surface_refresh_proof",
+            surface="post_confirm_package",
+            target_path="prewrite_package.surface_refresh_preview",
+            projection_id="registry",
+            semantic_node_id="ArtifactDraftSet.registry",
+            severity="critical",
+            repairability="projection_rerender",
+            owner="greenfield_surface_refresh_proof",
+            source="surface_refresh_proof",
+            message=message,
+        )
     return review_finding(
         code="legacy_package_artifact_gate",
         surface="post_confirm_package",

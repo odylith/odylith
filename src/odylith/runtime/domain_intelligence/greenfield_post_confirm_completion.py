@@ -42,6 +42,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     dedupe_review_findings,
 )
+from odylith.runtime.domain_intelligence.greenfield_surface_refresh_proof import (
+    surface_refresh_preview_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_completion_types import (
     GreenfieldCompletionPackage,
 )
@@ -129,6 +132,7 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
             "accepted_project_previews": 1 if isinstance(package.accepted_project_preview, Mapping) else 0,
             "compass_memory_previews": 1 if isinstance(package.compass_memory_preview, Mapping) else 0,
             "next_steps_previews": 1 if isinstance(package.next_steps_preview, Mapping) else 0,
+            "surface_refresh_previews": 1 if isinstance(package.surface_refresh_preview, Mapping) else 0,
             "release_assignment_previews": 1 if isinstance(package.release_assignment_result, Mapping) else 0,
             "release_workstream_ids": len(package.release_workstream_ids),
         },
@@ -302,6 +306,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
         issues.append("prewrite package must include operator next-steps preview")
     if next_steps_preview:
         issues.extend(_next_steps_preview_issues(package, next_steps_preview))
+    issues.extend(surface_refresh_preview_issues(package.surface_refresh_preview))
     if program_result and bool(program_result.get("created")) and clean_text(program_result.get("dry_run")).casefold() not in {"true", "1"}:
         issues.append("prewrite program package must be rendered in dry-run mode before governed writes")
     if package.release_selector and backlog_result and not package.release_workstream_ids:

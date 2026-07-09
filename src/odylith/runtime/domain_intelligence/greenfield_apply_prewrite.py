@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import datetime as dt
 import json
-import shutil
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -18,8 +15,12 @@ from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_experience
+from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import ensure_greenfield_create_baseline
+from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import staged_greenfield_prewrite_root
+from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -39,26 +40,6 @@ from odylith.runtime.surfaces import brand_assets
 class GreenfieldPrewriteBuild:
     package: GreenfieldCompletionPackage
     backlog_result: Mapping[str, Any]
-
-
-def ensure_greenfield_create_baseline(root: Path) -> None:
-    """Create missing governance indexes needed by the confirmed-create refresh path."""
-
-    greenfield_create_baseline.ensure_greenfield_create_baseline(root)
-
-
-@contextmanager
-def staged_greenfield_prewrite_root(root: Path) -> Iterator[Path]:
-    """Stage governed inputs so completion gates can run without target writes."""
-
-    source_root = Path(root).expanduser().resolve()
-    with tempfile.TemporaryDirectory(prefix="odylith-greenfield-prewrite-") as tmp:
-        stage_root = (Path(tmp) / "repo").resolve()
-        stage_root.mkdir(parents=True, exist_ok=True)
-        for token in _PREWRITE_STAGE_PATHS:
-            _copy_existing_path(source_root / token, stage_root / token)
-        ensure_greenfield_create_baseline(stage_root)
-        yield stage_root
 
 
 def build_prewrite_completion_package(
@@ -112,14 +93,15 @@ def build_prewrite_completion_package(
             backlog_result=staged_backlog_result,
             program_result=preview_program_result,
         )
+        staged_component_registry_preview = greenfield_apply_components.preview_prewrite_components(
+            root=prewrite_root,
+            proposal=proposal,
+            release_selector=release_selector,
+            backlog_result=staged_backlog_result,
+            program_result=preview_program_result,
+        )
         component_registry_preview = remap_prewrite_component_items(
-            greenfield_apply_components.preview_prewrite_components(
-                root=prewrite_root,
-                proposal=proposal,
-                release_selector=release_selector,
-                backlog_result=staged_backlog_result,
-                program_result=preview_program_result,
-            ),
+            staged_component_registry_preview,
             source_root=prewrite_root,
             target_root=root,
         )
@@ -133,6 +115,7 @@ def build_prewrite_completion_package(
             created_backlog=staged_backlog_result["created"],
             diagram_ids=diagram_ids,
         )
+        staged_traceability_plan = traceability_plan
         greenfield_traceability.apply_backlog_traceability(
             repo_root=prewrite_root,
             proposal=proposal,
@@ -152,6 +135,13 @@ def build_prewrite_completion_package(
         traceability_plan = greenfield_traceability_commit.rebase_compiled_traceability_plan(
             traceability_plan,
             backlog_result=backlog_result,
+        )
+        staged_atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+            root=prewrite_root,
+            rows=diagram_rows,
+            diagram_ids=diagram_ids,
+            traceability_plan=staged_traceability_plan,
+            review_date=atlas_review_date,
         )
         atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
             root=root,
@@ -243,6 +233,29 @@ def build_prewrite_completion_package(
             release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
             accepted_at=accepted_at,
         )
+        try:
+            surface_refresh_preview = greenfield_prewrite_surface_stage.build_staged_surface_refresh_preview(
+                prewrite_root=prewrite_root,
+                proposal=package_proposal,
+                release_selector=release_selector,
+                validation_gate=validation_gate,
+                staged_backlog_result=staged_backlog_result,
+                staged_component_registry_preview=staged_component_registry_preview,
+                rendered_component_specs=rendered_component_specs,
+                diagram_rows=diagram_rows,
+                diagram_ids=diagram_ids,
+                staged_traceability_plan=staged_traceability_plan,
+                rendered_atlas_sources=rendered_atlas_sources,
+                atlas_review_date=atlas_review_date,
+                staged_atlas_catalog_rows=staged_atlas_catalog_rows,
+                release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
+                source_launch_context=next_steps_preview,
+                accepted_at=accepted_at,
+            )
+        except (RuntimeError, ValueError) as exc:
+            surface_refresh_preview = greenfield_surface_refresh_proof.failed_prewrite_surface_refresh_preview(
+                reason=exc,
+            )
         package = GreenfieldCompletionPackage(
             proposal=package_proposal,
             release_selector=release_selector,
@@ -265,6 +278,7 @@ def build_prewrite_completion_package(
             baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
             brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
             prewrite_safety_preview=prewrite_safety_preview,
+            surface_refresh_preview=surface_refresh_preview,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
             release_workstream_ids=tuple(first_release_workstreams),
@@ -694,25 +708,6 @@ def _prewrite_release_id(*sources: Mapping[str, Any] | None) -> str:
             if text:
                 return text
     return "none"
-
-
-_PREWRITE_STAGE_PATHS = (
-    Path("odylith/radar"),
-    Path("odylith/technical-plans"),
-    Path("odylith/atlas"),
-)
-
-
-def _copy_existing_path(source: Path, target: Path) -> None:
-    if not source.exists() and not source.is_symlink():
-        return
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if source.is_symlink():
-        target.symlink_to(source.readlink())
-    elif source.is_dir():
-        shutil.copytree(source, target, symlinks=True)
-    else:
-        shutil.copy2(source, target)
 
 
 def _remap_created_backlog_item(

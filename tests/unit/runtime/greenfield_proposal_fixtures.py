@@ -7,6 +7,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
@@ -266,6 +267,7 @@ def compiled_greenfield_package_fixture(
         baseline_writes=baseline_writes,
         brand_asset_writes=brand_asset_writes,
         prewrite_safety_preview={"status": "passed"},
+        surface_refresh_preview=surface_refresh_preview_fixture(),
         release_target_result={
             "dry_run": True,
             "selector": release_selector,
@@ -287,6 +289,18 @@ def compiled_greenfield_package_fixture(
         },
         release_workstream_ids=(idea_id,),
     )
+
+
+def surface_refresh_preview_fixture() -> dict[str, Any]:
+    return {
+        "version": greenfield_surface_refresh_proof.GREENFIELD_SURFACE_REFRESH_PROOF_VERSION,
+        "status": "passed",
+        "phase": greenfield_surface_refresh_proof.GREENFIELD_SURFACE_REFRESH_PROOF_PHASE,
+        "proof": greenfield_surface_refresh_proof.GREENFIELD_SURFACE_REFRESH_PROOF_KIND,
+        "surfaces": list(greenfield_surface_refresh_proof.GREENFIELD_VISIBLE_SURFACES),
+        "artifact_paths": list(greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS),
+        "view": "odylith/index.html?tab=project",
+    }
 
 
 def _write_confirmed_intent(repo_root: Path) -> Path:

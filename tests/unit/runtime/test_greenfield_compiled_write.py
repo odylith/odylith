@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,7 @@ def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
     transaction = _transaction()
     calls: set[str] = set()
     memory_kwargs: dict[str, Any] = {}
+    refresh_kwargs: dict[str, Any] = {}
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("compiled transaction commits must not route through the legacy proposal writer")
@@ -94,7 +96,7 @@ def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
     monkeypatch.setattr(
         greenfield_compiled_write,
         "_refresh_compiled_greenfield_dashboard",
-        lambda **_kwargs: {"status": "passed", "surfaces": []},
+        lambda **_kwargs: refresh_kwargs.update(_kwargs) or {"status": "passed", "surfaces": []},
     )
     monkeypatch.setattr(
         greenfield_compiled_write.greenfield_apply_diagrams,
@@ -114,6 +116,38 @@ def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
     assert memory_kwargs["accepted_project_preview"] == transaction.prewrite_package.accepted_project_preview
     assert memory_kwargs["project_brief_record_text"] == transaction.prewrite_package.project_brief_record_text
     assert memory_kwargs["compass_memory_preview"] == transaction.prewrite_package.compass_memory_preview
+    assert refresh_kwargs["surface_refresh_preview"] == transaction.prewrite_package.surface_refresh_preview
+
+
+def test_write_compiled_greenfield_package_rejects_missing_surface_proof_before_writes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction()
+    bad_transaction = replace(
+        transaction,
+        prewrite_package=replace(transaction.prewrite_package, surface_refresh_preview=None),
+    )
+    calls: list[str] = []
+
+    monkeypatch.setattr(
+        greenfield_compiled_write,
+        "_remove_precompiled_stale_workstreams",
+        lambda **_kwargs: calls.append("stale_cleanup"),
+    )
+    monkeypatch.setattr(
+        greenfield_compiled_write.greenfield_backlog_commit,
+        "write_backlog_files",
+        lambda *_args, **_kwargs: calls.append("backlog"),
+    )
+
+    with pytest.raises(ValueError, match="missing compiled pre-confirm surface refresh proof"):
+        greenfield_compiled_write.write_compiled_greenfield_package(
+            root=tmp_path,
+            transaction=bad_transaction,
+        )
+
+    assert calls == []
 
 
 def test_record_compiled_greenfield_acceptance_does_not_reuse_timestamp_drift(tmp_path: Path) -> None:

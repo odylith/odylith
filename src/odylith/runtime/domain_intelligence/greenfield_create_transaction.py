@@ -42,8 +42,13 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_create_baseline.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",
     "runtime/domain_intelligence/greenfield_create_transaction.py",
+    "runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+    "runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
+    "runtime/domain_intelligence/greenfield_prewrite_stage_root.py",
+    "runtime/domain_intelligence/greenfield_prewrite_surface_stage.py",
     "runtime/domain_intelligence/greenfield_proposals.py",
     "runtime/domain_intelligence/greenfield_proposals_cli.py",
+    "runtime/domain_intelligence/greenfield_surface_refresh_proof.py",
     "runtime/surfaces/brand_assets.py",
     "runtime/surfaces/scaffold_mermaid_diagram.py",
 )
@@ -100,6 +105,7 @@ class ProductCreateTransaction:
             "compiler_phase": str(self.compiler_provenance.get("phase", "")).strip(),
             "product_facts_sha256": str(self.intent_authority.get("product_facts_sha256", "")).strip(),
             "intent_authority_version": str(self.intent_authority.get("version", "")).strip(),
+            "surface_refresh_preview": _json_ready(self.prewrite_package.surface_refresh_preview or {}),
         }
 
 

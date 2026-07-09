@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence import greenfield_compiled_package_cont
 from odylith.runtime.domain_intelligence import greenfield_compiled_readback
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_release_commit
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_apply_components import first_release_component_rows
@@ -23,7 +24,7 @@ from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_
 from odylith.runtime.governance import owned_surface_refresh
 
 
-_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "tooling_shell")
+_GREENFIELD_VISIBLE_SURFACES = greenfield_surface_refresh_proof.GREENFIELD_VISIBLE_SURFACES
 
 
 def write_compiled_greenfield_package(
@@ -49,6 +50,9 @@ def write_compiled_greenfield_package(
     greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
         package,
         release_selector=release_selector,
+    )
+    surface_refresh_preview = greenfield_surface_refresh_proof.require_compiled_surface_refresh_preview(
+        package.surface_refresh_preview,
     )
     rendered_atlas_sources = dict(package.rendered_atlas_sources or {})
     rendered_component_specs = dict(package.rendered_component_specs or {})
@@ -146,7 +150,10 @@ def write_compiled_greenfield_package(
         memory_record=memory_record,
     )
 
-    dashboard_refresh = _refresh_compiled_greenfield_dashboard(repo_root=repo_root)
+    dashboard_refresh = _refresh_compiled_greenfield_dashboard(
+        repo_root=repo_root,
+        surface_refresh_preview=surface_refresh_preview,
+    )
     rendered_surface_custody = greenfield_apply_diagrams.raise_for_greenfield_rendered_surface_custody(
         repo_root=repo_root,
         diagram_ids=diagrams_created,
@@ -187,7 +194,14 @@ def _remove_precompiled_stale_workstreams(*, root: Path, backlog_result: Mapping
     )
 
 
-def _refresh_compiled_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
+def _refresh_compiled_greenfield_dashboard(
+    *,
+    repo_root: Path,
+    surface_refresh_preview: Mapping[str, Any],
+) -> dict[str, Any]:
+    sealed_preview = greenfield_surface_refresh_proof.require_compiled_surface_refresh_preview(
+        surface_refresh_preview,
+    )
     view = owned_surface_refresh.dashboard_handoff(surface="project")
     owned_surface_refresh.raise_for_failed_refreshes(
         repo_root=Path(repo_root).resolve(),
@@ -198,6 +212,7 @@ def _refresh_compiled_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]
         "status": "passed",
         "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
         "view": view,
+        "pre_confirm_surface_refresh": sealed_preview,
     }
 
 

@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
@@ -30,6 +31,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _markdown_section
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
@@ -107,6 +109,11 @@ def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None =
         _write_stubbed_atlas_render_outputs(Path(str(kwargs["repo_root"])))
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
+    )
 
 
 def _run_confirmed_transaction_create(
@@ -850,6 +857,10 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert transaction_path.is_file()
     saved = json.loads(transaction_path.read_text(encoding="utf-8"))
     assert saved["transaction_hash"] == transaction.transaction_hash
+    assert (
+        saved["prewrite_package"]["surface_refresh_preview"]
+        == transaction.prewrite_package.surface_refresh_preview
+    )
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
 
 
@@ -874,6 +885,10 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     def fake_commit(**kwargs):
         calls.append(("commit", dict(kwargs)))
         assert kwargs["transaction"].transaction_hash == transaction.transaction_hash
+        assert (
+            kwargs["transaction"].prewrite_package.surface_refresh_preview
+            == transaction.prewrite_package.surface_refresh_preview
+        )
         return {
             "mode": "applied",
             "validation_gate": transaction.validation_gate,
