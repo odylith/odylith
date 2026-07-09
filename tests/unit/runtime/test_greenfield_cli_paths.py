@@ -646,7 +646,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert compile_payload["product_create_transaction"]["verified"] is True
     assert dashboard_calls
     assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "tooling_shell")
-    assert dashboard_calls[-1]["operation_label"] == "Greenfield apply dashboard visibility"
+    assert dashboard_calls[-1]["operation_label"] == "Greenfield create dashboard visibility"
     assert "atlas_sync" not in dashboard_calls[-1]
     assert "greenfield create wrote confirmed proposal" in out
     assert "- validation gate: passed" in out
@@ -895,6 +895,11 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "run_greenfield_post_confirm_engine", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", fake_commit)
 
     rc = greenfield_proposals.main(

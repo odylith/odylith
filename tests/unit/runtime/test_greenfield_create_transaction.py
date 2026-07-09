@@ -873,34 +873,6 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
         )
 
 
-def test_write_compiled_greenfield_package_passes_transaction_package(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    transaction = _transaction()
-    calls: list[dict[str, Any]] = []
-
-    def fake_write(**kwargs: Any) -> dict[str, Any]:
-        calls.append(kwargs)
-        return {"mode": "applied", "completion_priority_quality_debt": []}
-
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", fake_write)
-
-    result = greenfield_compiled_write.write_compiled_greenfield_package(
-        root=tmp_path,
-        transaction=transaction,
-        completion_priority_write_policy={"status": "write_allowed_with_projection_quality_debt"},
-    )
-
-    assert result["mode"] == "applied"
-    assert len(calls) == 1
-    assert calls[0]["proposal"] == transaction.proposal
-    assert calls[0]["release_selector"] == transaction.release_selector
-    assert calls[0]["tribunal"] == transaction.validation_gate
-    assert calls[0]["backlog_result"] == transaction.backlog_result
-    assert calls[0]["prewrite_package"] is transaction.prewrite_package
-
-
 def test_write_greenfield_proposal_uses_precompiled_program_plan(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

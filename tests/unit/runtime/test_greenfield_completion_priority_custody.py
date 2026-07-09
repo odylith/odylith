@@ -15,16 +15,27 @@ from odylith.runtime.domain_intelligence import greenfield_cli_output
 from odylith.runtime.domain_intelligence import greenfield_component_contract as component_contract
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
+from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _governed_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
+    prompt = "Draft a greenfield proposal for a trip comparison workspace"
     proposal = _governed_greenfield_fixture(
         tmp_path,
-        "Draft a greenfield proposal for a trip comparison workspace",
+        prompt,
     )
+    confirmed_intent = confirmed_intent_with_authority(
+        CONFIRMED_INTENT_TEXT,
+        prompt=prompt,
+        repo_root=tmp_path,
+        write_files=True,
+    )
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent[PRODUCT_INTENT_AUTHORITY_KEY]
     brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), dict) else {}
     brief["purpose"] = (
         "Travel planners face risk when cost, timing, accessibility, and policy constraints are compared in separate "

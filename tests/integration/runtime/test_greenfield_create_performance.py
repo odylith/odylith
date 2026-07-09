@@ -146,6 +146,8 @@ def _generated_visible_surface_payload(root) -> str:
 def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float) -> None:
     assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
+    assert payload["product_create_transaction"]["verified"] is True
+    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
     assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
@@ -209,7 +211,12 @@ def test_yacht_greenfield_confirm_repairs_quality_failures_and_commits_under_six
         "domain_expert",
     }
     assert payload["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
-    assert payload["post_confirm_quality_manifest"]["whole_project_elapsed_seconds"] < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert payload["product_create_transaction"]["verified"] is True
+    assert (
+        payload["post_confirm_quality_manifest"]["whole_project_elapsed_seconds"]
+        < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    )
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) >= 5
     assert len(payload["diagrams"]) == 6

@@ -377,6 +377,8 @@ def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCo
         kwargs["traceability_plan"] = greenfield_traceability.traceability_plan_from_payload(
             kwargs["traceability_plan"]
         )
+    if isinstance(kwargs.get("backlog_result"), Mapping):
+        kwargs["backlog_result"] = _backlog_result_from_payload(kwargs["backlog_result"])
     return GreenfieldCompletionPackage(**kwargs)
 
 
