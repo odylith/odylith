@@ -254,8 +254,8 @@ async function main() {
             opacity: 0.65;
           }
           .edgeLabel {
-            color: #293D52;
-            fill: #293D52;
+            color: #24384A;
+            fill: #24384A;
           }
           .edgeLabel rect,
           .edgeLabel background {
@@ -269,8 +269,16 @@ async function main() {
           }
         `;
         svg.insertBefore(style, svg.firstChild);
-        const BODY_TEXT = '#132033';
-        const STRUCTURE_LABEL = '#293D52';
+        const BODY_TEXT = '#0F1D30';
+        const STRUCTURE_LABEL = '#24384A';
+        const rewriteManagedTextColors = () => {
+          for (const styleNode of svg.querySelectorAll('style')) {
+            styleNode.textContent = String(styleNode.textContent || '')
+              .replace(/#132033/gi, BODY_TEXT)
+              .replace(/#293D52/gi, STRUCTURE_LABEL);
+          }
+        };
+        rewriteManagedTextColors();
         const nodePalette = {
           neutral: { fill: '#FBFDFF', stroke: '#D8E5F4', label: BODY_TEXT },
           primary: { fill: '#EFF6FF', stroke: '#BFD7FE', label: BODY_TEXT },

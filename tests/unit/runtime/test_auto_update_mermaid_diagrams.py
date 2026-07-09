@@ -214,8 +214,9 @@ def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> 
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
-    assert "const BODY_TEXT = '#132033';" in worker_source
-    assert "const STRUCTURE_LABEL = '#293D52';" in worker_source
+    assert "const BODY_TEXT = '#0F1D30';" in worker_source
+    assert "const STRUCTURE_LABEL = '#24384A';" in worker_source
+    assert "rewriteManagedTextColors" in worker_source
     assert "#17233A" not in worker_source
     assert "#334155" not in worker_source
     assert "stripManagedTextStyle" in worker_source
