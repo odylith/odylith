@@ -83,9 +83,14 @@ def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
     assert rendered.index("**Decision rail:** `CONFIRM` | `EDIT` | `REJECT`.") < (
         rendered.index("### Command: `CONFIRM`")
     )
+    assert "**Command buttons:** **`CONFIRM`**  |  **`EDIT`**  |  **`REJECT`**." in rendered
     assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in rendered
     assert "Do not write anything before the command." in rendered
     assert "Only the first command counts. Do not paste Odylith system commands in your reply." in rendered
+    assert rendered.count("**Copy-ready reply:**") == 3
+    assert "**Copy-ready reply:** `CONFIRM`" in rendered
+    assert "**Copy-ready reply:** `EDIT`" in rendered
+    assert "**Copy-ready reply:** `REJECT`" in rendered
     assert rendered.count("**Reply starts with:**") == 3
     assert rendered.count("**What happens:**") == 3
     assert "### Command: `CONFIRM`" in rendered
