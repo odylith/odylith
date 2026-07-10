@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -18,6 +19,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import norm
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 _CRYOGENIC_REQUIREMENT_PROMPT = (
@@ -74,7 +77,16 @@ def _visible_confirmation_intent(prompt: str) -> dict[str, object]:
         repo_name="greenfield-simulation",
         observed_source={},
     )
-    return parse_confirmed_intent_text(format_product_intent_confirmation_text(confirmation), prompt=prompt)
+    return confirmed_intent_with_authority(
+        format_product_intent_confirmation_text(confirmation),
+        prompt=prompt,
+        source_format="operator_prompt",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
 
 
 def _proposal_and_prewrite(tmp_path: Path, prompt: str):
@@ -109,6 +121,35 @@ def test_prompt_requirement_sentences_do_not_become_first_path_events() -> None:
     assert "Reopen the saved record with the same inputs" in model.steps
     assert len(model.steps) >= 5
     assert not any(contains_requirement_control_clause(step) for step in model.steps)
+
+
+def test_release_gate_title_does_not_capture_evidence_requirements_as_path() -> None:
+    source = prompt_intent_source(_SECURE_MULTIPARTY_BOUNDARY_PROMPT)
+
+    assert source.title == "secure multiparty risk model model-risk release gate"
+    assert "first release must preserve" not in source.first_path.casefold()
+    assert "secret share" not in source.first_path.casefold()
+    assert "approve only bounded release evidence" in source.first_path.casefold()
+
+
+def test_visible_confirmation_carries_typed_evidence_requirements() -> None:
+    confirmation = build_product_intent_confirmation(
+        prompt=_CRYOGENIC_REQUIREMENT_PROMPT,
+        title="greenfield simulation",
+        repo_name="greenfield-simulation",
+        observed_source={},
+    )
+    rendered = format_product_intent_confirmation_text(confirmation)
+    intent = confirmed_intent_with_authority(
+        rendered,
+        prompt=_CRYOGENIC_REQUIREMENT_PROMPT,
+        source_format="operator_prompt",
+    )
+
+    assert "Evidence requirements" in rendered
+    requirements = " ".join(intent["evidence_requirements"]).casefold()
+    for term in ("ion trap", "cryogenic calibration", "motional heating", "laser detuning"):
+        assert term in requirements
 
 
 def test_confirmed_package_keeps_requirement_obligations_out_of_atlas_path_labels(tmp_path: Path) -> None:

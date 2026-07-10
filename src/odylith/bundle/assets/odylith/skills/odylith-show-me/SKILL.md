@@ -66,8 +66,9 @@ placeholder products in response to a show-me request.
    validates, quality-gates, and hashes the ProductCreateTransaction before
    records can be confirmed. After **CONFIRM**, run
    `greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
-   Confirmed create only verifies the hash, writes atomically, validates
-   readback, refreshes surfaces, and reports success or environment/IO failure;
+   Confirmed create only verifies the compiler receipt, transaction hash,
+   compiler identity, and unchanged repo preconditions; applies the sealed write
+   set under rollback guard; validates exact readback; and reports success or environment/IO failure;
    do not show proposal JSON as a second approval step and do not search
    Odylith source, `.odylith`, bundle files, or local examples for schema.
    Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown unless they explicitly request a review artifact.

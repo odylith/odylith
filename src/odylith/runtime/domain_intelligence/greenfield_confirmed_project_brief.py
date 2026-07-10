@@ -6,7 +6,6 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import actor_display_label
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
@@ -20,8 +19,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_s
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_object_descriptor
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
@@ -31,6 +28,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import is_supporting_setup_step
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_outcome_text
+from odylith.runtime.domain_intelligence.greenfield_project_brief_fields import actor_boundary_text as _actor_boundary_text
+from odylith.runtime.domain_intelligence.greenfield_project_brief_fields import brief_option as _brief_option
+from odylith.runtime.domain_intelligence.greenfield_project_brief_fields import checkpoint as _checkpoint
+from odylith.runtime.domain_intelligence.greenfield_project_brief_fields import state_reference_text as _state_reference_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
@@ -303,35 +304,6 @@ def _sentence_text(value: str) -> str:
     if text.endswith(('."', '!"', '?"')):
         return text
     return f"{text}."
-
-
-def _actor_boundary_text(items: list[str] | None, *, project_focus: str = "", limit: int = 4) -> str:
-    values = [_actor_boundary_item(item, project_focus=project_focus) for item in (items or []) if str(item or "").strip()]
-    values = [value for value in values if value]
-    return join_confirmed_items(values[:limit])
-
-
-def _actor_boundary_item(value: str, *, project_focus: str = "") -> str:
-    text = compact_text(value).strip(" .")
-    if not text:
-        return ""
-    label, sep, body = _split_actor_boundary_item(text)
-    if sep and label:
-        label = actor_display_label(text, project_focus=project_focus) or label
-        if is_deferred_actor(text):
-            return f"{label} deferred from the first path"
-        return label
-    return actor_display_label(text, project_focus=project_focus) or boundary_clause_text([text])
-
-
-def _split_actor_boundary_item(value: str) -> tuple[str, str, str]:
-    for separator in (":", " — ", " – ", " - "):
-        head, sep, body = value.partition(separator)
-        label = compact_text(head).strip(" .:-")
-        detail = compact_text(body).strip(" .")
-        if sep and label and _word_count(label) <= 10:
-            return label, sep, detail
-    return "", "", ""
 
 
 def _command_prompt(*, label: str, first: str, fallback: str) -> str:
@@ -822,52 +794,6 @@ def _join_component_display_labels(items: list[str] | None, *, limit: int) -> st
         if label and label not in values:
             values.append(label)
     return ", ".join(values[:limit])
-
-
-def _brief_option(identifier: str, decision: str, recommended: str, impact: str) -> dict[str, Any]:
-    return {
-        "id": identifier,
-        "decision": decision,
-        "recommended": recommended,
-        "choices": ["accept default", "revise before apply", "defer from first release"],
-        "impact": impact,
-    }
-
-
-def _state_reference_text(state_object: str, *, state_label: str) -> str:
-    text = compact_text(state_object)
-    if text and ":" not in text:
-        sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
-        if len(sentences) <= 1:
-            detail = state_detail_summary(text, state_label=state_label, limit=220)
-            if (
-                detail
-                and not detail.casefold().endswith((" and", " for", " of", " through", " with"))
-                and not state_detail_restates_label_with_finite_action(detail, state_label=state_label)
-            ):
-                return sentence_label(detail)
-    return sentence_label(state_label)
-
-
-def _checkpoint(name: str, question: str) -> dict[str, str]:
-    done_when_by_name = {
-        "product story accepted": "Done when the accepted brief names the user, problem, first path, and deferred scope in one readable story.",
-        "state ownership accepted": (
-            "Done when one named component is accountable for accepted state, version history, "
-            "and review responsibility clearly enough to plan implementation."
-        ),
-        "evidence path accepted": "Done when reviewers can tell which evidence proves the result without relying on implementation prose.",
-        "release proof accepted": "Done when release gates block promotion unless the promised result, replay evidence, and review evidence are present.",
-    }
-    done_when = done_when_by_name.get(
-        name.casefold(),
-        "Done when the accepted proposal gives this checkpoint a named owner, decision, and verification target.",
-    )
-    return {
-        "checkpoint": name,
-        "operator_question": question,
-        "done_when": done_when,
-    }
 
 
 __all__ = ["confirmed_project_brief"]

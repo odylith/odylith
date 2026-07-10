@@ -3,13 +3,12 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
-from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import proposal_memory
 from tests.unit.runtime.test_greenfield_create_transaction import _transaction
 
@@ -18,91 +17,24 @@ def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = _transaction()
-    calls: set[str] = set()
-    memory_kwargs: dict[str, Any] = {}
-    refresh_kwargs: dict[str, Any] = {}
+    transaction = _transaction(repo_root=tmp_path)
+    staged_root = tmp_path / "staged"
+    staged_index = staged_root / "odylith/index.html"
+    staged_index.parent.mkdir(parents=True, exist_ok=True)
+    staged_index.write_text("sealed project surface\n", encoding="utf-8")
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=tmp_path,
+        staged_root=staged_root,
+    )
+    transaction = replace(
+        transaction,
+        prewrite_package=replace(transaction.prewrite_package, repository_write_set=write_set),
+    )
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+    def forbidden(*_args: object, **_kwargs: object) -> None:
         raise AssertionError("compiled transaction commits must not route through the legacy proposal writer")
 
-    def fake_write_backlog_files(*_args: Any, **_kwargs: Any) -> None:
-        calls.add("backlog")
-
-    def fake_release_target(**_kwargs: Any) -> dict[str, Any]:
-        calls.add("release_target")
-        return {"created": False, "release": {"release_id": "release-0-0-1"}}
-
-    def fake_program(**_kwargs: Any) -> dict[str, Any]:
-        calls.add("program")
-        return {"created": True, "umbrella_id": "B-001", "program_count": 1, "waves": []}
-
-    def fake_release_assignment(**_kwargs: Any) -> dict[str, Any]:
-        calls.add("release_assignment")
-        return {"selector": "0.0.1", "release_id": "release-0-0-1", "events": []}
-
-    def fake_diagrams(**_kwargs: Any) -> Any:
-        calls.add("diagrams")
-        return greenfield_apply_diagrams.GreenfieldDiagramWriteResult(diagram_ids=(), scaffold_logs=())
-
-    def fake_memory(**_kwargs: Any) -> dict[str, Any]:
-        calls.add("memory")
-        memory_kwargs.update(_kwargs)
-        return {"recorded": True, "event": {"ts_iso": "2026-07-07T00:00:00Z"}}
-
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "_remove_precompiled_stale_workstreams", lambda **_kwargs: None)
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_backlog_commit,
-        "write_backlog_files",
-        fake_write_backlog_files,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_release_commit,
-        "materialize_compiled_release_target",
-        fake_release_target,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_programs,
-        "materialize_compiled_greenfield_program",
-        fake_program,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_release_commit,
-        "materialize_compiled_release_assignment",
-        fake_release_assignment,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_apply_diagrams,
-        "materialize_apply_diagrams",
-        fake_diagrams,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_compiled_readback,
-        "raise_for_compiled_backlog_and_atlas_readback",
-        lambda **_kwargs: None,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_component_commit,
-        "raise_for_compiled_component_registry_readback",
-        lambda **_kwargs: None,
-    )
-    monkeypatch.setattr(greenfield_compiled_write, "record_compiled_greenfield_acceptance", fake_memory)
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_compiled_memory_readback,
-        "raise_for_compiled_memory_readback",
-        lambda **_kwargs: None,
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write,
-        "_refresh_compiled_greenfield_dashboard",
-        lambda **_kwargs: refresh_kwargs.update(_kwargs) or {"status": "passed", "surfaces": []},
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "passed"},
-    )
 
     result = greenfield_compiled_write.write_compiled_greenfield_package(
         root=tmp_path,
@@ -111,43 +43,27 @@ def test_write_compiled_greenfield_package_bypasses_legacy_proposal_writer(
     )
 
     assert result["mode"] == "applied"
-    assert calls == {"backlog", "release_target", "program", "release_assignment", "diagrams", "memory"}
+    assert (tmp_path / "odylith/index.html").read_text(encoding="utf-8") == "sealed project surface\n"
+    assert result["repository_write_set"]["write_set_hash"] == write_set["write_set_hash"]
     assert result["completion_priority_quality_debt"] == []
-    assert memory_kwargs["accepted_project_preview"] == transaction.prewrite_package.accepted_project_preview
-    assert memory_kwargs["project_brief_record_text"] == transaction.prewrite_package.project_brief_record_text
-    assert memory_kwargs["compass_memory_preview"] == transaction.prewrite_package.compass_memory_preview
-    assert refresh_kwargs["surface_refresh_preview"] == transaction.prewrite_package.surface_refresh_preview
 
 
-def test_write_compiled_greenfield_package_rejects_missing_surface_proof_before_writes(
+def test_write_compiled_greenfield_package_rejects_missing_write_set_before_writes(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = _transaction()
+    transaction = _transaction(repo_root=tmp_path)
     bad_transaction = replace(
         transaction,
-        prewrite_package=replace(transaction.prewrite_package, surface_refresh_preview=None),
-    )
-    calls: list[str] = []
-
-    monkeypatch.setattr(
-        greenfield_compiled_write,
-        "_remove_precompiled_stale_workstreams",
-        lambda **_kwargs: calls.append("stale_cleanup"),
-    )
-    monkeypatch.setattr(
-        greenfield_compiled_write.greenfield_backlog_commit,
-        "write_backlog_files",
-        lambda *_args, **_kwargs: calls.append("backlog"),
+        prewrite_package=replace(transaction.prewrite_package, repository_write_set=None),
     )
 
-    with pytest.raises(ValueError, match="missing compiled pre-confirm surface refresh proof"):
+    with pytest.raises(ValueError, match="missing a compiled repository write set"):
         greenfield_compiled_write.write_compiled_greenfield_package(
             root=tmp_path,
             transaction=bad_transaction,
         )
 
-    assert calls == []
+    assert not (tmp_path / "odylith/index.html").exists()
 
 
 def test_record_compiled_greenfield_acceptance_does_not_reuse_timestamp_drift(tmp_path: Path) -> None:

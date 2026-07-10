@@ -7,6 +7,8 @@ from collections.abc import Mapping
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
@@ -41,6 +43,18 @@ def require_complete_compiled_greenfield_package(
             prewrite_package.surface_refresh_preview,
         )
     )
+    try:
+        greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
+            prewrite_package.repository_write_set,
+        )
+    except ValueError as exc:
+        issues.append(str(exc))
+    try:
+        greenfield_prewrite_commit_result.require_greenfield_commit_result_preview(
+            prewrite_package.commit_result_preview,
+        )
+    except ValueError as exc:
+        issues.append(str(exc))
 
     component_rows = [row for row in first_release_component_rows(proposal) if isinstance(row, Mapping)]
     if component_rows:

@@ -7,11 +7,12 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 HARBOR_CONFIRMED_INTENT_TEXT = """# Harbor Incident Coordination
@@ -87,13 +88,14 @@ def test_first_path_action_grammar_keeps_close_as_action() -> None:
     )
 
 
-def test_harbor_prewrite_package_does_not_render_mixed_action_grammar(tmp_path) -> None:
+def test_harbor_prewrite_package_does_not_render_mixed_action_grammar(tmp_path, monkeypatch) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
     prompt = "build a harbor incident coordination product"
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(HARBOR_CONFIRMED_INTENT_TEXT, prompt=prompt),
+        confirmed_intent=confirmed_intent_with_authority(HARBOR_CONFIRMED_INTENT_TEXT, prompt=prompt),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(

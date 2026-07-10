@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -266,7 +267,7 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a science research paper peer review app.",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
         release_selector="0.0.1",
     )
 

@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import r
 
 @dataclass(frozen=True)
 class GreenfieldCompletionReport:
-    """Deterministic result for the in-memory post-confirm package."""
+    """Deterministic result for the staged pre-confirm package."""
 
     status: str
     version: str
@@ -62,6 +62,8 @@ class GreenfieldCompletionPackage:
     release_target_result: Mapping[str, Any] | None = None
     release_assignment_result: Mapping[str, Any] | None = None
     release_workstream_ids: tuple[str, ...] = ()
+    repository_write_set: Mapping[str, Any] | None = None
+    commit_result_preview: Mapping[str, Any] | None = None
 
 
 __all__ = ["GreenfieldCompletionPackage", "GreenfieldCompletionReport"]

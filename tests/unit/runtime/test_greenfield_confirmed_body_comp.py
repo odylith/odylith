@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
 SERVICE_READINESS_INTENT = """# Service Readiness Review App
@@ -212,7 +213,11 @@ def test_confirmed_service_readiness_intent_repairs_actor_and_system_labels() ->
 
 def test_confirmed_service_readiness_create_reaches_all_prewrite_gates(tmp_path) -> None:
     prompt = "Draft a product-first greenfield proposal for a service readiness review app."
-    intent = parse_confirmed_intent_text(SERVICE_READINESS_INTENT, prompt=prompt)
+    intent = confirmed_intent_with_authority(
+        SERVICE_READINESS_INTENT,
+        prompt=prompt,
+        repo_root=tmp_path,
+    )
 
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -253,7 +258,11 @@ def test_confirmed_service_readiness_create_reaches_all_prewrite_gates(tmp_path)
 
 def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_path) -> None:
     prompt = "Draft a product-first greenfield proposal for a peptide usage tracker."
-    intent = parse_confirmed_intent_text(PEPTIDE_TRACK_INTENT, prompt=prompt)
+    intent = confirmed_intent_with_authority(
+        PEPTIDE_TRACK_INTENT,
+        prompt=prompt,
+        repo_root=tmp_path,
+    )
 
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -304,7 +313,7 @@ def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_p
     assert "PeptideTrack Personal Peptide" not in encoded
     assert "Peptide Reference Catalog (descriptions" not in encoded
     assert "Individual User" in encoded
-    assert "the tracked metric trend view" in encoded
+    assert "review whether the tracked metrics changed with usage for that protocol" in encoded
     assert greenfield_quality_issues(proposal) == []
     assert component_spec_preflight_issues(proposal) == []
     rendered_specs = "\n".join(_rendered_component_specs(proposal))
@@ -326,7 +335,11 @@ def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_p
 
 def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_drift(tmp_path) -> None:
     prompt = "An app that optimizes the production and consumption of solar energy"
-    intent = parse_confirmed_intent_text(SUNLEDGER_INTENT, prompt=prompt)
+    intent = confirmed_intent_with_authority(
+        SUNLEDGER_INTENT,
+        prompt=prompt,
+        repo_root=tmp_path,
+    )
     intent_encoded = json.dumps(intent)
     assert "control actions to battery" not in intent_encoded
     assert "That single path" not in intent_encoded

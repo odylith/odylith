@@ -6,8 +6,8 @@ from pathlib import Path
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import has_progression_or_outcome
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import _looks_like_bare_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document import _looks_like_bare_title
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
@@ -24,6 +24,9 @@ CONFIRMED_ACTOR_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py"
 )
 CONFIRMED_SYSTEM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py"
+CONFIRMED_INTENT_DOCUMENT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_document.py"
+)
 CONFIRMED_SYSTEM_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py"
 )
@@ -48,10 +51,14 @@ def test_confirmed_intent_actor_completion_stays_in_dedicated_owner() -> None:
 def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
     parser_path = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
     parser_source = parser_path.read_text(encoding="utf-8")
+    document_source = CONFIRMED_INTENT_DOCUMENT_PATH.read_text(encoding="utf-8")
     system_source = CONFIRMED_SYSTEM_ROWS_PATH.read_text(encoding="utf-8")
     validation_source = CONFIRMED_INTENT_VALIDATION_PATH.read_text(encoding="utf-8")
 
     assert len(parser_source.splitlines()) < 800
+    assert len(document_source.splitlines()) < 800
+    assert "greenfield_confirmed_intent_document import" in parser_source
+    assert "def product_context_paragraphs" in document_source
     assert "def _role_or_system_rows" not in parser_source
     assert "def _system_sentence_row" not in parser_source
     assert "def _validate_confirmed_intent" not in parser_source

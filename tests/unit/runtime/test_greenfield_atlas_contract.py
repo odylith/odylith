@@ -386,7 +386,7 @@ def test_greenfield_apply_rejects_missing_host_authored_diagram_source(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0].pop("mermaid_source")
 
-    with pytest.raises(ValueError, match="missing proposal mermaid_source"):
+    with pytest.raises(ValueError, match="missing in-memory Mermaid source"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,

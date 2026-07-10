@@ -10,6 +10,7 @@ import pytest
 from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -22,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionPackage,
     build_greenfield_completion_report,
@@ -191,7 +195,7 @@ A data steward can reproduce the accepted or rejected correction from sensor ide
         repo_root=tmp_path,
         prompt="Productize this marine science calibration input.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
     specs = _rendered_specs(completed)
@@ -451,7 +455,10 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt=GENERIC_DECISION_REVIEW_INTENT,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(GENERIC_DECISION_REVIEW_INTENT),
+        confirmed_intent=confirmed_intent_with_authority(
+            GENERIC_DECISION_REVIEW_INTENT,
+            prompt=GENERIC_DECISION_REVIEW_INTENT,
+        ),
     )
 
 
@@ -460,7 +467,10 @@ def _service_goal_proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt=SERVICE_GOAL_PLANNING_INTENT,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(SERVICE_GOAL_PLANNING_INTENT),
+        confirmed_intent=confirmed_intent_with_authority(
+            SERVICE_GOAL_PLANNING_INTENT,
+            prompt=SERVICE_GOAL_PLANNING_INTENT,
+        ),
     )
 
 
@@ -469,7 +479,10 @@ def _trip_comparison_proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt=TRIP_COMPARISON_INTENT,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(TRIP_COMPARISON_INTENT),
+        confirmed_intent=confirmed_intent_with_authority(
+            TRIP_COMPARISON_INTENT,
+            prompt=TRIP_COMPARISON_INTENT,
+        ),
     )
 
 
@@ -478,7 +491,7 @@ def _pain_relief_tracking_proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt="Health Episode Journal (working title)",
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(
+        confirmed_intent=confirmed_intent_with_authority(
             PAIN_RELIEF_TRACKING_INTENT,
             prompt="Health Episode Journal (working title)",
         ),
@@ -490,7 +503,10 @@ def _protocol_effect_tracking_proposal(tmp_path: Path) -> dict[str, object]:
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a protocol effect tracker",
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(PROTOCOL_EFFECT_TRACKING_INTENT),
+        confirmed_intent=confirmed_intent_with_authority(
+            PROTOCOL_EFFECT_TRACKING_INTENT,
+            prompt="Draft a greenfield proposal for a protocol effect tracker",
+        ),
     )
 
 
@@ -1036,35 +1052,27 @@ def test_greenfield_post_confirm_completion_fails_without_first_path_and_release
     assert "missing `release_boundary` proof obligation" in joined
 
 
-def test_greenfield_completion_package_report_passes_with_prewrite_radar_and_release_bundle(tmp_path: Path) -> None:
+def test_greenfield_completion_package_report_passes_with_prewrite_radar_and_release_bundle(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
     proposal = _protocol_effect_tracking_proposal(tmp_path)
-    accepted_project_preview = {"schema_version": "odylith.accepted_project.v1", "origin": "greenfield", "proposal": {"semantic_model": proposal["semantic_model"]}, "validation_gate": {"status": "passed"}, "created": {"workstreams": _prewrite_backlog_result(proposal)["created"], "components": list(_prewrite_component_preview(proposal)), "diagrams": [f"D-{index:03d}" for index, _row in enumerate(proposal["diagrams"], start=1)], "release_selector": "0.0.1"}}
-    next_steps_preview = {"project_workstream_id": "B-001", "start_workstream_id": "B-001", "start_workstream_title": "Protocol Effect Tracking First Slice", "release_selector": "0.0.1", "implementation_prompt": "Start B-001 Protocol Effect Tracking First Slice from the accepted semantic model, create a protocol, log an active intervention, record baseline and follow-up measurements, and prove the timeline alignment, blocked-input handling, and replay evidence.", "operator_sequence": ["Review the project brief.", "Open the first workstream.", "Author the first technical plan."], "coding_readiness_gates": ["Semantic contract accepted.", "Release boundary accepted.", "Proof commands identified.", "Excluded scope preserved."], "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."]}
-    package = GreenfieldCompletionPackage(
+    tribunal = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
-        backlog_result=_prewrite_backlog_result(proposal),
-        rendered_atlas_sources=_prewrite_atlas_sources(proposal),
-        component_registry_preview=_prewrite_component_preview(proposal), project_brief_preview=proposal["project_brief"], tribunal_preview={"status": "passed", "version": "greenfield-validation-gate-v1", "summary": "Accepted product direction is coherent enough to create project records.", "dimensions": {"intent": "present", "first_path": "present", "topology": "present", "proof": "present"}, "issues": []},
-        accepted_project_preview=accepted_project_preview,
-        project_dashboard_preview=_accepted_project_dashboard_preview(
-            proposal,
-            tmp_path,
-            accepted_project_preview=accepted_project_preview,
-            source_launch_context=next_steps_preview,
-        ),
-        compass_memory_preview={"kind": "decision", "summary": "Accepted greenfield proposal", "evidence_tier": "user_intent", "work_category": "governance", "workstreams": ["B-001", "B-002", "B-003", "B-004"], "components": [row["component_id"] for row in _prewrite_component_preview(proposal)]}, next_steps_preview=next_steps_preview,
-        program_result={"created": True, "dry_run": True},
-        release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
-        release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
-        release_workstream_ids=("B-001",),
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
     )
 
-    report = build_greenfield_package_report(package)
+    report = build_greenfield_package_report(prewrite.package)
 
     assert report.passed, report.issues
     assert report.artifact_counts["rendered_workstream_files"] == len(proposal["backlog"])
-    assert report.artifact_counts["release_workstream_ids"] == 1
+    assert report.artifact_counts["release_workstream_ids"] == len(proposal["backlog"])
 
 
 def test_greenfield_completion_package_report_rejects_missing_project_dashboard_preview(tmp_path: Path) -> None:
@@ -1418,7 +1426,7 @@ def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sente
     assert "semantic repetition" in "\n".join(report.issues)
 
 
-def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting_malformed_copy(
+def test_greenfield_compile_rejects_malformed_renderer_copy_before_transaction_confirmation(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -1459,7 +1467,7 @@ def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting
         },
     )
 
-    with pytest.raises(ValueError, match="ProductCreateTransaction quality manifest is not approved"):
+    with pytest.raises(ValueError, match="could not prepare a creation-ready package"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,

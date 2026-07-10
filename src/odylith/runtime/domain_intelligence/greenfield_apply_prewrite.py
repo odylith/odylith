@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import datetime as dt
-import json
 from pathlib import Path
 from typing import Any
 
@@ -17,10 +16,22 @@ from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import ensure_greenfield_create_baseline
 from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import staged_greenfield_prewrite_root
-from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
+from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup import (
+    accepted_greenfield_workstream_ids,
+)
+from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup import (
+    mark_previous_greenfield_workstreams_stale,
+)
+from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup import (
+    remove_prewrite_stale_idea_files,
+)
+from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup import (
+    remove_stale_workstream_artifacts,
+)
+from odylith.runtime.domain_intelligence import greenfield_prewrite_transaction_seal
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_source_casing
-from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -55,6 +66,8 @@ def build_prewrite_completion_package(
 
     source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
     accepted_at = _compiled_acceptance_timestamp()
+    baseline_writes = greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root)
+    brand_asset_writes = brand_assets.precompiled_brand_asset_writes(repo_root=root)
     if source_text:
         restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
             proposal,
@@ -65,6 +78,10 @@ def build_prewrite_completion_package(
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     previous_greenfield_ids = accepted_greenfield_workstream_ids(root)
     with staged_greenfield_prewrite_root(root) as prewrite_root:
+        brand_assets.materialize_precompiled_brand_assets(
+            repo_root=prewrite_root,
+            brand_asset_writes=brand_asset_writes,
+        )
         staged_backlog_result = backlog_authoring.create_queued_backlog_items(
             repo_root=prewrite_root,
             backlog_index_path=prewrite_root / "odylith/radar/source/INDEX.md",
@@ -76,6 +93,7 @@ def build_prewrite_completion_package(
             staged_backlog_result,
             stale_ids=previous_greenfield_ids,
         )
+        remove_prewrite_stale_idea_files(root=prewrite_root, backlog_result=staged_backlog_result)
         remove_stale_workstream_artifacts(
             root=prewrite_root,
             stale_ids=staged_backlog_result.get("stale_idea_ids", ()),
@@ -121,7 +139,7 @@ def build_prewrite_completion_package(
             proposal=proposal,
             plan=traceability_plan,
         )
-        greenfield_programs.materialize_compiled_greenfield_program(
+        staged_program_result = greenfield_programs.materialize_compiled_greenfield_program(
             repo_root=prewrite_root,
             backlog_result=staged_backlog_result,
             program_result=preview_program_result,
@@ -135,13 +153,6 @@ def build_prewrite_completion_package(
         traceability_plan = greenfield_traceability_commit.rebase_compiled_traceability_plan(
             traceability_plan,
             backlog_result=backlog_result,
-        )
-        staged_atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
-            root=prewrite_root,
-            rows=diagram_rows,
-            diagram_ids=diagram_ids,
-            traceability_plan=staged_traceability_plan,
-            review_date=atlas_review_date,
         )
         atlas_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
             root=root,
@@ -157,6 +168,12 @@ def build_prewrite_completion_package(
         )
         preview_release_target = None
         preview_release_assignment = None
+        staged_release_bootstrap: Mapping[str, Any] = {"created": False, "release": {}}
+        staged_release_targeting: Mapping[str, Any] = {
+            "selector": release_selector,
+            "release_id": "none",
+            "events": [],
+        }
         if release_selector:
             preview_release_target = ensure_release_target(
                 repo_root=prewrite_root,
@@ -164,11 +181,10 @@ def build_prewrite_completion_package(
                 selector=release_selector,
                 dry_run=True,
             )
-            ensure_release_target(
+            staged_release_bootstrap = greenfield_release_commit.materialize_compiled_release_target(
                 repo_root=prewrite_root,
-                proposal=proposal,
-                selector=release_selector,
-                dry_run=False,
+                release_selector=release_selector,
+                release_target_result=preview_release_target,
             )
             preview_release_assignment = release_planning_authoring.add_workstreams_to_release(
                 repo_root=prewrite_root,
@@ -178,6 +194,10 @@ def build_prewrite_completion_package(
                 idea_specs=staged_backlog_result["_candidate_idea_specs"],
                 allow_existing=True,
                 dry_run=True,
+            )
+            staged_release_targeting = greenfield_release_commit.materialize_compiled_release_assignment(
+                repo_root=prewrite_root,
+                release_assignment_result=preview_release_assignment,
             )
         prewrite_safety_preview = prewrite_safety_evidence(
             validation_gate=validation_gate,
@@ -233,13 +253,15 @@ def build_prewrite_completion_package(
             release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
             accepted_at=accepted_at,
         )
-        try:
-            surface_refresh_preview = greenfield_prewrite_surface_stage.build_staged_surface_refresh_preview(
+        transaction_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
+            greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
                 prewrite_root=prewrite_root,
+                target_root=root,
                 proposal=package_proposal,
                 release_selector=release_selector,
                 validation_gate=validation_gate,
                 staged_backlog_result=staged_backlog_result,
+                target_backlog_result=backlog_result,
                 staged_component_registry_preview=staged_component_registry_preview,
                 rendered_component_specs=rendered_component_specs,
                 diagram_rows=diagram_rows,
@@ -247,15 +269,17 @@ def build_prewrite_completion_package(
                 staged_traceability_plan=staged_traceability_plan,
                 rendered_atlas_sources=rendered_atlas_sources,
                 atlas_review_date=atlas_review_date,
-                staged_atlas_catalog_rows=staged_atlas_catalog_rows,
+                compiled_atlas_catalog_rows=atlas_catalog_rows,
                 release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
-                source_launch_context=next_steps_preview,
                 accepted_at=accepted_at,
+                next_steps_preview=next_steps_preview,
+                staged_program_result=staged_program_result,
+                prewrite_safety_preview=prewrite_safety_preview,
+                staged_release_bootstrap=staged_release_bootstrap,
+                staged_release_targeting=staged_release_targeting,
+                brand_asset_count=len(brand_asset_writes),
             )
-        except (RuntimeError, ValueError) as exc:
-            surface_refresh_preview = greenfield_surface_refresh_proof.failed_prewrite_surface_refresh_preview(
-                reason=exc,
-            )
+        )
         package = GreenfieldCompletionPackage(
             proposal=package_proposal,
             release_selector=release_selector,
@@ -275,13 +299,15 @@ def build_prewrite_completion_package(
             backlog_result=backlog_result,
             program_result=preview_program_result,
             traceability_plan=traceability_plan,
-            baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
-            brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
+            baseline_writes=baseline_writes,
+            brand_asset_writes=brand_asset_writes,
             prewrite_safety_preview=prewrite_safety_preview,
-            surface_refresh_preview=surface_refresh_preview,
+            surface_refresh_preview=transaction_seal.surface_refresh_preview,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
             release_workstream_ids=tuple(first_release_workstreams),
+            repository_write_set=transaction_seal.repository_write_set,
+            commit_result_preview=transaction_seal.commit_result_preview,
         )
         package = greenfield_source_casing.package_with_source_casing(package)
         return GreenfieldPrewriteBuild(
@@ -388,107 +414,6 @@ def remap_prewrite_backlog_result(
         target_root=real_root,
     )
     return remapped
-
-
-def accepted_greenfield_workstream_ids(root: Path) -> tuple[str, ...]:
-    """Return workstream IDs from the currently accepted greenfield project, if any."""
-
-    path = Path(root).expanduser().resolve() / "odylith/runtime/source/accepted-project.v1.json"
-    if not path.is_file():
-        return ()
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return ()
-    if not isinstance(payload, Mapping):
-        return ()
-    if str(payload.get("schema_version", "")).strip() != "odylith.accepted_project.v1":
-        return ()
-    if str(payload.get("origin", "")).strip() != "greenfield":
-        return ()
-    created = payload.get("created") if isinstance(payload.get("created"), Mapping) else {}
-    rows = created.get("workstreams") if isinstance(created, Mapping) else ()
-    if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
-        return ()
-    ids: list[str] = []
-    for row in rows:
-        if not isinstance(row, Mapping):
-            continue
-        token = str(row.get("idea_id", "")).strip().upper()
-        if token and token not in ids:
-            ids.append(token)
-    return tuple(ids)
-
-
-def mark_previous_greenfield_workstreams_stale(
-    backlog_result: Mapping[str, Any],
-    *,
-    stale_ids: Sequence[str],
-) -> dict[str, Any]:
-    """Mark previously accepted greenfield workstreams stale when a rerun replaces them."""
-
-    result = dict(backlog_result)
-    previous = {str(value).strip().upper() for value in stale_ids if str(value).strip()}
-    if not previous:
-        return result
-    created_ids = {
-        str(row.get("idea_id", "")).strip().upper()
-        for row in mapping_rows(result.get("created"))
-        if str(row.get("idea_id", "")).strip()
-    }
-    stale = sorted(previous - created_ids)
-    if not stale:
-        return result
-
-    candidate_specs = dict(result.get("_candidate_idea_specs")) if isinstance(result.get("_candidate_idea_specs"), Mapping) else {}
-    stale_paths = [str(getattr(candidate_specs.get(token), "path", "")) for token in stale if getattr(candidate_specs.get(token), "path", None)]
-    for token in stale:
-        candidate_specs.pop(token, None)
-    result["_candidate_idea_specs"] = candidate_specs
-    result["stale_idea_ids"] = sorted({*stale, *[str(value).strip().upper() for value in result.get("stale_idea_ids", []) if str(value).strip()]})
-    result["stale_idea_files"] = sorted(
-        {str(value).strip() for value in [*result.get("stale_idea_files", []), *stale_paths] if str(value).strip()}
-    )
-    index_text = str(result.get("backlog_index_text", "") or "")
-    if index_text:
-        result["backlog_index_text"] = backlog_authoring.remove_workstreams_from_backlog_index_text(
-            index_text,
-            stale_ids=stale,
-            today=dt.datetime.now(tz=dt.UTC).date(),
-        )
-    return result
-
-
-def remove_stale_workstream_artifacts(*, root: Path, stale_ids: object) -> None:
-    tokens = {
-        str(value).strip().upper()
-        for value in (stale_ids if isinstance(stale_ids, Sequence) and not isinstance(stale_ids, str) else [])
-        if str(value).strip()
-    }
-    if not tokens:
-        return
-    target_root = Path(root).expanduser().resolve()
-    for token in tokens:
-        program_path = target_root / "odylith" / "radar" / "source" / "programs" / f"{token}.execution-waves.v1.json"
-        if program_path.is_file():
-            program_path.unlink()
-    release_events = target_root / "odylith" / "radar" / "source" / "releases" / "release-assignment-events.v1.jsonl"
-    if not release_events.is_file():
-        return
-    kept: list[str] = []
-    changed = False
-    for line in release_events.read_text(encoding="utf-8").splitlines():
-        try:
-            payload = json.loads(line)
-        except json.JSONDecodeError:
-            kept.append(line)
-            continue
-        if str(payload.get("workstream_id", "")).strip().upper() in tokens:
-            changed = True
-            continue
-        kept.append(line)
-    if changed:
-        release_events.write_text(("\n".join(kept).rstrip() + "\n") if kept else "", encoding="utf-8")
 
 
 def materialize_prewrite_backlog_result(backlog_result: Mapping[str, Any]) -> None:
@@ -782,6 +707,7 @@ __all__ = [
     "ensure_greenfield_create_baseline",
     "ensure_release_target",
     "mark_previous_greenfield_workstreams_stale",
+    "remove_prewrite_stale_idea_files",
     "remove_stale_workstream_artifacts",
     "preview_accepted_project_memory",
     "preview_compass_acceptance_event",

@@ -142,6 +142,7 @@ def build_product_intent_envelope(
     sections = confirmed_intent_sections(source_text) if source_text else {}
     spans, span_ids_by_field = _source_spans(sections)
     _add_source_title_span(facts, spans=spans, span_ids_by_field=span_ids_by_field, source_text=source_text)
+    _add_source_story_span(facts, spans=spans, span_ids_by_field=span_ids_by_field, source_text=source_text)
     ignored = [span for span in spans if span.get("classification") == "ignored_instruction"]
     supporting = [span for span in spans if span.get("classification") == "supporting_evidence"]
     source_sha256 = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest() if source_text else ""
@@ -380,6 +381,31 @@ def _add_source_title_span(
         }
     )
     span_ids_by_field["title"] = [span_id]
+
+
+def _add_source_story_span(
+    facts: Mapping[str, Any],
+    *,
+    spans: list[dict[str, Any]],
+    span_ids_by_field: dict[str, list[str]],
+    source_text: str,
+) -> None:
+    if span_ids_by_field.get("product_story"):
+        return
+    story = clean_markdown_text(facts.get("product_story"))
+    if not story or story.casefold() not in clean_markdown_text(source_text).casefold():
+        return
+    span_id = "product_story:source-preamble"
+    spans.append(
+        {
+            "span_id": span_id,
+            "section_key": "product_story",
+            "row_index": 0,
+            "classification": "product_claim",
+            "text": story,
+        }
+    )
+    span_ids_by_field["product_story"] = [span_id]
 
 
 def _span_classification(section_key: str) -> str:

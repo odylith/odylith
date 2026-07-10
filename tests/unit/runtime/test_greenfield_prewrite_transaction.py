@@ -33,6 +33,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_wit
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -263,7 +264,11 @@ Make it beautiful; this note is not product truth.
     assert "speaker notes" not in root_metrics.casefold()
 
 
-def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(tmp_path: Path) -> None:
+def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
     (tmp_path / "package.json").write_text('{"scripts":{"test":"vitest"}}\n', encoding="utf-8")
     proposal = _proposal(tmp_path)
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
@@ -616,7 +621,11 @@ def test_greenfield_package_report_rejects_missing_surface_refresh_proof(tmp_pat
     assert "missing compiled pre-confirm surface refresh proof" in report.issues
 
 
-def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_path: Path) -> None:
+def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
     prompt = "Draft a greenfield proposal for a calorie burn optimizer"
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -705,7 +714,11 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "Queue now, then bind a technical plan when the implementation wave starts" not in idea_text
 
 
-def test_greenfield_prewrite_package_passes_sun_burn_quality_regression(tmp_path: Path) -> None:
+def test_greenfield_prewrite_package_passes_sun_burn_quality_regression(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
     prompt = "Draft a greenfield proposal for a sunburn relief and skin-recovery coach"
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -1782,7 +1795,7 @@ def test_greenfield_apply_blocks_bad_rendered_specs_before_governed_writes(tmp_p
     proposal = _proposal(tmp_path)
     _force_bad_rendered_specs(monkeypatch)
 
-    with pytest.raises(ValueError, match="post-confirm completion"):
+    with pytest.raises(ValueError, match="could not prepare a creation-ready package"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
@@ -1868,75 +1881,83 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
     assert '["Optional"]' not in atlas_text
 
 
-def test_greenfield_apply_rolls_back_when_final_component_spec_drifts_after_prewrite(
+def test_greenfield_commit_does_not_rematerialize_component_specs_after_confirmation(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
-    original = greenfield_component_commit.materialize_compiled_component_from_preview
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+    )
+    materialize_calls = 0
 
-    def corrupt_final_spec(**kwargs):
-        created = original(**kwargs)
-        created_payload = created.as_dict()
-        spec_path = Path(str(created_payload["spec_path"]))
-        if not spec_path.is_absolute():
-            spec_path = kwargs["root"] / spec_path
-        spec_path.write_text(
-            f"{spec_path.read_text(encoding='utf-8')}\n\n{created_payload['label']} owns maintains state.\n",
-            encoding="utf-8",
-        )
-        return created
+    def fail_materialization(**_kwargs):
+        nonlocal materialize_calls
+        materialize_calls += 1
+        raise AssertionError("post-confirm commit must consume sealed component specs")
 
-    monkeypatch.setattr(greenfield_component_commit, "materialize_compiled_component_from_preview", corrupt_final_spec)
+    monkeypatch.setattr(
+        greenfield_component_commit,
+        "materialize_compiled_component_from_preview",
+        fail_materialization,
+    )
 
-    with pytest.raises(ValueError, match="compiled Registry readback"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+    )
 
-    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
-    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")) == []
-    assert list((tmp_path / "odylith/atlas/source").glob("*.mmd")) == []
+    specs = list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    assert result["post_confirm_quality_manifest"]["status"] == "passed"
+    assert materialize_calls == 0
+    assert specs
+    assert all("owns maintains state" not in path.read_text(encoding="utf-8") for path in specs)
 
 
-def test_greenfield_apply_final_gate_reads_persisted_project_brief_record(
+def test_greenfield_commit_does_not_regenerate_project_brief_after_confirmation(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+    )
+    writer_calls = 0
 
-    def write_bad_project_brief(**kwargs):
-        path = kwargs["repo_root"] / "odylith/runtime/source/project-brief.v1.md"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            "# Project Brief\n\n"
-            "- First path: Programmers can publish accessible screening readiness - "
-            "Why: A narrow first path keeps the first release testable and prevents broad platform drift.\n",
-            encoding="utf-8",
-        )
-        return path
+    def fail_project_brief_writer(**_kwargs):
+        nonlocal writer_calls
+        writer_calls += 1
+        raise AssertionError("post-confirm commit must consume the sealed project brief")
 
-    monkeypatch.setattr(proposal_memory, "_write_compiled_project_brief_source", write_bad_project_brief)
+    monkeypatch.setattr(
+        proposal_memory,
+        "_write_compiled_project_brief_source",
+        fail_project_brief_writer,
+    )
 
-    with pytest.raises(ValueError, match="compiled memory readback"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+    )
+
+    project_brief_path = tmp_path / "odylith/runtime/source/project-brief.v1.md"
+    assert writer_calls == 0
+    assert project_brief_path.read_text(encoding="utf-8") == transaction.prewrite_package.project_brief_record_text
 
 
-def test_greenfield_apply_prewrite_failure_does_not_bootstrap_target_repo(tmp_path: Path, monkeypatch) -> None:
+def test_greenfield_prewrite_failure_does_not_commit_governed_records(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
     _force_bad_rendered_specs(monkeypatch)
 
-    with pytest.raises(ValueError, match="post-confirm completion"):
+    with pytest.raises(ValueError, match="could not prepare a creation-ready package"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
@@ -1944,7 +1965,9 @@ def test_greenfield_apply_prewrite_failure_does_not_bootstrap_target_repo(tmp_pa
             release_selector="0.0.1",
         )
 
-    assert not (tmp_path / "odylith").exists()
+    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert not list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_writes(tmp_path: Path, monkeypatch) -> None:
@@ -1955,7 +1978,7 @@ def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_wr
         lambda **_kwargs: {"schema_version": "broken", "validation_gate": {"status": "failed"}},
     )
 
-    with pytest.raises(ValueError, match="post-confirm completion"):
+    with pytest.raises(ValueError, match="could not prepare a creation-ready package"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=proposal,
@@ -1963,29 +1986,43 @@ def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_wr
             release_selector="0.0.1",
         )
 
-    assert not (tmp_path / "odylith").exists()
+    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert not list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
-def test_greenfield_apply_uses_dry_run_release_target_preview_before_target_writes(tmp_path: Path, monkeypatch) -> None:
+def test_greenfield_commit_does_not_rebuild_release_target_after_confirmation(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
     original = greenfield_apply_prewrite.release_planning_authoring.ensure_release_selector
-    dry_run_calls: list[bool] = []
+    preconfirm_calls: list[bool] = []
 
     def capture_release_selector(**kwargs):
-        dry_run_calls.append(bool(kwargs.get("dry_run")))
+        preconfirm_calls.append(bool(kwargs.get("dry_run")))
         return original(**kwargs)
 
     monkeypatch.setattr(greenfield_apply_prewrite.release_planning_authoring, "ensure_release_selector", capture_release_selector)
-
-    commit_precompiled_greenfield_proposal(
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
         proposal=proposal,
-        confirm=True,
         release_selector="0.0.1",
     )
 
-    assert dry_run_calls[:2] == [True, False]
+    def fail_release_rebuild(**_kwargs):
+        raise AssertionError("post-confirm commit must consume the sealed release target")
+
+    monkeypatch.setattr(
+        greenfield_apply_prewrite.release_planning_authoring,
+        "ensure_release_selector",
+        fail_release_rebuild,
+    )
+    greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+    )
+
+    assert preconfirm_calls
 
 
 def test_greenfield_apply_bootstraps_target_repo_only_after_package_gate(tmp_path: Path, monkeypatch) -> None:

@@ -188,6 +188,14 @@ def action_chain_fragment(value: str) -> str:
     routing_action = _routing_action_clause(text, strip_subject=strip_action_subject)
     if routing_action:
         return _lower_initial_for_fragment(routing_action)
+    conditional_result = re.search(
+        r"\bshows?\s+whether\s+(?P<result>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if conditional_result:
+        result = clean_first_path_text(conditional_result.group("result"))
+        return f"review whether {lowercase_leading_article(result)}".strip(" .")
     outcome = "" if (re.search(r"\b(?:route|routes|send|sends|submit|submits)\b", text, flags=re.IGNORECASE) and re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", text, flags=re.IGNORECASE)) else visible_result_object(text)
     if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
         stripped = strip_action_subject(text)

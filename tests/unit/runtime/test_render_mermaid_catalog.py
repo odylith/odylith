@@ -1059,6 +1059,64 @@ def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() 
     assert "owns presents" not in rendered
 
 
+def test_atlas_box_explanations_keep_plural_action_components_grammatical() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        '\n'.join(
+            [
+                'flowchart LR',
+                '  adapters["Managed SDK adapters"] --> hooks["Host hooks"]',
+            ]
+        ),
+        component_rows=[
+            {
+                "name": "Managed SDK adapters",
+                "description": "Expose the same governed harness contract through host-neutral adapters.",
+            }
+        ],
+    )
+    by_label = {box.label: box.description for box in boxes}
+
+    assert by_label["Managed SDK adapters"].startswith("Managed SDK adapters expose")
+    assert "owns expose" not in by_label["Managed SDK adapters"]
+
+
+def test_atlas_box_explanations_use_plain_generic_container_copy() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        '\n'.join(
+            [
+                'flowchart LR',
+                '  subgraph wave["Execution waves"]',
+                '    first["First wave"]',
+                '  end',
+            ]
+        )
+    )
+    by_label = {box.label: box.description for box in boxes}
+
+    assert by_label["Execution waves"].startswith("Execution waves is a product boundary.")
+    assert "for the product" not in by_label["Execution waves"]
+
+
+def test_atlas_graph_descriptions_nominalize_action_labeled_conditions() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        '\n'.join(
+            [
+                'flowchart LR',
+                '  w1["B-119 W1"] -->|proves| w2["B-120 W2"]',
+                '  w1 --> runner["Benchmark runner"]',
+                '  w2 -->|closes| w3["B-121 W3"]',
+            ]
+        )
+    )
+    by_label = {box.label: box.description for box in boxes}
+    rendered = "\n".join(by_label.values())
+
+    assert "based on the proof result" in by_label["B-119 W1"]
+    assert "advances when the close condition is satisfied" in by_label["B-120 W2"]
+    assert "using proves" not in rendered
+    assert "when closes is true" not in rendered
+
+
 def test_atlas_box_explanations_strip_deferred_predicates_before_sentence_templates() -> None:
     boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
         "\n".join(
@@ -1084,8 +1142,11 @@ def test_atlas_box_explanations_strip_deferred_predicates_before_sentence_templa
 
     assert "Weather alert feeds" in by_label
     assert "Emergency dispatch systems" in by_label
-    assert "Weather alert feeds are" not in rendered
-    assert "Emergency dispatch systems are" not in rendered
+    assert "Weather alert feeds are deferred" not in rendered
+    assert "Emergency dispatch systems are deferred" not in rendered
+    assert by_label["Weather alert feeds"].startswith("Weather alert feeds are ")
+    assert by_label["Emergency dispatch systems"].startswith("Emergency dispatch systems are ")
+    assert "They should name the domain object they own" in by_label["Emergency dispatch systems"]
     assert "are is" not in rendered
     assert "are and Emergency dispatch systems are" not in rendered
     assert "owns presents" not in rendered
@@ -1150,7 +1211,7 @@ def test_atlas_box_explanations_do_not_classify_product_or_action_labels_as_peop
     by_label = {box.label: box.description for box in boxes}
     rendered = "\n".join(by_label.values())
 
-    assert "Support Leads is a person" in by_label["Support Leads"]
+    assert "Support Leads are people" in by_label["Support Leads"]
     assert "Customer Recovery Desk is a person" not in rendered
     assert "Repair customer trust is a person" not in rendered
     assert "coordinates recovery work" in by_label["Customer Recovery Desk"]
@@ -1466,7 +1527,7 @@ def test_atlas_box_explanations_infer_common_governance_surface_actions() -> Non
     assert "hands off" not in by_label["Odylith product"]
     assert "tracks the work choices" in by_label["Radar"]
     assert "hands off" not in by_label["Radar"]
-    assert "turns selected work into an implementation path" in by_label["Technical Plans"]
+    assert "turn selected work into an implementation path" in by_label["Technical Plans"]
     assert "hands off" not in by_label["Technical Plans"]
     assert "shows the system shape" in by_label["Atlas topology map"]
     assert "hands off" not in by_label["Atlas topology map"]

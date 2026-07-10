@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
-from odylith.runtime.surfaces import display_text
+from odylith.runtime.surfaces import atlas_graph_node_copy, display_text
 
 
 _NODE_SHAPE_RE = re.compile(
@@ -64,10 +64,6 @@ _FAILURE_RE = re.compile(
 )
 _SUCCESS_RE = re.compile(
     r"\b(stable|done|complete|completed|approved|valid|validated|verified|ready|released|success|safe|accepted)\b",
-    re.IGNORECASE,
-)
-_ACTION_RE = re.compile(
-    r"\b(action|execute|execution|run|runner|write|create|generate|apply|approve|review|coordinate|release)\b",
     re.IGNORECASE,
 )
 _MECHANICAL_COPY_RE = re.compile(
@@ -339,7 +335,18 @@ def node_role_from_graph(*, label: str, source_text: str) -> str:
 def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     """Return an action-oriented description of one node in its diagram context."""
 
+    return atlas_graph_node_copy.describe_node(_graph_node_copy_context(graph=graph, node_id=node_id))
+
+
+def describe_graph_node_role(*, graph: MermaidGraph, node_id: str) -> str:
+    """Return a compact role badge for one graph node."""
+
+    return atlas_graph_node_copy.describe_node_role(_graph_node_copy_context(graph=graph, node_id=node_id))
+
+
+def _graph_node_copy_context(*, graph: MermaidGraph, node_id: str) -> atlas_graph_node_copy.GraphNodeCopyContext:
     label = graph.label(node_id)
+    primary_label = _primary_label(label)
     incoming = graph.incoming(node_id)
     visible_incoming = tuple(edge for edge in incoming if edge.source_id != "[*]")
     outgoing = graph.outgoing(node_id)
@@ -347,77 +354,23 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     outgoing_targets = _node_label_list([graph.label(edge.target_id) for edge in outgoing if edge.target_id != "[*]"], limit=3)
     incoming_conditions = _label_list([edge.label for edge in incoming if edge.label], limit=3)
     outgoing_conditions = _label_list([edge.label for edge in outgoing if edge.label], limit=3)
-    subject = _sentence_subject(_primary_label(label))
-
-    if _looks_like_actor_node(node_id=node_id, label=label):
-        if outgoing_targets:
-            return f"{subject} starts this path and supplies the action, decision, or review needed by {outgoing_targets}."
-        return f"{subject} is a participant in this path and should have a clear responsibility, input, or result."
-    if _is_exception_label(_primary_label(label)):
-        route = incoming_conditions or incoming_sources
-        if route:
-            return f"{subject} stops normal progress when {route} makes the next step unsafe or incomplete."
-        return f"{subject} is the recovery state; work should stay here until the missing proof, owner action, or fault is cleared."
-    if _is_success_label(_primary_label(label)) and incoming:
-        proof = incoming_conditions or incoming_sources
-        if proof:
-            return f"{subject} is the trusted outcome reached after {proof}; it should mean the diagram's success condition is satisfied."
-        return f"{subject} is the trusted outcome state for this path."
-    if not visible_incoming and outgoing:
-        if outgoing_conditions:
-            return f"{subject} is the entry responsibility. It produces the next trusted state when {outgoing_conditions} is true."
-        if outgoing_targets:
-            return f"{subject} is the entry responsibility that creates the input needed by {outgoing_targets}."
-        return f"{subject} is the entry responsibility for this diagram."
-    if len(outgoing) > 1:
-        branches = outgoing_conditions or "the labeled or visual branches"
-        return f"{subject} decides between {outgoing_targets or 'different outcomes'} using {branches or 'the labeled conditions'}."
-    if _looks_like_action_label(label) and outgoing:
-        trigger = incoming_conditions or incoming_sources
-        if trigger:
-            return f"{subject} performs the bounded action after {trigger} and produces evidence for {outgoing_targets or 'verification'}."
-        return f"{subject} performs the bounded action and produces evidence for {outgoing_targets or 'verification'}."
-    if len(incoming) > 1 and outgoing:
-        trigger = incoming_conditions or incoming_sources
-        return f"{subject} joins inputs from {incoming_sources or 'earlier steps'} and advances when {trigger or outgoing_conditions or 'the next condition'} is satisfied."
-    if incoming and outgoing:
-        trigger = incoming_conditions or incoming_sources
-        if outgoing_conditions:
-            return f"{subject} carries the state forward after {trigger or 'the prerequisite'} and moves next when {outgoing_conditions} is true."
-        return f"{subject} carries the state forward after {trigger or 'the prerequisite'} and produces the input for {outgoing_targets or 'the next step'}."
-    if incoming:
-        trigger = incoming_conditions or incoming_sources
-        return f"{subject} is reached after {trigger or 'the incoming condition'} and closes this path unless another recovery edge is added."
-    return f"{subject} is a named state or responsibility in this diagram."
-
-
-def describe_graph_node_role(*, graph: MermaidGraph, node_id: str) -> str:
-    """Return a compact role badge for one graph node."""
-
-    label = graph.label(node_id)
-    incoming = graph.incoming(node_id)
-    visible_incoming = tuple(edge for edge in incoming if edge.source_id != "[*]")
-    outgoing = graph.outgoing(node_id)
-    lowered = _primary_label(label).casefold()
-    if _looks_like_actor_node(node_id=node_id, label=label):
-        return "Actor"
-    if _is_exception_label(_primary_label(label)):
-        return "Safety stop"
-    if _is_success_label(_primary_label(label)) and incoming:
-        return "Outcome"
-    if not visible_incoming and outgoing:
-        return "Start"
-    if _looks_like_action_label(lowered):
-        return "Action"
-    if len(outgoing) > 1:
-        return "Decision"
-    if re.search(r"\b(log|record|ledger|evidence|audit|receipt|proof|history)\b", lowered):
-        return "Evidence"
-    if re.search(r"\b(sensor|signal|classifier|resolver|registry|source|manifest|schema|input)\b", lowered):
-        return "Input"
-    if incoming and not outgoing:
-        return "End"
-    return "Step"
+    lowered = primary_label.casefold()
+    return atlas_graph_node_copy.GraphNodeCopyContext(
+        subject=_sentence_subject(primary_label),
+        incoming_sources=incoming_sources,
+        outgoing_targets=outgoing_targets,
+        incoming_conditions=incoming_conditions,
+        outgoing_conditions=outgoing_conditions,
+        incoming_count=len(incoming),
+        visible_incoming_count=len(visible_incoming),
+        outgoing_count=len(outgoing),
+        is_actor=atlas_graph_node_copy.looks_like_actor_node(node_id=node_id, primary_label=primary_label),
+        is_exception=_is_exception_label(primary_label),
+        is_success=_is_success_label(primary_label),
+        is_action=atlas_graph_node_copy.looks_like_action_label(primary_label),
+        is_evidence=bool(re.search(r"\b(log|record|ledger|evidence|audit|receipt|proof|history)\b", lowered)),
+        is_input=bool(re.search(r"\b(sensor|signal|classifier|resolver|registry|source|manifest|schema|input)\b", lowered)),
+    )
 
 
 def _authored_copy_is_useful(value: str, *, graph: MermaidGraph, min_words: int) -> bool:
@@ -736,87 +689,11 @@ def _exception_nodes(graph: MermaidGraph) -> tuple[str, ...]:
 
 
 def _action_nodes(graph: MermaidGraph) -> tuple[str, ...]:
-    return tuple(node_id for node_id in graph.node_ids() if _looks_like_action_label(_primary_label(graph.label(node_id))))
-
-
-def _looks_like_action_label(value: str) -> bool:
-    text = _primary_label(value).casefold()
-    return bool(_ACTION_RE.search(text) or re.search(r"\b[a-z][a-z0-9-]{2,}ing\b", text))
-
-
-def _looks_like_actor_node(*, node_id: str, label: str) -> bool:
-    key = str(node_id or "").casefold()
-    if key == "actor" or re.fullmatch(r"actor\d*", key):
-        return True
-    lowered = _primary_label(label).casefold()
-    tokens = re.findall(r"[a-z][a-z0-9'-]*", lowered)
-    if not tokens or len(tokens) > 7:
-        return False
-    system_tokens = {
-        "adapter",
-        "app",
-        "application",
-        "command",
-        "console",
-        "dashboard",
-        "desk",
-        "engine",
-        "form",
-        "interface",
-        "intake",
-        "ledger",
-        "model",
-        "platform",
-        "portal",
-        "product",
-        "queue",
-        "register",
-        "registry",
-        "service",
-        "store",
-        "surface",
-        "system",
-        "tool",
-        "tracker",
-        "view",
-        "workspace",
-    }
-    if any(token in system_tokens for token in tokens):
-        return False
-    if re.match(
-        r"^(?:assign|check|choose|collect|compare|create|display|download|enter|export|fix|generate|import|inspect|log|open|prove|record|repair|review|route|save|select|send|show|submit|triage|update|upload|validate|view)\b",
-        lowered,
-    ):
-        return False
-    person_tokens = {
-        "actor",
-        "actors",
-        "applicant",
-        "applicants",
-        "beneficiary",
-        "beneficiaries",
-        "client",
-        "clients",
-        "customer",
-        "customers",
-        "lead",
-        "leads",
-        "operator",
-        "operators",
-        "participant",
-        "participants",
-        "performer",
-        "performers",
-        "requester",
-        "requesters",
-        "reviewer",
-        "reviewers",
-        "stakeholder",
-        "stakeholders",
-        "user",
-        "users",
-    }
-    return any(token in person_tokens for token in tokens)
+    return tuple(
+        node_id
+        for node_id in graph.node_ids()
+        if atlas_graph_node_copy.looks_like_action_label(_primary_label(graph.label(node_id)))
+    )
 
 
 def _state_through_nodes(graph: MermaidGraph) -> tuple[str, ...]:

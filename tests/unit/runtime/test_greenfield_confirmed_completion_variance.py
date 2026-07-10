@@ -5,13 +5,13 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
 def test_prd_style_proof_language_repairs_generated_modal_drift(tmp_path: Path) -> None:
-    confirmed_intent = parse_confirmed_intent_text(
+    confirmed_intent = confirmed_intent_with_authority(
         """Product Requirements Draft: PDE Solver Evaluation Lab
 
 1. Background
@@ -37,7 +37,12 @@ Out of scope: Do not add general symbolic algebra or arbitrary solver synthesis.
 Proof: A reviewer can reproduce the same accepted or blocked decision from the stored benchmark data, baseline run, tolerance, and model configuration.
 """,
         prompt="Productize PDE Solver Evaluation Lab from a PRD intent document.",
+        repo_root=tmp_path,
+        source_format="in_memory_confirmed_intent",
     )
+    assert str(confirmed_intent["first_path"]).startswith("An evaluation researcher registers")
+    assert str(confirmed_intent["state_object"]).startswith("A solver evaluation case tracks")
+    assert str(confirmed_intent["proof_boundary"]).startswith("A reviewer can reproduce")
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="Productize PDE Solver Evaluation Lab from a PRD intent document.",

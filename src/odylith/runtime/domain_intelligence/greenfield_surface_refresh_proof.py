@@ -96,7 +96,11 @@ def surface_refresh_preview_issues(value: Mapping[str, Any] | None) -> list[str]
     if str(value.get("version", "")).strip() != GREENFIELD_SURFACE_REFRESH_PROOF_VERSION:
         issues.append("compiled surface refresh proof has an unsupported version")
     if str(value.get("status", "")).strip() != "passed":
-        issues.append("compiled surface refresh proof did not pass")
+        reason = str(value.get("reason", "")).strip()
+        issues.append(
+            "compiled surface refresh proof did not pass"
+            + (f": {reason}" if reason else "")
+        )
     if str(value.get("phase", "")).strip() != GREENFIELD_SURFACE_REFRESH_PROOF_PHASE:
         issues.append("compiled surface refresh proof is not from pre-confirm compile")
     if str(value.get("proof", "")).strip() != GREENFIELD_SURFACE_REFRESH_PROOF_KIND:

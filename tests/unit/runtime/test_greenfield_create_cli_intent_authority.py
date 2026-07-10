@@ -10,7 +10,6 @@ from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
@@ -81,11 +80,7 @@ def test_greenfield_create_cli_uses_transaction_authority_not_mutable_intent_fil
 ) -> None:
     transaction = _compiled_transaction(tmp_path)
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    transaction_path.parent.mkdir(parents=True, exist_ok=True)
-    transaction_path.write_text(
-        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
     markdown_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     sidecar_path = markdown_path.with_suffix(".json")
     if damage == "missing_sidecar":

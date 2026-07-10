@@ -5,8 +5,8 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
 def test_greenfield_checklist_ledger_and_risk_review_workspace_stay_distinct(tmp_path: Path) -> None:
@@ -56,7 +56,11 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
         repo_root=tmp_path,
         prompt="Create vendor onboarding",
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(text),
+        confirmed_intent=confirmed_intent_with_authority(
+            text,
+            prompt="Create vendor onboarding",
+            repo_root=tmp_path,
+        ),
     )
     decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
 
@@ -97,4 +101,7 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
     assert "Suggested fixture:" not in checklist_spec
     assert "compliance" in checklist_spec.casefold()
     assert "stops before a trusted result" in checklist_spec
-    assert "A replay of Compliance Checklist Ledger still connects" in checklist_spec
+    assert (
+        "Replay evidence for Compliance Checklist Ledger: actor, input facts, status, explanation, and proof trail."
+        in checklist_spec
+    )

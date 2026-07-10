@@ -66,6 +66,13 @@ def _expanded_confirmed_intent_rows(line: str) -> list[str]:
     if "|" in text and text.strip().startswith("|"):
         return [text]
     replacements = (
+        (r"^\s*primary\s+users?\s*:", "Human actors:"),
+        (r"^\s*the\s+job\s+is\s+to\s+complete\s+(?:this\s+)?release\s+path\s*:", "First complete path:"),
+        (r"^\s*the\s+durable\s+state\s+is\s*:", "State object:"),
+        (r"^\s*external\s+integrations?\s*:", "External systems:"),
+        (r"^\s*internal\s+services?\s*:", "Internal product systems:"),
+        (r"^\s*out\s+of\s+scope\s*:", "Non-goal:"),
+        (r"^\s*proof\s*:", "Proof boundary:"),
         (r"\s+(?:the\s+)?durable\s+state\s+object\s+is\s+(?:this\s*)?:", "\nState object:"),
         (r"\s+(?:the\s+)?state\s+object\s+is\s+(?:this\s*)?:", "\nState object:"),
         (r"\s+(?:the\s+)?first\s+complete\s+path\s+is\s*:", "\nFirst complete path:"),
@@ -124,7 +131,24 @@ def _confirmed_intent_answer_row(question: str, line: str) -> str:
 def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[str, list[str]]) -> str:
     if _looks_like_operator_instruction_body(line):
         return current
+    prd_heading = _prd_section_heading_key(line)
+    if prd_heading:
+        sections.setdefault(prd_heading, [])
+        return prd_heading
+    if line.strip() == "-":
+        return current
     if is_confirmed_intent_ignored_section(current) or is_confirmed_intent_supporting_section(current):
+        if _is_product_requirements_draft_root(current):
+            inline_heading = confirmed_intent_inline_heading_value(line)
+            if inline_heading:
+                heading, value = inline_heading
+                sections.setdefault(heading, [])
+                if value:
+                    sections[heading].append(value)
+                return heading
+            if line.strip():
+                sections.setdefault("product_story", []).append(line)
+            return current
         explicit_heading = _explicit_markdown_heading_key(line)
         heading = explicit_heading or confirmed_intent_heading_key(line)
         if (
@@ -190,6 +214,29 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
         return current
     sections.setdefault(current, []).append(line)
     return current
+
+
+def _is_product_requirements_draft_root(current: str) -> bool:
+    return current.startswith("__supporting__:product_requirements_draft")
+
+
+def _prd_section_heading_key(line: str) -> str:
+    normalized = normalize_confirmed_intent_heading(line)
+    match = re.match(r"^[1-9][0-9]*\s+(?P<label>.+)$", normalized)
+    if not match:
+        return ""
+    label = match.group("label")
+    if label == "background":
+        return "product_story"
+    if label == "primary user and job":
+        return "human_actors"
+    if label == "data model notes":
+        return "state_object"
+    if re.fullmatch(r"release [0-9.]+ rules", label):
+        return "assumptions"
+    if label == "risks and exclusions":
+        return "non_goals"
+    return ""
 
 
 def _supporting_heading_can_reenter_product_truth(line: str, heading: str, *, current: str) -> bool:
@@ -328,9 +375,9 @@ def confirmed_intent_inline_heading_value(line: str) -> tuple[str, str] | None:
         return "success_metrics", _clean_metric_note_value(value)
     if len(label.split()) > 8:
         return None
-    heading = classify_confirmed_intent_heading(label.strip())
-    if not heading and re.search(r"\b(?:are|contains?|is|tracks?)\b", normalized_label):
+    if re.search(r"\b(?:are|contains?|is|tracks?)\b", normalized_label):
         return None
+    heading = classify_confirmed_intent_heading(label.strip())
     if not heading:
         return None
     return heading, clean_markdown_text(value)
@@ -467,6 +514,8 @@ def _looks_like_plain_heading(text: str) -> bool:
         "product view",
         "success metrics",
         "proof metrics",
+        "evidence requirements",
+        "evidence obligations",
         "state object that changes through the first journey",
         "first complete path odylith should prove before broader scope",
         "first complete path the product should prove before broader scope",
@@ -665,6 +714,8 @@ def classify_confirmed_intent_heading(value: str) -> str:
         return "product_view"
     if normalized in {"metric", "metrics", "success metric", "success metrics", "proof metric", "proof metrics"}:
         return "success_metrics"
+    if normalized in {"evidence requirement", "evidence requirements", "evidence obligation", "evidence obligations"}:
+        return "evidence_requirements"
     if "human actor" in normalized or normalized in {
         "actors",
         "primary actors",

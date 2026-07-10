@@ -55,20 +55,23 @@
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifact_count": 1,
+      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4"
       ],
       "confidence": "high",
-      "event_index": 978,
+      "event_index": 980,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "odylith-chatter"
       ],
       "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-07-09T16:32:59-07:00",
+      "summary": "Workspace activity touched tracked component evidence. 4 tracked artifact references retained.",
+      "ts_iso": "2026-07-09T19:02:12-07:00",
       "workstreams": []
     },
     {

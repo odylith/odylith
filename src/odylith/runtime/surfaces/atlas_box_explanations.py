@@ -10,6 +10,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     capitalize_sentence_start_preserving_source_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import present_verb
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence
@@ -48,15 +49,15 @@ _SCOPE_OUT_RE = re.compile(
 )
 _OWNED_ACTION_RE = re.compile(
     r"^owns?\s+"
-    r"(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
+    r"(accepts?|assembles?|binds?|captures?|carries?|chooses?|computes?|converts?|coordinates?|derives?|engraves?|estimates?|exposes?|exports?|handles?|imports?|"
     r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|presents?|preserves?|pulls?|records?|renders?|"
-    r"resolves?|shows?|stores?|tracks?|validates?|writes?)\b",
+    r"resolves?|shows?|stores?|supplies?|tracks?|turns?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _ACTION_START_RE = re.compile(
-    r"^(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
+    r"^(accepts?|assembles?|binds?|captures?|carries?|chooses?|computes?|converts?|coordinates?|derives?|engraves?|estimates?|exposes?|exports?|handles?|imports?|"
     r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|presents?|preserves?|pulls?|records?|renders?|"
-    r"resolves?|shows?|stores?|tracks?|validates?|writes?)\b",
+    r"resolves?|shows?|stores?|supplies?|tracks?|turns?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _LEGACY_COMPONENT_APPENDIX_RE = re.compile(
@@ -285,6 +286,11 @@ def _generated_container_description(label: str, context: DiagramBoxContext) -> 
             f"{label} is the product boundary. It contains the actors, interfaces, records, controls, "
             "and evidence paths that must work together before the release claim can be trusted."
         )
+    if project == "the product":
+        return (
+            f"{label} is a product boundary. It contains the actors, interfaces, records, controls, "
+            "and evidence paths that must work together before the release claim can be trusted."
+        )
     return (
         f"{label} is the product boundary for {project}. It contains the actors, interfaces, records, "
         "controls, and evidence paths that must work together before the release claim can be trusted."
@@ -307,6 +313,13 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     clean = _clean_label(label).strip()
     lowered = clean.lower()
     subject = _sentence_subject(clean)
+    subject_be = present_verb(subject, singular="is", plural="are")
+    subject_pronoun = present_verb(subject, singular="It", plural="They")
+    subject_object_pronoun = present_verb(subject, singular="it", plural="they")
+
+    def subject_verb(singular: str, plural: str) -> str:
+        return present_verb(subject, singular=singular, plural=plural)
+
     project = context.project_name or "the product"
     tracked_object = context.tracked_object
     tracked_objects = context.tracked_objects
@@ -321,13 +334,14 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
     if _SCOPE_OUT_RE.search(clean):
         project_phrase = project if project != "the product" else "this product"
         return (
-            f"{subject} is intentionally outside the first-release proof boundary for {project_phrase}. "
+            f"{subject} {subject_be} intentionally outside the first-release proof boundary for {project_phrase}. "
             "It matters because reviewers need to see which integrations, claims, or responsibilities are deferred."
         )
     if _looks_like_person_role_label(clean):
         project_phrase = project if project != "the product" else "this product"
+        people_noun = present_verb(subject, singular="a person", plural="people")
         return (
-            f"{subject} is a person {project_phrase} must serve. "
+            f"{subject} {subject_be} {people_noun} {project_phrase} must serve. "
             f"They supply, review, or depend on {_object_with_article(tracked_object)}, so the first release must make that outcome understandable and trustworthy."
         )
     if _has_any(lowered, ("steward", "owner", "operator")) and not _has_any(
@@ -335,22 +349,22 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         ("web", "surface", "service", "interface", "status"),
     ):
         return (
-            f"{subject} owns or manages the {tracked_objects} being tracked in {project}. "
+            f"{subject} {subject_verb('owns', 'own')} or {subject_verb('manages', 'manage')} the {tracked_objects} being tracked in {project}. "
             f"They need trustworthy identity, state, evidence, and history for each {tracked_object} before decisions move forward."
         )
     if _has_any(lowered, ("observer", "community monitor", "field monitor", "monitor")) and not _has_any(lowered, ("service", "provider", "adapter")):
         return (
-            f"{subject} captures real-world observations for {tracked_objects}. "
+            f"{subject} {subject_verb('captures', 'capture')} real-world observations for {tracked_objects}. "
             "Their input only becomes trusted when it carries source, time, location, evidence, and review context."
         )
     if _has_any(lowered, ("verifier", "auditor", "reviewer")):
         return (
-            f"{subject} checks whether a {tracked_object} claim is supported. "
+            f"{subject} {subject_verb('checks', 'check')} whether a {tracked_object} claim is supported. "
             "They need to trace the claim back to the active record, source evidence, derivation step, and audit history."
         )
     if _has_any(lowered, ("coordinator", "program lead", "program manager")):
         return (
-            f"{subject} manages the program across owners, submitters, reviewers, and scoped {tracked_objects}. "
+            f"{subject} {subject_verb('manages', 'manage')} the program across owners, submitters, reviewers, and scoped {tracked_objects}. "
             "They need to know what is in scope, which evidence is missing, and what is ready for the first release."
         )
     if _has_any(
@@ -367,57 +381,57 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         ),
     ):
         return (
-            f"{subject} is an external source of remote signals for {tracked_objects}. "
+            f"{subject} {subject_be} an external source of remote signals for {tracked_objects}. "
             "Those signals matter only when they retain provider, sensor, time, location, and provenance."
         )
     if _has_any(lowered, ("library", "libraries", "model", "dsp", "operating system", "subsystem")):
         return (
-            f"{subject} is an external input, tool, or runtime dependency for {tracked_objects}. "
+            f"{subject} {subject_be} an external input, tool, or runtime dependency for {tracked_objects}. "
             "It matters only when the product records what came from it, when it was used, and which claim or output it supports."
         )
     if _has_any(lowered, ("remote sensing adapter", "remote-sensing adapter", "imagery adapter")):
         return (
-            f"{subject} turns remote-observation signals into project evidence. "
+            f"{subject} {subject_verb('turns', 'turn')} remote-observation signals into project evidence. "
             f"It connects provider output to the right {tracked_object}, active boundary or state version, and provenance record."
         )
     if _has_any(lowered, ("boundary source", "cadastral", "geometry source", "land record")):
         return (
-            f"{subject} supplies the external boundary or ownership reference for {tracked_objects}. "
+            f"{subject} {subject_verb('supplies', 'supply')} the external boundary or ownership reference for {tracked_objects}. "
             f"The release needs this because a claim is meaningless unless the product knows which {tracked_object} and version it describes."
         )
     if _has_any(lowered, ("identity provider", "idp")):
         return (
-            f"{subject} supplies trusted actor and organization identity. "
+            f"{subject} {subject_verb('supplies', 'supply')} trusted actor and organization identity. "
             "It lets the product distinguish who submitted, changed, reviewed, or approved each record."
         )
     if _has_any(lowered, ("auth", "authentication", "authorization", "session")):
         return (
-            f"{subject} attributes product actions to a known actor. "
+            f"{subject} {subject_verb('attributes', 'attribute')} product actions to a known actor. "
             f"It matters because {tracked_object} changes, observations, evidence submissions, and reviews must be accountable."
         )
     if _has_any(lowered, ("privacy", "sharing", "redaction", "access")):
         return (
-            f"{subject} governs who can see records, evidence, derived state, and audit history. "
+            f"{subject} {subject_verb('governs', 'govern')} who can see records, evidence, derived state, and audit history. "
             "It matters when project data is sensitive, partner-scoped, legally constrained, or unsafe to expose broadly."
         )
     if _has_any(lowered, ("notification", "sms", "email", "alert")):
         return (
-            f"{subject} is a later-wave communication path. "
+            f"{subject} {subject_be} a later-wave communication path. "
             "It should notify the right people when state changes, evidence is missing, or review is needed, but it should not define the first release proof boundary."
         )
     if _has_any(lowered, ("field capture", "capture surface", "mobile capture")):
         return (
-            f"{subject} lets field users submit evidence against a known {tracked_object}. "
+            f"{subject} {subject_verb('lets', 'let')} field users submit evidence against a known {tracked_object}. "
             "It should capture observation type, time, location, notes, media references, and source identity without overwriting prior history."
         )
     if _has_any(lowered, ("web surface", "portal", "console", "workspace", "dashboard", "ui", "interface")):
         return (
-            f"{subject} is the primary user surface for reviewing and changing {tracked_objects}. "
+            f"{subject} {subject_be} the primary user surface for reviewing and changing {tracked_objects}. "
             "It should show identity, current state, recent observations, evidence status, and review state in one coherent view."
         )
     if _has_any(lowered, ("core services", "record core", "evidence core", "core:")):
         return (
-            f"{subject} owns trusted record layer for {project}: records, state versions, evidence links, derivation, and audit history. "
+            f"{subject} {subject_verb('owns', 'own')} the trusted record layer for {project}: records, state versions, evidence links, derivation, and audit history. "
             "It matters because the first release must turn scattered inputs into traceable claims."
         )
     if matched_components:
@@ -428,49 +442,49 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
             matched_components=matched_components,
         )
     if _has_any(lowered, ("product", "program", "release")):
-        return f"{subject} defines the product scope, target outcome, and proof boundary that release work must satisfy."
+        return f"{subject} {subject_verb('defines', 'define')} the product scope, target outcome, and proof boundary that release work must satisfy."
     if _has_any(lowered, ("interface", "dashboard", "ui", "surface", "portal", "console", "app", "workspace")):
         return (
-            f"{subject} presents the domain object, latest state, next decision, and supporting evidence "
+            f"{subject} {subject_verb('presents', 'present')} the domain object, latest state, next decision, and supporting evidence "
             "for the user responsibility it serves."
         )
     if _has_any(lowered, ("radar", "backlog", "workstream", "queue")):
-        return f"{subject} tracks the work choices, priorities, and next slices that need governed follow-through."
+        return f"{subject} {subject_verb('tracks', 'track')} the work choices, priorities, and next slices that need governed follow-through."
     if _has_any(lowered, ("atlas", "diagram", "topology", "map")):
-        return f"{subject} shows the system shape, ownership boundaries, and flow relationships reviewers need to understand."
+        return f"{subject} {subject_verb('shows', 'show')} the system shape, ownership boundaries, and flow relationships reviewers need to understand."
     if _has_any(lowered, ("compass", "timeline", "status")):
-        return f"{subject} summarizes current runtime state, recent movement, and the evidence behind the status."
+        return f"{subject} {subject_verb('summarizes', 'summarize')} current runtime state, recent movement, and the evidence behind the status."
     if _has_any(lowered, ("plan", "plans", "implementation path", "implementation sequence")):
-        return f"{subject} turns selected work into an implementation path, validation obligation, and release gate."
+        return f"{subject} {subject_verb('turns', 'turn')} selected work into an implementation path, validation obligation, and release gate."
     if _has_any(lowered, ("router", "routing")):
-        return f"{subject} chooses where work should go next and records why that route is admissible."
+        return f"{subject} {subject_verb('chooses', 'choose')} where work should go next and {subject_verb('records', 'record')} why that route is admissible."
     if _has_any(lowered, ("orchestrator", "coordination")):
-        return f"{subject} coordinates bounded work across owners and brings completion evidence back into the flow."
+        return f"{subject} {subject_verb('coordinates', 'coordinate')} bounded work across owners and {subject_verb('brings', 'bring')} completion evidence back into the flow."
     if _has_any(lowered, ("broker", "proposal", "intervention", "observation", "assist")):
-        return f"{subject} decides what should be shown to the operator and when it is safe to surface."
+        return f"{subject} {subject_verb('decides', 'decide')} what should be shown to the operator and when it is safe to surface."
     if _has_any(lowered, ("chatter", "chat", "message", "narration")):
-        return f"{subject} turns governed state into user-visible language without changing the underlying source truth."
+        return f"{subject} {subject_verb('turns', 'turn')} governed state into user-visible language without changing the underlying source truth."
     if _has_any(lowered, ("handshake", "contract")):
-        return f"{subject} passes agreed state across a boundary and preserves the rules the next step must obey."
+        return f"{subject} {subject_verb('passes', 'pass')} agreed state across a boundary and {subject_verb('preserves', 'preserve')} the rules the next step must obey."
     if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "engineer", "maintainer")):
-        return f"{subject} makes or accepts the decisions this part of the flow depends on."
+        return f"{subject} {subject_verb('makes', 'make')} or {subject_verb('accepts', 'accept')} the decisions this part of the flow depends on."
     if _has_any(lowered, ("sensor", "sensing", "monitor", "measurement", "telemetry", "signal", "probe", "scanner")):
-        return f"{subject} measures the current state and feeds the decision or proof step that follows."
+        return f"{subject} {subject_verb('measures', 'measure')} the current state and {subject_verb('feeds', 'feed')} the decision or proof step that follows."
     if _has_any(lowered, ("decision", "policy", "rule", "eligibility", "approval", "review", "gate", "core", "engine", "tribunal")):
-        return f"{subject} decides whether the next action is allowed, blocked, or ready for review."
+        return f"{subject} {subject_verb('decides', 'decide')} whether the next action is allowed, blocked, or ready for review."
     if _has_any(lowered, ("controller", "actuator", "executor", "execution", "worker", "runner", "adapter")):
-        return f"{subject} performs the bounded action and should expose the result for verification."
+        return f"{subject} {subject_verb('performs', 'perform')} the bounded action and should expose the result for verification."
     if _has_any(lowered, ("log", "record", "ledger", "evidence", "audit", "receipt", "proof", "history", "casebook")):
-        return f"{subject} keeps the evidence needed to review what happened and why it was allowed."
+        return f"{subject} {subject_verb('keeps', 'keep')} the evidence needed to review what happened and why it was allowed."
     if _has_any(lowered, ("repo", "registry", "catalog", "store", "database", "source", "memory", "bundle", "snapshot")):
-        return f"{subject} stores the source information that downstream boxes read or update."
+        return f"{subject} {subject_verb('stores', 'store')} the source information that downstream boxes read or update."
     if _has_any(lowered, ("connector", "gateway", "api", "integration", "webhook", "bridge", "rail")):
-        return f"{subject} moves data or requests across a system boundary and should preserve handoff evidence."
+        return f"{subject} {subject_verb('moves', 'move')} data or requests across a system boundary and should preserve handoff evidence."
     if _looks_like_state_object(clean):
-        return f"{subject} is the object whose state changes as the flow moves from trigger to outcome."
+        return f"{subject} {subject_be} the object whose state changes as the flow moves from trigger to outcome."
     return (
-        f"{subject} is a named responsibility in {project}. It should name the domain object it owns, "
-        "the evidence or decision it receives or produces, and the release condition it protects."
+        f"{subject} {subject_be} a named responsibility in {project}. {subject_pronoun} should name the domain object {subject_object_pronoun} owns, "
+        f"the evidence or decision {subject_object_pronoun} receives or produces, and the release condition {subject_object_pronoun} protects."
     )
 
 

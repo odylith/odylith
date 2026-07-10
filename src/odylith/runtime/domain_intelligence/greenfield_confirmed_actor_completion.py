@@ -74,6 +74,9 @@ _DERIVED_CONTEXT_ACTOR_MODIFIERS = frozenset(
     }
 )
 _MODAL_ACTION_BOUNDARY_TAILS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
+_GENERIC_CONFIRMED_ACTOR_LABELS = frozenset(
+    {"user", "individual user", "person", "individual person", "participant", "individual participant"}
+)
 
 
 def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
@@ -162,6 +165,9 @@ def _actor_label_duplicates_existing(label: str, existing_labels: Sequence[str])
     for existing in existing_labels:
         current = _clean(existing).casefold()
         if candidate == current or candidate.endswith(f" {current}"):
+            return True
+        candidate_tail = candidate.rsplit(" ", 1)[-1]
+        if current in _GENERIC_CONFIRMED_ACTOR_LABELS and candidate_tail == current.rsplit(" ", 1)[-1]:
             return True
         if current.endswith(f" {candidate}") or current.startswith(f"{candidate} "):
             return True
@@ -620,7 +626,7 @@ def _actor_label(row: str, *, title: str) -> str:
 
 
 def _actor_label_display(value: str) -> str:
-    return _title_case(_clean(value).replace("-", " "))
+    return _title_case(_clean(value))
 
 
 def _specific_role_label(value: str) -> str:

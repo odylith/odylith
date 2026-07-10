@@ -325,8 +325,8 @@ def test_repetition_gate_allows_sequence_step_tail_projection_from_first_path_cu
         "handles an accept, decline, or more-info request, schedules the request when accepted, "
         "and reviews the completed status history."
     )
-    required_context_step = "A source coordinator attaches subject identity, required request context"
-    request_decision_step = "A source coordinator handles an accept, decline and more-info request"
+    required_context_step = "A source coordinator attaches subject identity and required request context"
+    request_decision_step = "A source coordinator handles an accept, decline, or more-info request"
     package = SimpleNamespace(
         proposal={
             "semantic_model": {

@@ -59,9 +59,10 @@ mechanism-level learning.
    validates, quality-gates, and hashes the ProductCreateTransaction before
    records can be confirmed. After **CONFIRM**, run
    `greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
-   Confirmed create only verifies the hash, writes atomically, validates
-   readback, refreshes readable views, and reports success or environment/IO
-   failure. Do not search `src/odylith`.
+   Confirmed create only verifies the compiler receipt, transaction hash,
+   compiler identity, and unchanged repo preconditions; applies the sealed write
+   set under rollback guard; validates exact readback; and reports success or
+   environment/IO failure. Do not search `src/odylith`.
    Do not search `.odylith`, `odylith/skills`, installed bundle files,
    local examples, or Python modules to discover schema fields after confirmation. Do not
    hand-author, switch to, or repair proposal JSON after confirmation. Do not

@@ -6,7 +6,6 @@ from pathlib import Path
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import program_problem
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_release_basis
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
@@ -14,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_
 from odylith.runtime.governance.component_authoring import _public_what_it_is
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -299,7 +299,7 @@ def test_component_spec_preserves_relative_clauses_in_accepted_intent() -> None:
 
 
 def test_confirmed_greenfield_artifacts_reject_mechanical_dashboard_and_radar_language(tmp_path) -> None:
-    intent = parse_confirmed_intent_text(
+    intent = confirmed_intent_with_authority(
         """Personal Asset Care — Product Intent Confirmation
 
 Product story
@@ -334,6 +334,7 @@ Proof boundary
 Release 0.0.1 succeeds when one owner can add the asset, log usage, receive a grounded health readout, and accept or dismiss the suggestion without losing the input facts or explanation.
 """,
         prompt="Draft a product-first greenfield proposal for personal asset care",
+        repo_root=tmp_path,
     )
 
     proposal = build_greenfield_proposal(

@@ -268,7 +268,8 @@ _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
 )
 _GREENFIELD_REPAIR_LOOP_GUARDS = (
     "quality-gates",
-    "writes atomically",
+    "compiler receipt",
+    "rollback guard",
 )
 _GREENFIELD_CONFIRMATION_FORMAT_GUARDS = (
     "sectioned",

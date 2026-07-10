@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift 
     semantic_repetition_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 def test_confirmed_build_preserves_accepted_intent_evidence_for_post_confirm_gates(tmp_path):
@@ -68,7 +69,7 @@ review meaningful trends, and export a readable summary without the product maki
         repo_root=tmp_path,
         prompt="build a personal progress journal",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
     rendered = str(proposal)
@@ -137,7 +138,7 @@ on a risky step, and produce an accountable review record with evidence and deci
         repo_root=tmp_path,
         prompt="create an agent execution control room",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
 
     rendered = str(proposal)

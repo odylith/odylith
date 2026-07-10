@@ -15,6 +15,7 @@ from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import starts_with_compound_noun_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import starts_with_result_object_modifier
@@ -383,8 +384,15 @@ def _split_semantic_action_conjunction(value: str) -> list[str]:
     text = _compact_text(value).strip(" .")
     if not text:
         return []
+    if _modal_actor_capability_step(text):
+        return [text]
     subject = leading_subject_prefix(text)
     action_text = strip_action_subject(text).strip(" .") if subject else text
+    if not subject:
+        actor, actor_action = actor_led_action_parts(text)
+        if actor and actor_action:
+            subject = actor
+            action_text = actor_action
     parts = [
         part.strip(" .")
         for part in re.split(

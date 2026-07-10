@@ -5,9 +5,10 @@ import json
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 DISTRIBUTED_AGENTS_CONFIRMED_INTENT_TEXT = """# Distributed Multi-Agent Platform
@@ -64,13 +65,14 @@ The first proof should show one end-to-end distributed run with at least three a
 """
 
 
-def test_prewrite_package_repairs_relative_actor_clause_before_public_previews(tmp_path) -> None:
+def test_prewrite_package_repairs_relative_actor_clause_before_public_previews(tmp_path, monkeypatch) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
     prompt = "building a distributed multi-agent platform"
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=parse_confirmed_intent_text(DISTRIBUTED_AGENTS_CONFIRMED_INTENT_TEXT, prompt=prompt),
+        confirmed_intent=confirmed_intent_with_authority(DISTRIBUTED_AGENTS_CONFIRMED_INTENT_TEXT, prompt=prompt),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
@@ -93,4 +95,6 @@ def test_prewrite_package_repairs_relative_actor_clause_before_public_previews(t
     assert report.passed, "\n".join(report.issues)
     assert "Launches launches" not in preview_text
     assert "Operator Who Launches" not in preview_text
-    assert "Distributed Multi-Agent Operator: launches runs and monitors active work" in preview_text
+    assert "Actors include Workflow Designer, Distributed Multi-Agent Operator, Risky Actions Reviewer" in preview_text
+    assert "Risky Actions or Validates Final Outputs Reviewer" not in preview_text
+    assert "Core Product State Is a Durable Work Graph" not in preview_text

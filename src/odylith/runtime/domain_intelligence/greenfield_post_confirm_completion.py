@@ -1,8 +1,8 @@
-"""Post-confirm completion gate for greenfield governed artifacts.
+"""Pre-confirm completion gate for greenfield governed artifacts.
 
-Product Intent Confirmation stays a lightweight no-write interaction. After
-confirmation, this gate treats the generated proposal and in-memory rendered
-artifacts as one completion package and fails before governed writes begin.
+The compiler treats the proposal and staged rendered artifacts as one package,
+repairs and validates it before final confirmation, and never writes target
+governance truth from this gate.
 """
 
 from __future__ import annotations
@@ -774,12 +774,12 @@ def _has_mermaid_declaration(value: str) -> bool:
 
 
 def _format_completion_issue_report(report: GreenfieldCompletionReport) -> str:
-    rows = [f"greenfield post-confirm completion failed with {len(report.issues)} issue(s):"]
+    rows = [f"Odylith could not prepare a creation-ready package from the provided evidence ({len(report.issues)} issue(s)):"]
     rows.extend(f"- {issue}" for issue in report.issues)
     rows.extend(
         [
             "No governed records were written.",
-            "This is an internal greenfield completion failure: repair the semantic model, renderers, or gates and rerun Confirm.",
+            "Final CONFIRM is unavailable until Odylith compiles and validates the complete package.",
         ]
     )
     return "\n".join(rows)

@@ -227,6 +227,28 @@ def test_semantic_compiler_rejects_object_led_workflow_subjects() -> None:
     assert any(item.code == "first_path.non_human_workflow_subject" for item in report.counterexamples)
 
 
+def test_semantic_compiler_accepts_actor_led_multi_action_workflow() -> None:
+    report = compile_greenfield_semantics(
+        {
+            "intent": {
+                "first_path": (
+                    "A coordinator signs up, records capacity measurements, chooses a goal, receives a plan, "
+                    "logs daily signals, and gets a weekly readiness review."
+                ),
+                "proof_boundary": (
+                    "Release 0.0.1 succeeds when the coordinator can inspect the weekly readiness review and "
+                    "trace it to the recorded measurements."
+                ),
+            },
+            "semantic_model": {
+                "first_path_contract": {"visible_result": "a weekly readiness review"},
+            },
+        }
+    )
+
+    assert not any(item.code == "first_path.non_human_workflow_subject" for item in report.counterexamples)
+
+
 def test_semantic_compiler_fails_closed_when_intent_first_path_is_missing() -> None:
     report = compile_greenfield_semantics(
         {

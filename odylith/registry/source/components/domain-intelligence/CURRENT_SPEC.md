@@ -26,6 +26,8 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-09 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
+  - Evidence: 2 tracked artifact references retained
 - **2026-07-09 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 2 tracked artifact references retained
@@ -39,11 +41,26 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: 2 tracked artifact references retained
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 5 tracked artifact references retained.
   - Evidence: 5 tracked artifact references retained
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-09: Sealed the exact repository mutation into the pre-confirm ProductCreateTransaction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Diagram: D-045)
+  `greenfield_repository_write_set.py` now compiles governed and rendered file
+  bytes, file and empty-directory deletions, modes, managed-path boundaries,
+  and before/after tree fingerprints from the fully staged package.
+  `greenfield_prewrite_transaction_seal.py` owns final staged materialization,
+  operator-result compilation, and write-set sealing before confirmation.
+  Confirmed create requires the detached compiler receipt, transaction hash,
+  compiler identity, and unchanged repository preconditions, then
+  `greenfield_compiled_write.py` applies only the sealed write set and validates
+  exact readback. `greenfield_transaction.py` snapshots the non-overlapping
+  affected paths, rolls back exceptions and graceful SIGINT/SIGTERM
+  interruption, and preserves the recovery snapshot when rollback itself
+  fails. Focused transaction, write-set, CLI, and serialized commit-only proof
+  covers compiler-receipt custody, stale empty-directory removal, repo drift,
+  mid-write exceptions, readback corruption, interrupt classification, and
+  poisoned legacy generators.
 
 - 2026-07-07: Corrected release-matrix domain-term scoring for sparse accepted intent. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-222`; Diagram: D-045)
   Exact installed replay after the next-step preservation fix completed
@@ -1504,11 +1521,19 @@ This section captures synchronized requirement and contract signals derived from
   spelling, release-plan shape, proof-field aliases, generic diagram
   slugs, Mermaid sequence message punctuation, and missing umbrella program
   parents, but it must not invent source-backed implementation evidence.
-- `greenfield_transaction.py` owns retry-safe source-truth rollback for failed
-  confirmed create commits. It snapshots the greenfield-owned Radar, Registry,
-  Atlas, and Compass acceptance source paths before writes and restores them on
-  failure so a retry cannot be blocked by duplicate ideas, stale catalog rows,
-  stale component dossiers, or release events from a rejected commit.
+- `greenfield_repository_write_set.py` owns the exact pre-confirm repository
+  mutation: approved managed paths, before/after tree fingerprints, file bytes,
+  modes, file deletions, empty-directory creation/deletion, symlink refusal,
+  repo-precondition verification, and exact readback verification.
+- `greenfield_prewrite_stale_cleanup.py` owns replacement-project cleanup in
+  staging: prior accepted greenfield IDs, stale Radar rows/files, program-wave
+  files, and release-assignment events are removed before the exact write set is
+  sealed. Post-confirm code must not repeat that cleanup.
+- `greenfield_transaction.py` owns retry-safe rollback for failed confirmed
+  create commits. It snapshots the sealed write set's non-overlapping affected
+  paths before the first write, restores them on exceptions and graceful
+  SIGINT/SIGTERM interruption, and preserves its recovery snapshot when
+  rollback fails.
 - `proposal_rendering.py` owns operator-facing text so proposal compilation,
   planning, and presentation stay decoupled.
 - Default `greenfield propose` text is a no-write Product Intent Confirmation
@@ -1517,8 +1542,11 @@ This section captures synchronized requirement and contract signals derived from
   gate before any writes. Before final confirmation, `greenfield
   compile-transaction` builds and quality-gates the durable package; after
   confirmation, `greenfield create --transaction-file ... --transaction-hash
-  ... --confirm` only verifies the transaction hash, commits the compiled
-  package, validates readback, refreshes surfaces, and reports success.
+  ... --confirm` only verifies the detached compiler receipt, transaction hash,
+  compiler identity, and repository preconditions; writes the sealed bytes and
+  deletions under the rollback guard; validates readback; and reports success.
+  No proposal parsing, product interpretation, artifact generation, semantic
+  repair, quality repair, or surface refresh is allowed after confirmation.
   `propose --confirm-intent --format json` is the optional review artifact
   before transaction compilation.
 - Default text `greenfield propose` output must itself be a concrete,
@@ -2137,13 +2165,13 @@ This section captures synchronized requirement and contract signals derived from
   `complete_semantic_model` and `preflight_issues`, but it must not re-own the
   greenfield Tribunal call, governed-artifact Tribunal aggregation, or local
   proposal/component/spec issue collector loop.
-- Confirmed-create final governed writes must stay in
-  `greenfield_apply_write.py`. The greenfield proposal entrypoint may call
-  `release_assignment_note` and `write_greenfield_proposal`, but it must not
-  re-own Radar source writes, stale workstream cleanup, release assignment
-  writes, program wave creation, Atlas scaffold/upsert helpers, Registry
-  component authoring, accepted-project memory recording, dashboard refresh, or
-  next-step shaping.
+- Confirmed-create final writes must stay in `greenfield_compiled_write.py` and
+  `greenfield_repository_write_set.py`. The post-confirm path may verify sealed
+  custody, apply exact bytes/deletions, validate readback, and report the
+  precompiled result; it must not call `greenfield_apply_write.py`, re-own Radar
+  or release authoring, clean stale workstreams, create program waves, scaffold
+  or upsert Atlas, author Registry components, record accepted-project memory,
+  refresh dashboards, shape next steps, or repair generated artifacts.
 - Installed greenfield guidance must not ask Codex or Claude hosts to
   hand-author or reconstruct proposal JSON. Proposal review uses Product Intent
   Confirmation from `greenfield propose`; full package review uses

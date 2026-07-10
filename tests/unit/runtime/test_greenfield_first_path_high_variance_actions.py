@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import re
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 _QUANTUM_DOT_DISPLAY_PROMPT = (
@@ -86,7 +87,7 @@ def test_final_memory_pressure_does_not_use_title_homonym_as_reviewer(tmp_path) 
         repo_root=tmp_path,
         prompt=_QUANTUM_DOT_DISPLAY_PROMPT,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
         require_completion_ready=False,
     )
     rendered = str(proposal)

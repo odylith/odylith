@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import re
 
+import pytest
+
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -18,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 _ARBORCELL_PROMPT = (
@@ -95,15 +100,13 @@ Confirmed: expand this accepted Product Intent Confirmation into the governed pr
 
 
 def _intent_from_prompt(prompt: str) -> dict[str, object]:
-    return parse_confirmed_intent_text(
-        f"""
+    text = f"""
 Product Intent Confirmation needed
 
 Original user intent
 {prompt}
-""",
-        prompt=prompt,
-    )
+"""
+    return confirmed_intent_with_authority(text, prompt=prompt, source_format="operator_prompt")
 
 
 def _visible_confirmation_intent(prompt: str) -> dict[str, object]:
@@ -113,7 +116,16 @@ def _visible_confirmation_intent(prompt: str) -> dict[str, object]:
         repo_name="greenfield-simulation",
         observed_source={},
     )
-    return parse_confirmed_intent_text(format_product_intent_confirmation_text(confirmation), prompt=prompt)
+    return confirmed_intent_with_authority(
+        format_product_intent_confirmation_text(confirmation),
+        prompt=prompt,
+        source_format="operator_prompt",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
 
 
 def _proposal_and_prewrite(tmp_path: Path, prompt: str):
@@ -192,7 +204,7 @@ def test_arborcell_post_confirm_package_does_not_repeat_setup_or_malformed_copy(
         repo_root=tmp_path,
         prompt=_ARBORCELL_PROMPT,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
@@ -477,7 +489,7 @@ The first proof should demonstrate that the app can ingest real wearable data, p
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=confirmed_intent,
+        confirmed_intent=confirmed_mapping_with_authority(confirmed_intent),
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
@@ -657,7 +669,7 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a quantum tunneling lab.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
         require_completion_ready=False,
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
@@ -706,7 +718,11 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
     )
     assert not any(metric == "adjust barrier height and width" for metric in first_metrics)
     assert ";" not in first_metrics[0]
-    actor_section = proposal["project_brief"]["blueprint_sections"][4]["must_capture"]
+    actor_section = next(
+        row["must_capture"]
+        for row in proposal["project_brief"]["blueprint_sections"]
+        if row["section"] == "Actors and systems"
+    )
     first_user_option = proposal["project_brief"]["customization_options"][0]["recommended"]
     assert actor_section.startswith("Actors include Physics Learner and Instructor.")
     assert first_user_option == "Confirm who participates in the first path: Physics Learner and Instructor."
@@ -758,7 +774,7 @@ Release 0.0.1 succeeds when a researcher can run one gene expression prediction,
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
         require_completion_ready=False,
     )
     tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")

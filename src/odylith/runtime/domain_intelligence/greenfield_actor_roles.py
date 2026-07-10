@@ -82,7 +82,7 @@ def has_actor_role_word(value: str | object) -> bool:
         for word in clean_first_path_text(value).replace("-", " ").split()
         if word.strip(".,:;")
     ]
-    return bool(set(words) & ACTOR_ROLE_NOUNS)
+    return any(looks_like_actor_role_term(word) for word in words)
 
 
 __all__ = ["ACTOR_ROLE_NOUNS", "ACTOR_ROLE_SUFFIXES", "has_actor_role_word", "looks_like_actor_role_term"]

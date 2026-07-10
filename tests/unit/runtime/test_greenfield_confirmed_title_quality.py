@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 ACTIVITY_WATCHLIST_INTENT = """Product story
@@ -89,7 +90,7 @@ def test_confirmed_create_repairs_prompt_shaped_title_before_quality_gate(tmp_pa
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
 
     title = str(proposal["intent"]["title"])
@@ -135,7 +136,7 @@ def test_confirmed_create_keeps_list_signal_journal_and_guardrail_components_loc
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     contracts = {str(row["label"]): row["component_contract"] for row in proposal["components"]}
     encoded = json.dumps(proposal)

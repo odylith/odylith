@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stag
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
@@ -62,6 +63,11 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         greenfield_prewrite_surface_stage,
         "build_staged_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
+    )
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
         lambda **_kwargs: surface_refresh_preview_fixture(),
     )
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)

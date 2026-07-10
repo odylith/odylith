@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_requirement_control_step
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_evidence_requirement
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
@@ -210,7 +211,11 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
     for sentence in _sentences(value):
         if contains_word_sense_metadata_clause(sentence):
             continue
-        if not (is_requirement_control_step(sentence) or contains_requirement_control_clause(sentence)):
+        if not (
+            is_requirement_control_step(sentence)
+            or contains_requirement_control_clause(sentence)
+            or is_release_evidence_requirement(sentence)
+        ):
             continue
         tail = _requirement_tail(sentence)
         if not tail:
@@ -220,8 +225,6 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
             if _meaningful_anchor(normalized):
                 rows.append(normalized)
     return tuple(dict.fromkeys(rows))[:12]
-
-
 def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_source: str) -> bool:
     text = " ".join(clean_text(value) for value in (source, title_source, first_path_source))
     tokens = {_word_key(word) for word in text.replace("/", " ").split()}

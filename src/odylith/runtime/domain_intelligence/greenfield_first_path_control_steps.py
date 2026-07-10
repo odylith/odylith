@@ -303,6 +303,21 @@ def is_requirement_control_step(value: str) -> bool:
     )
 
 
+def is_release_evidence_requirement(value: str) -> bool:
+    """Return whether a release clause names evidence to preserve, not path behavior."""
+
+    text = _clean(value).strip(" .")
+    return bool(
+        re.match(
+            r"^(?:(?:the|this)\s+)?(?:first|initial)\s+(?:release|version)\s+"
+            r"(?:must|should|needs?\s+to|has\s+to)\s+"
+            r"(?:capture|include|keep|name|preserve|record|show)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
 def is_operator_review_lens_step(value: str) -> bool:
     """Return whether a clause is an expert-review criterion, not product behavior."""
 
@@ -602,6 +617,7 @@ __all__ = [
     "contains_word_sense_metadata_clause",
     "is_declarative_visible_result_prefix",
     "is_operator_review_lens_step",
+    "is_release_evidence_requirement",
     "is_requirement_control_step",
     "operator_review_lens_obligations",
     "is_scope_or_deferred_statement",

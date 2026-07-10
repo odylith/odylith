@@ -75,4 +75,4 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "ProductCreateTransaction" in guidance
     assert "--transaction-file" in guidance
     assert "--transaction-hash" in guidance
-    assert "writes atomically" in guidance
+    assert "rollback guard" in guidance

@@ -56,6 +56,12 @@ def test_plain_title_actor_subjects_lower_coherently_before_finite_actions() -> 
     assert generated_semantic_slop_issues({"fragment": action_chain_fragment("Station Lead Review")}) == []
 
 
+def test_action_chain_fragment_preserves_conditional_visible_result() -> None:
+    assert action_chain_fragment(
+        "After enough data the app shows whether the tracked metrics changed with usage for that protocol"
+    ) == "review whether the tracked metrics changed with usage for that protocol"
+
+
 def test_accepted_project_memory_treats_repo_name_as_structural_metadata() -> None:
     payload = {"proposal": {"observed_source": {"repo_name": "odylith-debug-sports-concussion-return"}}}
 

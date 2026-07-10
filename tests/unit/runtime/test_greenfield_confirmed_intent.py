@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     CONTRACT_KEYS,
     rendered_component_spec_quality_issues,
@@ -25,9 +26,27 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfie
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+@pytest.fixture(autouse=True)
+def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
+    def render_preconfirm_surfaces(*, repo_root: Path):
+        for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
+            path = Path(repo_root) / relative_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("stubbed pre-confirm surface\n", encoding="utf-8")
+        return surface_refresh_preview_fixture()
+
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        render_preconfirm_surfaces,
+    )
 
 
 def _max_word_overlap(values: list[str]) -> float:
@@ -246,7 +265,7 @@ Proof boundary: The first release is proven when a reviewer can create a perturb
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
         require_completion_ready=True,
     )
     report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
@@ -377,7 +396,7 @@ Commit transaction after hash confirmation: odylith greenfield create --repo-roo
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
         require_completion_ready=False,
     )
     report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
@@ -652,7 +671,7 @@ Release 0.0.1 succeeds when an engineer can import one run, inspect the equipmen
         repo_root=tmp_path,
         prompt="Build an equipment reliability review app",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
     )
     encoded = json.dumps(proposal)
     assert "Run Evidence Review Surface" in encoded
@@ -796,7 +815,7 @@ Release 0.0.1 succeeds when a request packet can be created with subject identit
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a request handoff workspace.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
     )
 
     encoded = json.dumps(proposal)
@@ -1056,7 +1075,7 @@ Release 0.0.1 succeeds when a board member can open one civic case, inspect map 
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a civic case workbench.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
     )
     encoded = json.dumps(proposal)
     for banned in (
@@ -1862,7 +1881,7 @@ Release proof must show one supported device path from pairing through live read
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a field sensor review workspace.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
     )
 
     for component in proposal["components"]:
@@ -2038,7 +2057,7 @@ def test_confirmed_create_uses_structured_intent_fields_without_repair_loop(tmp_
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for an evidence review workspace.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent, repo_root=tmp_path),
     )
     greenfield_proposals.validate_host_reasoned_proposal(proposal)
     encoded = json.dumps(proposal)

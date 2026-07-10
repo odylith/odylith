@@ -94,6 +94,7 @@ from odylith.runtime.domain_intelligence.proposal_tribunal_substance import (
 )
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -118,7 +119,7 @@ Next step
         title=str(intent["title"]),
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
 FIRST_PATH_ACTION_SPLIT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_action_split.py"
@@ -855,7 +856,7 @@ The first proof should show that a user can start with a broad goal, get a struc
         title=str(intent["title"]),
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
     systems = "\n".join(intent.get("internal_systems", []))
@@ -1620,7 +1621,7 @@ Release 0.0.1 is complete when one resident can submit one application, receive 
         title="Municipal Permit Review Portal",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     proposal = normalize_host_reasoned_proposal(proposal)
     for row in proposal.get("backlog", [])[1:]:
@@ -1682,7 +1683,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
         title="Cooking Robot Controller",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     first_path = proposal["project_brief"]["blueprint_sections"][1]["must_capture"]
     rendered = json.dumps(proposal, sort_keys=True)
@@ -1745,7 +1746,7 @@ Release 0.0.1 succeeds when one homeowner can produce a reviewable solar quote a
         repo_root=Path("/tmp/nonexistent"),
         prompt="Create a residential solar quote planner.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1813,7 +1814,7 @@ Release 0.0.1 succeeds when a home cook can load a structured recipe, run its co
         repo_root=Path("/tmp/nonexistent"),
         prompt="Draft a greenfield proposal for a cooking robot controller",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     labels = [str(row["label"]) for row in proposal["components"]]
     release_labels = [str(row["label"]) for row in active_release_components(proposal["components"])]
@@ -2466,7 +2467,7 @@ Odylith should prove review creation, evidence tracking, blocked-check handling,
     completed = build_greenfield_proposal(
         repo_root=tmp_path,
         prompt="operations readiness board",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
         release_selector="0.0.1",
     )
     rendered = json.dumps(completed, sort_keys=True)
@@ -3198,7 +3199,7 @@ The first release succeeds when a parent can create an account and learner profi
         title="Choice Practice Journal",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     first_path = proposal["semantic_model"]["first_path_contract"]
     rendered = json.dumps(proposal, sort_keys=True)
@@ -3276,7 +3277,7 @@ Done means the first complete path works end to end on real records: an engine c
         title="Jet Engine Servicing Tracker",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     proposal = normalize_host_reasoned_proposal(proposal)
     completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
@@ -3523,7 +3524,7 @@ Release 0.0.1 is proven when one request moves through access, capacity, commitm
         "the outcome stays clear enough to choose the next step"
     )
     assert "Hospital Coordinator: uses the product to record capacity constraints;" in rendered
-    assert "Mutual Aid Officer: uses the product to confirm resource commitments;" in rendered
+    assert "Mutual-aid Officer: uses the product to confirm resource commitments;" in rendered
     assert "Emergency Commander: uses the product to publish public coordination status;" in rendered
     assert "Public Information Officer: supplies context, reviews the result, or takes the next step named by the first release" in rendered
 
@@ -3564,7 +3565,7 @@ def test_confirmed_actor_completion_augments_partial_actor_list_from_first_path(
     )
 
     rendered = json.dumps(completed, sort_keys=True)
-    assert "Mutual Aid Officer: uses the product to confirm resource commitments" in rendered
+    assert "Mutual-aid Officer: uses the product to confirm resource commitments" in rendered
     assert "Shelter Lead: uses the product to record readiness" in rendered
     assert "Emergency Commander: uses the product to publish public coordination status" in rendered
     assert "Evacuation Support" not in rendered
@@ -3583,7 +3584,7 @@ def test_confirmed_project_brief_preserves_complete_first_path_and_actor_boundar
         "City Dispatcher: uses the product to record evacuation support request; the outcome stays clear enough to choose the next step",
         "Tribal Liaison: uses the product to review restricted access needs; the outcome stays clear enough to choose the next step",
         "Hospital Coordinator: uses the product to record capacity constraints; the outcome stays clear enough to choose the next step",
-        "Mutual Aid Officer: uses the product to confirm resource commitments; the outcome stays clear enough to choose the next step",
+        "Mutual-aid Officer: uses the product to confirm resource commitments; the outcome stays clear enough to choose the next step",
         "Shelter Lead: uses the product to record readiness; the outcome stays clear enough to choose the next step",
         "Emergency Commander: uses the product to publish public coordination status; the outcome stays clear enough to choose the next step",
     ]
@@ -3621,7 +3622,7 @@ def test_confirmed_project_brief_preserves_complete_first_path_and_actor_boundar
     assert "mutual-aid officer confirms resource commitments" in first_path_section["must_capture"]
     assert "emergency commander publishes public coordination status" in first_path_section["must_capture"]
     assert "First release proves" not in first_path_section["must_capture"]
-    assert "Mutual Aid Officer" in actor_section["must_capture"]
+    assert "Mutual-aid Officer" in actor_section["must_capture"]
     assert "Shelter Lead" in actor_section["must_capture"]
     assert "Emergency Commander" in actor_section["must_capture"]
     assert "confirm resource commitments" in readiness_gate
@@ -3979,7 +3980,7 @@ Release 0.0.1 succeeds when one requester can submit a complete request, see a d
         title="Request Review Workspace",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -4030,7 +4031,7 @@ The release is good enough when a resident can submit a complete repair request,
         title="RepairDesk - Neighborhood Repair Booking",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
     posture_text = json.dumps(
@@ -4213,7 +4214,7 @@ The release is good enough when a resident can submit a complete repair request,
         title="Neighborhood Repair Booking",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -4258,7 +4259,7 @@ The first release succeeds when one requester can submit a complete request and 
         title="Request Review Workspace",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
     titles = [row["title"] for row in proposal["backlog"]]
@@ -4332,7 +4333,7 @@ Commit transaction after hash confirmation: odylith greenfield create --repo-roo
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -4380,7 +4381,7 @@ Proof boundary:
         title="Neighborhood Repair Booking",
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
     titles = [row["title"] for row in proposal["backlog"]]
@@ -4569,7 +4570,7 @@ def test_thin_prompt_recovery_preserves_input_list_before_purpose_tail(tmp_path:
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 

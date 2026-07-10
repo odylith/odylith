@@ -823,7 +823,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Command: `REJECT`" in guidance_text
     assert "--transaction-file" in guidance_text
     assert "--transaction-hash" in guidance_text
-    assert "writes atomically" in guidance_text
+    assert "rollback guard" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
     assert "Treat AI slop as a regression" in guidance_text
@@ -886,7 +886,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "Command: `REJECT`" in root_agents
     assert "--transaction-file" in root_agents
     assert "--transaction-hash" in root_agents
-    assert "writes atomically" in root_agents
+    assert "rollback guard" in root_agents
     assert "repo-local launcher, truthful `odylith ... --help`" in root_agents
     assert "rerender only the owned surface" in root_agents
     assert "odylith radar refresh" in root_agents

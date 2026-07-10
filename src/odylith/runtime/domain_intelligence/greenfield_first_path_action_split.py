@@ -321,6 +321,8 @@ def _continues_adverbial_object_list(value: str, current: str) -> bool:
     first_word = text.split(maxsplit=1)[0].strip(".,:;()[]{}").casefold()
     if first_word.endswith("s") and _MATERIAL_ACTION_RE.match(text):
         return False
+    if connector_core_starts_action_clause(text):
+        return False
     if _has_explicit_subject_action(text):
         return False
     terms = label_terms(text)

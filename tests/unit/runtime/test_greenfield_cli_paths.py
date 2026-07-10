@@ -109,10 +109,31 @@ def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None =
         _write_stubbed_atlas_render_outputs(Path(str(kwargs["repo_root"])))
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
+    def preview(**kwargs: object) -> dict[str, object]:
+        _write_stubbed_atlas_render_outputs(Path(str(kwargs["repo_root"])))
+        if calls is not None:
+            calls.append(
+                {
+                    "repo_root": kwargs["repo_root"],
+                    "surfaces": greenfield_surface_refresh_proof.GREENFIELD_VISIBLE_SURFACES,
+                    "operation_label": "Greenfield pre-confirm staged surface refresh",
+                }
+            )
+        return surface_refresh_preview_fixture()
+
     monkeypatch.setattr(
         greenfield_surface_refresh_proof,
         "build_prewrite_surface_refresh_preview",
-        lambda **_kwargs: surface_refresh_preview_fixture(),
+        preview,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {
+            "status": "passed",
+            "atlas_surface_count": 3,
+            "atlas_diagram_count": 0,
+        },
     )
 
 
@@ -653,7 +674,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert compile_payload["product_create_transaction"]["verified"] is True
     assert dashboard_calls
     assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "tooling_shell")
-    assert dashboard_calls[-1]["operation_label"] == "Greenfield create dashboard visibility"
+    assert dashboard_calls[-1]["operation_label"] == "Greenfield pre-confirm staged surface refresh"
     assert "atlas_sync" not in dashboard_calls[-1]
     assert "greenfield create wrote confirmed proposal" in out
     assert "- validation gate: passed" in out
@@ -831,12 +852,14 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert calls[1][1]["proposal_ready"] is True
     assert "ProductCreateTransaction ready for final command" in output
     assert transaction.transaction_hash in output
+    assert "exact file writes" in output
+    assert "hashed repo preconditions" in output
     assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
     assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
     assert "**Reply starts with:** `CONFIRM`" in output
     assert "Commit this exact validated package now." in output
-    assert "Odylith verifies the hash and writes the transaction atomically" in output
+    assert "verifies the hash and repo preconditions, writes the sealed bytes, and validates readback" in output
     assert "### Command: `EDIT`" in output
     assert "**Reply starts with:** `EDIT`" in output
     assert "Do not commit. Put corrections after EDIT" in output
@@ -855,6 +878,7 @@ def test_greenfield_compile_transaction_cli_outputs_hash_ready_contract(
     assert "--transaction-file" in output
     assert "--transaction-hash" in output
     assert transaction_path.is_file()
+    assert transaction_path.with_name(transaction_path.name + ".compiler-receipt.v1.json").is_file()
     saved = json.loads(transaction_path.read_text(encoding="utf-8"))
     assert saved["transaction_hash"] == transaction.transaction_hash
     assert (
@@ -872,11 +896,7 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     _write_confirmed_intent(tmp_path)
     _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    transaction_path.parent.mkdir(parents=True, exist_ok=True)
-    transaction_path.write_text(
-        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
     calls: list[tuple[str, dict[str, object]]] = []
 
     def forbidden(*_args, **_kwargs):
@@ -939,6 +959,43 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
 
 
+def test_greenfield_create_cli_rejects_transaction_without_compiler_receipt(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True, exist_ok=True)
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("a transaction without a compiler receipt must fail before commit")
+
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            transaction.transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "missing its pre-confirm compiler receipt" in payload["error"]
+
+
 @pytest.mark.parametrize(
     ("flag", "value"),
     (
@@ -956,11 +1013,7 @@ def test_greenfield_create_cli_rejects_post_confirm_overrides(
 ) -> None:
     _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    transaction_path.parent.mkdir(parents=True, exist_ok=True)
-    transaction_path.write_text(
-        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
 
     def forbidden(*_args, **_kwargs):
         raise AssertionError("post-confirm create overrides must fail before compile or commit")
@@ -1045,11 +1098,7 @@ def test_greenfield_create_cli_requires_visible_transaction_hash(
 ) -> None:
     _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    transaction_path.parent.mkdir(parents=True, exist_ok=True)
-    transaction_path.write_text(
-        json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
 
     def forbidden(*_args, **_kwargs):
         raise AssertionError("transaction create without --transaction-hash must fail before commit")
@@ -1090,20 +1139,11 @@ def test_greenfield_create_cli_rejects_transaction_file_without_compiler_provena
     candidate = replace(transaction, compiler_provenance={})
     forged = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    transaction_path.parent.mkdir(parents=True, exist_ok=True)
-    transaction_path.write_text(
-        json.dumps(product_create_transaction_to_dict(forged), indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, forged)
 
     def forbidden(*_args, **_kwargs):
         raise AssertionError("unapproved transaction provenance must fail before governed writes")
 
-    monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "materialize_precompiled_greenfield_create_baseline",
-        forbidden,
-    )
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
 

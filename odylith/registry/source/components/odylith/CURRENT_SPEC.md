@@ -169,10 +169,14 @@ Public docs should describe these commands, not direct module entrypoints.
   `odylith greenfield propose --prompt ...` shows the Product Intent
   Confirmation, `odylith greenfield compile-transaction --prompt ...
   --intent-file ... --output ...` builds and quality-gates the complete
-  `ProductCreateTransaction`, and `odylith greenfield create
-  --transaction-file ... --transaction-hash ... --confirm` only verifies and
-  commits that compiled transaction. Post-confirm create must not rebuild
-  proposals, repair product semantics, or accept prompt/intent edits; edits are
+  `ProductCreateTransaction`, including the exact governed/rendered write set,
+  file and directory deletions, repo preconditions, readback fingerprints, and
+  operator success result. `odylith greenfield create --transaction-file ...
+  --transaction-hash ... --confirm` only verifies the detached compiler
+  receipt, transaction hash, compiler identity, and repo preconditions; applies
+  the sealed write set under rollback guard; validates readback; and reports the
+  precompiled result. Post-confirm create must not rebuild proposals, repair
+  product semantics, refresh surfaces, or accept prompt/intent edits; edits are
   new evidence that require a rebuilt transaction.
 - Consumer-facing narration must keep `.agents/skills` lookup, missing-shim,
   and fallback-source-path details implicit unless they change the next

@@ -26,11 +26,13 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import writ
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import PRODUCT_CREATE_TRANSACTION_COMPILER
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_repo_fingerprint
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
@@ -41,6 +43,7 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 COMPILED_ACCEPTED_AT = "2026-07-07T00:00:00-07:00"
@@ -125,7 +128,7 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         traceability_plan=traceability_plan,
         review_date="2026-07-07",
     )
-    return GreenfieldCompletionPackage(
+    package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
         rendered_atlas_sources=rendered_atlas_sources,
@@ -270,6 +273,11 @@ def _package(proposal: dict[str, Any]) -> GreenfieldCompletionPackage:
         },
         release_workstream_ids=("B-001",),
     )
+    return _seal_test_package(package, repo_root=Path("/repo"))
+
+
+def _seal_test_package(package: GreenfieldCompletionPackage, *, repo_root: Path) -> GreenfieldCompletionPackage:
+    return seal_compiled_greenfield_package_fixture(package, repo_root=repo_root)
 
 
 def _record_compiled_memory_for_readback(**kwargs: Any) -> dict[str, Any]:
@@ -361,6 +369,7 @@ def _transaction(repo_root: Path | None = None) -> Any:
         baseline_writes=greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root),
         brand_asset_writes=brand_assets.precompiled_brand_asset_writes(repo_root=root),
     )
+    package = _seal_test_package(package, repo_root=root)
     return build_product_create_transaction(
         proposal=proposal,
         release_selector="0.0.1",
@@ -525,7 +534,9 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     restored = product_create_transaction_from_dict(payload)
 
     assert restored.transaction_hash == transaction.transaction_hash
-    assert restored.verified
+    assert not restored.verified
+    with pytest.raises(ValueError, match="not accepted by the pre-confirm compiler"):
+        require_product_create_transaction_verified(restored)
     assert restored.compiler_provenance["compiler"] == PRODUCT_CREATE_TRANSACTION_COMPILER
     assert restored.summary()["compiler_phase"] == "pre_confirm_compile"
     assert restored.prewrite_package.proposal == transaction.prewrite_package.proposal
@@ -554,6 +565,19 @@ def test_product_create_transaction_json_round_trips_with_hash() -> None:
     payload["quality_manifest"] = {**payload["quality_manifest"], "status": "failed"}
     with pytest.raises(ValueError, match="hash mismatch"):
         product_create_transaction_from_dict(payload)
+
+
+def test_compiled_transaction_file_requires_untampered_compiler_receipt(tmp_path: Path) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+    path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    write_compiled_product_create_transaction_file(path, transaction)
+
+    restored = load_compiled_product_create_transaction_file(path)
+
+    assert restored.verified
+    path.write_text(path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="does not match its pre-confirm compiler receipt"):
+        load_compiled_product_create_transaction_file(path)
 
 
 def test_product_create_transaction_json_round_trips_traceability_diagram_links() -> None:
@@ -603,7 +627,10 @@ def test_product_create_commit_owner_stays_separate_from_proposal_generation() -
     assert "GreenfieldApplyTransaction" not in proposal_source
     assert "greenfield_compiled_write" in commit_source
     assert "write_compiled_greenfield_package" in commit_source
-    assert "materialize_precompiled_greenfield_create_baseline" in commit_source
+    assert "require_greenfield_repository_preconditions" in commit_source
+    assert "greenfield_repository_write_set" in commit_source
+    assert "materialize_precompiled_greenfield_create_baseline" not in commit_source
+    assert "materialize_precompiled_brand_assets" not in commit_source
     assert "ensure_greenfield_create_baseline" not in commit_source
     assert "write_greenfield_proposal" not in commit_source
     forbidden_commit_tokens = (
@@ -625,67 +652,21 @@ def test_commit_product_create_transaction_is_commit_only(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transaction = _transaction(repo_root=tmp_path)
-    calls: list[dict[str, Any]] = []
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("commit must not run product interpretation, repair, or package compilation")
-
-    def forbidden_baseline_generation(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("commit must not generate baseline files after confirmation")
-
-    def forbidden_brand_asset_generation(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("commit must not dynamically seed brand assets after confirmation")
-
-    class _RollbackGuard:
-        def __init__(self, repo_root: Path) -> None:
-            self.repo_root = repo_root
-            self.committed = False
-
-        def __enter__(self) -> "_RollbackGuard":
-            return self
-
-        def commit(self) -> None:
-            self.committed = True
-
-        def __exit__(self, exc_type: object, exc: object, traceback: object) -> bool:
-            assert self.committed
-            return False
-
-    def fake_compiled_write(**kwargs: Any) -> dict[str, Any]:
-        calls.append(kwargs)
-        return {
-            "mode": "applied",
-            "validation_gate": kwargs["transaction"].validation_gate,
-            "backlog": [],
-            "components": [],
-            "diagrams": [],
-        }
-
-    brand_materialize_calls: list[dict[str, Any]] = []
-    real_materialize_brand_assets = greenfield_create_commit.brand_assets.materialize_precompiled_brand_assets
-
-    def fake_materialize_brand_assets(**kwargs: Any) -> tuple[Path, ...]:
-        brand_materialize_calls.append(kwargs)
-        return real_materialize_brand_assets(**kwargs)
+        raise AssertionError("commit must not run product interpretation, generation, repair, or surface refresh")
 
     monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
     monkeypatch.setattr(greenfield_proposals, "run_greenfield_post_confirm_engine", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", _RollbackGuard)
-    monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "ensure_greenfield_create_baseline",
-        forbidden_baseline_generation,
-    )
-    monkeypatch.setattr(greenfield_create_commit.brand_assets, "ensure_brand_assets", forbidden_brand_asset_generation)
-    monkeypatch.setattr(
-        greenfield_create_commit.brand_assets,
-        "materialize_precompiled_brand_assets",
-        fake_materialize_brand_assets,
-    )
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", fake_compiled_write)
+    monkeypatch.setattr(greenfield_apply_prewrite, "build_prewrite_completion_package", forbidden)
+    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", forbidden)
+    monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_target", forbidden)
+    monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_assignment", forbidden)
+    monkeypatch.setattr(greenfield_component_commit, "materialize_compiled_component_from_preview", forbidden)
+    monkeypatch.setattr(greenfield_apply_diagrams, "materialize_apply_diagrams", forbidden)
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
@@ -694,22 +675,15 @@ def test_commit_product_create_transaction_is_commit_only(
         started_at=0.0,
     )
 
-    assert len(calls) == 1
-    assert calls[0]["transaction"] is transaction
     assert result["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert result["product_create_transaction"]["verified"] is True
-    assert len(brand_materialize_calls) == 1
-    assert brand_materialize_calls[0]["brand_asset_writes"] == transaction.prewrite_package.brand_asset_writes
+    assert result["repository_write_set"]["status"] == "passed"
     assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
     assert result["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
     assert (
         result["post_confirm_quality_manifest"]["write_transaction"]["product_create_transaction_hash"]
         == transaction.transaction_hash
     )
-    assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
-    assert (tmp_path / "odylith/technical-plans/INDEX.md").is_file()
-    assert (tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").is_file()
-    assert (tmp_path / "odylith/surfaces/brand/manifest.json").is_file()
 
 
 def test_commit_product_create_transaction_rejects_bad_hash_before_write(
@@ -721,7 +695,6 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
 
-    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
@@ -735,6 +708,53 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
         )
 
 
+def test_commit_product_create_transaction_rejects_direct_uncompiled_object(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = replace(_transaction(repo_root=tmp_path), _compiler_attestation=None)
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("uncompiled transaction object must fail before the write boundary")
+
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="not accepted by the pre-confirm compiler"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=True,
+            started_at=0.0,
+        )
+
+
+def test_commit_product_create_transaction_rejects_repo_drift_before_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+    index_path = tmp_path / "odylith/radar/source/INDEX.md"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    index_path.write_text("operator edit after compile\n", encoding="utf-8")
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("repo drift must fail before entering the write boundary")
+
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="repo preconditions changed"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=True,
+            started_at=0.0,
+        )
+
+    assert index_path.read_text(encoding="utf-8") == "operator edit after compile\n"
+
+
 def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_or_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -745,7 +765,6 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
         raise AssertionError("missing confirm must fail before hash verification, rollback guard, or write path")
 
     monkeypatch.setattr(greenfield_create_commit, "require_product_create_transaction_verified", forbidden)
-    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
@@ -787,7 +806,6 @@ def test_commit_product_create_transaction_rejects_unapproved_provenance_before_
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("unapproved ProductCreateTransaction provenance must fail before write")
 
-    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
@@ -855,7 +873,6 @@ def test_commit_product_create_transaction_rejects_unapproved_manifest_before_wr
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("unapproved ProductCreateTransaction must not enter the write path")
 
-    monkeypatch.setattr(greenfield_create_commit.greenfield_create_baseline, "materialize_precompiled_greenfield_create_baseline", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)

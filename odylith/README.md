@@ -125,9 +125,10 @@ transaction. Odylith may normalize that Markdown into
 `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
 package from the accepted narrative, validates it, runs the Tribunal write gate,
 quality-gates the full package, and hashes the ProductCreateTransaction before
-records can be confirmed. After **CONFIRM**, create only verifies the transaction
-hash, writes atomically, validates readback, refreshes
-readable views, and reports success or an environment/IO failure. Do not inspect Odylith source files,
+records can be confirmed. After **CONFIRM**, create only verifies the compiler
+receipt, transaction hash, compiler identity, and unchanged repo preconditions;
+applies the sealed write set under rollback guard; validates exact readback; and
+reports success or an environment/IO failure. Do not inspect Odylith source files,
 `.odylith`, bundle files, Python modules, or local examples to discover schema fields.
 Do not hand-author, switch to, or repair proposal JSON
 after confirmation. Do not narrate parser/schema retries or intermediate

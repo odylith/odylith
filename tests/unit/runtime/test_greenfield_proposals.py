@@ -10,9 +10,10 @@ from odylith.runtime.domain_intelligence import artifact_enrichment
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
+from odylith.runtime.domain_intelligence import greenfield_confirmed_prewrite_gate
 from odylith.runtime.domain_intelligence import greenfield_create_commit
-from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lookup_for
@@ -44,6 +45,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _ontology_term_label
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -59,27 +61,22 @@ GREENFIELD_PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/
 
 @pytest.fixture(autouse=True)
 def _stub_rendered_surface_custody_for_legacy_proposal_units(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        greenfield_prewrite_surface_stage,
-        "build_staged_surface_refresh_preview",
-        lambda **_kwargs: surface_refresh_preview_fixture(),
-    )
-    monkeypatch.setattr(
-        greenfield_apply_diagrams,
-        "raise_for_greenfield_rendered_surface_custody",
-        lambda **_kwargs: {"status": "skipped_in_legacy_proposal_unit"},
-    )
+    stub_preconfirm_surface_refresh(monkeypatch)
 
 
 def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
     parent_source = GREENFIELD_PROPOSALS_PATH.read_text(encoding="utf-8")
     write_source = GREENFIELD_APPLY_WRITE_PATH.read_text(encoding="utf-8")
+    cli_source = (ROOT / "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py").read_text(
+        encoding="utf-8"
+    )
     diagram_source = (ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_diagrams.py").read_text(
         encoding="utf-8"
     )
 
     assert len(parent_source.splitlines()) < 800
-    assert "greenfield_create_commit.commit_greenfield_create_transaction" in parent_source
+    assert "greenfield_create_commit.commit_greenfield_create_transaction" not in parent_source
+    assert "greenfield_create_commit.commit_greenfield_create_transaction" in cli_source
     assert "greenfield_apply_write.write_greenfield_proposal" not in parent_source
     assert "greenfield_apply_write.release_assignment_note" in parent_source
     for moved in (
@@ -307,7 +304,7 @@ def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None
 
 
 def test_greenfield_confirmed_builder_rejects_shallow_confirmed_intent(tmp_path) -> None:
-    with pytest.raises(ValueError, match="requires product story"):
+    with pytest.raises(ValueError, match="Product Intent authority is missing"):
         greenfield_proposals.build_greenfield_proposal(
             repo_root=tmp_path,
             prompt="Create a community archive",
@@ -863,6 +860,16 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
+    )
+    monkeypatch.setattr(
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "passed", "atlas_surface_count": 3, "atlas_diagram_count": 2},
+    )
     proposal = _governed_greenfield_fixture(tmp_path, "plant sensor")
     proposal["intent"]["summary"] = "**Primary reviewer** can compare the accepted path, state, and evidence."
     proposal["backlog"][1]["customer"] = "**Primary reviewer** and __source reviewer__"
@@ -1085,8 +1092,7 @@ def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
-    original = greenfield_apply_diagrams.scaffold_mermaid_diagram.artifact_tribunal.run_governed_artifact_tribunal
+    original = greenfield_confirmed_prewrite_gate.artifact_tribunal.run_governed_artifact_tribunal
     diagram_payloads: list[dict[str, object]] = []
 
     def capture_tribunal(*, artifact_kind: str, payload: Mapping[str, object]) -> object:
@@ -1095,15 +1101,14 @@ def test_greenfield_apply_runs_artifact_tribunal_for_each_atlas_diagram(tmp_path
         return original(artifact_kind=artifact_kind, payload=payload)
 
     monkeypatch.setattr(
-        greenfield_apply_diagrams.scaffold_mermaid_diagram.artifact_tribunal,
+        greenfield_confirmed_prewrite_gate.artifact_tribunal,
         "run_governed_artifact_tribunal",
         capture_tribunal,
     )
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
 
-    commit_precompiled_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=proposal,
-        confirm=True,
+    greenfield_confirmed_prewrite_gate.preflight_issues(
+        proposal,
         release_selector="0.0.1",
     )
 
@@ -1420,10 +1425,20 @@ def test_greenfield_backlog_overrides_preserve_child_specific_sections() -> None
 def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     refresh_calls: list[dict[str, object]] = []
+    def capture_prewrite_refresh(**kwargs: object) -> dict[str, object]:
+        refresh_calls.append(
+            {
+                "repo_root": kwargs["repo_root"],
+                "surfaces": greenfield_surface_refresh_proof.GREENFIELD_VISIBLE_SURFACES,
+                "operation_label": "Greenfield pre-confirm staged surface refresh",
+            }
+        )
+        return surface_refresh_preview_fixture()
+
     monkeypatch.setattr(
-        greenfield_apply_write.owned_surface_refresh,
-        "raise_for_failed_refreshes",
-        lambda **kwargs: refresh_calls.append(dict(kwargs)),
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        capture_prewrite_refresh,
     )
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
@@ -1463,13 +1478,12 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert result["validation_gate"]["status"] == "passed"
     assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert result["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
-    assert refresh_calls == [
-        {
-            "repo_root": tmp_path.resolve(),
-            "surfaces": ("radar", "registry", "atlas", "compass", "tooling_shell"),
-            "operation_label": "Greenfield apply dashboard visibility",
-        }
-    ]
+    assert refresh_calls
+    assert all(call["repo_root"] != tmp_path.resolve() for call in refresh_calls)
+    assert all(
+        call["operation_label"] == "Greenfield pre-confirm staged surface refresh"
+        for call in refresh_calls
+    )
     assert result["program"]["created"] is True
     assert result["program"]["umbrella_id"] == "B-001"
     assert len(result["program"]["waves"]) == 2
@@ -1509,7 +1523,14 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "related_diagram_ids: D-001,D-002" in child_idea
     assert "## Impacted Components" in child_idea
     assert "`commerce-storefront`" in child_idea
-    assert any(result["backlog"][1]["idea_path"] in row["related_backlog"] for row in atlas_catalog["diagrams"])
+    backlog_paths = {str(row["idea_path"]) for row in result["backlog"]}
+    atlas_backlog_paths = {
+        str(path)
+        for row in atlas_catalog["diagrams"]
+        for path in row["related_backlog"]
+    }
+    assert backlog_paths & atlas_backlog_paths
+    assert "odylith-greenfield-prewrite" not in json.dumps(atlas_catalog)
     storefront = next(row for row in component_registry["components"] if row["component_id"] == "commerce-storefront")
     assert storefront["workstreams"] == ["B-002"]
     assert storefront["diagrams"] == []
@@ -1590,7 +1611,7 @@ def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_proj
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|program parent"):
+    with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|program parent|quality gate"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_recipe_legacy_shape(),
@@ -1608,7 +1629,7 @@ def test_greenfield_apply_rejects_missing_host_authored_program_parent(tmp_path,
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    with pytest.raises(ValueError, match="program parent|project_intelligence|domain_intelligence"):
+    with pytest.raises(ValueError, match="program parent|project_intelligence|domain_intelligence|quality gate"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_crispr_without_parent(),
@@ -1775,12 +1796,12 @@ def test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails(tmp_pat
     _seed_empty_governance_repo(tmp_path)
     original_index = (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
 
-    def fail_scaffold(**_kwargs: object) -> tuple[int, list[str]]:
-        return 1, ["FAILED: synthetic scaffold failure"]
+    def fail_scaffold(**_kwargs: object) -> object:
+        raise RuntimeError("synthetic scaffold failure")
 
-    monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram, "scaffold_diagram", fail_scaffold)
+    monkeypatch.setattr(greenfield_apply_diagrams, "materialize_apply_diagrams", fail_scaffold)
 
-    with pytest.raises(RuntimeError, match="synthetic scaffold failure"):
+    with pytest.raises(ValueError, match="synthetic scaffold failure"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_ecommerce_proposal(),
@@ -1799,16 +1820,21 @@ def test_greenfield_apply_rolls_back_partial_writes_when_dashboard_refresh_fails
     _seed_empty_governance_repo(tmp_path)
     original_index = (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
 
-    def fail_refreshes(**_kwargs: object) -> None:
-        _write(tmp_path / "odylith/radar/radar.html", "partial dashboard\n")
-        _write(tmp_path / "odylith/runtime/delivery_intelligence.v4.json", "{}\n")
+    def fail_refreshes(**kwargs: object) -> dict[str, object]:
+        staged_root = Path(str(kwargs["repo_root"]))
+        _write(staged_root / "odylith/radar/radar.html", "partial dashboard\n")
+        _write(staged_root / "odylith/runtime/delivery_intelligence.v4.json", "{}\n")
         raise RuntimeError("synthetic dashboard refresh failure")
 
-    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", fail_refreshes)
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        fail_refreshes,
+    )
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc_info:
+    with pytest.raises(ValueError, match="synthetic dashboard refresh failure"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_ecommerce_proposal(),
@@ -1816,8 +1842,6 @@ def test_greenfield_apply_rolls_back_partial_writes_when_dashboard_refresh_fails
             release_selector="0.0.1",
         )
 
-    assert exc_info.value.rollback_status == "rolled_back"
-    assert "synthetic dashboard refresh failure" in str(exc_info.value)
     assert (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8") == original_index
     assert not (tmp_path / "odylith/radar/radar.html").exists()
     assert not (tmp_path / "odylith/runtime/delivery_intelligence.v4.json").exists()

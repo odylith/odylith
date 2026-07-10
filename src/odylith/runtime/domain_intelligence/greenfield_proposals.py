@@ -17,7 +17,6 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine import repo_analysis
 from odylith.runtime.analysis_engine.types import SourceSummary, slugify
-from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
@@ -32,9 +31,10 @@ from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifa
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -48,6 +48,7 @@ from odylith.runtime.domain_intelligence.proposal_rendering import format_propos
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_completion_ready
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_package_ready
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     GreenfieldPostConfirmRepairContext,
 )
@@ -69,6 +70,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_planner 
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
+from odylith.runtime.domain_intelligence.proposal_validation import require_distinct_supplied_diagram_sources
 from odylith.runtime.common import display_text
 
 
@@ -439,8 +441,7 @@ def load_product_create_transaction_args(
     path = Path(transaction_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    transaction = product_create_transaction_from_dict(payload)
+    transaction = load_compiled_product_create_transaction_file(path)
     expected_hash = str(getattr(args, "transaction_hash", "") or "").strip()
     if not expected_hash:
         raise ValueError("greenfield create with a ProductCreateTransaction requires --transaction-hash")
@@ -450,11 +451,7 @@ def load_product_create_transaction_args(
 
 
 def write_product_create_transaction_file(path: Path, transaction: ProductCreateTransaction) -> Path:
-    target = Path(path).expanduser()
-    target.parent.mkdir(parents=True, exist_ok=True)
-    payload = product_create_transaction_to_dict(transaction)
-    atomic_write_text(target, json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    return target
+    return write_compiled_product_create_transaction_file(path, transaction)
 
 
 def _row_posture_text(row: Mapping[str, Any], proposal: Mapping[str, Any], *keys: str) -> str:
@@ -632,7 +629,9 @@ def _build_repaired_prewrite_package(
         max_passes=_MAX_PACKAGE_REPAIR_PASSES,
         repair_tier=repair_tier,
     )
-    return result.proposal, result.tribunal, result.prewrite_build, result.manifest
+    final_prewrite_build = build_prewrite(result.proposal, result.tribunal)
+    assert_greenfield_package_ready(final_prewrite_build.package)
+    return result.proposal, result.tribunal, final_prewrite_build, result.manifest
 
 
 def compile_greenfield_create_transaction(
@@ -652,6 +651,7 @@ def compile_greenfield_create_transaction(
         raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
     intent_authority = dict(intent_authority)
     require_product_intent_authority(intent_authority)
+    require_distinct_supplied_diagram_sources(proposal.get("diagrams"))
     proposal, tribunal, prewrite_build, quality_manifest = _build_repaired_prewrite_package(
         root=root,
         proposal=proposal,

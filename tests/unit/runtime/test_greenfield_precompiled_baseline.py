@@ -9,13 +9,14 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
-from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 _PROMPT = "Draft a greenfield proposal for a municipal permit review workspace"
@@ -37,6 +38,11 @@ def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
         greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        lambda **_kwargs: surface_refresh_preview_fixture(),
     )
 
 
@@ -76,7 +82,7 @@ def test_compile_greenfield_create_transaction_precompiles_missing_baseline_writ
     assert not (tmp_path / "odylith/radar/source/INDEX.md").exists()
 
 
-def test_commit_product_create_transaction_rejects_missing_precompiled_baseline_before_write(
+def test_commit_product_create_transaction_uses_write_set_when_legacy_baseline_field_is_empty(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -93,24 +99,15 @@ def test_commit_product_create_transaction_rejects_missing_precompiled_baseline_
         repo_root=tmp_path,
     )
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("missing baseline writes must fail before rollback guard or compiled writes")
-
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "materialize_precompiled_greenfield_create_baseline",
-        forbidden,
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction=transaction,
+        confirm=True,
+        started_at=0.0,
     )
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
-    with pytest.raises(ValueError, match="missing precompiled baseline writes"):
-        greenfield_create_commit.commit_greenfield_create_transaction(
-            repo_root=tmp_path,
-            transaction=transaction,
-            confirm=True,
-            started_at=0.0,
-        )
+    assert result["repository_write_set"]["status"] == "passed"
+    assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
 
 
 def test_materialize_precompiled_baseline_rejects_non_text_payload(tmp_path: Path) -> None:

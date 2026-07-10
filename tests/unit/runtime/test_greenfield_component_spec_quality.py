@@ -75,6 +75,7 @@ CONFIRMED_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield
 GREENFIELD_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_text.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 CONFIRMED_PROJECT_BRIEF_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
+PROJECT_BRIEF_FIELDS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_project_brief_fields.py"
 CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py"
 GREENFIELD_COMMAND_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_command_text.py"
 COMMON_VALUE_COERCION_PATH = ROOT / "src/odylith/runtime/common/value_coercion.py"
@@ -390,6 +391,7 @@ def test_exact_string_dedupe_stays_in_common_value_owner() -> None:
 def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:
     component_source = CONFIRMED_COMPONENTS_PATH.read_text(encoding="utf-8")
     brief_source = CONFIRMED_PROJECT_BRIEF_PATH.read_text(encoding="utf-8")
+    field_source = PROJECT_BRIEF_FIELDS_PATH.read_text(encoding="utf-8")
     proposal_source = CONFIRMED_PROPOSAL_PATH.read_text(encoding="utf-8")
     command_source = GREENFIELD_COMMAND_TEXT_PATH.read_text(encoding="utf-8")
 
@@ -397,9 +399,13 @@ def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:
     assert len(brief_source.splitlines()) < 800
     assert "from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import" in proposal_source
     assert "from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote" in proposal_source
-    for moved in ("def confirmed_project_brief", "def _brief_option", "def _checkpoint", "def _brief_clause"):
+    for moved in ("def confirmed_project_brief", "def _brief_clause"):
         assert moved not in component_source
         assert moved in brief_source
+    for moved in ("def brief_option", "def checkpoint"):
+        assert moved not in component_source
+        assert moved in field_source
+    assert "greenfield_project_brief_fields import brief_option as _brief_option" in brief_source
     assert "def shell_quote" not in component_source
     assert "def shell_quote" not in brief_source
     assert command_source.count("def shell_quote") == 1

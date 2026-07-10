@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
@@ -319,27 +320,32 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     ambiguities = evaluation.ambiguities or (
         "The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
     )
+    evidence_requirements = evidence_anchor_phrases(raw_source)
     actor_lines = "\n".join(f"- {row}" for row in actor_rows)
     system_lines = "\n".join(f"- {row}" for row in (evaluation.internal_systems or tuple(_internal_system_rows_from_recovered_title(title))))
-    return "\n\n".join(
+    sections = [
+        f"# {title} - Product Intent Confirmation",
+        "Product story\n" + story,
+        "State object\n" + state,
+        "First complete path\n" + first_path.rstrip(".") + ".",
+        "Human actors\n" + actor_lines,
+        "External systems\n- No external systems are required for the first proof path unless the operator adds one during edit.",
+        "Internal product systems\n" + system_lines,
+        "Problem\n" + problem,
+        "Opportunity\n" + f"Prove the smallest complete {title.lower()} path before broader automation expands.",
+        "Product view\n" + product_view,
+        "Success metrics\n" + "\n".join(f"- {row}" for row in success_metrics),
+        "Critical assumptions\n" + "\n".join(f"- {row}" for row in assumptions),
+    ]
+    if evidence_requirements:
+        sections.append("Evidence requirements\n" + "\n".join(f"- {row}" for row in evidence_requirements))
+    sections.extend(
         (
-            f"# {title} - Product Intent Confirmation",
-            "Product story\n" + story,
-            "State object\n" + state,
-            "First complete path\n" + first_path.rstrip(".") + ".",
-            "Human actors\n" + actor_lines,
-            "External systems\n- No external systems are required for the first proof path unless the operator adds one during edit.",
-            "Internal product systems\n" + system_lines,
-            "Problem\n" + problem,
-            "Opportunity\n" + f"Prove the smallest complete {title.lower()} path before broader automation expands.",
-            "Product view\n" + product_view,
-            "Success metrics\n"
-            + "\n".join(f"- {row}" for row in success_metrics),
-            "Critical assumptions\n" + "\n".join(f"- {row}" for row in assumptions),
             "Ambiguities\n" + "\n".join(f"- {row}" for row in ambiguities),
             "Proof boundary\n" + proof,
         )
     )
+    return "\n\n".join(sections)
 
 
 def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool = False) -> str:

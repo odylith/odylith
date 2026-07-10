@@ -149,7 +149,10 @@ def greenfield_repair_until_clean(
         if tuple(issues) == last_issues and not changed:
             break
         last_issues = tuple(issues)
-    raise ValueError(format_proposal_issue_report("confirmed completion", list(last_issues)))
+    final_issues = _preflight_issues(payload, release_selector=release_selector)
+    if not final_issues:
+        return payload
+    raise ValueError(format_proposal_issue_report("confirmed completion", list(final_issues)))
 
 
 def _is_confirmed_greenfield(proposal: Mapping[str, Any]) -> bool:

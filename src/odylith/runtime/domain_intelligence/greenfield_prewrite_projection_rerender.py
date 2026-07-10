@@ -291,13 +291,6 @@ def _rerender_surface_refresh_preview(
             source_root=root,
             target_root=prewrite_root,
         )
-        staged_catalog_rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
-            root=prewrite_root,
-            rows=diagram_rows,
-            diagram_ids=diagram_ids,
-            traceability_plan=traceability_plan,
-            review_date=package.atlas_review_date,
-        )
         try:
             return greenfield_prewrite_surface_stage.build_staged_surface_refresh_preview(
                 prewrite_root=prewrite_root,
@@ -312,7 +305,7 @@ def _rerender_surface_refresh_preview(
                 staged_traceability_plan=traceability_plan,
                 rendered_atlas_sources=package.rendered_atlas_sources or {},
                 atlas_review_date=package.atlas_review_date,
-                staged_atlas_catalog_rows=staged_catalog_rows,
+                compiled_atlas_catalog_rows=package.atlas_catalog_rows,
                 release_id=greenfield_apply_prewrite._prewrite_release_id(  # noqa: SLF001
                     package.release_target_result,
                     package.release_assignment_result,

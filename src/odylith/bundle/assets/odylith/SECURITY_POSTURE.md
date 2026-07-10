@@ -111,8 +111,9 @@ Odylith does not claim full protection against:
   governance claim.
 - `odylith greenfield compile-transaction` builds and quality-gates the full
   ProductCreateTransaction before confirmation.
-- `odylith greenfield create` only verifies the hash, commits the compiled
-  transaction, validates readback, refreshes surfaces, and reports success.
+- `odylith greenfield create` only verifies the compiler receipt, transaction
+  hash, compiler identity, and unchanged repo preconditions; applies the sealed
+  write set under rollback guard; validates exact readback; and reports success.
 - Legacy proposal `apply` is not a confirmed write path; edited intent must be
   treated as new evidence and compiled into a new transaction.
 - The greenfield proposal Tribunal rejects disconnected child topology, shallow

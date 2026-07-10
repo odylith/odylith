@@ -15,12 +15,14 @@ from odylith.runtime.domain_intelligence import greenfield_cli_output
 from odylith.runtime.domain_intelligence import greenfield_component_contract as component_contract
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _governed_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
@@ -52,6 +54,18 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
 
 
 def _stub_apply_refreshes(monkeypatch) -> None:
+    def render_preconfirm_surfaces(*, repo_root: Path):
+        for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
+            path = Path(repo_root) / relative_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("stubbed pre-confirm surface\n", encoding="utf-8")
+        return surface_refresh_preview_fixture()
+
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        render_preconfirm_surfaces,
+    )
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_component_commit.component_authoring.owned_surface_refresh,

@@ -121,7 +121,7 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
                 "owner": row.get("owner", "repo"),
                 "summary": row.get("summary", ""),
                 "components": row.get("components", "") or row.get("related_components", ""),
-                "watch_paths": row.get("watch_paths", ""),
+                "watch_paths": row.get("watch_paths", "") or row.get("intended_paths", ""),
                 "related_backlog": row.get("related_backlog", "") or row.get("related_diagrams", ""),
                 "related_code": row.get("related_code", ""),
             },

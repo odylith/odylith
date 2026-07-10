@@ -205,13 +205,15 @@ def _transaction_confirmation_text(
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
+        f"- sealed commit: {summary.get('repository_write_count', 0)} exact file writes, "
+        f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions",
         "- commands: CONFIRM commits this transaction hash; EDIT rebuilds from new evidence; REJECT stops with no writes",
         "",
         *format_confirmation_choice_lines(
             (
                 (
                     "CONFIRM",
-                    "Commit this exact validated package now. Odylith verifies the hash and writes the transaction atomically with "
+                    "Commit this exact validated package now. Odylith verifies the hash and repo preconditions, writes the sealed bytes, and validates readback with "
                     f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
                     f"--transaction-hash {summary['transaction_hash']} --confirm`. "
                     "No product reinterpretation, repair, or generation runs after CONFIRM.",
@@ -339,7 +341,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
                         "post_confirm_contract": (
                             "CONFIRM commits only this hash-bound transaction; post-confirm create verifies the hash, "
-                            "writes atomically, validates readback, and reports success or environment/IO failure."
+                            "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
+                            "guard, validates readback, and reports success or environment/IO failure."
                         ),
                         "choices": [
                             {

@@ -243,6 +243,8 @@ def outcome_action_phrase(outcome: str) -> str:
         or _looks_like_human_actor_prefix(actor)
     ):
         return _modal_safe_outcome_action(actor_action)
+    if looks_like_action_clause(text):
+        return _modal_safe_outcome_action(base_action_clause(text, force_leading_finite=True))
     if words & {"proof", "proven", "verified", "evidence", "audit", "ledger", "ledgers"}:
         return _modal_safe_outcome_action(f"review {_object_phrase(text)}")
     if _looks_like_coordinated_result_object(text):
@@ -252,8 +254,6 @@ def outcome_action_phrase(outcome: str) -> str:
         return _modal_safe_outcome_action(system_action)
     if _looks_like_past_result_noun(text):
         return _modal_safe_outcome_action(f"see {_object_phrase(text)}")
-    if looks_like_action_clause(text):
-        return _modal_safe_outcome_action(base_action_clause(text, force_leading_finite=True))
     if _looks_like_question_result(text):
         return _modal_safe_outcome_action(f"see {text}")
     if _looks_like_predicate_result(text):

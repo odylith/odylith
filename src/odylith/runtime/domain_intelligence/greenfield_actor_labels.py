@@ -787,6 +787,7 @@ def _focus_from_actor_body(value: str, *, role: str) -> str:
     finite_action_body = looks_like_finite_action_token(first) or looks_like_base_action_token(first)
     if finite_action_body:
         text = " ".join(text.split()[1:]).strip(" .")
+        text = _before_coordinated_action(text)
     text = re.sub(
         r"^(?:accepting|approving|checking|configuring|coordinating|editing|evaluating|handling|"
         r"following|logging|managing|monitoring|owning|receiving|reviewing|running|sharing|submitting|tracking|using)\s+",
@@ -801,6 +802,15 @@ def _focus_from_actor_body(value: str, *, role: str) -> str:
     if finite_action_body:
         text = re.split(r",|\s+\band\b\s+", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
     return _focus_from_text(text or value, role=role)
+
+
+def _before_coordinated_action(value: str) -> str:
+    text = _clean(value).strip(" .")
+    for match in re.finditer(r"\s+(?:and|or)\s+(?P<word>[A-Za-z][A-Za-z'-]*)\b", text, flags=re.IGNORECASE):
+        word = match.group("word")
+        if looks_like_finite_action_token(word) or looks_like_base_action_token(word):
+            return text[: match.start()].strip(" ,")
+    return text
 
 
 def _first_body_token(value: str) -> str:

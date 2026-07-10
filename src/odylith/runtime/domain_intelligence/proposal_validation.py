@@ -331,6 +331,20 @@ def _validate_diagrams(diagrams: list[Any]) -> None:
         raise ValueError("greenfield proposal diagrams must not reuse identical Mermaid source")
 
 
+def require_distinct_supplied_diagram_sources(value: object) -> None:
+    """Reject explicit duplicate topology before pre-confirm rendering begins."""
+
+    if not isinstance(value, list) or len(value) < 2:
+        return
+    supplied = [
+        _canonical_source(str(row.get("mermaid_source", "") or row.get("source", "")))
+        for row in value
+        if isinstance(row, Mapping) and str(row.get("mermaid_source", "") or row.get("source", "")).strip()
+    ]
+    if len(supplied) == len(value) and len(set(supplied)) == 1:
+        raise ValueError("greenfield proposal diagrams must not reuse identical Mermaid source")
+
+
 def _validate_evidence_tier(row: Mapping[str, Any], *, owner: str) -> None:
     tier = str(row.get("evidence_tier", "")).strip()
     if tier not in _VALID_EVIDENCE_TIERS:

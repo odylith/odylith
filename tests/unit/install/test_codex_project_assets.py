@@ -291,7 +291,7 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
         assert "greenfield compile-transaction" in compact_text, path
         assert "--transaction-file" in compact_text, path
         assert "--transaction-hash" in compact_text, path
-        assert "writes atomically" in compact_text, path
+        assert "rollback guard" in compact_text, path
         assert "same visible" in compact_text, path
         assert (
             "parser/schema retries" in compact_text
@@ -365,7 +365,7 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         assert "greenfield compile-transaction" in normalized, path
         assert "--transaction-file" in normalized, path
         assert "--transaction-hash" in normalized, path
-        assert "writes atomically" in normalized, path
+        assert "rollback guard" in normalized, path
         assert "hand-author" in normalized.casefold() or "hand author" in normalized.casefold(), path
         assert (
             "parser/schema retries" in normalized

@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 def _guidance_envelope(prompt: str) -> str:
@@ -75,7 +76,7 @@ def test_host_guidance_recovery_keeps_for_who_actor_role_out_of_workspace_user_f
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -98,7 +99,7 @@ def test_host_guidance_recovery_rejects_action_chain_prefix_as_actor(tmp_path) -
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -147,7 +148,7 @@ Commit transaction after hash confirmation: odylith greenfield create --repo-roo
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -174,7 +175,7 @@ def test_host_guidance_recovery_uses_user_actor_for_action_only_first_path() -> 
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -200,7 +201,7 @@ def test_host_guidance_recovery_does_not_invent_modal_actor_from_can_path() -> N
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -227,7 +228,7 @@ def test_host_guidance_recovery_carries_actor_across_coordinated_action_clauses(
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -258,7 +259,7 @@ def test_host_guidance_recovery_keeps_open_source_out_of_adapter_classification(
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
         require_completion_ready=False,
     )
     rendered = json.dumps(proposal, sort_keys=True)
@@ -304,7 +305,7 @@ def test_operator_intent_recovery_splits_product_view_result_sentence_for_model_
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     payload = build_accepted_project_source_payload(
         proposal=proposal,
@@ -351,7 +352,7 @@ def test_scientific_model_prompt_recovery_preserves_evaluation_depth(tmp_path) -
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -408,7 +409,7 @@ def test_scientific_recovery_preserves_loaded_measurement_source_step() -> None:
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
     lowered = text.casefold()
@@ -628,7 +629,7 @@ def test_command_led_sentence_target_preserves_domain_frame_without_container(tm
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -655,7 +656,7 @@ def test_command_led_platform_homonym_target_preserves_project_domain_frame(tmp_
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -681,7 +682,7 @@ def test_prompt_source_preserves_infinitive_after_use_to_instead_of_can_rewrite(
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -731,7 +732,7 @@ def test_host_guidance_recovery_handles_direct_product_for_actor_gerund_path(tmp
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -760,7 +761,7 @@ def test_host_guidance_recovery_handles_helper_relative_embedded_actor_path() ->
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -789,7 +790,7 @@ def test_prompt_source_recovers_actor_from_complete_path_grant() -> None:
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -844,7 +845,7 @@ def test_prompt_source_recovers_analyst_actor_from_complete_path_grant() -> None
             title=intent["title"],
             observed_source={},
             release_selector="0.0.1",
-            confirmed_intent=intent,
+            confirmed_intent=confirmed_mapping_with_authority(intent),
         )
         rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -888,7 +889,7 @@ def test_shard06_workflow_prompts_prefer_complete_actor_role_before_action() -> 
             title=intent["title"],
             observed_source={},
             release_selector="0.0.1",
-            confirmed_intent=intent,
+            confirmed_intent=confirmed_mapping_with_authority(intent),
         )
         rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -915,7 +916,7 @@ def test_confirmed_proposal_preserves_long_scientific_decision_phrase_without_da
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -939,7 +940,7 @@ def test_host_guidance_recovery_preserves_leading_purpose_context_before_actions
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
@@ -961,7 +962,7 @@ def test_host_guidance_recovery_keeps_direct_where_prompt_title_instead_of_termi
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1006,7 +1007,7 @@ Commit transaction after hash confirmation: odylith greenfield create --repo-roo
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1033,7 +1034,7 @@ def test_host_guidance_recovery_preserves_explicit_system_rows_through_completio
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1063,7 +1064,7 @@ def test_host_guidance_recovery_builds_clean_confirmed_proposal_from_controller_
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1116,7 +1117,7 @@ def test_host_guidance_recovery_handles_broad_product_prompt_without_parser_debr
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1151,7 +1152,7 @@ def test_host_guidance_recovery_rejects_long_title_noun_as_first_path() -> None:
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1181,7 +1182,7 @@ def test_host_guidance_recovery_strips_release_proof_tail_from_first_path() -> N
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1210,7 +1211,7 @@ def test_host_guidance_recovery_does_not_promote_verb_led_path_to_actor() -> Non
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1235,7 +1236,7 @@ def test_host_guidance_recovery_rejects_hyphenated_title_noun_as_first_path() ->
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1258,7 +1259,7 @@ def test_host_guidance_recovery_handles_bare_short_product_noun_phrase() -> None
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1287,7 +1288,7 @@ def test_host_guidance_recovery_keeps_audience_suffix_inside_product_title() -> 
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1309,7 +1310,7 @@ def test_host_guidance_recovery_handles_plural_actor_clauses_without_generic_wor
         title=intent["title"],
         observed_source={},
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
@@ -1371,7 +1372,7 @@ Release 0.0.1 is ready when one coordinator can triage a referral, mark missing 
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -1392,7 +1393,7 @@ def test_confirmed_recovery_uses_actor_subject_for_public_response_prompt(tmp_pa
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -1417,7 +1418,7 @@ def test_confirmed_recovery_keeps_instrument_objects_out_of_human_actors(tmp_pat
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
     expected_path = (
@@ -1451,7 +1452,7 @@ def test_confirmed_recovery_keeps_operator_notes_out_of_human_actors(tmp_path) -
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -1475,7 +1476,7 @@ def test_confirmed_recovery_keeps_anomalous_change_orders_as_object_phrase(tmp_p
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -1499,7 +1500,7 @@ def test_confirmed_recovery_keeps_organization_actor_and_including_context_reada
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 
@@ -1528,7 +1529,7 @@ def test_confirmed_recovery_fallback_actor_does_not_emit_participant(tmp_path) -
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(completed, sort_keys=True)
 

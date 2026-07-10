@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import copy
 import json
+from collections.abc import Mapping
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -134,6 +137,17 @@ def commit_precompiled_greenfield_proposal(
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
     proposal = _with_test_product_intent_authority(proposal, repo_root=root)
+    if not proposal_ready:
+        proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+        proposal = greenfield_proposals.complete_confirmed_proposal(
+            proposal,
+            release_selector=release_selector,
+        )
+        proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+        proposal = greenfield_proposals.complete_greenfield_semantic_apply_payload(
+            proposal,
+            release_selector=release_selector,
+        )
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=root,
         proposal=proposal,
@@ -146,8 +160,6 @@ def commit_precompiled_greenfield_proposal(
         transaction=transaction,
         confirm=True,
     )
-
-
 def _with_test_product_intent_authority(proposal: dict[str, object], *, repo_root: Path) -> dict[str, object]:
     if isinstance(proposal.get(PRODUCT_INTENT_AUTHORITY_KEY), dict):
         return proposal
@@ -167,6 +179,7 @@ def confirmed_intent_with_authority(
     prompt: str,
     repo_root: Path | None = None,
     write_files: bool = False,
+    source_format: str = "markdown",
 ) -> dict[str, object]:
     intent = parse_confirmed_intent_text(
         text,
@@ -178,7 +191,7 @@ def confirmed_intent_with_authority(
         intent,
         source_text=text,
         source_path=markdown_path,
-        source_format="markdown",
+        source_format=source_format,
     )
     if write_files:
         markdown_path.parent.mkdir(parents=True, exist_ok=True)
@@ -190,6 +203,29 @@ def confirmed_intent_with_authority(
         markdown_source_path=markdown_path,
     )
     return intent
+
+
+def confirmed_mapping_with_authority(
+    intent: Mapping[str, Any],
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    prepared = dict(intent)
+    source_text = json.dumps(prepared, ensure_ascii=True, sort_keys=True)
+    root = Path("/repo") if repo_root is None else Path(repo_root)
+    markdown_path = root / ".odylith/runtime/greenfield/confirmed-intent.md"
+    envelope = build_product_intent_envelope(
+        prepared,
+        source_text=source_text,
+        source_path=markdown_path,
+        source_format="in_memory_confirmed_intent",
+    )
+    prepared[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
+        envelope,
+        structured_intent_path=markdown_path.with_suffix(".json"),
+        markdown_source_path=markdown_path,
+    )
+    return prepared
 
 
 def compiled_greenfield_package_fixture(
@@ -242,7 +278,7 @@ def compiled_greenfield_package_fixture(
         traceability_plan=traceability_plan,
         review_date="2026-07-07",
     )
-    return GreenfieldCompletionPackage(
+    package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector=release_selector,
         rendered_atlas_sources=rendered_atlas_sources,
@@ -332,6 +368,52 @@ def compiled_greenfield_package_fixture(
         },
         release_workstream_ids=(idea_id,),
     )
+    return seal_compiled_greenfield_package_fixture(package, repo_root=repo_root)
+
+
+def seal_compiled_greenfield_package_fixture(
+    package: GreenfieldCompletionPackage,
+    *,
+    repo_root: Path,
+) -> GreenfieldCompletionPackage:
+    """Attach a no-op sealed commit envelope for transaction contract tests."""
+
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=repo_root,
+        staged_root=repo_root,
+    )
+    surface_preview = dict(package.surface_refresh_preview or surface_refresh_preview_fixture())
+    commit_result = {
+        "mode": "applied",
+        "validation_gate": {"status": "passed", "issues": []},
+        "backlog": list((package.backlog_result or {}).get("created", ())),
+        "components": [dict(row) for row in package.component_registry_preview],
+        "diagrams": list(package.atlas_diagram_ids),
+        "program": dict(package.program_result or {}),
+        "backlog_topology": [
+            str(row.get("idea_path", ""))
+            for row in (package.backlog_result or {}).get("created", ())
+            if isinstance(row, Mapping) and str(row.get("idea_path", "")).strip()
+        ],
+        "atlas_scaffold_logs": [],
+        "memory": {"recorded": True, "event": dict(package.compass_memory_preview or {})},
+        "dashboard_refresh": {
+            "status": "passed",
+            "surfaces": list(surface_preview.get("surfaces", ())),
+            "view": str(surface_preview.get("view", "")),
+            "pre_confirm_surface_refresh": surface_preview,
+        },
+        "next_steps": dict(package.next_steps_preview or {}),
+        "prewrite_safety": dict(package.prewrite_safety_preview or {}),
+        "release_bootstrap": dict(package.release_target_result or {"created": False, "release": {}}),
+        "release_target": dict(package.release_assignment_result or {"events": []}),
+        "completion_priority_quality_debt": [],
+    }
+    return replace(
+        package,
+        repository_write_set=write_set,
+        commit_result_preview=commit_result,
+    )
 
 
 def surface_refresh_preview_fixture() -> dict[str, Any]:
@@ -344,6 +426,24 @@ def surface_refresh_preview_fixture() -> dict[str, Any]:
         "artifact_paths": list(greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS),
         "view": "odylith/index.html?tab=project",
     }
+
+
+def stub_preconfirm_surface_refresh(monkeypatch: Any) -> None:
+    def render_preconfirm_surfaces(*, repo_root: Path) -> dict[str, Any]:
+        for relative_path in greenfield_surface_refresh_proof.GREENFIELD_REQUIRED_SURFACE_ARTIFACTS:
+            _write(Path(repo_root) / relative_path, "stubbed pre-confirm surface\n")
+        return surface_refresh_preview_fixture()
+
+    monkeypatch.setattr(
+        greenfield_surface_refresh_proof,
+        "build_prewrite_surface_refresh_preview",
+        render_preconfirm_surfaces,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_diagrams,
+        "raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped_in_unit_test"},
+    )
 
 
 def _write_confirmed_intent(repo_root: Path) -> Path:

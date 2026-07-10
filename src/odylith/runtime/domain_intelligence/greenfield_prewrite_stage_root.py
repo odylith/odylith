@@ -9,17 +9,12 @@ import shutil
 import tempfile
 
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
-
-
-_PREWRITE_STAGE_PATHS = (
-    Path("odylith/radar"),
-    Path("odylith/technical-plans"),
-    Path("odylith/atlas"),
-    Path("odylith/registry"),
-    Path("odylith/compass"),
-    Path("odylith/casebook"),
-    Path("odylith/runtime/source"),
+from odylith.runtime.domain_intelligence.greenfield_repository_write_set import (
+    GREENFIELD_REPOSITORY_WRITE_PATHS,
 )
+
+
+_PREWRITE_STAGE_PATHS = tuple(Path(token) for token in GREENFIELD_REPOSITORY_WRITE_PATHS)
 
 
 def ensure_greenfield_create_baseline(root: Path) -> None:

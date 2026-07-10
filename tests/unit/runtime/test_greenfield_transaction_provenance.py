@@ -114,11 +114,6 @@ def test_commit_rejects_stale_compiler_identity_before_write(
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("stale compiler identity must fail before governed writes")
 
-    monkeypatch.setattr(
-        greenfield_create_commit.greenfield_create_baseline,
-        "materialize_precompiled_greenfield_create_baseline",
-        forbidden,
-    )
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)

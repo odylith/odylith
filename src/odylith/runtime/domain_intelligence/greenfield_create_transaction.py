@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from collections.abc import Sequence
 from dataclasses import dataclass
+from dataclasses import field
 from dataclasses import fields
 from dataclasses import is_dataclass
 from dataclasses import replace
@@ -14,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith import __version__
+from odylith.install.fs import atomic_write_text
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -30,8 +32,10 @@ from odylith.runtime.governance import validate_backlog_contract as backlog_cont
 PRODUCT_CREATE_TRANSACTION_VERSION = "odylith.greenfield.product_create_transaction.v1"
 PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1"
 PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v1"
-PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "hash_verified_commit_only"
+PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "compiler_receipt_hash_verified_commit_only"
+PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION = "odylith.greenfield.compiler_receipt.v1"
 _COMPILER_IDENTITY_SOURCE_FILES = (
+    "install/fs.py",
     "runtime/domain_intelligence/greenfield_apply_diagrams.py",
     "runtime/domain_intelligence/greenfield_apply_prewrite.py",
     "runtime/domain_intelligence/greenfield_apply_write.py",
@@ -39,26 +43,36 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_compiled_readback.py",
     "runtime/domain_intelligence/greenfield_compiled_write.py",
     "runtime/domain_intelligence/greenfield_completion_types.py",
+    "runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
+    "runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+    "runtime/domain_intelligence/greenfield_confirmed_intent_document.py",
+    "runtime/domain_intelligence/greenfield_confirmed_product_posture_text.py",
     "runtime/domain_intelligence/greenfield_create_baseline.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",
     "runtime/domain_intelligence/greenfield_create_transaction.py",
     "runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+    "runtime/domain_intelligence/greenfield_project_brief_fields.py",
+    "runtime/domain_intelligence/greenfield_prewrite_commit_result.py",
     "runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
     "runtime/domain_intelligence/greenfield_prewrite_stage_root.py",
+    "runtime/domain_intelligence/greenfield_prewrite_stale_cleanup.py",
     "runtime/domain_intelligence/greenfield_prewrite_surface_stage.py",
+    "runtime/domain_intelligence/greenfield_prewrite_transaction_seal.py",
     "runtime/domain_intelligence/greenfield_proposals.py",
     "runtime/domain_intelligence/greenfield_proposals_cli.py",
+    "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_surface_refresh_proof.py",
+    "runtime/domain_intelligence/greenfield_transaction.py",
     "runtime/surfaces/brand_assets.py",
     "runtime/surfaces/scaffold_mermaid_diagram.py",
 )
 _POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
+    "verify_compiler_receipt",
     "verify_compiler_provenance",
     "verify_repo_preconditions",
-    "write_staged_governed_records",
+    "write_sealed_repository_bytes",
     "validate_readback",
-    "refresh_required_surfaces",
     "report_success",
 )
 _POST_CONFIRM_FORBIDDEN_OPERATIONS = (
@@ -73,6 +87,7 @@ _VOLATILE_HASH_KEYS = {
     "elapsed_seconds",
     "whole_project_elapsed_seconds",
 }
+_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION = object()
 
 @dataclass(frozen=True)
 class ProductCreateTransaction:
@@ -88,12 +103,21 @@ class ProductCreateTransaction:
     quality_manifest: Mapping[str, Any]
     compiler_provenance: Mapping[str, Any]
     transaction_hash: str
+    _compiler_attestation: object | None = field(default=None, repr=False, compare=False)
 
     @property
     def verified(self) -> bool:
-        return self.transaction_hash == product_create_transaction_hash(self)
+        return (
+            self._compiler_attestation is _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION
+            and self.transaction_hash == product_create_transaction_hash(self)
+        )
 
     def summary(self) -> dict[str, Any]:
+        write_set = (
+            self.prewrite_package.repository_write_set
+            if isinstance(self.prewrite_package.repository_write_set, Mapping)
+            else {}
+        )
         return {
             "version": self.version,
             "transaction_hash": self.transaction_hash,
@@ -106,6 +130,10 @@ class ProductCreateTransaction:
             "product_facts_sha256": str(self.intent_authority.get("product_facts_sha256", "")).strip(),
             "intent_authority_version": str(self.intent_authority.get("version", "")).strip(),
             "surface_refresh_preview": _json_ready(self.prewrite_package.surface_refresh_preview or {}),
+            "repository_write_set_hash": str(write_set.get("write_set_hash", "")).strip(),
+            "repository_write_count": int(write_set.get("write_count", 0) or 0),
+            "repository_delete_count": int(write_set.get("delete_count", 0) or 0),
+            "repository_directory_delete_count": int(write_set.get("directory_delete_count", 0) or 0),
         }
 
 
@@ -143,6 +171,7 @@ def build_product_create_transaction(
             quality_manifest=quality_manifest,
         ),
         transaction_hash="",
+        _compiler_attestation=_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION,
     )
     return replace(transaction, transaction_hash=product_create_transaction_hash(transaction))
 
@@ -156,6 +185,17 @@ def _authority_from_proposal(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
 
 def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:
     """Fail closed when a commit request does not match the compiled package hash."""
+
+    if transaction._compiler_attestation is not _PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION:
+        raise ValueError(
+            "ProductCreateTransaction was not accepted by the pre-confirm compiler; "
+            "compile the transaction before committing governed records"
+        )
+    require_product_create_transaction_hash_verified(transaction)
+
+
+def require_product_create_transaction_hash_verified(transaction: ProductCreateTransaction) -> None:
+    """Verify serialized transaction integrity without granting compiler custody."""
 
     require_product_intent_authority(transaction.intent_authority)
     expected = product_create_transaction_hash(transaction)
@@ -266,7 +306,7 @@ def product_create_transaction_to_dict(transaction: ProductCreateTransaction) ->
 
 
 def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductCreateTransaction:
-    """Rehydrate and verify a serialized ProductCreateTransaction."""
+    """Rehydrate hash-bound data without granting compiler custody."""
 
     if not isinstance(payload, Mapping):
         raise ValueError("ProductCreateTransaction payload must be a JSON object")
@@ -287,12 +327,70 @@ def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductC
         compiler_provenance=_mapping(payload.get("compiler_provenance")),
         transaction_hash=str(payload.get("transaction_hash", "")).strip(),
     )
-    require_product_create_transaction_verified(transaction)
-    greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
-        transaction.prewrite_package,
-        release_selector=transaction.release_selector,
-    )
+    require_product_create_transaction_hash_verified(transaction)
     return transaction
+
+
+def product_create_transaction_receipt_path(path: Path) -> Path:
+    target = Path(path).expanduser()
+    return target.with_name(target.name + ".compiler-receipt.v1.json")
+
+
+def write_compiled_product_create_transaction_file(
+    path: Path,
+    transaction: ProductCreateTransaction,
+) -> Path:
+    """Persist a compiler-attested transaction and its detached receipt."""
+
+    require_product_create_transaction_verified(transaction)
+    target = Path(path).expanduser()
+    payload_text = json.dumps(product_create_transaction_to_dict(transaction), indent=2, sort_keys=True) + "\n"
+    atomic_write_text(target, payload_text, encoding="utf-8")
+    receipt = {
+        "version": PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
+        "transaction_hash": transaction.transaction_hash,
+        "transaction_file_sha256": hashlib.sha256(payload_text.encode("utf-8")).hexdigest(),
+    }
+    atomic_write_text(
+        product_create_transaction_receipt_path(target),
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return target
+
+
+def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTransaction:
+    """Load only a transaction paired with its pre-confirm compiler receipt."""
+
+    target = Path(path).expanduser()
+    receipt_path = product_create_transaction_receipt_path(target)
+    if target.is_symlink() or receipt_path.is_symlink():
+        raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
+    try:
+        payload_bytes = target.read_bytes()
+        receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise ValueError(
+            "ProductCreateTransaction is missing its pre-confirm compiler receipt; "
+            "rebuild it with greenfield compile-transaction"
+        ) from exc
+    if not isinstance(receipt_payload, Mapping):
+        raise ValueError("ProductCreateTransaction compiler receipt must be a JSON object")
+    if str(receipt_payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION:
+        raise ValueError("ProductCreateTransaction compiler receipt has an unsupported version")
+    actual_file_hash = hashlib.sha256(payload_bytes).hexdigest()
+    if str(receipt_payload.get("transaction_file_sha256", "")).strip() != actual_file_hash:
+        raise ValueError("ProductCreateTransaction file does not match its pre-confirm compiler receipt")
+    payload = json.loads(payload_bytes.decode("utf-8"))
+    transaction = product_create_transaction_from_dict(payload)
+    if str(receipt_payload.get("transaction_hash", "")).strip() != transaction.transaction_hash:
+        raise ValueError("ProductCreateTransaction hash does not match its pre-confirm compiler receipt")
+    attested = replace(
+        transaction,
+        _compiler_attestation=_PRODUCT_CREATE_TRANSACTION_COMPILER_ATTESTATION,
+    )
+    require_product_create_transaction_verified(attested)
+    return attested
 
 
 def product_create_transaction_hash(transaction: ProductCreateTransaction) -> str:
@@ -392,15 +490,19 @@ __all__ = [
     "PRODUCT_CREATE_TRANSACTION_VERSION",
     "PRODUCT_CREATE_TRANSACTION_COMPILER",
     "PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION",
+    "PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION",
     "ProductCreateTransaction",
     "build_product_create_transaction",
     "build_product_create_transaction_provenance",
     "product_create_transaction_compiler_identity",
     "product_create_transaction_from_dict",
+    "product_create_transaction_receipt_path",
     "product_create_transaction_hash",
     "product_create_transaction_repo_fingerprint",
     "product_create_transaction_to_dict",
     "require_product_create_transaction_compiler_provenance",
     "require_product_create_transaction_intent_authority",
     "require_product_create_transaction_verified",
+    "load_compiled_product_create_transaction_file",
+    "write_compiled_product_create_transaction_file",
 ]

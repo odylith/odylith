@@ -364,7 +364,7 @@ def _product_result_from_visible_outcome(value: Any) -> str:
 
 def _finite_state_update_visible_result(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
-    if not text or _has_human_subject_signal(text):
+    if not text:
         return ""
     match = re.match(
         r"^(?P<subject>(?:(?:a|an|the|this|that|one)\s+)?(?:[A-Za-z][A-Za-z0-9/&'-]*\s+){1,7})"
@@ -755,9 +755,11 @@ def _candidate_is_product_result(value: str) -> bool:
     text = clean_text(value)
     if word_count(text) < 2:
         return False
+    finite_state_update = bool(_finite_state_update_visible_result(text))
     object_list_result = _is_visible_object_list_result(text)
     if (
         actor_signature(text)
+        and not finite_state_update
         and not visible_result_object(text)
         and not _is_predicate_result_state(text)
         and not _is_action_state_result(text)
@@ -1094,6 +1096,8 @@ def _intent_fact_counterexamples(*, first_path: str, proof_boundary: str) -> lis
 
 
 def _first_path_has_human_actor(value: str) -> bool:
+    if _actor_text_has_human_signal(actor_signature(value)):
+        return True
     model = first_path_model(value)
     return any(_actor_text_has_human_signal(actor_signature(step)) for step in model.steps)
 

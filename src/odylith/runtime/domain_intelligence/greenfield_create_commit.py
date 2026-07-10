@@ -7,9 +7,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
-from odylith.runtime.domain_intelligence import greenfield_create_baseline
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_compiler_provenance,
@@ -28,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     finalize_greenfield_post_confirm_manifest,
 )
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
-from odylith.runtime.surfaces import brand_assets
+from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
 
 
 class GreenfieldCreateCommitError(RuntimeError):
@@ -41,20 +40,26 @@ class GreenfieldCreateCommitError(RuntimeError):
         rollback_status: str,
         rollback_error: str = "",
         root_cause: BaseException | None = None,
+        failure_kind: str = "post_confirm_commit_invariant_failure",
+        recovery_path: str = "",
     ) -> None:
         super().__init__(message)
         self.rollback_status = rollback_status
         self.rollback_error = rollback_error
         self.root_cause_type = type(root_cause).__name__ if root_cause is not None else ""
+        self.failure_kind = failure_kind
+        self.recovery_path = recovery_path
 
     def to_dict(self) -> dict[str, str]:
         payload = {
-            "failure_kind": "post_confirm_commit_environment_or_runtime_failure",
+            "failure_kind": self.failure_kind,
             "rollback_status": self.rollback_status,
             "root_cause_type": self.root_cause_type,
         }
         if self.rollback_error:
             payload["rollback_error"] = self.rollback_error
+        if self.recovery_path:
+            payload["recovery_path"] = self.recovery_path
         return payload
 
 
@@ -74,36 +79,32 @@ def commit_greenfield_create_transaction(
     require_product_create_transaction_intent_authority(transaction, repo_root=root)
     require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
     raise_for_unapproved_product_create_transaction(transaction)
-    greenfield_create_baseline.require_precompiled_greenfield_create_baseline(
-        root,
-        transaction.prewrite_package.baseline_writes or {},
-    )
-    brand_assets.require_precompiled_brand_assets(
+    write_set = greenfield_repository_write_set.require_greenfield_repository_preconditions(
         repo_root=root,
-        brand_asset_writes=transaction.prewrite_package.brand_asset_writes or {},
+        write_set=transaction.prewrite_package.repository_write_set,
     )
     started = time.perf_counter() if started_at is None else float(started_at)
-    completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(
-        transaction.quality_manifest
+    write_paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
+    final_manifest = finalize_greenfield_post_confirm_manifest(
+        transaction.quality_manifest,
+        whole_project_elapsed_seconds=time.perf_counter() - started,
+        write_transaction_status="committed",
     )
-    write_transaction = GreenfieldApplyTransaction(root)
+    final_manifest["product_create_transaction"] = transaction.summary()
+    write_manifest = dict(final_manifest.get("write_transaction") or {})
+    write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
+    write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
+    write_manifest["commit_only"] = True
+    final_manifest["write_transaction"] = write_manifest
+    write_transaction = GreenfieldApplyTransaction(root, paths=write_paths)
     try:
         with write_transaction:
-            greenfield_create_baseline.materialize_precompiled_greenfield_create_baseline(
-                root=root,
-                baseline_writes=transaction.prewrite_package.baseline_writes or {},
-            )
-            brand_assets.materialize_precompiled_brand_assets(
-                repo_root=root,
-                brand_asset_writes=transaction.prewrite_package.brand_asset_writes or {},
-            )
             result = greenfield_compiled_write.write_compiled_greenfield_package(
                 root=root,
                 transaction=transaction,
-                completion_priority_write_policy=completion_priority_write_policy,
             )
             write_transaction.commit()
-    except (OSError, RuntimeError) as exc:
+    except BaseException as exc:
         if isinstance(exc, GreenfieldCreateCommitError):
             raise
         rollback_status = write_transaction.rollback_status
@@ -119,31 +120,16 @@ def commit_greenfield_create_transaction(
             rollback_status=rollback_status,
             rollback_error=write_transaction.rollback_error,
             root_cause=exc,
+            failure_kind=(
+                "post_confirm_commit_interrupted"
+                if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit))
+                else "post_confirm_commit_environment_or_io_failure"
+                if isinstance(exc, OSError)
+                else "post_confirm_commit_invariant_failure"
+            ),
+            recovery_path=write_transaction.recovery_path,
         ) from exc
-    final_manifest = finalize_greenfield_post_confirm_manifest(
-        transaction.quality_manifest,
-        whole_project_elapsed_seconds=time.perf_counter() - started,
-        write_transaction_status="committed",
-    )
-    final_manifest["product_create_transaction"] = transaction.summary()
-    write_manifest = dict(final_manifest.get("write_transaction") or {})
-    write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
-    write_manifest["commit_only"] = True
-    final_manifest["write_transaction"] = write_manifest
-    final_write_debt = result.get("completion_priority_quality_debt")
-    if final_write_debt:
-        final_manifest["status"] = "passed_with_quality_debt"
-        final_manifest["stop_reason"] = "completion_priority_quality_debt"
-        completion_priority = (
-            dict(final_manifest["completion_priority"])
-            if isinstance(final_manifest.get("completion_priority"), Mapping)
-            else dict(completion_priority_write_policy or {})
-        )
-        completion_priority["final_write_quality_debt"] = list(final_write_debt)
-        completion_priority["final_write_quality_debt_count"] = len(final_write_debt)
-        completion_priority.setdefault("status", "write_allowed_with_projection_quality_debt")
-        completion_priority.setdefault("hard_blocker_count", 0)
-        final_manifest["completion_priority"] = completion_priority
+    final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
     result["post_confirm_quality_manifest"] = final_manifest
     result["product_create_transaction"] = transaction.summary()
     return result

@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
+from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
 
 def test_component_proof_phrases_do_not_echo_short_component_kind_labels() -> None:
@@ -427,7 +428,7 @@ The first version is proven when a user can log entries over several days and th
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a personal pattern tracker.",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     rendered = json.dumps(proposal, sort_keys=True)
     titles = [row["title"] for row in proposal["backlog"]]
@@ -588,7 +589,7 @@ Release 0.0.1 succeeds when a reviewer can follow one item through registration,
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a volunteer equipment checkout tracker",
         release_selector="0.0.1",
-        confirmed_intent=intent,
+        confirmed_intent=confirmed_mapping_with_authority(intent),
     )
     encoded = json.dumps(proposal)
 

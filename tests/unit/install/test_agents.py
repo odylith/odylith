@@ -90,7 +90,7 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "ProductCreateTransaction",
         "--transaction-file",
         "--transaction-hash",
-        "writes atomically",
+        "rollback guard",
         "Odylith capabilities",
         "host model capability surface",
         "never prefix commentary with control-plane receipt labels",

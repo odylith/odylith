@@ -119,7 +119,7 @@ def test_actor_label_keeps_generic_relative_role_descriptions_as_body() -> None:
     assert project_specific_actor_row(
         "Reviewer who approves risky actions or validates final outputs",
         project_focus="Distributed Multi-Agent Platform",
-    ) == "Risky Actions or Validates Final Outputs Reviewer: approves risky actions or validates final outputs"
+    ) == "Risky Actions Reviewer: approves risky actions or validates final outputs"
     assert project_specific_actor_row(
         "Developer who builds agent plugins, tools, and custom routing logic",
         project_focus="Distributed Multi-Agent Platform",
@@ -207,3 +207,21 @@ def test_completed_actor_rows_collapse_context_expanded_same_role() -> None:
     labels = project_specific_actor_labels({**intent, "human_actors": rows})
 
     assert labels == ["Autonomous Warehouse Operator"]
+
+
+def test_completed_actor_rows_do_not_add_title_expanded_generic_user() -> None:
+    intent = {
+        "title": "PeptideTrack Personal Peptide Protocol",
+        "first_path": "A user adds a peptide, logs each dose, and reviews whether tracked metrics changed.",
+        "human_actors": (
+            "The individual user running and logging their own peptide protocols",
+            "A coach or clinician the user may share an outcome summary with",
+        ),
+        "state_object": "peptide protocol",
+    }
+
+    rows = completed_actor_rows(intent, title=intent["title"])
+    labels = project_specific_actor_labels({**intent, "human_actors": rows})
+
+    assert "Individual User" in labels
+    assert not any(label.startswith("PeptideTrack") and label.endswith("User") for label in labels)

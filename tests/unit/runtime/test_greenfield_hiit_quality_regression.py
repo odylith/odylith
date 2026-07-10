@@ -41,7 +41,7 @@ def test_hiit_compact_path_semantics_expand_without_manual_rewrite() -> None:
         "saves",
     ]
     assert first_path["visible_result"] == "Saved session in history with date, workout, and total time"
-    assert next(row for row in proposal["components"] if row["label"] == "Workout Builder Service")["release_scope"] == "deferred"
+    assert next(row for row in proposal["components"] if row["label"] == "Workout Builder Service")["release_scope"] == "supporting"
     assert "Trainee Following" not in "\n".join(proposal["intent"]["human_actors"])
 
 

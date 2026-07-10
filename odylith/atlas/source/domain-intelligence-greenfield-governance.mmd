@@ -83,29 +83,32 @@ flowchart LR
       rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
     end
 
-    subgraph write_lane["Fail-closed governed writes"]
+    subgraph write_lane["Precompiled transaction and commit-only boundary"]
       direction TB
-      writes["Governed records written<br/>Radar, Registry, Atlas,<br/>Compass, release artifacts"]
-      rollback["Rollback snapshot"]
-      blockers["Exact final blockers<br/>operator sees actionable failure"]
-      proof_log["Compass proof checkpoint"]
-      surface_custody["Rendered surface custody<br/>Casebook included,<br/>Atlas static fallback,<br/>browser state proof"]
+      surface_custody["Pre-confirm rendered surface custody<br/>Radar, Registry, Atlas, Compass, Casebook,<br/>Project shell and bundle mirrors"]
+      transaction_quality["Pre-confirm quality tribunal<br/>all package and artifact contracts pass;<br/>no unresolved quality debt"]
+      transaction_seal["ProductCreateTransaction seal<br/>exact bytes, modes, file and directory deletes,<br/>repo fingerprints, result preview"]
+      compiler_receipt["Detached compiler receipt<br/>transaction file digest and hash"]
+      transaction_ready["Creation-ready confirmation view<br/>CONFIRM, EDIT, or REJECT"]
+      commit_verify["Commit-only verification<br/>receipt, transaction hash, compiler identity,<br/>unchanged repo preconditions"]
+      writes["Sealed write set applied<br/>no parsing, generation, repair,<br/>quality work, or surface refresh"]
+      readback["Exact tree readback<br/>after fingerprints must match"]
+      rollback["Affected-path rollback guard<br/>SIGINT and SIGTERM included;<br/>failed rollback preserves recovery snapshot"]
+      blockers["No-write pre-confirm blocker<br/>or post-confirm environment/invariant failure"]
+      proof_log["Precompiled success result reported"]
       matrix_scorer["Hardened matrix scorer<br/>grounded anchor preflight,<br/>persisted governed readback,<br/>public artifact readback,<br/>Project shell payload readback,<br/>browser proof as premium blocker,<br/>runtime custody excluded"]
       release_matrix["Installed release proof<br/>13-case standard matrix,<br/>optional external case-file variance,<br/>per-case generated browser state proof,<br/>Project tab DOM and payload proof,<br/>independent artifact readback scoring,<br/>generated-term leakage rescan,<br/>persisted matrix JSON with manifest summaries,<br/>failed-create blocker excerpts,<br/>persisted temp-cleanup proof,<br/>plus rescue wiring smoke"]
       natural_rescue_proof["Natural structured rescue proof<br/>explicit provider,<br/>non-probe repaired issue,<br/>safe planned Tribunal patch summary,<br/>typed clear operation allowed,<br/>90s budget gate"]
       selected_case_leakage["Release domain leakage custody<br/>declared case sentinels,<br/>filtered distinctive anchors,<br/>historical sentinels,<br/>and generated readback<br/>scan protected source, shipped guidance,<br/>wheel, and runtime archives;<br/>top-level proof JSON stays evidence"]
       registry_forensics_custody["Registry forensics custody<br/>component sidecars keep generic summaries,<br/>workstream scope, component IDs,<br/>and artifact counts only<br/>raw scenario prose stays in evidence surfaces"]
-      completion_debt["Completion-priority quality debt<br/>creation takes priority only for typed,<br/>non-critical projection repetition;<br/>generated visible-copy, semantic, Tribunal,<br/>release, untyped, and quality-lens findings block"]
-      final_write_debt["Final-write debt ledger<br/>component-spec, next-step,<br/>or persisted package projection debt<br/>is recorded in accepted-project/source-launch<br/>and printed in CLI closeout<br/>without transaction rollback"]
     end
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> intent_section_parser --> prompt_recovery --> confirmed_ir --> accepted_path_projection --> non_goal_owner --> sparse_systems --> public_system_copy
     public_system_copy --> apply_input --> intent_visible_result --> compiler --> semantic_ir --> evaluation_semantics --> actor_role_owner --> artifact_actor_filter --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> visible_result_priority --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> semantic_patch_targets --> registry_contract_custody --> semantic_result_custody --> projections --> confirmed_diagram_projection --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
     draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
-    typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
-    final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
-    final_manifest -- "typed projection quality debt" --> completion_debt --> writes
-    writes --> final_write_debt --> proof_log
+    typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> blockers
+    final_manifest -- "pass" --> surface_custody --> transaction_quality --> transaction_seal --> compiler_receipt --> transaction_ready --> commit_verify --> writes --> readback --> proof_log --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
+    final_manifest -- "quality debt remains" --> blockers
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
     executable_target -- "localized exact source fact" --> deterministic_source_patch --> plan_apply
@@ -124,10 +127,12 @@ flowchart LR
     plan_apply --> semantic_mirror_sync --> scope_ledger --> dashboard_rerender
     dashboard_rerender --> rerender
     package_inspection --> rerender
-    executable_target -- "no" --> rollback
+    executable_target -- "no" --> blockers
     rerender --> validators
-    rescue_budget -- "no" --> rollback --> blockers
-    final_manifest -- "non-repairable" --> rollback
+    rescue_budget -- "no" --> blockers
+    final_manifest -- "non-repairable" --> blockers
+    writes -- "environment or invariant failure" --> rollback --> blockers
+    readback -- "fingerprint drift" --> rollback
     rollback --> blockers
 
     classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1.2px;
@@ -137,7 +142,7 @@ flowchart LR
     class visible_intent,confirmable_stdout,confirm,source_guard,intent_section_parser,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,intent_visible_result,compiler,semantic_ir,evaluation_semantics,actor_role_owner,artifact_actor_filter,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,visible_result_priority,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,registry_contract_custody,semantic_result_custody,projections,confirmed_diagram_projection,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody,completion_debt,final_write_debt write;
+    class surface_custody,transaction_quality,transaction_seal,compiler_receipt,transaction_ready,commit_verify,writes,readback,rollback,blockers,proof_log,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52
