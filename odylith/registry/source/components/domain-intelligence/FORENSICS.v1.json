@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 452,
-    "mapped_workstream_evidence_count": 405,
+    "explicit_event_count": 453,
+    "mapped_workstream_evidence_count": 406,
     "recent_path_match_count": 1,
     "spec_history_event_count": 260,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 453
+    "timeline_event_count": 454
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,58 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 984,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-10T13:26:36-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
+      ],
+      "confidence": "high",
+      "event_index": 983,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "ts_iso": "2026-07-10T13:24:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],
@@ -51,36 +103,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifact_count": 14,
-      "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6",
-        "tracked_artifact_7",
-        "tracked_artifact_8",
-        "tracked_artifact_9",
-        "tracked_artifact_10",
-        "tracked_artifact_11",
-        "tracked_artifact_12",
-        "tracked_artifact_13",
-        "tracked_artifact_14"
-      ],
-      "confidence": "high",
-      "event_index": 983,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 14 tracked artifact references retained.",
-      "ts_iso": "2026-07-10T12:19:11-07:00",
-      "workstreams": []
     },
     {
       "artifact_count": 0,
