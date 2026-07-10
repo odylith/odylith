@@ -69,15 +69,20 @@ This section captures synchronized requirement and contract signals derived from
   makes atomic helpers remove temp siblings on interrupts before rollback
   reports success. `CB-231` seals the complete reporting envelope before
   confirmation so no missing backlog, component, or diagram field can crash
-  terminal reporting after a durable commit. Both remain source-local pending
-  fresh installed proof. A final adversarial parser review also found that
+  terminal reporting after a durable commit. A final adversarial parser review also found that
   actorless dashboard-status prose could satisfy the concise-path fallback and
   that terminal `This flow works end to end` proof prose could become a product
   claim. The shared concise-path rule now requires an actor-led action, while
   terminal flow-proof prose remains supporting evidence. Current source proof
   passed the focused parser and custody suite (30 tests) and the complete
-  13-case create-performance matrix in 698.98 seconds; fresh installed proof
-  remains the release gate.
+  13-case create-performance matrix in 698.98 seconds. Fresh installed dist
+  `9606871db` then passed all 14 standard cases at 10/10 with zero issues,
+  browser proof 14/14, platform-leakage and zero-temp-root cleanup proof, and
+  synthetic/natural rescue in 58.704s and 77.523s. Standard create totals were
+  37.280-50.035s and commit-only apply was 0.106-0.120s. `CB-232` also makes
+  committed Registry forensics exclude volatile workspace activity, so clean
+  release preflight now converges while live Registry views retain that signal.
+  These fixes have fresh package proof but remain pending shipment.
 
 - 2026-07-10: Made precompiled Atlas links portable across target and staging roots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-226`, `CB-223`; Diagram: D-043)
   `greenfield_apply_diagrams.py` now seals Atlas `related_backlog` links as

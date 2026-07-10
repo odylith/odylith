@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix in the current B-142 checkpoint
 
-- Verification: Missing or non-list reporting collections fail package validation before write; valid receipts report without post-confirm parsing. The final current-source 13-case compile/create matrix also passed in 698.98 seconds; fresh installed proof remains required.
+- Verification: Missing or non-list reporting collections fail package validation before write; valid receipts report without post-confirm parsing. The final current-source 13-case compile/create matrix passed in 698.98 seconds. Fresh installed dist 9606871db then passed all 14 standard cases at 10/10, browser proof 14/14, platform-leakage and cleanup proof, and both rescue paths with commit-only success receipts.
 
 - Prevention: Treat all post-confirm reporter inputs as sealed transaction contract fields and add malformed-envelope tests
 
@@ -58,7 +58,7 @@
 
 - Monitoring Updates: Release proof must assert a complete success receipt after every committed case
 
-- Version/Build: 0.1.15 source-local branch before final packaged proof
+- Version/Build: 0.1.15 fresh installed dist 9606871db
 
 - Config/Flags: Default commit-only transaction path
 
@@ -66,7 +66,7 @@
 
 - Related Incidents/Bugs: CB-229
 
-- Fixed In: Pending 0.1.15 release proof
+- Fixed In: 0.1.15 release proof verified; shipment pending
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_prewrite_commit_result.py
 - src/odylith/runtime/domain_intelligence/greenfield_cli_output.py

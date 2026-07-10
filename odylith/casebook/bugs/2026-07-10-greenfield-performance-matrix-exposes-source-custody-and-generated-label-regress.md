@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix completed in the current B-142 source-local execution wave; retain the strict copy, provenance, and no-write pre-confirm gates. Installed proof remains required before release closeout.
 
-- Verification: Source-local proof passed the exact three replays, 3 tests in 141.48s; pattern and authority coverage, 26 tests in 69.48s; focused actor, envelope, text, and semantic coverage, 72 tests in 21.81s; the performance file, 13 tests in 876.57s; and the full slop, artifact, and render suite, 198 tests in 198.86s. Adversarial follow-up added literal claim-span authority, qualified-system ownership, actor-led concise-path, terminal-flow-proof, receipt, and atomic-write regressions. The final focused actor/envelope suite passed 30 tests in 13.31s, and the complete current-source performance matrix passed all 13 cases in 698.98s. This is uncommitted source-local proof, not installed package proof.
+- Verification: Source-local proof passed the exact three replays, 3 tests in 141.48s; pattern and authority coverage, 26 tests in 69.48s; focused actor, envelope, text, and semantic coverage, 72 tests in 21.81s; the performance file, 13 tests in 876.57s; and the full slop, artifact, and render suite, 198 tests in 198.86s. Adversarial follow-up added literal claim-span authority, qualified-system ownership, actor-led concise-path, terminal-flow-proof, receipt, and atomic-write regressions. The final focused actor/envelope suite passed 30 tests in 13.31s, and the complete current-source performance matrix passed all 13 cases in 698.98s. Fresh installed dist `9606871db` then passed all 14 standard cases at 10/10 with zero issues, browser proof 14/14, platform-leakage and temporary-root cleanup proof, and synthetic/natural rescue. Standard create totals were 37.280-50.035s and commit-only apply was 0.106-0.120s.
 
 - Prevention: Keep exact high-variance source and label fixtures in the performance gate, reject actorless status prose from concise-path completion, classify terminal proof loops as supporting evidence, and require generated source plus visible-surface scans, not only returned payload checks.
 
@@ -56,7 +56,7 @@
 
 - Monitoring Updates: Preserve the exact three-case replay and broader performance matrix as release gates; record a fresh installed dist replay before release readiness.
 
-- Version/Build: 0.1.15 source-local branch 2026/freedom/v0.1.15 after commit 1b2072f0f
+- Version/Build: 0.1.15 fresh installed dist built from commit 9606871db
 
 - Config/Flags: Default source-local greenfield create path; no feature flag.
 
@@ -64,7 +64,7 @@
 
 - Related Incidents/Bugs: CB-198, CB-215, CB-223, CB-226
 
-- Fixed In: Pending 0.1.15 release proof
+- Fixed In: 0.1.15 release proof verified; shipment pending
 
 - Code References: - tests/integration/runtime/test_greenfield_create_performance.py
 - src/odylith/runtime/domain_intelligence

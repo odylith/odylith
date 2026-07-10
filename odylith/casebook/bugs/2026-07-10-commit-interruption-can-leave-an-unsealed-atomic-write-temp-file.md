@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix in the current B-142 checkpoint
 
-- Verification: Real atomic-write interruption after temp creation leaves the original target intact and zero matching temp siblings. The final current-source 13-case compile/create matrix also passed in 698.98 seconds; fresh installed proof remains required.
+- Verification: Real atomic-write interruption after temp creation leaves the original target intact and zero matching temp siblings. The final current-source 13-case compile/create matrix passed in 698.98 seconds. Fresh installed dist 9606871db then passed all 14 standard cases, browser proof 14/14, platform-leakage proof, zero temporary-root cleanup residue, and both rescue paths.
 
 - Prevention: Keep a real temp-creation interruption regression, not only a monkeypatched pre-write failure
 
@@ -58,7 +58,7 @@
 
 - Monitoring Updates: Installed matrix cleanup proof must include zero temporary project roots and no write residue
 
-- Version/Build: 0.1.15 source-local branch before final packaged proof
+- Version/Build: 0.1.15 fresh installed dist 9606871db
 
 - Config/Flags: Default commit-only transaction path
 
@@ -66,7 +66,7 @@
 
 - Related Incidents/Bugs: CB-229
 
-- Fixed In: Pending 0.1.15 release proof
+- Fixed In: 0.1.15 release proof verified; shipment pending
 
 - Code References: - src/odylith/install/fs.py
 - src/odylith/runtime/domain_intelligence/greenfield_repository_write_set.py

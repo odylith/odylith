@@ -1,6 +1,8 @@
 - Bug ID: CB-232
 
-- Status: Open
+- Status: FixedPendingRelease
+
+- Fixed: Pending
 
 - Created: 2026-07-10
 
@@ -44,9 +46,9 @@
 
 - Solution: Keep volatile workspace activity out of committed forensic sidecars and compute it only for live Registry visibility.
 
-- Rollback/Forward Fix: Forward fix in the Registry forensics projection; retain the two-pass workaround until packaged proof passes.
+- Rollback/Forward Fix: Forward fix landed in the Registry forensics projection. The two-pass workaround is no longer required for clean-head release preflight.
 
-- Verification: Add clean-head convergence and externally dirty mapped-source regressions, then rerun local-release-assets.
+- Verification: Focused synchronization and Registry intelligence coverage passed 15 tests. A clean-head check-only run after commit 9606871db passed with zero stale paths. Fresh local-release assets then assembled successfully and the installed 14-case release matrix passed with browser, leakage, cleanup, and rescue proof.
 
 - Prevention: Release preflight must test sync, commit-equivalent clean state, and check-only convergence.
 
@@ -56,7 +58,7 @@
 
 - Monitoring Updates: Release proof records whether component-forensics check-only passed from a clean worktree.
 
-- Version/Build: 0.1.15 source-local branch before fresh installed proof.
+- Version/Build: 0.1.15 fresh installed dist 9606871db
 
 - Config/Flags: Default local release assets path.
 
@@ -64,5 +66,8 @@
 
 - Related Incidents/Bugs: CB-229, CB-231
 
+- Fixed In: 0.1.15 release proof verified; shipment pending
+
 - Code References: - bin/_odylith.sh
 - src/odylith/runtime/governance/sync_component_spec_requirements.py
+- tests/unit/runtime/test_sync_component_spec_requirements.py
