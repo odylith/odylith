@@ -36,7 +36,7 @@ def atomic_write_text(path: Path, text: str, *, encoding: str = "utf-8") -> Path
             os.fsync(handle.fileno())
         temp_path.replace(destination)
         fsync_directory(destination.parent)
-    except Exception:
+    except BaseException:
         temp_path.unlink(missing_ok=True)
         raise
     return destination
@@ -58,7 +58,7 @@ def atomic_write_bytes(path: Path, data: bytes) -> Path:
             os.fsync(handle.fileno())
         temp_path.replace(destination)
         fsync_directory(destination.parent)
-    except Exception:
+    except BaseException:
         temp_path.unlink(missing_ok=True)
         raise
     return destination

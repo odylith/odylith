@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -52,6 +53,29 @@ Product story: Build an unrelated casino dashboard with token payouts.
 """
 
 
+def _source_span_confirmation(first_path: str) -> str:
+    return f"""# Workflow Evidence Workspace
+
+## Product story
+People need one workspace to complete a workflow and review its result.
+
+## State object
+The workflow record tracks inputs, status, decisions, and result history.
+
+## First complete path
+{first_path}
+
+## Human actors
+- Workflow user: completes the workflow and reviews its result.
+
+## Internal product systems
+- Workflow workspace: records inputs, status, decisions, and results.
+
+## Proof boundary
+Release 0.0.1 is proven only when the same workflow record can be opened, updated, and read back with its result history intact.
+"""
+
+
 def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_sections(tmp_path: Path) -> None:
     path = tmp_path / "confirmed-intent.md"
     path.write_text(_hostile_confirmation(), encoding="utf-8")
@@ -72,6 +96,159 @@ def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_secti
     assert any("host instruction should not overwrite" in row["text"] for row in ignored)
     assert any("unrelated casino dashboard" in row["text"] for row in ignored)
     assert envelope["custody_ledger"]["fields"]["first_path"]["custody_state"] == "accepted_fact"
+
+
+def test_source_spans_exclude_smallest_version_editorial_loop_from_product_claims(tmp_path: Path) -> None:
+    source = _source_span_confirmation(
+        "A new user records their first entry - rates today's status, taps the factors that applied, and logs "
+        "one action they tried. The next day they log again. After a handful of entries, the app shows a simple "
+        "trend: status over time, and which logged actions line up with better days. That loop - log, repeat, see "
+        "the pattern - is the smallest version of the whole product working end to end."
+    )
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt="Build a workflow evidence workspace.")
+    spans = record.envelope["source_evidence"]["spans"]
+    claims = [
+        span
+        for span in spans
+        if span["section_key"] == "first_path" and span["classification"] == "product_claim"
+    ]
+    supporting = [
+        span
+        for span in spans
+        if span["section_key"] == "first_path" and span["classification"] == "supporting_evidence"
+    ]
+
+    assert "smallest version of the whole product" not in record.product_facts["first_path"]
+    assert any("records their first entry" in span["text"] for span in claims)
+    assert any("app shows a simple trend" in span["text"] for span in claims)
+    assert not any("smallest version of the whole product" in span["text"] for span in claims)
+    assert any("smallest version of the whole product" in span["text"] for span in supporting)
+    first_path_custody = record.envelope["custody_ledger"]["fields"]["first_path"]
+    assert first_path_custody["source_span_ids"] == [
+        span["span_id"]
+        for span in spans
+        if span["section_key"] == "first_path"
+    ]
+    assert first_path_custody["product_claim_span_ids"] == [
+        span["span_id"] for span in claims
+    ]
+    assert all(
+        record.envelope["custody_ledger"]["fields"][key]["custody_state"] == "accepted_fact"
+        for key in ("product_story", "state_object", "first_path", "proof_boundary", "human_actors")
+    )
+    assert all(
+        record.envelope["custody_ledger"]["fields"][key]["source_span_ids"]
+        for key in ("product_story", "state_object", "first_path", "proof_boundary", "human_actors")
+    )
+    assert path.read_text(encoding="utf-8") == source
+    assert record.envelope["source_evidence"]["source_sha256"] == hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+
+def test_terminal_flow_works_end_to_end_stays_supporting_evidence(tmp_path: Path) -> None:
+    source = _source_span_confirmation(
+        "A reviewer opens one record, completes the review, and sees the recorded decision. "
+        "This flow works end to end."
+    )
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt="Build a workflow evidence workspace.")
+    first_path_spans = [
+        span for span in record.envelope["source_evidence"]["spans"] if span["section_key"] == "first_path"
+    ]
+
+    assert "This flow works end to end" not in record.product_facts["first_path"]
+    assert any(
+        span["classification"] == "supporting_evidence" and span["text"] == "This flow works end to end."
+        for span in first_path_spans
+    )
+    assert not any(
+        span["classification"] == "product_claim" and "This flow works end to end" in span["text"]
+        for span in first_path_spans
+    )
+
+
+def test_source_spans_split_mixed_claim_and_editorial_clause_without_banning_product_terms(tmp_path: Path) -> None:
+    source = _source_span_confirmation(
+        "A reviewer opens a signed-record workflow, submits one record for approval, and sees the end-to-end "
+        "approval state - one complete path for the whole product."
+    )
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt="Build a workflow evidence workspace.")
+    first_path_spans = [
+        span for span in record.envelope["source_evidence"]["spans"] if span["section_key"] == "first_path"
+    ]
+    claims = [span["text"] for span in first_path_spans if span["classification"] == "product_claim"]
+    supporting = [span["text"] for span in first_path_spans if span["classification"] == "supporting_evidence"]
+
+    assert record.product_facts["first_path"].endswith("end-to-end approval state.")
+    assert " ".join(claims).count("signed-record") == 1
+    assert "end-to-end" in " ".join(claims)
+    assert not any("whole product" in text for text in claims)
+    assert supporting == ["one complete path for the whole product"]
+
+
+def test_inline_meta_loop_clause_stays_evidence_while_material_fact_keeps_source_custody(tmp_path: Path) -> None:
+    source = _source_span_confirmation(
+        "A reviewer opens one workflow and later, in the smallest version of the whole product, reviews the result."
+    )
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt="Build a workflow evidence workspace.")
+    first_path_spans = [
+        span for span in record.envelope["source_evidence"]["spans"] if span["section_key"] == "first_path"
+    ]
+    custody = record.envelope["custody_ledger"]["fields"]["first_path"]
+
+    assert "smallest version of the whole product" not in record.product_facts["first_path"]
+    assert first_path_spans == [
+        {
+            "span_id": "first_path:1.1",
+            "section_key": "first_path",
+            "row_index": 1,
+            "classification": "product_claim",
+            "text": "A reviewer opens one workflow and later",
+        },
+        {
+            "span_id": "first_path:1.2",
+            "section_key": "first_path",
+            "row_index": 1,
+            "classification": "supporting_evidence",
+            "text": "in the smallest version of the whole product",
+        },
+        {
+            "span_id": "first_path:1.3",
+            "section_key": "first_path",
+            "row_index": 1,
+            "classification": "product_claim",
+            "text": "reviews the result",
+        },
+    ]
+    assert custody["source_span_ids"] == ["first_path:1.1", "first_path:1.2", "first_path:1.3"]
+    assert custody["product_claim_span_ids"] == ["first_path:1.1", "first_path:1.3"]
+    assert custody["custody_state"] == "accepted_fact"
+
+
+def test_unpunctuated_meta_control_phrase_keeps_the_material_first_path_claim(tmp_path: Path) -> None:
+    source = _source_span_confirmation(
+        "A reviewer opens the smallest version of the whole product and approves one record."
+    )
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt="Build a workflow evidence workspace.")
+    first_path = record.product_facts["first_path"]
+    custody = record.envelope["custody_ledger"]["fields"]["first_path"]
+
+    assert first_path == "A reviewer opens and approves one record."
+    assert custody["custody_state"] == "accepted_fact"
+    assert custody["product_claim_span_ids"] == ["first_path:1.1", "first_path:1.3"]
 
 
 def test_supporting_sections_and_fenced_examples_cannot_inject_product_facts(tmp_path: Path) -> None:

@@ -242,6 +242,7 @@ _TITLE_HYPHEN_OBJECT_HEADS = {
     "compliance",
     "coordination",
     "model",
+    "tracking",
     "triage",
     "timeline",
 }

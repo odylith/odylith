@@ -31,6 +31,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import cle
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     leading_subject_prefix as _leading_subject_prefix,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_subject_kind import (
+    preserve_system_subject_then_action,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
     action_word_inside_compound_noun as _action_word_inside_compound_noun,
 )
@@ -59,11 +62,16 @@ def split_action_pieces(value: str) -> list[str]:
     previous_subject_prefix = ""
     for sentence in [part.strip(" .,;:") for part in re.split(r"(?<=[.!?])\s+", value) if part.strip(" .,;:")]:
         subject_prefix = previous_subject_prefix if _starts_with_carried_pronoun_subject(sentence) else ""
-        for raw_segment in [
-            part.strip(" .,;:")
-            for part in _ACTION_CONTINUATION_SPLIT_RE.split(sentence)
-            if part.strip(" .,;:")
-        ]:
+        raw_segments = (
+            [sentence]
+            if preserve_system_subject_then_action(sentence)
+            else [
+                part.strip(" .,;:")
+                for part in _ACTION_CONTINUATION_SPLIT_RE.split(sentence)
+                if part.strip(" .,;:")
+            ]
+        )
+        for raw_segment in raw_segments:
             for purpose_segment in _split_purpose_action_tail(raw_segment):
                 for segment in _split_temporal_action_tail(purpose_segment):
                     current = ""

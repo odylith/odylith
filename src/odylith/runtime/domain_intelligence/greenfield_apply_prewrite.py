@@ -10,6 +10,7 @@ from typing import Any
 
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence import greenfield_acceptance_identity
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
@@ -39,6 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.domain_intelligence.proposal_memory import build_project_brief_source_markdown
+from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_authoring
@@ -227,12 +229,6 @@ def build_prewrite_completion_package(
             source_launch_context=next_steps_preview,
             accepted_at=accepted_at,
         )
-        project_dashboard_preview = preview_project_dashboard_payload(
-            root=root,
-            proposal=package_proposal,
-            accepted_project_preview=accepted_project_preview,
-            source_launch_context=next_steps_preview,
-        )
         compass_memory_preview = preview_compass_acceptance_event(
             root=prewrite_root,
             target_root=root,
@@ -253,12 +249,35 @@ def build_prewrite_completion_package(
             release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
             accepted_at=accepted_at,
         )
+        resolved_accepted_at = greenfield_acceptance_identity.resolve_preconfirm_acceptance_timestamp(
+            repo_root=root,
+            fresh_accepted_at=accepted_at,
+            accepted_project_preview=accepted_project_preview,
+            project_brief_record_text=project_brief_record_text,
+            compass_memory_preview=compass_memory_preview,
+            portable_roots=(prewrite_root,),
+        )
+        if resolved_accepted_at != accepted_at:
+            accepted_at = resolved_accepted_at
+            accepted_project_preview = dict(accepted_project_preview)
+            accepted_project_preview["accepted_at"] = accepted_at
+            compass_memory_preview = dict(compass_memory_preview)
+            compass_memory_preview["ts_iso"] = accepted_at
+            project_brief_record_text = compiled_project_brief_record_text(
+                project_brief_record_text,
+                accepted_at=accepted_at,
+            )
+        project_dashboard_preview = preview_project_dashboard_payload(
+            root=root,
+            proposal=package_proposal,
+            accepted_project_preview=accepted_project_preview,
+            source_launch_context=next_steps_preview,
+        )
         transaction_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
             greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
                 prewrite_root=prewrite_root,
                 target_root=root,
                 proposal=package_proposal,
-                release_selector=release_selector,
                 validation_gate=validation_gate,
                 staged_backlog_result=staged_backlog_result,
                 target_backlog_result=backlog_result,
@@ -270,8 +289,9 @@ def build_prewrite_completion_package(
                 rendered_atlas_sources=rendered_atlas_sources,
                 atlas_review_date=atlas_review_date,
                 compiled_atlas_catalog_rows=atlas_catalog_rows,
-                release_id=_prewrite_release_id(preview_release_target, preview_release_assignment),
-                accepted_at=accepted_at,
+                accepted_project_preview=accepted_project_preview,
+                project_brief_record_text=project_brief_record_text,
+                compass_memory_preview=compass_memory_preview,
                 next_steps_preview=next_steps_preview,
                 staged_program_result=staged_program_result,
                 prewrite_safety_preview=prewrite_safety_preview,

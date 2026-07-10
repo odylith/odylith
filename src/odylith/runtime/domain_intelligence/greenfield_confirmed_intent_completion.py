@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import completed_external_boundary_rows
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, material_first_path_action, normalize_project_title
@@ -40,6 +41,10 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text, norm
 
 CORE_FIELD_MIN_WORDS = {"product_story": 28, "state_object": 12, "first_path": 18, "proof_boundary": 18}
 _ACTOR_MODAL_ROLE_WORDS = frozenset({"lead", "leads", "people", "person", "rep", "reps", "staff", "team", "teams", "user", "users"})
+_UNPUNCTUATED_META_CONTROL_PHRASE_RE = re.compile(
+    r"\b(?:in\s+)?(?:the\s+)?smallest\s+version\s+of\s+(?:the\s+)?whole\s+product\b",
+    re.IGNORECASE,
+)
 
 def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(dict(intent))
@@ -264,7 +269,9 @@ def _normalize_visible_result_language(value: str) -> str:
 
 
 def _normalize_first_path(value: str) -> str:
-    text = _normalize_visible_result_language(_strip_prompt_prefixes(value))
+    text = _strip_inline_meta_loop_clauses(
+        _normalize_visible_result_language(_strip_prompt_prefixes(value))
+    )
     sentences = [
         sentence.strip()
         for sentence in re.split(r"(?<=[.!?])\s+", text)
@@ -272,16 +279,65 @@ def _normalize_first_path(value: str) -> str:
     ]
     if not sentences:
         return text
-    kept = [sentence for sentence in sentences if not _is_terminal_meta_loop_summary(sentence)]
+    kept = [
+        _strip_unpunctuated_meta_control_phrases(sentence)
+        for sentence in sentences
+        if not _is_terminal_meta_loop_summary(sentence)
+    ]
     return " ".join(kept or sentences).strip()
+
+
+def _strip_inline_meta_loop_clauses(value: str) -> str:
+    def replacement(match: re.Match[str]) -> str:
+        clause = _clean(match.group("clause"))
+        return " " if is_first_path_meta_control_language(clause) else match.group(0)
+
+    return re.sub(r",(?P<clause>[^,.;!?]+),", replacement, _clean(value))
+
+
+def _strip_unpunctuated_meta_control_phrases(value: str) -> str:
+    return _UNPUNCTUATED_META_CONTROL_PHRASE_RE.sub(" ", _clean(value))
 
 
 def _is_terminal_meta_loop_summary(value: str) -> bool:
     text = _clean(value).strip()
     return bool(
         re.search(r"^(?:this|that)\s+(?:loop|path|journey|flow)\b", text, flags=re.IGNORECASE)
-        and re.search(r"\b(?:smallest\s+version|whole\s+product|end\s+to\s+end|working)\b", text, flags=re.IGNORECASE)
+        and is_first_path_meta_control_language(text)
     )
+
+
+def is_first_path_meta_control_language(value: str) -> bool:
+    """Identify source framing about proving the whole product, not product behavior."""
+
+    text = _clean(value)
+    has_smallest_version = bool(re.search(r"\bsmallest\s+version\b", text, re.IGNORECASE))
+    has_whole_product = bool(re.search(r"\bwhole\s+product\b", text, re.IGNORECASE))
+    has_terminal_meta_subject = bool(
+        re.search(r"^(?:this|that)\s+(?:loop|path|journey|flow)\b", text, re.IGNORECASE)
+    )
+    has_path_claim = bool(
+        re.search(r"\b(?:complete\s+path|end\s+to\s+end|proven|works?|working)\b", text, re.IGNORECASE)
+    )
+    return bool(
+        (has_smallest_version and (has_whole_product or has_path_claim))
+        or (has_whole_product and has_path_claim)
+        or (has_terminal_meta_subject and has_path_claim)
+    )
+
+
+def split_unpunctuated_first_path_meta_control(value: str) -> tuple[str, str, str] | None:
+    """Return exact source fragments around one removable inline meta-control phrase."""
+
+    match = _UNPUNCTUATED_META_CONTROL_PHRASE_RE.search(_clean(value))
+    if match is None:
+        return None
+    text = _clean(value)
+    return text[: match.start()].strip(" .,;:-"), match.group(0), text[match.end() :].strip(" .,;:-")
+
+
+def is_terminal_first_path_meta_loop_summary(value: str) -> bool:
+    return _is_terminal_meta_loop_summary(value)
 
 
 def _completion_seed_is_sufficient(intent: Mapping[str, Any]) -> bool:
@@ -419,6 +475,8 @@ def _first_path_is_complete_enough(value: str) -> bool:
         return True
     material_action = material_first_path_action(text)
     model = first_path_model(text)
+    if len(model.steps) == 1 and has_concise_coordinated_first_path(text):
+        return True
     visible_outcome = _clean(model.visible_outcome)
     if (
         len(model.steps) >= 2

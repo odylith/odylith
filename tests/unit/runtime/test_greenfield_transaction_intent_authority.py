@@ -187,6 +187,44 @@ def test_product_create_transaction_rejects_inferred_material_custody(tmp_path: 
         _transaction(tmp_path, authority=mutated)
 
 
+def test_product_create_transaction_rejects_accepted_material_fact_without_source_custody(tmp_path: Path) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    material_fields = {key: dict(value) for key, value in authority["material_fields"].items()}
+    material_fields["first_path"] = {
+        **material_fields["first_path"],
+        "source_span_ids": [],
+    }
+    mutated = {
+        **authority,
+        "material_fields": material_fields,
+        "material_custody_sha256": _stable_hash(material_fields),
+    }
+    mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
+
+    with pytest.raises(ValueError, match="missing material source custody"):
+        _transaction(tmp_path, authority=mutated)
+
+
+def test_product_create_transaction_rejects_markdown_material_fact_without_product_claim_custody(
+    tmp_path: Path,
+) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    material_fields = {key: dict(value) for key, value in authority["material_fields"].items()}
+    material_fields["first_path"] = {
+        **material_fields["first_path"],
+        "product_claim_span_ids": [],
+    }
+    mutated = {
+        **authority,
+        "material_fields": material_fields,
+        "material_custody_sha256": _stable_hash(material_fields),
+    }
+    mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
+
+    with pytest.raises(ValueError, match="missing material product-claim custody"):
+        _transaction(tmp_path, authority=mutated)
+
+
 @pytest.mark.parametrize("damage", ("missing_sidecar", "invalid_sidecar", "source_drift", "envelope_drift"))
 def test_product_create_transaction_intent_authority_uses_sealed_snapshot(
     tmp_path: Path,

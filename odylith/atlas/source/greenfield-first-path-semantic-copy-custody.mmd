@@ -1,7 +1,10 @@
 flowchart LR
-    subgraph intent_lane["Accepted First-Path Facts"]
+    subgraph intent_lane["Source And Accepted First-Path Facts"]
       direction TB
+      source_evidence_units["Source evidence units<br/>retain original text, hashes,<br/>and auditable span provenance"]
+      product_claim_spans["Accepted product-claim spans<br/>stay distinct from supporting evidence;<br/>every material fact requires source custody"]
       accepted_path["Accepted first path<br/>operator-confirmed behavior"]
+      editorial_framing_guard["First-path editorial framing guard<br/>removes inline smallest-version<br/>and whole-product meta clauses<br/>before semantic projection"]
       ingress_cleanup["Confirmed-text ingress cleanup<br/>dedupe adjacent words once<br/>before semantic projection"]
       title_boundary_custody["Title-boundary custody<br/>canonical project titles collapse<br/>duplicate lexical and compound-prefix<br/>boundaries before projection fan-out"]
       evidence_anchor_custody["Prompt-grounded evidence anchor custody<br/>canonicalize duplicate source words;<br/>treat hyphen/slash compounds as<br/>multi-part anchors before requirements,<br/>EvaluationSemantics, and projections"]
@@ -14,6 +17,7 @@ flowchart LR
       subject_carry_guard["Explicit subject-carry guard<br/>one-word human actors stay actors,<br/>visible result objects do not<br/>become sibling subjects"]
       purpose_context["Purpose-context owner<br/>semicolon-led accepted context<br/>carries into first actionable step"]
       action_boundary["Action-boundary owner<br/>ordinary leading actions stay actions,<br/>finite sibling actions split events"]
+      shared_event_resolver["Shared first-path actor/action resolver<br/>receives the complete accepted human actor set;<br/>pronouns retain the current human actor;<br/>system/product events are marked non-human"]
       action_result_nominalizer["Action-result nominalizer<br/>actor-role nouns beat leading<br/>action-shaped words when later<br/>owned actions carry the result"]
       actor_led_open_action["Actor-led open-action owner<br/>plausible actor plus open action<br/>when material-action grammar has<br/>no recognized action"]
       requirement_control["Requirement-control owner<br/>workflow/product/path must clauses<br/>become constraints, not actors,<br/>when material path actions remain"]
@@ -39,7 +43,7 @@ flowchart LR
 
     subgraph projection_lane["Surface Projections"]
       direction TB
-      radar_projection["Radar and brief projection<br/>surface-local wording"]
+      radar_projection["Radar title/action and brief projection<br/>selects one resolved human event;<br/>system/product events cannot title<br/>human workstreams"]
       state_boundary_titles["State-boundary title owner<br/>compact review/action focus,<br/>no changes-it pronoun tail,<br/>no duplicate clarity word"]
       actor_choice_copy["Project-brief actor choices<br/>neutral participant wording,<br/>curated readiness actions keep<br/>middle and terminal path steps"]
       atlas_projection["Atlas event projection<br/>sequence and flow labels"]
@@ -70,7 +74,9 @@ flowchart LR
       governed_write["Governed writes<br/>only after manifest passes"]
     end
 
-    accepted_path --> ingress_cleanup
+    source_evidence_units --> product_claim_spans --> accepted_path
+    accepted_path --> editorial_framing_guard
+    editorial_framing_guard --> ingress_cleanup
     ingress_cleanup --> title_boundary_custody
     title_boundary_custody --> evidence_anchor_custody
     evidence_anchor_custody --> prompt_material_custody
@@ -83,9 +89,11 @@ flowchart LR
     subject_carry_guard --> purpose_context
     purpose_context --> action_boundary
     action_boundary --> action_result_nominalizer
+    action_boundary --> shared_event_resolver
     action_result_nominalizer --> actor_led_open_action
     actor_led_open_action --> requirement_control
     requirement_control --> semantic_contract
+    shared_event_resolver --> semantic_contract
     semantic_contract --> evaluation_readback
     semantic_contract --> external_boundary
     external_boundary --> sequence_owner
@@ -96,6 +104,7 @@ flowchart LR
     review_result_owner --> modal_owner
     modal_owner --> product_view_copy
     product_view_copy --> radar_projection
+    shared_event_resolver -. "same human actor/action event" .-> radar_projection
     modal_owner --> atlas_projection
     modal_owner --> next_step_prompts
     radar_projection --> state_boundary_titles
@@ -134,7 +143,7 @@ flowchart LR
     classDef prose fill:#F8FAFC,stroke:#CBD5E1,color:#132033,stroke-width:1px;
     classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
     classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#132033,stroke-width:1px;
-    class accepted_path,ingress_cleanup,title_boundary_custody,evidence_anchor_custody,prompt_material_custody,actor_roles,actor_participation,artifact_context_actor_filter,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,action_result_nominalizer,actor_led_open_action,requirement_control,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,result_list_disambiguation,review_result_owner,modal_owner,product_view_copy intent;
+    class source_evidence_units,product_claim_spans,accepted_path,editorial_framing_guard,ingress_cleanup,title_boundary_custody,evidence_anchor_custody,prompt_material_custody,actor_roles,actor_participation,artifact_context_actor_filter,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,shared_event_resolver,action_result_nominalizer,actor_led_open_action,requirement_control,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,result_list_disambiguation,review_result_owner,modal_owner,product_view_copy intent;
     class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
     class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,label_action_grammar,atlas_coverage,next_step_prompts,overlap_projection,artifact_units,mermaid_label_gate,mermaid_source_units,canonical_facts,tribunal_actors,evaluation_readback,package_findings projection;
     class semantic_plan_patch,source_address,projection_repair_targets,dashboard_rerender,package_inspection,final_gate,quality_debt,debt_manifest,governed_write repair;

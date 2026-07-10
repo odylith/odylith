@@ -30,9 +30,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import resolve_first_path_events
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import select_first_path_actor_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
 
@@ -52,9 +55,23 @@ def confirmed_workstream_titles(
         for row in components
         if str(row.get("label", "")).strip()
     ]
-    actor = backlog_text.lead_actor_label(human_actors)
-    action = backlog_text.imperative_action_phrase(first_path)
-    actor_owned_action = backlog_actions.workflow_title_action(first_path=first_path, actor=actor, fallback=action)
+    title_actors = [label for row in human_actors if (label := backlog_text.actor_label(row))]
+    lead_actor = backlog_text.lead_actor_label(title_actors)
+    fallback_action = backlog_text.imperative_action_phrase(first_path)
+    resolved_events = resolve_first_path_events(
+        first_path_steps(first_path),
+        lead_actor=lead_actor or "user",
+        human_actors=title_actors,
+    )
+    resolved_pair = select_first_path_actor_action(resolved_events, lead_actor=lead_actor)
+    actor = resolved_pair.actor if resolved_pair else lead_actor
+    action = resolved_pair.action if resolved_pair else fallback_action
+    actor_owned_action = backlog_actions.workflow_title_action(
+        first_path=first_path,
+        actor=actor,
+        fallback=action,
+        human_actors=title_actors,
+    )
     state_label = _compact_domain_object_label(state_object, fallback=f"{label} state")
     proof_label = labels[-1] if len(labels) > 2 else (labels[0] if labels else label)
     outcome = backlog_text.first_path_outcome(first_path, proof_boundary=proof_boundary)
@@ -459,6 +476,7 @@ def confirmed_backlog_rows(
         first_path=first_path_for_clauses,
         actor=workflow_actor_label,
         fallback=first_path_action,
+        human_actors=first_release_human_actors,
     )
     workflow_review_action = backlog_actions.review_action_when_action_repeats_outcome(
         action=workflow_action,

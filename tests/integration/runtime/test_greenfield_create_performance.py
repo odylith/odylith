@@ -749,10 +749,27 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
         prompt="Draft a greenfield proposal for a personal pattern tracker",
     )
     rendered_payload = json.dumps(payload)
-    written_payload = "\n".join(
+    confirmed_intent = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").read_text(encoding="utf-8")
+    )
+    product_claim_spans = [
+        span
+        for span in confirmed_intent["source_evidence"]["spans"]
+        if span["classification"] == "product_claim"
+    ]
+    supporting_spans = [
+        span
+        for span in confirmed_intent["source_evidence"]["spans"]
+        if span["classification"] == "supporting_evidence"
+    ]
+    written_product_truth = json.dumps(
+        {
+            "product_facts": confirmed_intent["product_facts"],
+            "product_claim_spans": product_claim_spans,
+        }
+    ) + "\n" + "\n".join(
         path.read_text(encoding="utf-8")
         for path in (
-            tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
             tmp_path / "odylith/runtime/source/accepted-project.v1.json",
             tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json",
         )
@@ -787,11 +804,12 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
         "Do not expand beyond recording first entry and logging again until",
     ):
         assert banned not in rendered_payload
-        assert banned not in written_payload
+        assert banned not in written_product_truth
+    assert any("smallest version of the whole product" in span["text"] for span in supporting_spans)
     assert any(row.get("title") == "Let Person Managing Discomfort Record First Entry" for row in payload["backlog"])
     assert any(row.get("label") == "Reminder and Streak Nudge Service" for row in payload["components"])
-    assert "logging again" in written_payload
-    assert "reviewing a simple trend: status over time" in written_payload
+    assert "logging again" in written_product_truth
+    assert "reviewing a simple trend: status over time" in written_product_truth
     visible_actors = payload["validation_gate"]["visible_actors"]
     assert visible_actors[0]["visible_actor"] == "Person Managing Discomfort"
     assert visible_actors[1]["visible_actor"] == "Person Managing Discomfort workflow operator"
@@ -1224,6 +1242,7 @@ def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(
 
     payloads = []
     elapsed_runs = []
+    acceptance_timestamps = []
     for _index in range(2):
         rc, payload, elapsed = _run_confirmed_create_main(
             tmp_path,
@@ -1234,11 +1253,34 @@ def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(
         assert rc == 0
         assert elapsed_runs[-1] < 30.0
         payloads.append(payload)
+        accepted_project = json.loads(
+            (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
+        )
+        accepted_paths = [
+            str(row.get(key, ""))
+            for group, keys in (("workstreams", ("idea_path",)), ("components", ("registry_path", "spec_path")))
+            for row in accepted_project["created"][group]
+            for key in keys
+            if str(row.get(key, "")).strip()
+        ]
+        assert accepted_paths
+        assert all(Path(path).resolve().is_relative_to(tmp_path.resolve()) for path in accepted_paths)
+        project_brief = (tmp_path / "odylith/runtime/source/project-brief.v1.md").read_text(encoding="utf-8")
+        brief_timestamp = next(
+            line.removeprefix("- accepted_at: ")
+            for line in project_brief.splitlines()
+            if line.startswith("- accepted_at: ")
+        )
+        acceptance_timestamps.append(
+            (accepted_project["accepted_at"], brief_timestamp, payload["memory"]["event"]["ts_iso"])
+        )
+        assert len(set(acceptance_timestamps[-1])) == 1
 
     assert [row["idea_id"] for row in payloads[0]["backlog"]] == [row["idea_id"] for row in payloads[1]["backlog"]]
     assert payloads[0]["diagrams"] == payloads[1]["diagrams"]
     assert payloads[1]["memory"]["recorded"] is True
     assert payloads[1]["memory"]["reused_existing"] is True
+    assert acceptance_timestamps[1] == acceptance_timestamps[0]
     assert len(list((tmp_path / "odylith/radar/source/ideas").rglob("*.md"))) == 4
     stream = tmp_path / agent_runtime_contract.AGENT_STREAM_PATH
     events = [json.loads(line) for line in stream.read_text(encoding="utf-8").splitlines() if line.strip()]

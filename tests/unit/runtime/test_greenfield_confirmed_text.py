@@ -106,7 +106,10 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
     assert title_label("GLP-1 medication journey") == "GLP-1 Medication Journey"
     assert title_label("revision-round management") == "Revision-round Management"
     assert title_label("scientific-quality reviewer") == "Scientific Quality Reviewer"
+    assert title_label("side-effect tracking") == "Side Effect Tracking"
+    assert title_label("adverse-event tracking") == "Adverse Event Tracking"
     assert title_label("titration-schedule model") == "Titration Schedule Model"
+    assert title_label("Cryo-EM review ledger") == "Cryo-EM Review Ledger"
     assert capitalize_sentence_start_preserving_source_terms("mRNA Stability Batch stays reviewable") == (
         "mRNA Stability Batch stays reviewable"
     )

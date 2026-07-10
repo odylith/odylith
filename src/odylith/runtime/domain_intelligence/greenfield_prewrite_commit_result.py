@@ -72,6 +72,11 @@ def require_greenfield_commit_result_preview(value: object) -> dict[str, Any]:
     payload = dict(value)
     if str(payload.get("mode", "")).strip() != "applied":
         raise ValueError("ProductCreateTransaction commit result preview has an invalid mode")
+    for key in ("backlog", "components", "diagrams"):
+        if not isinstance(payload.get(key), list):
+            raise ValueError(
+                f"ProductCreateTransaction commit result preview is missing compiled {key} reporting data"
+            )
     dashboard = payload.get("dashboard_refresh")
     if not isinstance(dashboard, Mapping) or str(dashboard.get("status", "")).strip() != "passed":
         raise ValueError("ProductCreateTransaction commit result preview is missing surface refresh proof")

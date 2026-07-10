@@ -29,7 +29,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import FirstPathActorAction
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import first_path_actor_label
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import resolve_first_path_events
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_action_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
@@ -185,7 +187,7 @@ def build_greenfield_semantic_model(
 ) -> GreenfieldSemanticModel:
     """Build the canonical semantic model that renderers must preserve."""
 
-    first_actor = _actor_label(human_actors, fallback=f"{_clean(title) or 'Product'} user")
+    first_actor = first_path_actor_label(human_actors, fallback=f"{_clean(title) or 'Product'} user")
     raw_state = _clean(state_object)
     state_label = domain_object_label(raw_state, fallback="") or raw_state or f"{_clean(title) or 'Product'} state"
     path_contract = _first_path_contract(
@@ -280,6 +282,11 @@ def _first_path_contract(
 ) -> FirstPathContract:
     model = first_path_model(first_path)
     required_fields = tuple(_required_fields(model.steps, state_object=state_object))
+    resolved_events = resolve_first_path_events(
+        model.steps,
+        lead_actor=actor,
+        human_actors=human_actors,
+    )
     material = _clean(model.material_action) or (model.steps[0] if model.steps else "")
     visible_result = _clean(visible_result) or _terminal_handoff_visible_result(model.visible_outcome) or first_path_outcome_phrase(
         first_path,
@@ -289,10 +296,9 @@ def _first_path_contract(
     initial_visible_result = visible_result
     events = tuple(
         _first_path_events(
-            model.steps,
+            resolved_events,
             actor=actor,
             state_object=state_object,
-            human_actors=human_actors,
             visible_result=visible_result,
         )
     )
@@ -300,10 +306,9 @@ def _first_path_contract(
     if visible_result != initial_visible_result:
         events = tuple(
             _first_path_events(
-                model.steps,
+                resolved_events,
                 actor=actor,
                 state_object=state_object,
-                human_actors=human_actors,
                 visible_result=visible_result,
             )
         )
@@ -385,33 +390,29 @@ def _is_supporting_evidence_result(value: str) -> bool:
 
 
 def _first_path_events(
-    steps: Sequence[str],
+    resolved_events: Sequence[FirstPathActorAction],
     *,
     actor: str,
     state_object: str,
-    human_actors: Sequence[str],
     visible_result: str = "",
 ) -> list[FirstPathEvent]:
     events: list[FirstPathEvent] = []
-    current_actor = actor
     visible_result_text = _clean(visible_result)
-    step_count = len(steps)
-    for index, step in enumerate(steps, start=1):
-        text = _clean(step)
+    step_count = len(resolved_events)
+    for index, resolved_event in enumerate(resolved_events, start=1):
+        text = _clean(resolved_event.text)
         is_visible = _is_visible_result(
             text,
             visible_result=visible_result_text,
             is_last=index == step_count,
         )
         event_text = text
-        event_actor = _event_actor(text, human_actors=human_actors, fallback=current_actor or actor)
-        current_actor = event_actor or current_actor
         action = _action_label(text)
         target = _event_target(event_text, state_object=state_object)
         events.append(
             FirstPathEvent(
                 index=index,
-                actor=event_actor or actor,
+                actor=resolved_event.actor or actor,
                 action=action,
                 target_entity=target,
                 mutation=event_text,
@@ -422,7 +423,7 @@ def _first_path_events(
         )
     return _ensure_first_path_event_floor(
         events,
-        actor=current_actor or actor,
+        actor=resolved_events[-1].actor if resolved_events else actor,
         state_object=state_object,
         visible_result=visible_result_text,
     )
@@ -477,68 +478,6 @@ def _unique_visible_result_review(events: list[FirstPathEvent], visible_result: 
         if _clean(candidate).casefold().strip(" .") not in existing:
             return candidate
     return candidates[-1]
-
-
-def _event_actor(value: str, *, human_actors: Sequence[str], fallback: str) -> str:
-    signature = actor_signature(value)
-    explicit_subject = _explicit_event_subject(value)
-    if not signature and explicit_subject:
-        signature = " ".join(
-            ordered_terms(
-                explicit_subject,
-                stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS,
-            )
-        )
-    if not signature:
-        return fallback
-    signature_terms = set(ordered_terms(signature, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
-    if not signature_terms:
-        return fallback
-    candidates: list[tuple[int, int, str]] = []
-    for row in human_actors:
-        label = _actor_label([row], fallback="")
-        label_terms = set(ordered_terms(label, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
-        overlap = len(signature_terms & label_terms)
-        if overlap:
-            candidates.append((overlap, -len(label_terms), label))
-    if not candidates:
-        if explicit_subject:
-            return _actor_label([explicit_subject], fallback=fallback)
-        return fallback
-    candidates.sort(reverse=True)
-    return candidates[0][2]
-
-
-def _explicit_event_subject(value: str) -> str:
-    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip(" .,;:")
-    if not text:
-        return ""
-    for match in re.finditer(rf"\b({_ACTION_VERB_PATTERN})\b", text, re.IGNORECASE):
-        token = match.group(1).casefold()
-        if token in _NOUN_LIKE_ACTION_TOKENS and re.match(
-            rf"\s+(?:{_ACTION_VERB_PATTERN})\b",
-            text[match.end() :],
-            re.IGNORECASE,
-        ):
-            continue
-        if match.start() <= 0:
-            return ""
-        subject = text[: match.start()].strip(" .,;:")
-        subject = re.sub(
-            r"^(?:a|an|the|one|this|that|each|another)\s+",
-            "",
-            subject,
-            flags=re.IGNORECASE,
-        )
-        terms = ordered_terms(subject, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)
-        if not terms or len(terms) > 6:
-            return ""
-        if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", subject, re.IGNORECASE):
-            return ""
-        if re.search(r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b", subject, re.IGNORECASE):
-            return ""
-        return subject
-    return ""
 
 
 def _component_ref(
@@ -900,27 +839,6 @@ def _action_label(value: str) -> str:
             continue
         return token
     return "advance"
-
-
-def _actor_label(values: Sequence[str], *, fallback: str) -> str:
-    for value in values:
-        text = _clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .")
-        if text:
-            return _sentence_safe_actor_label(text)
-    return _sentence_safe_actor_label(fallback)
-
-
-def _sentence_safe_actor_label(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text or not re.search(r"\b(?:and|or)\b", text, flags=re.IGNORECASE):
-        return text
-    words = [word.strip(".,;:()[]{}") for word in text.split() if word.strip(".,;:()[]{}")]
-    if any(any(char.isdigit() for char in word) or (word.isupper() and len(word) > 1) for word in words):
-        return text
-    if not all(word[:1].isupper() or word.casefold() in {"and", "or"} for word in words):
-        return text
-    lowered = text.casefold()
-    return f"{lowered[:1].upper()}{lowered[1:]}"
 
 
 def _clean(value: Any) -> str:

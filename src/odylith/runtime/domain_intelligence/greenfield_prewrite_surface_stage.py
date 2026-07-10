@@ -12,10 +12,6 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
-from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
-from odylith.runtime.domain_intelligence.proposal_memory import build_project_brief_source_markdown
 from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 
 
@@ -35,9 +31,6 @@ def build_staged_surface_refresh_preview(
     *,
     prewrite_root: Path,
     proposal: Mapping[str, Any],
-    release_selector: str,
-    validation_gate: Mapping[str, Any],
-    staged_backlog_result: Mapping[str, Any],
     staged_component_registry_preview: Sequence[Mapping[str, Any]],
     rendered_component_specs: Mapping[str, str],
     diagram_rows: Sequence[Mapping[str, Any]],
@@ -46,9 +39,9 @@ def build_staged_surface_refresh_preview(
     rendered_atlas_sources: Mapping[str, str],
     atlas_review_date: str,
     compiled_atlas_catalog_rows: Sequence[Mapping[str, Any]],
-    release_id: str,
-    accepted_at: str,
-    source_launch_context: Mapping[str, Any],
+    accepted_project_preview: Mapping[str, Any],
+    project_brief_record_text: str,
+    compass_memory_preview: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Materialize staged truth and run the owned-surface proof before confirm."""
 
@@ -56,9 +49,6 @@ def build_staged_surface_refresh_preview(
         materialize_staged_greenfield_surfaces(
             prewrite_root=prewrite_root,
             proposal=proposal,
-            release_selector=release_selector,
-            validation_gate=validation_gate,
-            staged_backlog_result=staged_backlog_result,
             staged_component_registry_preview=staged_component_registry_preview,
             rendered_component_specs=rendered_component_specs,
             diagram_rows=diagram_rows,
@@ -67,9 +57,9 @@ def build_staged_surface_refresh_preview(
             rendered_atlas_sources=rendered_atlas_sources,
             atlas_review_date=atlas_review_date,
             compiled_atlas_catalog_rows=compiled_atlas_catalog_rows,
-            release_id=release_id,
-            accepted_at=accepted_at,
-            source_launch_context=source_launch_context,
+            accepted_project_preview=accepted_project_preview,
+            project_brief_record_text=project_brief_record_text,
+            compass_memory_preview=compass_memory_preview,
         ).surface_refresh_preview
     )
 
@@ -78,9 +68,6 @@ def materialize_staged_greenfield_surfaces(
     *,
     prewrite_root: Path,
     proposal: Mapping[str, Any],
-    release_selector: str,
-    validation_gate: Mapping[str, Any],
-    staged_backlog_result: Mapping[str, Any],
     staged_component_registry_preview: Sequence[Mapping[str, Any]],
     rendered_component_specs: Mapping[str, str],
     diagram_rows: Sequence[Mapping[str, Any]],
@@ -89,9 +76,9 @@ def materialize_staged_greenfield_surfaces(
     rendered_atlas_sources: Mapping[str, str],
     atlas_review_date: str,
     compiled_atlas_catalog_rows: Sequence[Mapping[str, Any]],
-    release_id: str,
-    accepted_at: str,
-    source_launch_context: Mapping[str, Any],
+    accepted_project_preview: Mapping[str, Any],
+    project_brief_record_text: str,
+    compass_memory_preview: Mapping[str, Any],
 ) -> GreenfieldStagedSurfaceBuild:
     """Materialize and prove the exact staged outputs later committed as bytes."""
 
@@ -114,36 +101,9 @@ def materialize_staged_greenfield_surfaces(
     )
     memory_record = record_compiled_greenfield_acceptance(
         repo_root=staged_root,
-        accepted_project_preview=_accepted_project_preview(
-            proposal=proposal,
-            backlog_result=staged_backlog_result,
-            component_items=staged_component_registry_preview,
-            diagram_ids=diagram_ids,
-            release_selector=release_selector,
-            release_id=release_id,
-            validation_gate=validation_gate,
-            source_launch_context=source_launch_context,
-            accepted_at=accepted_at,
-        ),
-        project_brief_record_text=build_project_brief_source_markdown(
-            proposal=proposal,
-            backlog_items=mapping_rows(staged_backlog_result.get("created")),
-            component_items=staged_component_registry_preview,
-            diagram_ids=diagram_ids,
-            release_selector=release_selector,
-            release_id=release_id,
-            accepted_at=accepted_at,
-        ),
-        compass_memory_preview=_compass_memory_preview(
-            root=staged_root,
-            proposal=proposal,
-            backlog_result=staged_backlog_result,
-            component_items=staged_component_registry_preview,
-            diagram_ids=diagram_ids,
-            release_selector=release_selector,
-            release_id=release_id,
-            accepted_at=accepted_at,
-        ),
+        accepted_project_preview=accepted_project_preview,
+        project_brief_record_text=project_brief_record_text,
+        compass_memory_preview=compass_memory_preview,
     )
     surface_refresh_preview = greenfield_surface_refresh_proof.build_prewrite_surface_refresh_preview(
         repo_root=staged_root,
@@ -159,54 +119,6 @@ def materialize_staged_greenfield_surfaces(
         atlas_scaffold_logs=tuple(diagram_write.scaffold_logs),
         memory_record=memory_record,
         rendered_surface_custody=rendered_surface_custody,
-    )
-
-
-def _accepted_project_preview(
-    *,
-    proposal: Mapping[str, Any],
-    backlog_result: Mapping[str, Any],
-    component_items: Sequence[Mapping[str, Any]],
-    diagram_ids: Sequence[str],
-    release_selector: str,
-    release_id: str,
-    validation_gate: Mapping[str, Any],
-    source_launch_context: Mapping[str, Any],
-    accepted_at: str,
-) -> dict[str, Any]:
-    return build_accepted_project_source_payload(
-        proposal=proposal,
-        backlog_items=mapping_rows(backlog_result.get("created")),
-        component_items=tuple(row for row in component_items if isinstance(row, Mapping)),
-        diagram_ids=tuple(str(value).strip() for value in diagram_ids if str(value).strip()),
-        release_selector=release_selector,
-        release_id=release_id,
-        validation_gate=validation_gate,
-        source_launch_context=source_launch_context,
-        accepted_at=accepted_at,
-    )
-
-
-def _compass_memory_preview(
-    *,
-    root: Path,
-    proposal: Mapping[str, Any],
-    backlog_result: Mapping[str, Any],
-    component_items: Sequence[Mapping[str, Any]],
-    diagram_ids: Sequence[str],
-    release_selector: str,
-    release_id: str,
-    accepted_at: str,
-) -> dict[str, Any]:
-    return build_greenfield_acceptance_event_preview(
-        proposal=proposal,
-        backlog_items=mapping_rows(backlog_result.get("created")),
-        component_items=tuple(row for row in component_items if isinstance(row, Mapping)),
-        diagram_ids=tuple(str(value).strip() for value in diagram_ids if str(value).strip()),
-        release_selector=release_selector,
-        release_id=release_id,
-        accepted_at=accepted_at,
-        repo_root=root,
     )
 
 

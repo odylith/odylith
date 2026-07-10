@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import hashlib
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
@@ -16,6 +17,15 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections im
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     is_confirmed_intent_supporting_section,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
+    is_first_path_meta_control_language,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
+    is_terminal_first_path_meta_loop_summary,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
+    split_unpunctuated_first_path_meta_control,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -70,6 +80,16 @@ MATERIAL_FACT_KEYS = (
     "first_path",
     "proof_boundary",
     "human_actors",
+)
+
+_STRUCTURED_SOURCE_FORMATS = frozenset(
+    {
+        "compiled_proposal_intent",
+        "in_memory_confirmed_intent",
+        "legacy_json",
+        "operator_prompt",
+        "typed_envelope_json",
+    }
 )
 
 
@@ -140,9 +160,21 @@ def build_product_intent_envelope(
 
     facts = product_facts_payload(intent)
     sections = confirmed_intent_sections(source_text) if source_text else {}
-    spans, span_ids_by_field = _source_spans(sections)
-    _add_source_title_span(facts, spans=spans, span_ids_by_field=span_ids_by_field, source_text=source_text)
-    _add_source_story_span(facts, spans=spans, span_ids_by_field=span_ids_by_field, source_text=source_text)
+    spans, source_span_ids_by_field, product_claim_span_ids_by_field = _source_spans(sections)
+    _add_source_title_span(
+        facts,
+        spans=spans,
+        source_span_ids_by_field=source_span_ids_by_field,
+        product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+        source_text=source_text,
+    )
+    _add_source_story_span(
+        facts,
+        spans=spans,
+        source_span_ids_by_field=source_span_ids_by_field,
+        product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+        source_text=source_text,
+    )
     ignored = [span for span in spans if span.get("classification") == "ignored_instruction"]
     supporting = [span for span in spans if span.get("classification") == "supporting_evidence"]
     source_sha256 = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest() if source_text else ""
@@ -151,7 +183,12 @@ def build_product_intent_envelope(
         "product_facts": facts,
         "custody_ledger": {
             "version": PRODUCT_INTENT_LEDGER_VERSION,
-            "fields": _field_custody(facts, span_ids_by_field=span_ids_by_field, source_format=source_format),
+            "fields": _field_custody(
+                facts,
+                source_span_ids_by_field=source_span_ids_by_field,
+                product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+                source_format=source_format,
+            ),
             "ignored_instructions": ignored,
             "supporting_evidence": supporting,
         },
@@ -192,6 +229,7 @@ def product_intent_authority_from_envelope(
             "derivation": clean_markdown_text(field.get("derivation")),
             "confidence": clean_markdown_text(field.get("confidence")),
             "source_span_ids": confirmed_text_values(field.get("source_span_ids")),
+            "product_claim_span_ids": confirmed_text_values(field.get("product_claim_span_ids")),
         }
     material_custody_sha256 = _stable_sha256(material_fields)
     authority = {
@@ -280,12 +318,22 @@ def require_product_intent_authority(authority: Mapping[str, Any]) -> None:
     if confirmed_text_values(authority.get("blocked_material_fields")):
         raise ValueError("ProductCreateTransaction confirmed Product Intent authority still has blocked material fields")
     material_fields = authority.get("material_fields") if isinstance(authority.get("material_fields"), Mapping) else {}
+    source_format = clean_markdown_text(authority.get("source_format"))
     for key in MATERIAL_FACT_KEYS:
         field = material_fields.get(key) if isinstance(material_fields.get(key), Mapping) else {}
         if clean_markdown_text(field.get("custody_state")) != "accepted_fact":
             raise ValueError(
                 "ProductCreateTransaction confirmed Product Intent authority has unresolved material custody"
             )
+        if source_format not in _STRUCTURED_SOURCE_FORMATS:
+            if not confirmed_text_values(field.get("source_span_ids")):
+                raise ValueError(
+                    "ProductCreateTransaction confirmed Product Intent authority is missing material source custody"
+                )
+            if not confirmed_text_values(field.get("product_claim_span_ids")):
+                raise ValueError(
+                    "ProductCreateTransaction confirmed Product Intent authority is missing material product-claim custody"
+                )
     if clean_markdown_text(authority.get("material_custody_sha256")) != _stable_sha256(
         {key: material_fields.get(key) for key in MATERIAL_FACT_KEYS}
     ):
@@ -335,37 +383,99 @@ def _envelope_source_hash(value: Mapping[str, Any]) -> str:
     return clean_markdown_text(evidence.get("source_sha256"))
 
 
-def _source_spans(sections: Mapping[str, Sequence[str]]) -> tuple[list[dict[str, Any]], dict[str, list[str]]]:
+def _source_spans(
+    sections: Mapping[str, Sequence[str]],
+) -> tuple[list[dict[str, Any]], dict[str, list[str]], dict[str, list[str]]]:
     spans: list[dict[str, Any]] = []
-    span_ids_by_field: dict[str, list[str]] = {}
+    source_span_ids_by_field: dict[str, list[str]] = {}
+    product_claim_span_ids_by_field: dict[str, list[str]] = {}
     for section_key, rows in sections.items():
-        classification = _span_classification(section_key)
+        section_classification = _span_classification(section_key)
         for index, row in enumerate(rows, start=1):
             text = clean_markdown_text(row)
             if not text:
                 continue
-            span_id = f"{section_key}:{index}"
-            span = {
-                "span_id": span_id,
-                "section_key": section_key,
-                "row_index": index,
-                "classification": classification,
-                "text": text,
-            }
-            spans.append(span)
-            if classification == "product_claim" and section_key in PRODUCT_FACT_KEYS:
-                span_ids_by_field.setdefault(section_key, []).append(span_id)
-    return spans, span_ids_by_field
+            classified_units = (
+                _canonical_source_units(text, section_key=section_key)
+                if section_classification == "product_claim" and section_key in PRODUCT_FACT_KEYS
+                else [(text, section_classification)]
+            )
+            for unit_index, (unit_text, classification) in enumerate(classified_units, start=1):
+                span_id = f"{section_key}:{index}"
+                if len(classified_units) > 1:
+                    span_id = f"{span_id}.{unit_index}"
+                span = {
+                    "span_id": span_id,
+                    "section_key": section_key,
+                    "row_index": index,
+                    "classification": classification,
+                    "text": unit_text,
+                }
+                spans.append(span)
+                if section_key in PRODUCT_FACT_KEYS:
+                    source_span_ids_by_field.setdefault(section_key, []).append(span_id)
+                    if classification == "product_claim":
+                        product_claim_span_ids_by_field.setdefault(section_key, []).append(span_id)
+    return spans, source_span_ids_by_field, product_claim_span_ids_by_field
+
+
+def _canonical_source_units(text: str, *, section_key: str) -> list[tuple[str, str]]:
+    units: list[tuple[str, str]] = []
+    for sentence in _sentence_units(text):
+        if section_key == "first_path" and is_terminal_first_path_meta_loop_summary(sentence):
+            units.append((sentence, "supporting_evidence"))
+            continue
+        inline_meta = split_unpunctuated_first_path_meta_control(sentence) if section_key == "first_path" else None
+        if inline_meta is not None:
+            before, meta, after = inline_meta
+            units.extend(
+                (fragment, classification)
+                for fragment, classification in (
+                    (before, "product_claim"),
+                    (meta, "supporting_evidence"),
+                    (after, "product_claim"),
+                )
+                if fragment
+            )
+            continue
+        clauses = _clause_units(sentence)
+        if section_key == "first_path" and any(
+            is_first_path_meta_control_language(clause)
+            for clause in clauses
+        ):
+            units.extend(
+                (
+                    clause,
+                    "supporting_evidence"
+                    if is_first_path_meta_control_language(clause)
+                    else "product_claim",
+                )
+                for clause in clauses
+            )
+            continue
+        units.append((sentence, "product_claim"))
+    return units
+
+
+def _sentence_units(value: str) -> list[str]:
+    rows = re.split(r"(?<=[.!?])\s+", clean_markdown_text(value))
+    return [text for row in rows if (text := clean_markdown_text(row))]
+
+
+def _clause_units(value: str) -> list[str]:
+    rows = re.split(r"\s+(?:[\u2013\u2014]|-)\s+|[;,]\s+", clean_markdown_text(value))
+    return [text for row in rows if (text := clean_markdown_text(row).strip(" .;"))]
 
 
 def _add_source_title_span(
     facts: Mapping[str, Any],
     *,
     spans: list[dict[str, Any]],
-    span_ids_by_field: dict[str, list[str]],
+    source_span_ids_by_field: dict[str, list[str]],
+    product_claim_span_ids_by_field: dict[str, list[str]],
     source_text: str,
 ) -> None:
-    if span_ids_by_field.get("title"):
+    if source_span_ids_by_field.get("title"):
         return
     title = clean_markdown_text(facts.get("title"))
     if not title or title.casefold() not in clean_markdown_text(source_text).casefold():
@@ -380,17 +490,19 @@ def _add_source_title_span(
             "text": title,
         }
     )
-    span_ids_by_field["title"] = [span_id]
+    source_span_ids_by_field["title"] = [span_id]
+    product_claim_span_ids_by_field["title"] = [span_id]
 
 
 def _add_source_story_span(
     facts: Mapping[str, Any],
     *,
     spans: list[dict[str, Any]],
-    span_ids_by_field: dict[str, list[str]],
+    source_span_ids_by_field: dict[str, list[str]],
+    product_claim_span_ids_by_field: dict[str, list[str]],
     source_text: str,
 ) -> None:
-    if span_ids_by_field.get("product_story"):
+    if source_span_ids_by_field.get("product_story"):
         return
     story = clean_markdown_text(facts.get("product_story"))
     if not story or story.casefold() not in clean_markdown_text(source_text).casefold():
@@ -405,7 +517,8 @@ def _add_source_story_span(
             "text": story,
         }
     )
-    span_ids_by_field["product_story"] = [span_id]
+    source_span_ids_by_field["product_story"] = [span_id]
+    product_claim_span_ids_by_field["product_story"] = [span_id]
 
 
 def _span_classification(section_key: str) -> str:
@@ -421,27 +534,37 @@ def _span_classification(section_key: str) -> str:
 def _field_custody(
     facts: Mapping[str, Any],
     *,
-    span_ids_by_field: Mapping[str, Sequence[str]],
+    source_span_ids_by_field: Mapping[str, Sequence[str]],
+    product_claim_span_ids_by_field: Mapping[str, Sequence[str]],
     source_format: str,
 ) -> dict[str, dict[str, Any]]:
     fields: dict[str, dict[str, Any]] = {}
-    structured_source = source_format in {
-        "compiled_proposal_intent",
-        "in_memory_confirmed_intent",
-        "legacy_json",
-        "operator_prompt",
-        "typed_envelope_json",
-    }
+    structured_source = source_format in _STRUCTURED_SOURCE_FORMATS
     for key in PRODUCT_FACT_KEYS:
         if key not in facts or not _has_fact_value(facts.get(key)):
             continue
-        span_ids = list(span_ids_by_field.get(key, ()))
-        state = _custody_state(key=key, span_ids=span_ids, structured_source=structured_source)
+        source_span_ids = list(source_span_ids_by_field.get(key, ()))
+        product_claim_span_ids = list(product_claim_span_ids_by_field.get(key, ()))
+        canonical_claim = bool(product_claim_span_ids)
+        state = _custody_state(
+            key=key,
+            span_ids=product_claim_span_ids,
+            structured_source=structured_source,
+        )
         fields[key] = {
             "custody_state": state,
-            "derivation": _derivation_for(state=state, span_ids=span_ids, structured_source=structured_source),
+            "derivation": (
+                "canonical_product_section"
+                if canonical_claim
+                else _derivation_for(
+                    state=state,
+                    span_ids=product_claim_span_ids,
+                    structured_source=structured_source,
+                )
+            ),
             "confidence": _confidence_for(state),
-            "source_span_ids": span_ids,
+            "source_span_ids": source_span_ids,
+            "product_claim_span_ids": product_claim_span_ids,
         }
     return fields
 

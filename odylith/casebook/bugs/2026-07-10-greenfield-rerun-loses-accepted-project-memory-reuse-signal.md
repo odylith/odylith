@@ -1,6 +1,8 @@
 - Bug ID: CB-228
 
-- Status: Open
+- Status: FixedPendingRelease
+
+- Fixed: Pending
 
 - Created: 2026-07-10
 
@@ -14,7 +16,7 @@
 
 - Impact: Consumers and release proof cannot distinguish a safe idempotent rerun from a fresh memory write, weakening confidence that repeated confirmation preserves accepted project continuity.
 
-- Components Affected: odylith-memory-backend
+- Components Affected: domain-intelligence, odylith-memory-backend
 
 - Environment(s): Product-repo detached source-local posture on branch 2026/freedom/v0.1.15; multi-actor greenfield create integration case.
 
@@ -24,7 +26,7 @@
 
 - Trigger Path: PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_greenfield_create_performance.py::test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds
 
-- Ownership: Accepted-project memory prewrite preview, compiled commit result, and memory backend idempotent readback contract.
+- Ownership: Domain Intelligence pre-confirm acceptance identity, compiled memory previews, and memory backend idempotent readback contract.
 
 - Timeline: Captured 2026-07-10 through `odylith bug capture`.
 
@@ -38,13 +40,13 @@
 
 - Invariant Violated: An identical accepted-project rerun must reuse the existing memory record or report the exact replacement contract truthfully; compiled result previews and readback must agree.
 
-- Root Cause: Investigation pending at the boundary between precompiled accepted-project memory writes and the memory backend reuse detector.
+- Root Cause: The pre-confirm path had no fail-closed acceptance identity resolver across prior accepted-project memory, project brief, and Compass evidence. Structurally equivalent reruns could therefore receive a new acceptance timestamp after staging-root path changes, and preview consumption could reconstruct identity instead of preserving the compiled result.
 
-- Solution: Trace the second-run sealed write and readback, preserve idempotent memory identity in the pre-confirm transaction result, and add exact repeat-confirm regression proof without post-confirm generation.
+- Solution: The pre-confirm acceptance identity resolver reuses a timestamp only when prior accepted-project memory, project brief, and Compass evidence are coherent and the transaction is exactly semantically equivalent after structurally scoped path rebasing. It rejects malformed input, duplicate keys, inconsistent evidence, untrusted paths, and path or command drift. Compiled previews are consumed without reconstruction, while the exact accepted-project writer remains unchanged.
 
-- Rollback/Forward Fix: Forward fix in a bounded memory/greenfield execution wave; keep current idempotency assertion fail-closed.
+- Rollback/Forward Fix: Forward fix completed in the bounded B-142 source-local memory/greenfield wave; keep identity reuse fail-closed and require fresh installed rerun proof before release closeout.
 
-- Verification: Exact two-run integration case reproduces deterministically: stable backlog IDs, stable diagrams, recorded memory, false reuse signal.
+- Verification: Source-local accepted-project memory coverage passed 14 tests in 114.58s. The wider prewrite and rerender suite passed 118 tests in 1371.12s. This proves the uncommitted source-local implementation; installed repeated-confirm proof remains pending.
 
 - Prevention: Include repeated identical transaction compile/confirm in installed release proof and compare memory identity, reuse status, and sealed write set across runs.
 
@@ -52,7 +54,7 @@
 
 - Preflight Checks: Inspect existing B-010 memory contracts and compiled accepted-project memory tests before changing code; replay exact two-run test first.
 
-- Monitoring Updates: Track exact idempotency replay and installed repeated-confirm proof before release readiness.
+- Monitoring Updates: Retain the exact idempotency replay and add installed repeated-confirm proof before release readiness.
 
 - Version/Build: 0.1.15 source-local branch 2026/freedom/v0.1.15 after commit 1b2072f0f
 
@@ -62,6 +64,10 @@
 
 - Related Incidents/Bugs: CB-226
 
+- Fixed In: Pending 0.1.15 release proof
+
 - Code References: - tests/integration/runtime/test_greenfield_create_performance.py
+- src/odylith/runtime/domain_intelligence/greenfield_acceptance_identity.py
+- src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
 - src/odylith/runtime/domain_intelligence/proposal_memory.py
 - src/odylith/runtime/memory

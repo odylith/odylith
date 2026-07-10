@@ -13,6 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import is_first_path_setup_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import resolve_first_path_events
+from odylith.runtime.domain_intelligence.greenfield_first_path_actor import same_first_path_actor
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 
 
@@ -39,14 +42,30 @@ def prefer_outcome_title(value: str) -> bool:
     return bool(words & strong)
 
 
-def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
-    fragments = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=False, max_fragments=4)
+def workflow_title_action(
+    *,
+    first_path: str,
+    actor: str,
+    fallback: str,
+    human_actors: Sequence[str] = (),
+) -> str:
+    fragments = _actor_owned_action_fragments(
+        first_path=first_path,
+        actor=actor,
+        include_visible=False,
+        max_fragments=4,
+        human_actors=human_actors,
+    )
     terminal = _preferred_terminal_fragment(fragments)
     if terminal:
         action = backlog_text.capability_action_clause(backlog_text.sentence_fragment(terminal))
         if action:
             return _action_with_preservation_constraint(action, first_path=first_path)
-    if len(fragments) > 1 and ("," in fragments[0] or "(" in fragments[0]):
+    if (
+        len(fragments) > 1
+        and not is_first_path_setup_action(fragments[0])
+        and ("," in fragments[0] or "(" in fragments[0])
+    ):
         action = backlog_text.capability_action_clause(f"{fragments[0]}, {fragments[1]}")
         if action:
             return _action_with_preservation_constraint(action, first_path=first_path)
@@ -61,8 +80,20 @@ def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
     return ""
 
 
-def actor_interaction_action(*, first_path: str, actor: str, fallback: str) -> str:
-    selected = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=False, max_fragments=3)
+def actor_interaction_action(
+    *,
+    first_path: str,
+    actor: str,
+    fallback: str,
+    human_actors: Sequence[str] = (),
+) -> str:
+    selected = _actor_owned_action_fragments(
+        first_path=first_path,
+        actor=actor,
+        include_visible=False,
+        max_fragments=3,
+        human_actors=human_actors,
+    )
     action = join_action_fragments(selected)
     return backlog_text.capability_action_clause(action or fallback)
 
@@ -367,10 +398,10 @@ def _preferred_title_fragment(values: list[str]) -> str:
     if not fragments:
         return ""
     first = fragments[0]
-    if not _skip_title_setup_fragment(first):
+    if not is_first_path_setup_action(first):
         return first
     for fragment in fragments[1:]:
-        if not _skip_title_setup_fragment(fragment):
+        if not is_first_path_setup_action(fragment):
             return fragment
     return first
 
@@ -432,7 +463,7 @@ def _compact_action_head_for_constraint(value: str) -> str:
         for piece in _action_head_pieces(value)
     ]
     for piece in pieces:
-        if piece and not _skip_title_setup_fragment(piece):
+        if piece and not is_first_path_setup_action(piece):
             return piece
     return next((piece for piece in pieces if piece), "")
 
@@ -474,52 +505,39 @@ def _preferred_terminal_fragment(values: list[str]) -> str:
     return ""
 
 
-def _skip_title_setup_fragment(value: str) -> bool:
-    text = str(value or "").strip()
-    if re.match(r"^(?:open|launch|start|visit|view)\b", text, flags=re.IGNORECASE):
-        return True
-    return bool(
-        re.match(
-            r"^(?:add|create|set\s+up)\s+(?:one\s+|a\s+|an\s+|the\s+)?"
-            r"(?:account|asset|child|learner\s+profile|profile|record|workspace)\b",
-            text,
-            flags=re.IGNORECASE,
-        )
-    )
-
-
-def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visible: bool, max_fragments: int) -> list[str]:
+def _actor_owned_action_fragments(
+    *,
+    first_path: str,
+    actor: str,
+    include_visible: bool,
+    max_fragments: int,
+    human_actors: Sequence[str] = (),
+) -> list[str]:
     actor_label = backlog_text.actor_label(actor)
-    actor_terms = _actor_match_terms(actor_label)
-    actor_role_terms = _actor_role_match_terms(actor_label)
     selected: list[str] = []
     selected_keys: set[str] = set()
     visible_seen = False
-    for step in first_path_steps(first_path):
-        if actor_terms:
-            signature = actor_signature(step)
-            matched_signature = _actor_phrase_present(actor_label, signature) or _actor_terms_match(
-                actor_terms,
-                actor_role_terms,
-                _actor_match_terms(signature),
-                candidate_is_signature=True,
-            )
-            matched_step = _actor_phrase_present(actor_label, step) or _actor_terms_match(
-                actor_terms,
-                actor_role_terms,
-                _actor_match_terms(step),
-                candidate_is_signature=False,
-            )
-            if not (matched_signature or matched_step):
-                if selected and visible_seen:
-                    break
-                continue
+    resolved_events = resolve_first_path_events(
+        first_path_steps(first_path),
+        lead_actor=actor_label,
+        human_actors=human_actors or (actor_label,),
+    )
+    for event in resolved_events:
+        if not event.human_owned:
+            continue
+        if not same_first_path_actor(event.actor, actor_label):
+            if selected and visible_seen:
+                break
+            continue
+        step = event.text
         step_visible = bool(visible_result_object(step) or looks_like_visible_result(step))
+        if re.match(r"^confirm\b", event.action, flags=re.IGNORECASE):
+            step_visible = False
         if step_visible and not include_visible:
             if selected:
                 break
             continue
-        fragment = backlog_text.sentence_fragment(action_chain_fragment(step))
+        fragment = backlog_text.sentence_fragment(event.action)
         fragment = backlog_text.base_leading_action(backlog_text.strip_actor_prefix(fragment, actor))
         key = fragment.casefold()
         if fragment and key not in selected_keys:

@@ -5,6 +5,7 @@ import shutil
 
 import pytest
 
+from odylith.install import fs as install_fs
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 
@@ -166,6 +167,25 @@ def test_repository_write_set_rolls_back_mid_write_failures(
     assert transaction.rollback_status == "rolled_back"
     assert first.read_text(encoding="utf-8") == "first before\n"
     assert second.read_text(encoding="utf-8") == "second before\n"
+
+
+def test_atomic_write_removes_temp_sibling_when_interrupted_after_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "INDEX.md"
+    target.write_bytes(b"before\n")
+
+    def interrupt_fsync(_fd: int) -> None:
+        raise KeyboardInterrupt()
+
+    monkeypatch.setattr(install_fs.os, "fsync", interrupt_fsync)
+
+    with pytest.raises(KeyboardInterrupt):
+        install_fs.atomic_write_bytes(target, b"after\n")
+
+    assert target.read_bytes() == b"before\n"
+    assert list(tmp_path.glob(".INDEX.md.*.tmp")) == []
 
 
 def test_repository_write_set_readback_failure_rolls_back(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

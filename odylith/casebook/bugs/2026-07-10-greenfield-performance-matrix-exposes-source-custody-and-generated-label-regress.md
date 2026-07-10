@@ -1,6 +1,8 @@
 - Bug ID: CB-227
 
-- Status: Open
+- Status: FixedPendingRelease
+
+- Fixed: Pending
 
 - Created: 2026-07-10
 
@@ -10,7 +12,7 @@
 
 - Type: Product
 
-- Description: The recommended source-local greenfield create performance matrix completed every case under 30 seconds but found three content regressions across pattern, child-agency, and GLP-1 intents: source-only whole-product prose survived in generated source truth, a mechanical Let Child Learner Create an Account title survived public output, and a Side-effect label failed expected title normalization.
+- Description: The recommended source-local greenfield create performance matrix found content regressions across pattern, child-agency, and GLP-1 intents: source-only whole-product prose survived in generated source truth, a mechanical Let Child Learner Create an Account title survived public output, and a Side-effect label failed expected title normalization. Final adversarial review found two adjacent paths: actorless dashboard-status prose could satisfy concise first-path completion, and terminal This flow works end to end prose could become a product claim.
 
 - Impact: Consumers can receive awkward or source-contaminated project records even though schema, Tribunal, semantic-slop, dashboard, and latency gates report success.
 
@@ -20,7 +22,7 @@
 
 - Detected By: Recommended greenfield create performance integration gate; 76 tests passed and three content assertions failed.
 
-- Failure Signature: Pattern generated source retained smallest version of the whole product as product_claim evidence; narrative payload retained Let Child Learner Create an Account; GLP-1 component label rendered Weight and Side-effect Tracking Service instead of Weight and Side Effect Tracking Service.
+- Failure Signature: Pattern generated source retained smallest version of the whole product as product_claim evidence; narrative payload retained Let Child Learner Create an Account; GLP-1 component label rendered Weight and Side-effect Tracking Service instead of Weight and Side Effect Tracking Service. The concise fallback also accepted The dashboard is working and shows project status, while terminal flow-proof prose was classified as product_claim.
 
 - Trigger Path: PYTHONPATH=src .venv/bin/pytest -q tests/integration/runtime/test_greenfield_create_performance.py
 
@@ -28,7 +30,7 @@
 
 - Timeline: Captured 2026-07-10 through `odylith bug capture`.
 
-- Blast Radius: Greenfield intents with source editorial framing, actor/action child titles, or hyphenated mixed-case component labels.
+- Blast Radius: Greenfield intents with source editorial framing, actor/action child titles, hyphenated mixed-case component labels, or concise first-path language that resembles system status or proof framing.
 
 - SLO/SLA Impact: Latency remains within the 30-second integration threshold, but release readiness is blocked by public-copy and product-truth quality failures.
 
@@ -36,23 +38,23 @@
 
 - Security/Compliance: No direct credential or regulated-data exposure observed; provenance misclassification can weaken audit clarity about evidence versus product truth.
 
-- Invariant Violated: Untrusted source framing must remain evidence only, and every human-visible generated title or component label must be grammatical, product-specific, and normalized before confirmation.
+- Invariant Violated: Untrusted source framing must remain evidence only. A concise first path must express an actor-led product action, and every human-visible generated title or component label must be grammatical, product-specific, and normalized before confirmation.
 
-- Root Cause: Investigation pending across typed evidence classification, child-title projection, and shared title-label normalization; the failures are deterministic and the strict gates did not catch them.
+- Root Cause: Canonical source paragraphs bypassed normalized product-fact custody, so source-only editorial framing could become literal product-claim evidence. The original concise-path shortcut tested coordination without proving an actor-owned action, and the meta classifier missed finite works phrasing. Actor and action selection ran independently, and the incomplete selected actor set then propagated downstream into mechanical child titles. The generic title hyphen policy also had no contextual rule for tracking labels, leaving Side-effect unnormalized.
 
-- Solution: Trace each escaped phrase to its typed owner, fix source semantics or shared label projection rather than rendered strings, add exact regressions, and replay the performance matrix without lowering copy gates.
+- Solution: Product intent custody now keeps source_span_ids separate from literal product_claim_span_ids and requires both for every material Markdown fact. Canonical source units remain claims unless the shared first-path meta-control classifier identifies whole-product, smallest-version, or terminal flow-proof framing before projection. The concise completion shortcut now requires an actor-led action in addition to coordinated actions. Actor/action event resolution is centralized, propagates the full actor set through downstream projections, and excludes qualified system subjects such as a routing engine from human workstream titles. Shared title normalization now applies contextual tracking-label normalization without adding domain-specific rendered-string repair.
 
-- Rollback/Forward Fix: Forward fix in a separate B-142 execution wave; keep current strict tests and no-write pre-confirm posture.
+- Rollback/Forward Fix: Forward fix completed in the current B-142 source-local execution wave; retain the strict copy, provenance, and no-write pre-confirm gates. Installed proof remains required before release closeout.
 
-- Verification: Exact failing tests are pattern placeholder/clause drift, narrative action/outcome normalization, and GLP-1 actor/state label drift; all three completed under 30 seconds before their quality assertions failed.
+- Verification: Source-local proof passed the exact three replays, 3 tests in 141.48s; pattern and authority coverage, 26 tests in 69.48s; focused actor, envelope, text, and semantic coverage, 72 tests in 21.81s; the performance file, 13 tests in 876.57s; and the full slop, artifact, and render suite, 198 tests in 198.86s. Adversarial follow-up added literal claim-span authority, qualified-system ownership, actor-led concise-path, terminal-flow-proof, receipt, and atomic-write regressions. The final focused actor/envelope suite passed 30 tests in 13.31s, and the complete current-source performance matrix passed all 13 cases in 698.98s. This is uncommitted source-local proof, not installed package proof.
 
-- Prevention: Keep exact high-variance source and label fixtures in the performance gate and require generated source plus visible-surface scans, not only returned payload checks.
+- Prevention: Keep exact high-variance source and label fixtures in the performance gate, reject actorless status prose from concise-path completion, classify terminal proof loops as supporting evidence, and require generated source plus visible-surface scans, not only returned payload checks.
 
 - Agent Guardrails: Do not delete evidence blindly, patch rendered files, add domain-specific word lists, or weaken banned-copy assertions. Repair classification and projection owners.
 
 - Preflight Checks: Search CB-198, CB-215, CB-223, and current typed evidence contracts before implementation; rerun exact failing tests first.
 
-- Monitoring Updates: Track exact three-case replay, broader performance matrix, and installed dist replay before release readiness.
+- Monitoring Updates: Preserve the exact three-case replay and broader performance matrix as release gates; record a fresh installed dist replay before release readiness.
 
 - Version/Build: 0.1.15 source-local branch 2026/freedom/v0.1.15 after commit 1b2072f0f
 
@@ -61,6 +63,8 @@
 - Customer Comms: None before release; defects were caught in maintainer QA.
 
 - Related Incidents/Bugs: CB-198, CB-215, CB-223, CB-226
+
+- Fixed In: Pending 0.1.15 release proof
 
 - Code References: - tests/integration/runtime/test_greenfield_create_performance.py
 - src/odylith/runtime/domain_intelligence

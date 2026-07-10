@@ -18,7 +18,7 @@
 
 - Components Affected: domain-intelligence-greenfield
 
-- Environment(s): Committed 0.1.15 local release matrix at 7ef226f12
+- Environment(s): Committed 0.1.15 local release matrix at eca44acc2
 
 - Detected By: Receipt-level audit after the 14-case installed release matrix passed
 
@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward-fix the release harness before using the matrix as final release proof
 
-- Verification: The focused installed-matrix scoring, proof-scope, and campaign suite passed 104 tests. False commit-only, prewrite-clean, rollback, transaction-hash, and write-set-hash values each fail with field-specific diagnostics; wrong-but-valid hashes fail cross-summary matching; missing, zero, negative, and malformed elapsed values fail; rescue output preserves the specific custody failure; and absent timing remains null in persisted proof. A fresh packaged-runtime matrix report carrying the new receipt summary remains the release gate.
+- Verification: The focused installed-matrix scoring, proof-scope, and campaign suite passed 104 tests. False commit-only, prewrite-clean, rollback, transaction-hash, and write-set-hash values each fail with field-specific diagnostics; wrong-but-valid hashes fail cross-summary matching; missing, zero, negative, and malformed elapsed values fail; rescue output preserves the specific custody failure; and absent timing remains null in persisted proof. Fresh committed dist eca44acc2 then passed all 14 standard cases at hard 10/10 with zero issues: compile-and-create completed in 38.997-49.791s and commit-only apply in 0.103-0.126s. Browser proof passed 14/14, and cleanup plus platform-leakage checks passed. Synthetic rescue completed in 62.599s with a 0.116s commit-only apply; natural rescue completed in 77.449s with a 0.113s commit-only apply.
 
 - Prevention: Version the receipt predicate with the transaction kernel and fail closed when required fields are absent
 
@@ -56,9 +56,9 @@
 
 - Regression Tests Added: `test_quality_verdict_requires_commit_only_transaction_custody`, `test_quality_verdict_rejects_create_payload_transaction_hash_mismatch`, `test_quality_verdict_requires_positive_measured_post_confirm_time`, `test_rescue_cli_issues_report_specific_commit_only_custody_failure`, and expanded proof-summary coverage
 
-- Monitoring Updates: Persist per-case write-transaction custody in the JSON proof artifact
+- Monitoring Updates: Persist per-case write-transaction custody in the JSON proof artifact and retain the standard, browser, cleanup, leakage, and rescue receipt checks as release gates
 
-- Version/Build: 0.1.15 committed dist 7ef226f12
+- Version/Build: 0.1.15 committed dist eca44acc2
 
 - Config/Flags: release proof tier with browser and rescue enabled
 

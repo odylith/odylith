@@ -45,6 +45,39 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-10: Fixed source-local content custody and accepted-project rerun identity, then proved commit-only custody in the packaged matrix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-227`, `CB-228`, `CB-229`, `CB-230`, `CB-231`; Diagrams: D-043, D-045)
+  `CB-227` separates source provenance from literal product claims, requires
+  both for material Markdown facts, strips whole-product and smallest-version
+  editorial framing before first-path projection, centralizes actor/action event
+  resolution with full actor propagation, excludes qualified system subjects
+  from human workstream titles, and normalizes contextual tracking labels. Source-local proof
+  passed the exact three replays, pattern/authority, focused semantic,
+  performance, and full slop/artifact/render suites. `CB-228` adds a fail-closed
+  pre-confirm acceptance identity resolver: only coherent prior accepted-project,
+  project-brief, and Compass evidence with exact semantics after scoped path
+  rebasing can reuse a timestamp; malformed, inconsistent, untrusted, or drifted
+  evidence is rejected, compiled previews are consumed unchanged, and the exact
+  writer is unchanged. Its source-local memory and prewrite/rerender suites
+  passed. These two fixes remain uncommitted source-local work pending installed
+  proof. Separately, committed dist `eca44acc2` supplied the packaged `CB-229`
+  receipt proof: all 14 standard cases passed at hard 10/10 with zero issues,
+  browser proof passed 14/14, cleanup and leakage checks passed, and synthetic
+  and natural rescue passed. Standard compile-and-create took 38.997-49.791s
+  with commit-only apply at 0.103-0.126s; rescue totals were 62.599s and 77.449s
+  with commit-only apply at 0.116s and 0.113s. Adversarial follow-up `CB-230`
+  makes atomic helpers remove temp siblings on interrupts before rollback
+  reports success. `CB-231` seals the complete reporting envelope before
+  confirmation so no missing backlog, component, or diagram field can crash
+  terminal reporting after a durable commit. Both remain source-local pending
+  fresh installed proof. A final adversarial parser review also found that
+  actorless dashboard-status prose could satisfy the concise-path fallback and
+  that terminal `This flow works end to end` proof prose could become a product
+  claim. The shared concise-path rule now requires an actor-led action, while
+  terminal flow-proof prose remains supporting evidence. Current source proof
+  passed the focused parser and custody suite (30 tests) and the complete
+  13-case create-performance matrix in 698.98 seconds; fresh installed proof
+  remains the release gate.
+
 - 2026-07-10: Made precompiled Atlas links portable across target and staging roots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-226`, `CB-223`; Diagram: D-043)
   `greenfield_apply_diagrams.py` now seals Atlas `related_backlog` links as
   validated repository-relative paths instead of consumer-root absolute paths.

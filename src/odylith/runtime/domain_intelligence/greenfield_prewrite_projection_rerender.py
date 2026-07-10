@@ -230,9 +230,6 @@ def rerender_prewrite_package_projections(
             root=target_root,
             package=candidate_package,
             proposal=package_proposal,
-            release_selector=release_selector,
-            validation_gate=validation_gate,
-            accepted_at=accepted_at,
         )
         candidate_package = replace(package, **updates)
     restored_package = greenfield_source_casing.package_with_source_casing(candidate_package)
@@ -263,9 +260,6 @@ def _rerender_surface_refresh_preview(
     root: Path,
     package: Any,
     proposal: Mapping[str, Any],
-    release_selector: str,
-    validation_gate: Mapping[str, Any],
-    accepted_at: str,
 ) -> dict[str, Any]:
     with staged_greenfield_prewrite_root(root) as prewrite_root:
         staged_backlog_result = greenfield_apply_prewrite.remap_prewrite_backlog_result(
@@ -295,9 +289,6 @@ def _rerender_surface_refresh_preview(
             return greenfield_prewrite_surface_stage.build_staged_surface_refresh_preview(
                 prewrite_root=prewrite_root,
                 proposal=proposal,
-                release_selector=release_selector,
-                validation_gate=validation_gate,
-                staged_backlog_result=staged_backlog_result,
                 staged_component_registry_preview=component_preview,
                 rendered_component_specs=package.rendered_component_specs or {},
                 diagram_rows=diagram_rows,
@@ -306,12 +297,9 @@ def _rerender_surface_refresh_preview(
                 rendered_atlas_sources=package.rendered_atlas_sources or {},
                 atlas_review_date=package.atlas_review_date,
                 compiled_atlas_catalog_rows=package.atlas_catalog_rows,
-                release_id=greenfield_apply_prewrite._prewrite_release_id(  # noqa: SLF001
-                    package.release_target_result,
-                    package.release_assignment_result,
-                ),
-                accepted_at=accepted_at,
-                source_launch_context=package.next_steps_preview or {},
+                accepted_project_preview=package.accepted_project_preview or {},
+                project_brief_record_text=package.project_brief_record_text,
+                compass_memory_preview=package.compass_memory_preview or {},
             )
         except (RuntimeError, ValueError) as exc:
             return greenfield_surface_refresh_proof.failed_prewrite_surface_refresh_preview(

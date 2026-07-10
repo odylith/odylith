@@ -19,7 +19,6 @@ class GreenfieldPrewriteSealRequest:
     prewrite_root: Path
     target_root: Path
     proposal: Mapping[str, Any]
-    release_selector: str
     validation_gate: Mapping[str, Any]
     staged_backlog_result: Mapping[str, Any]
     target_backlog_result: Mapping[str, Any]
@@ -31,8 +30,9 @@ class GreenfieldPrewriteSealRequest:
     rendered_atlas_sources: Mapping[str, str]
     atlas_review_date: str
     compiled_atlas_catalog_rows: Sequence[Mapping[str, Any]]
-    release_id: str
-    accepted_at: str
+    accepted_project_preview: Mapping[str, Any]
+    project_brief_record_text: str
+    compass_memory_preview: Mapping[str, Any]
     next_steps_preview: Mapping[str, Any]
     staged_program_result: Mapping[str, Any]
     prewrite_safety_preview: Mapping[str, Any]
@@ -55,9 +55,6 @@ def seal_staged_greenfield_create(request: GreenfieldPrewriteSealRequest) -> Gre
         staged_surfaces = greenfield_prewrite_surface_stage.materialize_staged_greenfield_surfaces(
             prewrite_root=request.prewrite_root,
             proposal=request.proposal,
-            release_selector=request.release_selector,
-            validation_gate=request.validation_gate,
-            staged_backlog_result=request.staged_backlog_result,
             staged_component_registry_preview=request.staged_component_registry_preview,
             rendered_component_specs=request.rendered_component_specs,
             diagram_rows=request.diagram_rows,
@@ -66,9 +63,9 @@ def seal_staged_greenfield_create(request: GreenfieldPrewriteSealRequest) -> Gre
             rendered_atlas_sources=request.rendered_atlas_sources,
             atlas_review_date=request.atlas_review_date,
             compiled_atlas_catalog_rows=request.compiled_atlas_catalog_rows,
-            release_id=request.release_id,
-            accepted_at=request.accepted_at,
-            source_launch_context=request.next_steps_preview,
+            accepted_project_preview=request.accepted_project_preview,
+            project_brief_record_text=request.project_brief_record_text,
+            compass_memory_preview=request.compass_memory_preview,
         )
     except (RuntimeError, ValueError) as exc:
         return GreenfieldPrewriteTransactionSeal(

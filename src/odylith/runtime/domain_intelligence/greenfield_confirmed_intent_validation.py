@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confir
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
@@ -188,6 +189,8 @@ def _first_path_is_clear_enough(intent: Mapping[str, Any]) -> bool:
         if part
     )
     if _actor_modal_path_is_clear(path) and _has_semantic_overlap(path, context, minimum=1):
+        return True
+    if has_concise_coordinated_first_path(path) and _has_semantic_overlap(path, context, minimum=1):
         return True
     if (
         clean_confirmed_text(action)
