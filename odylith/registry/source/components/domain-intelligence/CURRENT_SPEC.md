@@ -58,8 +58,17 @@ This section captures synchronized requirement and contract signals derived from
   parser/slop tests. A representative cross-domain transaction compiled in
   35.86 seconds with no repair ledger or model call, then committed its sealed
   package in 0.52 seconds with four workstreams, three component specs, and six
-  diagrams.
-  Fresh committed-dist matrix replay remains the release gate.
+  diagrams. Committed dist `7ef226f12` then passed all 14 maintained installed
+  cases at hard 10/10 in 37.551-49.111 seconds per complete compile-and-create
+  flow. Each standard case used one clean quality pass with zero repair
+  operations; browser, stressor-taxonomy, platform-leakage, and temp-cleanup
+  proof passed. Synthetic and natural rescue cases also committed sealed
+  transactions, with commit-only write phases of 0.112 and 0.125 seconds.
+  Receipt-level follow-up `CB-229` now makes release scoring require and persist
+  the commit-only, prewrite-clean, rollback, transaction-hash, and write-set-hash
+  contract instead of accepting committed status alone. Receipt hashes must
+  match the final manifest and create payload summaries, and elapsed-time proof
+  must be positive, finite, and inside the applicable standard or rescue budget.
 
 - 2026-07-09: Sealed the exact repository mutation into the pre-confirm ProductCreateTransaction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Diagram: D-045)
   `greenfield_repository_write_set.py` now compiles governed and rendered file

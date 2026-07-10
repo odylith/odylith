@@ -353,6 +353,15 @@ def test_post_confirm_manifest_summary_uses_last_repair_patchset_for_clean_final
             "passes": 2,
             "issue_count": 0,
             "repaired_issue_codes": ["semantic_alignment"],
+            "whole_project_elapsed_seconds": 0.125,
+            "write_transaction": {
+                "status": "committed",
+                "commit_only": True,
+                "prewrite_clean_before_commit": True,
+                "rollback_guard": "enabled",
+                "product_create_transaction_hash": "a" * 64,
+                "repository_write_set_hash": "b" * 64,
+            },
             "patchset_request": {
                 "status": "no_repairable_operations",
                 "operation_count": 0,
@@ -394,3 +403,20 @@ def test_post_confirm_manifest_summary_uses_last_repair_patchset_for_clean_final
     assert summary["structured_patch_fallback_operation_count"] == 1
     assert summary["structured_patch_fallback_provider"] == "codex-cli"
     assert summary["structured_patch_fallback_provider_failure_code"] == "timeout"
+    assert summary["whole_project_elapsed_seconds"] == 0.125
+    assert summary["write_transaction"] == {
+        "status": "committed",
+        "commit_only": True,
+        "prewrite_clean_before_commit": True,
+        "rollback_guard": "enabled",
+        "product_create_transaction_hash": "a" * 64,
+        "repository_write_set_hash": "b" * 64,
+    }
+
+
+def test_post_confirm_manifest_summary_does_not_invent_missing_elapsed_time() -> None:
+    module = _module()
+
+    summary = module.post_confirm_manifest_summary({"status": "passed"})
+
+    assert summary["whole_project_elapsed_seconds"] is None

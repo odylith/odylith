@@ -71,7 +71,7 @@ from greenfield_matrix_quality_scoring import build_quality_verdict  # noqa: E40
 from greenfield_matrix_quality_scoring import command_excerpt  # noqa: E402
 from greenfield_matrix_quality_scoring import count_key  # noqa: E402
 from greenfield_matrix_quality_scoring import required_count_minimums  # noqa: E402
-from greenfield_matrix_quality_scoring import write_committed  # noqa: E402
+from greenfield_matrix_quality_scoring import write_transaction_custody_issues  # noqa: E402
 from greenfield_tooling_payload_reader import read_tooling_payload_js  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import RESCUE_PROBE_CODE  # noqa: E402
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_structured_rescue_proof import (  # noqa: E402
@@ -1124,7 +1124,7 @@ def _run_rescue_smoke_case(
             counts=counts,
             count_minimums=required_count_minimums(),
             count_key=count_key,
-            write_committed=write_committed,
+            write_transaction_issues=write_transaction_custody_issues,
             as_mapping=_as_mapping,
             package_quality_issues=greenfield_rendered_package_quality_issues,
             create_returncode=create.returncode,
@@ -1199,7 +1199,7 @@ def _run_natural_rescue_case(
             counts=counts,
             count_minimums=required_count_minimums(),
             count_key=count_key,
-            write_committed=write_committed,
+            write_transaction_issues=write_transaction_custody_issues,
             as_mapping=_as_mapping,
             package_quality_issues=greenfield_rendered_package_quality_issues,
             create_returncode=create.returncode,

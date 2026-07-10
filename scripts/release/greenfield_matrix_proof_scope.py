@@ -28,6 +28,7 @@ def post_confirm_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]
     provider = _as_mapping(tribunal_patch_plan.get("provider"))
     fallback = _as_mapping(patchset.get("structured_patch_fallback"))
     fallback_provider = _as_mapping(fallback.get("provider_failure"))
+    write_transaction = _as_mapping(manifest.get("write_transaction"))
     return {
         "status": str(manifest.get("status", "")).strip(),
         "validation_status": str(manifest.get("validation_status", "")).strip(),
@@ -50,6 +51,17 @@ def post_confirm_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]
         "structured_patch_fallback_provider_failure_code": str(
             fallback_provider.get("code") or fallback_provider.get("last_failure_code") or ""
         ).strip(),
+        "whole_project_elapsed_seconds": manifest.get("whole_project_elapsed_seconds"),
+        "write_transaction": {
+            "status": str(write_transaction.get("status", "")).strip(),
+            "commit_only": write_transaction.get("commit_only") is True,
+            "prewrite_clean_before_commit": write_transaction.get("prewrite_clean_before_commit") is True,
+            "rollback_guard": str(write_transaction.get("rollback_guard", "")).strip(),
+            "product_create_transaction_hash": str(
+                write_transaction.get("product_create_transaction_hash", "")
+            ).strip(),
+            "repository_write_set_hash": str(write_transaction.get("repository_write_set_hash", "")).strip(),
+        },
         "patchset_summary_source": _patchset_summary_source(manifest),
         "issue_codes": _manifest_issue_values(manifest, "code"),
         "issue_owners": _manifest_issue_values(manifest, "owner"),

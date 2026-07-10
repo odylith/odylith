@@ -752,13 +752,32 @@ def _full_counts(module) -> object:
     )
 
 
+def _passing_write_transaction() -> dict[str, object]:
+    return {
+        "status": "committed",
+        "commit_only": True,
+        "prewrite_clean_before_commit": True,
+        "rollback_guard": "enabled",
+        "product_create_transaction_hash": "a" * 64,
+        "repository_write_set_hash": "b" * 64,
+    }
+
+
+def _passing_transaction_summary() -> dict[str, object]:
+    return {
+        "transaction_hash": "a" * 64,
+        "repository_write_set_hash": "b" * 64,
+    }
+
+
 def _passing_manifest() -> dict[str, object]:
     return {
         "status": "passed",
         "validation_status": "passed",
         "issue_count": 0,
         "whole_project_elapsed_seconds": 20.0,
-        "write_transaction": {"status": "committed"},
+        "write_transaction": _passing_write_transaction(),
+        "product_create_transaction": _passing_transaction_summary(),
         "quality_lenses": {
             "status": "passed",
             "lenses": {
@@ -774,7 +793,15 @@ def _passing_manifest() -> dict[str, object]:
 def _passing_create_payload() -> dict[str, object]:
     return {
         "post_confirm_quality_manifest": _passing_manifest(),
+        "product_create_transaction": _passing_transaction_summary(),
         "validation_gate": {"visible_actors": _passing_visible_actors()},
+    }
+
+
+def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, object]:
+    return {
+        "post_confirm_quality_manifest": manifest,
+        "product_create_transaction": _passing_transaction_summary(),
     }
 
 
@@ -1943,7 +1970,7 @@ def test_quality_verdict_requires_committed_write_transaction() -> None:
     manifest["write_transaction"] = {"status": "not_started"}
 
     verdict = module.build_quality_verdict(
-        create_payload={"post_confirm_quality_manifest": manifest},
+        create_payload=_create_payload_with_manifest(manifest),
         package=_empty_package(),
         counts=_full_counts(module),
         create_returncode=0,
@@ -1954,6 +1981,102 @@ def test_quality_verdict_requires_committed_write_transaction() -> None:
     assert verdict.score == 0
     assert "post-confirm write transaction was not committed" in verdict.issues
     assert verdict.lenses["engineer"] is False
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "expected_issue"),
+    (
+        ("commit_only", False, "post-confirm write transaction did not prove commit-only apply"),
+        (
+            "prewrite_clean_before_commit",
+            False,
+            "post-confirm write transaction did not prove a clean prewrite package",
+        ),
+        ("rollback_guard", "disabled", "post-confirm write transaction did not enable rollback"),
+        (
+            "product_create_transaction_hash",
+            "",
+            "post-confirm write transaction is missing a valid ProductCreateTransaction hash",
+        ),
+        (
+            "repository_write_set_hash",
+            "",
+            "post-confirm write transaction is missing a valid repository write-set hash",
+        ),
+        (
+            "product_create_transaction_hash",
+            "c" * 64,
+            "post-confirm write transaction ProductCreateTransaction hash does not match the manifest summary",
+        ),
+        (
+            "repository_write_set_hash",
+            "d" * 64,
+            "post-confirm write transaction repository write-set hash does not match the manifest summary",
+        ),
+    ),
+)
+def test_quality_verdict_requires_commit_only_transaction_custody(
+    field: str,
+    value: object,
+    expected_issue: str,
+) -> None:
+    module = _module()
+    manifest = _passing_manifest()
+    write_transaction = manifest["write_transaction"]
+    assert isinstance(write_transaction, dict)
+    write_transaction[field] = value
+
+    verdict = module.build_quality_verdict(
+        create_payload=_create_payload_with_manifest(manifest),
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert expected_issue in verdict.issues
+
+
+def test_quality_verdict_rejects_create_payload_transaction_hash_mismatch() -> None:
+    module = _module()
+    manifest = _passing_manifest()
+    create_payload = _create_payload_with_manifest(manifest)
+    transaction_summary = create_payload["product_create_transaction"]
+    assert isinstance(transaction_summary, dict)
+    transaction_summary["transaction_hash"] = "c" * 64
+
+    verdict = module.build_quality_verdict(
+        create_payload=create_payload,
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert (
+        "post-confirm write transaction ProductCreateTransaction hash does not match the create payload summary"
+        in verdict.issues
+    )
+
+
+@pytest.mark.parametrize("elapsed", (None, 0.0, -0.1, "not-a-number"))
+def test_quality_verdict_requires_positive_measured_post_confirm_time(elapsed: object) -> None:
+    module = _module()
+    manifest = _passing_manifest()
+    manifest["whole_project_elapsed_seconds"] = elapsed
+
+    verdict = module.build_quality_verdict(
+        create_payload=_create_payload_with_manifest(manifest),
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert "post-confirm manifest is missing a positive measured elapsed time" in verdict.issues
 
 
 def test_quality_verdict_rejects_self_reported_manifest_without_package_readback(monkeypatch) -> None:
@@ -2362,7 +2485,7 @@ def test_rescue_cli_issues_allow_committed_rescue_under_90s(monkeypatch) -> None
         counts=_full_counts(module),
         count_minimums=_scoring_module().required_count_minimums(),  # noqa: SLF001
         count_key=_scoring_module().count_key,  # noqa: SLF001
-        write_committed=_scoring_module().write_committed,  # noqa: SLF001
+        write_transaction_issues=_scoring_module().write_transaction_custody_issues,  # noqa: SLF001
         as_mapping=module._as_mapping,  # noqa: SLF001
         package_quality_issues=module.greenfield_rendered_package_quality_issues,
         create_returncode=0,
@@ -2372,6 +2495,43 @@ def test_rescue_cli_issues_allow_committed_rescue_under_90s(monkeypatch) -> None
     )
 
     assert issues == ()
+
+
+def test_rescue_cli_issues_report_specific_commit_only_custody_failure() -> None:
+    module = _module()
+    manifest = _passing_manifest()
+    manifest.update(
+        {
+            "requested_repair_tier": "auto",
+            "repair_tier": "rescue",
+            "rescue_activated": True,
+            "budget_seconds": 90.0,
+            "whole_project_elapsed_seconds": 74.5,
+            "passes": 2,
+            "repaired_issue_codes": ["post_confirm_rescue_probe"],
+        }
+    )
+    write_transaction = manifest["write_transaction"]
+    assert isinstance(write_transaction, dict)
+    write_transaction["commit_only"] = False
+
+    issues = module.rescue_cli_issues(
+        manifest=manifest,
+        package=_empty_package(),
+        counts=_full_counts(module),
+        count_minimums=_scoring_module().required_count_minimums(),  # noqa: SLF001
+        count_key=_scoring_module().count_key,  # noqa: SLF001
+        write_transaction_issues=_scoring_module().write_transaction_custody_issues,  # noqa: SLF001
+        as_mapping=module._as_mapping,  # noqa: SLF001
+        package_quality_issues=lambda _package: [],
+        create_returncode=0,
+        create_seconds=74.5,
+        detail="",
+        expected_requested_tier="auto",
+    )
+
+    assert "auto-rescue write transaction did not prove commit-only apply" in issues
+    assert "auto-rescue write transaction was not committed" not in issues
 
 
 def test_rescue_cli_issues_require_auto_escalation() -> None:
@@ -2388,7 +2548,7 @@ def test_rescue_cli_issues_require_auto_escalation() -> None:
             "passes": 1,
             "issue_count": 0,
             "repaired_issue_codes": [],
-            "write_transaction": {"status": "committed"},
+            "write_transaction": _passing_write_transaction(),
             "whole_project_elapsed_seconds": 30.0,
             "quality_lenses": {"status": "passed"},
         },
@@ -2396,7 +2556,7 @@ def test_rescue_cli_issues_require_auto_escalation() -> None:
         counts=_full_counts(module),
         count_minimums=_scoring_module().required_count_minimums(),  # noqa: SLF001
         count_key=_scoring_module().count_key,  # noqa: SLF001
-        write_committed=_scoring_module().write_committed,  # noqa: SLF001
+        write_transaction_issues=_scoring_module().write_transaction_custody_issues,  # noqa: SLF001
         as_mapping=module._as_mapping,  # noqa: SLF001
         package_quality_issues=lambda _package: [],
         create_returncode=0,

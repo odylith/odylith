@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix before further release proof; post-confirm commit-only semantics remain unchanged.
 
-- Verification: Focused path-custody and slop tests passed. A source-local replay of the preserved flood-shelter intent compiled a creation-ready transaction in 35.86 seconds with quality and validation passed, 57 sealed writes, six Atlas previews, repository-relative backlog links, no patch ledger, and no model repair. The final confirmed command completed in 0.52 seconds and wrote four workstreams, three component specs, and six diagrams through the commit-only path. Committed-dist rebuild and full installed matrix replay remain release gates.
+- Verification: Focused path-custody and slop tests passed. A source-local replay of the preserved flood-shelter intent compiled a creation-ready transaction in 35.86 seconds with quality and validation passed, 57 sealed writes, six Atlas previews, repository-relative backlog links, no patch ledger, and no model repair. The final confirmed command completed in 0.52 seconds and wrote four workstreams, three component specs, and six diagrams through the commit-only path. Committed dist `7ef226f12` then passed all 14 maintained installed release cases at hard 10/10 in 37.551-49.111 seconds per complete compile-and-create flow, with one clean quality pass, zero repair operations, browser proof for every generated repo, full stressor-taxonomy coverage, platform leakage proof, and no remaining simulation roots. Synthetic and natural rescue proofs also passed; their sealed commit-only write phases completed in 0.112 and 0.125 seconds.
 
 - Release Build Finding: The first committed-head package build stopped at the platform-domain leakage gate because the public Domain Intelligence living spec repeated the private QA scenario label. The spec now records only generic cross-domain proof language; public product contracts must never carry scenario fixture names even when the underlying replay is valid.
 
@@ -60,7 +60,7 @@
 
 - Monitoring Updates: Persist per-surface refresh stderr and retry classification in installed greenfield matrix evidence so no-progress infrastructure failures are visible.
 
-- Version/Build: 0.1.15 local dist from commit 1b2072f0f
+- Version/Build: Failing 0.1.15 local dist from commit 1b2072f0f; passing committed dist from 7ef226f12
 
 - Config/Flags: Both `runtime_mode=auto` and `runtime_mode=standalone` reproduced the failing build; runtime mode was not causal.
 

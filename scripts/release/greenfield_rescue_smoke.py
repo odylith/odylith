@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe im
     rescue_probe_env,
 )
 
+from greenfield_matrix_quality_scoring import elapsed_time_issues
 from greenfield_matrix_quality_scoring import required_domain_term_hits
 
 
@@ -22,7 +23,7 @@ def rescue_cli_issues(
     counts: Any,
     count_minimums: Mapping[str, int],
     count_key: Callable[[str], str],
-    write_committed: Callable[[Mapping[str, Any]], bool],
+    write_transaction_issues: Callable[[Mapping[str, Any]], Sequence[str]],
     as_mapping: Callable[[Any], Mapping[str, Any]],
     package_quality_issues: Callable[[Any], Sequence[str]],
     create_returncode: int,
@@ -45,7 +46,7 @@ def rescue_cli_issues(
         issues.extend(
             _manifest_issues(
             manifest,
-            write_committed=write_committed,
+            write_transaction_issues=write_transaction_issues,
             as_mapping=as_mapping,
             expected_requested_tier=expected_requested_tier,
             expected_repaired_issue_code=expected_repaired_issue_code,
@@ -73,7 +74,7 @@ def installed_auto_rescue_env(env: Mapping[str, str]) -> dict[str, str]:
 def _manifest_issues(
     manifest: Mapping[str, Any],
     *,
-    write_committed: Callable[[Mapping[str, Any]], bool],
+    write_transaction_issues: Callable[[Mapping[str, Any]], Sequence[str]],
     as_mapping: Callable[[Any], Mapping[str, Any]],
     expected_requested_tier: str,
     expected_repaired_issue_code: str,
@@ -103,10 +104,11 @@ def _manifest_issues(
     leaked_codes = sorted(forbidden_codes.intersection(repaired_issue_codes))
     if leaked_codes:
         issues.append(f"auto-rescue manifest recorded forbidden repaired issue code(s): {', '.join(leaked_codes)}")
-    if not write_committed(manifest):
-        issues.append("auto-rescue write transaction was not committed")
-    if float(manifest.get("whole_project_elapsed_seconds") or 0.0) >= POST_CONFIRM_RESCUE_BUDGET_SECONDS:
-        issues.append("auto-rescue manifest reports elapsed time outside the rescue budget")
+    issues.extend(f"auto-rescue {issue}" for issue in write_transaction_issues(manifest))
+    issues.extend(
+        f"auto-rescue {issue}"
+        for issue in elapsed_time_issues(manifest, budget_seconds=POST_CONFIRM_RESCUE_BUDGET_SECONDS)
+    )
     if str(as_mapping(manifest.get("quality_lenses")).get("status", "")).strip() != "passed":
         issues.append("auto-rescue quality lens report did not pass")
     return tuple(issues)

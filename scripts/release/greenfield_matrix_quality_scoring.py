@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -73,7 +74,10 @@ def build_quality_verdict(
             browser_surface_issues=browser_surface_issues,
         ),
         *_create_failure_detail_issues(create_returncode=create_returncode, create_detail=create_detail),
-        *_manifest_issues(manifest),
+        *_manifest_issues(
+            manifest,
+            product_create_transaction=mapping_copy(create_payload.get("product_create_transaction")),
+        ),
         *completion_issues(counts=counts, create_returncode=create_returncode, create_seconds=create_seconds),
     ]
     lenses = _quality_lenses(
@@ -202,7 +206,85 @@ def required_domain_term_hits(counts: GreenfieldArtifactCounts) -> int:
 
 
 def write_committed(manifest: Mapping[str, Any]) -> bool:
-    return str(mapping_copy(manifest.get("write_transaction")).get("status", "")).strip() == "committed"
+    return not write_transaction_custody_issues(manifest)
+
+
+def write_transaction_custody_issues(
+    manifest: Mapping[str, Any],
+    *,
+    product_create_transaction: Mapping[str, Any] | None = None,
+) -> tuple[str, ...]:
+    transaction = mapping_copy(manifest.get("write_transaction"))
+    manifest_transaction = mapping_copy(manifest.get("product_create_transaction"))
+    issues: list[str] = []
+    if str(transaction.get("status", "")).strip() != "committed":
+        issues.append("write transaction was not committed")
+    if transaction.get("commit_only") is not True:
+        issues.append("write transaction did not prove commit-only apply")
+    if transaction.get("prewrite_clean_before_commit") is not True:
+        issues.append("write transaction did not prove a clean prewrite package")
+    if str(transaction.get("rollback_guard", "")).strip() != "enabled":
+        issues.append("write transaction did not enable rollback")
+    if not _is_sha256_digest(transaction.get("product_create_transaction_hash")):
+        issues.append("write transaction is missing a valid ProductCreateTransaction hash")
+    if not _is_sha256_digest(transaction.get("repository_write_set_hash")):
+        issues.append("write transaction is missing a valid repository write-set hash")
+    issues.extend(
+        _transaction_hash_match_issues(
+            transaction=transaction,
+            expected=manifest_transaction,
+            source="manifest",
+        )
+    )
+    if product_create_transaction is not None:
+        issues.extend(
+            _transaction_hash_match_issues(
+                transaction=transaction,
+                expected=product_create_transaction,
+                source="create payload",
+            )
+        )
+    return tuple(issues)
+
+
+def _is_sha256_digest(value: Any) -> bool:
+    digest = str(value or "").strip()
+    return len(digest) == 64 and all(char in "0123456789abcdef" for char in digest)
+
+
+def _transaction_hash_match_issues(
+    *,
+    transaction: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    source: str,
+) -> tuple[str, ...]:
+    if not expected:
+        return (f"{source} ProductCreateTransaction summary is missing",)
+    issues: list[str] = []
+    expected_transaction_hash = str(expected.get("transaction_hash", "")).strip()
+    expected_write_set_hash = str(expected.get("repository_write_set_hash", "")).strip()
+    if not _is_sha256_digest(expected_transaction_hash):
+        issues.append(f"{source} ProductCreateTransaction hash is invalid")
+    elif str(transaction.get("product_create_transaction_hash", "")).strip() != expected_transaction_hash:
+        issues.append(f"write transaction ProductCreateTransaction hash does not match the {source} summary")
+    if not _is_sha256_digest(expected_write_set_hash):
+        issues.append(f"{source} repository write-set hash is invalid")
+    elif str(transaction.get("repository_write_set_hash", "")).strip() != expected_write_set_hash:
+        issues.append(f"write transaction repository write-set hash does not match the {source} summary")
+    return tuple(issues)
+
+
+def elapsed_time_issues(manifest: Mapping[str, Any], *, budget_seconds: float) -> tuple[str, ...]:
+    value = manifest.get("whole_project_elapsed_seconds")
+    try:
+        elapsed = float(value)
+    except (TypeError, ValueError):
+        return ("manifest is missing a positive measured elapsed time",)
+    if not math.isfinite(elapsed) or elapsed <= 0.0:
+        return ("manifest is missing a positive measured elapsed time",)
+    if elapsed >= float(budget_seconds):
+        return (f"manifest reports elapsed time outside the {float(budget_seconds):g}-second budget",)
+    return ()
 
 
 def _rendered_issues(
@@ -537,7 +619,11 @@ def _count_values(counts: GreenfieldArtifactCounts) -> dict[str, int]:
     }
 
 
-def _manifest_issues(manifest: Mapping[str, Any]) -> tuple[str, ...]:
+def _manifest_issues(
+    manifest: Mapping[str, Any],
+    *,
+    product_create_transaction: Mapping[str, Any] | None = None,
+) -> tuple[str, ...]:
     if not manifest:
         return ("post-confirm quality manifest missing",)
     issues: list[str] = []
@@ -547,10 +633,17 @@ def _manifest_issues(manifest: Mapping[str, Any]) -> tuple[str, ...]:
         issues.append(f"post-confirm validation status is {manifest.get('validation_status')!r}")
     if int(manifest.get("issue_count") or 0) != 0:
         issues.append(f"post-confirm quality manifest has {manifest.get('issue_count')} issue(s)")
-    if not write_committed(manifest):
-        issues.append("post-confirm write transaction was not committed")
-    if float(manifest.get("whole_project_elapsed_seconds") or 0.0) >= POST_CONFIRM_BUDGET_SECONDS:
-        issues.append("post-confirm manifest reports elapsed time outside the standard budget")
+    issues.extend(
+        f"post-confirm {issue}"
+        for issue in write_transaction_custody_issues(
+            manifest,
+            product_create_transaction=product_create_transaction,
+        )
+    )
+    issues.extend(
+        f"post-confirm {issue}"
+        for issue in elapsed_time_issues(manifest, budget_seconds=POST_CONFIRM_BUDGET_SECONDS)
+    )
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     if str(lens_report.get("status", "")).strip() != "passed":
         issues.append("post-confirm quality lens report did not pass")
@@ -658,5 +751,7 @@ __all__ = [
     "count_key",
     "required_count_minimums",
     "required_domain_term_hits",
+    "elapsed_time_issues",
     "write_committed",
+    "write_transaction_custody_issues",
 ]
