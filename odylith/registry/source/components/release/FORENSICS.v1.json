@@ -16,10 +16,10 @@
     "empty_reasons": [],
     "explicit_event_count": 270,
     "mapped_workstream_evidence_count": 203,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 62,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 271
+    "timeline_event_count": 270
   },
   "name": "Release",
   "path_prefixes": [
@@ -64,23 +64,6 @@
       "meaningful": true,
       "summary": "Decision evidence linked this component to governed work. 1 tracked artifact reference retained.",
       "ts_iso": "2026-07-09T22:44:21-07:00",
-      "workstreams": []
-    },
-    {
-      "artifact_count": 1,
-      "artifacts": [
-        "tracked_artifact_1"
-      ],
-      "confidence": "high",
-      "event_index": 981,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-07-09T16:32:59-07:00",
       "workstreams": []
     },
     {
