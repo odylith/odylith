@@ -301,7 +301,7 @@ def test_sync_component_spec_requirements_consumer_specs_use_per_component_sidec
     assert sync.main([*base_argv, "--check-only"]) == 0
 
 
-def test_sync_component_spec_requirements_records_workspace_activity_from_source_owned_bundle_mirror(
+def test_sync_component_spec_requirements_excludes_workspace_activity_from_persisted_forensics(
     tmp_path: Path,
 ) -> None:
     spec_path = tmp_path / "odylith" / "registry" / "source" / "components" / "tribunal" / "CURRENT_SPEC.md"
@@ -346,6 +346,20 @@ def test_sync_component_spec_requirements_records_workspace_activity_from_source
         encoding="utf-8",
     )
 
+    live_report = component_registry.build_component_registry_report(
+        repo_root=tmp_path,
+        manifest_path=manifest_path,
+        catalog_path=tmp_path / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json",
+        ideas_root=tmp_path / "odylith" / "radar" / "source" / "ideas",
+        stream_path=tmp_path / "odylith" / "compass" / "runtime" / "codex-stream.v1.jsonl",
+    )
+    live_timeline = component_registry.build_component_timelines(
+        component_index=live_report.components,
+        mapped_events=live_report.mapped_events,
+    )["tribunal"]
+    assert [event.kind for event in live_timeline] == ["workspace_activity"]
+    assert live_report.forensic_coverage["tribunal"].recent_path_match_count == 1
+
     base_argv = [
         "--repo-root",
         str(tmp_path),
@@ -360,11 +374,15 @@ def test_sync_component_spec_requirements_records_workspace_activity_from_source
     ]
 
     assert sync.main(base_argv) == 0
-    assert sync.main([*base_argv, "--check-only"]) == 0
 
     forensics_path = tmp_path / "odylith" / "registry" / "source" / "components" / "tribunal" / "FORENSICS.v1.json"
     payload = json.loads(forensics_path.read_text(encoding="utf-8"))
-    assert payload["forensic_coverage"]["status"] == "forensic_coverage_present"
+    assert payload["forensic_coverage"]["status"] == "baseline_forensic_only"
     assert payload["forensic_coverage"]["explicit_event_count"] == 0
-    assert payload["forensic_coverage"]["recent_path_match_count"] == 1
-    assert payload["timeline"][0]["kind"] == "workspace_activity"
+    assert payload["forensic_coverage"]["recent_path_match_count"] == 0
+    assert payload["timeline"] == []
+
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "sync forensics"], cwd=tmp_path, check=True, capture_output=True, text=True)
+
+    assert sync.main([*base_argv, "--check-only"]) == 0

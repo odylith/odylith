@@ -565,7 +565,6 @@ def _write_forensics_for_targets(
     targets: Sequence[str],
     components: Mapping[str, component_registry.ComponentEntry],
     report: component_registry.ComponentRegistryReport,
-    timelines: Mapping[str, Sequence[component_registry.MappedEvent]],
     traceability_index: Mapping[str, dict[str, list[str]]],
     check_only: bool,
     stale_paths: list[str],
@@ -575,6 +574,20 @@ def _write_forensics_for_targets(
     expected_forensics_paths: set[Path] = set()
     flat_spec_dirs: set[Path] = set()
     per_component_specs_roots: set[Path] = set()
+    persisted_events = [
+        event
+        for event in report.mapped_events
+        if str(event.kind or "").strip().lower() != "workspace_activity"
+    ]
+    persisted_timelines = component_registry.build_component_timelines(
+        component_index=components,
+        mapped_events=persisted_events,
+    )
+    persisted_coverage = component_registry.build_component_forensic_coverage(
+        component_index=components,
+        mapped_events=persisted_events,
+        repo_root=repo_root,
+    )
     for component_id in targets:
         entry = components.get(component_id)
         if entry is None:
@@ -594,8 +607,8 @@ def _write_forensics_for_targets(
         forensics_rel = repo_path_resolver.display_repo_path(repo_root=repo_root, value=forensics_path)
         payload = _forensics_payload(
             entry=entry,
-            coverage=report.forensic_coverage.get(component_id, _empty_forensic_coverage()),
-            timeline=timelines.get(component_id, []),
+            coverage=persisted_coverage.get(component_id, _empty_forensic_coverage()),
+            timeline=persisted_timelines.get(component_id, []),
             traceability=traceability_index.get(
                 component_id,
                 {"runbooks": [], "developer_docs": [], "code_references": []},
@@ -769,7 +782,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         targets=targets,
         components=components,
         report=report,
-        timelines=timelines,
         traceability_index=traceability_index,
         check_only=bool(args.check_only),
         stale_paths=stale_paths,
