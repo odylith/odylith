@@ -67,9 +67,10 @@ def confirmed_diagrams(
     proof_brief = diagram_text.brief_proof_boundary(proof_boundary)
     state_label = diagram_text.brief_object_label(state_object, fallback=f"{label} state")
     evidence_label = diagram_text.brief_object_label(evidence_record, fallback=f"{label} evidence record")
-    label_ref = sentence_label(label)
-    release_responsibilities = label_with_suffix(label, "release 0.0.1 responsibilities")
-    release_gate_ref = sentence_label(label_with_suffix(label, "release gate"))
+    label_display = _articleless_label(label)
+    label_ref = sentence_label(label_display)
+    release_responsibilities = label_with_suffix(label_ref, "release 0.0.1 responsibilities")
+    release_gate_ref = sentence_label(label_with_suffix(label_ref, "release gate"))
     return [
         {
             "slug": diagram_slugs["context"],
@@ -132,7 +133,7 @@ def confirmed_diagrams(
             "title": "State and Evidence View",
             "kind": "flowchart",
             "summary": (
-                f"Show how {state_label} becomes reviewable {label_ref} evidence in the first release. "
+                f"Show how {state_label} becomes reviewable evidence for {label_display} in the first release. "
                 f"The evidence record is {evidence_label}."
             ),
             "read_guide": (
@@ -217,7 +218,7 @@ def confirmed_diagrams(
             "title": "Release Proof Review",
             "kind": "flowchart",
             "summary": diagram_text.sentence(
-                f"Show which first-path result, state replay, evidence check, access proof, and release decision must exist before {label} trust increases"
+                f"Show which first-path result, state replay, evidence check, access proof, and release decision must exist before trust in {label_display} increases"
             ),
             "read_guide": (
                 f"Read this as the {release_gate_ref}. The product result, {state_label}, {evidence_label}, "
@@ -241,6 +242,11 @@ def confirmed_diagrams(
             ),
         },
     ]
+
+
+def _articleless_label(value: str) -> str:
+    text = str(value or "").strip(" .")
+    return re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE).strip() or text
 
 
 def _context_mermaid(

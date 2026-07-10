@@ -10,8 +10,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import MATERIAL_FACT_KEYS
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
@@ -113,6 +115,45 @@ def test_product_intent_confirmation_describes_pre_confirm_compile_and_commit_on
     assert "### Command: `CONFIRM`" in rendered
     assert "### Command: `EDIT`" in rendered
     assert "### Command: `REJECT`" in rendered
+
+
+def test_visible_confirmation_preserves_material_custody_when_proof_copy_has_no_final_period(
+    tmp_path: Path,
+) -> None:
+    prompt = (
+        "A city public works department needs to prioritize an emergency pavement repair after a bus route "
+        "reports a deep pothole. The inspector documents the distress rating, the traffic engineer approves "
+        "the lane closure, and the contractor records asphalt temperature during placement. Preserve the work "
+        "zone permit, compaction test, pavement section, and reopening inspection; a citizen complaint does "
+        "not establish that the repair meets specification."
+    )
+    confirmation = build_product_intent_confirmation(
+        prompt=prompt,
+        title="Approved Lane Closure Workspace",
+        repo_name="pavement-repair",
+    )
+    rendered = format_product_intent_confirmation_text(confirmation)
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(rendered, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt=prompt)
+    structured_path = write_structured_confirmed_intent_file(
+        path,
+        record.product_facts,
+        envelope=record.envelope,
+    )
+    authority = product_intent_authority_from_envelope(
+        record.envelope,
+        structured_intent_path=structured_path,
+        markdown_source_path=path,
+    )
+
+    require_product_intent_authority(authority)
+    for key in MATERIAL_FACT_KEYS:
+        field = authority["material_fields"][key]
+        assert field["custody_state"] == "accepted_fact"
+        assert field["source_span_ids"]
+        assert field["product_claim_span_ids"]
 
 
 def test_file_backed_edited_confirmation_validation_failure_does_not_regenerate_from_prompt(tmp_path: Path) -> None:

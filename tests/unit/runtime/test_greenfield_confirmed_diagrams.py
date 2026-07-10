@@ -55,6 +55,30 @@ def test_product_suffixed_project_label_does_not_trigger_atlas_copy_repair() -> 
     assert generated_public_copy_issues("mermaid", str(context["mermaid_source"])) == ()
 
 
+def test_diagram_guides_do_not_repeat_articles_for_product_titles() -> None:
+    diagrams = confirmed_diagrams(
+        label="The Approved Lane Closure Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {
+                "component_id": "intake-register",
+                "label": "Approved Lane Closure Intake Register",
+                "kind": "service",
+            },
+        ],
+        product_story="Inspectors coordinate an emergency pavement repair review.",
+        first_path="An inspector records the distress rating, routes lane closure approval, and reads the reopening decision.",
+        proof_boundary="The first release proves the approved lane closure remains reviewable with evidence.",
+        state_object="Approved Lane Closure Record",
+        evidence_record="Compaction Test Evidence Record",
+        human_actors=["Inspector"],
+    )
+    guides = "\n".join(str(row["read_guide"]) for row in diagrams)
+
+    assert "the the" not in guides.casefold()
+    assert generated_public_copy_issues("Atlas catalog rows", guides) == ()
+
+
 def test_sequence_event_steps_split_result_led_follow_on_finite_actions() -> None:
     selected_plan = sequence_event_steps(
         "A reviewer checks intake with provenance, selected plan routes the case, and the reviewer closes the review.",

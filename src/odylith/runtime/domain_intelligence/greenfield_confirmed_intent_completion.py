@@ -10,10 +10,11 @@ from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference, project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description, completed_actor_rows as _completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows, proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase, outcome_action_phrase as _outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_context_completion import complete_external_boundary as _complete_external_boundary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_context_completion import normalize_confirmed_actor_context as _normalize_confirmed_actor_context
 from odylith.runtime.domain_intelligence.greenfield_confirmed_non_goals import non_goal_rows as _non_goal_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_product_posture_text import path_capability as _path_capability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_product_posture_text import proof_boundary_metric as _proof_boundary_metric
@@ -29,14 +30,13 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_confirmed_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
-from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import completed_external_boundary_rows
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, material_first_path_action, normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_confirmed_intent_semantic_projections
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_confirmed_proof_boundary_sentence, normalize_visible_result_language as _normalize_visible_result_terms, text_values, unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_confirmed_proof_boundary_sentence, normalize_visible_result_language as _normalize_visible_result_terms, text_values
 
 
 CORE_FIELD_MIN_WORDS = {"product_story": 28, "state_object": 12, "first_path": 18, "proof_boundary": 18}
@@ -103,14 +103,6 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
         intent["external_systems"] = []
 
 
-def _complete_external_boundary(intent: dict[str, Any]) -> None:
-    rows, ambiguities = completed_external_boundary_rows(intent)
-    if rows:
-        intent["external_systems"] = rows
-    if ambiguities:
-        intent["ambiguities"] = list(unique_text([*confirmed_text_values(intent.get("ambiguities")), *ambiguities]))
-
-
 def _normalize_open_clause(value: str) -> str:
     text = _clean(value).strip(" .")
     text = re.sub(
@@ -120,26 +112,6 @@ def _normalize_open_clause(value: str) -> str:
         flags=re.IGNORECASE,
     )
     return text
-
-
-def _normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> None:
-    actor_rows = confirmed_text_values(intent.get("human_actors"))
-    if actor_rows:
-        intent["human_actors"] = [
-            normalized
-            for row in actor_rows
-            if (normalized := project_specific_actor_row(row, project_focus=title))
-        ]
-    first_path = _clean(intent.get("first_path"))
-    if first_path:
-        intent["first_path"] = _sentence(
-            localize_leading_actor_reference(
-                first_path,
-                actor_rows=confirmed_text_values(intent.get("human_actors")),
-                project_focus=title,
-                fallback=f"{_focus_label(title)} user",
-            )
-        )
 
 
 def _normalize_external_system_language(value: str) -> str:

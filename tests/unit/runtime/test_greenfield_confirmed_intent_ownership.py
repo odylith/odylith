@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_INTENT_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
 )
+CONFIRMED_INTENT_CONTEXT_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_context_completion.py"
+)
 CONFIRMED_TITLE_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py"
 )
@@ -111,6 +114,19 @@ def test_confirmed_intent_system_completion_stays_in_dedicated_owner() -> None:
     assert "def completed_system_rows" in completion_source
     assert "def system_labels" in completion_source
     assert "def state_label" in completion_source
+
+
+def test_confirmed_intent_context_completion_stays_in_dedicated_owner() -> None:
+    parent_source = CONFIRMED_INTENT_COMPLETION_PATH.read_text(encoding="utf-8")
+    context_source = CONFIRMED_INTENT_CONTEXT_COMPLETION_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 800
+    assert "complete_external_boundary as _complete_external_boundary" in parent_source
+    assert "normalize_confirmed_actor_context as _normalize_confirmed_actor_context" in parent_source
+    assert "def _complete_external_boundary" not in parent_source
+    assert "def _normalize_confirmed_actor_context" not in parent_source
+    assert "def complete_external_boundary" in context_source
+    assert "def normalize_confirmed_actor_context" in context_source
 
 
 def test_confirmed_intent_completion_title_tokens_use_shared_label_terms() -> None:

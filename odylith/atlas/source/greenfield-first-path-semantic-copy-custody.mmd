@@ -17,6 +17,7 @@ flowchart LR
       subject_carry_guard["Explicit subject-carry guard<br/>one-word human actors stay actors,<br/>visible result objects do not<br/>become sibling subjects"]
       purpose_context["Purpose-context owner<br/>semicolon-led accepted context<br/>carries into first actionable step"]
       action_boundary["Action-boundary owner<br/>ordinary leading actions stay actions,<br/>finite sibling actions split events"]
+      coordinated_action_guard["Coordinated-action guard<br/>requires a real second action;<br/>comma-separated noun tails<br/>cannot complete a first path"]
       shared_event_resolver["Shared first-path actor/action resolver<br/>receives the complete accepted human actor set;<br/>pronouns retain the current human actor;<br/>system/product events are marked non-human"]
       action_result_nominalizer["Action-result nominalizer<br/>actor-role nouns beat leading<br/>action-shaped words when later<br/>owned actions carry the result"]
       actor_led_open_action["Actor-led open-action owner<br/>plausible actor plus open action<br/>when material-action grammar has<br/>no recognized action"]
@@ -48,6 +49,7 @@ flowchart LR
       actor_choice_copy["Project-brief actor choices<br/>neutral participant wording,<br/>curated readiness actions keep<br/>middle and terminal path steps"]
       atlas_projection["Atlas event projection<br/>sequence and flow labels"]
       mermaid_label_custody["Mermaid label custody<br/>visible line breaks avoid<br/>dangling connector words;<br/>header/body labels do not repeat<br/>fixed result wrappers"]
+      atlas_catalog_copy["Atlas catalog copy custody<br/>leading product articles normalize once;<br/>state and release guides remain<br/>grammatical before quality scoring"]
       label_action_grammar["Shared action grammar for labels<br/>coordinated finite actions become<br/>imperative base actions before render"]
       atlas_coverage["Atlas coverage owner<br/>FirstPathContract checked through<br/>structured projection facts,<br/>not verbatim capability prose"]
       next_step_prompts["Project next-step prompts<br/>accepted first path preserved,<br/>no Radar slice echo"]
@@ -87,9 +89,9 @@ flowchart LR
     actor_recovery --> actor_path_role
     actor_path_role --> subject_carry_guard
     subject_carry_guard --> purpose_context
-    purpose_context --> action_boundary
-    action_boundary --> action_result_nominalizer
-    action_boundary --> shared_event_resolver
+    purpose_context --> action_boundary --> coordinated_action_guard
+    coordinated_action_guard --> action_result_nominalizer
+    coordinated_action_guard --> shared_event_resolver
     action_result_nominalizer --> actor_led_open_action
     actor_led_open_action --> requirement_control
     requirement_control --> semantic_contract
@@ -110,8 +112,8 @@ flowchart LR
     radar_projection --> state_boundary_titles
     state_boundary_titles --> actor_choice_copy
     radar_projection --> shape_checks
-    atlas_projection --> mermaid_label_custody
-    mermaid_label_custody --> label_action_grammar
+    atlas_projection --> mermaid_label_custody --> atlas_catalog_copy
+    atlas_catalog_copy --> label_action_grammar
     label_action_grammar --> atlas_coverage
     atlas_coverage --> shape_checks
     actor_choice_copy --> artifact_units
@@ -143,9 +145,9 @@ flowchart LR
     classDef prose fill:#F8FAFC,stroke:#CBD5E1,color:#132033,stroke-width:1px;
     classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
     classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#132033,stroke-width:1px;
-    class source_evidence_units,product_claim_spans,accepted_path,editorial_framing_guard,ingress_cleanup,title_boundary_custody,evidence_anchor_custody,prompt_material_custody,actor_roles,actor_participation,artifact_context_actor_filter,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,shared_event_resolver,action_result_nominalizer,actor_led_open_action,requirement_control,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,result_list_disambiguation,review_result_owner,modal_owner,product_view_copy intent;
+    class source_evidence_units,product_claim_spans,accepted_path,editorial_framing_guard,ingress_cleanup,title_boundary_custody,evidence_anchor_custody,prompt_material_custody,actor_roles,actor_participation,artifact_context_actor_filter,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,coordinated_action_guard,shared_event_resolver,action_result_nominalizer,actor_led_open_action,requirement_control,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,result_list_disambiguation,review_result_owner,modal_owner,product_view_copy intent;
     class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
-    class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,label_action_grammar,atlas_coverage,next_step_prompts,overlap_projection,artifact_units,mermaid_label_gate,mermaid_source_units,canonical_facts,tribunal_actors,evaluation_readback,package_findings projection;
+    class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,atlas_catalog_copy,label_action_grammar,atlas_coverage,next_step_prompts,overlap_projection,artifact_units,mermaid_label_gate,mermaid_source_units,canonical_facts,tribunal_actors,evaluation_readback,package_findings projection;
     class semantic_plan_patch,source_address,projection_repair_targets,dashboard_rerender,package_inspection,final_gate,quality_debt,debt_manifest,governed_write repair;
 
     style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52

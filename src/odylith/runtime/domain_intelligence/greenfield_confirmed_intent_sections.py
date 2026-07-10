@@ -606,9 +606,14 @@ def _looks_like_plain_heading(text: str) -> bool:
 
 def _looks_like_body_sentence(text: str) -> bool:
     value = str(text or "").strip()
-    if not value.endswith((".", "!", "?")):
+    words = value.split()
+    if len(words) <= 4:
         return False
-    return len(value.split()) > 4
+    if re.search(r"[.!?]", value):
+        return True
+    # A long unpunctuated sentence can contain labels such as "first path".
+    # It remains body copy unless the author marked it up as a Markdown heading.
+    return len(words) > 12
 
 
 def _consume_confirmed_intent_fence(
