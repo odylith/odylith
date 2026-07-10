@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import brief_proof_boundary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import proof_checkpoint_label
@@ -25,6 +27,54 @@ def _diagram_slugs() -> dict[str, str]:
         "ownership": "ownership",
         "proof_review": "proof-review",
     }
+
+
+def test_product_suffixed_project_label_does_not_trigger_atlas_copy_repair() -> None:
+    diagrams = confirmed_diagrams(
+        label="Flood Shelter Intake Product",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {
+                "component_id": "intake-register",
+                "label": "Flood Shelter Intake Product Intake Register Service",
+                "kind": "service",
+            },
+        ],
+        product_story="Municipal coordinators need a dependable shelter intake path.",
+        first_path="Municipal coordinators register shelters and publish readiness status.",
+        proof_boundary="The first release proves the published readiness status.",
+        state_object="Readiness Status Record",
+        evidence_record="Readiness Proof Record",
+        human_actors=["Municipal coordinators"],
+    )
+    context = next(row for row in diagrams if row["title"] == "System Context View")
+    normalized = re.sub(r"<br\s*/?>", " ", str(context["mermaid_source"]), flags=re.IGNORECASE)
+
+    assert not re.search(r"\bproduct\s+product\b", normalized, flags=re.IGNORECASE)
+    assert "Flood Shelter Intake Product boundary" in normalized
+    assert generated_public_copy_issues("mermaid", str(context["mermaid_source"])) == ()
+
+
+def test_sequence_event_steps_split_result_led_follow_on_finite_actions() -> None:
+    selected_plan = sequence_event_steps(
+        "A reviewer checks intake with provenance, selected plan routes the case, and the reviewer closes the review.",
+        dedupe=True,
+    )
+    final_report = sequence_event_steps(
+        "A reviewer checks intake with provenance, final report summarizes evidence, and the reviewer closes the review.",
+        dedupe=True,
+    )
+
+    assert selected_plan == [
+        "A reviewer checks intake with provenance",
+        "Selected plan routes the case",
+        "The reviewer closes the review",
+    ]
+    assert final_report == [
+        "A reviewer checks intake with provenance",
+        "Final report summarizes evidence",
+        "The reviewer closes the review",
+    ]
 
 
 def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplate() -> None:

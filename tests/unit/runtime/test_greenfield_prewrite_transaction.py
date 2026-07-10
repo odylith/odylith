@@ -307,6 +307,11 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
         str(row.get("diagram_id", "")).strip()
         for row in prewrite.package.atlas_catalog_rows
     } == set(prewrite.package.atlas_diagram_ids)
+    assert all(
+        not Path(path).is_absolute()
+        for row in prewrite.package.atlas_catalog_rows
+        for path in row.get("related_backlog", [])
+    )
     assert "odylith-greenfield-prewrite" not in json.dumps(prewrite.package.atlas_catalog_rows)
     accepted_at = str(prewrite.package.accepted_project_preview.get("accepted_at", "")).strip()
     assert accepted_at and accepted_at != "prewrite"

@@ -10,6 +10,7 @@ from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
@@ -36,6 +37,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds im
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
     starts_with_compound_noun_object as _starts_with_compound_noun_object,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_short_results import short_nominal_result_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import (
     base_from_gerund_action as _base_from_gerund_action,
 )
@@ -318,6 +320,10 @@ def _continues_adverbial_object_list(value: str, current: str) -> bool:
     text = re.sub(r"^(?:and|or)\s+", "", _clean(value).strip(" ."), flags=re.IGNORECASE)
     if not text:
         return False
+    if _has_internal_finite_action(text):
+        return False
+    if short_nominal_result_phrase(text, limit=180):
+        return True
     first_word = text.split(maxsplit=1)[0].strip(".,:;()[]{}").casefold()
     if first_word.endswith("s") and _MATERIAL_ACTION_RE.match(text):
         return False
@@ -327,6 +333,18 @@ def _continues_adverbial_object_list(value: str, current: str) -> bool:
         return False
     terms = label_terms(text)
     return 1 <= len(terms) <= 8
+
+
+def _has_internal_finite_action(value: str) -> bool:
+    words = [
+        word.strip(".,:;()[]{}")
+        for word in _clean(value).split()
+        if word.strip(".,:;()[]{}")
+    ]
+    return any(
+        0 < index < len(words) - 1 and looks_like_finite_action_token(word)
+        for index, word in enumerate(words)
+    )
 
 
 def _has_explicit_subject_action(value: str) -> bool:

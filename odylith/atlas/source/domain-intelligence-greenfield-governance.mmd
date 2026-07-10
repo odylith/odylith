@@ -86,6 +86,7 @@ flowchart LR
     subgraph write_lane["Precompiled transaction and commit-only boundary"]
       direction TB
       surface_custody["Pre-confirm rendered surface custody<br/>Radar, Registry, Atlas, Compass, Casebook,<br/>Project shell and bundle mirrors"]
+      portable_catalog_links["Portable Atlas link custody<br/>related_backlog paths are repo-relative;<br/>root and symlink escapes fail before confirm"]
       transaction_quality["Pre-confirm quality tribunal<br/>all package and artifact contracts pass;<br/>no unresolved quality debt"]
       transaction_seal["ProductCreateTransaction seal<br/>exact bytes, modes, file and directory deletes,<br/>repo fingerprints, result preview"]
       compiler_receipt["Detached compiler receipt<br/>transaction file digest and hash"]
@@ -107,7 +108,7 @@ flowchart LR
     public_system_copy --> apply_input --> intent_visible_result --> compiler --> semantic_ir --> evaluation_semantics --> actor_role_owner --> artifact_actor_filter --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> visible_result_priority --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> semantic_patch_targets --> registry_contract_custody --> semantic_result_custody --> projections --> confirmed_diagram_projection --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
     draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> blockers
-    final_manifest -- "pass" --> surface_custody --> transaction_quality --> transaction_seal --> compiler_receipt --> transaction_ready --> commit_verify --> writes --> readback --> proof_log --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
+    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> transaction_seal --> compiler_receipt --> transaction_ready --> commit_verify --> writes --> readback --> proof_log --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "quality debt remains" --> blockers
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
@@ -142,7 +143,7 @@ flowchart LR
     class visible_intent,confirmable_stdout,confirm,source_guard,intent_section_parser,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,intent_visible_result,compiler,semantic_ir,evaluation_semantics,actor_role_owner,artifact_actor_filter,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,visible_result_priority,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,registry_contract_custody,semantic_result_custody,projections,confirmed_diagram_projection,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class surface_custody,transaction_quality,transaction_seal,compiler_receipt,transaction_ready,commit_verify,writes,readback,rollback,blockers,proof_log,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
+    class surface_custody,portable_catalog_links,transaction_quality,transaction_seal,compiler_receipt,transaction_ready,commit_verify,writes,readback,rollback,blockers,proof_log,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52

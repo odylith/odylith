@@ -1523,13 +1523,17 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "related_diagram_ids: D-001,D-002" in child_idea
     assert "## Impacted Components" in child_idea
     assert "`commerce-storefront`" in child_idea
-    backlog_paths = {str(row["idea_path"]) for row in result["backlog"]}
+    backlog_paths = {
+        Path(str(row["idea_path"])).relative_to(tmp_path).as_posix()
+        for row in result["backlog"]
+    }
     atlas_backlog_paths = {
         str(path)
         for row in atlas_catalog["diagrams"]
         for path in row["related_backlog"]
     }
     assert backlog_paths & atlas_backlog_paths
+    assert all(not Path(path).is_absolute() for path in atlas_backlog_paths)
     assert "odylith-greenfield-prewrite" not in json.dumps(atlas_catalog)
     storefront = next(row for row in component_registry["components"] if row["component_id"] == "commerce-storefront")
     assert storefront["workstreams"] == ["B-002"]

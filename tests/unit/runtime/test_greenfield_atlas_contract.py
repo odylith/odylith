@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -16,6 +17,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
     confirmed_intent_with_authority,
+    stub_preconfirm_surface_refresh,
 )
 
 
@@ -298,6 +300,108 @@ def test_greenfield_atlas_sources_differ_by_host_reasoned_diagram_purpose() -> N
     assert context != waves
 
 
+def test_prewrite_atlas_catalog_rebases_absolute_backlog_links_to_repo_paths(tmp_path: Path) -> None:
+    traceability_plan = SimpleNamespace(
+        diagram_links=(
+            SimpleNamespace(
+                diagram_id="D-001",
+                related_backlog_paths=(
+                    str(tmp_path / "odylith/radar/source/ideas/2026-07/demo.md"),
+                ),
+            ),
+        )
+    )
+
+    rows = greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+        root=tmp_path,
+        rows=(
+            {
+                "slug": "demo-flow",
+                "title": "Demo Flow",
+                "kind": "flowchart",
+                "owner": "repo",
+                "summary": "Shows the demo path.",
+                "read_guide": "Read from intake to outcome.",
+                "components": [{"name": "Demo", "description": "Owns the demo path."}],
+                "watch_paths": [],
+            },
+        ),
+        diagram_ids=("D-001",),
+        traceability_plan=traceability_plan,
+        review_date="2026-07-10",
+    )
+
+    assert rows[0]["related_backlog"] == ["odylith/radar/source/ideas/2026-07/demo.md"]
+
+
+def test_prewrite_atlas_catalog_rejects_backlog_links_outside_repo(tmp_path: Path) -> None:
+    traceability_plan = SimpleNamespace(
+        diagram_links=(
+            SimpleNamespace(
+                diagram_id="D-001",
+                related_backlog_paths=(str(tmp_path.parent / "outside.md"),),
+            ),
+        )
+    )
+
+    with pytest.raises(ValueError, match="Atlas path escapes repo root"):
+        greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+            root=tmp_path,
+            rows=(
+                {
+                    "slug": "demo-flow",
+                    "title": "Demo Flow",
+                    "kind": "flowchart",
+                    "owner": "repo",
+                    "summary": "Shows the demo path.",
+                    "read_guide": "Read from intake to outcome.",
+                    "components": [{"name": "Demo", "description": "Owns the demo path."}],
+                    "watch_paths": [],
+                },
+            ),
+            diagram_ids=("D-001",),
+            traceability_plan=traceability_plan,
+            review_date="2026-07-10",
+        )
+
+
+def test_prewrite_atlas_catalog_rejects_symlinked_backlog_escape(tmp_path: Path) -> None:
+    external_root = tmp_path.parent / f"{tmp_path.name}-external"
+    external_root.mkdir()
+    (external_root / "outside.md").write_text("outside\n", encoding="utf-8")
+    linked_root = tmp_path / "odylith/radar/source/linked"
+    linked_root.parent.mkdir(parents=True)
+    linked_root.symlink_to(external_root, target_is_directory=True)
+    traceability_plan = SimpleNamespace(
+        diagram_links=(
+            SimpleNamespace(
+                diagram_id="D-001",
+                related_backlog_paths=(str(linked_root / "outside.md"),),
+            ),
+        )
+    )
+
+    with pytest.raises(ValueError, match="Atlas path escapes repo root"):
+        greenfield_apply_diagrams.render_prewrite_atlas_catalog_rows(
+            root=tmp_path,
+            rows=(
+                {
+                    "slug": "demo-flow",
+                    "title": "Demo Flow",
+                    "kind": "flowchart",
+                    "owner": "repo",
+                    "summary": "Shows the demo path.",
+                    "read_guide": "Read from intake to outcome.",
+                    "components": [{"name": "Demo", "description": "Owns the demo path."}],
+                    "watch_paths": [],
+                },
+            ),
+            diagram_ids=("D-001",),
+            traceability_plan=traceability_plan,
+            review_date="2026-07-10",
+        )
+
+
 def test_greenfield_tribunal_rejects_project_title_prefixed_diagram_titles() -> None:
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["diagrams"][0]["title"] = f"{proposal['intent']['title']} System Context"
@@ -329,6 +433,7 @@ def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -
 
 def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
+    stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)

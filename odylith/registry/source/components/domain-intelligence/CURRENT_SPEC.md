@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-09
+Last updated: 2026-07-10
 
 
 ## Overview
@@ -44,6 +44,21 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-10: Made precompiled Atlas links portable across target and staging roots. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-226`, `CB-223`; Diagram: D-043)
+  `greenfield_apply_diagrams.py` now seals Atlas `related_backlog` links as
+  validated repository-relative paths instead of consumer-root absolute paths.
+  Lexical and symlink escapes fail before confirmation, while the exact catalog
+  bytes remain valid in the isolated prewrite repository and the final target.
+  `greenfield_confirmed_diagrams.py` now composes product-boundary labels through
+  the shared suffix owner, removing a predictable `Product product` defect
+  before Tribunal review. The evidence-list splitter also keeps terminal result
+  nouns attached without swallowing result-led finite actions found by
+  adversarial review. Proof passed 174 transaction/proposal tests and 165
+  parser/slop tests. A real flood-shelter transaction compiled in 35.86 seconds
+  with no repair ledger or model call, then committed its sealed package in
+  0.52 seconds with four workstreams, three component specs, and six diagrams.
+  Fresh committed-dist matrix replay remains the release gate.
 
 - 2026-07-09: Sealed the exact repository mutation into the pre-confirm ProductCreateTransaction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Diagram: D-045)
   `greenfield_repository_write_set.py` now compiles governed and rendered file

@@ -22,6 +22,10 @@
 
 - Failure Signature: semantic.slop.modal.base.form.grammar.drift.leaked.proposal.intent; proposal.backlog.0.product_view rendered the user can yield maps
 
+- Follow-up Failure Signature: `sequence_event_steps` split `and a final disengagement review recommendation` out of a long `using` evidence list as a standalone action step. The earlier actor-led open-action guard did not cover the finite-action classifier used by comma-piece custody.
+
+- Adversarial Review Finding: The first follow-up implementation accepted any short nominal result before action classification and therefore absorbed real result-led finite clauses such as `selected plan routes the case` and `final report summarizes evidence` into the prior evidence list.
+
 - Trigger Path: GREENFIELD_MATRIX_VOLUME_CASE_FILES=/private/tmp/odylith-current-source-grounded-shards/shards/volume-discovery-004.cases.json make greenfield-matrix-campaign VERSION=0.1.15 DIST=/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-d696aff3
 
 - Ownership: domain-intelligence first-path parser, confirmed-completion text model, and visible-result projection
@@ -40,9 +44,15 @@
 
 - Root Cause: The first-path splitter broke comma-separated using evidence into standalone steps; completion action_phrase promoted later evidence fragments into user-can product-view copy; actor-led open-action parsing misread final recommendation nouns as actor/action; visible-result focus did not consistently preserve terminal final recommendation/explanation outcomes.
 
+- Follow-up Root Cause: `_continues_adverbial_object_list` asked the generic explicit-subject action classifier about an article-led terminal result noun. The phrase contained the homonym `review`, so the classifier treated it as a verb before the existing short nominal result owner could adjudicate it.
+
 - Solution: Keep using/with evidence lists attached to the source action, prefer representative human action for user-can copy, reject final-result noun phrases in actor-led open-action parsing, preserve transformation actions separately from terminal visible results, and focus terminal final recommendation/explanation tails without collapsing decision-package final status.
 
+- Follow-up Solution: Route comma-piece custody through the existing `short_nominal_result_phrase` owner only after rejecting phrases with an internal finite verb token. This keeps terminal result nouns attached to the evidence list without adding duplicate domain vocabulary and preserves real result-led follow-on actions.
+
 - Verification: Source unit proof: 179 greenfield parser/projection tests passed. Required next proof: rebuild dist, rerun exact failed-subset case hv-20260703-g-036, rerun volume shard/volume campaign, then release-proof.
+
+- Follow-up Verification: Adversarial review exposed and then verified the result-led finite-action counterexample. The full confirmed-diagram, first-path modal, and generated-slop suites passed 165 tests after both the terminal recommendation and real finite-action cases were added.
 
 - Workaround: None acceptable for release. The post-confirm transaction must continue to fail closed before governed writes until parser/projection custody produces clean artifacts.
 

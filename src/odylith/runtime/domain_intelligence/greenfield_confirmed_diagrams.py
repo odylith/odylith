@@ -254,14 +254,16 @@ def _context_mermaid(
     first_component = _node_id("component", 1)
     product_node = "P"
     if components:
-        lines.append(f'  {product_node}["{diagram_text.flow_label(label, limit=64)}<br/>product boundary"]')
+        boundary_label = label_with_suffix(label, "product boundary")
+        lines.append(f'  {product_node}["{diagram_text.flow_label(boundary_label, limit=96)}"]')
     actor_rows = actors[:8]
     for index, actor in enumerate(actor_rows, start=1):
         node = _node_id("actor", index)
         target = best_component_node_for_text(actor, components=components) or (product_node if components else first_component)
         lines.append(f'  {node}["{diagram_text.flow_label(actor, limit=96)}"] --> {target}')
     if not components:
-        lines.append(f'  {first_component}["{diagram_text.flow_label(label, limit=60)}<br/>product core"]')
+        core_label = label_with_suffix(label, "product core")
+        lines.append(f'  {first_component}["{diagram_text.flow_label(core_label, limit=96)}"]')
     for index, component in enumerate(components[:7], start=1):
         node = _node_id("component", index)
         lines.append(f'  {node}["{diagram_text.flow_label(str(component.get("label", "")), limit=72)}"]')
@@ -301,7 +303,8 @@ def _ownership_mermaid(
 ) -> str:
     lines = ["flowchart TB"]
     if not components:
-        lines.append(f'  product["{diagram_text.flow_label(label, limit=96)}<br/>product boundary"] --> proof["Release<br/>proof"]')
+        boundary_label = label_with_suffix(label, "product boundary")
+        lines.append(f'  product["{diagram_text.flow_label(boundary_label, limit=96)}"] --> proof["Release<br/>proof"]')
     for index, component in enumerate(components[:7], start=1):
         node = _node_id("owner", index)
         label_text = str(component.get("label", "")) or (internal_systems[index - 1] if index <= len(internal_systems) else f"Component {index}")

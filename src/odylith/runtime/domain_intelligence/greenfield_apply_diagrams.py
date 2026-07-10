@@ -124,7 +124,10 @@ def render_prewrite_atlas_catalog_rows(
             summary=str(row.get("summary", "")).strip(),
             read_guide=str(row.get("read_guide", "")).strip(),
             components=_proposal_diagram_components(row),
-            related_backlog=_diagram_related_backlog(traceability_plan, str(diagram_id).strip().upper()),
+            related_backlog=_repo_relative_backlog_paths(
+                root=root,
+                paths=_diagram_related_backlog(traceability_plan, str(diagram_id).strip().upper()),
+            ),
             related_plans=[],
             related_docs=[],
             related_code=[],
@@ -471,6 +474,18 @@ def _diagram_related_backlog(traceability_plan: Any, diagram_id: str) -> list[st
         None,
     )
     return list(getattr(link, "related_backlog_paths", ())) if link is not None else []
+
+
+def _repo_relative_backlog_paths(*, root: Path, paths: Sequence[str]) -> list[str]:
+    """Keep compiled Atlas links portable between target and staging roots."""
+
+    repo_root = root.resolve()
+    relative_paths = [
+        _resolve_repo_path(root=repo_root, token=str(path)).relative_to(repo_root).as_posix()
+        for path in paths
+        if str(path).strip()
+    ]
+    return dedupe_strings(relative_paths)
 
 
 def _existing_watch_paths(root: Path, row: Mapping[str, Any]) -> list[str]:
