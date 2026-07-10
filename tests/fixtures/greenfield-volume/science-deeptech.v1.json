@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "name": "cell-therapy-chain-of-identity",
+      "prompt": "A regional cell-therapy network needs a product for autologous CAR-T operations across collection clinics, apheresis couriers, manufacturing suites, and infusion centers. It must preserve chain of identity from leukapheresis bag through cryoshipper receipt, CD3+ enrichment, vector transduction, release assay, and patient infusion. The medical director, quality unit, and site coordinators need distinct evidence for deviations, temperature excursions, and final disposition.",
+      "required_terms": ["CAR-T", "chain of identity", "cryoshipper", "release assay"],
+      "leakage_terms": ["autologous CAR-T", "CD3+ enrichment", "vector transduction"],
+      "tags": ["biotech-operations", "cell-therapy", "quality"],
+      "stressors": ["multi-role-tribunal", "scientific-casing", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "gmp-plasmid-batch-readiness",
+      "prompt": "Build a readiness workspace for a GMP plasmid DNA facility preparing lentiviral vector campaigns. Operators need to connect a master cell bank, fermentation batch record, alkaline lysis harvest, endotoxin result, supercoiled percentage, sterility hold, and certificate of analysis before a lot can move to fill-finish. Manufacturing science, QC microbiology, and QA release staff must each state whether evidence supports the batch decision.",
+      "required_terms": ["GMP", "plasmid DNA", "endotoxin", "certificate of analysis"],
+      "leakage_terms": ["master cell bank", "alkaline lysis", "supercoiled percentage"],
+      "tags": ["biotech-operations", "viral-vector", "gmp"],
+      "stressors": ["path-grant", "multi-role-tribunal", "scientific-casing", "registry-contract-pressure"]
+    },
+    {
+      "name": "mab-comparability-study",
+      "prompt": "A biologics group is comparing an upstream process change for a monoclonal antibody after replacing a protein A resin. The product should organize fed-batch runs, glycan profile results, aggregate content by SEC-HPLC, potency assay trends, and comparability protocol commitments. Process development, analytical development, and regulatory CMC reviewers need a shared account of which lots support the similarity conclusion and which outliers require investigation.",
+      "required_terms": ["monoclonal antibody", "protein A", "SEC-HPLC", "comparability protocol"],
+      "leakage_terms": ["fed-batch", "glycan profile", "potency assay"],
+      "tags": ["biotech-operations", "biologics", "cmc"],
+      "stressors": ["modal-expert-lens", "noun-verb-homonym", "domain-depth-obligations", "atlas-label-pressure"]
+    },
+    {
+      "name": "bioreactor-contamination-response",
+      "prompt": "Create an operations record for a CDMO responding to suspected mycoplasma contamination in a 2,000 L single-use bioreactor. The record must link environmental monitoring, qPCR screening, viable cell density, inoculum genealogy, operator interventions, and cleaning verification. A manufacturing supervisor, biosafety officer, and client quality representative need to review containment, root-cause evidence, and the justified decision to discard or recover the culture.",
+      "required_terms": ["mycoplasma", "single-use bioreactor", "qPCR", "viable cell density"],
+      "leakage_terms": ["2,000 L", "inoculum genealogy", "environmental monitoring"],
+      "tags": ["biotech-operations", "cdmo", "contamination-control"],
+      "stressors": ["long-first-path", "multi-role-tribunal", "scientific-casing", "final-memory-pressure"]
+    },
+    {
+      "name": "crispr-off-target-evidence",
+      "prompt": "A genome-editing startup needs a research-to-development evidence system for a CRISPR-Cas9 program targeting HBB in hematopoietic stem cells. Scientists must compare guide RNA design, on-target editing rate, GUIDE-seq candidates, amplicon sequencing, karyotype review, and colony-forming unit results. The platform should retain the rationale for excluding low-confidence off-target sites while giving translational leads and safety reviewers separate views of the evidence.",
+      "required_terms": ["CRISPR-Cas9", "HBB", "GUIDE-seq", "amplicon sequencing"],
+      "leakage_terms": ["guide RNA", "on-target editing", "colony-forming unit"],
+      "tags": ["biotech-operations", "genome-editing", "translational-research"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "lms-sample-custody",
+      "prompt": "Design a laboratory workflow product for a biomarker lab handling plasma specimens from multi-site oncology studies. Each sample needs accessioning, barcode scan, centrifugation timing, freeze-thaw count, aliquot map, LC-MS/MS run assignment, and analyst review. Site coordinators, lab technologists, and biostatisticians need to understand when a specimen is usable, when a custody break invalidates it, and how missing metadata affects cohort inclusion.",
+      "required_terms": ["plasma specimens", "freeze-thaw count", "LC-MS/MS", "cohort inclusion"],
+      "leakage_terms": ["aliquot map", "barcode scan", "custody break"],
+      "tags": ["lab-workflow", "biomarkers", "clinical-research"],
+      "stressors": ["path-grant", "scientific-casing", "multi-role-tribunal", "registry-contract-pressure"]
+    },
+    {
+      "name": "microscopy-core-instrument-booking",
+      "prompt": "A university microscopy core wants a shared system for confocal and cryo-EM projects where instrument time is scarce. Investigators should submit specimen type, fluorophore panel, vitrification status, acquisition recipe, and data volume estimate. Core staff must approve training eligibility, biosafety constraints, and microscope configuration before a slot is released. Imaging scientists need to preserve calibration bead results and note when a failed alignment changes image interpretation.",
+      "required_terms": ["cryo-EM", "fluorophore panel", "vitrification", "calibration bead"],
+      "leakage_terms": ["confocal", "acquisition recipe", "failed alignment"],
+      "tags": ["lab-workflow", "imaging", "core-facility"],
+      "stressors": ["path-grant", "scientific-casing", "long-first-path", "atlas-label-pressure"]
+    },
+    {
+      "name": "mass-spec-method-transfer",
+      "prompt": "A proteomics team is transferring a DIA mass spectrometry method between two laboratories. The product must capture peptide library version, retention-time alignment, iRT standards, instrument tuning, false discovery rate, and replicate precision. Method owners, receiving analysts, and quality reviewers need a clear sequence from sample preparation through acceptance testing, including whether differences in collision energy or column lot prevent a comparable method transfer.",
+      "required_terms": ["DIA", "iRT standards", "false discovery rate", "collision energy"],
+      "leakage_terms": ["peptide library", "retention-time alignment", "column lot"],
+      "tags": ["lab-workflow", "proteomics", "method-transfer"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "synthetic-biology-design-build-test",
+      "prompt": "A synthetic biology lab needs a productization workspace for iterative design-build-test-learn cycles in engineered yeast. Teams should connect promoter variant, Golden Gate assembly, transformant plate, colony PCR, shake-flask titer, and HPLC metabolite profile to the hypothesis that selected pathways increase production. Molecular biologists, automation engineers, and strain-development leads need to distinguish failed assembly from a valid low-titer strain and carry forward the next experiment rationale.",
+      "required_terms": ["Golden Gate assembly", "colony PCR", "shake-flask", "HPLC metabolite profile"],
+      "leakage_terms": ["engineered yeast", "promoter variant", "low-titer strain"],
+      "tags": ["lab-workflow", "synthetic-biology", "automation"],
+      "stressors": ["noun-verb-homonym", "domain-depth-obligations", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "watershed-nutrient-attribution",
+      "prompt": "A watershed science consortium needs an evidence product for assigning seasonal nitrogen loads among agricultural subcatchments. Field crews collect nitrate sensors, grab samples, stream discharge, fertilizer application logs, and stable isotope measurements of delta-15N. Hydrologists, extension agents, and county planners must review calibration, storm-event gaps, and model uncertainty before identifying likely source areas. The product should distinguish observed concentration from modeled load and preserve assumptions about baseflow separation.",
+      "required_terms": ["nitrogen loads", "delta-15N", "baseflow separation", "modeled load"],
+      "leakage_terms": ["nitrate sensors", "storm-event gaps", "fertilizer application"],
+      "tags": ["climate-science", "hydrology", "environmental-monitoring"],
+      "stressors": ["modal-expert-lens", "scientific-casing", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "carbon-flux-tower-network",
+      "prompt": "Create a research operations system for a forest carbon flux tower network spanning managed pine, peatland, and old-growth plots. The system must assemble eddy covariance data, PAR sensor maintenance, friction velocity filtering, chamber measurements, and gap-filled net ecosystem exchange. Ecologists, data engineers, and land stewards need to assess whether a tower outage or footprint shift changes the annual carbon balance before results are used in restoration planning.",
+      "required_terms": ["eddy covariance", "friction velocity", "net ecosystem exchange", "carbon balance"],
+      "leakage_terms": ["PAR sensor", "footprint shift", "gap-filled"],
+      "tags": ["climate-science", "carbon-cycle", "field-instrumentation"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "long-first-path", "atlas-label-pressure"]
+    },
+    {
+      "name": "wildfire-smoke-exposure-model",
+      "prompt": "A public-health climate lab wants a defensible workflow for estimating wildfire smoke exposure at census-tract scale. Researchers combine PM2.5 monitors, satellite aerosol optical depth, plume polygons, low-cost sensor correction, and hospital encounter data. Atmospheric scientists, epidemiologists, and community partners need separate evidence views for monitor calibration, exposure model validation, and disclosure limits. The system must record when an inversion layer makes a daily estimate unreliable rather than presenting a false precision.",
+      "required_terms": ["PM2.5", "aerosol optical depth", "plume polygons", "inversion layer"],
+      "leakage_terms": ["low-cost sensor", "census-tract", "exposure model"],
+      "tags": ["climate-science", "air-quality", "health-evidence"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "glacier-mass-balance-campaign",
+      "prompt": "A mountain observatory needs to coordinate a glacier mass balance campaign across hazardous seasonal field sites. Teams must connect snow-pit density, ablation stake readings, GNSS survey tracks, firn temperature profiles, and UAV orthomosaics to each glacier basin. Glaciologists, safety officers, and remote-sensing analysts need to decide whether weather windows, crevasse closures, or missing stake observations allow interpolation, while retaining the seasonal accumulation and melt assumptions.",
+      "required_terms": ["mass balance", "ablation stake", "GNSS", "firn temperature"],
+      "leakage_terms": ["snow-pit density", "UAV orthomosaics", "crevasse closures"],
+      "tags": ["climate-science", "cryosphere", "field-campaign"],
+      "stressors": ["path-grant", "scientific-casing", "multi-role-tribunal", "long-first-path"]
+    },
+    {
+      "name": "ocean-acidification-mooring",
+      "prompt": "An ocean observatory is productizing data stewardship for coastal acidification moorings. The workflow needs to tie spectrophotometric pH, total alkalinity bottle samples, pCO2 sensor drift, CTD casts, biofouling inspections, and carbonate-system calculations to release-ready datasets. Marine chemists, instrument technicians, and shellfish growers must understand quality flags and latency. They need a record of why a corrected pH time series differs from the raw instrument stream.",
+      "required_terms": ["spectrophotometric pH", "total alkalinity", "pCO2", "carbonate-system"],
+      "leakage_terms": ["CTD casts", "biofouling inspections", "quality flags"],
+      "tags": ["climate-science", "oceanography", "sensor-data"],
+      "stressors": ["scientific-casing", "noun-verb-homonym", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "cubesat-thermal-vacuum-campaign",
+      "prompt": "A CubeSat team needs an integrated readiness record for thermal-vacuum testing before launch acceptance. It must connect spacecraft configuration, TVAC profile, thermocouple channels, battery state of charge, flight-software telemetry, anomaly log, and post-test functional checkout. Systems engineers, mission assurance, and payload scientists need separate approval roles, especially when a heater excursion resembles a sensor fault. The history should show which waivers apply to the flight unit.",
+      "required_terms": ["CubeSat", "thermal-vacuum", "TVAC", "thermocouple"],
+      "leakage_terms": ["state of charge", "flight-software telemetry", "heater excursion"],
+      "tags": ["space", "spacecraft-test", "mission-assurance"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "lunar-regolith-isru-experiment",
+      "prompt": "A lunar ISRU research team wants a product workspace for oxygen extraction experiments using regolith simulant. Researchers need to trace simulant batch, particle-size distribution, molten-salt electrolysis run, oxygen yield, electrode mass loss, XRD phase analysis, and contamination blank. Materials scientists, mission architects, and safety reviewers must assess whether a result can inform a lunar demonstration or only a bench-scale hypothesis, including the reason a crucible failure ended a run.",
+      "required_terms": ["ISRU", "regolith simulant", "molten-salt electrolysis", "XRD"],
+      "leakage_terms": ["particle-size distribution", "oxygen yield", "crucible failure"],
+      "tags": ["space", "lunar-science", "in-situ-resource-utilization"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "modal-expert-lens", "long-first-path"]
+    },
+    {
+      "name": "radio-astronomy-transient-followup",
+      "prompt": "An interferometer collaboration needs a rapid evidence workflow for transient radio events. The product must link trigger packet, dispersion measure, RFI excision, voltage buffer, localization ellipse, optical counterpart search, and observing proposal status. Telescope operators, pipeline scientists, and external follow-up teams need a time-sensitive but auditable sequence for deciding whether to release coordinates. It should retain uncertainty and distinguish an FRB candidate from a classified astrophysical event.",
+      "required_terms": ["dispersion measure", "RFI excision", "localization ellipse", "FRB"],
+      "leakage_terms": ["voltage buffer", "optical counterpart", "trigger packet"],
+      "tags": ["space", "radio-astronomy", "transients"],
+      "stressors": ["latency-pressure", "scientific-casing", "path-grant", "multi-role-tribunal"]
+    },
+    {
+      "name": "earth-observation-calibration-site",
+      "prompt": "An Earth observation program is organizing vicarious calibration at a desert test site for a hyperspectral imager. Field teams record reflectance panel measurements, solar zenith angle, aerosol optical thickness, BRDF characterization, and synchronized overpass time. Calibration scientists, satellite operators, and data-product leads need to determine whether the site supports radiometric adjustment. The product should keep traceable links between field spectra, Level-1B imagery, and the eventual calibration coefficient.",
+      "required_terms": ["hyperspectral imager", "BRDF", "Level-1B", "calibration coefficient"],
+      "leakage_terms": ["reflectance panel", "solar zenith", "vicarious calibration"],
+      "tags": ["space", "earth-observation", "calibration"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "long-first-path", "atlas-label-pressure"]
+    },
+    {
+      "name": "surgical-robot-safety-case",
+      "prompt": "A surgical robotics group needs an evidence system for a laparoscopic tissue manipulation prototype. The team must link force-torque sensor calibration, trocar workspace, vision segmentation, haptic limit, simulated-use task, and surgeon usability session. Robotics engineers, clinical advisors, and human-factors specialists need separate review lenses for control performance and safety. The system should capture why a model update is barred from a cadaver study until the collision-avoidance evidence is complete.",
+      "required_terms": ["force-torque sensor", "trocar", "haptic limit", "collision-avoidance"],
+      "leakage_terms": ["vision segmentation", "simulated-use", "cadaver study"],
+      "tags": ["robotics", "medical-device", "safety-evidence"],
+      "stressors": ["multi-role-tribunal", "path-grant", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "warehouse-amr-fleet-exceptions",
+      "prompt": "A distribution research lab is piloting autonomous mobile robots in a live warehouse shared with forklifts and pedestrians. The product should trace LiDAR localization, geofence map, battery swap, mission queue, near-miss event, and operator override across each AMR. Fleet managers, safety engineers, and shift leads need to identify whether a blocked aisle came from map drift, radio latency, or a manually paused route, while retaining the mitigation evidence for the next deployment.",
+      "required_terms": ["autonomous mobile robots", "LiDAR localization", "geofence", "operator override"],
+      "leakage_terms": ["battery swap", "near-miss event", "map drift"],
+      "tags": ["robotics", "warehouse-automation", "field-operations"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "latency-pressure", "final-memory-pressure"]
+    },
+    {
+      "name": "underwater-robot-benthic-survey",
+      "prompt": "A marine robotics institute needs a planning and evidence product for AUV benthic habitat surveys. Missions must relate DVL navigation, multibeam sonar, dissolved oxygen, camera transects, waypoint revisions, and specimen annotations to each dive. Oceanographers, vehicle pilots, and conservation biologists need a shared basis for accepting a survey line after currents push the vehicle off track. The system must separate an observed coral colony from an ML classification with uncertain geolocation.",
+      "required_terms": ["AUV", "DVL navigation", "multibeam sonar", "benthic habitat"],
+      "leakage_terms": ["camera transects", "waypoint revisions", "coral colony"],
+      "tags": ["robotics", "marine-science", "autonomy"],
+      "stressors": ["scientific-casing", "long-first-path", "modal-expert-lens", "atlas-label-pressure"]
+    },
+    {
+      "name": "agricultural-robot-phenotyping",
+      "prompt": "A crop science program needs a research workflow for a field robot that measures drought response in maize breeding trials. The product should connect RTK-GNSS path logs, hyperspectral canopy images, soil moisture probes, plot identifiers, leaf-area index, and hand-scored phenotypes. Breeders, roboticists, and field technicians must determine when a sensor occlusion invalidates a plot measurement and when the robot can repeat a pass without changing the trial protocol.",
+      "required_terms": ["RTK-GNSS", "hyperspectral", "leaf-area index", "maize"],
+      "leakage_terms": ["soil moisture", "sensor occlusion", "plot identifiers"],
+      "tags": ["robotics", "agriculture", "phenotyping"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "multi-role-tribunal", "long-first-path"]
+    },
+    {
+      "name": "solid-state-battery-interface-study",
+      "prompt": "A battery materials startup needs to organize an evidence program for sulfide solid-state cells with lithium metal anodes. Scientists must connect glovebox moisture readings, powder lot, cold-press pressure, impedance spectrum, critical current density, cross-sectional SEM, and cycling protocol. Electrochemists, process engineers, and product leads need to determine whether interfacial resistance comes from material chemistry or assembly variation, and which evidence is sufficient to advance a composition toward pilot-scale trials.",
+      "required_terms": ["lithium metal", "impedance spectrum", "critical current density", "SEM"],
+      "leakage_terms": ["sulfide solid-state", "glovebox moisture", "interfacial resistance"],
+      "tags": ["materials", "energy-storage", "electrochemistry"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "multi-role-tribunal", "registry-contract-pressure"]
+    },
+    {
+      "name": "perovskite-stability-screen",
+      "prompt": "A photovoltaic research group wants a productization workflow for accelerated stability screening of perovskite solar cells. Each device should carry precursor stoichiometry, spin-coating recipe, encapsulation stack, AM1.5G illumination, maximum power point tracking, T80 lifetime, and post-aging XPS result. Chemists, device physicists, and reliability engineers need to compare degradation pathways without treating one short test as a production claim. The workspace should retain humidity exposure and calibration assumptions.",
+      "required_terms": ["perovskite", "AM1.5G", "maximum power point", "T80 lifetime"],
+      "leakage_terms": ["spin-coating", "encapsulation stack", "post-aging XPS"],
+      "tags": ["materials", "photovoltaics", "reliability"],
+      "stressors": ["scientific-casing", "long-first-path", "modal-expert-lens", "final-memory-pressure"]
+    },
+    {
+      "name": "alloy-discovery-data-lineage",
+      "prompt": "A national lab alloy discovery program needs to connect computational and physical evidence for high-entropy alloys. The product must relate CALPHAD prediction, composition coupon, arc-melt batch, homogenization schedule, EBSD map, tensile curve, and fracture surface. Computational materials scientists, metallurgists, and program partners need to see when a model was trained on a limited composition space and whether a measured phase fraction supports a scale-up hypothesis.",
+      "required_terms": ["high-entropy alloys", "CALPHAD", "EBSD", "phase fraction"],
+      "leakage_terms": ["arc-melt", "homogenization schedule", "tensile curve"],
+      "tags": ["materials", "alloy-design", "materials-informatics"],
+      "stressors": ["scientific-casing", "noun-verb-homonym", "domain-depth-obligations", "atlas-label-pressure"]
+    },
+    {
+      "name": "membrane-separation-pilot",
+      "prompt": "A climate hardware team needs an evidence system for a carbon capture membrane pilot using mixed-gas feeds. Operators must track polymer formulation, membrane casting, CO2 permeance, selectivity, pressure ratio, humidity conditioning, and module leak check. Polymer chemists, pilot operators, and commercial diligence reviewers need separate views of lab performance and skid performance. The product should document why a high selectivity result from a dry gas run cannot be used as a field-energy estimate.",
+      "required_terms": ["carbon capture", "CO2 permeance", "selectivity", "pressure ratio"],
+      "leakage_terms": ["mixed-gas", "humidity conditioning", "module leak check"],
+      "tags": ["materials", "carbon-capture", "pilot-plant"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "metamaterial-rf-characterization",
+      "prompt": "A deep-tech RF team is developing a tunable metamaterial surface for satellite communications. The product needs to bind unit-cell geometry, dielectric constant, S-parameter sweep, anechoic chamber setup, beam-steering angle, thermal cycle, and fabrication lot to each claim. Electromagnetics researchers, manufacturing engineers, and systems architects need to determine whether an observed gain change comes from the material, fixture repeatability, or calibration drift before a demonstrator is proposed.",
+      "required_terms": ["metamaterial", "S-parameter", "anechoic chamber", "beam-steering"],
+      "leakage_terms": ["unit-cell geometry", "dielectric constant", "thermal cycle"],
+      "tags": ["materials", "rf-engineering", "deep-tech"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "metal-additive-qualification",
+      "prompt": "An aerospace supplier needs a qualification workspace for laser powder bed fusion of Inconel 718 brackets. The workflow should connect powder chemistry, particle-size distribution, build file, laser scan strategy, melt-pool monitoring, HIP cycle, CT scan, and fatigue coupon result. Materials engineers, production quality, and airworthiness reviewers need a disciplined path from parameter set to part release. It must retain when a powder reuse count or porosity finding blocks equivalence to the qualified process.",
+      "required_terms": ["laser powder bed fusion", "Inconel 718", "HIP cycle", "melt-pool monitoring"],
+      "leakage_terms": ["powder chemistry", "particle-size distribution", "fatigue coupon"],
+      "tags": ["advanced-manufacturing", "additive-manufacturing", "aerospace"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "long-first-path"]
+    },
+    {
+      "name": "semiconductor-process-window",
+      "prompt": "A semiconductor process development team needs to productize evidence for a new atomic layer deposition barrier film. The system must trace wafer lot, precursor pulse, chamber pressure, ellipsometry thickness, XRR density, four-point probe, and electromigration stress. Process integration, metrology, and reliability teams need to determine the valid process window and whether an outlier is a chamber excursion or measurement artifact. The decision trail should support a controlled transfer to the pilot line.",
+      "required_terms": ["atomic layer deposition", "ellipsometry", "XRR", "electromigration"],
+      "leakage_terms": ["wafer lot", "precursor pulse", "chamber pressure"],
+      "tags": ["advanced-manufacturing", "semiconductor", "process-development"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "multi-role-tribunal", "registry-contract-pressure"]
+    },
+    {
+      "name": "biomanufacturing-digital-twin",
+      "prompt": "A biomanufacturing scale-up group wants a digital twin evidence product for a perfusion process producing a recombinant enzyme. It should relate viable cell concentration, capacitance probe, feed rate, glucose uptake, lactate accumulation, harvest flux, and mechanistic model residuals. Process scientists, automation engineers, and tech-transfer leads must review when the model can recommend a setpoint versus when it is only descriptive. The record must preserve sensor qualification and scale-down experiment limits.",
+      "required_terms": ["perfusion", "capacitance probe", "lactate accumulation", "mechanistic model"],
+      "leakage_terms": ["viable cell concentration", "harvest flux", "scale-down experiment"],
+      "tags": ["advanced-manufacturing", "biomanufacturing", "digital-twin"],
+      "stressors": ["modal-expert-lens", "scientific-casing", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "catalyst-scaleup-reactor-lineage",
+      "prompt": "A green chemistry company needs an evidence chain for scaling a nickel catalyst from milligram discovery to a continuous-flow reactor. Scientists must connect ligand synthesis, ICP-OES metal loading, BET surface area, batch screening, residence time, selectivity profile, and catalyst deactivation. Chemists, reactor engineers, and product managers need to distinguish a reproducible catalyst effect from a change in analytical method. The workflow should retain why a promising batch recipe cannot yet become a manufacturing specification.",
+      "required_terms": ["nickel catalyst", "ICP-OES", "BET surface area", "continuous-flow reactor"],
+      "leakage_terms": ["ligand synthesis", "residence time", "catalyst deactivation"],
+      "tags": ["advanced-manufacturing", "catalysis", "scale-up"],
+      "stressors": ["scientific-casing", "noun-verb-homonym", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "quantum-sensor-field-deployment",
+      "prompt": "A quantum sensing venture needs to turn laboratory evidence into a field-deployment decision for an NV-center magnetometer. The workspace must align diamond lot, ODMR contrast, microwave control, magnetic shielding, sensitivity floor, field survey route, and calibration coil trace. Quantum physicists, hardware engineers, and geophysics customers need to see which conditions reproduce a laboratory sensitivity claim. The product should preserve whether vibration noise or temperature drift limits the field result.",
+      "required_terms": ["NV-center", "ODMR", "magnetometer", "sensitivity floor"],
+      "leakage_terms": ["diamond lot", "magnetic shielding", "calibration coil"],
+      "tags": ["research-productization", "quantum", "field-deployment"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "neurotechnology-signal-validation",
+      "prompt": "A neurotechnology research group needs a product pathway for validating a closed-loop EEG stimulation prototype. The system should connect electrode impedance, artifact rejection, spectral feature, stimulation phase, seizure diary, adverse event, and blinded review. Neuroscientists, embedded engineers, and clinical investigators need distinct evidence roles when deciding whether a signal classifier is stable enough for supervised human testing. The record must preserve protocol exclusions and explain why a model was frozen before analysis.",
+      "required_terms": ["EEG", "artifact rejection", "stimulation phase", "blinded review"],
+      "leakage_terms": ["electrode impedance", "seizure diary", "signal classifier"],
+      "tags": ["research-productization", "neurotechnology", "clinical-evidence"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "fusion-diagnostic-readiness",
+      "prompt": "A fusion research program needs a readiness product for deploying a Thomson scattering diagnostic on a tokamak campaign. The workflow must connect laser energy, timing jitter, polychromator calibration, electron temperature profile, plasma shot, interlock state, and diagnostic data quality. Plasma physicists, operations coordinators, and machine protection engineers need to agree when the diagnostic can request a shot and when calibration evidence requires a hold. The product should retain how an ELM-distorted trace was treated.",
+      "required_terms": ["Thomson scattering", "tokamak", "electron temperature", "ELM"],
+      "leakage_terms": ["polychromator calibration", "plasma shot", "interlock state"],
+      "tags": ["research-productization", "fusion", "diagnostics"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "latency-pressure"]
+    },
+    {
+      "name": "digital-pathology-model-evidence",
+      "prompt": "A pathology AI group needs an evidence system for an ML model that flags mitotic figures on whole-slide images. The product must connect H&E stain protocol, scanner resolution, pathologist annotation, tile sampling, calibration curve, external validation cohort, and false-negative audit. Pathologists, ML engineers, and clinical quality staff need separate views of model performance and data representativeness. The system should retain whether a scanner firmware change invalidates comparison to the locked model.",
+      "required_terms": ["mitotic figures", "H&E", "whole-slide images", "external validation cohort"],
+      "leakage_terms": ["scanner resolution", "calibration curve", "false-negative audit"],
+      "tags": ["ai-ml-evidence", "digital-pathology", "clinical-ai"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "geospatial-foundation-model-provenance",
+      "prompt": "A climate analytics team needs a provenance product for a geospatial foundation model used to map flood extent after storms. Researchers must record Sentinel-1 acquisition, SAR speckle filtering, training tile lineage, label source, segmentation threshold, confidence raster, and field validation. Remote-sensing specialists, ML researchers, and emergency planners need to understand when a map is fit for situational awareness but not insurance adjudication. The workflow must preserve missing-overpass limitations and post-event model drift evidence.",
+      "required_terms": ["Sentinel-1", "SAR", "confidence raster", "model drift"],
+      "leakage_terms": ["speckle filtering", "training tile", "flood extent"],
+      "tags": ["ai-ml-evidence", "geospatial-ai", "climate-risk"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "protein-design-benchmark-governance",
+      "prompt": "A protein design platform needs an evidence workflow for benchmarking a generative model against wet-lab expression outcomes. It should connect sequence family, predicted structure, pLDDT, novelty filter, construct design, expression titer, SEC chromatogram, and binding affinity. Computational biologists, assay scientists, and product leads need separate roles in deciding whether a benchmark compares models fairly. The system must retain holdout rules, failed constructs, and the rationale for excluding homologous training sequences.",
+      "required_terms": ["pLDDT", "expression titer", "SEC chromatogram", "binding affinity"],
+      "leakage_terms": ["predicted structure", "novelty filter", "holdout rules"],
+      "tags": ["ai-ml-evidence", "protein-design", "benchmarking"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "noun-verb-homonym", "final-memory-pressure"]
+    },
+    {
+      "name": "autonomous-lab-active-learning",
+      "prompt": "An autonomous laboratory is developing an active-learning system for discovering electrolyte additives. The product must link Bayesian optimization proposal, liquid-handler protocol, electrolyte formulation, coin-cell assembly, formation cycle, coulombic efficiency, and uncertainty estimate. Chemists, automation operators, and ML scientists need to see why a candidate was selected and whether a pipetting exception invalidated the measured outcome. The evidence should distinguish a model recommendation from a chemically confirmed improvement.",
+      "required_terms": ["Bayesian optimization", "liquid-handler", "coulombic efficiency", "uncertainty estimate"],
+      "leakage_terms": ["electrolyte additive", "coin-cell assembly", "pipetting exception"],
+      "tags": ["ai-ml-evidence", "autonomous-lab", "materials-discovery"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "long-first-path"]
+    },
+    {
+      "name": "causal-inference-trial-emulation",
+      "prompt": "A real-world evidence team needs a governed product for emulating a cardiovascular trial from EHR and claims data. Analysts must connect target trial protocol, eligibility phenotype, treatment initiation, propensity score, immortal-time bias check, negative control outcome, and sensitivity analysis. Epidemiologists, clinicians, and data stewards need distinct review responsibilities before any comparative effectiveness result is shared. The system should preserve code-list versions and explain which unmeasured confounding assumptions remain unresolved.",
+      "required_terms": ["target trial", "propensity score", "immortal-time bias", "negative control outcome"],
+      "leakage_terms": ["eligibility phenotype", "comparative effectiveness", "sensitivity analysis"],
+      "tags": ["ai-ml-evidence", "causal-inference", "real-world-evidence"],
+      "stressors": ["multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "multimodal-science-corpus-curation",
+      "prompt": "A research organization needs a corpus curation product for training multimodal scientific assistants on laboratory figures and methods. The workflow must track DOI source, figure panel, OCR confidence, chemical structure image, caption alignment, license status, benchmark split, and expert adjudication. Curators, subject-matter scientists, and ML safety reviewers need to decide whether ambiguous panels can enter training or only evaluation. The record should retain retraction checks and the reason a figure-label pairing was rejected.",
+      "required_terms": ["DOI", "OCR confidence", "caption alignment", "expert adjudication"],
+      "leakage_terms": ["figure panel", "license status", "benchmark split"],
+      "tags": ["ai-ml-evidence", "scientific-corpus", "data-governance"],
+      "stressors": ["scientific-casing", "path-grant", "multi-role-tribunal", "atlas-label-pressure"]
+    }
+  ]
+}

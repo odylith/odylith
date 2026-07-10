@@ -1,0 +1,324 @@
+{
+  "cases": [
+    {
+      "name": "correspondent banking payment repair",
+      "prompt": "A regional bank needs a payment repair workspace for operations analysts handling correspondent banking transfers. Analysts must identify malformed SWIFT messages, preserve nostro account evidence, request beneficiary-bank clarification, route sanctions holds to a reviewer, and record the final repair decision. The first release ends when an approved repair is queued for release; it does not send payments or alter core ledger balances.",
+      "required_terms": ["correspondent banking", "SWIFT", "nostro account", "sanctions holds"],
+      "leakage_terms": ["payment repair", "beneficiary-bank", "repair decision"],
+      "tags": ["banking-operations", "payments"],
+      "stressors": ["multi-role-tribunal", "path-grant", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "commercial loan covenant monitoring",
+      "prompt": "A commercial lending group needs a covenant monitoring desk where relationship managers upload borrower financial statements, credit analysts compare leverage ratios against loan covenant thresholds, and portfolio managers review waiver requests. The desk must retain calculation dates, borrower attestations, and escalation evidence. The first release produces a reviewed covenant status and waiver packet; it excludes underwriting decisions, pricing changes, and automated borrower notices.",
+      "required_terms": ["covenant monitoring", "leverage ratios", "waiver requests", "borrower attestations"],
+      "leakage_terms": ["commercial lending", "covenant status", "waiver packet"],
+      "tags": ["banking-operations", "credit-risk"],
+      "stressors": ["modal-expert-lens", "long-first-path", "registry-contract-pressure", "final-memory-pressure"]
+    },
+    {
+      "name": "branch cash exception register",
+      "prompt": "A retail bank requires a branch cash exception register for vault custodians, branch managers, and loss-prevention reviewers. Staff record cash overages, currency strap counts, dual-control witnesses, and camera reference numbers before a manager accepts or rejects the exception. The first release tracks the investigation and approved adjustment recommendation only; it does not post teller transactions, control vault access, or conduct employee discipline.",
+      "required_terms": ["cash overages", "currency strap", "dual-control", "vault custodians"],
+      "leakage_terms": ["branch cash", "exception register", "adjustment recommendation"],
+      "tags": ["banking-operations", "branch-controls"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "path-grant", "atlas-label-pressure"]
+    },
+    {
+      "name": "treasury liquidity forecast review",
+      "prompt": "A corporate treasury team needs a daily liquidity forecast review that combines cash position submissions from subsidiaries, expected debt draws, FX settlement dates, and approved funding assumptions. Treasury analysts prepare scenarios while controllers challenge material variance and the treasurer signs the published outlook. The first release records scenario evidence and signoff; it excludes bank account transfers, hedging execution, and external market data procurement.",
+      "required_terms": ["liquidity forecast", "debt draws", "FX settlement", "funding assumptions"],
+      "leakage_terms": ["cash position", "variance", "published outlook"],
+      "tags": ["banking-operations", "treasury"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "long-first-path", "latency-pressure"]
+    },
+    {
+      "name": "property claim severity triage",
+      "prompt": "A property insurer needs a claim severity triage workspace for adjusters, catastrophe managers, and special-investigation reviewers. It must collect first notice of loss details, policy deductibles, repair estimates, fraud indicators, and reserve rationale before an escalation tier is approved. The first release creates a defensible triage record and reviewer queue; it does not settle claims, issue payments, or make coverage determinations.",
+      "required_terms": ["first notice of loss", "policy deductibles", "repair estimates", "reserve rationale"],
+      "leakage_terms": ["claim severity", "fraud indicators", "triage record"],
+      "tags": ["insurance", "claims-operations"],
+      "stressors": ["modal-expert-lens", "path-grant", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "reinsurance bordereau reconciliation",
+      "prompt": "A reinsurance operations unit needs a bordereau reconciliation workspace for ceded premium analysts, treaty managers, and finance controllers. Users compare ceded premium rows, facultative placements, treaty attachment points, and loss recoverables against monthly partner files, documenting differences and approvals. The first release produces an accepted reconciliation package; it excludes treaty negotiation, accounting journal posting, and reinsurance cash collection.",
+      "required_terms": ["bordereau", "ceded premium", "facultative placements", "loss recoverables"],
+      "leakage_terms": ["reinsurance operations", "treaty attachment", "reconciliation package"],
+      "tags": ["insurance", "reinsurance"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "long-first-path", "atlas-label-pressure"]
+    },
+    {
+      "name": "life underwriting evidence intake",
+      "prompt": "A life insurer needs an evidence intake desk where underwriting coordinators receive attending physician statements, applicant disclosures, lab result references, and producer corrections. Underwriters can request missing evidence and medical directors can mark a record ready for review. The first release manages evidence completeness and provenance only; it does not calculate premiums, approve coverage, or communicate eligibility decisions to applicants.",
+      "required_terms": ["attending physician statements", "applicant disclosures", "lab result", "medical directors"],
+      "leakage_terms": ["life insurer", "evidence completeness", "provenance"],
+      "tags": ["insurance", "underwriting-operations"],
+      "stressors": ["modal-expert-lens", "path-grant", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "insurance model change governance",
+      "prompt": "An insurer needs a governance record for changes to catastrophe models used in portfolio planning. Model owners submit version notes, exposure managers attach validation results, actuarial reviewers compare AEP and PML movements, and risk officers approve a release recommendation. The first release preserves review evidence and decision history; it excludes model execution, rating changes, and reserving calculations.",
+      "required_terms": ["catastrophe models", "validation results", "AEP", "PML"],
+      "leakage_terms": ["model owners", "portfolio planning", "release recommendation"],
+      "tags": ["insurance", "model-risk"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "sales tax exemption certificate desk",
+      "prompt": "A multi-state retailer needs a tax operations desk for exemption certificates submitted by business customers. Tax analysts verify jurisdiction, resale certificate status, expiration dates, and legal entity mapping before a tax manager approves an exception. The first release records certificate completeness and approval history; it does not calculate tax, file returns, change invoices, or provide tax advice to customers.",
+      "required_terms": ["exemption certificates", "jurisdiction", "resale certificate", "legal entity"],
+      "leakage_terms": ["tax operations", "expiration dates", "approval history"],
+      "tags": ["tax-workflow", "retail"],
+      "stressors": ["path-grant", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "transfer pricing documentation calendar",
+      "prompt": "A global finance team needs a transfer pricing documentation calendar that coordinates country-by-country reporting, local file evidence, intercompany agreements, and fiscal-year deadlines. Regional tax leads assign owners while central tax reviews readiness exceptions and retains supporting schedules. The first release publishes status and evidence readiness only; it excludes tax calculations, legal conclusions, filing submission, and authority correspondence.",
+      "required_terms": ["transfer pricing", "country-by-country reporting", "local file", "intercompany agreements"],
+      "leakage_terms": ["fiscal-year", "tax leads", "supporting schedules"],
+      "tags": ["tax-workflow", "international-tax"],
+      "stressors": ["scientific-casing", "long-first-path", "atlas-label-pressure", "registry-contract-pressure"]
+    },
+    {
+      "name": "VAT invoice exception review",
+      "prompt": "An accounts payable organization needs a VAT invoice exception review queue for invoice processors, tax specialists, and purchasing approvers. The queue must show VAT registration numbers, place-of-supply references, reverse-charge flags, and supplier correction evidence before an exception is cleared. The first release produces an approved correction request; it does not reclaim VAT, post payable entries, or amend supplier invoices.",
+      "required_terms": ["VAT", "place-of-supply", "reverse-charge", "supplier correction"],
+      "leakage_terms": ["invoice exception", "tax specialists", "correction request"],
+      "tags": ["tax-workflow", "accounts-payable"],
+      "stressors": ["noun-verb-homonym", "path-grant", "multi-role-tribunal", "latency-pressure"]
+    },
+    {
+      "name": "R and D credit evidence binder",
+      "prompt": "A manufacturing tax team needs an R and D credit evidence binder for engineering managers, payroll analysts, and tax reviewers. It links qualified research activities, wage allocation worksheets, prototype test records, and contemporaneous time evidence to a claimed project. The first release makes evidence reviewable and marks gaps; it excludes credit computation, return preparation, filing, and tax advice.",
+      "required_terms": ["R and D credit", "qualified research", "wage allocation", "prototype test"],
+      "leakage_terms": ["evidence binder", "contemporaneous time", "claimed project"],
+      "tags": ["tax-workflow", "research-credit"],
+      "stressors": ["scientific-casing", "domain-depth-obligations", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "contract obligation extraction review",
+      "prompt": "A legal operations team needs a contract obligation review workspace for contract managers, business owners, and privacy reviewers. Users capture renewal dates, data processing obligations, service-level commitments, and notice clauses from executed agreements, then route uncertain language for human confirmation. The first release maintains an obligation register and review evidence; it does not interpret legal rights, negotiate clauses, or provide legal advice.",
+      "required_terms": ["renewal dates", "data processing obligations", "service-level commitments", "notice clauses"],
+      "leakage_terms": ["contract obligation", "executed agreements", "obligation register"],
+      "tags": ["legal-operations", "contract-management"],
+      "stressors": ["modal-expert-lens", "noun-verb-homonym", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "litigation hold custodian tracker",
+      "prompt": "A corporate legal operations group needs a litigation hold custodian tracker for legal coordinators, information governance staff, and department managers. The tracker records hold notices, custodian acknowledgments, data source interviews, preservation exceptions, and release approvals. The first release documents acknowledgment and preservation status only; it does not collect employee data, search documents, decide legal scope, or give legal advice.",
+      "required_terms": ["litigation hold", "custodian acknowledgments", "data source", "preservation exceptions"],
+      "leakage_terms": ["hold notices", "preservation status", "release approvals"],
+      "tags": ["legal-operations", "information-governance"],
+      "stressors": ["path-grant", "multi-role-tribunal", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "outside counsel matter intake",
+      "prompt": "A legal department needs an outside counsel matter intake desk where business sponsors request assistance, legal operations verifies conflict-check completion, and budget owners approve a matter code. The desk retains engagement letters, billing guidelines, matter taxonomy, and intake rationale. The first release creates a complete intake packet; it excludes selecting counsel, authorizing legal strategy, processing invoices, and delivering legal advice.",
+      "required_terms": ["outside counsel", "conflict-check", "matter code", "billing guidelines"],
+      "leakage_terms": ["matter intake", "engagement letters", "intake packet"],
+      "tags": ["legal-operations", "matter-management"],
+      "stressors": ["modal-expert-lens", "path-grant", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "entity management filing readiness",
+      "prompt": "A corporate legal operations team needs an entity management filing readiness workspace for paralegals, finance controllers, and registered-agent coordinators. It tracks board resolutions, officer changes, annual report due dates, and jurisdiction-specific filing evidence before a coordinator marks a package ready. The first release reports readiness and missing artifacts; it excludes submission, statutory interpretation, entity formation, and legal advice.",
+      "required_terms": ["board resolutions", "officer changes", "annual report", "registered-agent"],
+      "leakage_terms": ["entity management", "filing readiness", "missing artifacts"],
+      "tags": ["legal-operations", "corporate-governance"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "third party risk assessment intake",
+      "prompt": "A governance risk and compliance team needs a third party risk assessment intake for procurement sponsors, security reviewers, privacy reviewers, and risk owners. The record must capture inherent risk factors, data classification, subcontractor disclosures, and remediation commitments before residual risk acceptance. The first release produces an approved assessment record; it excludes continuous monitoring, vendor blocking, and automated security scanning.",
+      "required_terms": ["inherent risk", "data classification", "subcontractor disclosures", "residual risk"],
+      "leakage_terms": ["third party", "risk assessment", "remediation commitments"],
+      "tags": ["grc", "third-party-risk"],
+      "stressors": ["multi-role-tribunal", "path-grant", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "policy exception governance council",
+      "prompt": "An enterprise compliance office needs a policy exception governance council where policy owners submit exceptions, control owners attach compensating controls, and risk executives record acceptance conditions. The council must distinguish temporary exceptions, renewal requests, expiry dates, and closure evidence. The first release tracks deliberation and approved conditions; it excludes changing policies, enforcing technical controls, and granting permanent privileges.",
+      "required_terms": ["policy exception", "compensating controls", "acceptance conditions", "expiry dates"],
+      "leakage_terms": ["governance council", "renewal requests", "closure evidence"],
+      "tags": ["grc", "policy-governance"],
+      "stressors": ["modal-expert-lens", "path-grant", "multi-role-tribunal", "atlas-label-pressure"]
+    },
+    {
+      "name": "SOX control deficiency remediation",
+      "prompt": "A public company needs a SOX control deficiency remediation workspace for process owners, internal control specialists, and finance leadership. Users document design deficiencies, operating effectiveness tests, management action plans, and retest evidence before a deficiency is closed. The first release produces a reviewable remediation trail; it excludes testing execution, financial statement certification, and external auditor conclusions.",
+      "required_terms": ["SOX", "design deficiencies", "operating effectiveness", "retest evidence"],
+      "leakage_terms": ["control deficiency", "action plans", "remediation trail"],
+      "tags": ["grc", "internal-controls"],
+      "stressors": ["scientific-casing", "long-first-path", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "regulatory obligation change register",
+      "prompt": "A compliance operations group needs a regulatory obligation change register for regulatory affairs analysts, business control owners, and compliance officers. Analysts log a published rule change, map affected obligations, collect implementation attestations, and convene a review when applicability is disputed. The first release records impact assessment and ownership; it excludes legal interpretation, regulatory filing, policy publication, and automated regulatory monitoring.",
+      "required_terms": ["regulatory obligation", "published rule", "implementation attestations", "applicability"],
+      "leakage_terms": ["change register", "impact assessment", "control owners"],
+      "tags": ["grc", "regulatory-change"],
+      "stressors": ["noun-verb-homonym", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "capital expenditure approval portfolio",
+      "prompt": "A procurement finance team needs a capital expenditure approval portfolio for requesters, sourcing managers, finance business partners, and asset controllers. The portfolio captures business cases, total cost of ownership, supplier quotes, depreciation class, and approval thresholds before a request becomes purchase-ready. The first release generates an approved capital request; it excludes purchase order creation, budget posting, and supplier contracting.",
+      "required_terms": ["capital expenditure", "total cost of ownership", "supplier quotes", "depreciation class"],
+      "leakage_terms": ["approval portfolio", "approval thresholds", "capital request"],
+      "tags": ["procurement", "capital-planning"],
+      "stressors": ["path-grant", "multi-role-tribunal", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "supplier onboarding evidence desk",
+      "prompt": "A procurement organization needs a supplier onboarding evidence desk for category managers, tax operations, information security, and accounts payable. It assembles supplier legal name, beneficial ownership attestation, W-9 or W-8 form, bank detail verification, and onboarding approvals. The first release certifies documentation readiness; it excludes supplier creation in ERP, payment setup, contract execution, and sanctions screening decisions.",
+      "required_terms": ["beneficial ownership", "W-9", "W-8", "bank detail verification"],
+      "leakage_terms": ["supplier onboarding", "documentation readiness", "accounts payable"],
+      "tags": ["procurement", "supplier-management"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "strategic sourcing bid evaluation",
+      "prompt": "A strategic sourcing team needs a bid evaluation workspace where procurement leads collect RFP responses, technical evaluators score requirements, finance reviewers compare should-cost models, and business sponsors select a preferred bidder. The workspace preserves conflict declarations and scoring rationale. The first release issues a reviewed evaluation summary; it excludes supplier award, negotiations, purchase orders, and contract signature.",
+      "required_terms": ["RFP responses", "technical evaluators", "should-cost", "conflict declarations"],
+      "leakage_terms": ["bid evaluation", "preferred bidder", "scoring rationale"],
+      "tags": ["procurement", "strategic-sourcing"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "purchase order change review",
+      "prompt": "A manufacturing procurement team needs a purchase order change review queue for buyers, plant requesters, and finance approvers. Users compare original line items, revised quantities, delivery dates, price variance, and supplier correspondence before a change recommendation is approved. The first release captures review evidence and status; it excludes modifying purchase orders, receiving goods, invoice matching, and supplier payment.",
+      "required_terms": ["purchase order", "revised quantities", "price variance", "supplier correspondence"],
+      "leakage_terms": ["change review", "line items", "change recommendation"],
+      "tags": ["procurement", "purchase-to-pay"],
+      "stressors": ["noun-verb-homonym", "path-grant", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "workforce accommodation request coordination",
+      "prompt": "An HR operations team needs an accommodation request coordination workspace for employees, HR case managers, workplace services, and managers. The workspace records functional limitation information, accommodation options, interactive process notes, and implementation confirmation while limiting sensitive access. The first release tracks case progress and agreed actions; it excludes medical diagnosis, benefit eligibility decisions, payroll changes, and legal advice.",
+      "required_terms": ["functional limitation", "accommodation options", "interactive process", "implementation confirmation"],
+      "leakage_terms": ["accommodation request", "HR case managers", "agreed actions"],
+      "tags": ["hr-operations", "employee-relations"],
+      "stressors": ["modal-expert-lens", "multi-role-tribunal", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "international assignment readiness",
+      "prompt": "A global mobility team needs an international assignment readiness workspace for HR partners, immigration coordinators, tax mobility specialists, and destination managers. It tracks assignment letters, work authorization status, relocation milestones, host payroll readiness, and employee acknowledgments. The first release reports readiness exceptions and owner commitments; it excludes visa filing, tax advice, payroll activation, travel booking, and immigration decisions.",
+      "required_terms": ["international assignment", "work authorization", "host payroll", "employee acknowledgments"],
+      "leakage_terms": ["global mobility", "relocation milestones", "readiness exceptions"],
+      "tags": ["hr-operations", "global-mobility"],
+      "stressors": ["path-grant", "multi-role-tribunal", "long-first-path", "registry-contract-pressure"]
+    },
+    {
+      "name": "workforce restructuring consultation tracker",
+      "prompt": "An HR operations group needs a restructuring consultation tracker for HR business partners, employee relations, finance, and regional managers. Users prepare affected-role lists, consultation timelines, selection criteria evidence, severance policy references, and manager attestations for review. The first release records planning completeness and approval history; it excludes selecting employees, issuing notices, calculating severance, and making employment decisions.",
+      "required_terms": ["consultation timelines", "selection criteria", "severance policy", "manager attestations"],
+      "leakage_terms": ["restructuring consultation", "affected-role", "approval history"],
+      "tags": ["hr-operations", "workforce-planning"],
+      "stressors": ["noun-verb-homonym", "modal-expert-lens", "domain-depth-obligations", "final-memory-pressure"]
+    },
+    {
+      "name": "learning compliance certification register",
+      "prompt": "A regulated enterprise needs a learning compliance certification register for learners, line managers, training administrators, and compliance reviewers. The register maps mandatory curricula, prerequisite courses, certificate expiration, assessment evidence, and exception approvals to each role. The first release shows certification readiness and exceptions; it excludes course delivery, exam scoring, access suspension, and performance management action.",
+      "required_terms": ["mandatory curricula", "prerequisite courses", "certificate expiration", "assessment evidence"],
+      "leakage_terms": ["certification register", "exception approvals", "certification readiness"],
+      "tags": ["hr-operations", "learning-compliance"],
+      "stressors": ["path-grant", "multi-role-tribunal", "atlas-label-pressure", "latency-pressure"]
+    },
+    {
+      "name": "internal audit planning universe",
+      "prompt": "An internal audit function needs an audit planning universe workspace for audit directors, risk owners, finance leaders, and audit committee coordinators. It consolidates auditable entities, prior findings, risk ratings, regulatory themes, and management requests before the annual plan is recommended. The first release produces a traceable planning proposal; it excludes audit execution, audit committee approval, and management remediation decisions.",
+      "required_terms": ["auditable entities", "prior findings", "risk ratings", "audit committee"],
+      "leakage_terms": ["audit planning", "annual plan", "planning proposal"],
+      "tags": ["audit", "assurance-planning"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "audit evidence request portal",
+      "prompt": "An audit team needs an evidence request portal where auditors issue requests, control owners submit artifacts, and quality reviewers verify completeness. Every request must retain population criteria, period under review, source-system reference, and response due date before the auditor accepts evidence. The first release manages request status and acceptance evidence; it excludes direct system extraction, audit conclusions, and report publication.",
+      "required_terms": ["population criteria", "period under review", "source-system", "response due date"],
+      "leakage_terms": ["evidence request", "control owners", "acceptance evidence"],
+      "tags": ["audit", "evidence-management"],
+      "stressors": ["path-grant", "noun-verb-homonym", "long-first-path", "final-memory-pressure"]
+    },
+    {
+      "name": "continuous controls alert review",
+      "prompt": "A finance controls team needs a continuous controls alert review workspace for analysts, process owners, and internal audit observers. It groups duplicate-payment indicators, segregation-of-duties conflicts, journal entry anomalies, and rule version evidence before a reviewer dispositions an alert. The first release records triage and disposition rationale; it excludes transaction blocking, rule deployment, recovery action, and fraud determinations.",
+      "required_terms": ["duplicate-payment", "segregation-of-duties", "journal entry", "rule version"],
+      "leakage_terms": ["controls alert", "disposition rationale", "internal audit"],
+      "tags": ["audit", "continuous-controls"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "audit issue validation workflow",
+      "prompt": "An internal audit organization needs an issue validation workflow for audit leads, management action owners, and independent validators. The workflow captures root cause statements, corrective action milestones, validation test steps, and residual risk commentary before an issue is closed or reopened. The first release preserves validation evidence and final status; it excludes remediation execution, policy approval, and audit rating changes.",
+      "required_terms": ["root cause", "corrective action", "validation test", "residual risk"],
+      "leakage_terms": ["issue validation", "action owners", "final status"],
+      "tags": ["audit", "issue-management"],
+      "stressors": ["modal-expert-lens", "path-grant", "domain-depth-obligations", "atlas-label-pressure"]
+    },
+    {
+      "name": "scope 3 supplier emissions evidence",
+      "prompt": "A sustainability reporting team needs a Scope 3 supplier emissions evidence workspace for procurement, sustainability analysts, data stewards, and assurance reviewers. It records supplier activity data, emission factors, calculation methodology, and assurance exceptions for a reporting period. The first release makes reported figures traceable and reviewable; it excludes emissions calculation engines, public disclosure submission, supplier scoring, and carbon credit purchases.",
+      "required_terms": ["Scope 3", "supplier activity data", "emission factors", "calculation methodology"],
+      "leakage_terms": ["supplier emissions", "assurance reviewers", "reporting period"],
+      "tags": ["sustainability", "carbon-accounting"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "domain-depth-obligations", "registry-contract-pressure"]
+    },
+    {
+      "name": "climate transition plan governance",
+      "prompt": "A corporate sustainability office needs a climate transition plan governance record for strategy leaders, finance planners, operations owners, and board secretariat staff. The record aligns decarbonization initiatives, capital dependencies, interim targets, and scenario assumptions before governance review. The first release tracks commitments and evidence of review; it excludes target setting, investment approval, emissions forecasts, and external communications.",
+      "required_terms": ["climate transition plan", "decarbonization initiatives", "interim targets", "scenario assumptions"],
+      "leakage_terms": ["sustainability office", "capital dependencies", "governance review"],
+      "tags": ["sustainability", "climate-governance"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "final-memory-pressure", "atlas-label-pressure"]
+    },
+    {
+      "name": "water stewardship site assessment",
+      "prompt": "A manufacturing company needs a water stewardship site assessment workspace for environmental managers, plant engineers, community relations, and assurance reviewers. Each site records basin context, water withdrawal volumes, effluent quality data, and mitigation commitments before a corporate reviewer accepts the assessment. The first release provides assessment evidence and gaps; it excludes sensor collection, permit decisions, capital projects, and environmental compliance advice.",
+      "required_terms": ["basin context", "water withdrawal", "effluent quality", "mitigation commitments"],
+      "leakage_terms": ["water stewardship", "site assessment", "assessment evidence"],
+      "tags": ["sustainability", "water-management"],
+      "stressors": ["scientific-casing", "path-grant", "domain-depth-obligations", "latency-pressure"]
+    },
+    {
+      "name": "sustainable finance taxonomy eligibility",
+      "prompt": "A sustainable finance team needs a taxonomy eligibility review workspace for deal teams, ESG specialists, risk officers, and disclosure reviewers. Users attach use-of-proceeds evidence, technical screening criteria, DNSH assessment, and minimum safeguards findings before a classification is recommended. The first release records review readiness and evidence; it excludes investment approval, portfolio labeling, regulatory disclosure filing, and financial advice.",
+      "required_terms": ["use-of-proceeds", "technical screening criteria", "DNSH", "minimum safeguards"],
+      "leakage_terms": ["taxonomy eligibility", "ESG specialists", "classification"],
+      "tags": ["sustainability", "sustainable-finance"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "multi-role-tribunal", "final-memory-pressure"]
+    },
+    {
+      "name": "enterprise SaaS renewal health review",
+      "prompt": "A B2B SaaS company needs an enterprise renewal health review for customer success managers, account executives, support leaders, and finance partners. The record combines adoption milestones, contracted entitlements, support escalation history, renewal forecast, and executive sponsor notes before a renewal plan is accepted. The first release creates a shared account review; it excludes billing changes, contract amendments, outreach automation, and pricing approval.",
+      "required_terms": ["adoption milestones", "contracted entitlements", "renewal forecast", "executive sponsor"],
+      "leakage_terms": ["renewal health", "customer success", "account review"],
+      "tags": ["b2b-saas", "customer-success"],
+      "stressors": ["multi-role-tribunal", "long-first-path", "registry-contract-pressure", "latency-pressure"]
+    },
+    {
+      "name": "SaaS data processing addendum intake",
+      "prompt": "A B2B SaaS legal operations team needs a data processing addendum intake for sales, privacy, security, and customer procurement contacts. It captures controller-processor roles, subprocessor list requests, transfer mechanism evidence, and security questionnaire references before a reviewer marks the request complete. The first release organizes intake and review status; it excludes contract negotiation, legal interpretation, signature collection, and customer communications.",
+      "required_terms": ["data processing addendum", "controller-processor", "subprocessor", "transfer mechanism"],
+      "leakage_terms": ["SaaS", "security questionnaire", "review status"],
+      "tags": ["b2b-saas", "privacy-operations"],
+      "stressors": ["scientific-casing", "modal-expert-lens", "path-grant", "domain-depth-obligations"]
+    },
+    {
+      "name": "SaaS service incident customer impact review",
+      "prompt": "A B2B SaaS operations team needs a customer impact review for service incidents involving SLO breaches, tenant impact, support case clusters, and post-incident action items. Incident commanders, support leads, and account teams review evidence before an impact statement is approved. The first release records the internal review and action ownership; it excludes incident response execution, customer notification delivery, root-cause determination, and status page publishing.",
+      "required_terms": ["SLO", "tenant impact", "support case", "incident commanders"],
+      "leakage_terms": ["customer impact", "impact statement", "action ownership"],
+      "tags": ["b2b-saas", "service-operations"],
+      "stressors": ["scientific-casing", "multi-role-tribunal", "noun-verb-homonym", "final-memory-pressure"]
+    },
+    {
+      "name": "SaaS marketplace partner compliance review",
+      "prompt": "A B2B SaaS marketplace team needs a marketplace partner compliance review for partnership managers, security assessors, finance operations, and marketplace governance. The review tracks app permission scopes, data retention statements, revenue-share terms, and support ownership before a partner listing is recommended. The first release produces a reviewed listing packet; it excludes app installation, marketplace publication, payment settlement, and runtime permission enforcement.",
+      "required_terms": ["app permission scopes", "data retention", "revenue-share", "support ownership"],
+      "leakage_terms": ["marketplace partner", "partner listing", "listing packet"],
+      "tags": ["b2b-saas", "partner-operations"],
+      "stressors": ["path-grant", "multi-role-tribunal", "atlas-label-pressure", "registry-contract-pressure"]
+    }
+  ]
+}
