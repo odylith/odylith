@@ -73,6 +73,7 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert package_case.required_terms == ("package", "dependency", "provenance", "waiver")
     sparse_case = next(case for case in cases if case.name == "sparse disclosure confirmation")
     assert "## State object\nReport." in sparse_case.confirmed_intent_markdown
+    assert "Personalized notification delivery is outside the first release." in sparse_case.confirmed_intent_markdown
     assert "## Proof boundary\nEvidence custody and embargo decision." in sparse_case.confirmed_intent_markdown
     assert sparse_case.required_terms == ("disclosure", "council", "evidence", "embargo")
     quantum_case = next(case for case in cases if case.name == "quantum communication lab")

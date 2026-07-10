@@ -193,6 +193,9 @@ The first release records evidence only.
 ## Ambiguities
 Notification delivery is not included.
 
+## Non-goals
+Personalized notification delivery is outside the first release.
+
 ## Proof boundary
 Evidence custody and embargo decision.
 """.strip(),
