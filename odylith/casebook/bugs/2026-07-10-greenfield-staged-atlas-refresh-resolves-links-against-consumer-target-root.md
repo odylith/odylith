@@ -48,6 +48,8 @@
 
 - Verification: Focused path-custody and slop tests passed. A source-local replay of the preserved flood-shelter intent compiled a creation-ready transaction in 35.86 seconds with quality and validation passed, 57 sealed writes, six Atlas previews, repository-relative backlog links, no patch ledger, and no model repair. The final confirmed command completed in 0.52 seconds and wrote four workstreams, three component specs, and six diagrams through the commit-only path. Committed-dist rebuild and full installed matrix replay remain release gates.
 
+- Release Build Finding: The first committed-head package build stopped at the platform-domain leakage gate because the public Domain Intelligence living spec repeated the private QA scenario label. The spec now records only generic cross-domain proof language; public product contracts must never carry scenario fixture names even when the underlying replay is valid.
+
 - Prevention: Keep governed catalog links repository-relative at the compiler owner, reject cross-root absolute paths before sealing, and exercise target and staging roots as intentionally different repositories in regression and installed release proof.
 
 - Agent Guardrails: Do not move this failure after confirmation, bypass Atlas validation, lower the Tribunal, or ask the consumer to repair links. Fix stage-root custody before compiling the confirmation transaction.

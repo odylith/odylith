@@ -55,9 +55,10 @@ This section captures synchronized requirement and contract signals derived from
   before Tribunal review. The evidence-list splitter also keeps terminal result
   nouns attached without swallowing result-led finite actions found by
   adversarial review. Proof passed 174 transaction/proposal tests and 165
-  parser/slop tests. A real flood-shelter transaction compiled in 35.86 seconds
-  with no repair ledger or model call, then committed its sealed package in
-  0.52 seconds with four workstreams, three component specs, and six diagrams.
+  parser/slop tests. A representative cross-domain transaction compiled in
+  35.86 seconds with no repair ledger or model call, then committed its sealed
+  package in 0.52 seconds with four workstreams, three component specs, and six
+  diagrams.
   Fresh committed-dist matrix replay remains the release gate.
 
 - 2026-07-09: Sealed the exact repository mutation into the pre-confirm ProductCreateTransaction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Diagram: D-045)
