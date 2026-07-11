@@ -1161,7 +1161,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2665,7 +2665,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2785,7 +2785,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2905,7 +2905,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3025,7 +3025,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3446,7 +3446,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3566,7 +3566,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3686,7 +3686,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4243,7 +4243,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4843,7 +4843,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -7934,7 +7934,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-07-11 02:49:29Z",
+  "generated_utc": "2026-07-11 04:08:51Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -8755,7 +8755,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9274,7 +9274,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10013,7 +10013,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10752,7 +10752,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -11378,7 +11378,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -12551,7 +12551,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-001 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -14200,7 +14200,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-003 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -14960,7 +14960,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-004 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -15785,7 +15785,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-005 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -21524,7 +21524,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-012 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -22382,7 +22382,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-013 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -25672,7 +25672,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-017 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -26518,7 +26518,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-018 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -31346,7 +31346,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-024 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -36122,7 +36122,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-030 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -36941,7 +36941,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-031 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -37805,7 +37805,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-032 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -58254,7 +58254,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-058 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -59097,7 +59097,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-059 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -61564,7 +61564,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-062 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -61619,7 +61619,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -62423,7 +62423,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-063 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -67159,7 +67159,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-069 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -69543,7 +69543,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-072 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -73894,7 +73894,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-078 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Compass is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -78576,7 +78576,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -90553,7 +90553,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-099 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Governance Intervention Engine is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Odylith is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -95264,7 +95264,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-105 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -98337,7 +98337,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-109 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -99175,7 +99175,7 @@
       "operator_readout": {
         "action": "Rebind operator attention to the actual blocker and reconcile B-110 against that higher-risk scope.",
         "action_kind": "rebind_scope",
-        "issue": "This is not the scope to watch first; Atlas is carrying the sharper operator risk.",
+        "issue": "This is not the scope to watch first; Casebook is carrying the sharper operator risk.",
         "primary_scenario": "false_priority",
         "proof_refs": [
           {
@@ -100030,7 +100030,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -100874,7 +100874,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -101718,7 +101718,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -102562,7 +102562,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -104142,7 +104142,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -122753,7 +122753,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -126434,9 +126434,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-07-06T18:39:47-07:00",
+        "latest_event_ts_iso": "2026-07-11T02:56:45Z",
         "latest_explicit_ts_iso": "2026-07-06T18:39:47-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_teaser",
         "linked_components": [
           "casebook"
         ],
@@ -126611,7 +126611,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -127048,7 +127048,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -127491,7 +127491,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -127880,7 +127880,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -129872,9 +129872,9 @@
         "basis": "explicit",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-07-10T19:47:19-07:00",
+        "latest_event_ts_iso": "2026-07-11T02:56:45Z",
         "latest_explicit_ts_iso": "2026-07-10T19:47:19-07:00",
-        "latest_signal_kind": "implementation",
+        "latest_signal_kind": "intervention_teaser",
         "linked_components": [
           "odylith"
         ],
@@ -130150,7 +130150,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -130535,7 +130535,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -130988,7 +130988,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -132906,7 +132906,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -135620,7 +135620,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -143109,7 +143109,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "16372ff6d4ed7bfa52cb533001c66e2d48954a60",
+          "local_head": "c5d33897d58a4350a169debf556d479098382687",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
