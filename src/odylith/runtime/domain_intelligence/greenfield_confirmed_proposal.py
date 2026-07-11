@@ -111,7 +111,7 @@ def build_confirmed_greenfield_proposal(
     success_metrics = confirmed_intent_list(confirmed_intent, "success_metrics")
     evidence_requirements = list(
         evidence_anchor_phrases(
-            prompt,
+            "",
             source_anchors=confirmed_intent_list(confirmed_intent, "evidence_requirements"),
         )
     )

@@ -26,6 +26,22 @@ _EVALUATION_SIGNAL_TERMS = frozenset(
     """.split()
 )
 _EVALUATION_STRONG_TERMS = _EVALUATION_SIGNAL_TERMS - {"benchmark", "research", "researcher"}
+_PRODUCT_REQUEST_VERBS = frozenset(
+    {
+        "build",
+        "create",
+        "design",
+        "draft",
+        "generate",
+        "make",
+        "plan",
+        "propose",
+        "scaffold",
+        "write",
+    }
+)
+_CONTEXTUAL_EVIDENCE_CONNECTORS = frozenset({"with", "including", "featuring"})
+_CONTEXTUAL_EVIDENCE_ACTION_TOKENS = frozenset({"can", "must", "should", "that", "to", "where", "who", "will"})
 _EVALUATION_CONTEXT_TERMS = frozenset(
     """
     baseline benchmark calibration confidence dataset experiment experimental inference lab measurement method metric model
@@ -211,6 +227,10 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
     for sentence in _sentences(value):
         if contains_word_sense_metadata_clause(sentence):
             continue
+        for anchor in _contextual_product_evidence_anchors(sentence):
+            normalized = _normalize_anchor(anchor)
+            if _meaningful_anchor(normalized):
+                rows.append(normalized)
         if not (
             is_requirement_control_step(sentence)
             or contains_requirement_control_clause(sentence)
@@ -225,6 +245,29 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
             if _meaningful_anchor(normalized):
                 rows.append(normalized)
     return tuple(dict.fromkeys(rows))[:12]
+
+
+def _contextual_product_evidence_anchors(value: str) -> tuple[str, ...]:
+    """Keep concise setup nouns without turning setup prose into the first path."""
+
+    text = clean_text(value).strip(" .")
+    words = text.split()
+    if not words or _word_key(words[0]) not in _PRODUCT_REQUEST_VERBS:
+        return ()
+    for match in re.finditer(r"\b(with|including|featuring)\b", text, flags=re.IGNORECASE):
+        if _word_key(match.group(1)) not in _CONTEXTUAL_EVIDENCE_CONNECTORS:
+            continue
+        anchors = _anchor_list_items(text[match.end() :])
+        if not anchors:
+            continue
+        return tuple(
+            anchor
+            for anchor in anchors
+            if not ({_word_key(word) for word in anchor.split()} & _CONTEXTUAL_EVIDENCE_ACTION_TOKENS)
+        )
+    return ()
+
+
 def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_source: str) -> bool:
     text = " ".join(clean_text(value) for value in (source, title_source, first_path_source))
     tokens = {_word_key(word) for word in text.replace("/", " ").split()}

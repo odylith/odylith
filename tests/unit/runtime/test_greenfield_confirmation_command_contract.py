@@ -214,5 +214,6 @@ def test_confirmed_proposal_uses_edited_intent_not_stale_prompt_terms(tmp_path: 
     assert "Lab Evidence Review Workspace" in rendered
     assert "release-readiness decision" in rendered
     assert "orthopedic implant" not in rendered.casefold()
+    assert "wear-cycle telemetry" not in rendered.casefold()
     assert "fatigue-test" not in rendered.casefold()
     assert "crack propagation" not in rendered.casefold()

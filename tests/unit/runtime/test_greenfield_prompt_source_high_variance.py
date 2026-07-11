@@ -407,6 +407,18 @@ def test_evidence_anchors_ignore_word_sense_metadata_requirements() -> None:
     assert "so ownership must be explicit" not in anchors
 
 
+def test_evidence_anchors_keep_command_context_nouns_without_source_prose() -> None:
+    prompt = (
+        "Make a wedding weekend guide for guests traveling to a small town with limited taxis, a rehearsal dinner, "
+        "and an accessibility request. A guest RSVPs with a dietary choice and reserves a shuttle seat."
+    )
+
+    anchors = evidence_anchor_phrases(prompt)
+
+    assert anchors == ("limited taxis", "rehearsal dinner", "accessibility request")
+    assert all("guests traveling to a small town" not in anchor for anchor in anchors)
+
+
 def test_prompt_source_prioritizes_where_workflow_over_expert_lens_sentence() -> None:
     prompt = (
         "Create a greenfield proposal for maternal health referral priority. Focus on a governed workflow "

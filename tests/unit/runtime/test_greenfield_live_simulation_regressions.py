@@ -194,7 +194,11 @@ def test_wedding_context_phrase_does_not_become_the_first_path_actor(tmp_path: P
 
     assert str(proposal["intent"]["first_path"]).startswith("A guest RSVPs")
     assert proposal["semantic_model"]["first_path_contract"]["actor"] == "Guest"
+    for term in ("limited taxis", "rehearsal dinner", "accessibility request"):
+        assert term in proposal["intent"]["evidence_requirements"]
+        assert term in rendered.casefold()
     assert "Guests Traveling to a" not in rendered
+    assert "guests traveling to a small town" not in rendered.casefold()
     assert ", handles missing or invalid input" not in str(proposal["intent"]["proof_boundary"])
     assert "It explains missing or invalid input" in str(proposal["intent"]["proof_boundary"])
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()

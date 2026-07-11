@@ -6,6 +6,7 @@ Last updated (UTC): 2026-07-11
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-239 | 2026-07-11 | Greenfield setup evidence was dropped before confirm and replayed after confirma | P1 | domain-intelligence | Open | [2026-07-11-greenfield-setup-evidence-was-dropped-before-confirm-and-replayed-after-confirma.md](2026-07-11-greenfield-setup-evidence-was-dropped-before-confirm-and-replayed-after-confirma.md) |
 | CB-237 | 2026-07-11 | Greenfield recovered proof mixed a noun result with finite action labels | P2 | odylith | Open | [2026-07-11-greenfield-recovered-proof-mixed-a-noun-result-with-finite-action-labels.md](2026-07-11-greenfield-recovered-proof-mixed-a-noun-result-with-finite-action-labels.md) |
 | CB-238 | 2026-07-11 | Greenfield prompt recovery dropped supplied on call role from domain evidence | P2 | odylith | Open | [2026-07-11-greenfield-prompt-recovery-dropped-supplied-on-call-role-from-domain-evidence.md](2026-07-11-greenfield-prompt-recovery-dropped-supplied-on-call-role-from-domain-evidence.md) |
 | CB-236 | 2026-07-11 | Greenfield contextual gerund became a radar actor and clipped article tail | P2 | odylith | Open | [2026-07-11-greenfield-contextual-gerund-became-a-radar-actor-and-clipped-article-tail.md](2026-07-11-greenfield-contextual-gerund-became-a-radar-actor-and-clipped-article-tail.md) |
