@@ -768,10 +768,9 @@ def _run_compiled_greenfield_create(
     ]
     if repair_tier:
         compile_command.extend(["--repair-tier", repair_tier])
-    started = time.perf_counter()
     compiled = _run(cwd=repo_root, env=env, command=compile_command, timeout=timeout)
     if compiled.returncode != 0:
-        return compiled, round(time.perf_counter() - started, 3)
+        return compiled, 0.0
     compiled_payload = _parse_json_object(compiled.stdout)
     transaction_summary = _as_mapping(compiled_payload.get("product_create_transaction"))
     transaction_hash = str(transaction_summary.get("transaction_hash") or "").strip()
@@ -788,8 +787,9 @@ def _run_compiled_greenfield_create(
                 ),
                 stderr="",
             ),
-            round(time.perf_counter() - started, 3),
+            0.0,
         )
+    started = time.perf_counter()
     create = _run(
         cwd=repo_root,
         env=env,

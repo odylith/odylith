@@ -1889,6 +1889,37 @@ def test_invalid_greenfield_matrix_install_mode_is_rejected() -> None:
         module._validated_install_mode("partial")  # noqa: SLF001
 
 
+def test_compiled_greenfield_create_times_commit_only_phase(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    clock = {"seconds": 0.0}
+    compiled = SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps({"product_create_transaction": {"transaction_hash": "sealed-hash"}}),
+        stderr="",
+    )
+    created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    def fake_run(*, command, **_kwargs):
+        if "compile-transaction" in command:
+            clock["seconds"] += 69.0
+            return compiled
+        clock["seconds"] += 0.2
+        return created
+
+    monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setattr(module.time, "perf_counter", lambda: clock["seconds"])
+
+    response, create_seconds = module._run_compiled_greenfield_create(  # noqa: SLF001
+        repo_root=tmp_path,
+        env={},
+        prompt="Create a concise project.",
+        timeout=120,
+    )
+
+    assert response is created
+    assert create_seconds == 0.2
+
+
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:
     module = _module()
 
