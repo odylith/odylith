@@ -356,7 +356,7 @@ def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool
         return ""
     model = first_path_model(text)
     gerund_actor, gerund_action = _actor_gerund_action_parts(text)
-    if not first_path_has_action_signal(text) and not (gerund_actor and gerund_action):
+    if not first_path_has_action_signal(text) and not model.material_action and not (gerund_actor and gerund_action):
         return ""
     if len(model.steps) >= 2:
         if (
@@ -1416,6 +1416,13 @@ def _recovered_title(outcome: str) -> str:
 
 def _title_source_from_outcome(value: str) -> str:
     text = _clean(value).strip(" .")
+    text = re.sub(
+        r"^(?:a|an|the)?\s*[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
+        r"(?:(?:needs?|must)\s+to\s+|(?:is|are)\s+)(?:[A-Za-z]+ing\s+)?",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
     match = re.match(
         r"^(?:accept|approve|capture|collect|complete|create|display|generate|issue|log|prepare|produce|publish|record|return|save|show|submit|surface|verify)\s+(?P<object>.+)$",
         text,
@@ -1429,6 +1436,7 @@ def _title_source_from_outcome(value: str) -> str:
         head_words = _words(head)
         if len(head_words) >= 3 and head_words[-1].casefold() in {"decision", "packet", "record", "report", "summary"}:
             text = head
+    text = re.split(r"\s+(?:between|after|before|through)\s+", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
     return text
 
 

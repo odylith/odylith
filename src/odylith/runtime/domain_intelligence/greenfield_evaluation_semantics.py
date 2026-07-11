@@ -227,7 +227,12 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
     for sentence in _sentences(value):
         if contains_word_sense_metadata_clause(sentence):
             continue
-        for anchor in _contextual_product_evidence_anchors(sentence):
+        for anchor in (
+            *_contextual_product_evidence_anchors(sentence),
+            *_coordinated_action_evidence_anchors(sentence),
+            *_contextual_difference_anchors(sentence),
+            *_preservation_list_anchors(sentence),
+        ):
             normalized = _normalize_anchor(anchor)
             if _meaningful_anchor(normalized):
                 rows.append(normalized)
@@ -252,12 +257,14 @@ def _contextual_product_evidence_anchors(value: str) -> tuple[str, ...]:
 
     text = clean_text(value).strip(" .")
     words = text.split()
-    if not words or _word_key(words[0]) not in _PRODUCT_REQUEST_VERBS:
-        return ()
+    command_led = bool(words and _word_key(words[0]) in _PRODUCT_REQUEST_VERBS)
     for match in re.finditer(r"\b(with|including|featuring)\b", text, flags=re.IGNORECASE):
         if _word_key(match.group(1)) not in _CONTEXTUAL_EVIDENCE_CONNECTORS:
             continue
-        anchors = _anchor_list_items(text[match.end() :])
+        tail = text[match.end() :]
+        anchors = _contextual_difference_anchors(tail) if not command_led else _anchor_list_items(tail)
+        if not anchors and command_led:
+            anchors = _anchor_list_items(tail)
         if not anchors:
             continue
         return tuple(
@@ -266,6 +273,51 @@ def _contextual_product_evidence_anchors(value: str) -> tuple[str, ...]:
             if not ({_word_key(word) for word in anchor.split()} & _CONTEXTUAL_EVIDENCE_ACTION_TOKENS)
         )
     return ()
+
+
+def _contextual_difference_anchors(value: str) -> tuple[str, ...]:
+    text = clean_text(value).strip(" .")
+    match = re.search(
+        r"\b(?:whether\s+)?differences?\s+in\s+(?P<items>.+?)\s+"
+        r"(?:prevent|prevents|block|blocks|change|changes|affect|affects)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ()
+    return tuple(
+        item.strip(" .")
+        for item in re.split(r"\s+(?:and|or)\s+", match.group("items"), flags=re.IGNORECASE)
+        if item.strip(" .")
+    )
+
+
+def _coordinated_action_evidence_anchors(value: str) -> tuple[str, ...]:
+    text = clean_text(value).strip(" .")
+    if "," not in text:
+        return ()
+    anchors: list[str] = []
+    for clause in re.split(r"\s*,\s*|\s+and\s+", text, flags=re.IGNORECASE):
+        match = re.search(
+            r"\b(?:approves?|captures?|compares?|confirms?|records?|reviews?|tracks?|verifies?)\s+"
+            r"(?:the\s+)?(?P<object>[A-Za-z][A-Za-z0-9 /&'-]{1,56})$",
+            clause,
+            flags=re.IGNORECASE,
+        )
+        if match:
+            anchors.append(match.group("object").strip(" ."))
+    return tuple(anchors)
+
+
+def _preservation_list_anchors(value: str) -> tuple[str, ...]:
+    text = clean_text(value).strip(" .")
+    match = re.search(
+        r"\b(?:keep|preserve|separate|distinguish)\s+(?P<items>.+?)\s+"
+        r"(?:distinct|separate|separately)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return _anchor_list_items(match.group("items")) if match else ()
 
 
 def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_source: str) -> bool:

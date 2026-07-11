@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
@@ -177,15 +178,27 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     grant_actor, grant_first_path = _path_grant_actor_action(text)
     workflow_actor, workflow_first_path = _workflow_where_actor_action(text)
     actor, actor_led_first_path = _actor_led_relative_clause(text)
+    direct_actor, direct_first_path = _direct_actor_action_sentence(text)
     context_actor = _for_role_actor_context(text)
-    first_path_source = grant_first_path or workflow_first_path or actor_led_first_path or _first_path_source_from_text(text)
+    first_path_source = (
+        grant_first_path
+        or workflow_first_path
+        or actor_led_first_path
+        or direct_first_path
+        or _first_path_source_from_text(text)
+    )
     first_path = _strip_leading_contextual_gerund_sentence(_strip_release_proof_tail(first_path_source))
     resolved_actor = next(
-        (candidate for candidate in (grant_actor, workflow_actor, actor, context_actor) if _is_bounded_prompt_actor(candidate)),
+        (
+            candidate
+            for candidate in (grant_actor, workflow_actor, actor, direct_actor, context_actor)
+            if _is_bounded_prompt_actor(candidate)
+        ),
         "",
     )
     return PromptIntentSource(
-        title=_project_title_source_from_words(words, start=start, command_led=command_led),
+        title=_project_title_source_from_words(words, start=start, command_led=command_led)
+        or _direct_path_title_source(direct_first_path, actor=direct_actor),
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
@@ -224,6 +237,63 @@ def _first_path_source_from_text(value: str) -> str:
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
             return _strip_release_proof_tail(candidate)
     return _strip_release_proof_tail(text)
+
+
+def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
+    """Recover the first declarative user path before trailing proof constraints."""
+
+    for sentence in _sentence_fragments(value):
+        text = clean_markdown_text(sentence).strip(" .")
+        match = re.match(
+            r"^(?P<actor>(?:a|an|the)?\s*[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"
+            r"(?:(?P<need>(?:needs?|must)\s+to)\s+|(?P<gerund>is|are)\s+)(?P<action>[A-Za-z][A-Za-z0-9 /&'(),-]{4,})$",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            continue
+        actor = _strip_leading_actor_article(match.group("actor"))
+        action = re.split(r"\s+(?:after|before|between)\s+", match.group("action"), maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+        if not actor or not action or not _is_bounded_prompt_actor(actor):
+            continue
+        if match.group("gerund"):
+            verb, _separator, tail = action.partition(" ")
+            action = f"{_base_direct_gerund(verb) or verb} {tail}".strip(" .")
+            return actor, f"{actor} can {action}"
+        return actor, f"{actor} {action}"
+    return "", ""
+
+
+def _base_direct_gerund(value: str) -> str:
+    token = str(value or "").casefold().strip(".,:;")
+    if not token.endswith("ing") or len(token) <= 5:
+        return ""
+    stem = token[:-3]
+    if len(stem) >= 3 and stem[-1:] == stem[-2:-1]:
+        return stem[:-1]
+    if stem.endswith(("at", "it", "iz", "os", "v")):
+        return f"{stem}e"
+    return stem
+
+
+def _direct_path_title_source(value: str, *, actor: str) -> str:
+    """Name the product object in a direct actor-led first path."""
+
+    words = _request_words(value)
+    actor_words = _request_words(actor)
+    index = len(actor_words)
+    if index < len(words) and _word_key(words[index]) in {"can", "must", "need", "needs", "to", "will"}:
+        index += 1
+    title_words: list[str] = []
+    for word in words[index + 1 :]:
+        if _word_key(word) in {"after", "before", "between", "through", "with"}:
+            break
+        title_words.append(word.strip(".,:;"))
+    while title_words and _word_key(title_words[0]) in {"a", "an", "the", "one"}:
+        title_words.pop(0)
+    if 2 <= len(title_words) <= 7:
+        return " ".join(title_words).strip(" .")
+    return ""
 
 
 def _request_content_start(words: list[str]) -> tuple[int, bool]:

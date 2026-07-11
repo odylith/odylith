@@ -229,6 +229,47 @@ def test_on_call_role_context_is_preserved_in_the_compiled_package(tmp_path: Pat
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 
 
+@pytest.mark.parametrize(
+    ("prompt", "required_terms"),
+    (
+        (
+            "A mining company needs to allocate one critical haul-truck hydraulic pump between two sites after both "
+            "report failures. The maintenance planner verifies the part number, the reliability engineer compares "
+            "failure analysis, and the site superintendent approves the transport priority. Keep the serialized pump, "
+            "equipment downtime, warranty status, and transfer authorization distinct.",
+            ("hydraulic pump", "part number", "failure analysis", "transfer authorization"),
+        ),
+        (
+            "A proteomics team is transferring a DIA mass spectrometry method between two laboratories. The product "
+            "must capture peptide library version, retention-time alignment, iRT standards, instrument tuning, false "
+            "discovery rate, and replicate precision. Method owners need to know whether differences in collision energy "
+            "or column lot prevent a comparable method transfer.",
+            ("DIA", "iRT standards", "false discovery rate", "collision energy"),
+        ),
+    ),
+)
+def test_direct_product_need_recovery_preserves_domain_contract(
+    tmp_path: Path,
+    prompt: str,
+    required_terms: tuple[str, ...],
+) -> None:
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    rendered = "\n".join(
+        [
+            *prewrite.package.backlog_result["idea_files"].values(),
+            *prewrite.package.rendered_component_specs.values(),
+            *prewrite.package.rendered_atlas_sources.values(),
+            prewrite.package.project_brief_record_text,
+        ]
+    ).casefold()
+
+    assert proposal["intent"]["title"] != "Recovered Product Workspace"
+    assert "representative user" not in str(proposal["intent"]["first_path"]).casefold()
+    for term in required_terms:
+        assert term.casefold() in rendered
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_generic_setup_sentences_do_not_project_as_review_actions() -> None:
     first_path = (
         "A records team opens a reconciliation run. "
