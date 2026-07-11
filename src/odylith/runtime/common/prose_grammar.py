@@ -187,6 +187,7 @@ _INFINITIVE_TO_FINITE = {
     "restore": "restores",
     "return": "returns",
     "review": "reviews",
+    "rsvp": "rsvps",
     "route": "routes",
     "run": "runs",
     "schedule": "schedules",

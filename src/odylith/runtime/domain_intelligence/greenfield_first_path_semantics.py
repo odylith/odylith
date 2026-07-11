@@ -185,10 +185,30 @@ def _drop_leading_context_fragments(steps: Sequence[str]) -> list[str]:
 
 def _is_leading_context_fragment(value: str) -> bool:
     text = _clean(value).strip(" .")
-    if not text or _step_has_action_signal(text):
+    if not text:
+        return False
+    if is_contextual_gerund_phrase(text):
+        return True
+    if _step_has_action_signal(text):
         return False
     return len(label_terms(text)) <= 6
 
+
+def is_contextual_gerund_phrase(value: str) -> bool:
+    """Return true for a descriptive participant phrase, not a product action."""
+
+    text = _clean(value).strip(" .")
+    if not text or re.search(r"\b(?:is|are|was|were|can|must|will)\b", text, flags=re.IGNORECASE):
+        return False
+    return bool(
+        re.match(
+            r"^(?:[A-Za-z][A-Za-z'-]*\s+){0,4}[A-Za-z][A-Za-z'-]*ing\b"
+            r"(?:\s+[A-Za-z][A-Za-z'-]*){0,5}\s+"
+            r"(?:to|through|with|from|at|in|near|between)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 def _step_has_action_signal(value: str) -> bool:
     text = _clean(value).strip(" .")
     return bool(text) and (
@@ -473,4 +493,10 @@ def _sentence_case(value: str) -> str:
 def _unique(values: Sequence[str]) -> list[str]:
     return list(unique_text(_clean(value) for value in values))
 
-__all__ = ["FirstPathModel", "first_path_model", "first_path_steps", "material_first_path_action"]
+__all__ = [
+    "FirstPathModel",
+    "first_path_model",
+    "first_path_steps",
+    "is_contextual_gerund_phrase",
+    "material_first_path_action",
+]

@@ -1,11 +1,14 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-10
+Last updated (UTC): 2026-07-11
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-237 | 2026-07-11 | Greenfield recovered proof mixed a noun result with finite action labels | P2 | odylith | Open | [2026-07-11-greenfield-recovered-proof-mixed-a-noun-result-with-finite-action-labels.md](2026-07-11-greenfield-recovered-proof-mixed-a-noun-result-with-finite-action-labels.md) |
+| CB-238 | 2026-07-11 | Greenfield prompt recovery dropped supplied on call role from domain evidence | P2 | odylith | Open | [2026-07-11-greenfield-prompt-recovery-dropped-supplied-on-call-role-from-domain-evidence.md](2026-07-11-greenfield-prompt-recovery-dropped-supplied-on-call-role-from-domain-evidence.md) |
+| CB-236 | 2026-07-11 | Greenfield contextual gerund became a radar actor and clipped article tail | P2 | odylith | Open | [2026-07-11-greenfield-contextual-gerund-became-a-radar-actor-and-clipped-article-tail.md](2026-07-11-greenfield-contextual-gerund-became-a-radar-actor-and-clipped-article-tail.md) |
 | CB-231 | 2026-07-10 | Malformed compiled receipt can crash reporting after a successful commit | P1 | domain-intelligence | FixedPendingRelease | [2026-07-10-malformed-compiled-receipt-can-crash-reporting-after-a-successful-commit.md](2026-07-10-malformed-compiled-receipt-can-crash-reporting-after-a-successful-commit.md) |
 | CB-229 | 2026-07-10 | Installed matrix does not prove commit only transaction custody | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-07-10-installed-matrix-does-not-prove-commit-only-transaction-custody.md](2026-07-10-installed-matrix-does-not-prove-commit-only-transaction-custody.md) |
 | CB-226 | 2026-07-10 | Greenfield staged atlas refresh resolves links against consumer target root | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-07-10-greenfield-staged-atlas-refresh-resolves-links-against-consumer-target-root.md](2026-07-10-greenfield-staged-atlas-refresh-resolves-links-against-consumer-target-root.md) |

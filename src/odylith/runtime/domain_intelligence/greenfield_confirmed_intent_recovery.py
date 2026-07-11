@@ -489,6 +489,8 @@ def _embedded_first_path_clause(value: str, *, actor: str, force_actor_modal: bo
     if actor_prefix and actor_action and (
         force_actor_modal or (not article_led_prefix and text.casefold().startswith(f"{actor_prefix.casefold()} "))
     ):
+        if force_actor_modal and not _looks_like_actor_subject(_words(actor_prefix)):
+            return f"{_clean(actor) or 'the representative user'} can {actor_action}"
         if force_actor_modal or _actor_led_clause_has_modal(text, actor_prefix):
             return f"{_clean(actor_prefix) or _clean(actor) or 'the representative user'} can {actor_action}"
         return _sentence_case(text)
@@ -633,7 +635,7 @@ def _recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str
     else:
         opening = f"Release 0.0.1 succeeds when {first_path_inline}."
     return (
-        f"{opening} The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
+        f"{opening} The product shows {outcome_object}. It explains missing or invalid input with a clear blocker "
         "and keeps replayable evidence for review."
     )
 

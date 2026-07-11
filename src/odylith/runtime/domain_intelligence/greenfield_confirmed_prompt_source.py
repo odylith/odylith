@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_evidence_requirement
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import WORD_SENSE_REPORTING_CONTENT_VERBS
@@ -176,12 +177,18 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     grant_actor, grant_first_path = _path_grant_actor_action(text)
     workflow_actor, workflow_first_path = _workflow_where_actor_action(text)
     actor, actor_led_first_path = _actor_led_relative_clause(text)
+    context_actor = _for_role_actor_context(text)
     first_path_source = grant_first_path or workflow_first_path or actor_led_first_path or _first_path_source_from_text(text)
+    first_path = _strip_leading_contextual_gerund_sentence(_strip_release_proof_tail(first_path_source))
+    resolved_actor = next(
+        (candidate for candidate in (grant_actor, workflow_actor, actor, context_actor) if _is_bounded_prompt_actor(candidate)),
+        "",
+    )
     return PromptIntentSource(
         title=_project_title_source_from_words(words, start=start, command_led=command_led),
-        first_path=_strip_release_proof_tail(first_path_source),
+        first_path=first_path,
         command_led=command_led,
-        actor=grant_actor or workflow_actor or actor,
+        actor=resolved_actor,
     )
 
 
@@ -636,6 +643,37 @@ def _sentence_fragments(value: str) -> list[str]:
     return [row for row in rows if row]
 
 
+def _strip_leading_contextual_gerund_sentence(value: str) -> str:
+    """Start a recovered first path at its first action, not its audience context."""
+
+    rows = _sentence_fragments(value)
+    while len(rows) > 1 and is_contextual_gerund_phrase(rows[0]):
+        rows.pop(0)
+    return ". ".join(rows).strip(" .")
+
+
+def _is_bounded_prompt_actor(value: str) -> bool:
+    words = _request_words(value)
+    return bool(words) and len(words) <= 6 and not any(word.endswith((".", "!", "?")) for word in words)
+
+
+def _for_role_actor_context(value: str) -> str:
+    """Recover a short role phrase from command-led `for <role> <gerund>` context."""
+
+    words = _request_words(value)
+    for index, word in enumerate(words[:-2]):
+        if _word_key(word) != "for":
+            continue
+        tail = words[index + 1 :]
+        for boundary in range(1, min(5, len(tail) - 1) + 1):
+            actor_words = tail[:boundary]
+            action_head = _word_key(tail[boundary])
+            if not action_head.endswith("ing") or not _looks_like_actor_purpose_left(actor_words):
+                continue
+            return _strip_leading_actor_article(" ".join(actor_words))
+    return ""
+
+
 def _strip_trailing_operator_instruction_sentences(value: str) -> str:
     rows = _sentence_fragments(value)
     if len(rows) <= 1:
@@ -717,6 +755,8 @@ def _operator_request_tail_candidates(value: str) -> tuple[str, ...]:
     for index in range(start, len(words) - 1):
         connector = lowered[index].strip(",:;")
         if connector not in _REQUEST_LEAD_CONNECTORS:
+            continue
+        if not command_led and connector in {"for", "to"}:
             continue
         lead = lead_words[: max(0, index - start)]
         if not command_led and not (set(lead) & _REQUEST_PRODUCT_WORDS):

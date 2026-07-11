@@ -173,6 +173,58 @@ def test_arborcell_setup_details_do_not_become_confirmed_action_truth() -> None:
     assert "review the oxygen-poor root zone" not in readiness
 
 
+def test_wedding_context_phrase_does_not_become_the_first_path_actor(tmp_path: Path) -> None:
+    prompt = (
+        "Make a wedding weekend guide for guests traveling to a small town with limited taxis, a rehearsal dinner, "
+        "and an accessibility request. A guest RSVPs with a dietary choice, reserves a shuttle seat, notes a hearing "
+        "loop need, and saves the ceremony location. The couple sees headcounts, the shuttle coordinator assigns "
+        "departure groups, and the venue contact confirms that the hearing loop has been tested before guests arrive."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    rendered = json.dumps(
+        {
+            "intent": proposal["intent"],
+            "backlog": proposal["backlog"],
+            "package": prewrite.package.backlog_result,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+    assert str(proposal["intent"]["first_path"]).startswith("A guest RSVPs")
+    assert proposal["semantic_model"]["first_path_contract"]["actor"] == "Guest"
+    assert "Guests Traveling to a" not in rendered
+    assert ", handles missing or invalid input" not in str(proposal["intent"]["proof_boundary"])
+    assert "It explains missing or invalid input" in str(proposal["intent"]["proof_boundary"])
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
+def test_on_call_role_context_is_preserved_in_the_compiled_package(tmp_path: Path) -> None:
+    prompt = (
+        "Create a focused incident-operations workspace for on-call engineers handing an active service incident to "
+        "the next shift. Each handoff records incident timeline, current customer impact, mitigation owner, and "
+        "unresolved decision. The first release boundary is shift handoff for a single incident with an acknowledgement "
+        "trail; paging, automated remediation, and status-page publication remain outside the initial product."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    rendered = "\n".join(
+        [
+            *prewrite.package.backlog_result["idea_files"].values(),
+            *prewrite.package.rendered_component_specs.values(),
+            *prewrite.package.rendered_atlas_sources.values(),
+            prewrite.package.project_brief_record_text,
+        ]
+    ).casefold()
+
+    assert proposal["intent"]["human_actors"][0].startswith("On-call Engineers:")
+    assert str(proposal["intent"]["first_path"]).casefold().startswith("on-call engineers can record incident timeline")
+    for term in ("on-call engineers", "incident timeline", "customer impact", "acknowledgement trail"):
+        assert term in rendered
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_generic_setup_sentences_do_not_project_as_review_actions() -> None:
     first_path = (
         "A records team opens a reconciliation run. "

@@ -264,10 +264,24 @@ def strip_requirement_control_tail(value: str) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
+    text = _strip_pre_release_state_tail(text)
     start = _requirement_control_start(text)
     if start <= 0:
         return text if start != 0 else ""
     return text[:start].strip(" ,.;:")
+
+
+def _strip_pre_release_state_tail(value: str) -> str:
+    """Drop a lifecycle control noun that follows an otherwise complete action list."""
+
+    match = re.search(
+        r"(?:,\s*and\s+|\s+and\s+)"
+        r"(?:(?:recovery|approval|review|release)\s+)?(?:state|status|approval|review)\s+before\s+"
+        r"(?:a|an|the)\s+[^.]{1,80}?\s+is\s+(?:released|approved|deployed|published)$",
+        value,
+        flags=re.IGNORECASE,
+    )
+    return value[: match.start()].strip(" ,.;:") if match else value
 
 
 def is_requirement_control_step(value: str) -> bool:
