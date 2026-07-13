@@ -1,6 +1,6 @@
 ---
 description: Refresh the governed Odylith surfaces for the files changed in this task.
-argument-hint: [changed_paths...] (optional; derived from the active slice when omitted)
+argument-hint: "[changed_paths...] (optional; derived from the active slice when omitted)"
 ---
 
 Refresh the governed Odylith surfaces for the files changed in this task.
