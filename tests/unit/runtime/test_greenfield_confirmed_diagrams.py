@@ -101,6 +101,20 @@ def test_sequence_event_steps_split_result_led_follow_on_finite_actions() -> Non
     ]
 
 
+def test_sequence_event_steps_strip_delimiters_before_brief_rendering() -> None:
+    steps = sequence_event_steps(
+        "A representative user reviews permit details, records the current status, and sees a permit review result.",
+        dedupe=True,
+    )
+
+    assert steps == [
+        "A representative user reviews permit details",
+        "A representative user records the current status",
+        "A representative user sees a permit review result",
+    ]
+    assert all(not step.endswith((",", ";", ":")) for step in steps)
+
+
 def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplate() -> None:
     rows = confirmed_diagrams(
         label="Operations Platform",

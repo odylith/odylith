@@ -73,12 +73,14 @@ For example:
 odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
 ```
 
-After confirmation, Odylith turns that accepted narrative into backlog
+Before confirmation, Odylith stores only replaceable evidence and the compiled
+transaction under `.odylith/runtime/greenfield/`. After confirmation, Odylith
+turns that accepted narrative into backlog
 candidates, program waves, release planning, planned Registry components, Atlas
 topology, assumptions, risks, open questions, and validation obligations.
-Nothing is written until the confirmed create path validates the accepted
-intent, runs the deterministic greenfield Tribunal, targets the first release
-lane, and refreshes Radar, Registry, Atlas, and Compass.
+No governed product record is written until the confirmed create path validates
+the accepted intent, runs the deterministic greenfield Tribunal, targets the
+first release lane, and refreshes Radar, Registry, Atlas, and Compass.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.

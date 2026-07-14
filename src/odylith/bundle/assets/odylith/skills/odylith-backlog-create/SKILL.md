@@ -15,10 +15,10 @@ or asks to create one or more Radar backlog workstreams.
    legible, grammatically coherent, and clear about the problem being solved,
    who benefits, what changes, and what evidence would prove success.
    Exception: when the user asks for a new greenfield project from intent
-   only, use `odylith greenfield propose` first for Product Intent
-   Confirmation. Only after the operator confirms the interpretation should
-   `odylith greenfield propose --confirm-intent` or confirmed create
-   draft missing fields, program waves, and release planning.
+   only, use `odylith greenfield propose` to compile the typed evidence and
+   staged ProductCreateTransaction before it shows the sole final command rail.
+   `CONFIRM` then commits that validated package; `EDIT` rebuilds it from new
+   evidence; `REJECT` writes nothing.
 3. Run `./.odylith/bin/odylith backlog create --repo-root .` with `--title`,
    `--problem`, `--customer`, `--opportunity`, `--product-view`, and
    `--success-metrics`.

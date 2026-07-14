@@ -68,6 +68,34 @@ def _write_repo_root(repo_root: Path) -> None:
     (repo_root / "AGENTS.md").write_text("# Repo Root\n\nBody\n", encoding="utf-8")
 
 
+def _assert_canonical_assist_cadence(guidance_text: str) -> None:
+    assert "When explicit intervention feedback asks for more frequent Assist" in guidance_text
+    assert "earned cadence" in guidance_text
+    assert "substantive-continuation beats" in guidance_text
+    assert "while keeping bare acknowledgements, routine chatter, and internal execution details out" in guidance_text
+    assert "Never add Assist merely because Odylith ran." in guidance_text
+    assert "Lead with the user win" in guidance_text
+    assert "changed IDs" in guidance_text
+    assert "the `odylith_off` edge" in guidance_text
+    assert "concrete counts, deltas, or validation outcomes" in guidance_text
+    assert "Generic receipts are not premium interventions." in guidance_text
+    assert "supplies one shared prompt-visible Assist line" not in guidance_text
+
+
+def _assert_bundled_assist_cadence(guidance_text: str) -> None:
+    assert "When explicit intervention feedback asks for more frequent Assist" in guidance_text
+    assert "earned cadence" in guidance_text
+    assert "substantive-continuation beats" in guidance_text
+    assert "while keeping bare acknowledgements, routine chatter, and internal execution details out" in guidance_text
+    assert "Never add Assist merely because Odylith ran." in guidance_text
+    assert "Lead with the user win" in guidance_text
+    assert "changed IDs" in guidance_text
+    assert "the `odylith_off` edge" in guidance_text
+    assert "concrete counts, deltas, or validation outcomes" in guidance_text
+    assert "Generic receipts are not premium interventions." in guidance_text
+    assert "supplies one shared prompt-visible Assist line" not in guidance_text
+
+
 def _write_casebook_bug(
     path: Path,
     *,
@@ -789,18 +817,7 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "literal commands" not in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
-    assert "normal non-passthrough prompts do not get an Assist line by default" in guidance_text
-    assert "Do not add Assist just because Odylith ran" in guidance_text
-    assert "supplies one shared prompt-visible Assist line" not in guidance_text
-    assert "Lead with the user win" in guidance_text
-    assert "updated governance IDs inline when changed" in guidance_text
-    assert "affected governance-contract IDs when no governed file moved" in guidance_text
-    assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
-    assert "keep it crisp, authentic, clear, simple, insightful" in guidance_text
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
-    assert "or a concrete chat-visibility complaint" in guidance_text
-    assert "Generic activity receipts are not premium interventions" in guidance_text
+    _assert_bundled_assist_cadence(guidance_text)
     assert "Silence is better than filler." in guidance_text
     assert "run the repo-local `odylith start`/`odylith context` step" not in guidance_text
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in guidance_text
@@ -813,14 +830,13 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
-    assert "greenfield compile-transaction" in guidance_text
+    assert "compiles typed evidence" in guidance_text
+    assert "only command rail" in guidance_text
     assert "ProductCreateTransaction" in guidance_text
-    assert "`## Choose one command`" in guidance_text
-    assert "Start your reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**" in guidance_text
-    assert "Reply starts with: CONFIRM" in guidance_text
-    assert "Command: `CONFIRM`" in guidance_text
-    assert "Command: `EDIT`" in guidance_text
-    assert "Command: `REJECT`" in guidance_text
+    assert "CONFIRM commits the shown hash-bound package" in guidance_text
+    assert "EDIT treats corrections as new evidence and rebuilds" in guidance_text
+    assert "REJECT writes nothing" in guidance_text
+    assert "Markdown is a view, never product truth" in guidance_text
     assert "--transaction-file" in guidance_text
     assert "--transaction-hash" in guidance_text
     assert "rollback guard" in guidance_text
@@ -862,28 +878,20 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "literal commands" not in root_agents
     assert "Keep normal commentary task-first and human;" in root_agents
     assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
-    assert "At closeout, add at most one `Odylith Assist:` line only when useful" in root_agents
-    assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
-    assert "Do not add Assist just because Odylith ran" in root_agents
-    assert "supplies one shared prompt-visible Assist line" not in root_agents
-    assert "Lead with the user win" in root_agents
-    assert "changed governance IDs" in root_agents
-    assert "the `odylith_off` edge" in root_agents
-    assert "concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "Generic activity receipts are not premium interventions" in root_agents
+    _assert_canonical_assist_cadence(root_agents)
     assert "Silence is better than filler." in root_agents
     assert "grounding Odylith is diagnosis authority, not blanket write authority" in root_agents
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
     assert "search existing truth first" in root_agents
-    assert "greenfield compile-transaction" in root_agents
+    assert "Odylith treats input as evidence" in root_agents
+    assert "builds typed facts" in root_agents
+    assert "one hash-bound rail" in root_agents
     assert "ProductCreateTransaction" in root_agents
-    assert "`## Choose one command`" in root_agents
-    assert "Start your reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**" in root_agents
-    assert "Reply starts with: CONFIRM" in root_agents
-    assert "Command: `CONFIRM`" in root_agents
-    assert "Command: `EDIT`" in root_agents
-    assert "Command: `REJECT`" in root_agents
+    assert "**CONFIRM** commits that package" in root_agents
+    assert "**EDIT** adds evidence and rebuilds" in root_agents
+    assert "**REJECT** stops with no writes" in root_agents
+    assert "Markdown is a view, never product truth" in root_agents
     assert "--transaction-file" in root_agents
     assert "--transaction-hash" in root_agents
     assert "rollback guard" in root_agents
@@ -1703,17 +1711,7 @@ def test_upgrade_install_resyncs_consumer_guidance_and_skills(tmp_path: Path) ->
     assert "CLI-first is non-negotiable here too" in guidance_text
     assert "Keep normal commentary task-first and human." in guidance_text
     assert "Reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments." in guidance_text
-    assert "At closeout, or when a visible-intervention recovery renders a prompt-submit or visibility-proof note" in guidance_text
-    assert "normal non-passthrough prompts do not get an Assist line by default" in guidance_text
-    assert "Do not add Assist just because Odylith ran" in guidance_text
-    assert "supplies one shared prompt-visible Assist line" not in guidance_text
-    assert "Lead with the user win" in guidance_text
-    assert "updated governance IDs inline when changed" in guidance_text
-    assert "affected governance-contract IDs when no governed file moved" in guidance_text
-    assert "`odylith_off` or broader unguided path edge when supported" in guidance_text
-    assert "ground the line in concrete observed counts, measured deltas, or validation outcomes" in guidance_text
-    assert "or a concrete chat-visibility complaint" in guidance_text
-    assert "Generic activity receipts are not premium interventions" in guidance_text
+    _assert_bundled_assist_cadence(guidance_text)
     assert "Silence is better than filler." in guidance_text
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in guidance_text
     assert "Odylith grounding:" not in guidance_text
@@ -1803,15 +1801,7 @@ def test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and
     assert "Describe task progress, not control-plane receipts" in root_agents
     assert "Keep normal commentary task-first and human;" in root_agents
     assert "reserve `Odylith Insight:`, `Odylith History:`, or `Odylith Risks:` for rare high-signal moments" in root_agents
-    assert "At closeout, add at most one `Odylith Assist:` line only when useful" in root_agents
-    assert "normal non-passthrough prompts do not get an Assist line by default" in root_agents
-    assert "Do not add Assist just because Odylith ran" in root_agents
-    assert "supplies one shared prompt-visible Assist line" not in root_agents
-    assert "Lead with the user win" in root_agents
-    assert "changed governance IDs" in root_agents
-    assert "the `odylith_off` edge" in root_agents
-    assert "concrete observed counts, measured deltas, or validation outcomes" in root_agents
-    assert "Generic activity receipts are not premium interventions" in root_agents
+    _assert_canonical_assist_cadence(root_agents)
     assert "Silence is better than filler." in root_agents
     assert "keep Odylith grounding mostly in the background. Do not require a fixed visible prefix" not in root_agents
     assert "Odylith grounding:" not in root_agents

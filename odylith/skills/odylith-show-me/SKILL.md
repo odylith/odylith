@@ -44,42 +44,23 @@ placeholder products in response to a show-me request.
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
    `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
-   Treat that output as a no-write Product Intent request. Write the short
-   Product Intent Confirmation in chat from live reasoning as sectioned
-   Markdown so the operator sees Product story, State object, First complete
-   path, Human actors, External systems, Internal product systems, Critical
-   assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
-   The command block must show `Start your reply with exactly one command: **CONFIRM**,
-   **EDIT**, or **REJECT**.`, then visually separate sections headed **Command: `CONFIRM`**,
-   **Command: `EDIT`**, and **Command: `REJECT`** plus `Reply starts with: CONFIRM`,
-   `Reply starts with: EDIT`, and `Reply starts with: REJECT`. Use bullets for actors, systems,
-   assumptions, and ambiguities; do not collapse the confirmation into a wall
-   of prose or wrap normal domain words in code ticks or decorative bold
-   markers. The first **CONFIRM** compiles and hash-gates the transaction before any
-   governed records are written. After the operator chooses **CONFIRM** for the same
-   interpretation, write that same visible confirmation to
-   `.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
-   transaction from the same confirmation:
-   `greenfield compile-transaction --repo-root . --prompt "<their request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`.
-   Odylith may normalize that Markdown into
-   `.odylith/runtime/greenfield/confirmed-intent.json`, builds, repairs,
-   validates, quality-gates, and hashes the ProductCreateTransaction before
-   records can be confirmed. After **CONFIRM**, run
+   `propose` compiles typed evidence, repairs and quality-gates the full staged
+   ProductCreateTransaction, then renders the single visible confirmation view.
+   Show the preview directly in chat, including Product story, State object, First
+   complete path, actors, systems, assumptions, ambiguities, proof boundary, and one
+   clear `## Choose one command` block. **CONFIRM** commits the shown hash-bound
+   package; **EDIT** accepts corrections as new evidence and rebuilds a new package;
+   **REJECT** stops with no writes. Ask one focused question only for material
+   uncertainty; otherwise make assumptions visible. Markdown is evidence and a view,
+   never product truth. After **CONFIRM**, run
    `greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
-   Confirmed create only verifies the compiler receipt, transaction hash,
-   compiler identity, and unchanged repo preconditions; applies the sealed write
-   set under rollback guard; validates exact readback; and reports success or environment/IO failure;
-   do not show proposal JSON as a second approval step and do not search
-   Odylith source, `.odylith`, bundle files, or local examples for schema.
-   Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown unless they explicitly request a review artifact.
-   Do not hand-author, switch to, or repair proposal JSON after confirmation; do not use canned domain scaffolds, dump
-   tool internals, or write code before the product gates are accepted. When the CLI
-   returns proposal stdout directly before confirmation, do not hide the
-   confirmation behind collapsed tool output. After confirmation, do not narrate
-   parser/schema retries or intermediate transaction-compile failures in operator chat;
-   wait for the final transaction/result and do not stop at intermediate
-   repairable quality issues.
-   surface only created records or final validation/Tribunal blockers.
+   Confirmed create only verifies receipt, hash, compiler identity, and repo
+   preconditions; applies sealed bytes under rollback guard; validates readback; and
+   reports success or environment/IO failure. It does not generate, repair, or parse
+   product material after confirmation. Do not ask for a second confirmation, expose
+   proposal JSON, search Odylith source for schema, use canned domain scaffolds, dump
+   tool internals, or narrate parser/schema retries. Surface only the final transaction,
+   created records, or a material blocker.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator
    choose.

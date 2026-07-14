@@ -145,8 +145,10 @@ Stop here.
         release_selector="0.0.1",
         confirmed_intent=intent,
     )
-    rendered = json.dumps(proposal, sort_keys=True)
+    rendered_intent = json.dumps(proposal["intent"], sort_keys=True)
+    rendered_commands = json.dumps(proposal["apply_commands"], sort_keys=True)
 
     assert intent["title"] == "Municipal Permit Intake and Review Workspace"
-    assert "CONFIRM" not in rendered
-    assert "Municipal Permit Intake and Review Workspace" in rendered
+    assert "CONFIRM" not in rendered_intent
+    assert "Municipal Permit Intake and Review Workspace" in rendered_intent
+    assert "CONFIRM" in rendered_commands

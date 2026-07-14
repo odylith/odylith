@@ -189,6 +189,11 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.15:guidance-and-skills:3ec478acf01f`
 - `migration-observer:0.1.15:public-docs-and-release-guidance:65b4ded3f854`
 - `migration-observer:0.1.15:install-managed-assets:983d5161f7f0`
+- `migration-observer:0.1.15:guidance-and-skills:5aadee6c413b`
+- `migration-observer:0.1.15:operator-cli-contracts:9dff142cede2`
+- `migration-observer:0.1.15:public-docs-and-release-guidance:0d35800e39ae`
+- `migration-observer:0.1.15:browser-surfaces:e63657fa618c`
+- `migration-observer:0.1.15:install-managed-assets:cc8febc09545`
 
 The v0.1.15 browser-surface assessment covers the Radar detail-page template
 change that loads Mermaid only when the page actually contains Mermaid content.
@@ -204,6 +209,17 @@ need source or governance-data migration: upgrades refresh the managed guidance
 and skills, confirmed greenfield writes remain explicit and fail-closed, and
 hosts are instructed to report only neutral progress, created records, or final
 validation blockers instead of exposing parser or schema-retry internals.
+
+The v0.1.15 precompiled-create assessment covers the confirmed Greenfield
+transaction kernel, its Codex and Claude guidance, the shipped bundle, and the
+rendered governance surfaces. Existing consumer projects keep their governed
+records unchanged: a newly proposed project may use replaceable runtime staging
+before confirmation, but no governed record is written until the confirmed,
+hash-bound transaction commits. An upgraded runtime rejects stale or altered
+transactions before the write boundary and rolls back a true filesystem failure
+without partial governed writes. Managed guidance and browser assets refresh on
+upgrade; no manual data migration is required. Unsupported hosts receive an
+explicit unsupported status rather than a false Codex-ready result.
 
 ## 0.1.12 Upgrade Assessment
 - First-run install and sync overlap: existing 0.1.11 consumer repos can safely
@@ -2257,3 +2273,38 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   upgrade; upgraded installs receive the stricter future generator behavior plus
   regenerated read-only dashboard surfaces and bundled managed HTML mirrors
   through the normal install, upgrade, doctor, runtime, or dashboard refresh path.
+- The precompiled transaction and host-neutral Assist settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:e1ecacad392a`,
+  `migration-observer:0.1.15:operator-cli-contracts:5d2d5c72ab01`,
+  `migration-observer:0.1.15:public-docs-and-release-guidance:3418cd0af18a`,
+  `migration-observer:0.1.15:browser-surfaces:d0dc8b5ca7a7`, and
+  `migration-observer:0.1.15:install-managed-assets:1630652ca497`. The pass
+  moves the only visible `CONFIRM` command onto an already compiled and
+  validated ProductCreateTransaction, accepts normal-language edits as evidence,
+  preserves host-neutral Assist cadence across Codex and Claude, and refreshes
+  the affected guidance and browser assets. Existing consumer-owned product
+  truth remains untouched; upgrades receive managed runtime, guidance, and
+  read-only surface updates through normal install, upgrade, doctor, runtime,
+  or dashboard refresh paths.
+- The higher-cadence Assist and pre-confirm projection settlement is covered by
+  `migration-observer:0.1.15:guidance-and-skills:bc73a2047c78`,
+  `migration-observer:0.1.15:operator-cli-contracts:c38226d622e4`,
+  `migration-observer:0.1.15:browser-surfaces:b807d2057e32`, and
+  `migration-observer:0.1.15:install-managed-assets:d93cb6f32519`. Explicit
+  requests for more Odylith Assist now persist across substantive follow-up
+  turns in Codex and Claude, while acknowledgement-only turns remain quiet.
+  Existing consumer-owned product truth is untouched. Upgrades refresh managed
+  runtime, guidance, and generated browser assets through normal install,
+  upgrade, doctor, runtime, or dashboard refresh paths.
+- The installed guidance-generator alignment and product-root custody repair is
+  covered by `migration-observer:0.1.15:install-managed-assets:2b95f1332014`.
+  Consumer upgrades refresh the managed Assist-cadence guidance to match the
+  Codex and Claude runtime behavior. In the Odylith product repo, install and
+  doctor now leave tracked root guidance unchanged. Neither path rewrites
+  consumer-owned product or governance truth.
+- The conditional product-guidance custody repair is covered by
+  `migration-observer:0.1.15:install-managed-assets:4e4b3f77e134`. Product
+  checkouts with the tracked source guidance retain it unchanged, while
+  product-shaped recovery repositories that carry ordinary root guidance still
+  receive the required maintainer overlay. Consumer-owned truth remains
+  untouched in both cases.

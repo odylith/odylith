@@ -104,7 +104,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "intent_confirmation_authorizes_apply_attempt": False,
             "confirmation_authority": "ProductCreateTransaction hash",
             "contract_use": [
-                "Use greenfield compile-transaction after Product Intent Confirmation; it owns proposal construction, repair, validation, artifact compilation, quality gates, and transaction hashing before records can be confirmed.",
+                "Use greenfield propose to compile prompt or edit evidence; it owns proposal construction, validation, artifact compilation, quality gates, and transaction hashing before the final command rail appears.",
                 "Use greenfield create --transaction-file --transaction-hash --confirm only to verify and commit the already compiled ProductCreateTransaction.",
                 "Let Odylith treat edited confirmation Markdown as new evidence that rebuilds the transaction; do not trust edited Markdown as product truth.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
@@ -116,7 +116,7 @@ def build_proposal_contract() -> dict[str, Any]:
                 "Do not write governed records unless a verified ProductCreateTransaction is ready to commit.",
             ],
             "allowed_host_steps": [
-                "Run greenfield compile-transaction from the confirmed product intent and observed source posture.",
+                "Run greenfield propose from prompt or edit evidence and observed source posture.",
                 "Confirm by passing the compiled transaction file plus its hash to greenfield create with --transaction-file, --transaction-hash, and --confirm.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
                 "Let Odylith build and repair the governed package before confirmation; the confirmed create command is the hash verification and commit boundary.",
@@ -125,14 +125,14 @@ def build_proposal_contract() -> dict[str, Any]:
             "canonical_files": [
                 {
                     "path": ".odylith/runtime/greenfield/confirmed-intent.json",
-                    "purpose": "internal structured form normalized from the operator-confirmed Product Intent Confirmation",
+                    "purpose": "internal typed evidence and product-fact record used by the precompiled transaction",
                     "governed_record": False,
                 }
             ],
             "canonical_commands": [
-                "odylith greenfield compile-transaction --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1",
+                "odylith greenfield propose --repo-root . --prompt \"<request>\"",
                 "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
-                "odylith greenfield compile-transaction --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release 0.0.1",
+                "odylith greenfield propose --repo-root . --prompt \"<request>\" --format json",
             ],
             "failure_policy": [
                 "If transaction compilation or quality gates fail, do not offer confirmation yet; summarize the blocking issues in product language.",

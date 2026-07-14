@@ -15,7 +15,7 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(HIIT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    started, rc, payload, compile_payload = _run_compiled_transaction_create(
+    started, rc, payload, transaction_payload = _run_proposed_transaction_create(
         tmp_path,
         prompt="Draft a greenfield proposal for a guided HIIT interval training app",
         capsys=capsys,
@@ -36,7 +36,7 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) == 4
     assert len(payload["diagrams"]) == 6
-    transaction_package = compile_payload["transaction"]["prewrite_package"]
+    transaction_package = transaction_payload["prewrite_package"]
     assert payload["next_steps"] == transaction_package["next_steps_preview"]
     assert payload["diagrams"] == transaction_package["atlas_diagram_ids"]
     _assert_accepted_project_matches_transaction(
@@ -81,29 +81,26 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
         assert banned not in generated_source
 
 
-def _run_compiled_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
+def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_rc = greenfield_proposals.main(
+    propose_rc = greenfield_proposals.main(
         [
-            "compile-transaction",
+            "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
             prompt,
-            "--intent-file",
+            "--edit-evidence",
             ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--output",
-            transaction_file,
-            "--release",
-            "0.0.1",
             "--format",
             "json",
         ]
     )
-    compile_output = capsys.readouterr().out
-    assert compile_rc == 0, compile_output
-    compile_payload = json.loads(compile_output)
-    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    propose_output = capsys.readouterr().out
+    assert propose_rc == 0, propose_output
+    propose_payload = json.loads(propose_output)
+    transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
+    transaction_payload = json.loads((tmp_path / transaction_file).read_text(encoding="utf-8"))
     started = time.perf_counter()
     rc = greenfield_proposals.main(
         [
@@ -119,7 +116,7 @@ def _run_compiled_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> 
         ]
     )
     payload = json.loads(capsys.readouterr().out)
-    return started, rc, payload, compile_payload
+    return started, rc, payload, transaction_payload
 
 
 def _assert_committed_program_matches_transaction(tmp_path: Path, program_result: dict) -> None:

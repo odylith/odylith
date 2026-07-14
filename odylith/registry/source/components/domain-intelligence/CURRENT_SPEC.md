@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-10
+Last updated: 2026-07-12
 
 
 ## Overview
@@ -26,6 +26,8 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-12 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
+  - Evidence: 2 tracked artifact references retained
 - **2026-07-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 3 tracked artifact references retained
@@ -40,11 +42,11 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 2 tracked artifact references retained
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
-  - Evidence: 2 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-12: Moved rich-edit dependent-projection invalidation and state-object grammar repair into the pre-confirm typed compiler. Structured EDIT evidence now replaces stale prompt-derived product projections unless it explicitly owns them; one-word state labels are rendered as grammatical object phrases before quality gates and transaction sealing. Source proof passed the 40-case materializer-authority group, 14 full create/HIIT integrations, and the 135-case matrix without relying on post-confirm prose repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Diagrams: D-043, D-045)
 
 - 2026-07-10: Fixed source-local content custody and accepted-project rerun identity, then proved commit-only custody in the packaged matrix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-227`, `CB-228`, `CB-229`, `CB-230`, `CB-231`; Diagrams: D-043, D-045)
   `CB-227` separates source provenance from literal product claims, requires
@@ -2237,13 +2239,12 @@ This section captures synchronized requirement and contract signals derived from
   or upsert Atlas, author Registry components, record accepted-project memory,
   refresh dashboards, shape next steps, or repair generated artifacts.
 - Installed greenfield guidance must not ask Codex or Claude hosts to
-  hand-author or reconstruct proposal JSON. Proposal review uses Product Intent
-  Confirmation from `greenfield propose`; full package review uses
-  `greenfield compile-transaction --intent-file ... --output ...`, which emits
-  a hashed `ProductCreateTransaction`; confirmation uses
+  hand-author or reconstruct proposal JSON. `greenfield propose` compiles the
+  typed prompt/edit evidence, repairs and quality-gates the full package, and
+  renders the sole hash-bound `CONFIRM`, `EDIT`, and `REJECT` rail.
   `greenfield create --transaction-file ... --transaction-hash ... --confirm`
-  and cannot accept prompt, intent-file, repair-tier, or generated-proposal
-  inputs after confirmation.
+  cannot accept prompt, intent-file, repair-tier, or generated-proposal inputs
+  after confirmation; it only verifies and commits the sealed transaction.
 - `proposal_validation.py` owns confirmed proposal validation, required
   Mermaid source checks, evidence-tier checks, and duplicate-topology rejection.
   Generic Atlas scaffold remains the low-level catalog/source writer; Domain

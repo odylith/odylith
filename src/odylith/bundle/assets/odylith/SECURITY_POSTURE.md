@@ -109,8 +109,8 @@ Odylith does not claim full protection against:
 - Greenfield Domain Intelligence proposals separate observed source, user
   intent, and Odylith assumptions; missing source cannot become a source-backed
   governance claim.
-- `odylith greenfield compile-transaction` builds and quality-gates the full
-  ProductCreateTransaction before confirmation.
+- `odylith greenfield propose` builds and quality-gates the full
+  ProductCreateTransaction before it renders the sole confirmation rail.
 - `odylith greenfield create` only verifies the compiler receipt, transaction
   hash, compiler identity, and unchanged repo preconditions; applies the sealed
   write set under rollback guard; validates exact readback; and reports success.

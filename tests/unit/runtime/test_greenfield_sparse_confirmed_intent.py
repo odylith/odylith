@@ -39,64 +39,40 @@ def test_sparse_confirmed_intent_uses_grammatical_state_phrase_before_writes(
         "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "
         "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof."
     )
-    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(
-        """
-# Product Intent Confirmation
-
-## Title
-Disclosure council
-
-## Product story
-External researchers and internal owners coordinate a disclosure review.
+    edit_evidence = """
+EDIT
 
 ## State object
 Report.
 
-## First complete path
-Reporter submits a report; owner reviews it; council publishes proof.
-
-## Actors
-Reporter, owner, council.
-
-## Systems
-Intake desk, review log.
-
-## Assumptions
-The first release records evidence only.
-
-## Ambiguities
-Notification delivery is not included.
+## Problem
+Cross-organization disclosure council users need a dependable way to understand Report and decide the next step.
 
 ## Proof boundary
-Evidence custody and embargo decision.
-""".strip()
-        + "\n",
-        encoding="utf-8",
-    )
+Trusted evidence custody and embargo decision.
 
+## Internal product systems
+- Intake desk records disclosure reports.
+- Review log records cross-organization review decisions.
+- Embargo registry tracks embargo status.
+""".strip()
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_rc = greenfield_proposals.main(
+    propose_rc = greenfield_proposals.main(
         [
-            "compile-transaction",
+            "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
             prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--output",
-            transaction_file,
-            "--release",
-            "0.0.1",
+            "--edit",
+            edit_evidence,
             "--format",
             "json",
         ]
     )
-    compile_output = capsys.readouterr().out
-    assert compile_rc == 0, compile_output
-    transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])
+    propose_output = capsys.readouterr().out
+    assert propose_rc == 0, propose_output
+    transaction_hash = str(json.loads(propose_output)["product_create_transaction"]["transaction_hash"])
     rc = greenfield_proposals.main(
         [
             "create",
@@ -118,7 +94,7 @@ Evidence custody and embargo decision.
     assert manifest["status"] == "passed"
     assert manifest["write_transaction"]["status"] == "committed"
     structured_intent = json.loads(
-        (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").read_text(encoding="utf-8")
+        (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8")
     )
     assert "embargo" in structured_intent["proof_boundary"].casefold()
     assert "trusted" in structured_intent["proof_boundary"].casefold()

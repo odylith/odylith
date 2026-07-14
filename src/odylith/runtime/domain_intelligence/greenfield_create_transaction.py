@@ -340,7 +340,7 @@ def write_compiled_product_create_transaction_file(
     path: Path,
     transaction: ProductCreateTransaction,
 ) -> Path:
-    """Persist a compiler-attested transaction and its detached receipt."""
+    """Persist a compiled transaction and its detached local-integrity receipt."""
 
     require_product_create_transaction_verified(transaction)
     target = Path(path).expanduser()
@@ -360,7 +360,12 @@ def write_compiled_product_create_transaction_file(
 
 
 def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTransaction:
-    """Load only a transaction paired with its pre-confirm compiler receipt."""
+    """Load a transaction whose local receipt still matches its pre-confirm bytes.
+
+    The receipt protects the normal trusted-workspace flow from stale or
+    accidental file drift. It is not authentication against the local machine
+    owner, who can write the repository without invoking Odylith.
+    """
 
     target = Path(path).expanduser()
     receipt_path = product_create_transaction_receipt_path(target)
@@ -372,7 +377,12 @@ def load_compiled_product_create_transaction_file(path: Path) -> ProductCreateTr
     except FileNotFoundError as exc:
         raise ValueError(
             "ProductCreateTransaction is missing its pre-confirm compiler receipt; "
-            "rebuild it with greenfield compile-transaction"
+            "rebuild it with greenfield propose"
+        ) from exc
+    except OSError as exc:
+        raise RuntimeError(
+            "environment/IO failure while reading the pre-confirm ProductCreateTransaction; "
+            "no governed records were written"
         ) from exc
     if not isinstance(receipt_payload, Mapping):
         raise ValueError("ProductCreateTransaction compiler receipt must be a JSON object")

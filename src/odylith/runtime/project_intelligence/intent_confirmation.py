@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from typing import Any
 
 
-INTENT_CONFIRMATION_SCHEMA_VERSION = "odylith.greenfield.product_intent_confirmation.v4"
+INTENT_CONFIRMATION_SCHEMA_VERSION = "odylith.greenfield.product_intent_confirmation.v5"
 
 
 def build_product_intent_confirmation(
@@ -18,17 +18,17 @@ def build_product_intent_confirmation(
     repo_name: str,
     observed_source: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Return a no-write request for live host reasoning about product intent."""
+    """Return a no-write host preview contract for precompiled product intent."""
 
     clean_prompt = _clean(prompt) or "new project"
     evidence = dict(observed_source or {})
     source_posture = _clean(evidence.get("source_posture")) or "unknown"
     return {
         "schema_version": INTENT_CONFIRMATION_SCHEMA_VERSION,
-        "mode": "product_intent_reasoning_request",
+        "mode": "product_intent_preview_request",
         "provider_calls": 0,
         "host_agnostic": True,
-        "write_policy": "host_reason_product_intent_before_confirmed_greenfield_create",
+        "write_policy": "precompile_transaction_before_confirm",
         "intent": {
             "prompt": clean_prompt,
             "working_title": _clean(title),
@@ -38,15 +38,14 @@ def build_product_intent_confirmation(
         "observed_source": evidence,
         "source_posture": source_posture,
         "host_reasoning_task": {
-            "task": "Write the Product Intent Confirmation in chat before Odylith builds any proposal records.",
+            "task": "Render the typed Product Intent Preview as a view of precompiled prompt evidence.",
             "time_budget": "20_to_30_seconds_to_read",
             "format_contract": [
                 "Render the visible confirmation as sectioned Markdown, not as one long paragraph.",
-                "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Evidence requirements when present; Ambiguities; Proof boundary; Choose one command.",
+                "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Evidence requirements when present; Ambiguities; Proof boundary.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
-                "Render Choose one command with a visible decision rail `Decision rail: CONFIRM | EDIT | REJECT`, the exact `Start your reply with exactly one command: CONFIRM, EDIT, or REJECT` rule, and three visually separate command sections headed `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`, each with a copy-ready one-line command block.",
-                "For EDIT, tell the operator to put corrections after the command so Odylith can treat the reply as new evidence and rebuild.",
+                "Do not render CONFIRM, EDIT, or REJECT in this preview. Odylith must compile and validate the complete transaction first, then render the sole command rail from that transaction.",
                 "Use plain prose for domain nouns; do not wrap ordinary product, actor, state, or component names in code ticks or decorative bold markers.",
             ],
             "must_include": [
@@ -62,8 +61,7 @@ def build_product_intent_confirmation(
                 "any concrete evidence, measurement, method, vocabulary, safety, or reproducibility requirements stated by the user, kept as concise visible evidence requirements rather than hidden prompt text",
                 "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
-                "a clear Choose one command block that tells the operator to start with exactly one command, CONFIRM, EDIT, or REJECT, shows the decision rail as CONFIRM | EDIT | REJECT, then three visually separate command sections for CONFIRM, EDIT, and REJECT; each choice must include a copy-ready one-line command block and say exactly what happens next",
-                "for Confirm, say that Odylith does pre-confirm compile/validate work, produces a validated ProductCreateTransaction, and shows the hash-ready commit-only gate before any governed records are written",
+                "a clear product preview that lets the compiler determine whether material clarification is required before any final command rail appears",
             ],
             "must_not": [
                 "echo command instructions as the product name",
@@ -74,7 +72,7 @@ def build_product_intent_confirmation(
                 "turn the product story into a list of governance artifacts",
                 "invent source-backed implementation evidence",
                 "promote references, citations, authors, equations, benchmark tables, slide captions, legal boilerplate, or coding instructions into product actors, product systems, assumptions, or proof claims",
-                "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation",
+                "claim the advisory preview is the final confirmation or write accepted project records before the hash-bound CONFIRM command",
                 "dump a generic template or domain catalog",
             ],
             "reasoning_standard": (
@@ -86,36 +84,33 @@ def build_product_intent_confirmation(
             ),
         },
         "confirmation_gate": {
-            "status": "waiting_for_host_authored_product_intent",
-            "proceed": "If the interpretation is right, compile and validate the ProductCreateTransaction, then show the hash-ready commit-only gate before Odylith writes accepted project records.",
+            "status": "precompile_before_final_confirmation",
+            "proceed": "Compile and validate the ProductCreateTransaction from prompt evidence, then show the sole hash-ready commit-only gate before Odylith writes accepted project records.",
             "edit": "If anything is wrong or missing, treat the reply as new Product Intent evidence and rebuild the ProductCreateTransaction.",
             "reject": "If this is not the intended product, stop and write no records.",
         },
         "commands": {
-            "compile_transaction_after_intent_confirmation": (
-                "odylith greenfield compile-transaction --repo-root . --prompt "
+            "compile_transaction_from_prompt_evidence": (
+                "odylith greenfield propose --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1"
             ),
             "commit_transaction_after_hash_confirmation": (
                 "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm"
             ),
-            "optional_review_json_after_confirmation": (
-                "odylith greenfield compile-transaction --repo-root . --prompt "
+            "optional_review_json_before_confirmation": (
+                "odylith greenfield propose --repo-root . --prompt "
                 + _shell_quote(clean_prompt)
-                + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release 0.0.1"
+                + " --format json"
             ),
         },
     }
 
 
 def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> str:
-    """Render the no-write confirmation as the exact artifact safe to confirm."""
+    """Render the typed intent preview; the transaction owns the command rail."""
 
     intent = _mapping(confirmation.get("intent"))
-    commands = _mapping(confirmation.get("commands"))
     prompt = _clean(intent.get("prompt"))
-    compile_transaction = _clean(commands.get("compile_transaction_after_intent_confirmation"))
     try:
         from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
             confirmation_from_operator_intent,
@@ -127,35 +122,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
         body = _fallback_confirmation_markdown(prompt=prompt, title=title)
     else:
         body = confirmation_from_operator_intent(prompt, prefer_product_title=True).rstrip()
-    lines = [
-        body,
-        "",
-        *format_confirmation_choice_lines(
-            (
-                (
-                    "CONFIRM",
-                    "Accept this interpretation. Odylith starts pre-confirm compile/validate work, builds the ProductCreateTransaction, and shows the hash-ready commit-only gate before any governed records are written.",
-                ),
-                (
-                    "EDIT",
-                    "Correct the interpretation. Put the correction after EDIT; Odylith treats it as new Product Intent evidence and rebuilds before asking again.",
-                ),
-                ("REJECT", "Stop. Odylith writes no governed records."),
-            )
-        ),
-    ]
-    if compile_transaction:
-        lines.extend(
-            [
-                "",
-                "Odylith system action after **CONFIRM**",
-                "- Do not paste this command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT.",
-                "- CONFIRM here only starts pre-confirm compile/validate; governed records wait for the hash-ready commit-only gate.",
-                f"- Compile transaction: {compile_transaction}",
-                "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
-            ]
-        )
-    return "\n".join(lines).rstrip() + "\n"
+    return body.replace("Product Intent Confirmation", "Product Intent Preview").rstrip() + "\n"
 
 
 def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list[str]:

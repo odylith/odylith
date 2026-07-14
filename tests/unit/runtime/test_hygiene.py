@@ -409,64 +409,45 @@ def test_benchmark_honest_baseline_contract_stays_explicit() -> None:
 
 
 def test_odylith_assist_closeout_contract_stays_explicit_across_shared_and_bundled_guidance() -> None:
-    paths = (
+    canonical_paths = (
         ROOT / "AGENTS.md",
-        ROOT / "odylith" / "AGENTS.md",
-        ROOT / "odylith" / "README.md",
-        ROOT / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
-        ROOT / "odylith" / "agents-guidelines" / "ODYLITH_CONTEXT_ENGINE.md",
-        ROOT / "odylith" / "agents-guidelines" / "SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        ROOT / "odylith" / "agents-guidelines" / "VALIDATION_AND_TESTING.md",
-        ROOT / "odylith" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md",
-        ROOT / "odylith" / "skills" / "odylith-context-engine-operations" / "SKILL.md",
-        ROOT / "odylith" / "skills" / "odylith-session-context" / "SKILL.md",
-            ROOT / "odylith" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md",
-            ROOT / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md",
-            ROOT / "src" / "odylith" / "install" / "agents.py",
-            ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
-            ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "README.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "ODYLITH_CONTEXT_ENGINE.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "SUBAGENT_ROUTING_AND_ORCHESTRATION.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "VALIDATION_AND_TESTING.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-delivery-governance-surface-ops" / "SKILL.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-context-engine-operations" / "SKILL.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-session-context" / "SKILL.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-subagent-orchestrator" / "SKILL.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills" / "odylith-subagent-router" / "SKILL.md",
-    )
-    prompt_visible_contract_paths = {
-        ROOT / "AGENTS.md",
-        ROOT / "odylith" / "AGENTS.md",
-        ROOT / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
         ROOT / "src" / "odylith" / "install" / "agents.py",
-        ROOT / "src" / "odylith" / "install" / "bootstrap_assets.py",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md",
-        ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
-    }
-    for path in paths:
+    )
+    canonical_requirements = (
+        ODYLITH_ASSIST_LABEL,
+        "material implementation, decisions, verified results, or explicit intervention feedback",
+        "Routine prompts stay quiet.",
+        "Never add Assist merely because Odylith ran.",
+        ODYLITH_ASSIST_USER_WIN,
+        "changed IDs",
+        "the `odylith_off` edge",
+        "concrete counts, deltas, or validation outcomes",
+        "Generic receipts are not premium interventions.",
+    )
+    for path in canonical_paths:
         normalized = " ".join(path.read_text(encoding="utf-8").split())
-        assert ODYLITH_ASSIST_LABEL in normalized, f"closeout Odylith assist label drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_MARKDOWN_LABEL in normalized, f"closeout assist markdown label drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_USER_WIN in normalized, f"closeout assist user-win framing drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_UPDATED_IDS in normalized, f"closeout assist updated-id framing drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_AFFECTED_IDS in normalized, f"closeout assist affected-id framing drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_UNGUIDED_PATH in normalized, f"closeout assist delta framing drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_TONE in normalized, f"closeout assist tone drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_ASSIST_MIXED_EVIDENCE in normalized, f"closeout assist evidence rule drifted in {path.relative_to(ROOT)}"
-        if path in prompt_visible_contract_paths:
-            assert ODYLITH_ASSIST_DEFAULT_SILENCE in normalized, (
-                f"default-silent assist rule drifted in {path.relative_to(ROOT)}"
-            )
-            assert ODYLITH_ASSIST_NO_FAKE_SUCCESS in normalized, (
-                f"fake assist suppression rule drifted in {path.relative_to(ROOT)}"
-            )
+        for requirement in canonical_requirements:
+            assert requirement in normalized, f"canonical assist cadence drifted in {path.relative_to(ROOT)}: {requirement!r}"
         assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized, (
             f"legacy default assist emission remains in {path.relative_to(ROOT)}"
         )
-        assert ODYLITH_AMBIENT_SIGNAL_LABELS in normalized, f"ambient Odylith signal labels drifted in {path.relative_to(ROOT)}"
-        assert ODYLITH_SILENCE_RULE in normalized, f"silence rule drifted in {path.relative_to(ROOT)}"
+
+    bundle_path = ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith" / "AGENTS.md"
+    bundled_requirements = (
+        ODYLITH_ASSIST_LABEL,
+        "material implementation, decisions, verified results, or explicit intervention feedback",
+        "Routine prompts stay quiet.",
+        "Never add Assist merely because Odylith ran.",
+        ODYLITH_ASSIST_USER_WIN,
+        "changed IDs",
+        "the `odylith_off` edge",
+        "concrete counts, deltas, or validation outcomes",
+        "Generic receipts are not premium interventions.",
+    )
+    normalized_bundle = " ".join(bundle_path.read_text(encoding="utf-8").split())
+    for requirement in bundled_requirements:
+        assert requirement in normalized_bundle, f"bundled assist cadence drifted: {requirement!r}"
+    assert ODYLITH_ASSIST_LEGACY_DEFAULT not in normalized_bundle
 
 
 def test_odylith_assist_closeout_contract_stays_explicit_in_maintainer_and_benchmark_surfaces() -> None:

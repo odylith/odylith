@@ -46,7 +46,9 @@ def render_prompt_bundle_payload(
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return {}
     refs = list(dict.fromkeys(prompt_signal_runtime.ANCHOR_RE.findall(str(prompt or ""))))
-    if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+    if not refs and not host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt, repo_root=repo_root, session_id=session_id, host_family="claude"
+    ):
         if suppress_prompt_first_receipt or not host_intervention_support.prompt_first_receipt_eligible(prompt):
             return {}
         receipt = host_intervention_support.prompt_first_receipt_context(

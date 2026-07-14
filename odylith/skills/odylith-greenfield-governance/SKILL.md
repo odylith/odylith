@@ -14,75 +14,35 @@ artifacts, read prior failed mechanisms, failed fix attempts, and guardrails,
 do not repeat a fix path that already failed, and capture new
 mechanism-level learning.
 
-1. Do not refuse merely because the repo has no app source. Greenfield intent
-   is valid proposal evidence, not source evidence.
-2. Run the Product Intent Confirmation path:
-   `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<operator request>"`.
-3. Treat the default CLI text as the host reasoning contract, not the
-   interpretation itself. The host must write the Product Intent Confirmation
-   in chat from live reasoning. The visible confirmation must be sectioned
-   Markdown, not one large paragraph and never a wall of prose: title, Product
-   story, State object, First complete path, Human actors, External systems,
-   Internal product systems, Critical assumptions, Ambiguities, Proof boundary,
-   and a clear `## Choose one command` block:
-   `Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.`
-   Include `Reply starts with: CONFIRM`, `Reply starts with: EDIT`, and
-   `Reply starts with: REJECT` in the three command sections so the operator
-   can see the exact first word to use.
-   - **Command: `CONFIRM`** - Accept this interpretation, compile the validated transaction, and show its hash before any governed records are written.
-   - **Command: `EDIT`** - Put corrections after EDIT; treat them as new evidence and rebuild.
-   - **Command: `REJECT`** - Stop with no governed records written.
-   Use short paragraphs for the story, state object, first path, and proof
-   boundary. Use bullets for actors, systems, assumptions, and ambiguities.
-   Do not wrap ordinary product, actor, state, or component names in code ticks
-   or decorative bold markers.
-   The confirmation and every created record must pass the clarity floor first:
-   simple, easy to understand, legible, grammatically coherent, and clear.
-   Product meaning comes before artifact mapping; clipped titles, malformed
-   Markdown, repeated generic copy, or internal Odylith surface dumps are
-   invalid greenfield narration.
-   It must not generate backlog, Registry, Atlas, release waves, validation
-   obligations, or proposal JSON before the operator confirms the
-   interpretation.
-4. In chat, do not rely on collapsed Bash/tool output as the only visible
-   confirmation. Do not replace live product reasoning with a generic
-   "apply as-is, revise, or export JSON" menu. If the transcript collapses,
-   write the short Product Intent Confirmation yourself. After the operator
-   confirms that intent, keep the proposal contract internal and surface only
-   created records or validation/Tribunal blockers.
-5. After the operator confirms or edits the intent, write the same visible
-   Product Intent Confirmation to
-   `.odylith/runtime/greenfield/confirmed-intent.md`, then run
-   `greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`
-   with the original prompt. Odylith may normalize that Markdown into
-   `.odylith/runtime/greenfield/confirmed-intent.json`, then builds, repairs,
-   validates, quality-gates, and hashes the ProductCreateTransaction before
-   records can be confirmed. After **CONFIRM**, run
-   `greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
-   Confirmed create only verifies the compiler receipt, transaction hash,
-   compiler identity, and unchanged repo preconditions; applies the sealed write
-   set under rollback guard; validates exact readback; and reports success or
-   environment/IO failure. Do not search `src/odylith`.
-   Do not search `.odylith`, `odylith/skills`, installed bundle files,
-   local examples, or Python modules to discover schema fields after confirmation. Do not
-   hand-author, switch to, or repair proposal JSON after confirmation. Do not
-   narrate parser/schema retries or intermediate transaction-compile failures in
-   operator chat. `greenfield compile-transaction --intent-file
-   .odylith/runtime/greenfield/confirmed-intent.md --format json`
-   is only an optional review artifact when explicitly requested.
-6. The operator's Product Intent confirmation authorizes transaction
-   compilation; the hash confirmation authorizes one governed write
-   transaction. Do not stop at intermediate repairable package-quality or
-   create-shape findings before the transaction is ready.
-   Do not ask the operator to inspect proposal JSON or confirm a second time around uncompiled Markdown by default.
-   The normal confirmed path is
-   `./.odylith/bin/odylith greenfield compile-transaction --repo-root . --prompt "<operator request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`, followed by `./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
-   If a reviewer asks for JSON, render
-   `greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json`
-   as an audit artifact only; never reconstruct it by hand and never turn it
-   into a host-side data-shaping step. If transaction compilation, validation,
-   or Tribunal rejects the package, show the blocking issues in product
-   language and write no records.
+1. Do not refuse merely because the repo has no app source. Greenfield intent is
+   proposal evidence, not source evidence.
+   Product meaning comes before artifact mapping.
+2. Run `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<operator request>"`.
+   It treats the prompt and any EDIT Markdown as untrusted evidence, compiles typed
+   custody facts, repairs and quality-gates the complete staged ProductCreateTransaction,
+   and only then renders the visible confirmation.
+3. Show that transaction-bound preview directly in chat. Keep product story, state object,
+   first complete path, actors, systems, assumptions, ambiguities, and proof boundary clear
+   and concise. End with one `## Choose one command` block:
+   - **CONFIRM** commits this already validated, hash-bound package.
+   - **EDIT** supplies corrections as new evidence and rebuilds a replacement package and hash.
+   - **REJECT** stops with no governed records written.
+   Ask one focused question only when uncertainty materially changes the first release;
+   otherwise state the assumption. Markdown is evidence and a human view, never product truth.
+4. Do not hide the final rail behind collapsed tool output or replace it with a generic menu.
+   Do not expose internal repair chatter, proposal JSON, source-schema exploration, parser
+   retries, or a second confirmation. The visible prose must remain simple, legible,
+   grammatical, and specific.
+5. After **CONFIRM**, run
+   `./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
+   Create only verifies receipt, hash, compiler identity, and repo preconditions; writes
+   sealed bytes atomically under rollback guard; validates readback; and reports success or
+   an environment/IO failure. It does not parse Markdown, call a host model, generate
+   artifacts, or repair product prose after confirmation.
+6. If compilation, validation, or the Tribunal cannot produce a transaction, repair the
+   product/compiler before presenting CONFIRM. Explain only material blockers in product
+   language and write no records. If JSON is explicitly requested, use
+   `greenfield propose --format json` as an audit view; never rebuild transaction data by hand.
 7. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and

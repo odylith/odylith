@@ -7,6 +7,25 @@ import pytest
 from odylith.runtime.surfaces import brand_assets
 
 
+def _asset_payloads(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in root.rglob("*")
+        if path.is_file() and path.name not in {".DS_Store", "README.md"}
+    }
+
+
+def test_brand_asset_payloads_match_runtime_canonical_set() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    runtime_root = repo_root / "src/odylith/runtime/surfaces/assets/brand"
+    live_root = repo_root / "odylith/surfaces/brand"
+    bundle_root = repo_root / "src/odylith/bundle/assets/odylith/surfaces/brand"
+
+    expected = _asset_payloads(runtime_root)
+    assert _asset_payloads(live_root) == expected
+    assert _asset_payloads(bundle_root) == expected
+
+
 def test_render_brand_head_html_uses_root_relative_paths(tmp_path: Path) -> None:
     html = brand_assets.render_brand_head_html(
         repo_root=tmp_path,

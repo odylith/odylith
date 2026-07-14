@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
+from odylith.runtime.domain_intelligence import greenfield_confirmed_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
@@ -360,6 +361,17 @@ def test_ownership_clause_system_row_keeps_responsibility_out_of_component_ident
     assert rows[0].startswith("Request Intake Register — owns request identity")
     assert components[0]["label"] == "Request Intake Register Service"
     assert "Owns Request Identity" not in components[0]["label"]
+
+
+def test_short_system_description_uses_direct_preservation_prose() -> None:
+    description = greenfield_confirmed_system_rows._contextualized_system_body(  # noqa: SLF001
+        name="Recipe Sequencer",
+        body="tracks",
+        context_text="",
+    )
+
+    assert description == "keeps recipe sequencer state, validation result, blocker state, and handoff evidence together"
+    assert "while keeping" not in description
 
 
 def test_long_system_descriptors_do_not_become_component_identity() -> None:

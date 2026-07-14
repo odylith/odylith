@@ -219,6 +219,7 @@ def css() -> str:
       max-width: 100%;
     }
     .artifact {
+      --surface-deep-link-button-padding: 4px 12px;
       justify-content: flex-start;
       flex: 0 1 auto;
       max-width: 100%;
@@ -237,6 +238,9 @@ def css() -> str:
     }
     .forensic-artifact-disclosure > summary::-webkit-details-marker {
       display: none;
+    }
+    .forensic-artifact-overflow-summary {
+      --surface-deep-link-button-padding: 4px 12px;
     }
     .forensic-artifact-disclosure-panel {
       display: flex;

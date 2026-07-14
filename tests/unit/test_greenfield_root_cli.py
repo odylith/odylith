@@ -5,15 +5,15 @@ import pytest
 from odylith import cli
 
 
-def test_greenfield_compile_transaction_help_forwards_backend_flags(capsys) -> None:
+def test_greenfield_create_help_exposes_precompiled_transaction_contract(capsys) -> None:
     with pytest.raises(SystemExit) as excinfo:
-        cli.main(["greenfield", "compile-transaction", "--help"])
+        cli.main(["greenfield", "create", "--help"])
 
     output = capsys.readouterr().out
     assert excinfo.value.code == 0
-    assert "usage: odylith greenfield compile-transaction" in output
-    assert "--prompt" in output
-    assert "--intent-file" in output
-    assert "--transaction-file" not in output
-    assert "--output" in output
-    assert "--format" in output
+    assert "usage: odylith greenfield create" in output
+    assert "--transaction-file" in output
+    assert "--transaction-hash" in output
+    assert "--confirm" in output
+    assert "--intent-file" not in output
+    assert "--confirm-intent" not in output

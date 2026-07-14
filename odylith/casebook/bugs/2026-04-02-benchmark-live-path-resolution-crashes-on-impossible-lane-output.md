@@ -147,7 +147,7 @@ running the pinned 0.1.15 runtime and failed while rendering Casebook because a
 prose paragraph was treated as a path and `pathlib.exists()` raised
 `OSError: [Errno 63] File name too long`. The same refresh immediately passed
 through the current source runtime with
-`PYTHONPATH=src .venv/bin/python -m odylith.cli sync --repo-root . --force`,
+`odylith sync --repo-root . --force`,
 including Casebook render, 46 fresh Atlas diagrams, Registry render, Compass
 refresh, and top-level shell render. This confirms the fix is present in
 current source but not yet shipped in the active pinned dogfood runtime. Future
@@ -171,7 +171,7 @@ CB-202 because the pinned context-engine snapshot still exposed a prose-sized
 Casebook path token beginning `into the canonical title...`. Source validation
 passed first (`213` records checked), and the same Casebook surface refreshed
 cleanly through the current source runtime with
-`PYTHONPATH=src .venv/bin/python -m odylith.cli casebook refresh --repo-root .`
+`odylith casebook refresh --repo-root .`
 (`213` total cases, `120` open). This is the same known shipped-runtime gap:
 do not repeat the fix, do not mutate CB-202 to hide parser behavior, and prove
 the packaged runtime after the next local dist is built.

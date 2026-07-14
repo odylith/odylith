@@ -290,11 +290,13 @@ def test_visible_intervention_fallback_markdown_is_transcript_visible_in_compact
     message = page.locator("#assistant-message")
     message.wait_for(timeout=15000)
     message.locator("text=Odylith Observation").wait_for(timeout=15000)
-    message.locator("text=Odylith note").wait_for(timeout=15000)
+    message.locator("text=You should see guidance when it matters").wait_for(timeout=15000)
     rendered_text = message.inner_text().strip()
     assert rendered_text.startswith("---\n\n**Odylith Observation:**")
     assert not rendered_text.lstrip().startswith("{")
-    assert "intervention visibility is the blocker" in rendered_text
+    assert "You should see guidance when it matters" in rendered_text
+    assert "Codex" not in rendered_text
+    assert "Claude" not in rendered_text
     assert "Show the next Odylith" not in rendered_text
     assert "chat-proved" not in rendered_text
     assert "hook" not in rendered_text

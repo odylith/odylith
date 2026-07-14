@@ -46,6 +46,7 @@ def repair_domain_intelligence_sentence_lists(
     state_object: str,
     proof_boundary: str,
     actor_summary: str,
+    primary_actor: str,
 ) -> bool:
     intelligence = row.get("domain_intelligence")
     if not isinstance(intelligence, dict):
@@ -60,7 +61,7 @@ def repair_domain_intelligence_sentence_lists(
             intelligence,
             "scope",
             [
-                f"{title} starts with a representative user who can {action}.",
+                f"{title} starts with {primary_actor} who can {action}.",
                 f"{title} stays inside the first release until the product can {outcome_action} and explain blocked input.",
             ],
         )

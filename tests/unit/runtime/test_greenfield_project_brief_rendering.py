@@ -113,14 +113,10 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
         "coding_readiness_gates": ["The first path has a blocked-input and recovery proof."],
         "host_independent_paths": [
             {
-                "path": "Compile create transaction",
-                "command": "odylith greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json",
+                "path": "Review the creation-ready transaction",
+                "command": "odylith greenfield propose --repo-root . --prompt 'resident repair workspace'",
                 "works_in": "Codex and Claude Code",
-            },
-            {
-                "path": "Commit confirmed transaction",
-                "command": "odylith greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
-                "works_in": "Codex and Claude Code",
+                "use_when": "Odylith compiles and validates the package before showing CONFIRM, EDIT, and REJECT.",
             }
         ],
     }
@@ -140,11 +136,10 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
     ) in lines
     assert "done when Done when" not in "\n".join(lines)
     assert (
-        "  - Compile create transaction: `odylith greenfield compile-transaction --intent-file "
-        ".odylith/runtime/greenfield/confirmed-intent.md --output "
-        ".odylith/runtime/greenfield/product-create-transaction.v1.json` (Codex and Claude Code)"
+        "  - Review the creation-ready transaction: `odylith greenfield propose --repo-root . --prompt "
+        "'resident repair workspace'` (Codex and Claude Code)"
     ) in lines
-    assert not any("Commit confirmed transaction" in line for line in lines)
+    assert not any("greenfield compile-transaction" in line for line in lines)
     assert not any("odylith greenfield create" in line for line in lines)
     assert all("not a row" not in line for line in lines)
 

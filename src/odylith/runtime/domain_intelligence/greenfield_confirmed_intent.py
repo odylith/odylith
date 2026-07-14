@@ -100,6 +100,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import has_presentation_only_title_marker
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
@@ -144,6 +145,12 @@ def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: 
     """Load a host-visible Product Intent Confirmation from Markdown/text/JSON."""
 
     return load_confirmed_intent_record(path, prompt=prompt, fallback_title=fallback_title).product_facts
+
+
+def is_host_guidance_envelope(value: str) -> bool:
+    """Return whether input is a host-control envelope rather than product evidence."""
+
+    return _looks_like_host_guidance_envelope(value)
 
 
 def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title: str = "") -> ConfirmedIntentRecord:
@@ -273,7 +280,7 @@ def normalize_confirmed_intent(
         ),
         "non_goals": confirmed_text_values(payload.get("non_goals")),
     }
-    if title_normalization.changed:
+    if title_normalization.changed and not has_presentation_only_title_marker(title_normalization.raw_title):
         result["source_title"] = title_normalization.raw_title
     result["internal_systems"] = _expand_internal_system_rows(
         _preferred_internal_rows(
@@ -442,7 +449,7 @@ def parse_confirmed_intent_text(
         "non_goals": _section_list(sections, "non_goals"),
     }
     _split_embedded_ambiguity_rows(result)
-    if title_normalization.changed:
+    if title_normalization.changed and not has_presentation_only_title_marker(title_normalization.raw_title):
         result["source_title"] = title_normalization.raw_title
     result["internal_systems"] = _internal_system_rows(
         sections,

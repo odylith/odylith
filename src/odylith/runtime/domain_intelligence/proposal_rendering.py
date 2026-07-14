@@ -8,7 +8,6 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
-from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 _PROJECT_REQUIREMENTS_TEXT_PREVIEW_LIMIT = 90
@@ -23,17 +22,11 @@ def build_apply_commands(proposal: Mapping[str, Any]) -> list[str]:
     backlog = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     diagrams = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    release_selector = _release_selector(release_plan)
-    release_arg = f" --release {shell_quote(release_selector)}"
     prompt_arg = shell_quote(str(proposal.get("intent", {}).get("prompt", "new project")))
     commands = [
-        "odylith greenfield compile-transaction --repo-root . --prompt "
-        + prompt_arg
-        + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json"
-        + release_arg,
-        "# after compile, confirm or reject the transaction-ready screen that shows the real hash",
-        "# optional audit artifact: `greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json` prints the validated transaction payload",
+        "odylith greenfield propose --repo-root . --prompt " + prompt_arg,
+        "# this compiles and validates the transaction before showing the sole hash-bound command rail",
+        "# optional audit artifact: `greenfield propose --format json` prints the validated transaction payload",
     ]
     if backlog:
         commands.append("# commit will create project workstream records from the validated transaction")
@@ -65,9 +58,9 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             f"- source posture: {source.get('source_posture', 'unknown')}",
             "- files changed: none",
             "- generated governance artifacts: none",
-            "- proposal authorship: legacy reasoning-request mode; prefer confirmed create path",
+            "- proposal authorship: legacy advisory mode; use the precompiled create path for final commands",
             f"- provider calls by Odylith CLI: {proposal.get('provider_calls', 0)}",
-            "- write gate: `greenfield compile-transaction` builds, repairs, validates, quality-gates, and hashes the package before confirmation; the transaction-ready screen owns the commit-only create command",
+            "- write gate: `greenfield propose` builds, validates, quality-gates, and hashes the package before the transaction-ready screen renders the commit-only command",
             "",
             "Host handoff",
         ]
@@ -77,9 +70,9 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.append(f"- Stop: {rule}")
         lines.extend(
             [
-                "- Use `odylith greenfield compile-transaction --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1`, then follow the transaction-ready confirmation screen.",
+                "- Use `odylith greenfield propose --repo-root . --prompt \"<request>\"`, then follow the resulting transaction-ready confirmation screen.",
                 "",
-                "Confirmed create after intent confirmation",
+                "Precompiled create",
             ]
         )
         for step in _contract_rows(handoff.get("allowed_host_steps"), limit=4):
@@ -109,8 +102,8 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.extend(["", "Quality bar"])
             for rule in contract.get("quality_bar", []) if isinstance(contract.get("quality_bar"), list) else []:
                 lines.append(f"- {rule}")
-        lines.extend(["", "Confirmed create"])
-        lines.append("After Product Intent is confirmed, run the confirmed create path; do not ask the operator to inspect proposal JSON.")
+        lines.extend(["", "Precompiled create"])
+        lines.append("Run the precompiled create path; do not ask the operator to inspect or repair proposal JSON.")
         if isinstance(commands, list):
             for command in commands:
                 lines.append("  " + str(command))
@@ -145,9 +138,9 @@ def _format_proposal_preview_text(
     commands = request_context.get("apply_commands", [])
     apply_json_command = ""
     if isinstance(commands, list):
-        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield compile-transaction")), "")
+        apply_json_command = next((str(item) for item in commands if str(item).startswith("odylith greenfield propose")), "")
     if not apply_json_command:
-        apply_json_command = "odylith greenfield compile-transaction --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json" + f" --release {shell_quote(release_selector)}"
+        apply_json_command = "odylith greenfield propose --repo-root . --prompt '<request>'"
 
     lines = [
         f"Greenfield proposal preview: {title}",
@@ -182,23 +175,8 @@ def _format_proposal_preview_text(
     lines.extend(
         [
             "",
-            *format_confirmation_choice_lines(
-                (
-                    (
-                        "CONFIRM",
-                        "Accept this preview so Odylith can compile the ProductCreateTransaction and show the final hash confirmation before records are written.",
-                    ),
-                    (
-                        "EDIT",
-                        "Put corrections after EDIT; Odylith treats them as new evidence and rebuilds from the sharper intent.",
-                    ),
-                    ("REJECT", "Stop. No governed records are written."),
-                )
-            ),
-            "- After the transaction is ready, Odylith shows the hash and the commit-only confirmation screen.",
-            "Odylith system action after **CONFIRM**",
-            "- Do not paste this command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT.",
-            f"- Compile transaction: {apply_json_command}",
+            "This preview is not a confirmation rail. Odylith compiles and quality-gates it before rendering the only hash-bound CONFIRM command.",
+            f"- Pre-confirm compiler action: {apply_json_command}",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
@@ -481,37 +459,16 @@ def _format_governed_proposal_text(
         rendered = _render_evidence_item(item, "question")
         if rendered:
             lines.append(f"- Question: {rendered}")
-    lines.extend(
-        [
-            "",
-            *format_confirmation_choice_lines(
-                (
-                    (
-                        "CONFIRM",
-                        "Accept this proposal so Odylith can compile the ProductCreateTransaction and show the hash-ready final command before any records are written.",
-                    ),
-                    (
-                        "EDIT",
-                        "Put corrections after EDIT; Odylith treats them as new evidence and rebuilds before compiling a transaction.",
-                    ),
-                    ("REJECT", "Stop. No governed records are written."),
-                )
-            ),
-        ]
-    )
-    lines.extend(["", "Transaction path"])
-    lines.append("No governed records changed. Transaction path:")
-    lines.append(
-        "- Do not paste the transaction command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT."
-    )
+    lines.extend(["", "Transaction boundary"])
+    lines.append("This advisory proposal view cannot be confirmed or create records.")
+    lines.append("Start from prompt evidence; only the resulting transaction view may render CONFIRM, EDIT, and REJECT.")
     request_commands = request_context.get("apply_commands", [])
     apply_command = ""
     if isinstance(request_commands, list):
-        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield compile-transaction")), "")
+        apply_command = next((str(item) for item in request_commands if str(item).startswith("odylith greenfield propose")), "")
     if not apply_command:
-        release_selector = _release_selector(release_plan)
-        apply_command = "odylith greenfield compile-transaction --repo-root . --prompt '<confirmed request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json" + f" --release {shell_quote(release_selector)}"
-    lines.append("  # Odylith compiles and validates the transaction before hash confirmation")
+        apply_command = "odylith greenfield propose --repo-root . --prompt '<request>'"
+    lines.append("  # Odylith compiles and validates the transaction before the final command rail")
     lines.append("  " + apply_command)
     commands = proposal.get("apply_commands", [])
     if isinstance(commands, list) and commands:

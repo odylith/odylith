@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import re
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import direct_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
@@ -244,19 +244,14 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
 
     for sentence in _sentence_fragments(value):
         text = clean_markdown_text(sentence).strip(" .")
-        match = re.match(
-            r"^(?P<actor>(?:a|an|the)?\s*[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"
-            r"(?:(?P<need>(?:needs?|must)\s+to)\s+|(?P<gerund>is|are)\s+)(?P<action>[A-Za-z][A-Za-z0-9 /&'(),-]{4,})$",
-            text,
-            flags=re.IGNORECASE,
-        )
+        match = direct_actor_action_match(text)
         if not match:
             continue
-        actor = _strip_leading_actor_article(match.group("actor"))
-        action = re.split(r"\s+(?:after|before|between)\s+", match.group("action"), maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+        actor = _strip_leading_actor_article(match.actor)
+        action = match.action.strip(" .")
         if not actor or not action or not _is_bounded_prompt_actor(actor):
             continue
-        if match.group("gerund"):
+        if match.gerund:
             verb, _separator, tail = action.partition(" ")
             action = f"{_base_direct_gerund(verb) or verb} {tail}".strip(" .")
             return actor, f"{actor} can {action}"

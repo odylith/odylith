@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import datetime as dt
 from pathlib import Path
 from typing import Any
@@ -201,6 +201,10 @@ def build_prewrite_completion_package(
                 repo_root=prewrite_root,
                 release_assignment_result=preview_release_assignment,
             )
+            staged_release_targeting = {
+                **staged_release_targeting,
+                "workstream_ids": list(first_release_workstreams),
+            }
         prewrite_safety_preview = prewrite_safety_evidence(
             validation_gate=validation_gate,
             program_result=preview_program_result,
@@ -330,6 +334,42 @@ def build_prewrite_completion_package(
             commit_result_preview=transaction_seal.commit_result_preview,
         )
         package = greenfield_source_casing.package_with_source_casing(package)
+        source_cased_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
+            greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
+                prewrite_root=prewrite_root,
+                target_root=root,
+                proposal=package.proposal,
+                validation_gate=package.tribunal_preview,
+                staged_backlog_result=staged_backlog_result,
+                target_backlog_result=package.backlog_result,
+                staged_component_registry_preview=package.component_registry_preview,
+                rendered_component_specs=package.rendered_component_specs,
+                diagram_rows=diagram_rows,
+                diagram_ids=package.atlas_diagram_ids,
+                staged_traceability_plan=staged_traceability_plan,
+                rendered_atlas_sources=package.rendered_atlas_sources,
+                atlas_review_date=package.atlas_review_date,
+                compiled_atlas_catalog_rows=package.atlas_catalog_rows,
+                accepted_project_preview=package.accepted_project_preview,
+                project_brief_record_text=package.project_brief_record_text,
+                compass_memory_preview=package.compass_memory_preview,
+                next_steps_preview=package.next_steps_preview,
+                staged_program_result=package.program_result,
+                prewrite_safety_preview=package.prewrite_safety_preview,
+                staged_release_bootstrap=staged_release_bootstrap,
+                staged_release_targeting={
+                    **dict(package.release_assignment_result or {}),
+                    "workstream_ids": list(package.release_workstream_ids),
+                },
+                brand_asset_count=len(brand_asset_writes),
+            )
+        )
+        package = replace(
+            package,
+            surface_refresh_preview=source_cased_seal.surface_refresh_preview,
+            repository_write_set=source_cased_seal.repository_write_set,
+            commit_result_preview=source_cased_seal.commit_result_preview,
+        )
         return GreenfieldPrewriteBuild(
             backlog_result=package.backlog_result or backlog_result,
             package=package,

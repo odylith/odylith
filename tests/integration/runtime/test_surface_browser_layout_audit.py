@@ -895,7 +895,22 @@ def _assert_registry_forensic_digest_keeps_default_view_compact(  # noqa: ANN001
     assert artifact_disclosure_style["paddingLeft"] == "12px"
     assert artifact_disclosure_style["borderRadius"] == "999px"
 
-    artifact_disclosure = registry.locator("#timeline .forensic-artifact-disclosure").first
+    artifact_disclosures = registry.locator("#timeline .forensic-artifact-disclosure")
+    disclosure_index = artifact_disclosures.evaluate_all(
+        """(nodes) => {
+            const index = nodes.findIndex((node) => node.querySelector(
+                '.forensic-artifact-disclosure-panel .artifact'
+            ));
+            if (index < 0) return index;
+            for (let parent = nodes[index].parentElement; parent; parent = parent.parentElement) {
+                if (parent.tagName === 'DETAILS') parent.open = true;
+            }
+            return index;
+        }"""
+    )
+    assert disclosure_index >= 0
+    artifact_disclosure = artifact_disclosures.nth(disclosure_index)
+    artifact_disclosure.scroll_into_view_if_needed()
     hidden_artifacts = artifact_disclosure.locator(".forensic-artifact-disclosure-panel .artifact")
     assert hidden_artifacts.count() > 0
     assert hidden_artifacts.first.is_visible() is False

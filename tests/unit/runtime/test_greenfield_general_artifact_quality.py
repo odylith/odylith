@@ -670,6 +670,7 @@ def test_greenfield_atlas_uses_first_path_events_and_evidence_owner(tmp_path: Pa
 
 def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_material_first_path(tmp_path: Path) -> None:
     title = normalize_project_title("Health Episode Journal (working title)")
+    preview_title = normalize_project_title("Digestive Health Patients Workspace - Product Intent Preview")
     intent = parse_confirmed_intent_text(
         PAIN_RELIEF_TRACKING_INTENT,
         prompt="Health Episode Journal (working title)",
@@ -682,6 +683,7 @@ def test_greenfield_health_tracking_artifacts_strip_working_title_and_parse_mate
 
     assert title.canonical_title == "Health Episode Journal"
     assert title.raw_title == "Health Episode Journal (working title)"
+    assert preview_title.canonical_title == "Digestive Health Patients Workspace"
     assert intent["title"] == "Health Episode Journal"
     assert intent["source_title"] == "Health Episode Journal (working title)"
     assert intent["prompt"] == "Health Episode Journal"
@@ -1484,6 +1486,7 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
+    stub_preconfirm_surface_refresh(monkeypatch)
     proposal = _trip_comparison_proposal(tmp_path)
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
@@ -1613,6 +1616,7 @@ def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registr
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
+    stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
         greenfield_component_commit.component_authoring.owned_surface_refresh,

@@ -11,6 +11,8 @@ from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_dri
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description, completed_actor_rows as _completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import customer_summary as _customer_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import needs_verb as _needs_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows, proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase, outcome_action_phrase as _outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_context_completion import complete_external_boundary as _complete_external_boundary
@@ -34,7 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import re
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, material_first_path_action, normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, has_presentation_only_title_marker, material_first_path_action, normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_confirmed_intent_semantic_projections
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_confirmed_proof_boundary_sentence, normalize_visible_result_language as _normalize_visible_result_terms, text_values
 
@@ -50,7 +52,10 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(dict(intent))
     title_normalization = normalize_project_title(_title(result), fallback="Greenfield Project")
     if title_normalization.changed:
-        result["source_title"] = result.get("source_title") or title_normalization.raw_title
+        if has_presentation_only_title_marker(title_normalization.raw_title):
+            result.pop("source_title", None)
+        else:
+            result["source_title"] = result.get("source_title") or title_normalization.raw_title
         result["title"] = title_normalization.canonical_title
     title = _title(result)
     if not _completion_seed_is_sufficient(result):
@@ -77,6 +82,7 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
         text = _clean(intent.get(key))
         if text:
             normalized = _normalize_first_path(text) if key == "first_path" else _normalize_visible_result_language(_strip_prompt_prefixes(text))
+            normalized = _normalize_understand_object_phrase(normalized)
             intent[key] = _sentence(normalized)
     state = _clean(intent.get("state_object"))
     if state:
@@ -112,6 +118,25 @@ def _normalize_open_clause(value: str) -> str:
         flags=re.IGNORECASE,
     )
     return text
+
+
+def _normalize_understand_object_phrase(value: str) -> str:
+    """Add a determiner and source casing when a state noun follows ``understand``."""
+
+    def replacement(match: re.Match[str]) -> str:
+        words = match.group("object").split()
+        normalized = " ".join(
+            word if word.isupper() else f"{word[:1].lower()}{word[1:]}"
+            for word in words
+        )
+        return f"understand the {normalized}"
+
+    return re.sub(
+        r"\bunderstand\s+(?P<object>[A-Z][A-Za-z0-9/_-]*(?:\s+[A-Z][A-Za-z0-9/_-]*){0,3})"
+        r"(?=\s+(?:and|or|but|before|after|when|where|while|to)\b|[.,;:]|$)",
+        replacement,
+        value,
+    )
 
 
 def _normalize_external_system_language(value: str) -> str:
@@ -373,11 +398,12 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
         if _concise_proof_boundary_is_meaningful(proof):
             intent["proof_boundary"] = _sentence(_completed_concise_proof_boundary(proof, title=title))
         else:
+            actor = _join(actors[:2]) or f"the first {_focus_label(title)} user"
             action = first_path_action_phrase(first_path or story, fallback="complete the first useful product action", max_fragments=1)
             outcome = _visible_outcome_phrase(first_path or story, proof=proof).rstrip(" .") or "a clear, useful result"
             outcome_action = _outcome_action_phrase(outcome)
             intent["proof_boundary"] = _sentence(
-                f"The first release works when a representative user can {action}, the product confirms the user can {outcome_action}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
+                f"The first release works when {actor} can {action}, the product confirms the user can {outcome_action}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
                 f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
             )
 
@@ -746,29 +772,6 @@ def _metric_needs_repair(value: Any) -> bool:
     return tail in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an", "required"}
 
 
-def _customer_summary(actors: Sequence[str], *, title: str) -> str:
-    labels = [_clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .") for value in actors]
-    labels = [label for label in labels if label]
-    if not labels:
-        return f"{_focus_label(title)} users"
-    if len(labels) == 1:
-        return labels[0]
-    if _secondary_role_is_supporting(labels[1]):
-        return labels[0]
-    return _join(labels[:2])
-
-
-def _secondary_role_is_supporting(label: str) -> bool:
-    text = _clean(label).casefold()
-    return bool(
-        re.search(
-            r"\b(?:admin|administrator|advisor|analyst|approver|auditor|coach|coordinator|evaluator|expert|inspector|"
-            r"lead|manager|officer|operator|reviewer|specialist|supervisor|support)\b",
-            text,
-        )
-    )
-
-
 def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) -> str:
     rows = []
     for value in actors[:4]:
@@ -782,15 +785,6 @@ def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) ->
         return "; ".join(rows)
     path = readable_action_chain_phrase(first_path, fallback=first_path_capability_phrase(first_path))
     return f"{_focus_label(title)} users need to {path} and understand the outcome."
-
-
-def _needs_verb(label: str) -> str:
-    text = _clean(label).casefold()
-    if not text:
-        return "need"
-    if " and " in text or "," in text or text.endswith(("s", "team", "teams")):
-        return "need"
-    return "needs"
 
 
 __all__ = ["complete_confirmed_intent"]

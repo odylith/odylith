@@ -131,8 +131,11 @@ def test_broker_hard_fail_visible_for_zero_visibility_feedback(tmp_path: Path) -
     )
 
     assert decision.visible_markdown.startswith(
-        "---\n\n**Odylith Observation:** Codex intervention visibility is the blocker: this turn must render an Odylith note in chat before Odylith can claim the user saw it."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
+    assert "Codex" not in decision.visible_markdown
+    assert "Claude" not in decision.visible_markdown
+    assert "hook" not in decision.visible_markdown.casefold()
     assert "Show the next Odylith" not in decision.visible_markdown
     assert "chat-proved" not in decision.visible_markdown
     assert decision.delivery_status == "assistant_render_required"
@@ -157,7 +160,7 @@ def test_broker_hard_fail_visible_for_zero_signals_branding_feedback(tmp_path: P
     )
 
     assert decision.visible_markdown.startswith(
-        "---\n\n**Odylith Observation:** Codex intervention visibility is the blocker: this turn must render an Odylith note in chat before Odylith can claim the user saw it."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True

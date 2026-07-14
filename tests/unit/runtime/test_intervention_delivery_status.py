@@ -784,3 +784,19 @@ def test_host_intervention_status_cli_dispatches_for_both_hosts(tmp_path: Path, 
     claude_payload = json.loads(capsys.readouterr().out)
     assert claude_payload["host_family"] == "claude"
     assert claude_payload["activation"] == "ready"
+
+
+def test_unsupported_host_status_does_not_fall_back_to_codex(tmp_path: Path) -> None:
+    report = host_intervention_status.inspect_intervention_status(
+        repo_root=tmp_path,
+        host_family="gemini",
+        session_id="unsupported-host",
+    )
+
+    assert report["host_family"] == "gemini"
+    assert report["activation"] == "unsupported"
+    assert report["static_readiness"]["checks"] == {"supported_host": False}
+    assert report["smoke_command"] == ""
+    rendered = host_intervention_status.render_intervention_status(report)
+    assert "Host: Unsupported host" in rendered
+    assert "odylith gemini visible-intervention" not in rendered

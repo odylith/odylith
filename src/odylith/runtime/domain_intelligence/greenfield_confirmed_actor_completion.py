@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_confirmed_items as _join
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
@@ -674,6 +675,38 @@ def _actor_context(intent: Mapping[str, Any]) -> str:
     return ". ".join(part.strip(" .") for part in parts if part)
 
 
+def customer_summary(actors: Sequence[str], *, title: str) -> str:
+    """Return the primary customer label from completed actor rows."""
+
+    labels = [_clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .") for value in actors]
+    labels = [label for label in labels if label]
+    if not labels:
+        return f"{_focus_label(title)} users"
+    if len(labels) == 1 or _secondary_role_is_supporting(labels[1]):
+        return labels[0]
+    return _join(labels[:2])
+
+
+def needs_verb(label: str) -> str:
+    """Return the finite form for a completed customer label."""
+
+    text = _clean(label).casefold()
+    if not text or " and " in text or "," in text or text.endswith(("s", "team", "teams")):
+        return "need"
+    return "needs"
+
+
+def _secondary_role_is_supporting(label: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:admin|administrator|advisor|analyst|approver|auditor|coach|coordinator|evaluator|expert|inspector|"
+            r"lead|manager|officer|operator|reviewer|specialist|supervisor|support)\b",
+            _clean(label),
+            re.IGNORECASE,
+        )
+    )
+
+
 _GENERIC_ACTOR_VALUE_HEADS = {
     "admin",
     "administrator",
@@ -713,4 +746,12 @@ _GENERIC_ACTOR_VALUE_ACTIONS = {
 }
 
 
-__all__ = ["actor_labels", "actor_row_description", "completed_actor_rows", "project_specific_actor_labels", "value_starts_with_generic_actor_label"]
+__all__ = [
+    "actor_labels",
+    "actor_row_description",
+    "completed_actor_rows",
+    "customer_summary",
+    "needs_verb",
+    "project_specific_actor_labels",
+    "value_starts_with_generic_actor_label",
+]

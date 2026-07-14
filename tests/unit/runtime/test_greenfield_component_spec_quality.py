@@ -431,6 +431,18 @@ def test_component_contract_profiles_stay_in_dedicated_owner() -> None:
         contract_profiles._object_phrase("The Primary source-backed_review record")
         == "source-backed review record"
     )
+
+
+def test_document_contract_does_not_duplicate_downstream_preposition() -> None:
+    contract = contract_profiles.document_context_contract(
+        label="Proof Ledger",
+        state_label="proof record",
+        context="lifecycle",
+        previous_label="Review Workspace",
+        next_label="",
+    )
+
+    assert "for for lifecycle" not in " ".join(str(value) for value in contract.values()).casefold()
     document_contract = contract_profiles.document_context_contract(
         label="Packet Intake Service",
         state_label="permit application packet",

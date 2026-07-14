@@ -15,10 +15,28 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import look
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
-from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import LEADING_ARTICLES as _LEADING_ARTICLES
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import MODAL_MARKERS as _MODAL_MARKERS
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import PRODUCT_CONTAINER_TERMS as _PRODUCT_CONTAINER_TERMS
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import actor_reference as _actor_reference
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import actor_verb as _actor_verb
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import clean_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import indefinite_phrase as _indefinite_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import internal_system_rows_from_recovered_title as _internal_system_rows_from_recovered_title
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import lower_leading_word as _lower_leading_word
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import object_result_phrase as _object_result_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_title as _recovered_title
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_proof_text as _recovered_proof_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_story_text as _recovered_story_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recover_title_source as _recover_title_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import sentence_start as _sentence_start
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import stable_outcome_phrase as _stable_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import strip_leading_articles as _strip_leading_articles
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import word_spans as _word_spans
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import words as _words
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import product_view_result_sentence as _product_view_result_sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
-from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
@@ -29,14 +47,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import re
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
-from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 
-_MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
 _ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
-_LEADING_ARTICLES = frozenset({"a", "an", "the"})
-_LEADING_CONNECTORS = frozenset({"and", "or", "then"})
 _NON_HUMAN_ACTOR_TERMS = frozenset(
     {
         "api",
@@ -153,63 +167,28 @@ _STATE_REVIEW_PREDICATES = frozenset(
         "visible",
     }
 )
-_PRODUCT_CONTAINER_TERMS = frozenset(
-    {
-        "app",
-        "application",
-        "coach",
-        "console",
-        "coordination",
-        "controller",
-        "board",
-        "builder",
-        "dashboard",
-        "desk",
-        "engine",
-        "experience",
-        "executor",
-        "hub",
-        "journal",
-        "logbook",
-        "manager",
-        "monitor",
-        "notebook",
-        "platform",
-        "planner",
-        "portal",
-        "product",
-        "room",
-        "service",
-        "studio",
-        "system",
-        "tool",
-        "tracker",
-        "workbench",
-        "workspace",
-    }
-)
-_RESULT_FOCUS_CONTAINER_TERMS = frozenset(
-    {
-        "app",
-        "application",
-        "console",
-        "dashboard",
-        "desk",
-        "platform",
-        "portal",
-        "product",
-        "room",
-        "service",
-        "studio",
-        "system",
-        "tool",
-        "workbench",
-        "workspace",
-    }
-)
 
 
-def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title: bool = False) -> str:
+def intent_hypothesis_from_operator_evidence(
+    intent_text: str,
+    *,
+    prefer_product_title: bool = False,
+) -> dict[str, object]:
+    """Build typed candidate facts directly from untrusted operator evidence."""
+
+    return confirmation_from_operator_intent(
+        intent_text,
+        prefer_product_title=prefer_product_title,
+        as_mapping=True,
+    )
+
+
+def confirmation_from_operator_intent(
+    intent_text: str,
+    *,
+    prefer_product_title: bool = False,
+    as_mapping: bool = False,
+) -> str | dict[str, object]:
     """Return a structured confirmation when the host passed guidance instead of the visible answer."""
 
     raw_source = str(intent_text or "")
@@ -231,11 +210,13 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         ),
         fallback="Recovered Product Workspace",
     ).canonical_title
+    device_owner_first_path = _device_owner_first_path(raw_source, title=title)
     recovered_source_has_non_human_subject = _path_starts_with_non_human_workflow_subject(recovered_first_path_source)
     usable_first_path_source = _usable_first_path_source(
         recovered_first_path_source,
         title=title,
         preserve_one_line=bool(prompt_source.command_led and prompt_source.title and prompt_source.actor),
+        require_explicit_action=prompt_source.command_led,
     )
     generic_context_source = (
         (prompt_title_source or title_source or title)
@@ -243,7 +224,8 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         else recovered_first_path_source
     )
     first_path_source = (
-        usable_first_path_source
+        device_owner_first_path
+        or usable_first_path_source
         or evaluation.first_path_source
         or _generic_first_path_source(title, source=generic_context_source)
     )
@@ -321,6 +303,26 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         "The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
     )
     evidence_requirements = evidence_anchor_phrases(raw_source)
+    hypothesis: dict[str, object] = {
+        "title": title,
+        "prompt": raw_source,
+        "product_story": story,
+        "state_object": state,
+        "first_path": first_path.rstrip(".") + ".",
+        "human_actors": tuple(actor_rows),
+        "external_systems": (),
+        "internal_systems": tuple(evaluation.internal_systems or tuple(_internal_system_rows_from_recovered_title(title))),
+        "problem": problem,
+        "opportunity": f"Prove the smallest complete {title.lower()} path before broader automation expands.",
+        "product_view": product_view,
+        "success_metrics": tuple(success_metrics),
+        "assumptions": tuple(assumptions),
+        "ambiguities": tuple(ambiguities),
+        "proof_boundary": proof,
+        "evidence_requirements": tuple(evidence_requirements),
+    }
+    if as_mapping:
+        return hypothesis
     actor_lines = "\n".join(f"- {row}" for row in actor_rows)
     system_lines = "\n".join(f"- {row}" for row in (evaluation.internal_systems or tuple(_internal_system_rows_from_recovered_title(title))))
     sections = [
@@ -348,7 +350,13 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     return "\n\n".join(sections)
 
 
-def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool = False) -> str:
+def _usable_first_path_source(
+    value: str,
+    *,
+    title: str,
+    preserve_one_line: bool = False,
+    require_explicit_action: bool = False,
+) -> str:
     text = _clean(value).strip(" .")
     if not text or _path_source_restates_title(text, title=title):
         return ""
@@ -356,6 +364,8 @@ def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool
         return ""
     model = first_path_model(text)
     gerund_actor, gerund_action = _actor_gerund_action_parts(text)
+    if require_explicit_action and not first_path_has_action_signal(text) and not (gerund_actor and gerund_action):
+        return ""
     if not first_path_has_action_signal(text) and not model.material_action and not (gerund_actor and gerund_action):
         return ""
     if len(model.steps) >= 2:
@@ -466,6 +476,31 @@ def _semantic_terms(value: str) -> set[str]:
 
 def _generic_first_path_source(title: str, *, source: str = "") -> str:
     return semantic_first_path_from_context(title=title, source=source)
+
+
+def _device_owner_first_path(value: str, *, title: str) -> str:
+    """Recover a usable owner journey when a prompt describes device behavior, not a user flow."""
+
+    source = _clean(value).casefold()
+    if not re.search(r"\b(?:device|controller|sensor|monitor)\b[^.!?]{0,120}\bthat\s+", source):
+        return ""
+    device_label = _title_without_terminal_container(title).casefold() or "device"
+    status_subject = "plant status" if re.search(r"\bhouseplants?|plants?\b", source) else "device status"
+    outcome_parts: list[str] = []
+    if re.search(r"\bwater(?:s|ing)?\b", source):
+        outcome_parts.append("watering")
+    if re.search(r"\bmonitor(?:s|ing)?\b", source):
+        outcome_parts.append("monitoring")
+    if outcome_parts == ["watering", "monitoring"]:
+        visible_result = "current watering status and sensor status"
+    elif outcome_parts:
+        visible_result = f"current {outcome_parts[0]} status"
+    else:
+        visible_result = "current device status"
+    return (
+        f"A device owner can configure one {device_label}, review the {status_subject}, "
+        f"and see {visible_result}"
+    )
 
 
 def _embedded_first_path_clause(value: str, *, actor: str, force_actor_modal: bool = False) -> str:
@@ -609,110 +644,6 @@ def _actor_purpose_parts(value: str) -> tuple[str, str]:
     if _looks_like_actor_subject(_words(actor)) and looks_like_action_clause(action):
         return actor, action
     return ("", "")
-
-
-def _recovered_story_text(
-    *,
-    title: str,
-    lead_actor_ref: str,
-    first_path_inline: str,
-    outcome_object: str,
-) -> str:
-    first_path = _sentence_start(first_path_inline)
-    if "." in first_path_inline:
-        opening = f"{title} helps {lead_actor_ref} complete this first path: {first_path}."
-    else:
-        opening = f"{title} helps {lead_actor_ref} complete a first path where {first_path_inline}."
-    return (
-        f"{opening} It keeps {outcome_object} tied to source input, current state, blockers, handoffs, "
-        "and proof evidence so the next step is clear."
-    )
-
-
-def _recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str:
-    if "." in first_path_inline:
-        opening = "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required."
-    else:
-        opening = f"Release 0.0.1 succeeds when {first_path_inline}."
-    return (
-        f"{opening} The product shows {outcome_object}. It explains missing or invalid input with a clear blocker "
-        "and keeps replayable evidence for review."
-    )
-
-
-def _product_view_result_sentence(outcome_object: str, *, lead_action: str) -> str:
-    outcome = _clean(outcome_object).strip(" .")
-    if not outcome or word_count(outcome) < 3:
-        return ""
-    lead = _clean(lead_action).casefold()
-    if outcome.casefold() in lead and not (
-        re.search(r"\binto\b", lead) and re.match(r"^(?:a|an|the)\s+final\b", outcome, flags=re.IGNORECASE)
-    ):
-        return ""
-    return f"The visible result is {outcome}. "
-
-
-def _recover_title_source(source: str) -> str:
-    title = prompt_project_title_source(source)
-    if title:
-        return title
-    return _direct_product_title_source(source)
-
-
-def _direct_product_title_source(source: str) -> str:
-    text = _clean(source).strip(" .")
-    words = _words(text)
-    if len(words) < 2 or len(words) > 8:
-        return ""
-    lowered = {word.casefold().strip(".,:;") for word in words}
-    if lowered & {"confirm", "confirmation", "format", "intent", "needed", "original", "sectioned", "visible"}:
-        return ""
-    if lowered <= _LEADING_ARTICLES:
-        return ""
-    if any(marker in lowered for marker in _MODAL_MARKERS):
-        return ""
-    if looks_like_action_clause(text) or first_path_model(text).material_action:
-        return ""
-    return " ".join(words).strip(" .")
-
-
-def _indefinite_phrase(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return "a request"
-    first = text.split(maxsplit=1)[0].casefold()
-    if first in _LEADING_ARTICLES:
-        return text
-    text = _lower_article_body(text)
-    first = text.split(maxsplit=1)[0].casefold()
-    article = "an" if first[:1] in {"a", "e", "i", "o", "u"} else "a"
-    return f"{article} {text}"
-
-
-def _lower_article_body(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    first, _separator, _tail = text.partition(" ")
-    if first.isupper() and len(first) <= 4:
-        return text
-    if first.casefold() in _LEADING_ARTICLES:
-        return text
-    return f"{text[:1].casefold()}{text[1:]}"
-
-
-def _lower_leading_word(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    return f"{text[:1].lower()}{text[1:]}"
-
-
-def _sentence_start(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    return f"{text[:1].upper()}{text[1:]}"
 
 
 def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[str]:
@@ -1253,88 +1184,6 @@ def _lead_actor_action(actor_rows: Sequence[str]) -> str:
     return ""
 
 
-def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
-    label = title_case_text(collapse_repeated_phrase_units(_clean(title) or "Product"))
-    return [
-        (
-            f"{_system_label_with_suffix(label, 'Intake Register')} — records source input, current status, owner, blocker, "
-            "handoff, and version history for the first path"
-        ),
-        (
-            f"{_system_label_with_suffix(label, 'Review Workspace')} — presents current state, missing input, user-facing confirmation, "
-            "and the next useful action"
-        ),
-        (
-            f"{_system_label_with_suffix(label, 'Proof Ledger')} — keeps validation results, release decisions, failure reasons, "
-            "and replayable evidence for review"
-        ),
-    ]
-
-
-def _system_label_with_suffix(label: str, suffix: str) -> str:
-    head = title_case_text(collapse_repeated_phrase_units(_clean(label) or "Product"))
-    head_words = head.split()
-    suffix_words = _clean(suffix).split()
-    head_keys = [word.casefold().strip(".,;:") for word in head_words]
-    suffix_keys = [word.casefold().strip(".,;:") for word in suffix_words]
-    if suffix_keys and head_keys[-len(suffix_keys) :] == suffix_keys:
-        return head
-    if len(suffix_keys) > 1 and head_keys and head_keys[-1] == suffix_keys[-1]:
-        return title_case_text(collapse_repeated_phrase_units(" ".join([*head_words[:-1], *suffix_words]).strip()))
-    return title_case_text(collapse_repeated_phrase_units(" ".join([head, *suffix_words]).strip()))
-
-
-def _stable_outcome_phrase(value: str, *, title: str) -> str:
-    text = _clean(value).strip(" .")
-    lowered = text.casefold()
-    first_word = lowered.split(maxsplit=1)[0] if lowered.split() else ""
-    if (
-        not text
-        or first_word in _LEADING_CONNECTORS
-        or word_count(text) > 8
-        or _looks_like_status_only_outcome(lowered)
-        or _looks_like_generic_result_outcome(lowered)
-        or any(f" {marker} " in f" {lowered} " for marker in _MODAL_MARKERS)
-    ):
-        return f"{_title_result_focus(title)} result"
-    return text
-
-
-def _looks_like_status_only_outcome(value: str) -> bool:
-    text = f" {_clean(value).casefold()} "
-    return " ready or blocked " in text or " ready or rejected " in text or " ready or accepted " in text
-
-
-def _looks_like_generic_result_outcome(value: str) -> bool:
-    words = [word.casefold() for word in _words(value)]
-    return bool(
-        words
-        and words[-1] == "result"
-        and set(words[:-1]) <= {"a", "an", "the", "visible", "reviewable", "workspace"}
-    )
-
-
-def _title_result_focus(value: str) -> str:
-    terms = [
-        term.casefold()
-        for term in label_terms(value)
-        if term.casefold() not in _RESULT_FOCUS_CONTAINER_TERMS
-    ]
-    return " ".join(terms).strip(" .") or lower_plain_title_subject_fragment(value, action_offset=0) or "accepted product"
-
-
-def _object_result_phrase(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return "the first visible result"
-    text = lower_plain_title_subject_fragment(text, action_offset=0)
-    if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:
-        return text
-    if text[:2].isupper():
-        return f"the {text}"
-    return f"the {text[:1].casefold()}{text[1:]}"
-
-
 def _state_record_subject(value: str) -> str:
     text = lower_plain_title_subject_fragment(_clean(value), action_offset=0).strip(" .")
     if not text:
@@ -1401,107 +1250,6 @@ def _looks_like_actor_subject(words: Sequence[str]) -> bool:
     if any(singular.endswith(suffix) or last.endswith(suffix) for suffix in _HUMAN_ROLE_SUFFIXES):
         return True
     return False
-
-
-def _recovered_title(outcome: str) -> str:
-    title_source = _title_source_from_outcome(outcome)
-    words = _clean(title_source).split()
-    if 1 <= len(words) <= 8 and title_source.casefold() != "the first visible result":
-        title = title_case_text(title_source)
-        if _has_product_container_title(title):
-            return title
-        return f"{title} Workspace"
-    return "Recovered Product Workspace"
-
-
-def _title_source_from_outcome(value: str) -> str:
-    text = _clean(value).strip(" .")
-    text = re.sub(
-        r"^(?:a|an|the)?\s*[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
-        r"(?:(?:needs?|must)\s+to\s+|(?:is|are)\s+)(?:[A-Za-z]+ing\s+)?",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    ).strip(" .")
-    match = re.match(
-        r"^(?:accept|approve|capture|collect|complete|create|display|generate|issue|log|prepare|produce|publish|record|return|save|show|submit|surface|verify)\s+(?P<object>.+)$",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if match:
-        text = re.sub(r"^(?:a|an|the|one)\s+", "", match.group("object").strip(" ."), flags=re.IGNORECASE)
-    if " with " in f" {text.casefold()} ":
-        parts = re.split(r"\s+with\s+", text, maxsplit=1, flags=re.IGNORECASE)
-        head = parts[0].strip(" .")
-        head_words = _words(head)
-        if len(head_words) >= 3 and head_words[-1].casefold() in {"decision", "packet", "record", "report", "summary"}:
-            text = head
-    text = re.split(r"\s+(?:between|after|before|through)\s+", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
-    return text
-
-
-def _has_product_container_title(value: str) -> bool:
-    terms = [term.casefold() for term in label_terms(value)]
-    if terms and terms[-1] in _PRODUCT_CONTAINER_TERMS:
-        return True
-    words = [word.casefold().strip(".,:;") for word in _words(value)]
-    for index, word in enumerate(words[:-1]):
-        if word in _PRODUCT_CONTAINER_TERMS and words[index + 1] in {"for", "with"}:
-            return True
-    return False
-
-
-def _actor_reference(value: str) -> str:
-    text = lower_plain_title_subject_fragment(value, action_offset=0).strip(" .")
-    if not text:
-        return "a product user"
-    if len(text.split()) == 1 and not text.isupper():
-        text = text.casefold()
-    if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:
-        return text
-    if _looks_plural(text.split()[-1]):
-        return text
-    return _indefinite_phrase(text)
-
-
-def _actor_verb(value: str, *, singular: str, plural: str) -> str:
-    words = _words(value)
-    if words and _looks_plural(words[-1]):
-        return plural
-    return singular
-
-
-def _strip_leading_articles(words: Sequence[str]) -> list[str]:
-    cleaned = [word for word in words if str(word).strip()]
-    while cleaned and cleaned[0].casefold() in _LEADING_ARTICLES:
-        cleaned = cleaned[1:]
-    return cleaned
-
-
-def _words(value: str) -> list[str]:
-    words = [
-        word.strip("()[]{}\"'.,:;")
-        for word in _clean(value).replace("/", " ").split()
-        if word.strip("()[]{}\"'.,:;")
-    ]
-    while words and words[0].casefold() in _LEADING_CONNECTORS:
-        words = words[1:]
-    return words
-
-
-def _word_spans(value: str) -> list[tuple[str, int, int]]:
-    spans = [
-        (match.group(0).strip("()[]{}\"'.,:;"), match.start(), match.end())
-        for match in re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", _clean(value).replace("/", " "))
-    ]
-    rows = [(word, start, end) for word, start, end in spans if word]
-    while rows and rows[0][0].casefold() in _LEADING_CONNECTORS:
-        rows = rows[1:]
-    return rows
-
-
-def _clean(value: object) -> str:
-    return clean_markdown_text(value)
 
 
 __all__ = ["confirmation_from_operator_intent"]

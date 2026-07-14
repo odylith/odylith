@@ -58,8 +58,8 @@
 ## Consumer Greenfield Rules
 - Greenfield Domain Intelligence may reason from user intent, but it must keep
   observed source, user intent, and Odylith assumptions separate.
-- `odylith greenfield compile-transaction` must build and quality-gate the full
-  ProductCreateTransaction before confirmation; `odylith greenfield create`
+- `odylith greenfield propose` must build and quality-gate the full
+  ProductCreateTransaction before the sole confirmation rail; `odylith greenfield create`
   must only verify the hash, commit, validate readback, refresh surfaces, and
   report success.
 - Legacy proposal `apply` must not become a confirmed write path; edited

@@ -15,13 +15,12 @@ from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmEngineError
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_REPAIR_TIERS
-from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
-from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
-from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 
 
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
@@ -35,27 +34,37 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     propose.add_argument("--prompt", required=True)
     propose.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     propose.add_argument(
+        "--edit",
+        default="",
+        help="New product evidence after EDIT. It rebuilds a staged transaction and never writes governed records.",
+    )
+    propose.add_argument(
+        "--edit-evidence",
+        default="",
+        help="Path to Markdown or text edit evidence. The contents are untrusted evidence, not product truth.",
+    )
+    propose.add_argument(
         "--detail",
         choices=("brief", "full"),
         default="brief",
-        help="Text preview depth after intent is confirmed. Default propose shows only Product Intent Confirmation.",
+        help="Reserved preview depth selector. `propose` always compiles the full staged transaction before the final rail.",
     )
     propose.add_argument(
         "--confirm-intent",
         action="store_true",
-        help="Build the full proposal preview or JSON after the operator confirms the Product Intent Confirmation.",
+        help=argparse.SUPPRESS,
     )
     propose.add_argument(
         "--intent-file",
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
+        help=argparse.SUPPRESS,
     )
     apply = subparsers.add_parser(
         "apply",
-        help="Legacy proposal apply is disabled; use compile-transaction, then create.",
-        description="Legacy proposal apply is disabled; use compile-transaction, then create.",
+        help="Legacy proposal apply is disabled; use propose, then hash-bound create.",
+        description="Legacy proposal apply is disabled; use propose, then hash-bound create.",
     )
     apply.add_argument("--repo-root", default=".")
     apply.add_argument("--proposal-file", default="")
@@ -102,16 +111,18 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     create.add_argument("--json", action="store_true", dest="as_json")
     compile_transaction = subparsers.add_parser(
         "compile-transaction",
-        help="Compile and quality-gate a ProductCreateTransaction without governed writes.",
+        help="Compile a no-write ProductCreateTransaction for controlled tooling; normal product flow uses propose.",
     )
     compile_transaction.add_argument("--repo-root", default=".")
     compile_transaction.add_argument("--prompt", required=True)
+    compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
+    compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument(
         "--intent-file",
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help="Markdown/text/JSON file containing the operator-confirmed Product Intent Confirmation.",
+        help=argparse.SUPPRESS,
     )
     compile_transaction.add_argument("--release", default="")
     compile_transaction.add_argument(
@@ -178,9 +189,7 @@ def _with_operator_output(result: Mapping[str, Any], captured: Sequence[str]) ->
 def _legacy_apply_disabled_error() -> str:
     return (
         "greenfield apply is disabled for confirmed writes. Confirm now commits only an already compiled "
-        "ProductCreateTransaction. Run `odylith greenfield compile-transaction --repo-root . --prompt <request> "
-        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --output "
-        ".odylith/runtime/greenfield/product-create-transaction.v1.json`, then run `odylith greenfield create "
+        "ProductCreateTransaction. Run `odylith greenfield propose --repo-root . --prompt <request>`, then run `odylith greenfield create "
         "--repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
         "--transaction-hash <hash> --confirm`. No governed records were written."
     )
@@ -193,6 +202,7 @@ def _transaction_confirmation_text(
 ) -> str:
     summary = transaction.summary()
     manifest = transaction.quality_manifest if isinstance(transaction.quality_manifest, Mapping) else {}
+    intent_authority = transaction.intent_authority if isinstance(transaction.intent_authority, Mapping) else {}
     package = transaction.prewrite_package
     backlog_result = package.backlog_result if isinstance(package.backlog_result, Mapping) else {}
     created = backlog_result.get("created") if isinstance(backlog_result.get("created"), list) else []
@@ -202,6 +212,7 @@ def _transaction_confirmation_text(
     lines = [
         "ProductCreateTransaction ready for final command",
         f"- transaction hash: {summary['transaction_hash']}",
+        f"- product facts hash: {intent_authority.get('product_facts_sha256', '')}",
         f"- quality gate: {summary.get('quality_status') or manifest.get('status', 'unknown')}",
         f"- validation gate: {summary.get('validation_status') or manifest.get('validation_status', 'unknown')}",
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
@@ -255,36 +266,99 @@ def _post_confirm_create_overrides(args: argparse.Namespace) -> list[str]:
     return overrides
 
 
+def _edit_evidence_from_args(args: argparse.Namespace, *, repo_root: Path) -> str:
+    inline = str(getattr(args, "edit", "") or "").strip()
+    evidence_file = str(getattr(args, "edit_evidence", "") or "").strip()
+    if inline and evidence_file:
+        raise ValueError("use either --edit or --edit-evidence, not both")
+    if not evidence_file:
+        return inline
+    path = Path(evidence_file).expanduser()
+    if not path.is_absolute():
+        path = repo_root / path
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError("environment/IO failure while reading EDIT evidence") from exc
+
+
+def _compile_prompt_evidence_transaction(
+    *,
+    repo_root: Path,
+    prompt: str,
+    edit_evidence: str,
+    release_selector: str,
+    repair_tier: str = "",
+) -> tuple[dict[str, Any], Any, Path]:
+    candidate_intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=repo_root,
+        fallback_title=greenfield_proposals.intent_title(prompt),
+        edit_evidence=edit_evidence,
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=repo_root,
+        prompt=prompt,
+        confirmed_intent=candidate_intent,
+        require_completion_ready=False,
+    )
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=repo_root,
+        proposal=proposal,
+        release_selector=release_selector,
+        proposal_ready=True,
+        **({"repair_tier": repair_tier} if repair_tier else {}),
+    )
+    candidate_authority = candidate_intent.get("product_intent_authority")
+    transaction_authority = transaction.intent_authority if isinstance(transaction.intent_authority, Mapping) else {}
+    if not isinstance(candidate_authority, Mapping) or (
+        str(candidate_authority.get("product_facts_sha256", "")).strip()
+        != str(transaction_authority.get("product_facts_sha256", "")).strip()
+    ):
+        raise RuntimeError(
+            "pre-confirm compiler produced a transaction whose product facts do not match the visible typed preview"
+        )
+    transaction_path = repo_root / ".odylith" / "runtime" / "greenfield" / "product-create-transaction.v1.json"
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
+    return candidate_intent, transaction, transaction_path
+
+
+def _retired_intent_file_message() -> str:
+    return (
+        "The separate Product Intent confirmation flow is retired. `propose` now compiles the typed evidence and "
+        "full ProductCreateTransaction before it shows the only CONFIRM rail. Use `--edit` or `--edit-evidence` "
+        "to rebuild from corrections; edited Markdown is evidence, never a confirmed product source."
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     if args.command == "propose":
-        if not bool(args.confirm_intent):
-            confirmation = build_product_intent_confirmation(
-                prompt=str(args.prompt),
-                title=greenfield_proposals.intent_title(str(args.prompt)),
-                repo_name=repo_root.name,
-                observed_source=greenfield_proposals.source_evidence(repo_root),
-            )
-            if args.output_format == "json":
-                print(json.dumps(confirmation, indent=2, sort_keys=True))
-            else:
-                print(format_product_intent_confirmation_text(confirmation), end="")
-            return 0
+        if bool(args.confirm_intent) or str(args.intent_file or "").strip():
+            _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
+            return 2
         try:
-            confirmed_intent = greenfield_proposals.load_confirmed_intent_args(args, repo_root=repo_root)
-            proposal = greenfield_proposals.build_greenfield_proposal(
+            edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            candidate_intent, transaction, transaction_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
-                confirmed_intent=confirmed_intent,
+                release_selector="",
+                edit_evidence=edit_evidence,
             )
-        except (ValueError, RuntimeError) as exc:
+        except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
         if args.output_format == "json":
-            print(json.dumps(proposal, indent=2, sort_keys=True))
+            print(json.dumps({
+                "mode": "product_create_transaction",
+                "intent_hypothesis": candidate_intent,
+                "product_create_transaction": transaction.summary(),
+                "transaction_file": str(transaction_path),
+            }, indent=2, sort_keys=True))
         else:
-            print(format_proposal_text(proposal, detail=str(args.detail)), end="")
+            preview = render_product_intent_preview(candidate_intent).rstrip()
+            print(f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=str(transaction_path))}", end="")
         return 0
     if args.command == "apply":
         message = _legacy_apply_disabled_error()
@@ -294,28 +368,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(message)
         return 2
     if args.command == "compile-transaction":
+        if str(args.intent_file or "").strip():
+            _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
+            return 2
         try:
-            confirmed_intent = greenfield_proposals.load_confirmed_intent_args(args, repo_root=repo_root)
-            proposal = greenfield_proposals.build_greenfield_proposal(
+            edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            candidate_intent, transaction, staged_path = _compile_prompt_evidence_transaction(
                 repo_root=repo_root,
                 prompt=str(args.prompt),
                 release_selector=str(args.release),
-                confirmed_intent=confirmed_intent,
-                require_completion_ready=False,
+                edit_evidence=edit_evidence,
+                repair_tier=str(args.repair_tier),
             )
-            result, captured = _run_with_optional_stdout_capture(
-                enabled=args.output_format == "json",
-                action=lambda: {
-                    "transaction": greenfield_proposals.compile_greenfield_create_transaction(
-                        repo_root=repo_root,
-                        proposal=proposal,
-                        release_selector=str(args.release),
-                        proposal_ready=True,
-                        repair_tier=str(args.repair_tier),
-                    )
-                },
-            )
-            transaction = result["transaction"]
             output_path = str(args.output or "").strip()
             if output_path:
                 path = Path(output_path).expanduser()
@@ -323,6 +387,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     path = repo_root / path
                 greenfield_proposals.write_product_create_transaction_file(path, transaction)
                 output_path = str(path)
+            else:
+                output_path = str(staged_path)
             if args.output_format == "json":
                 summary = transaction.summary()
                 transaction_ref = output_path or "<compiled-transaction.json>"
@@ -333,6 +399,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
                 payload = {
                     "mode": "product_create_transaction",
+                    "intent_hypothesis": candidate_intent,
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
                     "confirmation": {
@@ -366,19 +433,19 @@ def main(argv: Sequence[str] | None = None) -> int:
                 }
                 if output_path:
                     payload["transaction_file"] = output_path
-                payload = _with_operator_output(payload, captured)
                 print(json.dumps(payload, indent=2, sort_keys=True))
             else:
-                print(_transaction_confirmation_text(transaction=transaction, output_path=output_path), end="")
-        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                preview = render_product_intent_preview(candidate_intent).rstrip()
+                print(f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=output_path)}", end="")
+        except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
         return 0
     if args.command == "create":
         if not bool(args.confirm):
             message = (
-                "greenfield create requires --confirm after the Product Intent Confirmation is accepted. "
-                "Run `odylith greenfield compile-transaction --repo-root . --prompt "
+                "greenfield create requires --confirm after the compiled ProductCreateTransaction is accepted. "
+                "Run `odylith greenfield propose --repo-root . --prompt "
                 + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
                 + "` first, then rerun create with --transaction-file, --transaction-hash, and --confirm "
                 "when the validated package is correct."
@@ -392,10 +459,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             if str(getattr(args, "intent_file", "") or "").strip():
                 raise ValueError(
                     "greenfield create no longer accepts --intent-file. "
-                    "Run `odylith greenfield compile-transaction --repo-root . --prompt "
+                    "Run `odylith greenfield propose --repo-root . --prompt "
                     + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
-                    + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md "
-                    "--output .odylith/runtime/greenfield/product-create-transaction.v1.json` first, "
+                    + "` first, "
                     "then run create with --transaction-file, --transaction-hash, and --confirm."
                 )
             post_confirm_overrides = _post_confirm_create_overrides(args)
@@ -410,10 +476,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             if transaction is None:
                 raise ValueError(
                     "greenfield create requires --transaction-file with --transaction-hash. "
-                    "Run `odylith greenfield compile-transaction --repo-root . --prompt "
+                    "Run `odylith greenfield propose --repo-root . --prompt "
                     + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
-                    + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md "
-                    "--output .odylith/runtime/greenfield/product-create-transaction.v1.json` first; "
+                    + "` first; "
                     "post-confirm create only commits an already compiled ProductCreateTransaction."
                 )
             result, captured = _run_with_optional_stdout_capture(
@@ -424,7 +489,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     confirm=True,
                 )
             )
-        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
+        except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=bool(args.as_json))
             return 2
         if args.as_json:

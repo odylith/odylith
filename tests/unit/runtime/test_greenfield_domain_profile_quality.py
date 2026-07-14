@@ -51,38 +51,36 @@ def test_confirmed_greenfield_proposal_is_apply_ready_without_domain_profiles(tm
 
 
 @pytest.mark.parametrize("prompt", PRODUCT_INTENTS)
-def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_records(
+def test_product_intent_preview_stages_one_rail_transaction_without_governed_records(
     tmp_path: Path, capsys, prompt: str
 ) -> None:
     rc = greenfield_proposals.main(["propose", "--repo-root", str(tmp_path), "--prompt", prompt])
     output = capsys.readouterr().out
 
     assert rc == 0
-    assert "Product Intent Confirmation" in output
-    assert "Product story" in output
-    assert "State object" in output
-    assert "First complete path" in output
-    assert "Human actors" in output
-    assert "External systems" in output
-    assert "Internal product systems" in output
-    assert "Proof boundary" in output
+    assert "Product Intent Preview" in output
+    assert "ProductCreateTransaction ready for final command" in output
+    assert "transaction hash:" in output
+    assert "transaction file:" in output
     assert "## Choose one command" in output
     assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
     assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
     assert "### Command: `CONFIRM`" in output
     assert "**Reply starts with:** `CONFIRM`" in output
-    assert "Accept this interpretation." in output
+    assert "Commit this exact validated package now" in output
     assert "### Command: `EDIT`" in output
     assert "**Reply starts with:** `EDIT`" in output
-    assert "Correct the interpretation." in output
+    assert "Put corrections after EDIT" in output
     assert "### Command: `REJECT`" in output
     assert "**Reply starts with:** `REJECT`" in output
-    assert "Stop. Odylith writes no governed records." in output
+    assert "Stop. No governed records are written." in output
+    assert "greenfield create --repo-root ." in output
+    assert "--transaction-hash" in output
+    assert "No product reinterpretation, repair, or generation runs after CONFIRM." in output
     assert "Host reasoning task" not in output
     assert "Visible format contract" not in output
     assert "No files changed" not in output
     assert "Registry" not in output
-    assert "Atlas" not in output
     assert "Primary user" not in output
     assert "Project operator" not in output
     assert "Evidence owner" not in output
@@ -103,8 +101,8 @@ def test_greenfield_title_strips_operator_directives(tmp_path: Path) -> None:
     assert "Do Not Write" not in request["intent"]["title"]
 
 
-def test_confirm_intent_returns_apply_ready_governance(tmp_path: Path, capsys) -> None:
-    _write_confirmed_intent(tmp_path)
+def test_edit_evidence_returns_hash_bound_transaction(tmp_path: Path, capsys) -> None:
+    evidence_path = _write_confirmed_intent(tmp_path)
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -112,9 +110,8 @@ def test_confirm_intent_returns_apply_ready_governance(tmp_path: Path, capsys) -
             str(tmp_path),
             "--prompt",
             "draft a greenfield proposal for a municipal permit review workspace",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm-intent",
+            "--edit-evidence",
+            str(evidence_path.relative_to(tmp_path)),
             "--format",
             "json",
         ],
@@ -123,11 +120,11 @@ def test_confirm_intent_returns_apply_ready_governance(tmp_path: Path, capsys) -
     request = json.loads(output)
 
     assert rc == 0
-    assert request["mode"] == "host_reasoned_greenfield_proposal"
+    assert request["mode"] == "product_create_transaction"
+    assert request["product_create_transaction"]["transaction_hash"]
+    assert request["transaction_file"].endswith("product-create-transaction.v1.json")
     assert "reasoning_contract" not in request
-    assert len(request["backlog"]) >= 4
-    assert len(request["components"]) >= 3
-    assert len(request["diagrams"]) >= 3
+    assert request["intent_hypothesis"]["title"] == "Municipal Permit Review Workspace"
 
 
 def test_quality_gate_rejects_profile_scaffold_and_generic_persona_leaks() -> None:

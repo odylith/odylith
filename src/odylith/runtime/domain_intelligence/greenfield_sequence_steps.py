@@ -394,13 +394,13 @@ def _split_semantic_action_conjunction(value: str) -> list[str]:
             subject = actor
             action_text = actor_action
     parts = [
-        part.strip(" .")
+        part.strip(" .,;:")
         for part in re.split(
             rf"\s+and\s+(?=(?:{_SPLIT_ACTION_VERB_PATTERN})\b)",
             action_text,
             flags=re.IGNORECASE,
         )
-        if part.strip(" .")
+        if part.strip(" .,;:")
     ]
     if len(parts) <= 1 or not all(looks_like_action_clause(part) for part in parts):
         return [text]

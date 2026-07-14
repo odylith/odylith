@@ -91,7 +91,7 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "Payment failure recovery proof." in text
     assert "Provider-specific behavior may change the boundary." in text
     assert "[B-201](odylith/radar/radar.html?view=plan&workstream=B-201)" in text
-    assert "Use B-201 (Checkout first slice) as the implementation anchor for Checkout Boundary" in text
+    assert "Implementation anchor for Checkout Boundary: B-201 (Checkout first slice)" in text
     assert "Release wave: Checkout spine." in text
     assert "Release target: 0.0.1." in text
     assert "Implement browse-to-checkout with payment sandbox failure recovery." in text

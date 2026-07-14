@@ -390,15 +390,9 @@ def build_confirmed_greenfield_proposal(
             semantic_model=semantic_model,
         ),
         "apply_commands": [
-            "odylith greenfield compile-transaction --repo-root . --prompt "
-            + shell_quote(command_prompt)
-            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release "
-            + shell_quote(release),
-            "# after compile, confirm or reject the transaction-ready screen that shows the real hash",
-            "# optional review-only audit: odylith greenfield compile-transaction --repo-root . --prompt "
-            + shell_quote(command_prompt)
-            + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release "
-            + shell_quote(release),
+            "odylith greenfield propose --repo-root . --prompt " + shell_quote(command_prompt),
+            "# Odylith compiles and validates the package before showing CONFIRM, EDIT, and REJECT.",
+            "# CONFIRM commits the exact hash-bound transaction; EDIT rebuilds it from new evidence.",
         ],
     }
     if title_normalization.changed:

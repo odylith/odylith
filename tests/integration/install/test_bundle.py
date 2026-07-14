@@ -6,8 +6,16 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
     agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "compact product-first interpretation" in agents_text
-    assert "runs the Tribunal write gate" in agents_text
+    assert "repairs and quality-gates the full staged ProductCreateTransaction" in agents_text
+    assert "renders the sole visible confirmation view" in agents_text
+    assert "**CONFIRM** commits the exact shown transaction hash" in agents_text
+    assert "greenfield create --repo-root . --transaction-file" in agents_text
+    assert (
+        "It does not parse product Markdown, call a host model, generate artifacts, or repair prose "
+        "after CONFIRM"
+    ) in agents_text
+    assert "greenfield compile-transaction" not in agents_text
+    assert "confirmed-intent.json" not in agents_text
     assert "rerender only the owned surface" in agents_text
     assert "Generated human-visible content has a non-negotiable clarity floor across all lanes" in agents_text
     anti_slop_text = (root / "agents-guidelines" / "ANTI_SLOP_AND_DECOMPOSITION.md").read_text(encoding="utf-8")

@@ -67,11 +67,19 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Hook `systemMessage` or `additionalContext` generation is not proof of chat-visible UX" in guidance
     assert "reports `Activation: ready` and a chat-visibility line is confirmed" in guidance
     assert "Treat recorded-only and waiting-for-chat states as partial proof" in guidance
-    assert "sectioned Markdown: Product story, State object, First complete path" in guidance
-    assert "Proof boundary" in guidance
-    assert "avoid wall of prose" in guidance
-    assert ".odylith/runtime/greenfield/confirmed-intent.json" in guidance
-    assert "greenfield compile-transaction" in guidance
+    assert (
+        "fully quality-gated staged ProductCreateTransaction before it presents the only command rail"
+        in guidance
+    )
+    assert "CONFIRM commits the shown hash-bound package" in guidance
+    assert "Markdown is a view, never product truth" in guidance
+    assert (
+        "greenfield create --transaction-file "
+        ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+        in guidance
+    )
+    assert "confirmed-intent.json" not in guidance
+    assert "greenfield compile-transaction" not in guidance
     assert "ProductCreateTransaction" in guidance
     assert "--transaction-file" in guidance
     assert "--transaction-hash" in guidance

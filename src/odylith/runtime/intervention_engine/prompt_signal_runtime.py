@@ -218,9 +218,45 @@ ASSIST_VISIBILITY_COMPLAINT_PHRASES = (
     "assist in every prompt",
     "assist every prompt",
 )
-VISIBILITY_FEEDBACK_PHRASE = (
-    "Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require "
-    "a concrete Observation, Proposal, validation result, or visibility failure"
+INTERVENTION_EXPERIENCE_REQUEST_PHRASES = (
+    "more frequent",
+    "more often",
+)
+ASSIST_CADENCE_REQUEST_PHRASES = (
+    *INTERVENTION_EXPERIENCE_REQUEST_PHRASES,
+    "assist in every prompt",
+    "assist every prompt",
+)
+PROOF_BOUNDARY_RE = re.compile(
+    r"\b(?:proof|evidence|validat(?:e|ion)|verif(?:y|ication)|review|audit)\b",
+    re.IGNORECASE,
+)
+STATUS_OR_QUALITY_RE = re.compile(
+    r"\b(?:"
+    r"status|"
+    r"progress|"
+    r"quality(?:\s+score)?|"
+    r"scorecard|"
+    r"gap(?:s)?|"
+    r"risk(?:s)?|"
+    r"what(?:'s| is) left|"
+    r"where do we stand|"
+    r"how are we doing|"
+    r"how is (?:this|the) .* doing"
+    r")\b",
+    re.IGNORECASE,
+)
+ASSIST_CADENCE_SIGNAL_RE = re.compile(
+    r"\b(?:"
+    r"decision|tradeoff|assumption|next\s+(?:step|move|task|slice)|priority|blocker|constraint|"
+    r"continue|continuing|proceed|carry\s+on|go\s+ahead|keep\s+(?:going|working)|move\s+forward|"
+    r"status|progress|quality|score|gap(?:s)?|risk(?:s)?|proof|validat(?:e|ion)|review"
+    r")\b",
+    re.IGNORECASE,
+)
+ASSIST_CONTINUATION_RE = re.compile(
+    r"\b(?:continue|continuing|proceed|carry\s+on|go\s+ahead|keep\s+(?:going|working)|move\s+forward)\b",
+    re.IGNORECASE,
 )
 _WORD_RE = re.compile(r"[a-z0-9']+")
 
@@ -342,12 +378,16 @@ def has_prompt_intervention_signal(value: Any) -> bool:
         return False
     if is_greenfield_governance_prompt(text):
         return False
+    if intervention_experience_feedback_requested(prompt=text):
+        return True
     if explicit_ids(text, WORKSTREAM_RE) or explicit_ids(text, BUG_RE) or explicit_ids(text, DIAGRAM_RE):
         return True
     lowered = text.casefold()
     if any(marker in lowered for marker in PLACEHOLDER_FAILURE_EVIDENCE_MARKERS):
         return True
     if STRONG_INVARIANT_RE.search(text):
+        return True
+    if STATUS_OR_QUALITY_RE.search(text):
         return True
     if not (
         contains_any(text, GOVERNANCE_HINTS)
@@ -362,10 +402,70 @@ def has_prompt_intervention_signal(value: Any) -> bool:
     )
 
 
+def has_assist_cadence_signal(value: Any) -> bool:
+    """Return whether a cadence preference can usefully surface an extra Assist."""
+
+    text = normalize_string(value)
+    if not text or is_passthrough_prompt(text) or is_greenfield_governance_prompt(text):
+        return False
+    return bool(ASSIST_CADENCE_SIGNAL_RE.search(text))
+
+
+def prompt_assist_summary(value: Any) -> str:
+    """Return one concrete user-facing Assist sentence for an earned prompt signal."""
+
+    text = normalize_string(value)
+    if _assist_cadence_feedback_requested(text):
+        return "I will surface meaningful decisions, risks, proof points, and verified results; routine chatter stays out of the way."
+    if _visibility_feedback_requested_text(text):
+        return "I will make the next decision, risk, or verified result visible in the conversation."
+    anchor = prompt_anchor(text)
+    if anchor.startswith("CB-"):
+        return "I will separate the symptom, accountable owner, and proof of recovery before it is called resolved."
+    if anchor:
+        return f"{anchor} stays tied to a visible proof checkpoint; I will surface the evidence that changes its status."
+    if STRONG_INVARIANT_RE.search(text):
+        return "I will treat the stated constraint as a release gate, not a detail to repair later."
+    if PROOF_BOUNDARY_RE.search(text):
+        return "I will keep the next decision tied to a visible proof checkpoint before it becomes a completion claim."
+    if STATUS_OR_QUALITY_RE.search(text):
+        return "I will separate verified progress, open risk, and the next gate so this status guides the next move."
+    if ASSIST_CONTINUATION_RE.search(text):
+        return "I will continue from the last verified checkpoint and call out the next completed change, remaining risk, and gate."
+    return "I will surface the next assumption, risk, or verified result that changes the outcome."
+
+
 def meaningful_tokens(value: Any) -> set[str]:
     """Return lowercase word tokens for the visibility-complaint detector."""
 
     return {token.strip("'") for token in _WORD_RE.findall(normalize_string(value).casefold()) if token.strip("'")}
+
+
+def _visibility_feedback_requested_text(value: Any) -> bool:
+    text = normalize_string(value)
+    if not text:
+        return False
+    tokens = meaningful_tokens(text)
+    product_hits = tokens & VISIBILITY_PRODUCT_TOKENS
+    delivery_hits = tokens & VISIBILITY_DELIVERY_TOKENS
+    if not product_hits or not delivery_hits:
+        return False
+    if "odylith" not in tokens and len(product_hits | delivery_hits) < 3:
+        return False
+    return any(phrase in text.casefold() for phrase in VISIBILITY_COMPLAINT_PHRASES)
+
+
+def _assist_cadence_feedback_requested(value: Any) -> bool:
+    text = normalize_string(value).casefold()
+    if not text:
+        return False
+    tokens = set(_WORD_RE.findall(text))
+    direct_targets = {"assist", "observation", "observations", "intervention", "interventions"}
+    return bool(
+        "odylith" in tokens
+        and direct_targets & tokens
+        and any(phrase in text for phrase in ASSIST_CADENCE_REQUEST_PHRASES)
+    )
 
 
 def visibility_feedback_phrase(*, prompt: Any = "", assistant_summary: Any = "") -> tuple[str, str]:
@@ -374,17 +474,10 @@ def visibility_feedback_phrase(*, prompt: Any = "", assistant_summary: Any = "")
     text = normalize_string(f"{prompt or ''} {assistant_summary or ''}")
     if not text:
         return "", ""
-    tokens = meaningful_tokens(text)
-    product_hits = tokens & VISIBILITY_PRODUCT_TOKENS
-    delivery_hits = tokens & VISIBILITY_DELIVERY_TOKENS
-    if not product_hits or not delivery_hits:
+    if not _visibility_feedback_requested_text(text):
         return "", ""
-    if "odylith" not in tokens and len(product_hits | delivery_hits) < 3:
-        return "", ""
-    lowered = text.casefold()
-    if not any(phrase in lowered for phrase in VISIBILITY_COMPLAINT_PHRASES):
-        return "", ""
-    return VISIBILITY_FEEDBACK_PHRASE, VISIBILITY_FEEDBACK_PHRASE
+    summary = prompt_assist_summary(text)
+    return summary, summary
 
 
 def visibility_feedback_requested(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
@@ -395,6 +488,25 @@ def visibility_feedback_requested(*, prompt: Any = "", assistant_summary: Any = 
         assistant_summary=assistant_summary,
     )
     return bool(markdown_phrase)
+
+
+def intervention_experience_feedback_requested(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
+    """Return whether an operator explicitly asks Odylith to improve its visible help."""
+
+    text = normalize_string(f"{prompt or ''} {assistant_summary or ''}")
+    if not text:
+        return False
+    if _assist_cadence_feedback_requested(text):
+        return True
+    if not any(phrase in text.casefold() for phrase in VISIBILITY_COMPLAINT_PHRASES):
+        return False
+    return visibility_feedback_requested(prompt=text)
+
+
+def assist_cadence_feedback_requested(*, prompt: Any = "", assistant_summary: Any = "") -> bool:
+    """Return whether the operator explicitly asks for more frequent Assist moments."""
+
+    return _assist_cadence_feedback_requested(f"{prompt or ''} {assistant_summary or ''}")
 
 
 def assist_visibility_feedback_requested(*, prompt: Any = "", assistant_summary: Any = "") -> bool:

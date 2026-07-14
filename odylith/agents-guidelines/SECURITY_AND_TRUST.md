@@ -58,14 +58,17 @@
 ## Consumer Greenfield Rules
 - Greenfield Domain Intelligence may reason from user intent, but it must keep
   observed source, user intent, and Odylith assumptions separate.
-- `odylith greenfield compile-transaction` must build and quality-gate the full
-  ProductCreateTransaction before confirmation; `odylith greenfield create`
+- `odylith greenfield propose` must build and quality-gate the full
+  ProductCreateTransaction before the sole confirmation rail; `odylith greenfield create`
   must only verify the hash, commit, validate readback, refresh surfaces, and
   report success.
 - Legacy proposal `apply` must not become a confirmed write path; edited
   confirmation text is new evidence and requires a rebuilt transaction.
-- Host routes may help the operator draft a proposal, but Codex, Claude Code,
-  and future hosts must not own the durable validation or write boundary.
+- The deterministic greenfield proposal Tribunal must reject disconnected child
+  topology, shallow component ownership, and invisible release/program
+  structures before durable source truth changes.
+- Host routes may help the operator draft a proposal, but supported hosts must
+  not own the durable validation or write boundary.
 
 ## Host Configuration Rules
 - Managed Codex and Claude assets must merge additively with user-owned host

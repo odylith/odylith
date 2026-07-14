@@ -34,12 +34,6 @@ _LIVE_BLOCK_LABELS: tuple[str, ...] = (
     "Odylith History:",
     "Odylith Risks:",
 )
-_PROMPT_VISIBLE_ASSIST_MARKDOWN = (
-    "**Odylith Assist:** Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure."
-)
-_PROMPT_VISIBLE_ASSIST_PLAIN = (
-    "Odylith Assist: Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure."
-)
 _PROMPT_FIRST_FALLBACK = (
     "Odylith prompt-start substrate: alignment unavailable; keep the prompt Odylith-first, "
     "but do not claim full engine coverage without a fresh status check."
@@ -162,7 +156,35 @@ def suppress_prompt_live_narration(*, prompt: Any = "", assistant_summary: Any =
     )
 
 
-def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] | None = None, intervention_bundle_override: Mapping[str, Any] | None = None) -> bool:
+def session_prefers_assist(
+    *,
+    repo_root: Path | str = ".",
+    session_id: str = "",
+    host_family: str = "",
+) -> bool:
+    """Return whether this session explicitly asked for more Assist coverage."""
+
+    token = prompt_signal_runtime.normalize_string(session_id)
+    if not token:
+        if not host_family:
+            return False
+        from odylith.runtime.intervention_engine import host_surface_runtime
+
+        token = host_surface_runtime.normalized_session_id("", host_family=host_family)
+    from odylith.runtime.intervention_engine import stream_state
+
+    return any(
+        prompt_signal_runtime.assist_cadence_feedback_requested(prompt=row.get("prompt_excerpt", ""))
+        for row in stream_state.load_recent_intervention_events(
+            repo_root=Path(repo_root).expanduser().resolve(), session_id=token, limit=40
+        )
+    )
+
+
+def prompt_needs_live_bundle(
+    *, prompt: Any, repo_root: Path | str = ".", session_id: str = "", host_family: str = "",
+    bundle_override: Mapping[str, Any] | None = None, intervention_bundle_override: Mapping[str, Any] | None = None,
+) -> bool:
     """Return whether prompt-submit should pay for the live intervention bundle."""
     if suppress_prompt_live_narration(prompt=prompt):
         return False
@@ -170,7 +192,13 @@ def prompt_needs_live_bundle(*, prompt: Any, bundle_override: Mapping[str, Any] 
         return False
     if isinstance(bundle_override, Mapping) or isinstance(intervention_bundle_override, Mapping):
         return True
-    if prompt_signal_runtime.visibility_feedback_requested(prompt=prompt, assistant_summary=""):
+    if prompt_signal_runtime.intervention_experience_feedback_requested(prompt=prompt, assistant_summary=""):
+        return True
+    if session_prefers_assist(
+        repo_root=repo_root,
+        session_id=session_id,
+        host_family=host_family,
+    ) and prompt_signal_runtime.has_assist_cadence_signal(prompt):
         return True
     return prompt_signal_runtime.has_prompt_intervention_signal(prompt)
 
@@ -327,48 +355,71 @@ def merge_replay_with_closeout(
 
 
 def prompt_visible_assist_text(bundle: Mapping[str, Any] | object) -> tuple[str, str]:
-    """Return the prompt-submit Assist text, preferring a bundle-owned closeout."""
+    """Return the signal-specific prompt-submit Assist text."""
     from odylith.runtime.intervention_engine import conversation_surface
 
     existing_markdown = conversation_surface.render_closeout_text(bundle, markdown=True)
     existing_plain = conversation_surface.render_closeout_text(bundle, markdown=False)
-    if not existing_markdown and not prompt_visibility_feedback_requested(bundle):
+    if not existing_markdown and not prompt_assist_requested(bundle):
         return "", ""
+    if not prompt_assist_requested(bundle):
+        return existing_markdown, existing_plain
+    observation = _alignment_mapping(bundle, "observation") if isinstance(bundle, Mapping) else {}
+    summary = prompt_signal_runtime.prompt_assist_summary(observation.get("prompt_excerpt"))
     return (
-        existing_markdown or _PROMPT_VISIBLE_ASSIST_MARKDOWN,
-        existing_plain or _PROMPT_VISIBLE_ASSIST_PLAIN,
+        f"**Odylith Assist:** {summary}",
+        f"Odylith Assist: {summary}",
     )
 
 
 def prompt_visibility_feedback_requested(bundle: Mapping[str, Any] | object) -> bool:
-    """Return whether the prompt explicitly reports missing Odylith visibility."""
+    """Return whether the prompt explicitly asks for a better Odylith moment."""
 
     observation = _alignment_mapping(bundle, "observation") if isinstance(bundle, Mapping) else {}
-    return prompt_signal_runtime.visibility_feedback_requested(
+    return prompt_signal_runtime.intervention_experience_feedback_requested(
         prompt=observation.get("prompt_excerpt"),
         assistant_summary=observation.get("assistant_summary", ""),
     )
 
 
-def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> dict[str, Any]:
-    """Add a prompt-submit Assist only for explicit visibility feedback.
+def prompt_assist_requested(bundle: Mapping[str, Any] | object) -> bool:
+    """Return whether a prompt warrants a visible, decision-oriented Assist."""
 
-    Prompt hooks may be the only visible Odylith lane in a host session, but
-    normal successful work should not pick up a generic visibility recovery
-    line. The default text stays owned here so Codex, Claude, and the manual
-    visible-intervention recovery do not drift when feedback is explicit.
+    observation = _alignment_mapping(bundle, "observation") if isinstance(bundle, Mapping) else {}
+    prompt = observation.get("prompt_excerpt")
+    return bool(observation.get("assist_cadence_preference")) or prompt_visibility_feedback_requested(
+        bundle
+    ) or prompt_signal_runtime.has_prompt_intervention_signal(prompt)
+
+
+def with_assist_cadence_preference(bundle: Mapping[str, Any] | object) -> dict[str, Any]:
+    """Mark a rendered prompt bundle for the session's explicit Assist preference."""
+
+    updated = dict(bundle) if isinstance(bundle, Mapping) else {}
+    observation = dict(_alignment_mapping(updated, "observation"))
+    observation["assist_cadence_preference"] = True
+    updated["observation"] = observation
+    return updated
+
+
+def ensure_prompt_visible_assist_bundle(bundle: Mapping[str, Any] | object) -> dict[str, Any]:
+    """Add a prompt-submit Assist for explicit feedback or a concrete governed request.
+
+    Prompt hooks may be the only visible Odylith lane in a host session. Keep
+    low-signal conversational turns quiet, but expose the decision or proof
+    boundary early when a request enters the intervention hot path.
     """
     from odylith.runtime.intervention_engine import conversation_surface
 
     updated = dict(bundle) if isinstance(bundle, Mapping) else {}
-    if conversation_surface.render_closeout_text(updated, markdown=True):
-        return updated
-    if not prompt_visibility_feedback_requested(updated):
+    if not prompt_assist_requested(updated):
         return updated
     markdown_text, plain_text = prompt_visible_assist_text(updated)
+    if conversation_surface.render_closeout_text(updated, markdown=True) == markdown_text:
+        return updated
     updated["closeout_bundle"] = {
         "eligible": True,
-        "style": "prompt_visible_feedback",
+        "style": "prompt_visible_feedback" if prompt_visibility_feedback_requested(updated) else "prompt_signal",
         "label": "Odylith Assist:",
         "preferred_markdown_label": "**Odylith Assist:**",
         "text": markdown_text,
@@ -441,10 +492,17 @@ def build_prompt_conversation_bundle(
         delivery_snapshot=_alignment_mapping(alignment, "delivery_snapshot"),
         alignment_proof=_alignment_mapping(alignment, "alignment_proof"),
     )
-    return conversation_surface.build_conversation_bundle(
+    bundle = conversation_surface.build_conversation_bundle(
         repo_root=root,
         observation=observation,
     )
+    if session_prefers_assist(
+        repo_root=root,
+        session_id=session_id,
+        host_family=normalized_host,
+    ) and prompt_signal_runtime.has_assist_cadence_signal(prompt):
+        bundle = with_assist_cadence_preference(bundle)
+    return bundle
 
 
 def render_prompt_system_message(

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.intervention_engine import surface_runtime
+from odylith.runtime.surfaces import codex_host_post_bash_checkpoint
 from odylith.runtime.surfaces import codex_host_stop_summary
 
 
@@ -332,6 +333,68 @@ def test_main_stays_silent_without_pending_stop_replay(
     assert buffer.getvalue() == ""
 
 
+def test_main_reports_governance_refresh_status_without_forcing_chat_continuation(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        codex_host_stop_summary.codex_host_shared,
+        "load_payload",
+        lambda: {"last_assistant_message": "Completed the requested change.", "session_id": "stop-status"},
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "settle_deferred_checkpoint_events",
+        lambda **kwargs: {"systemMessage": "Odylith governance refresh failed after editing foo.md."},
+    )
+    monkeypatch.setattr(codex_host_stop_summary, "_stop_intervention_bundle", lambda **kwargs: {})
+    buffer = io.StringIO()
+    monkeypatch.setattr("sys.stdout", buffer)
+
+    exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(buffer.getvalue())
+    assert payload["systemMessage"] == "Odylith governance refresh failed after editing foo.md."
+    assert "decision" not in payload
+
+
+def test_main_does_not_mask_governance_failure_with_stop_assist(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        codex_host_stop_summary.codex_host_shared,
+        "load_payload",
+        lambda: {"last_assistant_message": "Completed the requested change.", "session_id": "stop-failure"},
+    )
+    monkeypatch.setattr(
+        codex_host_post_bash_checkpoint,
+        "settle_deferred_checkpoint_events",
+        lambda **kwargs: {"systemMessage": "Odylith governance refresh failed after editing foo.md."},
+    )
+    monkeypatch.setattr(
+        codex_host_stop_summary,
+        "_stop_intervention_bundle",
+        lambda **kwargs: {
+            "intervention_bundle": {},
+            "closeout_bundle": {
+                "markdown_text": "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
+                "plain_text": "Odylith Assist: B-096 stayed tied to the refreshed intervention contract.",
+            },
+        },
+    )
+    buffer = io.StringIO()
+    monkeypatch.setattr("sys.stdout", buffer)
+
+    exit_code = codex_host_stop_summary.main(["--repo-root", str(tmp_path)])
+
+    assert exit_code == 0
+    payload = json.loads(buffer.getvalue())
+    assert payload["systemMessage"] == "Odylith governance refresh failed after editing foo.md."
+    assert "decision" not in payload
+
+
 def test_main_replays_pending_chat_blocks_before_stop_assist(
     monkeypatch,
     tmp_path: Path,
@@ -397,8 +460,8 @@ def test_main_replays_pending_chat_blocks_before_stop_assist(
         "\n---\n\n"
         "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
         )
-    assert "decision" not in payload
-    assert "reason" not in payload
+    assert payload["decision"] == "block"
+    assert "Show the Odylith note below once" in payload["reason"]
 
 
 def test_main_suppresses_cli_help_stop_replay(monkeypatch, tmp_path: Path) -> None:

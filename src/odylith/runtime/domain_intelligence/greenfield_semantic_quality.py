@@ -40,7 +40,8 @@ _PROVISIONAL_TITLE_RE = re.compile(
             t\.b\.d\.|
             temporary\s+title|
             title\s+tbd|
-            name\s+tbd
+            name\s+tbd|
+            product\s+intent\s+preview
         )
         \s*[\)\]\}]\s*)+
     |
@@ -51,9 +52,18 @@ _PROVISIONAL_TITLE_RE = re.compile(
             tbd|
             temporary\s+title|
             title\s+tbd|
-            name\s+tbd
+            name\s+tbd|
+            product\s+intent\s+preview
         )
         \s*)$
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+_PRESENTATION_ONLY_TITLE_MARKER_RE = re.compile(
+    r"""
+    (?:\s*(?:[-:;]|[–—])\s*|\s*[\(\[\{]\s*)
+    product\s+intent\s+preview
+    \s*(?:[\)\]\}])?\s*$
     """,
     re.IGNORECASE | re.VERBOSE,
 )
@@ -192,6 +202,12 @@ def normalize_project_title(value: Any, *, fallback: str = "Greenfield Project")
 
 def contains_provisional_title_marker(value: Any) -> bool:
     return bool(_PROVISIONAL_TITLE_RE.search(_clean(value)))
+
+
+def has_presentation_only_title_marker(value: Any) -> bool:
+    """Return whether a title suffix came from a rendered confirmation view."""
+
+    return bool(_PRESENTATION_ONLY_TITLE_MARKER_RE.search(_clean(value)))
 
 
 def _collapse_title_boundary_duplicates(value: str) -> str:

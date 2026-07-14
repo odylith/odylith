@@ -198,10 +198,11 @@
 - When prompt submit earns a teaser, Codex should carry that sentence in the
   hook `systemMessage` and also place an assistant-render fallback in
   `hookSpecificOutput.additionalContext`. When no teaser is earned for a
-  normal non-passthrough prompt, Codex stays quiet; Assist is visible only for
-  concrete closeout proof, explicit visibility failure, or a replayed earned
-  live moment. Prompt-time context should feel like one useful interjection,
-  not a visible dump of narrowing scaffolding.
+  routine low-signal prompt, Codex stays quiet; a concrete decision or
+  proof-boundary request, meaningful closeout, explicit intervention feedback
+  request, or replayed earned live moment gets one useful Assist line.
+  Prompt-time context should feel like one useful
+  interjection, not a visible dump of narrowing scaffolding.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for a Codex-authored capability
   summary. When Codex hooks are available, `codex prompt-context` must emit

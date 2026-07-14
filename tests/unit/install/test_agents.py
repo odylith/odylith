@@ -76,18 +76,12 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "odylith/agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md",
         "odylith/skills/odylith-code-hygiene-guard/SKILL.md",
         "Discipline hot paths must not call host models",
-        "project-first Product Intent Confirmation",
-        "sectioned Markdown",
-        "`## Choose one command`",
-        "Start your reply with exactly one command: **CONFIRM**, **EDIT**, or **REJECT**",
-        "Reply starts with: CONFIRM",
-        "Command: `CONFIRM`",
-        "Command: `EDIT`",
-        "Command: `REJECT`",
-        "same visible Product Intent Confirmation",
-        ".odylith/runtime/greenfield/confirmed-intent.json",
-        "greenfield compile-transaction",
-        "ProductCreateTransaction",
+            "Odylith treats input as evidence",
+            "builds typed facts",
+            "one hash-bound rail",
+            "Material uncertainty gets one focused question",
+            "Markdown is a view, never product truth",
+            "ProductCreateTransaction",
         "--transaction-file",
         "--transaction-hash",
         "rollback guard",
@@ -101,10 +95,12 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "`odylith codex intervention-status` or `odylith claude",
         "low-latency delivery record for Teaser, Ambient Highlight, Observation, Proposal, and Assist readiness",
         "`Activation: ready` plus chat visibility",
-        "normal non-passthrough prompts do not get an Assist line by default",
-        "Do not add Assist just because Odylith ran",
-        "concrete observed counts, measured deltas, or validation outcomes",
-        "Generic activity receipts are not premium interventions",
+        "When explicit intervention feedback asks for more frequent Assist",
+        "substantive-continuation beats",
+        "while keeping bare acknowledgements, routine chatter, and internal execution details out",
+        "Never add Assist merely because Odylith ran",
+        "concrete counts, deltas, or validation outcomes",
+        "Generic receipts are not premium interventions",
         "never say `fixed`, `cleared`, or `resolved` without qualification",
         "same fingerprint as the last falsification or not",
         "grounding Odylith is diagnosis authority, not blanket write authority",
@@ -144,8 +140,8 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "Do not inspect Odylith source" in block
     assert "hand-author/repair proposal JSON" in block
     assert "parser/schema retries" in block
-    assert "Do not ask operator to inspect proposal JSON or add a second confirmation" in block
-    assert "Surface only final summary or blockers" in block
+    assert "Do not narrate parser/schema retries or request a second confirmation" in block
+    assert "Surface only the final transaction, created-record summary, or blocker" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block
     assert len(block.encode("utf-8")) < 11600

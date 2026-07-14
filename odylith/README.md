@@ -107,46 +107,35 @@ greenfield proposal lane before source-backed governance exists:
 ./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
 ```
 
-Odylith returns a no-write reasoning request. The host must write the short project-first
-Product Intent Confirmation in chat from live reasoning before any proposal
-records exist. Render it as sectioned Markdown: Product story, State object,
-First complete path, Human actors, External systems, Internal product systems,
-Critical assumptions, Ambiguities, Proof boundary, and `## Choose one command`.
-The command block must show `Start your reply with exactly one command: **CONFIRM**,
-**EDIT**, or **REJECT**.`, then visually separate sections headed **Command: `CONFIRM`**,
-**Command: `EDIT`**, and **Command: `REJECT`** with `Reply starts with: CONFIRM`,
-`Reply starts with: EDIT`, and `Reply starts with: REJECT`. Use short paragraphs plus bullets, not a wall of
-prose, and do not wrap ordinary product terms in code ticks or decorative bold
-markers. The first **CONFIRM** compiles and hash-gates the transaction before any
-governed records are written. After the operator chooses **CONFIRM**, write the
-same visible Product Intent Confirmation to
-`.odylith/runtime/greenfield/confirmed-intent.md`, then compile the create
-transaction. Odylith may normalize that Markdown into
-`.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
-package from the accepted narrative, validates it, runs the Tribunal write gate,
-quality-gates the full package, and hashes the ProductCreateTransaction before
-records can be confirmed. After **CONFIRM**, create only verifies the compiler
-receipt, transaction hash, compiler identity, and unchanged repo preconditions;
-applies the sealed write set under rollback guard; validates exact readback; and
-reports success or an environment/IO failure. Do not inspect Odylith source files,
-`.odylith`, bundle files, Python modules, or local examples to discover schema fields.
-Do not hand-author, switch to, or repair proposal JSON
-after confirmation. Do not narrate parser/schema retries or intermediate
-transaction-compile failures in operator chat. The operator does not need to
-inspect proposal JSON or confirm uncompiled Markdown.
+`propose` compiles a typed ProductCreateTransaction before it shows the final command rail.
+The visible preview is a sectioned view of the transaction-bound facts: Product story,
+State object, First complete path, Human actors, systems, assumptions, ambiguities, and
+proof boundary. It ends with one clear `## Choose one command` block:
+
+- **CONFIRM** commits the shown validated transaction hash.
+- **EDIT** adds corrections as new untrusted evidence and rebuilds a replacement transaction.
+- **REJECT** stops with no governed records written.
+
+Odylith asks one focused question only when an ambiguity materially changes the first
+release. Other gaps become visible assumptions. Markdown is evidence and a human view,
+not product truth. Before **CONFIRM**, `propose` may store replaceable evidence and the
+compiled transaction under `.odylith/runtime/greenfield/`; it does not change governed
+product records. After **CONFIRM**, create only verifies the receipt, transaction hash,
+compiler identity, and unchanged repo preconditions; applies the sealed write set under a
+rollback guard; validates exact readback; and reports success or an environment/IO failure.
+It does not parse product Markdown, call a host model, generate artifacts, or repair prose
+after confirmation. Do not inspect Odylith source files, `.odylith`, bundle files, Python
+modules, or local examples to discover schema fields. Do not hand-author or repair proposal
+JSON, narrate parser/schema retries, or request a second confirmation.
 
 ```bash
-./.odylith/bin/odylith greenfield compile-transaction --repo-root . --prompt "<project intent>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
 ./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 ```
 
-If a reviewer explicitly asks for JSON, use `greenfield compile-transaction
---intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json`
-as an audit artifact only. The normal write path stays confirmed create from
-the verified transaction hash. Do not use canned domain families or scaffolds
-as product truth. Do not run confirmed create from a thin prompt without a
-verified ProductCreateTransaction. Do not start coding until the product gates
-are accepted.
+If a reviewer explicitly asks for JSON, use `greenfield propose --format json` as an audit
+view of the staged transaction. The normal write path stays confirmed create from the
+verified transaction hash. Do not use canned domain families or scaffolds as product truth.
+Do not start coding until the product gates are accepted.
 
 For the common governance authoring fast paths, use:
 

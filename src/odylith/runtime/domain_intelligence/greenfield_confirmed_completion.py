@@ -25,7 +25,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_label_repair import (
     repair_generic_actor_labels as _repair_generic_actor_labels,
 )
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
+    validation_proof_summary as _validation_proof_summary,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
     actor_phrase_for_sentence as _actor_phrase_for_sentence,
 )
@@ -173,7 +175,11 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         or not risks
         or _sequence_has_text_repair(risks)
         or any(risk_text_has_framework_leak(row) for row in risks)
-        or _risks_have_generic_actor_label(risks)
+        or any(
+            value_starts_with_generic_actor_label(row.get("statement"))
+            or value_starts_with_generic_actor_label(row.get("mitigation"))
+            for row in dict_rows(risks)
+        )
     ):
         proposal["risks"] = build_product_risks_from_proposal(
             proposal,
@@ -203,7 +209,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         outcome = completion_text.outcome_phrase(proposal)
         outcome_action = completion_text.outcome_action_phrase(outcome)
         proof_capability = completion_text.proof_capability_phrase(proposal)
-        proof_summary = _validation_proof_summary(proposal)
+        proof_summary = _validation_proof_summary(completion_text.proof_boundary(proposal))
         proposal["validation_strategy"] = list(
             unique_text(
                 [
@@ -220,14 +226,6 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
     return changed
 
 
-def _risks_have_generic_actor_label(value: Any) -> bool:
-    return any(
-        value_starts_with_generic_actor_label(row.get("statement"))
-        or value_starts_with_generic_actor_label(row.get("mitigation"))
-        for row in dict_rows(value)
-    )
-
-
 def _complete_backlog(proposal: dict[str, Any]) -> bool:
     rows = proposal.get("backlog")
     if not isinstance(rows, list):
@@ -240,6 +238,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
     state = completion_text.state_reference(proposal)
     state_label = completion_text.state_object(proposal)
     actors = completion_text.actor_summary(proposal)
+    primary_actor = completion_text.primary_actor_phrase(proposal)
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
@@ -253,7 +252,12 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
             row["customer"] = actors
             changed = True
         if not _clean(row.get("opportunity")) or _text_needs_repair(row.get("opportunity")):
-            row["opportunity"] = completion_text.workstream_opportunity(label=label, action=action, outcome=outcome)
+            row["opportunity"] = completion_text.workstream_opportunity(
+                label=label,
+                actor=primary_actor,
+                action=action,
+                outcome=outcome,
+            )
             changed = True
         if not _clean(row.get("product_view")) or _text_needs_repair(row.get("product_view")):
             row["product_view"] = completion_text.workstream_product_view(label=label, action=action, outcome=outcome)
@@ -550,12 +554,13 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
     state_object = completion_text.state_reference(proposal)
-    proof_summary = _validation_proof_summary(proposal)
+    proof_summary = _validation_proof_summary(completion_text.proof_boundary(proposal))
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
+    actor_phrase = _actor_phrase_for_sentence(completion_text.actor_summary(proposal))
     proof_success = _sentence(
-        f"Release {release} succeeds only when a representative user can {action}, the product lets the user {outcome_action}, and {state_object} remains understandable when information is missing or corrected.",
+        f"Release {release} succeeds only when {actor_phrase} can {action}, the product lets {actor_phrase} {outcome_action}, and {state_object} remains understandable when information is missing or corrected.",
         limit=520,
     )
     changed = False
@@ -571,7 +576,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     release_plan = proposal.get("release_plan")
     if isinstance(release_plan, dict):
         criteria = [
-            _sentence(f"{label} success proof shows a representative user can {action} and {outcome_action}.", limit=520),
+            _sentence(f"{label} success proof shows {actor_phrase} can {action} and {outcome_action}.", limit=520),
             _sentence(f"{label} replay proof reconstructs {state_object} with actor, timestamp, status, result, and explanation.", limit=520),
             _sentence(f"{label} blocked-path proof keeps missing input, failed validation, access limits, or privacy issues visible before a result is trusted.", limit=520),
             _sentence(f"{label} release proof stays within the accepted product promise: {proof_summary}.", limit=520),
@@ -589,7 +594,7 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
     state_object = completion_text.state_reference(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     proof_capability = completion_text.proof_capability_phrase(proposal)
-    proof_summary = _validation_proof_summary(proposal)
+    proof_summary = _validation_proof_summary(completion_text.proof_boundary(proposal))
     rows = [
         _sentence(f"Success proof for release {release} includes {proof_capability}.", limit=700),
         _sentence(f"Result proof confirms the user can {completion_text.outcome_action_phrase(outcome)} with the visible result explained.", limit=520),
@@ -604,11 +609,6 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
         _sentence(f"Release proof: {label} cannot promote unless validation output proves the visible product outcome and stays inside the first-release promise.", limit=520),
     ]
     return _set_list(proposal, "validation_strategy", rows)
-
-
-def _validation_proof_summary(proposal: Mapping[str, Any], *, limit: int = 300) -> str:
-    summary = proof_claim_summary(completion_text.proof_boundary(proposal), limit=limit).strip(" .")
-    return _sentence(summary, fallback="the promised user-visible result", limit=limit).rstrip(".")
 
 
 def _repair_backlog_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
@@ -672,6 +672,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
     proof_boundary = completion_text.proof_boundary(proposal)
     proof_clause = _clean(proof_boundary).strip(" .")
     actors = completion_text.actor_summary(proposal)
+    primary_actor = completion_text.primary_actor_phrase(proposal)
     actor_phrase = _actor_phrase_for_sentence(actors)
     outcome_action = completion_text.outcome_action_phrase(outcome)
     intent = proposal.get("intent")
@@ -681,7 +682,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             "summary",
             fallback=(
                 f"{label} helps {actor_phrase} {action}, keeps {state_object} explainable, and proves that "
-                f"a representative user can {outcome_action} without trusting incomplete information."
+                f"{actor_phrase} can {outcome_action} without trusting incomplete information."
             ),
         )
         changed |= _repair_bad_scalar(
@@ -715,7 +716,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
         changed |= _repair_bad_scalar(
             row,
             "opportunity",
-            fallback=f"{title} gives the team a small release slice where a representative user can {action} before broader variants are added.",
+            fallback=f"{title} gives the team a small release slice where {actor_phrase} can {action} before broader variants are added.",
         )
         changed |= _repair_bad_scalar(
             row,
@@ -769,6 +770,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             state_object=state_object,
             proof_boundary=proof_boundary,
             actor_summary=actors,
+            primary_actor=primary_actor,
         )
         if _sequence_has_text_repair(row.get("rationale_lines")):
             changed |= _set_list(

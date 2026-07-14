@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from argparse import Namespace
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -15,8 +16,15 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_intent_authority
+from odylith.runtime.domain_intelligence.greenfield_proposals import load_confirmed_intent_args
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+    materialize_prompt_confirmed_intent,
+    materialize_prompt_intent_hypothesis,
+    render_product_intent_preview,
+)
+from odylith.runtime.domain_intelligence import greenfield_prompt_intent_materialization
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -25,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_snapshot_hash,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 
 
@@ -223,6 +232,212 @@ def test_product_create_transaction_rejects_markdown_material_fact_without_produ
 
     with pytest.raises(ValueError, match="missing material product-claim custody"):
         _transaction(tmp_path, authority=mutated)
+
+
+@pytest.mark.parametrize(
+    ("prompt", "fallback_title"),
+    (
+        (
+            "Build an urban pavement emergency repair workspace where public works staff complete path for the "
+            "whole product from hazard report through verified street reopening.",
+            "Urban Pavement Emergency Repair Workspace",
+        ),
+        (
+            "Build a thrift consignment payout workspace where consignment managers complete path for the whole "
+            "product from item sale through approved seller payout.",
+            "Thrift Consignment Payout Workspace",
+        ),
+    ),
+)
+def test_prompt_only_materialization_preserves_concrete_first_path_claim_custody(
+    tmp_path: Path,
+    prompt: str,
+    fallback_title: str,
+) -> None:
+    intent = materialize_prompt_confirmed_intent(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=fallback_title,
+    )
+
+    authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
+
+    require_product_intent_authority(authority)
+    first_path = authority["material_fields"]["first_path"]
+    assert first_path["custody_state"] == "accepted_fact"
+    assert first_path["product_claim_span_ids"] == ["first_path:1"]
+
+
+def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_authority(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_prompt_intent_materialization,
+        "parse_confirmed_intent_text",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("Markdown parsing is forbidden")),
+    )
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=(
+            "Build a lab evidence review workspace where research coordinators record submitted sample context, "
+            "route an evidence reviewer, resolve custody gaps, and see a release-readiness decision with proof."
+        ),
+        repo_root=tmp_path,
+        fallback_title="Lab Evidence Review Workspace",
+    )
+
+    authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
+    require_product_intent_authority(authority)
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.md").is_file()
+    assert authority["source_format"] == "operator_prompt"
+    assert authority["markdown_source_path"].endswith("candidate-evidence.md")
+
+
+def test_edit_evidence_rebuilds_typed_candidate_with_separate_raw_custody(tmp_path: Path) -> None:
+    prompt = (
+        "Build a flood shelter intake workspace where city staff register displaced residents, match household needs "
+        "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
+    )
+    initial = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Flood Shelter Intake Workspace",
+    )
+    edited = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Flood Shelter Intake Workspace",
+        edit_evidence=(
+            "EDIT\n\n## First complete path\n"
+            "A shelter coordinator registers a displaced household, records accessibility needs, matches an available "
+            "bed, obtains consent, and sees a confirmed placement receipt with the household's readiness status."
+        ),
+    )
+
+    initial_authority = initial[PRODUCT_INTENT_AUTHORITY_KEY]
+    edited_authority = edited[PRODUCT_INTENT_AUTHORITY_KEY]
+    require_product_intent_authority(edited_authority)
+    assert initial_authority[PRODUCT_FACTS_HASH_KEY] != edited_authority[PRODUCT_FACTS_HASH_KEY]
+    assert "shelter coordinator" in edited["first_path"].casefold()
+    assert edited_authority["source_format"] == "operator_prompt_with_edit_evidence"
+    assert (tmp_path / ".odylith/runtime/greenfield/operator-prompt.txt").is_file()
+    assert (tmp_path / ".odylith/runtime/greenfield/edit-evidence.md").is_file()
+    evidence = (tmp_path / ".odylith/runtime/greenfield/candidate-evidence.md").read_text(encoding="utf-8")
+    assert "Operator prompt evidence" in evidence
+    assert "Operator edit evidence" in evidence
+    preview = render_product_intent_preview(edited)
+    assert "Product Intent Preview" in preview
+    assert "shelter coordinator" in preview.casefold()
+
+
+def test_rich_edit_rebuilds_prompt_derived_product_projections(tmp_path: Path) -> None:
+    edited = materialize_prompt_intent_hypothesis(
+        prompt="Draft a greenfield proposal for a learner choice practice journal.",
+        repo_root=tmp_path,
+        fallback_title="Learner Choice Practice Journal",
+        edit_evidence=(
+            "# Choice Practice Journal\n\n"
+            "## Product story\n"
+            "The journal gives a learner one short scenario and gives a parent a concise recap.\n\n"
+            "## State object\n"
+            "A learner practice record tracks the selected scenario, choice, reflection, recap status, and privacy boundary.\n\n"
+            "## First complete path\n"
+            "A parent creates an account, adds a learner profile, and selects one scenario. The learner makes a choice, "
+            "sees a short reflection, and the parent opens the recap.\n\n"
+            "## Human actors\n"
+            "- Parent: creates the account and reviews the recap.\n"
+            "- Learner: makes the scenario choice and sees the reflection.\n\n"
+            "## Proof boundary\n"
+            "Release 0.0.1 succeeds when the learner completes one scenario and the parent can review the recap."
+        ),
+    )
+
+    derived_text = " ".join(
+        str(edited.get(field) or "")
+        for field in ("customer", "problem", "opportunity", "product_view", "success_metrics")
+    ).casefold()
+
+    assert "representative user" not in derived_text
+    assert "parent" in str(edited["product_view"]).casefold()
+
+
+def test_plain_language_edit_rebuilds_the_typed_candidate_without_a_schema_prompt(tmp_path: Path) -> None:
+    prompt = (
+        "Build a flood shelter intake workspace where city staff register displaced residents, match household needs "
+        "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
+    )
+
+    edited = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Flood Shelter Intake Workspace",
+        edit_evidence="EDIT\nMake shelter coordinators the people who complete the first placement handoff.",
+    )
+
+    assert edited["first_path"] == (
+        "Shelter coordinators can complete the first placement handoff, then register displaced residents, match "
+        "household needs to shelter capacity; then preserve consent evidence; then publish a daily placement readiness result."
+    )
+    assert edited["human_actors"] == [
+        "Shelter coordinators: can complete the first placement handoff and review the visible result"
+    ]
+    preview = render_product_intent_preview(edited).casefold()
+    assert "shelter coordinators" in preview
+    assert "city staff" not in preview
+
+
+def test_sentence_form_first_path_actor_correction_rebuilds_without_schema_terms(tmp_path: Path) -> None:
+    prompt = (
+        "Build a flood shelter intake workspace where city staff register displaced residents, match household needs "
+        "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
+    )
+
+    edited = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Flood Shelter Intake Workspace",
+        edit_evidence="EDIT\nThe first path should be completed by shelter coordinators rather than city staff.",
+    )
+
+    assert edited["first_path"].startswith("Shelter coordinators can register displaced residents")
+    assert edited["human_actors"] == [
+        "Shelter coordinators: can complete the first path and review the visible result"
+    ]
+    assert "city staff" not in render_product_intent_preview(edited).casefold()
+
+
+def test_device_description_compiles_a_usable_owner_path_without_a_product_intent_failure(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt="Draft a greenfield proposal for a plant-care irrigation device that waters and monitors houseplants.",
+        repo_root=tmp_path,
+        fallback_title="Plant-care Irrigation Device Workspace",
+    )
+
+    assert intent["first_path"] == (
+        "A device owner can configure one plant-care irrigation device, review the plant status, and see current "
+        "watering status and sensor status."
+    )
+    assert "device owner" in " ".join(intent["human_actors"]).casefold()
+    assert "device that waters" not in intent["product_story"].casefold()
+
+
+@pytest.mark.parametrize(
+    "text",
+    (
+        "Field inspectors record pavement findings, attach photos, route traffic engineer review, and publish an approval packet with proof.",
+        "Product Intent Confirmation needed\n\nHost reasoning task\n\nVisible format contract\n\nOriginal user intent\nField inspectors record pavement findings, attach photos, route traffic engineer review, and publish an approval packet with proof.",
+    ),
+)
+def test_confirmed_intent_file_rejects_raw_prompt_and_host_guidance(tmp_path: Path, text: str) -> None:
+    path = tmp_path / "intent.md"
+    path.write_text(text, encoding="utf-8")
+    args = Namespace(
+        intent_file=str(path),
+        prompt="Field inspectors record pavement findings, attach photos, route traffic engineer review, and publish an approval packet with proof.",
+    )
+
+    with pytest.raises(ValueError, match="cannot treat"):
+        load_confirmed_intent_args(args, repo_root=tmp_path)
 
 
 @pytest.mark.parametrize("damage", ("missing_sidecar", "invalid_sidecar", "source_drift", "envelope_drift"))

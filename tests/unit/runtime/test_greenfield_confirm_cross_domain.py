@@ -55,23 +55,18 @@ def _run_confirmed_transaction_create(
     release: str = "0.0.1",
 ) -> tuple[int, str]:
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_rc = greenfield_proposals.main(
-        [
-            "compile-transaction",
-            "--repo-root",
-            str(repo_root),
-            "--prompt",
-            prompt,
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--output",
-            transaction_file,
-            "--release",
-            release,
-            "--format",
-            "json",
-        ]
-    )
+    propose_args = [
+        "propose",
+        "--repo-root",
+        str(repo_root),
+        "--prompt",
+        prompt,
+        "--edit-evidence",
+        ".odylith/runtime/greenfield/confirmed-intent.md",
+        "--format",
+        "json",
+    ]
+    compile_rc = greenfield_proposals.main(propose_args)
     compile_output = capsys.readouterr().out
     assert compile_rc == 0, compile_output
     transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])

@@ -139,7 +139,7 @@ def _explicit_system_description(name: str, *, context_clause: str) -> str:
     if any(token in lowered for token in ("notification", "reminder", "handoff", "referral")):
         return f"delivers {topic} handoff for {path} without hiding the source context, owner, next action, or blocked state"
     if context_clause:
-        return "owns the component responsibility named by the accepted intent while keeping required inputs, visible result, blockers, and proof evidence clear"
+        return "owns the component responsibility named by the accepted intent and keeps required inputs, visible result, blockers, and proof evidence clear"
     return f"owns {topic} behavior for {path} with required input, visible result, blocker, and proof evidence clear"
 
 

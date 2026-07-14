@@ -484,9 +484,9 @@ def workstream_problem(*, label: str, action: str, outcome: str, state: str) -> 
     )
 
 
-def workstream_opportunity(*, label: str, action: str, outcome: str) -> str:
+def workstream_opportunity(*, label: str, actor: str, action: str, outcome: str) -> str:
     return _sentence(
-        f"Build the narrow behavior in {label} that lets one representative user {action} and {outcome_action_phrase(outcome)}.",
+        f"Build the narrow behavior in {label} that lets {actor} {action} and {outcome_action_phrase(outcome)}.",
         limit=420,
     )
 
@@ -799,6 +799,21 @@ def actor_summary(proposal: Mapping[str, Any]) -> str:
     return f"{project_title(proposal)} users, reviewers, owners, and release decision makers"
 
 
+def primary_actor_phrase(proposal: Mapping[str, Any]) -> str:
+    """Return the named first-path actor as a readable sentence subject."""
+
+    path_model = first_path_model(first_path(proposal))
+    actor = first_path_semantic_view(path_model).primary_actor_signature
+    if actor:
+        return _actor_subject_phrase(actor)
+    intent = proposal.get("intent")
+    if isinstance(intent, Mapping):
+        labels = project_specific_actor_labels(intent)
+        if labels:
+            return _actor_subject_phrase(labels[0])
+    return "the first user"
+
+
 def lower_first(value: str) -> str:
     text = _clean(value).strip()
     if not text:
@@ -824,6 +839,7 @@ __all__ = [
     "outcome_action_phrase",
     "outcome_phrase",
     "object_reference_phrase",
+    "primary_actor_phrase",
     "primary_component_for_backlog",
     "project_title",
     "proof_capability_phrase",

@@ -222,9 +222,10 @@
   for route locks, anchor context, and continuity, and emits an earned teaser
   through `systemMessage` for the host-visible lane. Additional context still
   carries an assistant-render fallback so the next assistant message can speak
-  the teaser when it was earned. When no teaser is earned, Claude stays quiet;
-  Assist is visible only for concrete closeout proof, explicit visibility
-  failure, or a replayed earned live moment.
+  the teaser when it was earned. When no teaser is earned, Claude stays quiet
+  unless a concrete decision or proof-boundary request earns one short Assist;
+  closeout proof, explicit visibility failure, or a replayed earned live
+  moment may also earn it.
 - Plain `Odylith, show me what you can do` and `Odylith, help` prompts are
   first-match route locks, not requests for generic Claude Code capabilities.
   The route lock is now handled inside `prompt-bundle` so the default Claude

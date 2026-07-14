@@ -51,14 +51,13 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 ),
                 commands=(
                     "odylith greenfield propose",
-                    "odylith greenfield compile-transaction",
                     "odylith greenfield create",
                 ),
                 anchors=("src/odylith/runtime/domain_intelligence/",),
                 activation=(
-                    "greenfield propose returns no-write Product Intent Confirmation; compile-transaction builds "
-                    "and quality-gates the governed package before confirmation; confirmed create verifies the transaction "
-                    "hash, commits records atomically, validates readback, and refreshes surfaces"
+                    "greenfield propose compiles and quality-gates the governed package before it shows the sole "
+                    "hash-bound CONFIRM, EDIT, and REJECT rail; confirmed create verifies the transaction hash, "
+                    "commits records atomically, validates readback, and refreshes surfaces"
                 ),
             ),
             InventoryItem(

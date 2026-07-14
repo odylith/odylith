@@ -78,8 +78,9 @@
   failed.
 - The live mid-turn hot path for teaser, Observation, and Proposal belongs to
   the intervention engine. `Odylith Chatter` owns the broader narration
-  posture and the evidence-backed `Odylith Assist:` closeout or explicit
-  visibility-feedback fallback instead of recomputing the hook-time surface.
+  posture and the evidence-backed `Odylith Assist:` closeout, concrete
+  decision/proof-boundary prompt, or explicit visibility-feedback fallback
+  instead of recomputing the hook-time surface.
 - The lane may change what evidence is available or whether apply is allowed,
   but it must not fork the labels, confirmation phrase, or overall markdown UX
   across detached `source-local`, pinned dogfood, and consumer pinned-runtime
@@ -146,9 +147,9 @@
   `prompt-context` JSON `additionalContext` hook. On Codex, the earned teaser
   stays in hook `systemMessage` plus `hookSpecificOutput.additionalContext`,
   with the same assistant-render fallback for chat visibility. Normal
-  non-passthrough prompts do not get `Odylith Assist:` by default; they stay
-  quiet unless a concrete Observation, Proposal, validation result, or
-  visibility failure earns a premium visible note.
+  non-passthrough prompts stay quiet unless a concrete decision or
+  proof-boundary, Observation, Proposal, validation result, or visibility
+  failure earns a premium visible note.
 - Hook output generation is not chat visibility. The shipped contract is:
   hooks produce structured evidence and model/developer context; hosts may
   render hook `systemMessage` or stdout when they support it; if not, the

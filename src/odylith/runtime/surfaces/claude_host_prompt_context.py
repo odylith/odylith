@@ -94,6 +94,9 @@ def render_prompt_context(
     refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
     needs_live_bundle = bool(refs) or host_intervention_support.prompt_needs_live_bundle(
         prompt=prompt,
+        repo_root=repo_root,
+        session_id=session_id,
+        host_family="claude",
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
@@ -171,7 +174,9 @@ def main(argv: list[str] | None = None) -> int:
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return 0
     refs = list(dict.fromkeys(_ANCHOR_RE.findall(str(prompt or ""))))
-    if not refs and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+    if not refs and not host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt, repo_root=repo_root, session_id=session_id, host_family="claude"
+    ):
         receipt = (
             ""
             if confirmed_events

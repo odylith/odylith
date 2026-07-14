@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+import fcntl
 import time
 from collections.abc import Mapping
 from pathlib import Path
@@ -79,35 +81,39 @@ def commit_greenfield_create_transaction(
     require_product_create_transaction_intent_authority(transaction, repo_root=root)
     require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
     raise_for_unapproved_product_create_transaction(transaction)
-    write_set = greenfield_repository_write_set.require_greenfield_repository_preconditions(
-        repo_root=root,
-        write_set=transaction.prewrite_package.repository_write_set,
-    )
     started = time.perf_counter() if started_at is None else float(started_at)
-    write_paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
-    final_manifest = finalize_greenfield_post_confirm_manifest(
-        transaction.quality_manifest,
-        whole_project_elapsed_seconds=time.perf_counter() - started,
-        write_transaction_status="committed",
-    )
-    final_manifest["product_create_transaction"] = transaction.summary()
-    write_manifest = dict(final_manifest.get("write_transaction") or {})
-    write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
-    write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
-    write_manifest["commit_only"] = True
-    final_manifest["write_transaction"] = write_manifest
-    write_transaction = GreenfieldApplyTransaction(root, paths=write_paths)
+    write_transaction: GreenfieldApplyTransaction | None = None
     try:
-        with write_transaction:
-            result = greenfield_compiled_write.write_compiled_greenfield_package(
-                root=root,
-                transaction=transaction,
+        with _greenfield_commit_lock(root):
+            write_set = greenfield_repository_write_set.require_greenfield_repository_preconditions(
+                repo_root=root,
+                write_set=transaction.prewrite_package.repository_write_set,
             )
-            write_transaction.commit()
+            write_paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
+            final_manifest = finalize_greenfield_post_confirm_manifest(
+                transaction.quality_manifest,
+                whole_project_elapsed_seconds=time.perf_counter() - started,
+                write_transaction_status="committed",
+            )
+            final_manifest["product_create_transaction"] = transaction.summary()
+            write_manifest = dict(final_manifest.get("write_transaction") or {})
+            write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
+            write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
+            write_manifest["commit_only"] = True
+            final_manifest["write_transaction"] = write_manifest
+            write_transaction = GreenfieldApplyTransaction(root, paths=write_paths)
+            with write_transaction:
+                result = greenfield_compiled_write.write_compiled_greenfield_package(
+                    root=root,
+                    transaction=transaction,
+                )
+                write_transaction.commit()
     except BaseException as exc:
         if isinstance(exc, GreenfieldCreateCommitError):
             raise
-        rollback_status = write_transaction.rollback_status
+        if isinstance(exc, ValueError) and write_transaction is None:
+            raise
+        rollback_status = write_transaction.rollback_status if write_transaction is not None else "not_started"
         rollback_phrase = (
             "rollback completed; no governed records were committed"
             if rollback_status == "rolled_back"
@@ -118,7 +124,7 @@ def commit_greenfield_create_transaction(
             f"{rollback_phrase}. "
             f"Root cause: {exc}",
             rollback_status=rollback_status,
-            rollback_error=write_transaction.rollback_error,
+            rollback_error=write_transaction.rollback_error if write_transaction is not None else "",
             root_cause=exc,
             failure_kind=(
                 "post_confirm_commit_interrupted"
@@ -127,12 +133,50 @@ def commit_greenfield_create_transaction(
                 if isinstance(exc, OSError)
                 else "post_confirm_commit_invariant_failure"
             ),
-            recovery_path=write_transaction.recovery_path,
+            recovery_path=write_transaction.recovery_path if write_transaction is not None else "",
         ) from exc
     final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
     result["post_confirm_quality_manifest"] = final_manifest
     result["product_create_transaction"] = transaction.summary()
     return result
+
+
+@contextmanager
+def _greenfield_commit_lock(repo_root: Path):
+    """Serialize cooperating create transactions across the exact write boundary."""
+
+    lock_path = Path(repo_root) / ".odylith" / "runtime" / "greenfield" / "create.lock"
+    try:
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        handle = lock_path.open("a+b")
+    except OSError as exc:
+        raise GreenfieldCreateCommitError(
+            "greenfield create could not acquire its repository commit lock; no governed records were written",
+            rollback_status="not_started",
+            root_cause=exc,
+            failure_kind="post_confirm_commit_environment_or_io_failure",
+        ) from exc
+    with handle:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise GreenfieldCreateCommitError(
+                "another greenfield create transaction is already committing; retry after it finishes",
+                rollback_status="not_started",
+                root_cause=exc,
+                failure_kind="post_confirm_repository_busy",
+            ) from exc
+        except OSError as exc:
+            raise GreenfieldCreateCommitError(
+                "greenfield create could not acquire its repository commit lock; no governed records were written",
+                rollback_status="not_started",
+                root_cause=exc,
+                failure_kind="post_confirm_commit_environment_or_io_failure",
+            ) from exc
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 def raise_for_unapproved_product_create_transaction(transaction: ProductCreateTransaction) -> None:

@@ -29,12 +29,8 @@ ASSISTANT_RENDER_REQUIRED_CHANNEL = visibility_contract.ASSISTANT_RENDER_REQUIRE
 LIVE_BOUNDARY_REQUIRED_KINDS = visibility_contract.LIVE_BOUNDARY_REQUIRED_KINDS
 _ASSIST_COMMON_MISSPELLING = "as" "sit"
 _VISIBILITY_FAILURE_FALLBACK_MARKER = (
-    "this turn must render an Odylith note in chat before Odylith can claim the user saw it"
+    "You should see guidance when it matters. This is the visible checkpoint"
 )
-_HOST_LABELS = {
-    "claude": "Claude",
-    "codex": "Codex",
-}
 _VISIBLE_COPY_BLOCKERS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "recursive display instruction",
@@ -260,11 +256,10 @@ def _wrap_live_text(value: str) -> str:
     return visibility_contract.wrap_live_boundary(value)
 
 
-def _visibility_failure_observation(*, host_family: str) -> str:
-    host_label = _HOST_LABELS.get(_normalize_token(host_family), "This assistant")
+def _visibility_failure_observation() -> str:
     return _wrap_live_text(
-        f"**Odylith Observation:** {host_label} intervention visibility is the blocker: "
-        f"{_VISIBILITY_FAILURE_FALLBACK_MARKER}."
+        "**Odylith Observation:** You should see guidance when it matters. This is the visible "
+        "checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
 
 
@@ -433,7 +428,7 @@ def build_visible_intervention_decision(
             else ""
         )
         visible = visibility_contract.compose_visible_markdown(
-            _visibility_failure_observation(host_family=normalized_host),
+            _visibility_failure_observation(),
             closeout,
         )
         forced_visible = True

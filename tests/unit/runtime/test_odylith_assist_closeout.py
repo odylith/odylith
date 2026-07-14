@@ -208,7 +208,7 @@ def test_closeout_assist_prefers_visibility_continuity_over_inherited_governance
 
     assert assist["eligible"] is True
     assert assist["style"] == "visibility_continuity"
-    assert "Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure" in assist["markdown_text"]
+    assert "I will make the next decision, risk, or verified result visible in the conversation" in assist["markdown_text"]
 
 
 def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_or_ids() -> None:
@@ -236,7 +236,7 @@ def test_closeout_assist_recovers_high_signal_visibility_feedback_without_paths_
     assert assist["style"] == "visibility_continuity"
     assert assist["updated_artifacts"] == []
     assert assist["affected_contracts"] == []
-    assert "Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure" in assist["markdown_text"]
+    assert "I will make the next decision, risk, or verified result visible in the conversation" in assist["markdown_text"]
     assert "candidate path" not in assist["markdown_text"]
     assert "focused check" not in assist["markdown_text"]
 

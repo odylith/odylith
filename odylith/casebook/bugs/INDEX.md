@@ -1,11 +1,16 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-11
+Last updated (UTC): 2026-07-14
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-246 | 2026-07-14 | Greenfield commit lock misclassified guarded write failures | P1 | domain-intelligence | Open | [2026-07-14-greenfield-commit-lock-misclassified-guarded-write-failures.md](2026-07-14-greenfield-commit-lock-misclassified-guarded-write-failures.md) |
+| CB-245 | 2026-07-14 | Concurrent greenfield create transactions can lose a managed update | P2 | domain-intelligence | Open | [2026-07-14-concurrent-greenfield-create-transactions-can-lose-a-managed-update.md](2026-07-14-concurrent-greenfield-create-transactions-can-lose-a-managed-update.md) |
+| CB-243 | 2026-07-12 | Initial greenfield confirm starts compilation instead of committing a sealed tra | P1 | domain-intelligence | Open | [2026-07-12-initial-greenfield-confirm-starts-compilation-instead-of-committing-a-sealed-tra.md](2026-07-12-initial-greenfield-confirm-starts-compilation-instead-of-committing-a-sealed-tra.md) |
+| CB-244 | 2026-07-12 | Greenfield confirmation can advance compilation after user confirmation | P1 | domain-intelligence | Open | [2026-07-12-greenfield-confirmation-can-advance-compilation-after-user-confirmation.md](2026-07-12-greenfield-confirmation-can-advance-compilation-after-user-confirmation.md) |
+| CB-242 | 2026-07-11 | Host specific intervention transport hides odylith moments | P1 | intervention-engine | Open | [2026-07-11-host-specific-intervention-transport-hides-odylith-moments.md](2026-07-11-host-specific-intervention-transport-hides-odylith-moments.md) |
 | CB-239 | 2026-07-11 | Greenfield setup evidence was dropped before confirm and replayed after confirma | P1 | domain-intelligence | Open | [2026-07-11-greenfield-setup-evidence-was-dropped-before-confirm-and-replayed-after-confirma.md](2026-07-11-greenfield-setup-evidence-was-dropped-before-confirm-and-replayed-after-confirma.md) |
 | CB-237 | 2026-07-11 | Greenfield recovered proof mixed a noun result with finite action labels | P2 | odylith | Open | [2026-07-11-greenfield-recovered-proof-mixed-a-noun-result-with-finite-action-labels.md](2026-07-11-greenfield-recovered-proof-mixed-a-noun-result-with-finite-action-labels.md) |
 | CB-238 | 2026-07-11 | Greenfield prompt recovery dropped supplied on call role from domain evidence | P2 | odylith | Open | [2026-07-11-greenfield-prompt-recovery-dropped-supplied-on-call-role-from-domain-evidence.md](2026-07-11-greenfield-prompt-recovery-dropped-supplied-on-call-role-from-domain-evidence.md) |

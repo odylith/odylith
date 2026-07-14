@@ -525,8 +525,8 @@ def _clean_proof_summary(value: object, *, first_path: str) -> str:
     ):
         outcome = first_path_outcome_phrase(first_path, fallback="", limit=120)
         if outcome:
-            return f"The first release must show that a representative user can complete the scenario and receive {outcome}."
-        return "The first release must show that a representative user can complete the scenario and receive the promised result."
+            return f"The first release must show that the first user can complete the scenario and receive {outcome}."
+        return "The first release must show that the first user can complete the scenario and receive the promised result."
     return text
 
 

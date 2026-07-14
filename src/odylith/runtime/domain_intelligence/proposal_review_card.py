@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
 
@@ -18,9 +17,9 @@ def format_visible_proposal_card_text(
     """Render the default greenfield review card.
 
     This is intentionally short enough to stay visible in Claude/Codex tool
-    transcripts after product intent is confirmed. The longer text gate stays
-    behind ``--confirm-intent --detail full``. The governed package is compiled
-    into a ProductCreateTransaction before ``greenfield create`` commits it.
+    transcripts after prompt evidence is staged. The longer text remains an
+    advisory view; ``greenfield propose`` compiles the governed package into a
+    ProductCreateTransaction before ``greenfield create`` commits it.
     """
 
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
@@ -65,21 +64,8 @@ def format_visible_proposal_card_text(
             "Records after transaction commit",
             f"- {_visible_records_line(proposal, release_display=release_display)}",
             "",
-            *format_confirmation_choice_lines(
-                (
-                    (
-                        "CONFIRM",
-                        "Accept this preview so Odylith can compile the ProductCreateTransaction and show the transaction hash before any records are written.",
-                    ),
-                    ("EDIT", "Put corrections after EDIT; Odylith treats them as new evidence before rerunning greenfield propose."),
-                    ("REJECT", "Stop. No governed records are written."),
-                )
-            ),
-            "",
-            "Odylith system action after **CONFIRM**",
-            "- Do not paste this command in your reply. Start your reply with exactly one of CONFIRM, EDIT, or REJECT.",
-            f"- Compile transaction: {_visible_compile_command(proposal, request_context=request_context, release_selector=release_selector)}",
-            "- Full review: add --confirm-intent --detail full for the long contract; export JSON only when explicitly requested.",
+            "Odylith compiles this preview before showing the only command rail.",
+            "The final rail binds CONFIRM to the transaction hash; EDIT rebuilds from new evidence and REJECT stops.",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
@@ -169,22 +155,3 @@ def _visible_records_line(proposal: Mapping[str, Any], *, release_display: str) 
     if not pieces:
         pieces.append("accepted project direction")
     return ", ".join(pieces) + f", release {release_display}."
-
-
-def _visible_compile_command(
-    proposal: Mapping[str, Any],
-    *,
-    request_context: Mapping[str, Any],
-    release_selector: str,
-) -> str:
-    commands = request_context.get("apply_commands", [])
-    if isinstance(commands, list):
-        command = next((str(item) for item in commands if str(item).startswith("odylith greenfield compile-transaction")), "")
-        if command:
-            return command
-    return (
-        "odylith greenfield compile-transaction --repo-root . --prompt '<confirmed request>' "
-        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md "
-        "--output .odylith/runtime/greenfield/product-create-transaction.v1.json "
-        f"--release {release_selector}"
-    )

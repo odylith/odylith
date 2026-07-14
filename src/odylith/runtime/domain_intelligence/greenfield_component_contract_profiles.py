@@ -51,7 +51,7 @@ def document_context_contract(
             f"and access actor from {previous_label or 'the intake workspace'}"
         ),
         "produced_outputs": (
-            f"validated {packet}, {missing} blockers, uploaded-context metadata, access decisions, and handoff context for {downstream}"
+            f"validated {packet}, {missing} blockers, uploaded-context metadata, access decisions, and handoff context {_downstream_phrase(downstream)}"
         ),
         "states_or_transitions": (
             f"no-context, incomplete, missing-required-{_state_token(docs)}, {missing} blocking, uploaded, validation-failed, access-restricted, ready-for-review, "
@@ -410,6 +410,13 @@ def _downstream_from_context(context: str, *, fallback: str) -> str:
     if "status" in lowered:
         return "status view"
     return fallback
+
+
+def _downstream_phrase(value: str) -> str:
+    """Keep downstream prose grammatical when the fallback already has a preposition."""
+
+    text = _clean(value)
+    return text if text.casefold().startswith("for ") else f"for {text}"
 
 
 def _lifecycle_tracking_phrase(lowered_context: str) -> str:

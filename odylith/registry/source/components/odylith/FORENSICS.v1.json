@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 688,
-    "mapped_workstream_evidence_count": 510,
+    "explicit_event_count": 727,
+    "mapped_workstream_evidence_count": 516,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 688
+    "timeline_event_count": 727
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,869 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1053,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:49Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1051,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:49Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1050,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:39Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1048,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:39Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1047,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:29Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1045,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:29Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1044,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:19Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1042,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-13T03:10:19Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1041,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:47:28Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1037,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:47:28Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1036,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:47:08Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1034,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:45:23Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1033,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:45:11Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1029,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "casebook",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:39:22Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1025,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:39:00Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1023,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:38:59Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1022,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:38:43Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1021,
+      "explicit_components": [],
+      "kind": "ambient_signal",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T23:38:33Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 1020,
+      "explicit_components": [
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-07-12T16:37:06-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1019,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T03:08:04Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1018,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T03:08:04Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1015,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-12T03:03:25Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1014,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T03:03:25Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1011,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T01:34:33Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1010,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T01:34:33Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1009,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T01:34:23Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1008,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T01:34:23Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1007,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T01:28:31Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1006,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-12T01:28:31Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1005,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-12T01:28:20Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1004,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-12T01:28:20Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 1003,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-11T20:18:55Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1002,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-11T20:18:55Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 999,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-11T20:18:39Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 998,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-11T20:18:39Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 997,
+      "explicit_components": [],
+      "kind": "assist_closeout",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-11T20:16:21Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 995,
+      "explicit_components": [
+        "governance-intervention-engine"
+      ],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "atlas",
+        "benchmark",
+        "casebook",
+        "compass",
+        "dashboard",
+        "delivery-intelligence",
+        "domain-intelligence",
+        "execution-engine",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "odylith-context-engine",
+        "odylith-memory-backend",
+        "odylith-memory-contracts",
+        "odylith-projection-bundle",
+        "odylith-projection-snapshot",
+        "odylith-remote-retrieval",
+        "proof-state",
+        "radar",
+        "registry",
+        "remediator",
+        "subagent-orchestrator",
+        "subagent-router",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-07-11T20:16:21Z",
+      "workstreams": [
+        "B-001",
+        "B-031",
+        "B-058",
+        "B-059",
+        "B-072",
+        "B-096",
+        "B-099",
+        "B-105",
+        "B-106",
+        "B-107",
+        "B-108",
+        "B-109",
+        "B-110",
+        "B-141",
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 993,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-11T20:15:46Z",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "low",
+      "event_index": 992,
+      "explicit_components": [],
+      "kind": "intervention_teaser",
+      "mapped_components": [
+        "governance-intervention-engine",
+        "odylith"
+      ],
+      "meaningful": false,
+      "summary": "Component evidence linked this component to governed work.",
+      "ts_iso": "2026-07-11T20:15:36Z",
+      "workstreams": []
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

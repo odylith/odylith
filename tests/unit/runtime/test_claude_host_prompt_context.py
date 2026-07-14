@@ -118,7 +118,8 @@ def test_claude_prompt_system_message_hard_fails_visible_for_zero_signals(tmp_pa
     observation = dict(bundle["observation"])
 
     assert rendered.startswith(
-        "---\n\n**Odylith Observation:** Claude intervention visibility is the blocker: this turn must render an Odylith note in chat before Odylith can claim the user saw it."
+        "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible "
+        "checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
     )
     assert observation["context_packet_summary"]["packet_state"] == "visibility_recovery"
     assert observation["execution_engine_summary"]["execution_engine_next_move"] == "recover.current_blocker"

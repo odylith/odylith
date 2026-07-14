@@ -7,6 +7,12 @@ from odylith.runtime.intervention_engine import host_surface_runtime
 from odylith.runtime.intervention_engine import conversation_surface
 from odylith.runtime.intervention_engine import surface_runtime
 from odylith.runtime.surfaces import host_intervention_status
+
+
+_VISIBILITY_OBSERVATION = (
+    "---\n\n**Odylith Observation:** You should see guidance when it matters. This is the visible "
+    "checkpoint; future notes will stay concise, useful, and tied to a decision or verified result."
+)
 from odylith.runtime.surfaces import host_visible_intervention
 
 
@@ -207,9 +213,7 @@ def test_host_conversation_bundle_carries_full_alignment_context_for_zero_signal
         include_closeout=False,
     )
 
-    assert decision.visible_markdown.startswith(
-        "---\n\n**Odylith Observation:** Codex intervention visibility is the blocker: this turn must render an Odylith note in chat before Odylith can claim the user saw it."
-    )
+    assert decision.visible_markdown.startswith(_VISIBILITY_OBSERVATION)
     assert decision.delivery_status == "assistant_render_required"
     assert decision.proof_required is True
 
@@ -323,15 +327,15 @@ def test_stop_payload_is_empty_without_message() -> None:
     assert host_surface_runtime.stop_payload(system_message="") == {}
 
 
-def test_stop_payload_never_blocks_for_visible_delivery_continuation() -> None:
+def test_stop_payload_blocks_for_visible_delivery_continuation() -> None:
     payload = host_surface_runtime.stop_payload(
         system_message="**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract.",
         block_for_visible_delivery=True,
     )
 
     assert payload["systemMessage"] == "**Odylith Assist:** B-096 stayed tied to the refreshed intervention contract."
-    assert "decision" not in payload
-    assert "reason" not in payload
+    assert payload["decision"] == "block"
+    assert "Show the Odylith note below once" in payload["reason"]
 def test_normalized_session_id_falls_back_when_host_payload_is_missing() -> None:
     token = host_surface_runtime.normalized_session_id("", host_family="codex")
     assert token
@@ -543,11 +547,16 @@ def test_compose_checkpoint_system_message_prefers_live_intervention_over_succes
     assert message == "---\n\n**Odylith Observation:** The signal is real.\n\n---"
 
 
-def test_compose_checkpoint_system_message_keeps_failure_status_with_live_intervention() -> None:
+def test_compose_checkpoint_system_message_prioritizes_governance_failure_over_live_intervention() -> None:
     message = host_surface_runtime.compose_checkpoint_system_message(
         live_intervention="**Odylith Observation:** The signal is real.",
         governance_status="Odylith governance refresh failed after editing foo.md: exit code 2",
     )
 
-    assert message.startswith("---\n\n**Odylith Observation:** The signal is real.\n\n---")
-    assert "failed after editing foo.md" in message
+    assert message == "Odylith governance refresh failed after editing foo.md: exit code 2"
+
+
+def test_compose_checkpoint_system_message_keeps_bare_governance_status() -> None:
+    assert host_surface_runtime.compose_checkpoint_system_message(
+        governance_status="Odylith governance refresh failed after editing foo.md: exit code 2"
+    ) == "Odylith governance refresh failed after editing foo.md: exit code 2"

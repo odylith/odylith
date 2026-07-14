@@ -17,28 +17,24 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_int
 POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS = 60.0
 
 
-def _run_confirmed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[int, dict, float]:
+def _run_proposed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[int, dict, float]:
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_rc = greenfield_proposals.main(
+    propose_rc = greenfield_proposals.main(
         [
-            "compile-transaction",
+            "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
             prompt,
-            "--intent-file",
+            "--edit-evidence",
             ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--output",
-            transaction_file,
-            "--release",
-            "0.0.1",
             "--format",
             "json",
         ]
     )
-    compile_output = capsys.readouterr().out
-    assert compile_rc == 0, compile_output
-    transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])
+    propose_output = capsys.readouterr().out
+    assert propose_rc == 0, propose_output
+    transaction_hash = str(json.loads(propose_output)["product_create_transaction"]["transaction_hash"])
     started = time.perf_counter()
     rc = greenfield_proposals.main(
         [
@@ -58,7 +54,7 @@ def _run_confirmed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[
     return rc, payload, elapsed
 
 
-def _run_confirmed_create_subprocess(
+def _run_proposed_create_subprocess(
     *,
     tmp_path: Path,
     prompt: str,
@@ -66,23 +62,19 @@ def _run_confirmed_create_subprocess(
     timeout: float,
 ) -> tuple[subprocess.CompletedProcess[str], float]:
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_result = subprocess.run(
+    propose_result = subprocess.run(
         [
             sys.executable,
             "-m",
             "odylith.cli",
             "greenfield",
-            "compile-transaction",
+            "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
             prompt,
-            "--intent-file",
+            "--edit-evidence",
             ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--output",
-            transaction_file,
-            "--release",
-            "0.0.1",
             "--format",
             "json",
         ],
@@ -92,9 +84,9 @@ def _run_confirmed_create_subprocess(
         text=True,
         timeout=timeout,
     )
-    if compile_result.returncode != 0:
-        return compile_result, timeout
-    transaction_hash = str(json.loads(compile_result.stdout)["product_create_transaction"]["transaction_hash"])
+    if propose_result.returncode != 0:
+        return propose_result, timeout
+    transaction_hash = str(json.loads(propose_result.stdout)["product_create_transaction"]["transaction_hash"])
     started = time.perf_counter()
     create_result = subprocess.run(
         [
@@ -162,7 +154,7 @@ def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) >= 4
     assert len(payload["diagrams"]) == 6
-    assert (root / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert (root / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
     assert (root / "odylith/runtime/source/accepted-project.v1.json").is_file()
     assert (root / "odylith/radar/radar.html").is_file()
     assert (root / "odylith/registry/registry.html").is_file()
@@ -180,7 +172,7 @@ def test_greenfield_create_cli_completes_whole_project_under_sixty_seconds(tmp_p
     repo_root = Path(__file__).resolve().parents[3]
     env = os.environ.copy()
     env["PYTHONPATH"] = str(repo_root / "src") + os.pathsep + env.get("PYTHONPATH", "")
-    result, elapsed = _run_confirmed_create_subprocess(
+    result, elapsed = _run_proposed_create_subprocess(
         tmp_path=tmp_path,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
         env=env,
@@ -198,7 +190,7 @@ def test_yacht_greenfield_confirm_repairs_quality_failures_and_commits_under_six
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(YACHT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a yacht servicing platform",
@@ -666,7 +658,7 @@ def test_greenfield_create_confirm_full_refresh_stays_under_thirty_seconds(tmp_p
     _seed_empty_governance_repo(tmp_path)
     _write_confirmed_intent(tmp_path)
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
@@ -702,7 +694,7 @@ def test_solar_greenfield_create_refreshes_semantic_model_and_stays_under_thirty
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(SOLAR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="An app that optimizes the production and consumption of solar energy",
@@ -719,7 +711,7 @@ def test_solar_greenfield_create_refreshes_semantic_model_and_stays_under_thirty
     written_payload = "\n".join(
         path.read_text(encoding="utf-8")
         for path in (
-            tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
+            tmp_path / ".odylith/runtime/greenfield/candidate-intent.json",
             tmp_path / "odylith/runtime/source/accepted-project.v1.json",
         )
     )
@@ -743,28 +735,28 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(PATTERN_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a personal pattern tracker",
     )
     rendered_payload = json.dumps(payload)
-    confirmed_intent = json.loads(
-        (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").read_text(encoding="utf-8")
+    candidate_intent = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8")
     )
     product_claim_spans = [
         span
-        for span in confirmed_intent["source_evidence"]["spans"]
+        for span in candidate_intent["source_evidence"]["spans"]
         if span["classification"] == "product_claim"
     ]
     supporting_spans = [
         span
-        for span in confirmed_intent["source_evidence"]["spans"]
+        for span in candidate_intent["source_evidence"]["spans"]
         if span["classification"] == "supporting_evidence"
     ]
     written_product_truth = json.dumps(
         {
-            "product_facts": confirmed_intent["product_facts"],
+            "product_facts": candidate_intent["product_facts"],
             "product_claim_spans": product_claim_spans,
         }
     ) + "\n" + "\n".join(
@@ -822,7 +814,7 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a learner choice practice journal",
@@ -886,7 +878,7 @@ def test_narrative_greenfield_create_normalizes_action_outcome_under_thirty_seco
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(NARRATIVE_AGENCY_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a child agency practice app",
@@ -935,7 +927,7 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(GLP1_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a GLP-1 medication tracking app",
@@ -1012,7 +1004,7 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(QUANTUM_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a lab app where we are building quantum communication",
@@ -1069,7 +1061,7 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(SIGNAL_PROCESSING_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a real-time signal processing pipeline",
@@ -1136,7 +1128,7 @@ def test_greenfield_create_completes_compound_public_response_path_under_sixty_s
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(PUBLIC_RESPONSE_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    rc, payload, elapsed = _run_confirmed_create_main(
+    rc, payload, elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a regional response workspace",
@@ -1198,7 +1190,7 @@ def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
 
-    first_rc, first_payload, first_elapsed = _run_confirmed_create_main(
+    first_rc, first_payload, first_elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a learner choice practice journal",
@@ -1210,7 +1202,7 @@ def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_
         "- Child learner, a kid aged eight to ten",
     )
     intent_path.write_text(revised_text, encoding="utf-8")
-    second_rc, second_payload, second_elapsed = _run_confirmed_create_main(
+    second_rc, second_payload, second_elapsed = _run_proposed_create_main(
         tmp_path,
         capsys,
         prompt="Draft a greenfield proposal for a learner choice practice journal",
@@ -1244,7 +1236,7 @@ def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(
     elapsed_runs = []
     acceptance_timestamps = []
     for _index in range(2):
-        rc, payload, elapsed = _run_confirmed_create_main(
+        rc, payload, elapsed = _run_proposed_create_main(
             tmp_path,
             capsys,
             prompt="Draft a greenfield proposal for a learner choice practice journal",
@@ -1284,9 +1276,11 @@ def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(
     assert len(list((tmp_path / "odylith/radar/source/ideas").rglob("*.md"))) == 4
     stream = tmp_path / agent_runtime_contract.AGENT_STREAM_PATH
     events = [json.loads(line) for line in stream.read_text(encoding="utf-8").splitlines() if line.strip()]
+    accepted_event = payloads[0]["memory"]["event"]
+    assert payloads[1]["memory"]["event"] == accepted_event
     acceptance_events = [
         event
         for event in events
-        if str(event.get("summary", "")).startswith("Accepted greenfield proposal for Choice Practice Journal:")
+        if event == accepted_event
     ]
     assert len(acceptance_events) == 1

@@ -19,6 +19,11 @@ from odylith.runtime.intervention_engine import visibility_broker
 from odylith.runtime.intervention_engine import visibility_replay
 from odylith.runtime.intervention_engine.visibility_contract import normalize_string as _normalize_string
 from odylith.runtime.intervention_engine.visibility_contract import normalize_token as _normalize_token
+
+
+_SUPPORTED_HOST_FAMILIES = ("codex", "claude")
+
+
 def _matcher_tokens(value: Any) -> set[str]:
     matcher = _normalize_string(value)
     if matcher in {"*", ".*"}:
@@ -132,6 +137,13 @@ def _claude_static_readiness(repo_root: Path) -> dict[str, Any]:
 
 def _static_readiness(*, repo_root: Path, host_family: str) -> dict[str, Any]:
     host = _normalize_token(host_family)
+    if host not in _SUPPORTED_HOST_FAMILIES:
+        return {
+            "host_family": host or "unknown",
+            "ready": False,
+            "checks": {"supported_host": False},
+            "activation_note": "This host is not yet supported for Odylith intervention delivery.",
+        }
     if host == "claude":
         return _claude_static_readiness(repo_root)
     return _codex_static_readiness(repo_root)
@@ -231,7 +243,30 @@ def inspect_intervention_status(
     last_assistant_message: str = "",
 ) -> dict[str, Any]:
     root = Path(repo_root).expanduser().resolve()
-    host = _normalize_token(host_family) or "codex"
+    host = _normalize_token(host_family)
+    if host not in _SUPPORTED_HOST_FAMILIES:
+        unsupported_host = host or "unknown"
+        readiness = _static_readiness(repo_root=root, host_family=unsupported_host)
+        return {
+            "version": "v1",
+            "host_family": unsupported_host,
+            "repo_root": str(root),
+            "session_id": _normalize_string(session_id),
+            "activation": "unsupported",
+            "static_readiness": readiness,
+            "chat_visibility_contract": "Odylith intervention delivery is available only on supported hosts.",
+            "chat_visible_proof": _chat_visible_proof(ledger={}, static_ready=False),
+            "assistant_visible_replay_markdown": "",
+            "assistant_visible_replay_count": 0,
+            "assistant_visible_replay_additional_count": 0,
+            "assistant_visible_replay_blocks": [],
+            "active_lanes": [],
+            "delivery_ledger": {},
+            "chat_confirmed_event_count": 0,
+            "pending_proposal_count": 0,
+            "fresh_session_required_after_runtime_change": False,
+            "smoke_command": "",
+        }
     resolved_session = _normalize_string(session_id) or agent_runtime_contract.default_host_session_id(
         host_family=host
     )
@@ -330,8 +365,8 @@ def _format_ratio(value: Any) -> str:
 
 
 def render_intervention_status(report: Mapping[str, Any]) -> str:
-    host = _normalize_token(report.get("host_family")) or "codex"
-    host_label = "Claude" if host == "claude" else "Codex"
+    host = _normalize_token(report.get("host_family")) or "unknown"
+    host_label = {"claude": "Claude", "codex": "Codex"}.get(host, "Unsupported host")
     activation = _normalize_token(report.get("activation")) or "unknown"
     readiness = report.get("static_readiness") if isinstance(report.get("static_readiness"), Mapping) else {}
     checks = readiness.get("checks") if isinstance(readiness.get("checks"), Mapping) else {}

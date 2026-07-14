@@ -109,14 +109,17 @@ Odylith does not claim full protection against:
 - Greenfield Domain Intelligence proposals separate observed source, user
   intent, and Odylith assumptions; missing source cannot become a source-backed
   governance claim.
-- `odylith greenfield compile-transaction` builds and quality-gates the full
-  ProductCreateTransaction before confirmation.
+- `odylith greenfield propose` builds and quality-gates the full
+  ProductCreateTransaction before it renders the sole confirmation rail.
 - `odylith greenfield create` only verifies the compiler receipt, transaction
   hash, compiler identity, and unchanged repo preconditions; applies the sealed
   write set under rollback guard; validates exact readback; and reports success.
 - Legacy proposal `apply` is not a confirmed write path; edited intent must be
   treated as new evidence and compiled into a new transaction.
-- Host-specific Codex and Claude routes stay thin; the Odylith runtime owns
+- The greenfield proposal Tribunal rejects disconnected child topology, shallow
+  component ownership, and invisible release/program structures before durable
+  source truth changes.
+- Supported host routes stay thin; the Odylith runtime owns
   validation, confirmation, topology hygiene, and durable memory boundaries.
 
 ### Product Governed Harness safety

@@ -11,7 +11,7 @@ def test_prompt_visible_assist_has_shared_host_owner() -> None:
     owner_text = owner_path.read_text(encoding="utf-8")
     assert "def ensure_prompt_visible_assist_bundle(" in owner_text
     assert "def compose_prompt_visible_markdown(" in owner_text
-    assert "Visibility issue confirmed in chat; routine turns stay silent, and future Odylith notes require a concrete Observation, Proposal, validation result, or visibility failure" in owner_text
+    assert "prompt_signal_runtime.prompt_assist_summary" in owner_text
     assert "visibility feedback noted; this line is deliberately shown in chat" not in owner_text
     assert "surfaced this visibility issue in normal chat where you can inspect it" not in owner_text
     assert "brand promise is something the user can see" not in owner_text
@@ -25,3 +25,21 @@ def test_prompt_visible_assist_has_shared_host_owner() -> None:
         text = path.read_text(encoding="utf-8")
         assert "brand promise is something the user can see" not in text
         assert "ensure_prompt_visible_assist_bundle(" in text
+
+
+def test_assist_cadence_guidance_reaches_the_shipped_bundle() -> None:
+    canonical = ROOT / "odylith" / "agents-guidelines"
+    bundled = ROOT / "src" / "odylith" / "bundle" / "assets" / "odylith"
+
+    for path in (
+        canonical / "GROUNDING_AND_NARROWING.md",
+        canonical / "CODEX_HOST_CONTRACT.md",
+        canonical / "VALIDATION_AND_TESTING.md",
+        bundled / "AGENTS.md",
+        bundled / "agents-guidelines" / "GROUNDING_AND_NARROWING.md",
+        bundled / "agents-guidelines" / "CODEX_HOST_CONTRACT.md",
+        bundled / "agents-guidelines" / "VALIDATION_AND_TESTING.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "explicit intervention feedback" in text
+        assert "normal non-passthrough prompts do not get an Assist line by default" not in text

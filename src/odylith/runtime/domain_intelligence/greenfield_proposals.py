@@ -20,6 +20,7 @@ from odylith.runtime.analysis_engine.types import SourceSummary, slugify
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import is_host_guidance_envelope
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -395,20 +396,33 @@ def load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) -> 
     intent_file = str(getattr(args, "intent_file", "") or "").strip()
     if not intent_file:
         raise ValueError(
-            "confirmed Product Intent file is required before proposal preview or ProductCreateTransaction compile. "
-            "Run `odylith greenfield propose --repo-root . --prompt <request>`, save the accepted visible "
-            "Product Intent Confirmation to `.odylith/runtime/greenfield/confirmed-intent.md`, then rerun "
-            "`odylith greenfield compile-transaction --intent-file .odylith/runtime/greenfield/confirmed-intent.md`. "
-            "Prompt-only transaction compilation is disabled so raw prompts cannot become product truth after confirmation."
+            "The separate Product Intent file path is retired. `odylith greenfield propose --repo-root . --prompt "
+            "<request>` compiles typed prompt evidence and the full ProductCreateTransaction before it shows the "
+            "only CONFIRM rail. Use EDIT evidence to rebuild a correction; do not create or repair a Product Intent file."
         )
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
+    try:
+        supplied_text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RuntimeError("environment/IO failure while reading confirmed intent evidence") from exc
+    if is_host_guidance_envelope(supplied_text):
+        raise ValueError(
+            "greenfield compile-transaction cannot treat host guidance as confirmed intent. "
+            "Extract or edit bounded Product Intent sections as new evidence, then rebuild the transaction."
+        )
     record = load_confirmed_intent_record(
         path,
         prompt=str(getattr(args, "prompt", "") or ""),
         fallback_title=intent_title(str(getattr(args, "prompt", "") or "")),
     )
+    source_evidence = record.envelope.get("source_evidence") if isinstance(record.envelope.get("source_evidence"), Mapping) else {}
+    if str(source_evidence.get("source_format", "")).strip() == "operator_prompt":
+        raise ValueError(
+            "greenfield compile-transaction cannot treat a raw prompt as confirmed intent. "
+            "Use greenfield propose to compile a typed hypothesis, or provide bounded edited Product Intent sections as new evidence."
+        )
     structured_path = write_structured_confirmed_intent_file(path, record.product_facts, envelope=record.envelope)
     markdown_path = _confirmed_intent_markdown_source_path(record.envelope, fallback=path)
     authority = product_intent_authority_from_envelope(
@@ -629,7 +643,12 @@ def _build_repaired_prewrite_package(
         max_passes=_MAX_PACKAGE_REPAIR_PASSES,
         repair_tier=repair_tier,
     )
-    final_prewrite_build = build_prewrite(result.proposal, result.tribunal)
+    final_prewrite_build = result.prewrite_build
+    if not (
+        getattr(final_prewrite_build.package, "repository_write_set", None)
+        and getattr(final_prewrite_build.package, "commit_result_preview", None)
+    ):
+        final_prewrite_build = build_prewrite(result.proposal, result.tribunal)
     assert_greenfield_package_ready(final_prewrite_build.package)
     return result.proposal, result.tribunal, final_prewrite_build, result.manifest
 
@@ -728,7 +747,7 @@ def apply_greenfield_proposal(
     _ = (repo_root, proposal, release_selector, proposal_ready, repair_tier)
     raise ValueError(
         "greenfield apply is disabled for confirmed writes. "
-        "Run greenfield compile-transaction before confirmation, then commit the verified "
+        "Run greenfield propose before confirmation, then commit the verified "
         "ProductCreateTransaction with greenfield create --transaction-file --transaction-hash --confirm."
     )
 

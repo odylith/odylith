@@ -221,7 +221,7 @@ def test_claude_backlog_skill_shim_carries_exact_cli_enum_guard() -> None:
         assert "moderate" in text
 
 
-def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() -> None:
+def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -265,58 +265,20 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
     for path in (*guidance_paths, *source_paths):
         text = path.read_text(encoding="utf-8")
         compact_text = " ".join(text.split())
-        assert "Product Intent Confirmation" in text, path
-        assert "greenfield create" in text, path
-        assert "--intent-file" in text, path
-        assert ".odylith/runtime/greenfield/confirmed-intent.md" in text, path
-        assert ".odylith/runtime/greenfield/confirmed-intent.json" in text, path
-        assert "--confirm" in text, path
-        assert (
-            "Do not inspect Odylith source" in text
-            or "do not inspect Odylith source" in text
-            or "Do not search `src/odylith`" in text
-            or "do not search Odylith source" in text
-            or "rather than searching Odylith source" in text
-            or "do not search `src/odylith`" in compact_text.casefold()
-            or "do not search odylith source" in compact_text.casefold()
-        ), path
         assert "ProductCreateTransaction" in compact_text, path
-        assert "`## Choose one command`" in text or "## Choose one command" in text, path
-        assert "Start your reply with exactly one command" in compact_text, path
-        assert "Reply starts with: CONFIRM" in compact_text, path
-        assert "Command: `CONFIRM`" in text and "Command: `EDIT`" in text and "Command: `REJECT`" in text, path
-        assert "Confirm/Edit/Reject" not in text, path
-        assert "confirm to expand" not in text.casefold(), path
-        assert "Confirm by running" not in text, path
-        assert "greenfield compile-transaction" in compact_text, path
+        assert "greenfield create" in text, path
         assert "--transaction-file" in compact_text, path
         assert "--transaction-hash" in compact_text, path
+        assert "--confirm" in text, path
+        assert "--intent-file" not in text, path
+        assert "--confirm-intent" not in text, path
+        assert all(command in text for command in ("CONFIRM", "EDIT", "REJECT")), path
         assert "rollback guard" in compact_text, path
-        assert "same visible" in compact_text, path
-        assert (
-            "parser/schema retries" in compact_text
-            or "intermediate create-shape failures" in compact_text
-        ), path
-        assert (
-            "project-first" in compact_text
-            or "product story" in compact_text
-            or "coding-readiness gates" in compact_text
-            or path.name == "SKILL.md"
-        ), path
-        assert "greenfield create" in compact_text, path
-        assert "hand-author" in compact_text or "hand author" in compact_text or "Do not hand-author" in text, path
-        assert (
-            "Do not ask the operator to inspect JSON" in text
-            or "does not need to inspect proposal JSON" in compact_text
-            or "without a second confirmation" in text
-            or "Do not ask the operator to inspect proposal JSON" in text
-            or "Do not ask operator to inspect proposal JSON" in text
-        ), path
         for token in forbidden:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
 
 
-def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None:
+def test_greenfield_guidance_keeps_internal_intent_flags_off_user_path() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -348,39 +310,16 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
     for path in guidance_paths:
         text = path.read_text(encoding="utf-8")
         normalized = " ".join(text.split())
-        assert "Product Intent Confirmation" in normalized, path
-        assert "greenfield create" in normalized, path
-        assert "--intent-file" in normalized, path
-        assert ".odylith/runtime/greenfield/confirmed-intent.md" in normalized, path
-        assert ".odylith/runtime/greenfield/confirmed-intent.json" in normalized, path
-        assert "--confirm" in normalized, path
         assert "ProductCreateTransaction" in normalized, path
-        assert "## Choose one command" in normalized, path
-        assert "Start your reply with exactly one command" in normalized, path
-        assert "Reply starts with: CONFIRM" in normalized, path
-        assert "Command: `CONFIRM`" in text and "Command: `EDIT`" in text and "Command: `REJECT`" in text, path
-        assert "Confirm/Edit/Reject" not in text, path
-        assert "confirm to expand" not in text.casefold(), path
-        assert "Confirm by running" not in text, path
-        assert "greenfield compile-transaction" in normalized, path
+        assert "greenfield create" in normalized, path
         assert "--transaction-file" in normalized, path
         assert "--transaction-hash" in normalized, path
-        assert "rollback guard" in normalized, path
-        assert "hand-author" in normalized.casefold() or "hand author" in normalized.casefold(), path
-        assert (
-            "parser/schema retries" in normalized
-            or "intermediate create-shape failures" in normalized
-        ), path
-        assert (
-            "surface only" in normalized.casefold()
-            or "show either created records" in normalized.casefold()
-            or "created-record summary" in normalized.casefold()
-        ), path
-        assert (
-            "second approval step" in normalized
-            or "second confirmation" in normalized
-            or "confirm a second time" in normalized
-        ), path
+        assert "--confirm" in normalized, path
+        assert "--intent-file" not in normalized, path
+        assert "--confirm-intent" not in normalized, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.md" not in normalized, path
+        assert ".odylith/runtime/greenfield/confirmed-intent.json" not in normalized, path
+        assert "greenfield compile-transaction" not in normalized, path
 
 
 def test_claude_output_style_keeps_observation_rare_and_assist_concrete() -> None:

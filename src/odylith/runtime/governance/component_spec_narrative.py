@@ -486,7 +486,7 @@ def _state_narrative(
     else:
         first = f"The useful local state is {owned}."
         second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
-    material = _material_state_sentence(role=role, material_state=material_state)
+    material = _material_state_sentence(label=label, role=role, material_state=material_state)
     material_contract = _material_contract_sentence(label=label, view=view)
     transition = _transition_sentence(label=label, view=view, text=state_path)
     return _sentences(first, second, blocker, material, material_contract, transition)
@@ -1013,22 +1013,22 @@ def _fallback_phrase(values: Sequence[str], fallback: str) -> str:
     return _human_join(rows) if rows else _lower_first(fallback)
 
 
-def _material_state_sentence(*, role: str, material_state: str) -> str:
+def _material_state_sentence(*, label: str, role: str, material_state: str) -> str:
     if not material_state:
         return ""
     if role == "read_model":
-        return f"It should also keep {material_state} visible enough for someone to understand the view"
+        return f"{label} should also keep {material_state} visible enough for someone to understand the view"
     if role == "state_store":
         if re.search(r"\battached\b$", material_state, flags=re.IGNORECASE):
             record_state = re.sub(r"\battached\b$", "", material_state, flags=re.IGNORECASE).strip(" ,")
             record_state = record_state or material_state
-            return f"It should also keep {record_state} in the record instead of leaving those facts implicit"
-        return f"It should also keep {material_state} attached to the record instead of leaving those facts implicit"
+            return f"{label} should also keep {record_state} in the record instead of leaving those facts implicit"
+        return f"{label} should also keep {material_state} attached to the record instead of leaving those facts implicit"
     if role == "evidence":
-        return f"It should also keep {material_state} connected to the evidence trail"
+        return f"{label} should also keep {material_state} connected to the evidence trail"
     if role in {"entry", "recovery"}:
-        return f"It should also keep {material_state} visible before the path moves on"
-    return f"It should also keep {material_state} visible enough to review"
+        return f"{label} should also keep {material_state} visible before the path moves on"
+    return f"{label} should also keep {material_state} visible enough to review"
 
 
 def _present_verb(subject: str, *, singular: str, plural: str) -> str:

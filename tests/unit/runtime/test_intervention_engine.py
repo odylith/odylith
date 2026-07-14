@@ -994,12 +994,16 @@ def test_context_packet_summary_feeds_engine_without_legacy_packet_summary(tmp_p
         for row in bundle["observation"]["active_target_refs"]
     }
     fact_kinds = {row["kind"] for row in bundle["facts"]}
+    governance_fact = next(row for row in bundle["facts"] if row["kind"] == "governance_truth")
 
     assert ("workstream", "B-096") in refs
     assert ("component", "governance-intervention-engine") in refs
     assert ("bug", "CB-122") in refs
     assert ("diagram", "D-038") in refs
     assert {"governance_truth", "history", "topology"} <= fact_kinds
+    assert governance_fact["headline"] == (
+        "B-096 is an active Radar lane; prompt binding determines whether it governs this turn."
+    )
     assert bundle["candidate"]["stage"] == "card"
 
 

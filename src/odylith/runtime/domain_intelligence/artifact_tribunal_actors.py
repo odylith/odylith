@@ -571,7 +571,6 @@ def _looks_like_actor_label(value: str) -> bool:
         "planner",
         "preparer",
         "recipient",
-        "resident",
         "requester",
         "researcher",
         "reviewer",
@@ -585,7 +584,9 @@ def _looks_like_actor_label(value: str) -> bool:
     if words & role_words:
         return True
     tokens = [word.strip(".,;:()") for word in lowered.split() if word.strip(".,;:()")]
-    if 2 <= len(tokens) <= 5 and any(re.search(r"(?:er|or|ist|ian|ant|ee)$", token) for token in tokens):
+    if 1 <= len(tokens) <= 5 and any(
+        re.search(r"(?:er|or|ist|ian|ant|ee|(?<!c)ident)$", token) for token in tokens
+    ):
         return True
     return False
 
@@ -690,7 +691,7 @@ def _role_specific_candidates(
             continue
         lowered = source.casefold()
         if any(token in lowered for token in tokens):
-            candidates.append(label)
+            candidates.append(source if _looks_like_actor_label(source) else label)
     return unique_text(candidates) or (_ownerish_candidates(values) if ownerish_fallback else [])
 
 

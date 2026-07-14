@@ -215,7 +215,7 @@ def test_capabilities_command_prints_host_agnostic_engine_inventory(capsys) -> N
     assert "Topology Integrity" in output
     assert "Taxonomies and FSMs" in output
     assert "Operator Experience" in output
-    assert "odylith greenfield compile-transaction" in output
+    assert "odylith greenfield compile-transaction" not in output
     assert "odylith greenfield create" in output
     assert "odylith greenfield apply" not in output
     assert "Activation:" in output
@@ -356,8 +356,10 @@ def test_greenfield_propose_help_forwards_backend_flags(capsys) -> None:
     assert "usage: odylith greenfield propose" in output
     assert "--prompt" in output
     assert "--format" in output
-    assert "--confirm-intent" in output
-    assert "--intent-file" in output
+    assert "--edit" in output
+    assert "--edit-evidence" in output
+    assert "--confirm-intent" not in output
+    assert "--intent-file" not in output
 
 
 def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
@@ -368,7 +370,7 @@ def test_greenfield_apply_help_forwards_backend_flags(capsys) -> None:
     assert excinfo.value.code == 0
     assert "usage: odylith greenfield apply" in output
     assert "Legacy proposal apply is disabled" in output
-    assert "compile-transaction" in output
+    assert "use propose, then hash-bound create" in output
     assert "--proposal-file" in output
     assert "--confirm" in output
     assert "--release" in output
@@ -407,21 +409,12 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
-    assert payload["provider_calls"] == 0
-    assert payload["mode"] == "product_intent_reasoning_request"
-    assert payload["write_policy"] == "host_reason_product_intent_before_confirmed_greenfield_create"
-    assert payload["host_reasoning_task"]["must_include"]
-    assert payload["host_reasoning_task"]["must_not"]
-    assert payload["host_reasoning_task"]["format_contract"]
-    assert "sectioned Markdown" in " ".join(payload["host_reasoning_task"]["format_contract"])
-    assert "visually separate command sections headed `Command: CONFIRM`, `Command: EDIT`, and `Command: REJECT`" in " ".join(
-        payload["host_reasoning_task"]["format_contract"]
-    )
-    assert "three visually separate command sections for CONFIRM, EDIT, and REJECT" in " ".join(
-        payload["host_reasoning_task"]["must_include"]
-    )
-    assert "echo command instructions" in " ".join(payload["host_reasoning_task"]["must_not"])
-    assert "collapse the confirmation into a wall of prose without clear sections" in payload["host_reasoning_task"]["must_not"]
+    assert payload["mode"] == "product_create_transaction"
+    assert payload["product_create_transaction"]["compiler_phase"] == "pre_confirm_compile"
+    assert payload["product_create_transaction"]["quality_status"] == "passed"
+    assert payload["product_create_transaction"]["verified"] is True
+    assert "provider_calls" not in payload
+    assert "host_reasoning_task" not in payload
     assert "backlog" not in payload
     assert "components" not in payload
     assert "diagrams" not in payload
@@ -480,23 +473,9 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
     )
 
     payload = json.loads(capsys.readouterr().out)
-    assert rc == 0
-    assert payload["provider_calls"] == 0
-    assert payload["mode"] == "host_reasoned_greenfield_proposal"
-    assert payload["intent"]["reasoning_mode"] == "odylith_confirmed_governed_proposal"
-    assert payload["write_policy"] == "confirmed_intent_before_confirmed_create"
-    assert "reasoning_contract" not in payload
-    assert "host_instruction" not in payload
-    assert "canonical_proposal" not in payload
-    assert "proposal_template" not in payload
-    assert len(payload["backlog"]) >= 4
-    assert len(payload["components"]) >= 3
-    assert len(payload["diagrams"]) >= 3
-    structured_intent = intent_file.with_suffix(".json")
-    assert structured_intent.is_file()
-    structured_payload = json.loads(structured_intent.read_text(encoding="utf-8"))
-    assert structured_payload["title"] == "Permit Review Workspace"
-    assert len(structured_payload["internal_systems"]) >= 3
+    assert rc == 2
+    assert payload["mode"] == "error"
+    assert "separate Product Intent confirmation flow is retired" in payload["error"]
 
 
 def test_component_register_help_forwards_backend_flags(capsys) -> None:

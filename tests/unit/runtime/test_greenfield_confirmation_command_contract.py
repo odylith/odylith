@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import prompt_only_material_decision_error
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
@@ -100,7 +101,7 @@ def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
     assert "### Command: `REJECT`" in rendered
 
 
-def test_product_intent_confirmation_describes_pre_confirm_compile_and_commit_only_gate() -> None:
+def test_product_intent_preview_defers_the_only_command_rail_to_the_transaction() -> None:
     confirmation = build_product_intent_confirmation(
         prompt="Create a review workspace for field inspectors to record findings and publish approval packets.",
         title="Field Inspection Review Workspace",
@@ -109,12 +110,17 @@ def test_product_intent_confirmation_describes_pre_confirm_compile_and_commit_on
 
     rendered = format_product_intent_confirmation_text(confirmation)
 
-    assert "pre-confirm compile/validate" in rendered
-    assert "hash-ready commit-only gate" in rendered
-    assert "ProductCreateTransaction" in rendered
-    assert "### Command: `CONFIRM`" in rendered
-    assert "### Command: `EDIT`" in rendered
-    assert "### Command: `REJECT`" in rendered
+    assert "Product Intent Preview" in rendered
+    assert "ProductCreateTransaction" not in rendered
+    assert "### Command: `CONFIRM`" not in rendered
+    assert "### Command: `EDIT`" not in rendered
+    assert "### Command: `REJECT`" not in rendered
+    assert confirmation["mode"] == "product_intent_preview_request"
+    assert confirmation["write_policy"] == "precompile_transaction_before_confirm"
+    commands = confirmation["commands"]
+    assert "--intent-file" not in " ".join(str(value) for value in commands.values())
+    assert "compile_transaction_after_intent_confirmation" not in commands
+    assert "odylith greenfield propose" in commands["compile_transaction_from_prompt_evidence"]
 
 
 def test_visible_confirmation_preserves_material_custody_when_proof_copy_has_no_final_period(
@@ -193,6 +199,14 @@ The proof shows the workflow is visible before implementation begins.
     message = str(exc.value)
     assert "Odylith needs one material product decision" in message
     assert "municipal permit review workspace" not in message
+
+
+def test_materiality_recovery_asks_one_focused_question() -> None:
+    message = str(prompt_only_material_decision_error())
+
+    assert message.count("?") == 1
+    assert "who uses it" not in message
+    assert "state changes" not in message
 
 
 def test_confirmed_proposal_uses_edited_intent_not_stale_prompt_terms(tmp_path: Path) -> None:

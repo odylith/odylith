@@ -173,14 +173,19 @@ def main(argv: list[str] | None = None) -> int:
         governance_status=(deferred_governance or {}).get("systemMessage", ""),
     )
     if system_message:
+        visible_delivery_required = (
+            bool(rendered)
+            and system_message == host_surface_runtime.compose_checkpoint_system_message(live_intervention=rendered)
+            and not visible_delivery_runtime.visible_delivery_already_present(
+            last_assistant_message=message,
+            visible_text=system_message,
+            )
+        )
         sys.stdout.write(
             json.dumps(
                 host_surface_runtime.stop_payload(
                     system_message=system_message,
-                    block_for_visible_delivery=not visible_delivery_runtime.visible_delivery_already_present(
-                        last_assistant_message=message,
-                        visible_text=system_message,
-                    ),
+                    block_for_visible_delivery=visible_delivery_required,
                 )
             )
         )

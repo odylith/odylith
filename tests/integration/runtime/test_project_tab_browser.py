@@ -20,11 +20,13 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
     _apply_ready_greenfield_fixture,
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
+    stub_preconfirm_surface_refresh,
 )
 
 
 def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa: ANN001
     _seed_empty_governance_repo(tmp_path)
+    stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(
         greenfield_apply_write.owned_surface_refresh,
         "raise_for_failed_refreshes",

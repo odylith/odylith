@@ -386,7 +386,7 @@ def _preflight_failure_error(results: Sequence[GreenfieldMatrixResult]) -> str:
     if "leakage_terms are required" in joined:
         return "custom greenfield matrix cases must declare leakage_terms before platform leakage proof: " + joined
     if "required terms are not grounded" in joined:
-        return "required_terms must be grounded in the prompt or confirmed intent: " + joined
+        return "required_terms must be grounded in the case prompt or edit evidence: " + joined
     return "greenfield matrix preflight failed: " + joined
 
 
@@ -401,7 +401,7 @@ def _raise_for_ungrounded_required_terms(cases: Sequence[GreenfieldMatrixCase]) 
         if missing:
             failures.append(f"{case.name}: {', '.join(missing)}")
     if failures:
-        raise RuntimeError("required_terms must be grounded in the prompt or confirmed intent: " + "; ".join(failures))
+        raise RuntimeError("required terms are not grounded in the case prompt or edit evidence: " + "; ".join(failures))
 
 
 def _case_evidence_manifest_case(result: GreenfieldMatrixResult) -> Mapping[str, Any]:
@@ -664,24 +664,11 @@ def _run_case(
             return _failed_case(case, repo_root, "install_failed", install.returncode, install.stderr or install.stdout)
     elif not (repo_root / ".odylith/bin/odylith").is_file():
         return _failed_case(case, repo_root, "seed_clone_failed", 1, "seeded repo clone is missing .odylith/bin/odylith")
-    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
-    if not confirmed_intent:
-        propose = _run(
-            cwd=repo_root,
-            env=env,
-            command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
-            timeout=120,
-        )
-        if propose.returncode != 0:
-            return _failed_case(case, repo_root, "propose_failed", propose.returncode, propose.stderr or propose.stdout)
-        confirmed_intent = propose.stdout
-    intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(confirmed_intent, encoding="utf-8")
     create, create_seconds = _run_compiled_greenfield_create(
         repo_root=repo_root,
         env=env,
         prompt=case.prompt,
+        edit_evidence=str(case.confirmed_intent_markdown or ""),
         timeout=120,
     )
     payload = _parse_json_object(create.stdout)
@@ -746,42 +733,37 @@ def _run_compiled_greenfield_create(
     env: Mapping[str, str],
     prompt: str,
     timeout: int,
-    repair_tier: str = "",
+    edit_evidence: str = "",
 ) -> tuple[Any, float]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_command = [
+    propose_command = [
         "./.odylith/bin/odylith",
         "greenfield",
-        "compile-transaction",
+        "propose",
         "--repo-root",
         ".",
         "--prompt",
         prompt,
-        "--intent-file",
-        ".odylith/runtime/greenfield/confirmed-intent.md",
-        "--output",
-        transaction_file,
-        "--release",
-        "0.0.1",
         "--format",
         "json",
     ]
-    if repair_tier:
-        compile_command.extend(["--repair-tier", repair_tier])
-    compiled = _run(cwd=repo_root, env=env, command=compile_command, timeout=timeout)
-    if compiled.returncode != 0:
-        return compiled, 0.0
-    compiled_payload = _parse_json_object(compiled.stdout)
-    transaction_summary = _as_mapping(compiled_payload.get("product_create_transaction"))
+    if edit_evidence.strip():
+        propose_command.extend(["--edit", edit_evidence])
+    proposed = _run(cwd=repo_root, env=env, command=propose_command, timeout=timeout)
+    if proposed.returncode != 0:
+        return proposed, 0.0
+    proposed_payload = _parse_json_object(proposed.stdout)
+    transaction_summary = _as_mapping(proposed_payload.get("product_create_transaction"))
     transaction_hash = str(transaction_summary.get("transaction_hash") or "").strip()
-    if not transaction_hash:
+    transaction_file = str(proposed_payload.get("transaction_file") or "").strip()
+    proposal_mode = str(proposed_payload.get("mode") or "").strip()
+    if not transaction_hash or (proposal_mode == "product_create_transaction" and not transaction_file):
         return (
             SimpleNamespace(
                 returncode=2,
                 stdout=json.dumps(
                     {
                         "mode": "error",
-                        "error": "compile-transaction did not return a ProductCreateTransaction hash",
+                        "error": "greenfield propose did not return a ProductCreateTransaction hash and transaction file",
                     },
                     sort_keys=True,
                 ),
@@ -789,6 +771,8 @@ def _run_compiled_greenfield_create(
             ),
             0.0,
         )
+    if not transaction_file:
+        transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     started = time.perf_counter()
     create = _run(
         cwd=repo_root,
@@ -892,7 +876,7 @@ def _case_evidence(case: GreenfieldMatrixCase) -> Mapping[str, Any]:
         "tags": list(getattr(case, "tags", ()) or ()),
         "stressors": list(getattr(case, "stressors", ()) or ()),
         "prompt_sha256": _sha256_text(case.prompt),
-        "confirmed_intent_sha256": _sha256_text(getattr(case, "confirmed_intent_markdown", "") or ""),
+        "edit_evidence_sha256": _sha256_text(getattr(case, "confirmed_intent_markdown", "") or ""),
         "required_terms": list(case.required_terms),
         "leakage_terms": list(getattr(case, "leakage_terms", ()) or ()),
     }
@@ -1090,27 +1074,10 @@ def _run_rescue_smoke_case(
             issues=(f"install_failed: {(install.stderr or install.stdout).strip()[:800]}",),
             create_returncode=install.returncode,
         )
-    propose = _run(
-        cwd=repo_root,
-        env=env,
-        command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
-        timeout=120,
-    )
-    if propose.returncode != 0:
-        return _rescue_smoke_result(
-            create_payload={},
-            counts=GreenfieldArtifactCounts(),
-            issues=(f"propose_failed: {(propose.stderr or propose.stdout).strip()[:800]}",),
-            create_returncode=propose.returncode,
-        )
-    intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(propose.stdout, encoding="utf-8")
     create, create_seconds = _run_compiled_greenfield_create(
         repo_root=repo_root,
         env=installed_auto_rescue_env(env),
         prompt=case.prompt,
-        repair_tier="auto",
         timeout=150,
     )
     payload = _parse_json_object(create.stdout)
@@ -1163,28 +1130,10 @@ def _run_natural_rescue_case(
             create_returncode=install.returncode,
             proof_scope="real_installed_structured_patch_plan_case",
         )
-    propose = _run(
-        cwd=repo_root,
-        env=env,
-        command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
-        timeout=120,
-    )
-    if propose.returncode != 0:
-        return _rescue_smoke_result(
-            create_payload={},
-            counts=GreenfieldArtifactCounts(),
-            issues=(f"propose_failed: {(propose.stderr or propose.stdout).strip()[:800]}",),
-            create_returncode=propose.returncode,
-            proof_scope="real_installed_structured_patch_plan_case",
-        )
-    intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(propose.stdout, encoding="utf-8")
     create, create_seconds = _run_compiled_greenfield_create(
         repo_root=repo_root,
         env=_installed_structured_rescue_env(env),
         prompt=case.prompt,
-        repair_tier="auto",
         timeout=150,
     )
     payload = _parse_json_object(create.stdout)
@@ -1310,8 +1259,7 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
     """Collect generated records in the shape understood by artifact quality gates."""
 
     accepted_project = _read_json_mapping(repo_root / "odylith/runtime/source/accepted-project.v1.json")
-    confirmed_intent = _read_json_mapping(repo_root / ".odylith/runtime/greenfield/confirmed-intent.json")
-    proposal = _as_mapping(accepted_project.get("proposal")) or _as_mapping(create_payload.get("proposal")) or confirmed_intent
+    proposal = _as_mapping(accepted_project.get("proposal")) or _as_mapping(create_payload.get("proposal"))
     source_launch_readback = _as_mapping(accepted_project.get("source_launch"))
     governed_readback = collect_governed_readback(repo_root)
     backlog_result = {

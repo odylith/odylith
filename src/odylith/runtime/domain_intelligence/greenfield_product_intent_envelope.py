@@ -88,6 +88,7 @@ _STRUCTURED_SOURCE_FORMATS = frozenset(
         "in_memory_confirmed_intent",
         "legacy_json",
         "operator_prompt",
+        "operator_prompt_with_edit_evidence",
         "typed_envelope_json",
     }
 )
@@ -440,14 +441,14 @@ def _canonical_source_units(text: str, *, section_key: str) -> list[tuple[str, s
             continue
         clauses = _clause_units(sentence)
         if section_key == "first_path" and any(
-            is_first_path_meta_control_language(clause)
+            _is_first_path_supporting_clause(clause)
             for clause in clauses
         ):
             units.extend(
                 (
                     clause,
                     "supporting_evidence"
-                    if is_first_path_meta_control_language(clause)
+                    if _is_first_path_supporting_clause(clause)
                     else "product_claim",
                 )
                 for clause in clauses
@@ -465,6 +466,21 @@ def _sentence_units(value: str) -> list[str]:
 def _clause_units(value: str) -> list[str]:
     rows = re.split(r"\s+(?:[\u2013\u2014]|-)\s+|[;,]\s+", clean_markdown_text(value))
     return [text for row in rows if (text := clean_markdown_text(row).strip(" .;"))]
+
+
+def _is_first_path_supporting_clause(value: str) -> bool:
+    """Keep editorial product-proof summaries out of product-claim custody."""
+
+    text = clean_markdown_text(value)
+    if not is_first_path_meta_control_language(text):
+        return False
+    return not bool(
+        re.search(
+            r"\b(?:can|will|needs?\s+to)\b|\bfrom\b.+\bthrough\b|\b(?:by|after|before)\s+\w+ing\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _add_source_title_span(

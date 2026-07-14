@@ -755,6 +755,30 @@ def test_commit_product_create_transaction_rejects_repo_drift_before_write(
     assert index_path.read_text(encoding="utf-8") == "operator edit after compile\n"
 
 
+def test_commit_product_create_transaction_rejects_busy_repository_before_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+
+    def busy(*_args: Any, **_kwargs: Any) -> None:
+        raise BlockingIOError("simulated competing create transaction")
+
+    monkeypatch.setattr(greenfield_create_commit.fcntl, "flock", busy)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", lambda **_kwargs: None)
+
+    with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc:
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction=transaction,
+            confirm=True,
+            started_at=0.0,
+        )
+
+    assert exc.value.failure_kind == "post_confirm_repository_busy"
+    assert exc.value.rollback_status == "not_started"
+
+
 def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_or_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

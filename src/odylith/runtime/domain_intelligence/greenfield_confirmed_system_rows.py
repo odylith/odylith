@@ -53,7 +53,7 @@ def confirmed_system_description(value: str) -> str:
         if middle and _looks_generated_system_description(body):
             if _word_count(middle) < 5:
                 return _normalize_system_description(
-                    f"{middle} while keeping required inputs, blockers, and proof evidence clear"
+                    f"{middle} and keeps required inputs, blockers, and proof evidence clear"
                 )
             return _normalize_system_description(middle)
         if middle and not _looks_generated_system_description(middle):
@@ -641,10 +641,10 @@ def _descriptor_system_description(name: str, descriptor: str) -> str:
     subject = _readable_descriptor_list(descriptor)
     name_text = _clean(name).casefold()
     if re.search(r"\b(?:view|surface|dashboard|interface|screen|portal)\b", name_text):
-        return f"presents {subject} while keeping source facts and blockers clear"
+        return f"presents {subject} and keeps source facts and blockers clear"
     if re.search(r"\b(?:library|store|registry|ledger|log|record|tracker)\b", name_text):
         return f"keeps {subject} with required inputs, blockers, and proof evidence clear"
-    return f"supports {subject} while keeping required inputs, blockers, and proof evidence clear"
+    return f"supports {subject} and keeps required inputs, blockers, and proof evidence clear"
 
 
 def _readable_descriptor_list(value: str) -> str:
@@ -849,7 +849,7 @@ def _contextualized_system_body(*, name: str, body: str, context_text: str) -> s
     if _usable_system_description(description) and _word_count(description) >= 4:
         return description
     if _usable_system_description(description):
-        return f"{description} while keeping blocker state and handoff evidence visible"
+        return f"{description} and keeps blocker state and handoff evidence visible"
     topic = _system_topic_from_name(name)
     return f"keeps {topic} state, validation result, blocker state, and handoff evidence together"
 

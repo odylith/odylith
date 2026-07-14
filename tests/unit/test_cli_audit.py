@@ -214,6 +214,20 @@ _HANDLER_CASES = [
         and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
     },
     {
+        "path": ("greenfield", "compile-transaction"),
+        "argv": lambda root: [
+            "greenfield",
+            "compile-transaction",
+            f"--repo-root={root}",
+            "--prompt",
+            "Build a lab notebook",
+        ],
+        "handler": "_cmd_greenfield",
+        "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
+        and getattr(args, "greenfield_command", "") == "compile-transaction"
+        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+    },
+    {
         "path": ("greenfield", "apply"),
         "argv": lambda root: ["greenfield", "apply", f"--repo-root={root}", "--proposal-file", "proposal.json"],
         "handler": "_cmd_greenfield",
@@ -223,11 +237,21 @@ _HANDLER_CASES = [
     },
     {
         "path": ("greenfield", "create"),
-        "argv": lambda root: ["greenfield", "create", f"--repo-root={root}", "--prompt", "Build a lab notebook"],
+        "argv": lambda root: [
+            "greenfield",
+            "create",
+            f"--repo-root={root}",
+            "--transaction-file",
+            "transaction.json",
+            "--transaction-hash",
+            "fixture-hash",
+            "--confirm",
+        ],
         "handler": "_cmd_greenfield",
         "check": lambda args, root: getattr(args, "repo_root", "") == str(root)
         and getattr(args, "greenfield_command", "") == "create"
-        and list(getattr(args, "forwarded", [])) == ["--prompt", "Build a lab notebook"],
+        and list(getattr(args, "forwarded", []))
+        == ["--transaction-file", "transaction.json", "--transaction-hash", "fixture-hash", "--confirm"],
     },
     {
         "path": ("component", "register"),

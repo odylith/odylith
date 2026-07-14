@@ -74,6 +74,16 @@ def test_confirmed_intent_parser_accepts_title_after_confirmation_heading() -> N
     assert intent["title"] == "People-Driven Activity Watchlist"
 
 
+def test_confirmed_intent_parser_drops_rendered_preview_title_metadata() -> None:
+    intent = parse_confirmed_intent_text(
+        "People-Driven Activity Watchlist - Product Intent Preview\n\n" + ACTIVITY_WATCHLIST_INTENT,
+        prompt="Draft a product-first greenfield proposal for a people activity tracker.",
+    )
+
+    assert intent["title"] == "People-Driven Activity Watchlist"
+    assert intent.get("source_title") is None
+
+
 def test_confirmed_create_repairs_prompt_shaped_title_before_quality_gate(tmp_path) -> None:
     prompt = (
         "Draft a product-first greenfield proposal for a people activity tracker app that captures "

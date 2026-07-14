@@ -72,17 +72,18 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert "tracks provenance and waiver evidence" in package_case.prompt
     assert package_case.required_terms == ("package", "dependency", "provenance", "waiver")
     sparse_case = next(case for case in cases if case.name == "sparse disclosure confirmation")
-    assert "## State object\nReport." in sparse_case.confirmed_intent_markdown
-    assert "Personalized notification delivery is outside the first release." in sparse_case.confirmed_intent_markdown
-    assert "## Proof boundary\nEvidence custody and embargo decision." in sparse_case.confirmed_intent_markdown
+    sparse_prompt = sparse_case.prompt.casefold()
+    assert "evidence custody" in sparse_prompt
+    assert "personalized notification" in sparse_prompt
+    assert "first release" in sparse_prompt
     assert sparse_case.required_terms == ("disclosure", "council", "evidence", "embargo")
     quantum_case = next(case for case in cases if case.name == "quantum communication lab")
-    assert "## State object\nA communication run" in quantum_case.confirmed_intent_markdown
-    assert "CHSH" in quantum_case.confirmed_intent_markdown
-    assert "QBER" in quantum_case.confirmed_intent_markdown
+    quantum_prompt = quantum_case.prompt.casefold()
+    assert "communication run" in quantum_prompt
+    assert "chsh" in quantum_prompt
+    assert "qber" in quantum_prompt
     assert quantum_case.required_terms == ("quantum", "e91", "qber", "chsh")
     assay_case = next(case for case in cases if case.name == "assay drift prediction model")
-    assert assay_case.confirmed_intent_markdown == ""
     assert "assay drift prediction model" in assay_case.prompt
     assert assay_case.required_terms == ("assay", "drift", "prediction", "model")
 
@@ -806,8 +807,12 @@ def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, obje
     }
 
 
-def _compiled_transaction_payload() -> dict[str, object]:
-    return {"product_create_transaction": {"transaction_hash": "compiled-hash"}}
+def _proposed_transaction_payload() -> dict[str, object]:
+    return {
+        "mode": "product_create_transaction",
+        "product_create_transaction": {"transaction_hash": "compiled-hash"},
+        "transaction_file": ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+    }
 
 
 def _passing_package_lens_report() -> dict[str, object]:
@@ -897,14 +902,12 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
     monkeypatch.setattr(module, "browser_surface_proof_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
-        if "compile-transaction" in command:
-            return subprocess.CompletedProcess(command, 0, json.dumps(_compiled_transaction_payload()), "")
+        if "propose" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_proposed_transaction_payload()), "")
         if "create" in command:
             create_envs.append(dict(env))
             payload = _passing_create_payload()
             return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
-        if "propose" in command:
-            return subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
         return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(module, "_run", fake_run)
@@ -927,7 +930,7 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
     assert RESCUE_PROBE_ENV not in create_envs[0]
 
 
-def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monkeypatch, tmp_path: Path) -> None:
+def test_standard_matrix_propose_compiles_before_hash_bound_create_without_rescue_probe(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     commands: list[list[str]] = []
     create_envs: list[dict[str, str]] = []
@@ -940,8 +943,8 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         commands.append(list(command))
-        if "compile-transaction" in command:
-            return subprocess.CompletedProcess(command, 0, json.dumps(_compiled_transaction_payload()), "")
+        if "propose" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_proposed_transaction_payload()), "")
         if "create" in command:
             create_envs.append(dict(env))
             payload = _passing_create_payload()
@@ -953,9 +956,8 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
     result = module._run_case(  # noqa: SLF001
         case=module.GreenfieldMatrixCase(
             name="sparse standard",
-            prompt="Create a sparse confirmed project.",
+            prompt="Create a sparse project whose report preserves its first-path evidence.",
             required_terms=("sparse", "project"),
-            confirmed_intent_markdown="# Product Intent Confirmation\n\n## State object\nReport.\n",
         ),
             repo_root=tmp_path / "standard-repo",
             install_script=tmp_path / "install.sh",
@@ -964,15 +966,17 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
             include_browser_proof=True,
         )
 
-    intent_text = (tmp_path / "standard-repo/.odylith/runtime/greenfield/confirmed-intent.md").read_text(
-        encoding="utf-8"
-    )
     assert result.status == "passed"
-    assert "## State object\nReport." in intent_text
-    assert all("propose" not in command for command in commands)
-    assert any("compile-transaction" in command for command in commands)
-    assert any("--transaction-hash" in command for command in commands if "create" in command)
-    assert all("--intent-file" not in command for command in commands if "create" in command)
+    propose_index = next(index for index, command in enumerate(commands) if "propose" in command)
+    create_index = next(index for index, command in enumerate(commands) if "create" in command)
+    assert propose_index < create_index
+    assert all("compile-transaction" not in command for command in commands)
+    assert all("--intent-file" not in command for command in commands)
+    create_command = commands[create_index]
+    assert "--transaction-file" in create_command
+    assert "--transaction-hash" in create_command
+    assert "--confirm" in create_command
+    assert "--prompt" not in create_command
     assert len(create_envs) == 1
     assert RESCUE_PROBE_ENV not in create_envs[0]
 
@@ -987,8 +991,8 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
-        if "compile-transaction" in command:
-            return subprocess.CompletedProcess(command, 0, json.dumps(_compiled_transaction_payload()), "")
+        if "propose" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_proposed_transaction_payload()), "")
         if "create" in command:
             create_envs.append(dict(env))
             manifest = _passing_manifest()
@@ -1004,8 +1008,6 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
             )
             payload = {"post_confirm_quality_manifest": manifest}
             return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
-        if "propose" in command:
-            return subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
         return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(module, "_run", fake_run)
@@ -1069,10 +1071,6 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
         ),
     )
     _write(tmp_path / "odylith/runtime/source/accepted-project.v1.json", "{}\n")
-    _write(
-        tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
-        json.dumps({"project_brief": {"project_outcome": "Residents reach shelter placements with consent evidence."}}),
-    )
     for surface in module.REQUIRED_RENDERED_SURFACES:
         _write(tmp_path / surface, "<html>ready</html>\n")
     _write(
@@ -1240,7 +1238,6 @@ def test_project_brief_record_count_excludes_runtime_custody_files(tmp_path: Pat
     module = _module()
     package = _empty_package()
     _write(tmp_path / "odylith/runtime/source/accepted-project.v1.json", "{}\n")
-    _write(tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json", "{}\n")
     _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
 
     counts = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
@@ -1416,7 +1413,7 @@ def test_domain_readback_requires_semantic_terms_on_each_major_surface() -> None
     assert any("semantic terms on Registry" in finding.message for finding in findings)
 
 
-def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirmed_intent(tmp_path: Path) -> None:
+def test_collect_artifact_package_prefers_accepted_project_proposal_over_create_payload(tmp_path: Path) -> None:
     module = _module()
     _write(
         tmp_path / "odylith/runtime/source/accepted-project.v1.json",
@@ -1435,12 +1432,10 @@ def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirm
         )
         + "\n",
     )
-    _write(
-        tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
-        json.dumps({"intent": {"title": "Confirmed intent only"}, "components": []}) + "\n",
+    package = module.collect_artifact_package(
+        repo_root=tmp_path,
+        create_payload={"proposal": {"intent": {"title": "Uncommitted proposal"}, "components": []}},
     )
-
-    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
 
     assert package.proposal["intent"]["title"] == "Neonatal Transfer Coordination"
     assert package.proposal["components"][0]["label"] == "Neonatal Transfer Intake Register Service"
@@ -1889,10 +1884,10 @@ def test_invalid_greenfield_matrix_install_mode_is_rejected() -> None:
         module._validated_install_mode("partial")  # noqa: SLF001
 
 
-def test_compiled_greenfield_create_times_commit_only_phase(monkeypatch, tmp_path: Path) -> None:
+def test_greenfield_create_times_only_hash_bound_commit_phase(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     clock = {"seconds": 0.0}
-    compiled = SimpleNamespace(
+    proposed = SimpleNamespace(
         returncode=0,
         stdout=json.dumps({"product_create_transaction": {"transaction_hash": "sealed-hash"}}),
         stderr="",
@@ -1900,9 +1895,9 @@ def test_compiled_greenfield_create_times_commit_only_phase(monkeypatch, tmp_pat
     created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
 
     def fake_run(*, command, **_kwargs):
-        if "compile-transaction" in command:
+        if "propose" in command:
             clock["seconds"] += 69.0
-            return compiled
+            return proposed
         clock["seconds"] += 0.2
         return created
 

@@ -252,7 +252,7 @@ def test_cheap_config_advances_requested_codex_model_after_budget_failure(
     )
 
     assert config.provider == "codex-cli"
-    assert config.model == "gpt-5.3-codex"
+    assert config.model == "gpt-5.4-mini"
     assert config.codex_reasoning_effort == "medium"
 
 

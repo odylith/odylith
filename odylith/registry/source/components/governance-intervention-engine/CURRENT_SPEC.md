@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-07-04
+Last updated: 2026-07-11
 
 
 Last updated (UTC): 2026-04-28
@@ -796,6 +796,9 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Scope: B-096
+  - Evidence: 3 tracked artifact references retained
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-141
   - Evidence: 4 tracked artifact references retained
@@ -809,9 +812,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-141
   - Evidence: 7 tracked artifact references retained
 - **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
-  - Scope: B-096
-  - Evidence: 3 tracked artifact references retained
-- **2026-04-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-096
   - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->

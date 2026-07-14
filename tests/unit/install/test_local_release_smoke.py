@@ -197,7 +197,7 @@ def test_run_reports_timeout_with_command_and_cwd(monkeypatch, tmp_path: Path) -
     assert "err" in message
 
 
-def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -225,28 +225,12 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
         class Result:
             if "show" in command:
                 stdout = "Odylith read this repo: no application source was found.\n"
-            elif "propose" in command and "--confirm-intent" not in command:
-                stdout = (
-                    '{\n'
-                    '  "mode": "product_intent_reasoning_request",\n'
-                    '  "write_policy": "host_reason_product_intent_before_confirmed_greenfield_create",\n'
-                    '  "host_reasoning_task": {"must_not": []}\n'
-                    '}\n'
-                )
             elif "propose" in command:
                 stdout = (
                     '{\n'
-                    '  "mode": "host_reasoned_greenfield_proposal",\n'
-                    '  "backlog": [],\n'
-                    '  "components": [],\n'
-                    '  "diagrams": []\n'
-                    '}\n'
-                )
-            elif "compile-transaction" in command:
-                stdout = (
-                    '{\n'
                     '  "mode": "product_create_transaction",\n'
-                    '  "product_create_transaction": {"transaction_hash": "unit-transaction-hash"}\n'
+                    '  "product_create_transaction": {"transaction_hash": "unit-transaction-hash"},\n'
+                    '  "transaction_file": ".odylith/runtime/greenfield/product-create-transaction.v1.json"\n'
                     '}\n'
                 )
             elif "create" in command:
@@ -282,37 +266,6 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
         (
             str(odylith),
             "greenfield",
-            "propose",
-            "--repo-root",
-            ".",
-            "--prompt",
-            "warehouse dispatch planning app",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--confirm-intent",
-            "--format",
-            "json",
-        ),
-        (
-            str(odylith),
-            "greenfield",
-            "compile-transaction",
-            "--repo-root",
-            ".",
-            "--prompt",
-            "warehouse dispatch planning app",
-            "--intent-file",
-            ".odylith/runtime/greenfield/confirmed-intent.md",
-            "--output",
-            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
-            "--release",
-            "0.0.1",
-            "--format",
-            "json",
-        ),
-        (
-            str(odylith),
-            "greenfield",
             "create",
             "--repo-root",
             ".",
@@ -334,13 +287,13 @@ def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
         path.write_text(text, encoding="utf-8")
 
 
-def test_release_smoke_requires_installed_greenfield_guidance_uses_confirmed_create(tmp_path: Path) -> None:
+def test_release_smoke_requires_installed_greenfield_guidance_uses_proposal_first_confirm(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use project-first Product Intent Confirmation before confirmed create. Include a sectioned Product story, State object, First complete path, Proof boundary, and never collapse it into a wall of prose. Write the same visible accepted Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md. Run odylith greenfield compile-transaction --repo-root . --prompt '<request>' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1 from the same confirmation. Odylith may normalize that confirmation into .odylith/runtime/greenfield/confirmed-intent.json, builds and quality-gates the ProductCreateTransaction, and waits for hash confirmation. Run odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm to commit; confirmed create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under rollback guard, and validates readback. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries or intermediate transaction-compile failures. Do not ask the operator to inspect proposal JSON.\n",
+        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction before showing the only hash-bound CONFIRM rail. EDIT supplies new evidence and rebuilds the proposal; REJECT writes nothing. Run odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm to commit. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after CONFIRM. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
     )
 
     module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")

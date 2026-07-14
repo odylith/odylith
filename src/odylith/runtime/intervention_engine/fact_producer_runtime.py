@@ -317,8 +317,8 @@ def collect_facts(
         facts.append(
             _fact(
                 "governance_truth",
-                f"{ws_id} is the live Radar lane for this turn.",
-                "Keep the next visible claim tied to that lane only when this prompt actually touches it.",
+                f"{ws_id} is an active Radar lane; prompt binding determines whether it governs this turn.",
+                "Keep the next visible claim tied to that lane only after this prompt binds it.",
                 evidence_classes,
                 [{"kind": "workstream", "id": ws_id, "label": ws_id}],
                 95,

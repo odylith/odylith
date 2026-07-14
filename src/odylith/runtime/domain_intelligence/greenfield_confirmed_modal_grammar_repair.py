@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 
@@ -33,6 +35,14 @@ _MODAL_GRAMMAR_SKIP_KEYS = frozenset(
         "workstream_ids",
         "workstream_titles",
     }
+)
+_MODAL_CLAUSE_PATTERN = re.compile(
+    r"\b(?P<modal>can|could|may|might|must|shall|should|will|would)\s+(?P<body>[^.!?;:]+)",
+    flags=re.IGNORECASE,
+)
+_ARTICLE_BEFORE_ACTION_PATTERN = re.compile(
+    r"(?:(?P<connector>\b(?:and|or)\b|,)\s+|^)(?:a|an|the)\s+(?P<verb>[A-Za-z][A-Za-z'-]*)",
+    flags=re.IGNORECASE,
 )
 
 
@@ -79,9 +89,26 @@ def _skip_modal_grammar_repair_key(key: str) -> bool:
 
 
 def _repair_modal_grammar_text(value: str) -> str:
-    repaired = repair_modal_base_form_drift(value)
+    repaired = _drop_articles_before_modal_actions(value)
+    repaired = repair_modal_base_form_drift(repaired)
     repaired = repair_infinitive_base_form_drift(repaired)
     return repaired
+
+
+def _drop_articles_before_modal_actions(value: str) -> str:
+    def replace_clause(match: re.Match[str]) -> str:
+        body = _ARTICLE_BEFORE_ACTION_PATTERN.sub(_replace_article_before_action, match.group("body"))
+        return f"{match.group('modal')} {body}"
+
+    return _MODAL_CLAUSE_PATTERN.sub(replace_clause, value)
+
+
+def _replace_article_before_action(match: re.Match[str]) -> str:
+    verb = match.group("verb")
+    if not looks_like_finite_action_token(verb):
+        return match.group(0)
+    connector = match.group("connector")
+    return f"{connector} {verb}" if connector else verb
 
 
 __all__ = ["repair_generated_modal_grammar"]

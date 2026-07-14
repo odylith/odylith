@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_modal_grammar_repair import repair_generated_modal_grammar
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
@@ -72,26 +73,14 @@ def _run_confirmed_transaction_create(
     prompt: str,
     capsys,
     release: str = "0.0.1",
-    intent_file: str = ".odylith/runtime/greenfield/confirmed-intent.md",
+    edit_evidence_file: str = ".odylith/runtime/greenfield/confirmed-intent.md",
 ) -> tuple[int, str, dict[str, object]]:
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-    compile_rc = greenfield_proposals.main(
-        [
-            "compile-transaction",
-            "--repo-root",
-            str(repo_root),
-            "--prompt",
-            prompt,
-            "--intent-file",
-            intent_file,
-            "--output",
-            transaction_file,
-            "--release",
-            release,
-            "--format",
-            "json",
-        ]
-    )
+    propose_args = ["propose", "--repo-root", str(repo_root), "--prompt", prompt]
+    if edit_evidence_file:
+        propose_args.extend(("--edit-evidence", edit_evidence_file))
+    propose_args.extend(("--format", "json"))
+    compile_rc = greenfield_proposals.main(propose_args)
     compile_output = capsys.readouterr().out
     assert compile_rc == 0, compile_output
     compile_payload = json.loads(compile_output)
@@ -944,7 +933,7 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
     assert rc == 0, output
     assert "too similar" not in output
     assert "greenfield create wrote confirmed proposal" in output
-    assert (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert _compile_payload["intent_hypothesis"]["title"] == "Structured Review Workspace"
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/atlas/source/catalog").glob("*.json"))
@@ -1232,7 +1221,7 @@ Success means the exported package explains which records were included or exclu
         "need clearer separation",
     ):
         assert blocker not in output
-    assert (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert _compile_payload["intent_hypothesis"]["title"] == "Structured Evidence Review Workspace"
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/atlas/source/catalog").glob("*.json"))
@@ -1274,6 +1263,25 @@ Success means the exported package explains which records were included or exclu
     )
     assert "/Users/freedom/mock/research-review" not in source_text
     assert "Scientific Research Review App" not in source_text
+
+
+def test_preconfirm_modal_grammar_repair_preserves_quality_gate() -> None:
+    proposal = {
+        "backlog": [
+            {
+                "opportunity": (
+                    "A reviewer can a records a screening decision and a exports the evidence package."
+                ),
+            }
+        ]
+    }
+
+    assert any("modal/base-form grammar drift" in issue for issue in greenfield_quality_issues(proposal))
+    assert repair_generated_modal_grammar(proposal)
+    assert proposal["backlog"][0]["opportunity"] == (
+        "A reviewer can record a screening decision and export the evidence package."
+    )
+    assert not any("modal/base-form grammar drift" in issue for issue in greenfield_quality_issues(proposal))
 
 
 def test_confirmed_intent_parser_still_rejects_exact_generic_system_scaffold() -> None:
@@ -1788,7 +1796,7 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     assert _max_word_overlap(child_blobs) < 0.60
 
 
-def test_confirmed_greenfield_create_lifts_one_line_intent_file_before_post_confirm(
+def test_greenfield_create_compiles_prompt_without_edit_evidence(
     tmp_path: Path,
     monkeypatch,
     capsys,
@@ -1806,15 +1814,13 @@ def test_confirmed_greenfield_create_lifts_one_line_intent_file_before_post_conf
         "Build a customer recovery desk for support leads to triage delayed orders, assign owners, "
         "repair customer trust, and prove every response path before launch."
     )
-    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
-    intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(prompt + "\n", encoding="utf-8")
 
     rc, output, _compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt=prompt,
         capsys=capsys,
         release="0.0.1",
+        edit_evidence_file="",
     )
 
     assert rc == 0, output

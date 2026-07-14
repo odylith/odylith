@@ -6,7 +6,7 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-07-09
+Last updated: 2026-07-12
 
 
 Last updated (UTC): 2026-04-17
@@ -314,6 +314,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-12: Made explicit intervention-feedback cadence a host-neutral session preference. Codex and Claude now carry the preference through substantive continuation, progress, proof, and risk prompts, suppress stale replay before it can eclipse a fresh Assist, and resolve the same synthetic session when a host omits an ID. Bare acknowledgements remain quiet. Source proof covered 91 focused shared-host tests plus exact Codex and Claude visible-intervention continuation probes. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-121`)
 - 2026-03-31: Promoted Odylith chatter into a first-class Registry component so the task-first, final-only, evidence-backed narration contract is governed across consumer, maintainer, dogfood, and sim-facing surfaces. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-06: Expanded the chatter contract from a closeout-only note into ambient conversation intelligence with rare labeled `Odylith Insight:`, `Odylith History:`, and `Odylith Risks:` beats plus capitalized `Odylith Assist:` closeout lines that link updated governance ids inline when they were actually changed. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))
 - 2026-04-07: Tightened the runtime contract so closeout narration suppresses overlapping assist/supplement beats and avoids leaning on one small set of stock delta phrases across unrelated governed slices. (Plan: [B-031](odylith/radar/radar.html?view=plan&workstream=B-031))

@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import shares_product_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
@@ -64,6 +65,13 @@ _SHORT_ACTOR_ROLE_WORDS = frozenset(
     }
 )
 _ACTOR_LABEL_CLAUSE_BOUNDARIES = frozenset({"after", "before", "once", "until", "when", "while", "without"})
+
+
+def validation_proof_summary(value: Any, *, limit: int = 300) -> str:
+    """Return a short proof-boundary clause for validation language."""
+
+    summary = proof_claim_summary(value, limit=limit).strip(" .")
+    return _sentence(summary, fallback="the promised user-visible result", limit=limit).rstrip(".")
 _ACTOR_LABEL_EVENT_TAILS = frozenset(
     {
         "approval",
@@ -747,5 +755,6 @@ __all__ = [
     "state_changer_label",
     "strip_actor_prefix",
     "supporting_actor_label",
+    "validation_proof_summary",
     "workstream_subject",
 ]

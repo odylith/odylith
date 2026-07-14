@@ -47,6 +47,9 @@ def render_codex_prompt_context(
     ref = prompt_signal_runtime.prompt_anchor(prompt)
     needs_live_bundle = bool(ref) or host_intervention_support.prompt_needs_live_bundle(
         prompt=prompt,
+        repo_root=repo_root,
+        session_id=session_id,
+        host_family="codex",
         bundle_override=conversation_bundle_override,
         intervention_bundle_override=intervention_bundle_override,
     )
@@ -121,7 +124,9 @@ def main(argv: list[str] | None = None) -> int:
     if host_intervention_support.suppress_prompt_live_narration(prompt=prompt):
         return 0
     ref = prompt_signal_runtime.prompt_anchor(prompt)
-    if not ref and not host_intervention_support.prompt_needs_live_bundle(prompt=prompt):
+    if not ref and not host_intervention_support.prompt_needs_live_bundle(
+        prompt=prompt, repo_root=args.repo_root, session_id=session_id, host_family="codex"
+    ):
         receipt = (
             ""
             if confirmed_events or not host_intervention_support.prompt_first_receipt_eligible(prompt)

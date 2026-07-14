@@ -119,17 +119,7 @@ def confirmed_project_brief(
     )
     assumption_summary = boundary_clause_text(assumptions) or "accepted first-release assumptions"
     command_prompt = _command_prompt(label=label, first=first, fallback=prompt)
-    confirm_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
-    compile_command = (
-        f"odylith greenfield compile-transaction --repo-root . --prompt {shell_quote(command_prompt)} "
-        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md "
-        "--output .odylith/runtime/greenfield/product-create-transaction.v1.json "
-        f"--release {release}"
-    )
-    audit_command = (
-        f"odylith greenfield compile-transaction --repo-root . --prompt {shell_quote(command_prompt)} "
-        f"--intent-file .odylith/runtime/greenfield/confirmed-intent.md --format json --release {release}"
-    )
+    proposal_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
         "purpose": _purpose_text(story=story, problem=problem, first=first),
@@ -260,25 +250,14 @@ def confirmed_project_brief(
         ],
         "host_independent_paths": [
             {
-                "path": "Confirm product intent",
-                "command": confirm_command,
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use before records are written while the accepted interpretation can still be confirmed or edited.",
-            },
-            {
-                "path": "Compile transaction",
-                "command": compile_command,
+                "path": "Review the creation-ready transaction",
+                "command": proposal_command,
                 "works_in": "shell, Codex, Claude Code",
                 "use_when": (
-                    "Use after writing the already-shown confirmation to the intent file. Odylith shows the hash "
-                    "and commit-only confirmation screen before records are written."
+                    "Odylith compiles and validates the package before showing CONFIRM, EDIT, and REJECT. "
+                    "CONFIRM commits the displayed hash-bound transaction; EDIT rebuilds from new evidence; "
+                    "REJECT stops without writes."
                 ),
-            },
-            {
-                "path": "Explicit file review",
-                "command": audit_command,
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use only when a reviewer explicitly asks for a governed proposal audit artifact.",
             },
         ],
     }

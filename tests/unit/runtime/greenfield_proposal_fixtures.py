@@ -1032,22 +1032,10 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
         ],
         "host_independent_paths": [
             {
-                "path": "Confirm product intent",
+                "path": "Review the creation-ready transaction",
                 "command": f"odylith greenfield propose --repo-root . --prompt {json.dumps(prompt)}",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use before proposal expansion so the operator can confirm, edit, or reject the interpretation.",
-            },
-            {
-                "path": "Compile create transaction",
-                "command": f"odylith greenfield compile-transaction --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release {release}",
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after intent confirmation so Odylith builds, repairs, validates, gates, and hashes the complete create transaction before writes.",
-            },
-            {
-                "path": "Commit confirmed transaction",
-                "command": "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
-                "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after hash confirmation so Odylith verifies and commits the already compiled package.",
+                "use_when": "Odylith compiles and validates the package before showing CONFIRM, EDIT, and REJECT. CONFIRM commits the displayed hash-bound transaction; EDIT rebuilds from new evidence; REJECT stops without writes.",
             },
         ],
     }

@@ -46,9 +46,10 @@ def _stop_summary_assist_text(summary: object, *, forced: bool = False, changed_
         return ""
     if not forced and not changed_paths and not _looks_like_completed_work_summary(text):
         return ""
-    return (
-        "**Odylith Assist:** Closeout reached in chat; no separate Observation or Proposal earned this turn."
-    )
+    text = text.rstrip(".")
+    if len(text) > 220:
+        text = f"{text[:217].rstrip()}..."
+    return f"**Odylith Assist:** {text}. The next visible checkpoint is verification."
 
 
 def _looks_like_completed_work_summary(value: str) -> bool:
@@ -104,16 +105,26 @@ def render_visible_intervention(
     )
     if include_closeout is not None:
         closeout = bool(include_closeout)
-    prompt_visibility_feedback_only = (
-        prompt_signal_runtime.assist_visibility_feedback_requested(
-            prompt=prompt,
-            assistant_summary=summary,
-        )
-        and normalized_phase in _PROMPT_SUBMIT_PHASES
+    resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
+    prompt_assist_feedback = (
+        normalized_phase in _PROMPT_SUBMIT_PHASES
         and include_proposal is None
         and not changed_paths
+        and (
+            prompt_signal_runtime.assist_cadence_feedback_requested(
+                prompt=prompt,
+                assistant_summary=summary,
+            )
+            or (
+                host_intervention_support.session_prefers_assist(
+                    repo_root=repo_root,
+                    session_id=resolved_session,
+                    host_family=host_family,
+                )
+                and prompt_signal_runtime.has_assist_cadence_signal(prompt)
+            )
+        )
     )
-    resolved_session = host_surface_runtime.normalized_session_id(session_id, host_family=host_family)
     replay = visibility_replay.replayable_chat_markdown(
         repo_root=repo_root,
         host_family=host_family,
@@ -121,7 +132,18 @@ def render_visible_intervention(
         include_assist=closeout,
         include_teaser=False,
     )
-    if replay and not (closeout and normalized_phase != "stop_summary"):
+    if replay and not prompt_assist_feedback:
+        if closeout and prompt_signal_runtime.visibility_feedback_requested(
+            prompt=prompt,
+            assistant_summary=summary,
+        ):
+            replay = host_intervention_support.merge_replay_with_closeout(
+                replay=replay,
+                closeout_text=(
+                    "**Odylith Assist:** "
+                    + prompt_signal_runtime.prompt_assist_summary(prompt)
+                ),
+            )
         if confirm_chat_delivery:
             _confirm_rendered_chat(
                 repo_root=repo_root,
@@ -139,10 +161,12 @@ def render_visible_intervention(
         assistant_summary=summary,
         changed_paths=changed_paths,
     )
+    if prompt_assist_feedback:
+        bundle = host_intervention_support.with_assist_cadence_preference(bundle)
     if normalized_phase in _PROMPT_SUBMIT_PHASES and closeout:
         bundle = host_intervention_support.ensure_prompt_visible_assist_bundle(bundle)
     visible_override = ""
-    if prompt_visibility_feedback_only:
+    if prompt_assist_feedback:
         visible_override = conversation_surface.render_closeout_text(bundle, markdown=True)
     elif replay and closeout:
         visible_override = host_intervention_support.merge_replay_with_closeout(

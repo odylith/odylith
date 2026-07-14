@@ -132,9 +132,18 @@ def project_brief_issues(value: Any) -> list[str]:
         value.get("host_independent_paths"),
         owner="proposal `project_brief.host_independent_paths`",
         issues=issues,
-        min_rows=3,
+        min_rows=1,
         required_keys=("path", "command", "works_in", "use_when"),
     )
+    paths = mapping_rows(value.get("host_independent_paths"))
+    if any(
+        "greenfield compile-transaction" in clean_text(path.get("command")).casefold()
+        or "--intent-file" in clean_text(path.get("command")).casefold()
+        for path in paths
+    ):
+        issues.append(
+            "proposal `project_brief.host_independent_paths` must not expose a separate compile-before-confirm rail"
+        )
     return issues
 
 

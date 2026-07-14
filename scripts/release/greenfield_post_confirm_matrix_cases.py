@@ -161,48 +161,20 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             name="sparse disclosure confirmation",
             prompt=(
                 "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "
-                "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof."
+                "coordinates review, records evidence custody, decides embargo status, and publishes first release "
+                "readiness proof without personalized notification delivery."
             ),
             required_terms=("disclosure", "council", "evidence", "embargo"),
             leakage_terms=("disclosure council", "embargo decision", "personalized notification delivery"),
             stressors=("final-memory-pressure", "multi-role-tribunal", "long-first-path", "modal-expert-lens"),
-            confirmed_intent_markdown="""
-# Product Intent Confirmation
-
-## Title
-Disclosure council
-
-## Product story
-External researchers and internal owners coordinate a disclosure review.
-
-## State object
-Report.
-
-## First complete path
-Reporter submits a report; owner reviews it; council publishes proof.
-
-## Actors
-Reporter, owner, council.
-
-## Systems
-Intake desk, review log.
-
-## Assumptions
-The first release records evidence only.
-
-## Ambiguities
-Notification delivery is not included.
-
-## Non-goals
-Personalized notification delivery is outside the first release.
-
-## Proof boundary
-Evidence custody and embargo decision.
-""".strip(),
         ),
         GreenfieldMatrixCase(
             name="quantum communication lab",
-            prompt="Draft a greenfield proposal for a lab app where we are building quantum communication",
+            prompt=(
+                "Draft a greenfield proposal for a lab app where researchers configure and launch an E91 quantum "
+                "communication run on real hardware, observe live coincidence counts, Bell inequality checks, CHSH, "
+                "QBER, and established key bits, then compare the saved run against prior results."
+            ),
             required_terms=("quantum", "e91", "qber", "chsh"),
             leakage_terms=(
                 "quantum communication",
@@ -222,50 +194,6 @@ Evidence custody and embargo decision.
                 "latency-pressure",
                 "noun-verb-homonym",
             ),
-            confirmed_intent_markdown="""
-# Quantum Link Lab
-
-## Product story
-A lab application for a research team running entanglement-based quantum communication on real hardware. A researcher configures a run, launches it, and watches the link behave live: entangled pairs distributed, coincidence counts, the measured Bell/CHSH parameter, error rate (QBER), and sifted or final key bits. The headline question is whether the entanglement survived the channel well enough to certify a secure link, judged by the Bell-inequality violation.
-
-## State object
-A communication run: E91 parameters, measurement-basis configuration, bound source and station endpoints, live and final measurements, CHSH value, QBER, key length, status, and timestamped history for review and comparison.
-
-## First complete path
-A researcher opens the lab, defines a new E91 run, launches it against the hardware, watches coincidences and the live CHSH value stream in, and ends with a completed run that reports whether the Bell inequality was violated, the QBER, and the key established, saved and viewable alongside prior runs.
-
-## Human actors
-- Researcher - configures and launches E91 runs, reads live and historical results.
-- Lab lead - reviews run history, compares configurations, judges link viability.
-- Lab technician - manages source and station hardware setup, monitors active runs.
-
-## External systems
-- Entangled-photon source rig and its control interface.
-- Two measurement stations and their control or readout interface.
-- Coincidence-counting or time-tagging electronics.
-- Shared clock or synchronization source across the stations.
-
-## Internal product systems
-- Run configuration and validation - supports E91 parameters, bases, and endpoints.
-- Hardware control and run execution - drives the source and stations and sequences a run.
-- Live telemetry stream - exposes coincidences, CHSH, and QBER while the run progresses.
-- Security and verification logic - checks Bell-inequality verdicts and key sifting.
-- Results store and run history - keeps saved runs, comparison, and review evidence.
-
-## Critical assumptions
-- The first release drives real lab hardware through an available control interface.
-- E91 is the headline protocol and CHSH/Bell violation is the first security test.
-- A run is owned by one researcher session at a time.
-- Live telemetry and saved comparable run history are both required from day one.
-
-## Ambiguities
-- Is there a documented hardware control API, or does the app need a driver layer first?
-- Are laser and detector safety interlocks in first release scope or externally handled?
-- Does the first release operate one shared rig or select between multiple rigs?
-
-## Proof boundary
-The product is proven when a researcher can configure an E91 run, launch it on the real rig, watch coincidences and CHSH stream live, end with a saved run that reports the Bell verdict, QBER, and established key, then find that run in history and compare it. Formal security certification and hardware safety certification are outside this first proof.
-""".strip(),
         ),
     )
 

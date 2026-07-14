@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_transaction import Greenfiel
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _role_suffixed_label
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _looks_like_actor_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
 from odylith.runtime.common import display_text
@@ -62,6 +63,12 @@ GREENFIELD_PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/
 @pytest.fixture(autouse=True)
 def _stub_rendered_surface_custody_for_legacy_proposal_units(monkeypatch: pytest.MonkeyPatch) -> None:
     stub_preconfirm_surface_refresh(monkeypatch)
+
+
+def test_actor_label_detection_rejects_domain_objects_but_keeps_known_roles() -> None:
+    assert _looks_like_actor_label("resident") is True
+    assert _looks_like_actor_label("incident") is False
+    assert _looks_like_actor_label("patient") is False
 
 
 def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
@@ -275,13 +282,17 @@ def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None
     assert proposal["project_intelligence"]["intent"]
     assert proposal["observed_source"]["source_posture"] == "confirmed_intent_only"
     assert proposal["intent"]["prompt"] == ""
-    assert "greenfield compile-transaction" in proposal["apply_commands"][0]
-    assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in proposal["apply_commands"][0]
-    assert "--output .odylith/runtime/greenfield/product-create-transaction.v1.json" in proposal["apply_commands"][0]
-    assert "--release '0.0.1'" in proposal["apply_commands"][0]
+    assert proposal["apply_commands"][0].startswith("odylith greenfield propose --repo-root . --prompt ")
+    assert "greenfield compile-transaction" not in "\n".join(proposal["apply_commands"])
+    assert "--intent-file" not in "\n".join(proposal["apply_commands"])
     assert not any(str(command).startswith("odylith greenfield create") for command in proposal["apply_commands"])
-    assert "real hash" in proposal["apply_commands"][1]
-    assert "review-only" in proposal["apply_commands"][2]
+    assert "CONFIRM, EDIT, and REJECT" in proposal["apply_commands"][1]
+    assert "hash-bound transaction" in proposal["apply_commands"][2]
+    paths = proposal["project_brief"]["host_independent_paths"]
+    assert len(paths) == 1
+    assert paths[0]["path"] == "Review the creation-ready transaction"
+    assert paths[0]["command"].startswith("odylith greenfield propose --repo-root . --prompt ")
+    assert "--intent-file" not in paths[0]["command"]
     assert "internal apply payload" not in encoded
     assert "active-proposal.v1.json" not in encoded
     assert "Make product-owned systems explicit:" not in encoded
@@ -1361,7 +1372,8 @@ def test_project_brief_blocks_coding_rush_without_domain_scaffold(tmp_path) -> N
     assert "Project requirements" in rendered
     assert "Coding starts only after the accepted project story" in rendered
     assert rendered.index("Project requirements") < rendered.index("Backlog proposal")
-    assert "greenfield compile-transaction --repo-root ." in rendered
+    assert "greenfield propose --repo-root ." in rendered
+    assert "greenfield compile-transaction --repo-root ." not in rendered
     assert "greenfield create --repo-root ." not in rendered
     assert "Warehouse Dispatch Planning App Operator Workspace" not in rendered
 
