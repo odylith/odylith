@@ -2308,3 +2308,11 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   product-shaped recovery repositories that carry ordinary root guidance still
   receive the required maintainer overlay. Consumer-owned truth remains
   untouched in both cases.
+- The final precompiled-create reliability settlement is covered by
+  `migration-observer:0.1.15:browser-surfaces:165059ab8eb1` and
+  `migration-observer:0.1.15:install-managed-assets:3b77f06922bc`. Existing
+  consumer governance records need no migration: normal upgrade, reinstall,
+  doctor, or dashboard refresh replaces only managed runtime and rendered
+  assets. The updated transaction kernel rejects stale confirmation data before
+  any governed write and rolls back true filesystem failures without rewriting
+  consumer-owned source truth.

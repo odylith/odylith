@@ -429,7 +429,10 @@ def _blueprint_section_lines(value: Any) -> list[str]:
                     block.append(f"  - Why: {why}")
                 lines.append("\n".join(block))
                 continue
-            if why and _combined_detail_is_hard_to_scan(section=section, detail=must_capture, why=why):
+            if why and (
+                not must_capture.rstrip().endswith((".", "!", "?"))
+                or _combined_detail_is_hard_to_scan(section=section, detail=must_capture, why=why)
+            ):
                 lines.append("\n".join([f"{section}: {must_capture}", f"  - Why: {why}"]))
                 continue
             suffix = f" Why: {why}" if why else ""

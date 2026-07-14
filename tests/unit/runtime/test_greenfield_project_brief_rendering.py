@@ -169,6 +169,26 @@ def test_project_brief_rendering_splits_long_blueprint_rationale_rows() -> None:
     assert "installation plan Why:" not in rendered
 
 
+def test_project_brief_rendering_separates_rationale_after_unpunctuated_detail() -> None:
+    lines = render_project_brief_lines(
+        {
+            "blueprint_sections": [
+                {
+                    "section": "First path",
+                    "must_capture": "Permit reviewers can track applications and publish decisions",
+                    "why_it_matters": "A narrow first path keeps the first release testable and prevents broad platform drift.",
+                }
+            ]
+        }
+    )
+
+    assert (
+        "- First path: Permit reviewers can track applications and publish decisions\n"
+        "  - Why: A narrow first path keeps the first release testable and prevents broad platform drift."
+    ) in lines
+    assert not any("decisions Why:" in line for line in lines)
+
+
 def test_confirmed_project_brief_does_not_clip_article_modifier_tail_from_broad_prompt() -> None:
     proposal = _proposal_from_guidance_prompt("Draft a greenfield proposal for a training roster readiness hub")
     brief = proposal["project_brief"]
