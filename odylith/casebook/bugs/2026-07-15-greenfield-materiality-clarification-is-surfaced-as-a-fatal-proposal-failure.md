@@ -1,6 +1,10 @@
 - Bug ID: CB-251
 
-- Status: InProgress
+- Status: FixedPendingRelease
+
+- Fixed: Pending
+
+- Fixed In: v0.1.15
 
 - Created: 2026-07-15
 
@@ -20,7 +24,7 @@
 
 - Detected By: Fresh installed 240-case discovery campaign
 
-- Failure Signature: The original cell-therapy-chain-of-identity replay exited code 2 with a first-path question and no staged records. After the typed-outcome fix, fresh installed replay reached exit code 0 and made no writes, but rejected the structured question because the `question` field contained reply guidance after its question mark.
+- Failure Signature: The original cell-therapy-chain-of-identity replay exited code 2 with a first-path question and no staged records. After the typed-outcome and copy fixes, a fresh installed replay reached exit code 0, score 10/10, and no staged or governed writes. Its first campaign wrapper verdict was falsely failed by CB-253, a separate proof-runner defect.
 
 - Trigger Path: ./bin/greenfield-matrix-campaign 0.1.15 /private/tmp/odylith-greenfield-release-0.1.15 with science-deeptech fixture
 
@@ -44,7 +48,7 @@
 
 - Rollback/Forward Fix: Forward fix only; no accepted package or governed consumer record was committed.
 
-- Verification: The focused CLI and installed-matrix suite passed 135 tests after the copy fix. Rebuild and replay the exact failed subset against a fresh installed dist; resume discovery only after that replay accepts the clarification as a valid no-write pre-confirm outcome.
+- Verification: The focused CLI, installed-matrix, materiality, and confirmation-command suite passed 170 tests. The exact fresh installed cell-therapy replay accepted the clarification as a valid no-write pre-confirm outcome with score 10/10. CB-253 separately governs campaign-wrapper classification.
 
 - Prevention: Keep detailed ambiguous multi-role prompts in the installed corpus with explicit expected clarification assertions, including a check that the structured question has exactly one question mark and no trailing reply instruction.
 
@@ -52,7 +56,7 @@
 
 - Related Incidents/Bugs: CB-250
 
-- GitHub Status: confirmed
+- GitHub Status: fixed_pending_release
 
 - Public Response: pending
 

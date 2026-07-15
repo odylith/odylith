@@ -24,6 +24,7 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 MATRIX_SCRIPT = SCRIPT_DIR / "greenfield_preconfirm_matrix.py"
+_SUCCESSFUL_MATRIX_PAYLOAD_STATUSES = frozenset(("passed", "discovery-passed"))
 
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
@@ -78,7 +79,11 @@ class ShardRunResult:
 
     @property
     def passed(self) -> bool:
-        return self.returncode == 0 and self.status == "passed" and self.payload_status == "passed"
+        return (
+            self.returncode == 0
+            and self.status == "passed"
+            and self.payload_status in _SUCCESSFUL_MATRIX_PAYLOAD_STATUSES
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -358,6 +363,7 @@ def _run_shard(
         )
         if process_failure_cluster:
             clusters = (*clusters, process_failure_cluster)
+        payload_status = str(payload.get("status") or "")
         result = ShardRunResult(
             tier=shard.tier,
             name=shard.name,
@@ -366,7 +372,11 @@ def _run_shard(
                 "stopped"
                 if stop_reason
                 else "passed"
-                if completed.returncode == 0 and payload.get("status") == "passed"
+                if completed.returncode == 0 and _successful_matrix_payload(
+                    payload_status=payload_status,
+                    campaign=campaign,
+                    proof_tier=shard.proof_tier,
+                )
                 else "failed"
             ),
             returncode=completed.returncode,
@@ -374,7 +384,7 @@ def _run_shard(
             output_json=str(output_json),
             telemetry_jsonl=str(telemetry_jsonl),
             temp_parent=str(shard_temp_parent),
-            payload_status=str(payload.get("status") or ""),
+            payload_status=payload_status,
             completed_case_count=int(campaign.get("completed_case_count") or 0),
             failed_case_count=max(
                 int(campaign.get("failed_case_count") or 0),
@@ -459,6 +469,19 @@ def _run_shard(
         },
     )
     return result
+
+
+def _successful_matrix_payload(
+    *,
+    payload_status: str,
+    campaign: dict[str, Any],
+    proof_tier: str,
+) -> bool:
+    if payload_status == "passed":
+        return True
+    if proof_tier != "discovery" or payload_status != "discovery-passed":
+        return False
+    return int(campaign.get("failed_case_count") or 0) == 0 and not campaign.get("failure_clusters")
 
 
 def _reset_shard_run_files(*, output_json: Path, telemetry_jsonl: Path) -> None:

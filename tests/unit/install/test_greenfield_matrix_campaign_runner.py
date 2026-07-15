@@ -35,6 +35,13 @@ def _shards_module():
     )
 
 
+def _shard_runner_module():
+    return _load_module(
+        SCRIPTS_ROOT / "greenfield_matrix_campaign_shard_runner.py",
+        "greenfield_matrix_campaign_shard_runner_test",
+    )
+
+
 def _write_payload(path: Path, *, status: str, cluster: str = "") -> None:
     clusters = [{"cluster": cluster, "count": 1, "cases": ["case one"]}] if cluster else []
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -946,6 +953,78 @@ def test_discovery_only_campaign_passes_without_claiming_release_readiness(tmp_p
     assert payload["release_proof_completed"] is False
     assert payload["release_proof_status"] == "not-run"
     assert payload["release_readiness_status"] == "not-proven"
+
+
+def test_discovery_tier_accepts_discovery_passed_matrix_payload(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        command = kwargs["command"]
+        output_json = Path(_arg(command, "--output-json"))
+        output_json.parent.mkdir(parents=True, exist_ok=True)
+        output_json.write_text(
+            json.dumps(
+                {
+                    "status": "discovery-passed",
+                    "campaign": {
+                        "completed_case_count": 1,
+                        "failed_case_count": 0,
+                        "failure_clusters": [],
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(command, 0, "passed shard", ""), ""
+
+    monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
+
+    payload = module.run_campaign(
+        dist_dir=tmp_path / "dist",
+        version="0.1.15",
+        temp_parent=tmp_path / "tmp",
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        volume_case_files=(tmp_path / "volume-01.json",),
+        discovery_max_workers=1,
+        stop_after_failures=1,
+        stop_after_cluster_failures=1,
+    )
+
+    tier = payload["tiers"][0]
+    shard = tier["shards"][0]
+    assert payload["status"] == "discovery-passed"
+    assert payload["execution_status"] == "passed"
+    assert tier["status"] == "passed"
+    assert tier["stop_reason"] == ""
+    assert shard["status"] == "passed"
+    assert shard["payload_status"] == "discovery-passed"
+    assert shard["stop_reason"] == ""
+
+
+def test_discovery_passed_payload_requires_zero_failed_cases_and_clusters() -> None:
+    module = _shard_runner_module()
+
+    assert module._successful_matrix_payload(  # noqa: SLF001
+        payload_status="discovery-passed",
+        campaign={"failed_case_count": 0, "failure_clusters": []},
+        proof_tier="discovery",
+    )
+    assert not module._successful_matrix_payload(  # noqa: SLF001
+        payload_status="discovery-passed",
+        campaign={"failed_case_count": 1, "failure_clusters": []},
+        proof_tier="discovery",
+    )
+    assert not module._successful_matrix_payload(  # noqa: SLF001
+        payload_status="discovery-passed",
+        campaign={"failed_case_count": 0, "failure_clusters": [{"cluster": "scores.copy"}]},
+        proof_tier="discovery",
+    )
+    assert not module._successful_matrix_payload(  # noqa: SLF001
+        payload_status="discovery-passed",
+        campaign={"failed_case_count": 0, "failure_clusters": []},
+        proof_tier="release",
+    )
 
 
 def test_campaign_can_require_release_readiness_for_release_claims(tmp_path: Path, monkeypatch) -> None:
