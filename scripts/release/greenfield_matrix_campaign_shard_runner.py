@@ -893,6 +893,23 @@ def _tier_case_file_preflight_failure(
             )
         try:
             audits = load_release_audit_file(audit_file)
+            individual_failure: tuple[CampaignShard, Any] | None = None
+            for shard in release_shards:
+                shard_cases = load_case_file(shard.case_file)
+                shard_case_ids = {case.case_id for case in shard_cases}
+                shard_audits = tuple(audit for audit in audits if audit.case_id in shard_case_ids)
+                evaluation = evaluate_release_corpus(shard_cases, shard_audits)
+                if not evaluation.passed and individual_failure is None:
+                    individual_failure = (shard, evaluation)
+            if individual_failure is not None:
+                shard, evaluation = individual_failure
+                return _release_corpus_preflight_failure(
+                    shard=shard,
+                    output_dir=output_dir,
+                    telemetry_dir=telemetry_dir,
+                    temp_parent=temp_parent,
+                    detail="invalid greenfield release case file: " + "; ".join(evaluation.issues),
+                )
             cases = tuple(case for shard in release_shards for case in load_case_file(shard.case_file))
             evaluation = evaluate_release_corpus(cases, audits)
         except RuntimeError as exc:

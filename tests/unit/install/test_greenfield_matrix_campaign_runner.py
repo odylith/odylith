@@ -1,133 +1,37 @@
 from __future__ import annotations
 
-import importlib.util
 import hashlib
 import json
 import subprocess
 import sys
 from pathlib import Path
 
-
-REPO_ROOT = Path(__file__).resolve().parents[3]
-SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
-
-
-def _load_module(path: Path, name: str):
-    spec = importlib.util.spec_from_file_location(name, path)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
+from tests.greenfield_matrix_campaign_test_support import REPO_ROOT
+from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
+from tests.greenfield_matrix_campaign_test_support import command_arg as _arg
+from tests.greenfield_matrix_campaign_test_support import load_module
+from tests.greenfield_matrix_campaign_test_support import write_case_file as _write_case_file
+from tests.greenfield_matrix_campaign_test_support import write_payload as _write_payload
 
 def _module():
-    return _load_module(
+    return load_module(
         SCRIPTS_ROOT / "greenfield_matrix_campaign_runner.py",
         "greenfield_matrix_campaign_runner_test",
     )
 
 
 def _shards_module():
-    return _load_module(
+    return load_module(
         SCRIPTS_ROOT / "greenfield_matrix_shards.py",
         "greenfield_matrix_shards_runner_test",
     )
 
 
 def _shard_runner_module():
-    return _load_module(
+    return load_module(
         SCRIPTS_ROOT / "greenfield_matrix_campaign_shard_runner.py",
         "greenfield_matrix_campaign_shard_runner_test",
     )
-
-
-def _write_payload(path: Path, *, status: str, cluster: str = "") -> None:
-    clusters = [{"cluster": cluster, "count": 1, "cases": ["case one"]}] if cluster else []
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(
-            {
-                "status": status,
-                "campaign": {
-                    "completed_case_count": 1,
-                    "failed_case_count": 0 if status == "passed" else 1,
-                    "failure_clusters": clusters,
-                },
-            }
-        ),
-        encoding="utf-8",
-    )
-
-
-def _arg(command: list[str], flag: str) -> str:
-    index = command.index(flag)
-    return command[index + 1]
-
-
-def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -> None:
-    module = _module()
-    discovery = module.CampaignShard(
-        tier="volume-discovery",
-        case_file=tmp_path / "shard-01.json",
-        proof_tier="discovery",
-        install_mode="seeded",
-        include_browser_proof=False,
-        include_rescue_smoke=False,
-        include_natural_rescue_proof=False,
-        stop_after_failures=1,
-        stop_after_cluster_failures=2,
-        require_high_variance_stressors=True,
-        required_stressors=("modal-expert-lens",),
-    )
-    release = module.CampaignShard(
-        tier="release-proof",
-        case_file=tmp_path / "release.json",
-        proof_tier="release",
-        install_mode="full",
-        include_browser_proof=True,
-        include_rescue_smoke=True,
-        include_natural_rescue_proof=True,
-        stop_after_failures=0,
-        stop_after_cluster_failures=0,
-        require_high_variance_stressors=True,
-        required_stressors=(),
-    )
-
-    discovery_command = module._matrix_command(  # noqa: SLF001
-        shard=discovery,
-        dist_dir=tmp_path / "dist",
-        version="0.1.15",
-        temp_parent=tmp_path / "tmp",
-        output_json=tmp_path / "out.json",
-        telemetry_jsonl=tmp_path / "out.jsonl",
-    )
-    release_command = module._matrix_command(  # noqa: SLF001
-        shard=release,
-        dist_dir=tmp_path / "dist",
-        version="0.1.15",
-        temp_parent=tmp_path / "tmp",
-        output_json=tmp_path / "release.json",
-        telemetry_jsonl=tmp_path / "release.jsonl",
-    )
-
-    assert "--proof-tier" in discovery_command
-    assert _arg(discovery_command, "--proof-tier") == "discovery"
-    assert "--allow-skipped-browser-proof" in discovery_command
-    assert "--skip-rescue-smoke" in discovery_command
-    assert "--skip-natural-rescue-proof" in discovery_command
-    assert "--require-high-variance-stressors" not in discovery_command
-    assert "--required-stressor" in discovery_command
-    assert _arg(discovery_command, "--required-stressor") == "modal-expert-lens"
-    assert "--allow-partial-stressor-coverage" in discovery_command
-    assert _arg(discovery_command, "--install-mode") == "seeded"
-    assert _arg(release_command, "--proof-tier") == "release"
-    assert "--include-browser-proof" in release_command
-    assert "--include-rescue-smoke" in release_command
-    assert "--include-natural-rescue-proof" in release_command
-    assert _arg(release_command, "--install-mode") == "full"
-    assert "--stop-after-failures" not in release_command
-    assert "--allow-partial-stressor-coverage" not in release_command
 
 
 def test_campaign_stops_before_later_tiers_after_failed_subset_failure(tmp_path: Path, monkeypatch) -> None:
@@ -164,91 +68,6 @@ def test_campaign_stops_before_later_tiers_after_failed_subset_failure(tmp_path:
     assert payload["tiers"][0]["completed_shard_count"] == 1
     assert payload["tiers"][0]["selected_shard_count"] == 2
     assert payload["tiers"][0]["stopped_early"] is True
-
-
-def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_path: Path, monkeypatch) -> None:
-    module = _module()
-    calls: list[list[str]] = []
-
-    def fake_run(**kwargs):  # noqa: ANN001
-        command = kwargs["command"]
-        calls.append(command)
-        _write_payload(Path(_arg(command, "--output-json")), status="passed")
-        return subprocess.CompletedProcess(command, 0, "passed shard", ""), ""
-
-    monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
-
-    payload = module.run_campaign(
-        dist_dir=tmp_path / "dist",
-        version="0.1.15",
-        temp_parent=tmp_path / "tmp",
-        output_dir=tmp_path / "out",
-        telemetry_dir=tmp_path / "telemetry",
-        volume_case_files=(tmp_path / "volume-01.json",),
-        release_case_files=(tmp_path / "release.json",),
-        discovery_max_workers=2,
-    )
-
-    assert payload["status"] == "failed"
-    assert payload["execution_status"] == "failed"
-    assert payload["release_proof_completed"] is False
-    assert payload["release_readiness_status"] == "failed"
-    assert [tier["tier"] for tier in payload["tiers"]] == ["volume-discovery", "release-proof"]
-    assert [_arg(command, "--proof-tier") for command in calls] == ["discovery"]
-    assert payload["tiers"][-1]["stop_reason"].startswith("tier-release-corpus-invalid:")
-
-
-def test_campaign_finishes_discovery_tiers_before_rejecting_an_unproven_release(
-    tmp_path: Path,
-    monkeypatch,
-) -> None:
-    module = _module()
-    calls: list[list[str]] = []
-
-    def fake_run(**kwargs):  # noqa: ANN001
-        command = kwargs["command"]
-        calls.append(command)
-        _write_payload(Path(_arg(command, "--output-json")), status="passed")
-        return subprocess.CompletedProcess(command, 0, "passed shard", ""), ""
-
-    monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
-
-    payload = module.run_campaign(
-        dist_dir=tmp_path / "dist",
-        version="0.1.15",
-        temp_parent=tmp_path / "tmp",
-        output_dir=tmp_path / "out",
-        telemetry_dir=tmp_path / "telemetry",
-        regression_case_files=(tmp_path / "regression-01.json", tmp_path / "regression-02.json"),
-        volume_case_files=(tmp_path / "volume-01.json",),
-        deep_volume_case_files=(tmp_path / "deep-volume-01.json", tmp_path / "deep-volume-02.json"),
-        release_case_files=(tmp_path / "release.json",),
-        discovery_max_workers=1,
-        regression_max_workers=2,
-        volume_max_workers=3,
-        deep_volume_max_workers=4,
-    )
-
-    assert payload["status"] == "failed"
-    assert payload["execution_status"] == "failed"
-    assert [tier["tier"] for tier in payload["tiers"]] == [
-        "60-case-regression",
-        "volume-discovery",
-        "240-case-discovery",
-        "release-proof",
-    ]
-    assert payload["tiers"][0]["max_workers"] == 2
-    assert payload["tiers"][1]["max_workers"] == 3
-    assert payload["tiers"][2]["max_workers"] == 4
-    assert payload["tiers"][3]["max_workers"] == 1
-    assert [_arg(command, "--campaign-phase") for command in calls] == [
-        "60-case-regression",
-        "60-case-regression",
-        "volume-discovery",
-        "240-case-discovery",
-        "240-case-discovery",
-    ]
-    assert payload["tiers"][-1]["stop_reason"].startswith("tier-release-corpus-invalid:")
 
 
 def test_campaign_isolates_concurrent_shard_temp_cleanup_scope(
@@ -1569,26 +1388,3 @@ def test_progress_snapshot_preserves_tier_completed_preflight_counts(tmp_path: P
     assert tier["selected_shard_count"] == 3
     assert tier["completed_shard_count"] == 0
     assert tier["cluster_counts"] == {"campaign.preflight.coverage": 1}
-
-
-def _write_case_file(path: Path, *, name: str, stressors: tuple[str, ...]) -> None:
-    path.write_text(
-        json.dumps(
-            {
-                "version": "odylith.greenfield.matrix.case-file.v1",
-                "cases": [
-                    {
-                        "name": name,
-                        "prompt": (
-                            f"Create a greenfield proposal for {name} with modal registry proof "
-                            f"and {name} leakage phrase."
-                        ),
-                        "required_terms": ("modal", "registry"),
-                        "leakage_terms": (f"{name} leakage phrase",),
-                        "stressors": stressors,
-                    }
-                ],
-            }
-        ),
-        encoding="utf-8",
-    )

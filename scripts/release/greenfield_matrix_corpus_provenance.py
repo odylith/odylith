@@ -54,6 +54,7 @@ class GreenfieldReleaseAudit:
     reviewed_on: str
     review_status: str
     independent: bool
+    review_evidence_path: str
     review_evidence_sha256: str
 
 
@@ -64,6 +65,8 @@ class ReleaseCorpusPolicy:
     minimum_cases_per_family: int = 6
     maximum_family_share: float = 0.20
     maximum_cases_per_source_artifact: int = 3
+    maximum_cases_per_source_id: int = 1
+    maximum_cases_per_source_uri: int = 1
     minimum_cases_per_stressor: int = 8
     audit_fraction: float = 0.20
     minimum_audited_cases: int = 24
@@ -165,6 +168,11 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, Mapping):
             raise RuntimeError(f"greenfield release audit entry {index} must be a JSON object")
+        independent = row.get("independent")
+        if type(independent) is not bool:
+            raise RuntimeError(
+                f"greenfield release audit entry {index} must define independent as a JSON boolean"
+            )
         audit = GreenfieldReleaseAudit(
             case_id=_text(row.get("case_id")),
             prompt_sha256=_hash_text(row.get("prompt_sha256")),
@@ -173,7 +181,8 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
             reviewer_id=_text(row.get("reviewer_id")),
             reviewed_on=_text(row.get("reviewed_on")),
             review_status=_text(row.get("review_status")).casefold(),
-            independent=bool(row.get("independent")),
+            independent=independent,
+            review_evidence_path=_text(row.get("review_evidence_path")),
             review_evidence_sha256=_hash_text(row.get("review_evidence_sha256")),
         )
         if not audit.case_id:
@@ -204,9 +213,14 @@ def evaluate_release_corpus(
     prompt_hashes: dict[str, list[str]] = {}
     families: Counter[str] = Counter()
     artifacts: Counter[str] = Counter()
+    source_ids: Counter[str] = Counter()
+    source_uris: Counter[str] = Counter()
+    source_id_uris: dict[str, set[str]] = {}
+    source_uri_ids: dict[str, set[str]] = {}
     stressors: Counter[str] = Counter()
     provenance_failures: list[str] = []
     artifact_hash_cache: dict[Path, str] = {}
+    review_evidence_hash_cache: dict[Path, str] = {}
     normalized_prompts: list[tuple[str, str]] = []
 
     for index, case in enumerate(records, start=1):
@@ -232,6 +246,15 @@ def evaluate_release_corpus(
             families[provenance.source_family] += 1
         if provenance.source_artifact_sha256:
             artifacts[provenance.source_artifact_sha256] += 1
+        if provenance.source_id:
+            source_ids[provenance.source_id] += 1
+            source_id_uris.setdefault(provenance.source_id, set()).add(
+                _source_uri_identity(provenance.source_uri)
+            )
+        if provenance.source_uri:
+            uri_identity = _source_uri_identity(provenance.source_uri)
+            source_uris[uri_identity] += 1
+            source_uri_ids.setdefault(uri_identity, set()).add(provenance.source_id)
         for stressor in _case_stressors(case):
             stressors[stressor] += 1
 
@@ -263,6 +286,22 @@ def evaluate_release_corpus(
                 f"source artifact `{artifact}` produced {count} cases; release proof permits at most "
                 f"{policy.maximum_cases_per_source_artifact}"
             )
+    for source_id, count in sorted(source_ids.items()):
+        if count > policy.maximum_cases_per_source_id:
+            issues.append(
+                f"source_id `{source_id}` has {count} cases; release proof permits at most "
+                f"{policy.maximum_cases_per_source_id} per source ID"
+            )
+        if len(source_id_uris[source_id]) > 1:
+            issues.append(f"source_id `{source_id}` is bound to multiple source URIs")
+    for source_uri, count in sorted(source_uris.items()):
+        if count > policy.maximum_cases_per_source_uri:
+            issues.append(
+                f"source_uri `{source_uri}` has {count} cases; release proof permits at most "
+                f"{policy.maximum_cases_per_source_uri} per source URI"
+            )
+        if len(source_uri_ids[source_uri]) > 1:
+            issues.append(f"source_uri `{source_uri}` is bound to multiple source IDs")
     for stressor in DEFAULT_HIGH_VARIANCE_STRESSORS:
         if stressors[stressor] < policy.minimum_cases_per_stressor:
             issues.append(
@@ -274,6 +313,8 @@ def evaluate_release_corpus(
         cases_by_id=cases_by_id,
         audits=audits,
         policy=policy,
+        root=root,
+        review_evidence_hash_cache=review_evidence_hash_cache,
     )
     issues.extend(audit_issues)
     summary = {
@@ -281,6 +322,8 @@ def evaluate_release_corpus(
         "source_family_count": len(families),
         "source_family_counts": dict(sorted(families.items())),
         "source_artifact_count": len(artifacts),
+        "source_id_count": len(source_ids),
+        "source_uri_count": len(source_uris),
         "stressor_counts": {key: int(stressors[key]) for key in DEFAULT_HIGH_VARIANCE_STRESSORS},
         "audit_count": len(audited_case_ids),
         "minimum_audit_count": policy.minimum_audit_count(len(records)),
@@ -375,8 +418,11 @@ def _case_provenance_issues(
         except OSError as exc:
             issues.append(f"{label}: unable to read source_artifact_path: {exc}")
         else:
-            if provenance.source_excerpt not in artifact_text:
-                issues.append(f"{label}: source_excerpt is not present in source_artifact_path")
+            source_span_text = _resolved_source_span(artifact_text, provenance.source_span)
+            if source_span_text is None:
+                issues.append(f"{label}: source_span does not resolve against source_artifact_path")
+            elif provenance.source_excerpt not in source_span_text:
+                issues.append(f"{label}: source_excerpt is not present in declared source_span")
     return issues
 
 
@@ -385,6 +431,8 @@ def _audit_issues(
     cases_by_id: Mapping[str, Any],
     audits: Sequence[GreenfieldReleaseAudit],
     policy: ReleaseCorpusPolicy,
+    root: Path,
+    review_evidence_hash_cache: dict[Path, str],
 ) -> tuple[list[str], set[str]]:
     issues: list[str] = []
     approved: set[str] = set()
@@ -412,6 +460,9 @@ def _audit_issues(
         if audit.review_status != "approved":
             issues.append(f"release audit `{audit.case_id}` is not approved")
             continue
+        if type(audit.independent) is not bool:
+            issues.append(f"release audit `{audit.case_id}` must define independent as a boolean")
+            continue
         if not audit.independent:
             issues.append(f"release audit `{audit.case_id}` is not independent")
             continue
@@ -423,6 +474,24 @@ def _audit_issues(
             continue
         if not _is_sha256(audit.review_evidence_sha256):
             issues.append(f"release audit `{audit.case_id}` must include review_evidence_sha256")
+            continue
+        review_evidence_path = _repo_artifact_path(root, audit.review_evidence_path)
+        if review_evidence_path is None:
+            issues.append(f"release audit `{audit.case_id}` must use a repository-relative review_evidence_path")
+            continue
+        if not review_evidence_path.is_file():
+            issues.append(
+                f"release audit `{audit.case_id}` review_evidence_path does not exist: "
+                f"{audit.review_evidence_path}"
+            )
+            continue
+        evidence_hash = review_evidence_hash_cache.setdefault(
+            review_evidence_path, _sha256_file(review_evidence_path)
+        )
+        if evidence_hash != audit.review_evidence_sha256:
+            issues.append(
+                f"release audit `{audit.case_id}` review_evidence_sha256 does not match review_evidence_path"
+            )
             continue
         approved.add(audit.case_id)
     required_audits = policy.minimum_audit_count(len(cases_by_id))
@@ -477,6 +546,30 @@ def _repo_artifact_path(root: Path, value: str) -> Path | None:
     except ValueError:
         return None
     return resolved
+
+
+def _resolved_source_span(artifact_text: str, source_span: str) -> str | None:
+    match = re.fullmatch(
+        r"lines? (?P<start>[1-9]\d*)(?:\s*-\s*(?P<end>[1-9]\d*))?",
+        source_span.casefold(),
+    )
+    if match is None:
+        return None
+    start = int(match.group("start"))
+    end = int(match.group("end") or start)
+    lines = artifact_text.splitlines(keepends=True)
+    if end < start or end > len(lines):
+        return None
+    return "".join(lines[start - 1 : end])
+
+
+def _source_uri_identity(value: str) -> str:
+    parsed = urlparse(value)
+    return parsed._replace(
+        scheme=parsed.scheme.casefold(),
+        netloc=parsed.netloc.casefold(),
+        fragment="",
+    ).geturl()
 
 
 def _case_id(case: Any) -> str:

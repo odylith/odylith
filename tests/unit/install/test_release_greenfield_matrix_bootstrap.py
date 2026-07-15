@@ -1,9 +1,57 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+import subprocess
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _run_greenfield_preconfirm_matrix(
+    tmp_path: Path,
+    *,
+    overrides: dict[str, str],
+) -> subprocess.CompletedProcess[str]:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    fake_python = tmp_path / "fake-python"
+    fake_python.write_text(
+        "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+
+    environment = os.environ.copy()
+    for name in (
+        "BROWSER_PROOF",
+        "GREENFIELD_MATRIX_CASE_FILE",
+        "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE",
+        "GREENFIELD_MATRIX_RELEASE_INTENT",
+        "NATURAL_RESCUE_PROOF",
+        "RESCUE_SMOKE",
+    ):
+        environment.pop(name, None)
+    environment.update(
+        {
+            "FAKE_PYTHON_LOG": str(tmp_path / "fake-python.log"),
+            "ODYLITH_PYTHON": str(fake_python),
+            "ODYLITH_REPO_ROOT_OVERRIDE": str(REPO_ROOT),
+            "TEMP_PARENT": str(tmp_path),
+            **overrides,
+        }
+    )
+    return subprocess.run(
+        [str(REPO_ROOT / "bin" / "greenfield-preconfirm-matrix"), "0.1.15", str(dist_dir)],
+        cwd=REPO_ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def test_local_release_assets_target_builds_maintainer_installable_assets() -> None:
@@ -53,8 +101,14 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert 'browser_proof_enabled=0' in text
     assert 'release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"' in text
     assert 'release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"' in text
+    assert 'release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_CASE_FILE' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1' in text
     assert 'GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE' in text
-    assert 'if [[ "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" && -n "$release_case_file" && -n "$release_audit_file" ]]' in text
+    assert 'if [[ "$release_intent" == "1" || (' in text
     assert '--proof-tier release' in text
     assert '--proof-tier discovery' in text
     assert '--release-audit-file "$release_audit_file"' in text
@@ -82,6 +136,114 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert "GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES" in help_text
     assert "NATURAL_RESCUE_PROOF=0" in help_text
     assert "automatically downgrades the run to discovery proof" in help_text
+
+
+@pytest.mark.parametrize(
+    ("overrides", "expected_error"),
+    (
+        (
+            {},
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_CASE_FILE",
+        ),
+        (
+            {"GREENFIELD_MATRIX_CASE_FILE": "/missing/cases.json"},
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 case file is missing: /missing/cases.json",
+        ),
+        (
+            {"GREENFIELD_MATRIX_CASE_FILE": "{case_file}"},
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE",
+        ),
+        (
+            {
+                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
+                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "/missing/audit.json",
+            },
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 audit file is missing: /missing/audit.json",
+        ),
+        (
+            {
+                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
+                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
+                "RESCUE_SMOKE": "0",
+            },
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1",
+        ),
+        (
+            {
+                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
+                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
+                "NATURAL_RESCUE_PROOF": "0",
+            },
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1",
+        ),
+        (
+            {
+                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
+                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
+                "BROWSER_PROOF": "0",
+            },
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1",
+        ),
+    ),
+)
+def test_greenfield_preconfirm_matrix_release_intent_rejects_missing_prerequisites(
+    tmp_path: Path,
+    overrides: dict[str, str],
+    expected_error: str,
+) -> None:
+    case_file = tmp_path / "cases.json"
+    audit_file = tmp_path / "audit.json"
+    case_file.write_text("{}\n", encoding="utf-8")
+    audit_file.write_text("{}\n", encoding="utf-8")
+    resolved_overrides = {
+        name: value.format(case_file=case_file, audit_file=audit_file)
+        for name, value in overrides.items()
+    }
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={"GREENFIELD_MATRIX_RELEASE_INTENT": "1", **resolved_overrides},
+    )
+
+    assert result.returncode != 0
+    assert expected_error in result.stderr
+
+
+def test_greenfield_preconfirm_matrix_without_release_intent_runs_discovery_proof(tmp_path: Path) -> None:
+    case_file = tmp_path / "cases.json"
+    case_file.write_text("{}\n", encoding="utf-8")
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={
+            "BROWSER_PROOF": "0",
+            "GREENFIELD_MATRIX_CASE_FILE": str(case_file),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    assert "--proof-tier discovery" in invocations
+
+
+def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof(tmp_path: Path) -> None:
+    case_file = tmp_path / "cases.json"
+    audit_file = tmp_path / "audit.json"
+    case_file.write_text("{}\n", encoding="utf-8")
+    audit_file.write_text("{}\n", encoding="utf-8")
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={
+            "GREENFIELD_MATRIX_RELEASE_INTENT": "1",
+            "GREENFIELD_MATRIX_CASE_FILE": str(case_file),
+            "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": str(audit_file),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr
+    invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
+    assert "--proof-tier release" in invocations
 
 
 def test_greenfield_matrix_campaign_target_runs_tiered_harness() -> None:

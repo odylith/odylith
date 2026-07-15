@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-07-15T23:20:35Z",
+  "generated_utc": "2026-07-15T23:52:03Z",
   "release_summary": {
     "catalog": [
       {
@@ -318,19 +318,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 295
+            "commit_count": 6,
+            "local_change_count": 2,
+            "file_touch_count": 296
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 669
+            "commit_count": 7,
+            "local_change_count": 2,
+            "file_touch_count": 670
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-15T15:42:48-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 19,
           "eta_days": 3,
           "eta_confidence": "high"
@@ -346,7 +346,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           },
           "48h": {
@@ -766,19 +766,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 450
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 451
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 96,
           "eta_days": null,
           "eta_confidence": "low"
@@ -794,11 +794,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 47,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 50,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -937,19 +937,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 448
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 449
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 109,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -965,11 +965,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 67,
-            "band": "Medium"
+            "index": 72,
+            "band": "High"
           },
           "48h": {
-            "index": 70,
+            "index": 75,
             "band": "High"
           }
         },
@@ -988,12 +988,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 628,
+            "explicit_count": 630,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 428,
+            "implementation_count": 429,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -1109,19 +1109,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 447
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 448
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 98,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1139,11 +1139,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 67,
-            "band": "Medium"
+            "index": 72,
+            "band": "High"
           },
           "48h": {
-            "index": 70,
+            "index": 75,
             "band": "High"
           }
         },
@@ -1162,12 +1162,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 631,
+            "explicit_count": 633,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 430,
+            "implementation_count": 431,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -1283,19 +1283,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 450
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 451
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 97,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1313,11 +1313,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 83,
+            "index": 88,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 91,
             "band": "High"
           }
         },
@@ -1484,7 +1484,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -2441,12 +2441,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 617,
+            "explicit_count": 619,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 418,
+            "implementation_count": 419,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -2793,12 +2793,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 630,
+            "explicit_count": 632,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 431,
+            "implementation_count": 432,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -2963,12 +2963,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 594,
+            "explicit_count": 596,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -3303,12 +3303,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 599,
+            "explicit_count": 601,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 408,
+            "implementation_count": 409,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -3477,12 +3477,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 614,
+            "explicit_count": 616,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 417,
+            "implementation_count": 418,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -4022,7 +4022,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -4800,12 +4800,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -4966,12 +4966,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -5125,12 +5125,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -7180,12 +7180,12 @@
             "cross_surface_conflict": false,
             "decision_count": 27,
             "decision_evidence": true,
-            "explicit_count": 610,
+            "explicit_count": 612,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 415,
+            "implementation_count": 416,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -9662,12 +9662,12 @@
             "cross_surface_conflict": false,
             "decision_count": 12,
             "decision_evidence": true,
-            "explicit_count": 532,
+            "explicit_count": 534,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 377,
+            "implementation_count": 378,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -9822,12 +9822,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -10294,12 +10294,12 @@
             "cross_surface_conflict": false,
             "decision_count": 27,
             "decision_evidence": true,
-            "explicit_count": 615,
+            "explicit_count": 617,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 420,
+            "implementation_count": 421,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -10674,12 +10674,12 @@
             "cross_surface_conflict": false,
             "decision_count": 27,
             "decision_evidence": true,
-            "explicit_count": 617,
+            "explicit_count": 619,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 420,
+            "implementation_count": 421,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -11164,12 +11164,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 613,
+            "explicit_count": 615,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 416,
+            "implementation_count": 417,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -11327,12 +11327,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 594,
+            "explicit_count": 596,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 405,
+            "implementation_count": 406,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -11653,12 +11653,12 @@
             "cross_surface_conflict": false,
             "decision_count": 18,
             "decision_evidence": true,
-            "explicit_count": 567,
+            "explicit_count": 569,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 386,
+            "implementation_count": 387,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -12635,12 +12635,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -12791,12 +12791,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -13727,12 +13727,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -13887,12 +13887,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -14687,7 +14687,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -14902,12 +14902,12 @@
             "cross_surface_conflict": false,
             "decision_count": 25,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 396,
+            "implementation_count": 397,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -15064,12 +15064,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 597,
+            "explicit_count": 599,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 400,
+            "implementation_count": 401,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -19756,7 +19756,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24203,7 +24203,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24428,7 +24428,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24653,7 +24653,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24878,7 +24878,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25290,7 +25290,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29816,19 +29816,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 5,
-            "local_change_count": 1,
-            "file_touch_count": 295
+            "commit_count": 6,
+            "local_change_count": 2,
+            "file_touch_count": 296
           },
           "48h": {
-            "commit_count": 6,
-            "local_change_count": 1,
-            "file_touch_count": 669
+            "commit_count": 7,
+            "local_change_count": 2,
+            "file_touch_count": 670
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-15T15:42:48-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 19,
           "eta_days": 3,
           "eta_confidence": "high"
@@ -29844,7 +29844,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 73,
+            "index": 75,
             "band": "High"
           },
           "48h": {
@@ -30236,19 +30236,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 448
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 449
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 109,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30264,11 +30264,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 67,
-            "band": "Medium"
+            "index": 72,
+            "band": "High"
           },
           "48h": {
-            "index": 70,
+            "index": 75,
             "band": "High"
           }
         },
@@ -30287,12 +30287,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 628,
+            "explicit_count": 630,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 428,
+            "implementation_count": 429,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -30436,19 +30436,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 450
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 451
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 96,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30464,11 +30464,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 47,
+            "index": 52,
             "band": "Medium"
           },
           "48h": {
-            "index": 50,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -30607,19 +30607,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 447
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 448
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 98,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30637,11 +30637,11 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 67,
-            "band": "Medium"
+            "index": 72,
+            "band": "High"
           },
           "48h": {
-            "index": 70,
+            "index": 75,
             "band": "High"
           }
         },
@@ -30660,12 +30660,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 631,
+            "explicit_count": 633,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 430,
+            "implementation_count": 431,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -30781,19 +30781,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 3,
-            "local_change_count": 1,
-            "file_touch_count": 194
+            "commit_count": 4,
+            "local_change_count": 2,
+            "file_touch_count": 195
           },
           "48h": {
-            "commit_count": 4,
-            "local_change_count": 1,
-            "file_touch_count": 450
+            "commit_count": 5,
+            "local_change_count": 2,
+            "file_touch_count": 451
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-15T14:51:11-07:00",
+          "last_activity_iso": "2026-07-15T16:22:26-07:00",
           "age_days": 97,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30811,11 +30811,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 83,
+            "index": 88,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 91,
             "band": "High"
           }
         },
@@ -30982,7 +30982,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -32798,12 +32798,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -33643,7 +33643,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -35739,7 +35739,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -39451,12 +39451,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 617,
+            "explicit_count": 619,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 418,
+            "implementation_count": 419,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -39803,12 +39803,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 630,
+            "explicit_count": 632,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 431,
+            "implementation_count": 432,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -39973,12 +39973,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 594,
+            "explicit_count": 596,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -40313,12 +40313,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 599,
+            "explicit_count": 601,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 408,
+            "implementation_count": 409,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -40487,12 +40487,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 614,
+            "explicit_count": 616,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 417,
+            "implementation_count": 418,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -41032,7 +41032,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -41810,12 +41810,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -41976,12 +41976,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -42135,12 +42135,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -43619,12 +43619,12 @@
             "cross_surface_conflict": false,
             "decision_count": 27,
             "decision_evidence": true,
-            "explicit_count": 610,
+            "explicit_count": 612,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 415,
+            "implementation_count": 416,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -45937,12 +45937,12 @@
             "cross_surface_conflict": false,
             "decision_count": 12,
             "decision_evidence": true,
-            "explicit_count": 532,
+            "explicit_count": 534,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 377,
+            "implementation_count": 378,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -46409,12 +46409,12 @@
             "cross_surface_conflict": false,
             "decision_count": 27,
             "decision_evidence": true,
-            "explicit_count": 615,
+            "explicit_count": 617,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 420,
+            "implementation_count": 421,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -46577,12 +46577,12 @@
             "cross_surface_conflict": false,
             "decision_count": 27,
             "decision_evidence": true,
-            "explicit_count": 617,
+            "explicit_count": 619,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 420,
+            "implementation_count": 421,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -47067,12 +47067,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 613,
+            "explicit_count": 615,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 416,
+            "implementation_count": 417,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -47230,12 +47230,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 594,
+            "explicit_count": 596,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 405,
+            "implementation_count": 406,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -47556,12 +47556,12 @@
             "cross_surface_conflict": false,
             "decision_count": 18,
             "decision_evidence": true,
-            "explicit_count": 567,
+            "explicit_count": 569,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 386,
+            "implementation_count": 387,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -48538,12 +48538,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -48694,12 +48694,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -49630,12 +49630,12 @@
             "cross_surface_conflict": false,
             "decision_count": 23,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 399,
+            "implementation_count": 400,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -49790,12 +49790,12 @@
             "cross_surface_conflict": false,
             "decision_count": 24,
             "decision_evidence": true,
-            "explicit_count": 593,
+            "explicit_count": 595,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 404,
+            "implementation_count": 405,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -50117,12 +50117,12 @@
             "cross_surface_conflict": false,
             "decision_count": 25,
             "decision_evidence": true,
-            "explicit_count": 586,
+            "explicit_count": 588,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 396,
+            "implementation_count": 397,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -50279,12 +50279,12 @@
             "cross_surface_conflict": false,
             "decision_count": 30,
             "decision_evidence": true,
-            "explicit_count": 597,
+            "explicit_count": 599,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
             "has_any_signal": true,
-            "implementation_count": 400,
+            "implementation_count": 401,
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
@@ -54075,7 +54075,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54300,7 +54300,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54525,7 +54525,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54750,7 +54750,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54975,7 +54975,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+            "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -59315,19 +59315,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 295
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 296
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 669
+          "commit_count": 7,
+          "local_change_count": 2,
+          "file_touch_count": 670
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-15T15:42:48-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 19,
         "eta_days": 3,
         "eta_confidence": "high"
@@ -59343,7 +59343,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         },
         "48h": {
@@ -59735,19 +59735,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 448
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 449
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 109,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -59763,11 +59763,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
-          "band": "Medium"
+          "index": 72,
+          "band": "High"
         },
         "48h": {
-          "index": 70,
+          "index": 75,
           "band": "High"
         }
       },
@@ -59786,12 +59786,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 628,
+          "explicit_count": 630,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 428,
+          "implementation_count": 429,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -59935,19 +59935,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 450
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 451
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 96,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59963,11 +59963,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 47,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 50,
+          "index": 55,
           "band": "Medium"
         }
       },
@@ -60106,19 +60106,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 447
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 448
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 98,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60136,11 +60136,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
-          "band": "Medium"
+          "index": 72,
+          "band": "High"
         },
         "48h": {
-          "index": 70,
+          "index": 75,
           "band": "High"
         }
       },
@@ -60159,12 +60159,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 631,
+          "explicit_count": 633,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 430,
+          "implementation_count": 431,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -60280,19 +60280,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 450
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 451
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 97,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60310,11 +60310,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 83,
+          "index": 88,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 91,
           "band": "High"
         }
       },
@@ -60481,7 +60481,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -62297,12 +62297,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -63142,7 +63142,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -65238,7 +65238,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -68950,12 +68950,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 617,
+          "explicit_count": 619,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 418,
+          "implementation_count": 419,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -69302,12 +69302,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 630,
+          "explicit_count": 632,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 431,
+          "implementation_count": 432,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -69472,12 +69472,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 596,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -69812,12 +69812,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 599,
+          "explicit_count": 601,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 408,
+          "implementation_count": 409,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -69986,12 +69986,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 614,
+          "explicit_count": 616,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 417,
+          "implementation_count": 418,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -70531,7 +70531,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -71309,12 +71309,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -71475,12 +71475,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -71634,12 +71634,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -73118,12 +73118,12 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 610,
+          "explicit_count": 612,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 415,
+          "implementation_count": 416,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -75436,12 +75436,12 @@
           "cross_surface_conflict": false,
           "decision_count": 12,
           "decision_evidence": true,
-          "explicit_count": 532,
+          "explicit_count": 534,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 377,
+          "implementation_count": 378,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -75908,12 +75908,12 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 615,
+          "explicit_count": 617,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 420,
+          "implementation_count": 421,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -76076,12 +76076,12 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 617,
+          "explicit_count": 619,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 420,
+          "implementation_count": 421,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -76566,12 +76566,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 613,
+          "explicit_count": 615,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 416,
+          "implementation_count": 417,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -76729,12 +76729,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 596,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 405,
+          "implementation_count": 406,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -77055,12 +77055,12 @@
           "cross_surface_conflict": false,
           "decision_count": 18,
           "decision_evidence": true,
-          "explicit_count": 567,
+          "explicit_count": 569,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 386,
+          "implementation_count": 387,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -78037,12 +78037,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -78193,12 +78193,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -79129,12 +79129,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -79289,12 +79289,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -79616,12 +79616,12 @@
           "cross_surface_conflict": false,
           "decision_count": 25,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 396,
+          "implementation_count": 397,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -79778,12 +79778,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 597,
+          "explicit_count": 599,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 400,
+          "implementation_count": 401,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -83574,7 +83574,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83799,7 +83799,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84024,7 +84024,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84249,7 +84249,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84474,7 +84474,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -88845,12 +88845,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 617,
+          "explicit_count": 619,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 418,
+          "implementation_count": 419,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -89379,12 +89379,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 630,
+          "explicit_count": 632,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 431,
+          "implementation_count": 432,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -89772,12 +89772,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 596,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -90112,12 +90112,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 599,
+          "explicit_count": 601,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 408,
+          "implementation_count": 409,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -90286,12 +90286,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 614,
+          "explicit_count": 616,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 417,
+          "implementation_count": 418,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -90775,19 +90775,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 450
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 451
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 96,
         "eta_days": null,
         "eta_confidence": "low"
@@ -90803,11 +90803,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 47,
+          "index": 52,
           "band": "Medium"
         },
         "48h": {
-          "index": 50,
+          "index": 55,
           "band": "Medium"
         }
       },
@@ -91030,7 +91030,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -91808,12 +91808,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -91974,12 +91974,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -92133,12 +92133,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -93501,19 +93501,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 5,
-          "local_change_count": 1,
-          "file_touch_count": 295
+          "commit_count": 6,
+          "local_change_count": 2,
+          "file_touch_count": 296
         },
         "48h": {
-          "commit_count": 6,
-          "local_change_count": 1,
-          "file_touch_count": 669
+          "commit_count": 7,
+          "local_change_count": 2,
+          "file_touch_count": 670
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-15T15:42:48-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 19,
         "eta_days": 3,
         "eta_confidence": "high"
@@ -93529,7 +93529,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 73,
+          "index": 75,
           "band": "High"
         },
         "48h": {
@@ -94432,19 +94432,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 448
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 449
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 109,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -94460,11 +94460,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
-          "band": "Medium"
+          "index": 72,
+          "band": "High"
         },
         "48h": {
-          "index": 70,
+          "index": 75,
           "band": "High"
         }
       },
@@ -94483,12 +94483,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 628,
+          "explicit_count": 630,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 428,
+          "implementation_count": 429,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -94818,12 +94818,12 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 610,
+          "explicit_count": 612,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 415,
+          "implementation_count": 416,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -97464,12 +97464,12 @@
           "cross_surface_conflict": false,
           "decision_count": 12,
           "decision_evidence": true,
-          "explicit_count": 532,
+          "explicit_count": 534,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 377,
+          "implementation_count": 378,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -97624,12 +97624,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -98096,12 +98096,12 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 615,
+          "explicit_count": 617,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 420,
+          "implementation_count": 421,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -98476,12 +98476,12 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 617,
+          "explicit_count": 619,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 420,
+          "implementation_count": 421,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -98966,12 +98966,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 613,
+          "explicit_count": 615,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 416,
+          "implementation_count": 417,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -99129,12 +99129,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 596,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 405,
+          "implementation_count": 406,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -99455,12 +99455,12 @@
           "cross_surface_conflict": false,
           "decision_count": 18,
           "decision_evidence": true,
-          "explicit_count": 567,
+          "explicit_count": 569,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 386,
+          "implementation_count": 387,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -100437,12 +100437,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -100593,12 +100593,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -101529,12 +101529,12 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 399,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -101689,12 +101689,12 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 593,
+          "explicit_count": 595,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 404,
+          "implementation_count": 405,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -102489,7 +102489,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -102665,19 +102665,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 447
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 448
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 98,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -102695,11 +102695,11 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 67,
-          "band": "Medium"
+          "index": 72,
+          "band": "High"
         },
         "48h": {
-          "index": 70,
+          "index": 75,
           "band": "High"
         }
       },
@@ -102718,12 +102718,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 631,
+          "explicit_count": 633,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 430,
+          "implementation_count": 431,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -102878,12 +102878,12 @@
           "cross_surface_conflict": false,
           "decision_count": 25,
           "decision_evidence": true,
-          "explicit_count": 586,
+          "explicit_count": 588,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 396,
+          "implementation_count": 397,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -103040,12 +103040,12 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 597,
+          "explicit_count": 599,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 400,
+          "implementation_count": 401,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
@@ -103473,19 +103473,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 3,
-          "local_change_count": 1,
-          "file_touch_count": 194
+          "commit_count": 4,
+          "local_change_count": 2,
+          "file_touch_count": 195
         },
         "48h": {
-          "commit_count": 4,
-          "local_change_count": 1,
-          "file_touch_count": 450
+          "commit_count": 5,
+          "local_change_count": 2,
+          "file_touch_count": 451
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-15T14:51:11-07:00",
+        "last_activity_iso": "2026-07-15T16:22:26-07:00",
         "age_days": 97,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103503,11 +103503,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 83,
+          "index": 88,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 91,
           "band": "High"
         }
       },
@@ -107906,7 +107906,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112353,7 +112353,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112578,7 +112578,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112803,7 +112803,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113028,7 +113028,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113440,7 +113440,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -117953,7 +117953,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "3bb6778946e603d0028ebe1684a04e9a127a4eab",
+          "local_head": "663888f7350fcec46a975806db8e709fcd6cb3cc",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",

@@ -1,10 +1,14 @@
 - Bug ID: CB-252
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-07-15
 
 - Severity: P1
+
+- Fixed: Pending
+
+- Fixed In: v0.1.15
 
 - Reproducibility: Always
 
@@ -40,11 +44,11 @@
 
 - Root Cause: Policy validation treats metadata as self-asserted rather than as linked, typed, and hash-verified artifacts; shell launcher infers discovery when release inputs are incomplete.
 
-- Solution: Require strict JSON booleans, review-evidence paths with byte hashes, source spans resolved against captured artifacts, URI and source-ID diversity checks, and an explicit release-intent flag that rejects partial input. Align campaign-wide and shard-level corpus scope.
+- Solution: Require strict JSON booleans, repository-contained review-evidence paths with byte hashes, source spans resolved against captured artifacts, URI and source-ID diversity checks, and an explicit release-intent flag that rejects partial input. Release campaigns now validate each case file with only its own audits and then validate the full union with the complete audit set.
 
 - Rollback/Forward Fix: Forward fix only; synthetic discovery and any current release corpus remain non-release evidence.
 
-- Verification: Add rejection tests for truthy strings, missing review artifacts, off-span excerpts, repeated URIs, incomplete release intent, and multi-file corpus scope; then build an independently auditable corpus.
+- Verification: 2026-07-15: 181 focused release-proof tests passed. They reject truthy audit booleans, missing, mismatched, and repo-escaping review artifacts, unresolved and off-span excerpts, repeated source IDs or URIs, incomplete declared release intent, and release files that fail independently despite a passing union. Fresh installed replay also confirmed a materially incomplete CAR-T request receives one focused no-write first-path question rather than a failed create. An independently auditable 200+ source corpus remains required before any release-readiness claim.
 
 - Prevention: Never call a corpus release-provenanced based on self-reported metadata or discovery output.
 
