@@ -2325,3 +2325,11 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   `migration-observer:0.1.15:install-managed-assets:571737d67a1f`. Existing
   installs retain all governed source truth; normal managed refresh updates the
   renderer and the generated Casebook/browser assets only.
+- The synthetic-corpus release-proof evidence is covered by
+  `migration-observer:0.1.15:browser-surfaces:ef5c8b19750f`. Existing installs
+  retain source truth; normal refresh updates only generated review surfaces.
+- The final corpus-proof surface refresh is covered by
+  `migration-observer:0.1.15:browser-surfaces:99d36c7b24b2` and
+  `migration-observer:0.1.15:install-managed-assets:aa70cc339bc9`. Existing
+  installs retain source truth; normal refresh updates generated review and
+  managed bundle surfaces only.

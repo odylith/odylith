@@ -38,6 +38,11 @@ from greenfield_matrix_leakage import term_present as _term_present  # noqa: E40
 from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
+from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
+from greenfield_matrix_corpus_provenance import case_provenance_summary  # noqa: E402
+from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
+from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
+from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_matrix_campaign import MatrixCampaignConfig  # noqa: E402
 from greenfield_matrix_campaign import MatrixTelemetryWriter  # noqa: E402
 from greenfield_matrix_campaign import campaign_phase_from_value  # noqa: E402
@@ -116,12 +121,13 @@ def run_matrix(
     install_mode: str = "full",
     telemetry_jsonl: Path | None = None,
     campaign_phase: str = "single-matrix",
-    proof_tier: str = "release",
+    proof_tier: str = "discovery",
     stop_after_failures: int = 0,
     stop_after_cluster_failures: int = 0,
     required_stressors: Sequence[str] = (),
     incremental_output_json: Path | None = None,
     allow_partial_stressor_coverage: bool = False,
+    release_audits: Sequence[GreenfieldReleaseAudit] = (),
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
 
@@ -134,6 +140,20 @@ def run_matrix(
         stop_after_failures=positive_int(stop_after_failures),
         stop_after_cluster_failures=positive_int(stop_after_cluster_failures),
         required_stressors=tuple(required_stressors),
+    )
+    _raise_for_invalid_campaign_policy(
+        config=campaign_config,
+        install_mode=install_mode,
+        include_browser_proof=include_browser_proof,
+        include_rescue_smoke=True,
+        include_natural_rescue_proof=True,
+        allow_skipped_browser_proof=False,
+        allow_partial_stressor_coverage=allow_partial_stressor_coverage,
+        release_corpus_issues=(
+            evaluate_release_corpus(selected_cases, release_audits).issues
+            if campaign_config.proof_tier == "release"
+            else ()
+        ),
     )
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
     release_dir = Path(dist_dir).expanduser().resolve()
@@ -500,6 +520,7 @@ def _raise_for_invalid_campaign_policy(
     include_natural_rescue_proof: bool,
     allow_skipped_browser_proof: bool,
     allow_partial_stressor_coverage: bool = False,
+    release_corpus_issues: Sequence[str] = (),
 ) -> None:
     if config.proof_tier != "release":
         return
@@ -520,6 +541,7 @@ def _raise_for_invalid_campaign_policy(
         violations.append("release proof cannot stop after a failure threshold")
     if config.stop_after_cluster_failures:
         violations.append("release proof cannot stop after a cluster threshold")
+    violations.extend(str(issue) for issue in release_corpus_issues if str(issue).strip())
     if violations:
         raise RuntimeError("invalid greenfield release proof policy: " + "; ".join(violations))
 
@@ -868,7 +890,7 @@ def _failed_case_evidence_manifest(
 
 
 def _case_evidence(case: GreenfieldMatrixCase) -> Mapping[str, Any]:
-    return {
+    evidence = {
         "id": str(getattr(case, "case_id", "") or case.slug),
         "name": case.name,
         "slug": case.slug,
@@ -876,10 +898,14 @@ def _case_evidence(case: GreenfieldMatrixCase) -> Mapping[str, Any]:
         "tags": list(getattr(case, "tags", ()) or ()),
         "stressors": list(getattr(case, "stressors", ()) or ()),
         "prompt_sha256": _sha256_text(case.prompt),
-        "edit_evidence_sha256": _sha256_text(getattr(case, "confirmed_intent_markdown", "") or ""),
         "required_terms": list(case.required_terms),
         "leakage_terms": list(getattr(case, "leakage_terms", ()) or ()),
+        "provenance": case_provenance_summary(getattr(case, "provenance", None)),
     }
+    confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+    if confirmed_intent:
+        evidence["confirmed_intent_sha256"] = _sha256_text(confirmed_intent)
+    return evidence
 
 
 def _artifact_text_inventory(package: Any) -> list[Mapping[str, str]]:
@@ -1635,8 +1661,13 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--proof-tier",
         choices=("discovery", "release"),
-        default="release",
+        default="discovery",
         help="Separate high-volume discovery proof from release-grade proof in the persisted matrix payload.",
+    )
+    parser.add_argument(
+        "--release-audit-file",
+        default="",
+        help="Independent audit JSON required with --proof-tier release; ignored for discovery.",
     )
     parser.add_argument(
         "--stop-after-failures",
@@ -1687,6 +1718,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
     selected_cases = _load_cli_case_files(args.case_file or ())
     planned_cases = selected_cases or default_cases()
+    release_audits = (
+        load_release_audit_file(Path(str(args.release_audit_file)))
+        if str(args.release_audit_file or "").strip()
+        else ()
+    )
     required_stressors = required_stressors_from_values(
         args.required_stressor or (),
         use_default=bool(args.require_high_variance_stressors),
@@ -1701,6 +1737,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         stop_after_cluster_failures=positive_int(args.stop_after_cluster_failures),
         required_stressors=required_stressors,
     )
+    corpus_provenance = (
+        evaluate_release_corpus(planned_cases, release_audits)
+        if campaign_config.proof_tier == "release"
+        else discovery_corpus_summary(planned_cases)
+    )
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=str(args.install_mode),
@@ -1709,6 +1750,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
         allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+        release_corpus_issues=(
+            corpus_provenance.issues if campaign_config.proof_tier == "release" else ()
+        ),
     )
     incremental_output_json = (
         Path(str(args.output_json)).expanduser().resolve()
@@ -1730,6 +1774,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         required_stressors=campaign_config.required_stressors,
         incremental_output_json=incremental_output_json,
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+        release_audits=release_audits,
     )
     rescue = (
         run_rescue_smoke(
@@ -1758,7 +1803,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped"
-        and bool(args.allow_skipped_browser_proof)
         and campaign_config.proof_tier == "discovery"
     )
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
@@ -1773,7 +1817,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
-        "status": "passed" if passed else "failed",
+        "status": (
+            "passed"
+            if passed and campaign_config.proof_tier == "release"
+            else "discovery-passed"
+            if passed
+            else "failed"
+        ),
         "proof_scope": {
             "standard_path": "real_installed_greenfield_preconfirm_quality_matrix",
             "rescue_path": "synthetic_typed_probe_wiring_only",
@@ -1787,6 +1837,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 BROWSER_SURFACE_PROOF_SCOPE if bool(args.include_browser_proof) else "not_requested"
             ),
         },
+        "corpus_provenance": (
+            corpus_provenance.to_dict()
+            if campaign_config.proof_tier == "release"
+            else corpus_provenance
+        ),
         "results": [result.to_dict() for result in results],
         "campaign": campaign_summary(
             cases=planned_cases,
@@ -1812,7 +1867,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_human_summary(results)
         _print_rescue_summary(rescue)
         _print_rescue_summary(natural_rescue)
-    return 0 if payload["status"] == "passed" else 1
+    return 0 if payload["status"] in {"passed", "discovery-passed"} else 1
 
 
 def _load_cli_case_files(case_files: Sequence[str]) -> tuple[GreenfieldMatrixCase, ...]:

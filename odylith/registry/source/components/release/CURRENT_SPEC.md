@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-07-09
+Last updated: 2026-07-15
 
 
 Last updated (UTC): 2026-04-09
@@ -606,6 +606,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-14 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+  - Scope: B-142
+  - Evidence: 2 tracked artifact references retained
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 6 tracked artifact references retained
@@ -615,9 +618,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 6 tracked artifact references retained
-- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
-  - Scope: B-142
-  - Evidence: 2 tracked artifact references retained
 - **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 2 tracked artifact references retained

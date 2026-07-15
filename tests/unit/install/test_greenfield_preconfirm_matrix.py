@@ -2770,7 +2770,7 @@ def test_quality_verdict_rejects_surface_health_findings(monkeypatch) -> None:
     assert "rendered surface odylith/radar/radar.html does not load backlog-payload.v1.js" in verdict.issues
 
 
-def test_main_requires_browser_surface_proof_by_default(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_defaults_to_labeled_discovery_when_browser_proof_is_not_requested(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
@@ -2781,22 +2781,25 @@ def test_main_requires_browser_surface_proof_by_default(monkeypatch, tmp_path: P
     )
     monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
-    with pytest.raises(RuntimeError, match="release proof must include browser proof"):
-        module.main(
-            [
-                "--dist-dir",
-                str(dist_dir),
-                "--version",
-                "0.1.15",
-                "--temp-parent",
-                str(tmp_path),
-                "--json",
-                "--output-json",
-                str(tmp_path / "matrix-proof.json"),
-            ]
-        )
-    assert capsys.readouterr().out == ""
-    assert not (tmp_path / "matrix-proof.json").exists()
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--json",
+            "--output-json",
+            str(tmp_path / "matrix-proof.json"),
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "discovery-passed"
+    assert payload["corpus_provenance"]["claim_class"] == "synthetic-discovery"
+    assert (tmp_path / "matrix-proof.json").is_file()
 
 
 def test_main_allows_skipped_browser_surface_proof_for_volume_discovery(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -2823,7 +2826,7 @@ def test_main_allows_skipped_browser_surface_proof_for_volume_discovery(monkeypa
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["status"] == "passed"
+    assert payload["status"] == "discovery-passed"
     assert payload["browser_surface_proof"]["status"] == "skipped"
 
 
@@ -2861,7 +2864,7 @@ def test_main_runs_browser_surface_proof_when_requested(monkeypatch, tmp_path: P
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["status"] == "passed"
+    assert payload["status"] == "discovery-passed"
     assert matrix_kwargs["include_browser_proof"] is True
     assert payload["proof_scope"]["browser_surface_proof"] == "per_case_headless_generated_surface_state_matrix"
     assert payload["browser_surface_proof"]["status"] == "passed"

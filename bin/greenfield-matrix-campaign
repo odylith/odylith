@@ -100,6 +100,11 @@ if [[ "${GREENFIELD_MATRIX_QUIET_PROGRESS:-0}" == "1" ]]; then
   extra_args+=(--quiet-progress)
 fi
 if [[ "$has_release_case_files" == "1" ]]; then
+  release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
+  if [[ -z "$release_audit_file" ]]; then
+    die "GREENFIELD_MATRIX_RELEASE_CASE_FILES requires GREENFIELD_MATRIX_RELEASE_AUDIT_FILE"
+  fi
+  extra_args+=(--release-audit-file "$release_audit_file" --require-release-readiness)
   require_current_component_forensics
   ensure_playwright_chromium
 fi

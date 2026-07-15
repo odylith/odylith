@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from dataclasses import field
+
+from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 
 
 @dataclass(frozen=True)
@@ -16,6 +19,7 @@ class GreenfieldMatrixCase:
     tags: tuple[str, ...] = ()
     stressors: tuple[str, ...] = ()
     source_file: str = ""
+    provenance: GreenfieldCaseProvenance = field(default_factory=GreenfieldCaseProvenance)
 
     @property
     def slug(self) -> str:
@@ -235,6 +239,7 @@ def historical_domain_leakage_sentinels() -> tuple[str, ...]:
 
 __all__ = [
     "GreenfieldMatrixCase",
+    "GreenfieldCaseProvenance",
     "default_cases",
     "historical_domain_leakage_sentinels",
     "rescue_smoke_case",

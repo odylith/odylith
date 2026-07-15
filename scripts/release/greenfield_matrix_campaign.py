@@ -27,7 +27,7 @@ CAMPAIGN_SUMMARY_VERSION = "odylith.greenfield.matrix.campaign.v1"
 @dataclass(frozen=True)
 class MatrixCampaignConfig:
     phase: str = "single-matrix"
-    proof_tier: str = "release"
+    proof_tier: str = "discovery"
     telemetry_jsonl: Path | None = None
     stop_after_failures: int = 0
     stop_after_cluster_failures: int = 0

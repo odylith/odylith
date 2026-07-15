@@ -47,13 +47,21 @@ else
   browser_proof_enabled=0
   extra_args+=(--allow-skipped-browser-proof)
 fi
-if [[ "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" ]]; then
+release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
+release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
+if [[ -n "$release_audit_file" && -z "$release_case_file" ]]; then
+  die "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE"
+fi
+if [[ "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" && -n "$release_case_file" && -n "$release_audit_file" ]]; then
   extra_args+=(--proof-tier release)
 else
   extra_args+=(--proof-tier discovery)
 fi
-if [[ -n "${GREENFIELD_MATRIX_CASE_FILE:-}" ]]; then
-  extra_args+=(--case-file "$GREENFIELD_MATRIX_CASE_FILE")
+if [[ -n "$release_case_file" ]]; then
+  extra_args+=(--case-file "$release_case_file")
+fi
+if [[ -n "$release_audit_file" ]]; then
+  extra_args+=(--release-audit-file "$release_audit_file")
 fi
 if [[ -n "${GREENFIELD_MATRIX_INSTALL_MODE:-}" ]]; then
   extra_args+=(--install-mode "$GREENFIELD_MATRIX_INSTALL_MODE")

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from greenfield_matrix_leakage import term_present
+from greenfield_matrix_corpus_provenance import case_provenance_from_mapping
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
@@ -49,6 +50,10 @@ def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> Green
     required_terms = _string_tuple(row.get("required_terms"))
     leakage_terms = _string_tuple(row.get("leakage_terms"))
     confirmed_intent = _canonical_block_text(_optional_block_text(row.get("confirmed_intent_markdown")))
+    try:
+        provenance = case_provenance_from_mapping(row.get("provenance"))
+    except ValueError as exc:
+        raise RuntimeError(f"{source} case {index} ({name}) has invalid provenance: {exc}") from exc
     if not required_terms:
         raise RuntimeError(f"{source} case {index} ({name}) must define required_terms")
     if not leakage_terms:
@@ -83,6 +88,7 @@ def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> Green
         tags=_string_tuple(row.get("tags")),
         stressors=_string_tuple(row.get("stressors")),
         source_file=str(source),
+        provenance=provenance,
     )
 
 

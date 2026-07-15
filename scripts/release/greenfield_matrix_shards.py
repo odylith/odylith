@@ -24,6 +24,7 @@ from greenfield_matrix_stressors import required_stressors_from_values
 from greenfield_matrix_stressors import stressor_coverage
 from greenfield_matrix_stressors import variance_evaluation
 from greenfield_matrix_case_file import load_case_file
+from greenfield_matrix_corpus_provenance import case_provenance_to_dict
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
@@ -33,7 +34,7 @@ DEFAULT_SHARD_SIZE = 30
 DEFAULT_REGRESSION_SIZE = 60
 DEFAULT_VOLUME_SIZE = 120
 DEFAULT_DEEP_VOLUME_SIZE = 240
-DEFAULT_RELEASE_SIZE = 12
+DEFAULT_RELEASE_SIZE = 200
 
 
 @dataclass(frozen=True)
@@ -393,6 +394,9 @@ def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
         row["case_id"] = case.case_id
     if case.confirmed_intent_markdown:
         row["confirmed_intent_markdown"] = case.confirmed_intent_markdown
+    provenance = case_provenance_to_dict(case.provenance)
+    if provenance and provenance.get("corpus_tier") != "synthetic_regression":
+        row["provenance"] = provenance
     return row
 
 

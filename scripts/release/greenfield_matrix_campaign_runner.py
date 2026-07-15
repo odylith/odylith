@@ -60,6 +60,7 @@ def run_campaign(
     require_high_variance_stressors: bool = False,
     required_stressors: Sequence[str] = (),
     require_release_readiness: bool = False,
+    release_audit_file: Path | None = None,
     progress_jsonl: Path | None = None,
     progress_json: Path | None = None,
     failed_subset_replay_dir: Path | None = None,
@@ -119,6 +120,7 @@ def run_campaign(
             release_case_files,
             require_high_variance_stressors=require_high_variance_stressors,
             required_stressors=normalized_required_stressors,
+            release_audit_file=release_audit_file,
         ),
     )
     selected_shard_count = sum(len(shards) for shards in tiers)
@@ -272,6 +274,7 @@ def _release_tier(
     *,
     require_high_variance_stressors: bool,
     required_stressors: Sequence[str],
+    release_audit_file: Path | None = None,
 ) -> tuple[CampaignShard, ...]:
     return tuple(
         CampaignShard(
@@ -286,6 +289,7 @@ def _release_tier(
             stop_after_cluster_failures=0,
             require_high_variance_stressors=bool(require_high_variance_stressors),
             required_stressors=tuple(required_stressors),
+            release_audit_file=Path(release_audit_file).expanduser().resolve() if release_audit_file else None,
         )
         for case_file in case_files
     )
@@ -345,6 +349,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument("--volume-case-file", action="append", default=None)
     parser.add_argument("--deep-volume-case-file", action="append", default=None)
     parser.add_argument("--release-case-file", action="append", default=None)
+    parser.add_argument("--release-audit-file", default="")
     parser.add_argument(
         "--discovery-max-workers",
         type=int,
@@ -410,6 +415,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         require_high_variance_stressors=bool(args.require_high_variance_stressors),
         required_stressors=tuple(args.required_stressor or ()),
         require_release_readiness=bool(args.require_release_readiness),
+        release_audit_file=Path(str(args.release_audit_file)).expanduser().resolve()
+        if str(args.release_audit_file or "").strip()
+        else None,
         progress_jsonl=Path(str(args.progress_jsonl)).expanduser().resolve()
         if str(args.progress_jsonl or "").strip()
         else None,

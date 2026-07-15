@@ -32,6 +32,8 @@ from greenfield_matrix_campaign import missing_required_stressors  # noqa: E402
 from greenfield_matrix_campaign_progress import CampaignProgressWriter  # noqa: E402
 from greenfield_matrix_campaign_progress import first_cluster_at_threshold  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
+from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
 
 
@@ -48,6 +50,7 @@ class CampaignShard:
     stop_after_cluster_failures: int
     require_high_variance_stressors: bool
     required_stressors: tuple[str, ...]
+    release_audit_file: Path | None = None
 
     @property
     def name(self) -> str:
@@ -127,6 +130,9 @@ def run_tier(
         temp_parent=temp_parent,
     )
     if case_file_failure:
+        invalid_release_corpus = case_file_failure.payload_status == "release-corpus-invalid"
+        reason_prefix = "tier-release-corpus-invalid" if invalid_release_corpus else "tier-case-file-invalid"
+        cluster = "campaign.release-corpus-invalid" if invalid_release_corpus else "campaign.case-file-invalid"
         result = {
             "tier": shards[0].tier,
             "status": "failed",
@@ -134,9 +140,9 @@ def run_tier(
             "selected_shard_count": len(shards),
             "completed_shard_count": 0,
             "stopped_early": True,
-            "stop_reason": f"tier-case-file-invalid:{case_file_failure.name}",
+            "stop_reason": f"{reason_prefix}:{case_file_failure.name}",
             "max_workers": max(1, int(max_workers)),
-            "cluster_counts": {"campaign.case-file-invalid": 1},
+            "cluster_counts": {cluster: 1},
             "shards": [case_file_failure.to_dict()],
         }
         progress.emit(
@@ -804,6 +810,8 @@ def _matrix_command(
         token = str(stressor or "").strip()
         if token:
             command.extend(["--required-stressor", token])
+    if shard.release_audit_file is not None:
+        command.extend(["--release-audit-file", str(shard.release_audit_file)])
     if shard.proof_tier == "discovery" and shard.required_stressors:
         command.append("--allow-partial-stressor-coverage")
     return command
@@ -849,7 +857,74 @@ def _tier_case_file_preflight_failure(
                 stderr_excerpt=_excerpt(str(exc)),
                 stop_reason="case-file-invalid",
             )
+    release_shards = tuple(shard for shard in shards if shard.proof_tier == "release")
+    if release_shards:
+        audit_file = release_shards[0].release_audit_file
+        if audit_file is None:
+            return _release_corpus_preflight_failure(
+                shard=release_shards[0],
+                output_dir=output_dir,
+                telemetry_dir=telemetry_dir,
+                temp_parent=temp_parent,
+                detail="release proof requires --release-audit-file",
+            )
+        try:
+            audits = load_release_audit_file(audit_file)
+            cases = tuple(case for shard in release_shards for case in load_case_file(shard.case_file))
+            evaluation = evaluate_release_corpus(cases, audits)
+        except RuntimeError as exc:
+            return _release_corpus_preflight_failure(
+                shard=release_shards[0],
+                output_dir=output_dir,
+                telemetry_dir=telemetry_dir,
+                temp_parent=temp_parent,
+                detail=str(exc),
+            )
+        if not evaluation.passed:
+            return _release_corpus_preflight_failure(
+                shard=release_shards[0],
+                output_dir=output_dir,
+                telemetry_dir=telemetry_dir,
+                temp_parent=temp_parent,
+                detail="invalid greenfield release corpus: " + "; ".join(evaluation.issues),
+            )
     return None
+
+
+def _release_corpus_preflight_failure(
+    *,
+    shard: CampaignShard,
+    output_dir: Path,
+    telemetry_dir: Path,
+    temp_parent: Path,
+    detail: str,
+) -> ShardRunResult:
+    return ShardRunResult(
+        tier=shard.tier,
+        name=shard.name,
+        case_file=str(shard.case_file),
+        status="failed",
+        returncode=2,
+        seconds=0.0,
+        output_json=str(output_dir / f"{shard.name}.result.v1.json"),
+        telemetry_jsonl=str(telemetry_dir / f"{shard.name}.telemetry.v1.jsonl"),
+        temp_parent=str(_shard_temp_parent(base_temp_parent=temp_parent, shard=shard)),
+        payload_status="release-corpus-invalid",
+        completed_case_count=0,
+        failed_case_count=1,
+        failure_clusters=(
+            {
+                "cluster": "campaign.release-corpus-invalid",
+                "count": 1,
+                "cases": [shard.name],
+                "example_issue": _tail_excerpt(detail),
+                "replay_scope": "release-corpus",
+            },
+        ),
+        stdout_excerpt="",
+        stderr_excerpt=_excerpt(detail),
+        stop_reason="release-corpus-invalid",
+    )
 
 
 def _missing_tier_required_stressors(shards: Sequence[CampaignShard]) -> tuple[str, ...]:

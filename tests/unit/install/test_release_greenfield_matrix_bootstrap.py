@@ -51,9 +51,13 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert 'BROWSER_PROOF:-1' in text
     assert '--include-browser-proof' in text
     assert 'browser_proof_enabled=0' in text
-    assert 'if [[ "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" ]]' in text
+    assert 'release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"' in text
+    assert 'release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE' in text
+    assert 'if [[ "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" && -n "$release_case_file" && -n "$release_audit_file" ]]' in text
     assert '--proof-tier release' in text
     assert '--proof-tier discovery' in text
+    assert '--release-audit-file "$release_audit_file"' in text
     assert 'ensure_playwright_chromium' in text
     assert '"$odylith_python" -m playwright install chromium >/dev/null' in shared
     assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"' in text

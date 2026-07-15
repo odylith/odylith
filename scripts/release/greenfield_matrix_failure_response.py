@@ -7,7 +7,12 @@ import json
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 import subprocess
+import sys
 from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 from greenfield_matrix_case_file import load_case_file
 
@@ -414,15 +419,17 @@ def _synthetic_failed_result(
 def _synthetic_case_identity(case: Any) -> dict[str, Any]:
     prompt = str(getattr(case, "prompt", "") or "")
     confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "")
-    return {
+    identity = {
         "id": str(getattr(case, "case_id", "") or getattr(case, "slug", "")),
         "name": str(getattr(case, "name", "")),
         "slug": str(getattr(case, "slug", "")),
         "tags": list(getattr(case, "tags", ()) or ()),
         "stressors": list(getattr(case, "stressors", ()) or ()),
         "prompt_sha256": _sha256_text(prompt),
-        "confirmed_intent_sha256": _sha256_text(confirmed_intent),
     }
+    if confirmed_intent.strip():
+        identity["confirmed_intent_sha256"] = _sha256_text(confirmed_intent)
+    return identity
 
 
 def _cluster_row(

@@ -159,7 +159,7 @@ def test_campaign_stops_before_later_tiers_after_failed_subset_failure(tmp_path:
     assert payload["tiers"][0]["stopped_early"] is True
 
 
-def test_campaign_runs_release_tier_after_discovery_success(tmp_path: Path, monkeypatch) -> None:
+def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     calls: list[list[str]] = []
 
@@ -182,17 +182,16 @@ def test_campaign_runs_release_tier_after_discovery_success(tmp_path: Path, monk
         discovery_max_workers=2,
     )
 
-    assert payload["status"] == "release-ready"
-    assert payload["execution_status"] == "passed"
-    assert payload["release_proof_completed"] is True
-    assert payload["release_readiness_status"] == "proven"
+    assert payload["status"] == "failed"
+    assert payload["execution_status"] == "failed"
+    assert payload["release_proof_completed"] is False
+    assert payload["release_readiness_status"] == "failed"
     assert [tier["tier"] for tier in payload["tiers"]] == ["volume-discovery", "release-proof"]
-    assert _arg(calls[-1], "--proof-tier") == "release"
-    assert "--include-browser-proof" in calls[-1]
-    assert "--include-natural-rescue-proof" in calls[-1]
+    assert [_arg(command, "--proof-tier") for command in calls] == ["discovery"]
+    assert payload["tiers"][-1]["stop_reason"].startswith("tier-release-corpus-invalid:")
 
 
-def test_campaign_runs_240_case_discovery_before_release_with_tier_workers(
+def test_campaign_finishes_discovery_tiers_before_rejecting_an_unproven_release(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -223,8 +222,8 @@ def test_campaign_runs_240_case_discovery_before_release_with_tier_workers(
         deep_volume_max_workers=4,
     )
 
-    assert payload["status"] == "release-ready"
-    assert payload["execution_status"] == "passed"
+    assert payload["status"] == "failed"
+    assert payload["execution_status"] == "failed"
     assert [tier["tier"] for tier in payload["tiers"]] == [
         "60-case-regression",
         "volume-discovery",
@@ -241,8 +240,8 @@ def test_campaign_runs_240_case_discovery_before_release_with_tier_workers(
         "volume-discovery",
         "240-case-discovery",
         "240-case-discovery",
-        "release-proof",
     ]
+    assert payload["tiers"][-1]["stop_reason"].startswith("tier-release-corpus-invalid:")
 
 
 def test_campaign_isolates_concurrent_shard_temp_cleanup_scope(
@@ -917,7 +916,7 @@ def test_campaign_fails_release_proof_when_required_stressors_are_missing(
     assert calls == []
     assert payload["status"] == "failed"
     assert payload["tiers"][0]["tier"] == "release-proof"
-    assert payload["tiers"][0]["stop_reason"] == "tier-stressor-coverage-missing:registry-contract-pressure"
+    assert payload["tiers"][0]["stop_reason"].startswith("tier-release-corpus-invalid:")
     assert payload["release_proof_completed"] is False
     assert payload["release_proof_status"] == "failed-preflight"
     assert payload["release_readiness_status"] == "failed"

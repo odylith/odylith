@@ -197,7 +197,7 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
     payload = json.loads(capsys.readouterr().out)
 
     assert exit_code == 0
-    assert payload["status"] == "passed"
+    assert payload["status"] == "discovery-passed"
     assert payload["temp_cleanup_proof"]["status"] == "passed"
     cases = matrix_kwargs["cases"]
     assert len(cases) == 1
