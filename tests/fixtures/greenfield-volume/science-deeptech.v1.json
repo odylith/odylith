@@ -2,6 +2,7 @@
   "cases": [
     {
       "name": "cell-therapy-chain-of-identity",
+      "expectation": "clarification_required",
       "prompt": "A regional cell-therapy network needs a product for autologous CAR-T operations across collection clinics, apheresis couriers, manufacturing suites, and infusion centers. It must preserve chain of identity from leukapheresis bag through cryoshipper receipt, CD3+ enrichment, vector transduction, release assay, and patient infusion. The medical director, quality unit, and site coordinators need distinct evidence for deviations, temperature excursions, and final disposition.",
       "required_terms": ["CAR-T", "chain of identity", "cryoshipper", "release assay"],
       "leakage_terms": ["autologous CAR-T", "CD3+ enrichment", "vector transduction"],

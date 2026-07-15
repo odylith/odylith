@@ -38,6 +38,7 @@ from greenfield_matrix_leakage import term_present as _term_present  # noqa: E40
 from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
+from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
 from greenfield_matrix_corpus_provenance import case_provenance_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
@@ -59,8 +60,11 @@ from greenfield_matrix_proof_scope import natural_rescue_quality_proven  # noqa:
 from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
 from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
-from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
-from greenfield_preconfirm_matrix_cases import rescue_smoke_case  # noqa: E402
+from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION  # noqa: E402
+from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: E402
+from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
+from greenfield_preconfirm_matrix_cases import default_cases, rescue_smoke_case  # noqa: E402
+from greenfield_preconfirm_matrix_cases import raise_for_release_case_expectations  # noqa: E402
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
@@ -132,6 +136,7 @@ def run_matrix(
     """Run the real installed greenfield create path for each matrix case."""
 
     selected_cases = tuple(cases) or default_cases()
+    _raise_for_unsupported_case_expectations(selected_cases)
     install_mode = _validated_install_mode(install_mode)
     campaign_config = MatrixCampaignConfig(
         phase=campaign_phase_from_value(campaign_phase),
@@ -141,6 +146,7 @@ def run_matrix(
         stop_after_cluster_failures=positive_int(stop_after_cluster_failures),
         required_stressors=tuple(required_stressors),
     )
+    raise_for_release_case_expectations(selected_cases, proof_tier=campaign_config.proof_tier)
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=install_mode,
@@ -424,6 +430,17 @@ def _raise_for_ungrounded_required_terms(cases: Sequence[GreenfieldMatrixCase]) 
         raise RuntimeError("required terms are not grounded in the case prompt or edit evidence: " + "; ".join(failures))
 
 
+def _raise_for_unsupported_case_expectations(cases: Sequence[GreenfieldMatrixCase]) -> None:
+    unsupported = [
+        f"{case.name}: {case_expectation(case)}"
+        for case in cases
+        if case_expectation(case) not in VALID_CASE_EXPECTATIONS
+    ]
+    if unsupported:
+        supported = ", ".join(sorted(VALID_CASE_EXPECTATIONS))
+        raise RuntimeError("unsupported greenfield matrix case expectation; expected one of: " + supported + "; " + "; ".join(unsupported))
+
+
 def _case_evidence_manifest_case(result: GreenfieldMatrixResult) -> Mapping[str, Any]:
     evidence = result.evidence if isinstance(result.evidence, Mapping) else {}
     case = evidence.get("case") if isinstance(evidence.get("case"), Mapping) else {}
@@ -686,6 +703,16 @@ def _run_case(
             return _failed_case(case, repo_root, "install_failed", install.returncode, install.stderr or install.stdout)
     elif not (repo_root / ".odylith/bin/odylith").is_file():
         return _failed_case(case, repo_root, "seed_clone_failed", 1, "seeded repo clone is missing .odylith/bin/odylith")
+    if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
+        return _run_expected_clarification_case(
+            case=case,
+            repo_root=repo_root,
+            env=env,
+            timeout=120,
+            install_script=install_script,
+            version=version,
+            install_mode=install_mode,
+        )
     create, create_seconds = _run_compiled_greenfield_create(
         repo_root=repo_root,
         env=env,
@@ -749,6 +776,75 @@ def _run_case(
     )
 
 
+def _run_expected_clarification_case(
+    *,
+    case: GreenfieldMatrixCase,
+    repo_root: Path,
+    env: Mapping[str, str],
+    timeout: int,
+    install_script: Path,
+    version: str,
+    install_mode: str,
+) -> GreenfieldMatrixResult:
+    execution = run_expected_clarification(
+        repo_root=repo_root,
+        invoke=lambda: _run_greenfield_propose(
+            repo_root=repo_root,
+            env=env,
+            prompt=case.prompt,
+            edit_evidence=str(case.confirmed_intent_markdown or ""),
+            timeout=timeout,
+        ),
+        parse_payload=_parse_json_object,
+    )
+    payload = execution.payload
+    issues = clarification_contract_issues(execution)
+    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    quality = clarification_quality_verdict(issues)
+    evidence = dict(
+        _case_evidence_manifest(
+            case=case,
+            repo_root=repo_root,
+            package=package,
+            create_payload=payload,
+            quality=quality,
+            install_script=install_script,
+            version=version,
+            install_mode=install_mode,
+            browser_surface_proof_attempted=False,
+            browser_surface_proof_required=False,
+            browser_surface_issues=(),
+        )
+    )
+    clarification = _as_mapping(payload.get("clarification"))
+    evidence["clarification"] = {
+        "mode": str(payload.get("mode") or "").strip(),
+        "question": str(clarification.get("question") or "").strip(),
+        "required_fields": list(clarification.get("required_fields") or ()),
+        "returncode": execution.returncode,
+    }
+    evidence["no_write"] = {
+        "before_record_count": execution.before_record_count,
+        "after_record_count": execution.after_record_count,
+        "changed_records": list(execution.changed_records),
+        "staged_transaction_present": execution.staged_transaction_present,
+    }
+    return GreenfieldMatrixResult(
+        name=case.name,
+        status="passed" if quality.passed else "failed",
+        create_seconds=execution.seconds,
+        counts=counts,
+        quality=quality,
+        create_returncode=execution.returncode,
+        failure_detail="clarification-required no-write contract failed" if not quality.passed else "",
+        create_stdout_excerpt="",
+        create_stderr_excerpt="",
+        commit_manifest_summary={},
+        evidence=evidence,
+    )
+
+
 def _run_compiled_greenfield_create(
     *,
     repo_root: Path,
@@ -757,20 +853,13 @@ def _run_compiled_greenfield_create(
     timeout: int,
     edit_evidence: str = "",
 ) -> tuple[Any, float]:
-    propose_command = [
-        "./.odylith/bin/odylith",
-        "greenfield",
-        "propose",
-        "--repo-root",
-        ".",
-        "--prompt",
-        prompt,
-        "--format",
-        "json",
-    ]
-    if edit_evidence.strip():
-        propose_command.extend(["--edit", edit_evidence])
-    proposed = _run(cwd=repo_root, env=env, command=propose_command, timeout=timeout)
+    proposed = _run_greenfield_propose(
+        repo_root=repo_root,
+        env=env,
+        prompt=prompt,
+        edit_evidence=edit_evidence,
+        timeout=timeout,
+    )
     if proposed.returncode != 0:
         return proposed, 0.0
     proposed_payload = _parse_json_object(proposed.stdout)
@@ -815,6 +904,30 @@ def _run_compiled_greenfield_create(
         timeout=timeout,
     )
     return create, round(time.perf_counter() - started, 3)
+
+
+def _run_greenfield_propose(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    prompt: str,
+    timeout: int,
+    edit_evidence: str = "",
+) -> Any:
+    propose_command = [
+        "./.odylith/bin/odylith",
+        "greenfield",
+        "propose",
+        "--repo-root",
+        ".",
+        "--prompt",
+        prompt,
+        "--format",
+        "json",
+    ]
+    if edit_evidence.strip():
+        propose_command.extend(["--edit", edit_evidence])
+    return _run(cwd=repo_root, env=env, command=propose_command, timeout=timeout)
 
 
 def _case_evidence_manifest(
@@ -895,6 +1008,7 @@ def _case_evidence(case: GreenfieldMatrixCase) -> Mapping[str, Any]:
         "name": case.name,
         "slug": case.slug,
         "source_file": str(getattr(case, "source_file", "") or ""),
+        "expectation": case_expectation(case),
         "tags": list(getattr(case, "tags", ()) or ()),
         "stressors": list(getattr(case, "stressors", ()) or ()),
         "prompt_sha256": _sha256_text(case.prompt),

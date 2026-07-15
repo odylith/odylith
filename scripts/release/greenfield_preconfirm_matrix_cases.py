@@ -8,6 +8,16 @@ from dataclasses import field
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 
 
+DEFAULT_CASE_EXPECTATION = "transaction_committed"
+CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
+VALID_CASE_EXPECTATIONS = frozenset(
+    {
+        DEFAULT_CASE_EXPECTATION,
+        CLARIFICATION_REQUIRED_EXPECTATION,
+    }
+)
+
+
 @dataclass(frozen=True)
 class GreenfieldMatrixCase:
     name: str
@@ -20,10 +30,26 @@ class GreenfieldMatrixCase:
     stressors: tuple[str, ...] = ()
     source_file: str = ""
     provenance: GreenfieldCaseProvenance = field(default_factory=GreenfieldCaseProvenance)
+    expectation: str = DEFAULT_CASE_EXPECTATION
 
     @property
     def slug(self) -> str:
         return "-".join(token for token in self.name.casefold().split() if token)
+
+
+def case_expectation(case: GreenfieldMatrixCase) -> str:
+    return str(getattr(case, "expectation", "") or DEFAULT_CASE_EXPECTATION).strip().casefold()
+
+
+def raise_for_release_case_expectations(cases: tuple[GreenfieldMatrixCase, ...], *, proof_tier: str) -> None:
+    if str(proof_tier).strip().casefold() != "release":
+        return
+    clarification_cases = [case.name for case in cases if case_expectation(case) != DEFAULT_CASE_EXPECTATION]
+    if clarification_cases:
+        raise RuntimeError(
+            "release proof requires transaction_committed cases; clarification_required cases are discovery-only: "
+            + ", ".join(clarification_cases)
+        )
 
 
 def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
@@ -238,9 +264,14 @@ def historical_domain_leakage_sentinels() -> tuple[str, ...]:
 
 
 __all__ = [
+    "CLARIFICATION_REQUIRED_EXPECTATION",
+    "DEFAULT_CASE_EXPECTATION",
     "GreenfieldMatrixCase",
     "GreenfieldCaseProvenance",
+    "VALID_CASE_EXPECTATIONS",
+    "case_expectation",
     "default_cases",
     "historical_domain_leakage_sentinels",
+    "raise_for_release_case_expectations",
     "rescue_smoke_case",
 ]

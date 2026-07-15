@@ -29,6 +29,17 @@ _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
     r"\b(?:device|controller|sensor|monitor)\b[^.!?]{0,160}\bthat\s+[a-z]",
     flags=re.IGNORECASE,
 )
+
+
+class GreenfieldClarificationRequired(ValueError):
+    """A user decision is needed before a create transaction can be compiled."""
+
+    def __init__(self, question: str, *, required_fields: tuple[str, ...] = ("first_path",)) -> None:
+        super().__init__(question)
+        self.question = question
+        self.required_fields = required_fields
+
+
 _ANAPHORIC_FIRST_PATH_ACTOR_RE = re.compile(
     r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"
     r"(?:can|should|must|needs?\s+to)\s+(?:complete|own|handle)\s+"
@@ -140,9 +151,9 @@ def render_product_intent_preview(intent: Mapping[str, Any]) -> str:
     )
 
 
-def prompt_only_material_decision_error(*, product_name: str = "") -> ValueError:
+def prompt_only_material_decision_error(*, product_name: str = "") -> GreenfieldClarificationRequired:
     subject = str(product_name or "this product").strip()
-    return ValueError(
+    return GreenfieldClarificationRequired(
         f"For {subject}, what should the first person complete and what result should they see? "
         "One plain-language sentence is enough."
     )

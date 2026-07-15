@@ -416,8 +416,10 @@ def test_greenfield_propose_cli_asks_one_product_question_for_a_bare_title(tmp_p
     )
 
     output = capsys.readouterr().out
-    assert rc == 2
+    assert rc == 0
+    assert "Odylith needs one product decision." in output
     assert "what should the first person complete and what result should they see" in output.casefold()
+    assert "No transaction or governed records were created." in output
     assert "ProductCreateTransaction ready for final command" not in output
     assert not transaction_path.exists()
 
@@ -436,10 +438,90 @@ def test_greenfield_propose_cli_asks_one_product_question_for_a_title_like_path(
     )
 
     output = capsys.readouterr().out
-    assert rc == 2
+    assert rc == 0
+    assert "Odylith needs one product decision." in output
     assert "what should the first person complete and what result should they see" in output.casefold()
+    assert "No transaction or governed records were created." in output
     assert "ProductCreateTransaction ready for final command" not in output
     assert not transaction_path.exists()
+
+
+def test_greenfield_propose_cli_returns_typed_clarification_without_staging(tmp_path, capsys) -> None:
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            (
+                "A regional cell-therapy network needs a product for autologous CAR-T operations across collection "
+                "clinics, apheresis couriers, manufacturing suites, and infusion centers. It must preserve chain of "
+                "identity from leukapheresis bag through cryoshipper receipt, CD3+ enrichment, vector transduction, "
+                "release assay, and patient infusion."
+            ),
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert payload == {
+        "mode": "clarification_required",
+        "clarification": {
+            "question": (
+                "For Regional Cell-therapy Network Needs A Product For Autologous CAR-T Operations Across Collection "
+                "Clinics, Apheresis Couriers, Manufacturing, what should the first person complete and what result "
+                "should they see? One plain-language sentence is enough."
+            ),
+            "required_fields": ["first_path"],
+        },
+    }
+    assert not transaction_path.exists()
+    assert not (tmp_path / "odylith/radar/source").exists()
+
+
+def test_greenfield_clarification_removes_a_stale_default_transaction(tmp_path, capsys) -> None:
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path.parent.mkdir(parents=True)
+    transaction_path.write_text('{"stale": true}\n', encoding="utf-8")
+
+    rc = greenfield_proposals.main(
+        ["propose", "--repo-root", str(tmp_path), "--prompt", "Create assay review.", "--format", "json"]
+    )
+
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
+    assert not transaction_path.exists()
+
+
+def test_greenfield_compile_clarification_removes_stale_requested_output(tmp_path, capsys) -> None:
+    default_transaction = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    requested_output = tmp_path / "transactions/compiled.json"
+    for path in (default_transaction, requested_output):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{"stale": true}\n', encoding="utf-8")
+
+    rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Create assay review.",
+            "--output",
+            str(requested_output),
+            "--format",
+            "json",
+        ]
+    )
+
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
+    assert not default_transaction.exists()
+    assert not requested_output.exists()
 
 
 def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:

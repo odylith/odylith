@@ -9,7 +9,9 @@ from typing import Any
 
 from greenfield_matrix_leakage import term_present
 from greenfield_matrix_corpus_provenance import case_provenance_from_mapping
+from greenfield_preconfirm_matrix_cases import DEFAULT_CASE_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
 
@@ -89,6 +91,7 @@ def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> Green
         stressors=_string_tuple(row.get("stressors")),
         source_file=str(source),
         provenance=provenance,
+        expectation=_case_expectation(row.get("expectation"), index=index, name=name, source=source),
     )
 
 
@@ -133,6 +136,16 @@ def _optional_text(value: Any) -> str:
 
 def _optional_block_text(value: Any) -> str:
     return str(value or "").strip()
+
+
+def _case_expectation(value: Any, *, index: int, name: str, source: Path) -> str:
+    expectation = _optional_text(value).casefold() or DEFAULT_CASE_EXPECTATION
+    if expectation not in VALID_CASE_EXPECTATIONS:
+        supported = ", ".join(sorted(VALID_CASE_EXPECTATIONS))
+        raise RuntimeError(
+            f"{source} case {index} ({name}) has unsupported expectation `{expectation}`; expected one of: {supported}"
+        )
+    return expectation
 
 
 def _string_tuple(value: Any) -> tuple[str, ...]:

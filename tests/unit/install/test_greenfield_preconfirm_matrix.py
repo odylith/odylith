@@ -815,6 +815,16 @@ def _proposed_transaction_payload() -> dict[str, object]:
     }
 
 
+def _clarification_payload() -> dict[str, object]:
+    return {
+        "mode": "clarification_required",
+        "clarification": {
+            "question": "What is the first complete path a site coordinator follows?",
+            "required_fields": ["first_path"],
+        },
+    }
+
+
 def _passing_package_lens_report() -> dict[str, object]:
     return {
         "version": "greenfield-quality-lenses-v1",
@@ -979,6 +989,172 @@ def test_standard_matrix_propose_compiles_before_hash_bound_create_without_rescu
     assert "--prompt" not in create_command
     assert len(create_envs) == 1
     assert RESCUE_PROBE_ENV not in create_envs[0]
+
+
+def test_explicit_clarification_expectation_passes_without_create_or_records(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _module()
+    commands: list[list[str]] = []
+    repo_root = tmp_path / "clarification-repo"
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        commands.append(list(command))
+        if "propose" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_clarification_payload()), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="ambiguous cell therapy",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+            expectation="clarification_required",
+        ),
+        repo_root=repo_root,
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "passed"
+    assert result.quality.passed is True
+    assert result.quality.score_basis == "clarification_required_no_write_contract"
+    assert result.create_returncode == 0
+    assert sum("propose" in command for command in commands) == 1
+    assert not any(command[1:3] == ["greenfield", "create"] for command in commands)
+    assert result.evidence["case"]["expectation"] == "clarification_required"
+    assert result.evidence["clarification"] == {
+        "mode": "clarification_required",
+        "question": "What is the first complete path a site coordinator follows?",
+        "required_fields": ["first_path"],
+        "returncode": 0,
+    }
+    assert result.evidence["no_write"]["changed_records"] == []
+    assert result.evidence["no_write"]["staged_transaction_present"] is False
+    assert not (repo_root / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
+    assert not (repo_root / "odylith").exists()
+
+
+def test_explicit_clarification_expectation_rejects_staged_transaction_record(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _module()
+    commands: list[list[str]] = []
+    repo_root = tmp_path / "clarification-repo"
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        commands.append(list(command))
+        if "propose" in command:
+            _write(
+                cwd / ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+                "unexpected staged transaction\n",
+            )
+            return subprocess.CompletedProcess(command, 0, json.dumps(_clarification_payload()), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="ambiguous cell therapy",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+            expectation="clarification_required",
+        ),
+        repo_root=repo_root,
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "failed"
+    assert result.quality.passed is False
+    assert "clarification proposal created a staged transaction record" in result.quality.issues
+    assert any("created or changed governed or staged records" in issue for issue in result.quality.issues)
+    assert not any(command[1:3] == ["greenfield", "create"] for command in commands)
+
+
+def test_explicit_clarification_expectation_rejects_extra_payload_fields(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "propose" in command:
+            payload = _clarification_payload()
+            payload["intent_hypothesis"] = {"title": "must not leak"}
+            return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="ambiguous cell therapy",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+            expectation="clarification_required",
+        ),
+        repo_root=tmp_path / "clarification-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "failed"
+    assert "clarification proposal must contain only mode and clarification" in result.quality.issues
+
+
+def test_release_proof_rejects_clarification_only_cases(tmp_path: Path) -> None:
+    module = _module()
+
+    with pytest.raises(RuntimeError, match="release proof requires transaction_committed cases"):
+        module.run_matrix(
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(
+                module.GreenfieldMatrixCase(
+                    name="ambiguous cell therapy",
+                    prompt="Create a cell therapy proposal with several possible operating paths.",
+                    required_terms=("cell", "therapy"),
+                    expectation="clarification_required",
+                ),
+            ),
+            proof_tier="release",
+        )
+
+
+def test_unannotated_clarification_stays_a_failed_transaction_expectation(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    commands: list[list[str]] = []
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        commands.append(list(command))
+        if "propose" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_clarification_payload()), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="unannotated ambiguity",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+        ),
+        repo_root=tmp_path / "transaction-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "failed"
+    assert result.quality.passed is False
+    assert result.create_returncode == 2
+    assert "ProductCreateTransaction" in result.failure_detail
+    assert not any(command[1:3] == ["greenfield", "create"] for command in commands)
 
 
 def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: Path) -> None:
@@ -1758,6 +1934,7 @@ def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
                         "prompt": "Create a proposal for rare assay workflow.",
                         "required_terms": ["assay"],
                         "leakage_terms": ["rare assay"],
+                        "expectation": "clarification_required",
                         "tags": ["science", "regulated"],
                         "stressors": ["thin prompt", "specialized vocabulary"],
                     }
@@ -1770,6 +1947,7 @@ def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
     case = module.load_case_file(case_file)[0]
 
     assert case.case_id == "science-001"
+    assert case.expectation == "clarification_required"
     assert case.tags == ("science", "regulated")
     assert case.stressors == ("thin prompt", "specialized vocabulary")
     assert case.source_file == str(case_file.resolve())

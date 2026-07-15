@@ -15,6 +15,7 @@ from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import GreenfieldClarificationRequired
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
@@ -254,6 +255,50 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
     print(str(exc))
 
 
+def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_json: bool) -> None:
+    clarification = {
+        "question": exc.question,
+        "required_fields": list(exc.required_fields),
+    }
+    if as_json:
+        print(json.dumps({"mode": "clarification_required", "clarification": clarification}, indent=2, sort_keys=True))
+        return
+    print("Odylith needs one product decision.")
+    print(exc.question)
+    print("Reply with one plain-language sentence. No transaction or governed records were created.")
+
+
+def _transaction_output_path(*, repo_root: Path, output_path: str) -> Path | None:
+    value = str(output_path or "").strip()
+    if not value:
+        return None
+    path = Path(value).expanduser()
+    return path if path.is_absolute() else repo_root / path
+
+
+def _finish_clarification(
+    *,
+    exc: GreenfieldClarificationRequired,
+    repo_root: Path,
+    as_json: bool,
+    output_path: str = "",
+) -> int:
+    paths = [repo_root / ".odylith" / "runtime" / "greenfield" / "product-create-transaction.v1.json"]
+    if requested_output := _transaction_output_path(repo_root=repo_root, output_path=output_path):
+        paths.append(requested_output)
+    try:
+        for path in dict.fromkeys(paths):
+            path.unlink(missing_ok=True)
+    except OSError:
+        _print_greenfield_error(
+            RuntimeError("environment/IO failure while clearing a stale Greenfield transaction"),
+            as_json=as_json,
+        )
+        return 2
+    _print_greenfield_clarification(exc, as_json=as_json)
+    return 0
+
+
 def _create_input_overrides(args: argparse.Namespace) -> list[str]:
     overrides: list[str] = []
     has_transaction_ref = bool(str(getattr(args, "transaction_file", "") or "").strip())
@@ -346,6 +391,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 release_selector="",
                 edit_evidence=edit_evidence,
             )
+        except GreenfieldClarificationRequired as exc:
+            return _finish_clarification(exc=exc, repo_root=repo_root, as_json=args.output_format == "json")
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
@@ -382,9 +429,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
             output_path = str(args.output or "").strip()
             if output_path:
-                path = Path(output_path).expanduser()
-                if not path.is_absolute():
-                    path = repo_root / path
+                path = _transaction_output_path(repo_root=repo_root, output_path=output_path)
+                assert path is not None
                 greenfield_proposals.write_product_create_transaction_file(path, transaction)
                 output_path = str(path)
             else:
@@ -437,6 +483,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             else:
                 preview = render_product_intent_preview(candidate_intent).rstrip()
                 print(f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=output_path)}", end="")
+        except GreenfieldClarificationRequired as exc:
+            return _finish_clarification(
+                exc=exc,
+                repo_root=repo_root,
+                as_json=args.output_format == "json",
+                output_path=str(args.output or ""),
+            )
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
