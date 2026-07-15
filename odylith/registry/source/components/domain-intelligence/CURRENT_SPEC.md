@@ -879,7 +879,7 @@ This section captures synchronized requirement and contract signals derived from
   occurrence paths, surfaces, projection IDs, artifact and occurrence counts, and
   sanctioned ArtifactPlanIR roots for single-projection defects. Rendered package
   findings carry `package_repetition` metadata, and
-  `greenfield_post_confirm_package_findings.py` converts those source-owned
+  `greenfield_preconfirm_package_findings.py` converts those source-owned
   findings into typed review findings without parsing display strings. Raw
   string-only package issues still fail closed through `legacy_package_artifact_gate`.
   The former 1,196-line `greenfield_package_quality.py` owner is decomposed to
@@ -1039,9 +1039,9 @@ This section captures synchronized requirement and contract signals derived from
 
 - 2026-06-30: Removed generic no-op semantic PatchSet rescue operations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagram: D-043)
   Auto-rescue now requires actual typed repair custody, not just a repairable
-  issue label. `greenfield_post_confirm_patchset.py` no longer emits a generic
+  issue label. `greenfield_preconfirm_patchset.py` no longer emits a generic
   `semantic_fact` operation for reviewer-lens or `SemanticModelIR` roots that
-  do not name a supported semantic slot. `greenfield_post_confirm_engine.py`
+  do not name a supported semantic slot. `greenfield_preconfirm_engine.py`
   derives the PatchSet before deciding rescue eligibility and keeps auto mode
   on the standard 60s path with exact blockers when no executable PatchSet
   operation exists. Supported semantic rescue targets remain first path, proof
@@ -1075,13 +1075,13 @@ This section captures synchronized requirement and contract signals derived from
 
 - 2026-06-29: Removed broad rendered-preview repair authority from post-confirm package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagrams: D-043, D-045)
   Safe artifact-draft repair now depends on exact leaf target paths owned by
-  the shared ArtifactPlanIR contract. `greenfield_post_confirm_repair.py`
+  the shared ArtifactPlanIR contract. `greenfield_preconfirm_repair.py`
   updates only the addressed scalar leaf for project brief, next steps,
   accepted-project, project-dashboard, Compass, Radar, Registry, and Atlas
   draft artifacts; whole preview roots and broad category paths no longer
-  carry repair authority. `greenfield_post_confirm_package_findings.py` emits
+  carry repair authority. `greenfield_preconfirm_package_findings.py` emits
   source-owned exact public-copy leaf findings, including Compass memory
-  preview leaves, and `greenfield_post_confirm_findings.py` suppresses stale
+  preview leaves, and `greenfield_preconfirm_findings.py` suppresses stale
   broad generated-copy findings when exact package findings exist. Focused
   proof passed 41 artifact-plan/quality-repair tests, the widened
   post-confirm engine/projection group passed 76 tests in 50.17s, compile proof
@@ -1089,7 +1089,7 @@ This section captures synchronized requirement and contract signals derived from
   Compass cleanup plus removal of broad `next_steps` safe-repair operations.
 
 - 2026-06-30: Superseded rendered artifact-draft repair with read-only package inspection and typed source repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
-  `greenfield_post_confirm_repair.py` no longer mutates rendered project
+  `greenfield_preconfirm_repair.py` no longer mutates rendered project
   brief, next-step, accepted-project, dashboard, Compass, Radar, Registry, or
   Atlas artifact drafts. The post-confirm engine inspects package quality
   without replacement, final next steps fail closed on generated-copy defects,
@@ -1105,7 +1105,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-29: Hardened selected-case domain-leakage proof for recursive custom simulations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `GreenfieldMatrixCase` now carries explicit `leakage_terms` for maintained
   simulations, `platform_domain_leakage_check.py` derives per-case forbidden
-  vocabulary from that contract, and `greenfield_post_confirm_matrix.py`
+  vocabulary from that contract, and `greenfield_preconfirm_matrix.py`
   requires every selected case to contribute at least one distinctive term
   before serving a local release or creating temp repos. Custom cases may still
   fall back to required terms when they produce distinctive coverage, and
@@ -1447,12 +1447,12 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-14: Replaced the v0.1.15 host-authored JSON repair path with an Odylith-owned confirmed create path. `greenfield propose --confirm-intent --format json` now emits the same apply-ready proposal that `greenfield create --confirm` applies, release smoke runs the confirmed create path against a fresh repo, and installed guidance forbids hand-authored proposal repair loops across hosts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-181`)
 - 2026-05-19: Tightened the confirmed-intent internal-systems gate so fail-closed create still rejects the exact generic fallback trio while accepting domain-specific systems that own evidence review, such as a race gearbox run evidence review surface. The recurrence is captured under `CB-202`, and the regression tests prove both acceptance and rejection paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-05-20: Added the confirmed-completion gate for `greenfield create --confirm`. Confirmed proposals now fill deterministic omissions before writes: project posture, backlog risk/security fields, component interfaces/dependencies/validation/risks, and non-self-invalidating Atlas watch paths. The gate reruns proposal and governed-artifact Tribunals before create applies source truth, so a rich accepted intent produces a full Radar/Registry/Atlas/release/Compass project set instead of stopping on missing derivable fields. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
-- 2026-06-02: Hardened the post-confirm semantic render path so first-path clauses, component contracts, Atlas labels, runtime JSON, public dashboard prose, Radar workstreams, and Registry component specs reject parser debris, activity-shaped actor names, framework proof scaffolds, bare outcome nouns, coordinated action-verb drift, and component-boundary boilerplate before any confirmed greenfield writes. First-path parsing now lives in `greenfield_first_path_semantics.py`, separate from title normalization, release classification, and slop scanning. The pass keeps the fix provider-free and domain-agnostic, with regression coverage in `test_greenfield_post_confirm_slop_regressions.py`, an 11.67-second confirmed-create E2E run with no slop hits, and rendered browser proof for Radar and Registry behavior. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-02: Hardened the post-confirm semantic render path so first-path clauses, component contracts, Atlas labels, runtime JSON, public dashboard prose, Radar workstreams, and Registry component specs reject parser debris, activity-shaped actor names, framework proof scaffolds, bare outcome nouns, coordinated action-verb drift, and component-boundary boilerplate before any confirmed greenfield writes. First-path parsing now lives in `greenfield_first_path_semantics.py`, separate from title normalization, release classification, and slop scanning. The pass keeps the fix provider-free and domain-agnostic, with regression coverage in `test_greenfield_preconfirm_slop_regressions.py`, an 11.67-second confirmed-create E2E run with no slop hits, and rendered browser proof for Radar and Registry behavior. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Decomposed confirmed-intent completion so `greenfield_confirmed_actor_completion.py` owns actor row completion, actor label derivation, generated meta-row rejection, and actor description repair, while `greenfield_confirmed_intent_completion.py` keeps orchestration, core-field completion, system completion, title repair, and product posture. Shared confirmed text helpers now live in `greenfield_confirmed_text.py`, the former parent dropped below the source-size ceiling, and `test_greenfield_confirmed_intent.py` pins the actor phase outside the parent. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-create prewrite gating so `greenfield_confirmed_prewrite_gate.py` owns semantic model completion, proposal/component/spec preflight issue aggregation, the deterministic greenfield Tribunal call, and governed-artifact Tribunal issue collection. `greenfield_confirmed_completion.py` now stays under the 1200-line hard threshold while delegating the quality gate through a focused owner pinned by `test_greenfield_confirmed_repair.py`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-intent internal-system row parsing into `greenfield_confirmed_system_rows.py`. The owner now handles JSON/Markdown role rows, labeled system spans, sentence-system rows, contextual system descriptions, generic scaffold detection, and exported `confirmed_system_name`/`confirmed_system_description` helpers while `greenfield_confirmed_intent.py` stays below the source-size threshold as a parser/validator entrypoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
-- 2026-06-03: Split post-confirm semantic drift checks into `greenfield_post_confirm_semantic_drift.py`. The owner now handles contrastive drift terms, semantic repetition clustering, generated-artifact sentence extraction, intent/component signatures, and semantic overlap scoring while `greenfield_post_confirm_completion.py` stays below the source-size threshold as the package orchestration and prewrite-preview gate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
-- 2026-06-03: Split post-confirm semantic model alignment into `greenfield_post_confirm_semantic_alignment.py` and shared list-row coercion into `greenfield_post_confirm_rows.py`. Semantic model shape, component/workstream/diagram alignment, rendered Registry spec alignment, component ID fallback, and first-release scope checks now sit outside the package completion parent, which stays below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split post-confirm semantic drift checks into `greenfield_preconfirm_semantic_drift.py`. The owner now handles contrastive drift terms, semantic repetition clustering, generated-artifact sentence extraction, intent/component signatures, and semantic overlap scoring while `greenfield_preconfirm_completion.py` stays below the source-size threshold as the package orchestration and prewrite-preview gate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split post-confirm semantic model alignment into `greenfield_preconfirm_semantic_alignment.py` and shared list-row coercion into `greenfield_preconfirm_rows.py`. Semantic model shape, component/workstream/diagram alignment, rendered Registry spec alignment, component ID fallback, and first-release scope checks now sit outside the package completion parent, which stays below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-intent validation into `greenfield_confirmed_intent_validation.py`. Field thresholds, meta-narration rejection, qualitative gap checks, progression/outcome scoring, and semantic-overlap term extraction now sit outside `greenfield_confirmed_intent.py`, which stays below the 800-line soft limit as the file/JSON/Markdown parser and normalizer. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-completion quality checks into `greenfield_confirmed_completion_quality.py`. Generic text repair detection, sequence repair detection, proof-boundary weakness checks, and bad sentence-tail detection now sit outside `greenfield_confirmed_completion.py`, keeping quality predicates reusable across completion phases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-completion phrase and label derivation into `greenfield_confirmed_completion_text_model.py`. The owner now handles action/outcome phrasing, workstream sentences, project/component/diagram labels, first-path/proof/state summaries, actor summaries, keyword extraction, and backlog-to-component lexical matching while `greenfield_confirmed_completion.py` stays below the 800-line soft limit and calls component contract owners directly for interfaces, dependencies, and validation defaults. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -1492,8 +1492,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Moved confirmed-intent semantic term extraction into `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now passes `CONFIRMED_INTENT_VALIDATION_STOPWORDS` into the text owner, internal-system row parsing imports the same owner, and the confirmed-intent tests were split so the main confirmed-intent suite stays below the test ceiling. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Atlas sequence and first-path flowchart component matching through `greenfield_domain_term_index.ordered_terms`. The shared term index now supports `stem_ing=True` for callers that need gerund collapse, and `greenfield_sequence_diagram.py` no longer owns `_domain_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated semantic model term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_semantic_model.py` now passes semantic-model stopwords to the shared owner for ontology terms, required fields, event targets, and actor terms instead of owning `_semantic_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
-- 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
-- 2026-06-04: Routed post-confirm repeated generated-term counting through `greenfield_domain_term_index.term_frequencies` and generated sentence length filtering through `greenfield_text.word_count`. `greenfield_post_confirm_semantic_drift.py` keeps stopwords, separator cleanup, repetition clustering, and drift thresholds while shared token owners handle reusable counts with one normalized pass. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_preconfirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed post-confirm repeated generated-term counting through `greenfield_domain_term_index.term_frequencies` and generated sentence length filtering through `greenfield_text.word_count`. `greenfield_preconfirm_semantic_drift.py` keeps stopwords, separator cleanup, repetition clustering, and drift thresholds while shared token owners handle reusable counts with one normalized pass. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal substance terms through `greenfield_domain_term_index.ordered_terms`. `proposal_tribunal_substance.py` now keeps only Tribunal stopwords and Atlas action aliases instead of owning direct `normalize_domain_token` calls or local regex token loops for generated Radar, Registry, and Atlas substance checks. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal accepted public-text product phrase matching through `greenfield_domain_term_index.label_terms`. `proposal_tribunal_substance.py` keeps scaffold repetition policy while the shared term index owns raw accepted-text tokenization for product phrases such as `evidence record`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -1546,7 +1546,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed keyed dedupe for sequence event steps, artifact enrichment bullets, and component contract repair targets through `runtime.common.value_coercion.dedupe_by_key`. Those callers keep their step canonicalization, artifact-native bullet keys, and row-identity repair-target keys while common value coercion owns reusable first-seen keyed duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Removed unused actor-term extraction from the confirmed semantic model. `greenfield_semantic_model.py` no longer computes `_actor_terms(human_actors)` or passes an unread `actor_terms` parameter into proof-checkpoint rendering; domain terms stay in the shared term index, and proof checkpoints continue to render from accepted visible-result or proof-boundary text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-26: Captured the typed greenfield repair architecture boundary. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`) Domain Intelligence must move rescue from English issue-string routing and rendered-prose mutation to typed `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`, typed `ReviewReport` findings, and semantic or plan `PatchSet` repair. Host reasoning owns ambiguity interpretation and minimal semantic patches; Odylith owns schema custody, projection isolation, validation, latency budgets, and fail-closed governed writes.
-- 2026-06-26: Implemented the first typed post-confirm repair seam. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_review.py` now owns typed `ReviewReport` findings, `greenfield_post_confirm_findings.py` maps deterministic validators and reviewer lenses into stable finding codes and targets, `greenfield_post_confirm_patchset.py` emits formal semantic or artifact-plan `PatchSet` requests into the post-confirm manifest and repair context, and `greenfield_post_confirm_patch_apply.py` executes operation-level PatchSet repair for current deterministic semantic/quality-lens proposal repair while refusing proposal mutation for artifact-draft-only operations. Full host-authored semantic or artifact-plan patch application remains open.
+- 2026-06-26: Implemented the first typed post-confirm repair seam. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_preconfirm_review.py` now owns typed `ReviewReport` findings, `greenfield_preconfirm_findings.py` maps deterministic validators and reviewer lenses into stable finding codes and targets, `greenfield_preconfirm_patchset.py` emits formal semantic or artifact-plan `PatchSet` requests into the post-confirm manifest and repair context, and `greenfield_preconfirm_patch_apply.py` executes operation-level PatchSet repair for current deterministic semantic/quality-lens proposal repair while refusing proposal mutation for artifact-draft-only operations. Full host-authored semantic or artifact-plan patch application remains open.
 - 2026-06-26: Moved a failed Radar handoff quality regression upstream into projection owners instead of rendered-package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_traceability.py` now normalizes validation copy before Radar sections are assembled, `artifact_enrichment.py` preserves complete validation predicates, and `test_greenfield_radar_projection_quality.py` pins both contracts. The ecommerce post-confirm apply path, the widened greenfield slice, and the post-confirm/prewrite transaction suite all pass after the change.
 - 2026-06-26: Moved raw first-path risk-copy leakage upstream into the workstream risk projection owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_workstream_risk_projection.py` now replaces raw `First path:` action-chain copies with semantic visible-result evidence when the semantic model is available, preserving risk context without repeating comma-heavy workflow prose across Radar artifacts.
 - 2026-06-26: Captured a remaining faithful post-confirm rescue failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) One retained high-variance project completed propose-then-confirm create in 11.668 seconds with no simple red flags, but a second retained high-variance project failed in 9.668 seconds because Radar, Atlas, and project brief projections missed first-path semantic coverage and the Radar index repeated the visible result. Domain Intelligence therefore requires host-authored semantic or artifact-plan patch application, decision-ledger capture, and impacted-projection rerender before release-quality claims.
@@ -1555,23 +1555,23 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Fixed prompt-source custody for source-local confirmed-intent recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_confirmed_prompt_source.py` now isolates the `Original user intent` block from no-host propose guidance envelopes before title and first-path recovery, splits sentence-style prompts into product title and first-release action, and keeps operational `Next step`/CLI instructions out of recovered project facts. The retained recovery replay now passes confirmed create in 14.465 seconds with a standard passed manifest, zero issues, governed records written, and temp cleanup.
 - 2026-06-26: Preserved negative proof-boundary release limits through backlog completion. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_release_scope_limits.py` owns generic proof-boundary limit extraction, `greenfield_confirmed_backlog.py` projects `without claiming ...` and similar limits into proof workstream deferred-scope metrics, `greenfield_confirmed_completion.py` keeps the same limit when component-contract reconciliation rewrites success metrics, and `greenfield_confirmed_completion_text_model.py` recognizes trust/evidence proof rows even when the title says `can be trusted` instead of `proof`.
 - 2026-06-26: Final checkpoint proof for prompt-source and proof-boundary custody passed after shared release-scope helper extraction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Affected confirmed-intent/CLI paths passed 69 tests in 161.14s, the greenfield quality pack passed 160 tests in 50.09s, the heavy post-confirm engine/artifact suite passed 93 tests in 283.07s, and ten fresh source-local simulations passed in 13.970-15.504s with standard-tier manifests, zero issues, all PM/architect/engineer/domain-expert lenses passing, governed records written, and temp repos deleted after every scenario.
-- 2026-06-26: Made `ArtifactPlanIR` PatchSet operations executable for sanctioned projection facts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan_patch_executor.py` now applies formal `target_layer: artifact_plan` replacement facts to approved proposal roots for project brief, Radar backlog, Registry components, Atlas diagrams, release plan, program, assumptions, questions, risks, and validation strategy. It rejects prose-only patches, protects ids, slugs, schema versions, paths, and timestamps, records an artifact-plan patch ledger, and runs through `greenfield_post_confirm_patch_apply.py` before normalization and deterministic completion rerun.
+- 2026-06-26: Made `ArtifactPlanIR` PatchSet operations executable for sanctioned projection facts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan_patch_executor.py` now applies formal `target_layer: artifact_plan` replacement facts to approved proposal roots for project brief, Radar backlog, Registry components, Atlas diagrams, release plan, program, assumptions, questions, risks, and validation strategy. It rejects prose-only patches, protects ids, slugs, schema versions, paths, and timestamps, records an artifact-plan patch ledger, and runs through `greenfield_preconfirm_patch_apply.py` before normalization and deterministic completion rerun.
 - 2026-06-26: Preserved source-local recovered intent facts through completion. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_confirmed_system_completion.py` now keeps explicit spaced-hyphen recovered internal-system rows as canonical system name/description facts instead of collapsing them into one generic component-responsibility row, and `greenfield_confirmed_intent_recovery.py` treats actorless imperative `release ...` clauses as action steps during recovered actor extraction. The fix keeps global prose grammar unchanged after broad regression proof showed that adding `release` globally regressed modal/base-form semantics.
-- 2026-06-26: Removed the old greenfield post-confirm repair authority from raw English issue strings. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_engine.py` now maps raw completion report strings to fail-closed `legacy_untyped_report` blockers, `greenfield_post_confirm_findings.py` maps raw package strings to `legacy_package_artifact_gate` blockers, and `greenfield_post_confirm_package_findings.py` emits source-owned typed package findings for semantic coverage, release drift, Registry preview/spec shape, and bounded mechanical draft-copy cleanup. This keeps human-readable diagnostics out of the semantic routing API.
-- 2026-06-26: Wired the bounded host-reasoned rescue seam through general Tribunal structured patch planning. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_rescue_planner.py` calls `runtime/reasoning/tribunal_patch_planner.py` only in rescue/deep tiers when time remains; the provider can fill replacement facts, decision-ledger entries, proof-obligation deltas, rejected interpretations, and confidence for existing PatchSet operations, while Odylith rejects moved targets, invented operation IDs, and empty facts before semantic or artifact-plan executors run.
+- 2026-06-26: Removed the old greenfield post-confirm repair authority from raw English issue strings. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_preconfirm_engine.py` now maps raw completion report strings to fail-closed `legacy_untyped_report` blockers, `greenfield_preconfirm_findings.py` maps raw package strings to `legacy_package_artifact_gate` blockers, and `greenfield_preconfirm_package_findings.py` emits source-owned typed package findings for semantic coverage, release drift, Registry preview/spec shape, and bounded mechanical draft-copy cleanup. This keeps human-readable diagnostics out of the semantic routing API.
+- 2026-06-26: Wired the bounded host-reasoned rescue seam through general Tribunal structured patch planning. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_preconfirm_rescue_planner.py` calls `runtime/reasoning/tribunal_patch_planner.py` only in rescue/deep tiers when time remains; the provider can fill replacement facts, decision-ledger entries, proof-obligation deltas, rejected interpretations, and confidence for existing PatchSet operations, while Odylith rejects moved targets, invented operation IDs, and empty facts before semantic or artifact-plan executors run.
 - 2026-07-04: Added source-anchored structured-rescue fallback after local provider timeout. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`) The rescue planner still invokes the host reasoning provider first, but exact schema-owned semantic operations with source-owned current values now receive a short 12s host window before applying a semantic fallback that records provider timeout metadata, decision-ledger evidence, and `structured_patch_fallback` manifest truth. Source-local proof completed the natural structured-rescue create in 43.439s with final manifest passed, governed writes committed, `structured_rescue_semantic_patch` repaired, and no rendered-prose mutation. Focused rescue/campaign/proof tests passed 68 tests plus compile and diff checks; installed release proof remains required from the next dist.
 - 2026-07-04: Proved source-anchored structured-rescue fallback in the installed release lane for the then-current checkpoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`) Fresh local-release dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-rescue-fallback-20260704` passed strict full-install release proof with 12/12 high-variance cases, browser proof, zero issue rows, complete governed evidence, and standard create timings of 30.674-40.448s. The natural rescue proof committed governed writes with manifest elapsed 40.888s, `structured_rescue_semantic_patch` repaired, provider timeout recorded after 12.0s, and `structured_patch_fallback.status=applied`; campaign release readiness status was `proven` for that checkpoint. This proof is superseded by later high-variance runtime falsification and the subsequent semantic-ownership repair, so the current source still requires fresh installed high-variance discovery and strict release proof before release readiness can be claimed. The implementation remains generic: no project-domain vocabulary was added to Domain Intelligence.
 - 2026-06-26: Moved semantic PatchSet application to IR-first custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now patches `SemanticModelIR` nodes such as `first_path_contract.raw_path` and `domain_ontology.*` before mirroring accepted-intent compatibility fields, preserves `semantic_model` instead of deleting it for replay, and records `semantic_model.*` applied fields in the semantic patch ledger.
 - 2026-06-26: Proved the cleanup checkpoint through the packaged consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Local release dist `odylith-local-release-0.1.15-d42f127c` passed the installed greenfield post-confirm matrix across five unrelated scenarios in 20.107-23.147 seconds with zero final quality issues, five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, governed records written, and temp repos deleted before the next run.
-- 2026-06-26: Centralized the greenfield `ArtifactPlanIR` projection contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now owns sanctioned artifact-plan roots, projection aliases, immutable metadata fields, affected projection calculation, and artifact-draft repair projection normalization for PatchSet repair. `greenfield_artifact_plan_patch_executor.py`, `greenfield_post_confirm_patchset.py`, and `greenfield_post_confirm_repair.py` consume that shared contract instead of carrying private projection maps or role-surface guesses; role names such as product-manager or architect no longer imply affected projections without a typed projection ID or artifact path. `greenfield_apply_semantic.py` now builds and persists a typed apply-semantic input with source-path provenance, and routes first-path visible-result fallback through the semantic compiler rather than a local visibility regex.
+- 2026-06-26: Centralized the greenfield `ArtifactPlanIR` projection contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now owns sanctioned artifact-plan roots, projection aliases, immutable metadata fields, affected projection calculation, and artifact-draft repair projection normalization for PatchSet repair. `greenfield_artifact_plan_patch_executor.py`, `greenfield_preconfirm_patchset.py`, and `greenfield_preconfirm_repair.py` consume that shared contract instead of carrying private projection maps or role-surface guesses; role names such as product-manager or architect no longer imply affected projections without a typed projection ID or artifact path. `greenfield_apply_semantic.py` now builds and persists a typed apply-semantic input with source-path provenance, and routes first-path visible-result fallback through the semantic compiler rather than a local visibility regex.
 - 2026-06-26: Proved the standard path after structured rescue/provider hardening. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Eight fresh source-local propose-then-confirm simulations across unrelated high-variance domains passed in 14.434-15.514 seconds. Every run stayed on `repair-tier: standard`, did not activate rescue, committed governed writes, reported zero manifest/package quality issues, passed PM/architect/engineer/domain-expert lenses, produced the expected Radar/Registry/Atlas/Compass/project/release records, and deleted its temp repo before the next case.
 - 2026-06-26: Proved the same checkpoint through the fresh installed consumer-lane package. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Local release dist `odylith-local-release-0.1.15-58a9b7c5` passed the installed greenfield post-confirm matrix across five unrelated high-variance scenarios in 18.368-20.393 seconds with zero quality issues, governed writes, at least five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, and temp cleanup by the harness.
 - 2026-06-27: Hardened typed PatchSet dispatch and actor-title projection custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) PatchSet operations now carry operation kind, repair owner, and projection kind into Tribunal structured patch validation and post-confirm apply; first-path repair no longer routes from rejected-prose wording; quality-lens findings without structured facts no longer rehydrate proposal fields; and recovered actor labels trim temporal/proof context before Radar title projection. Focused repair proof passed 58 tests, the widened post-confirm quality/slop/text suite passed 181 tests, and one failed retained replay plus five fresh domains passed source-local confirmed create in 14.005-15.737 seconds with zero quality issues and all expert lenses passing.
-- 2026-06-27: Added scoped prewrite rerender custody for artifact-plan-only PatchSet repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now expands affected projection dependencies and declares which scopes still require full staged prewrite, `greenfield_post_confirm_patch_apply.py` records an auditable patch application ledger, `greenfield_post_confirm_engine.py` consumes that ledger on the next pass, and `greenfield_prewrite_projection_rerender.py` refreshes only the named package previews when the patch does not require semantic completion or Radar/program restaging. A pre-commit review caught and fixed two custody escapes: `program` must remain a first-class full-prewrite projection, and release-scope rerender must include Compass because release assignment feeds Compass acceptance preview state. Focused scoped-rerender tests passed 66 tests, the wider post-confirm quality pack passed 242 tests, and an eight-domain source-local standard-path matrix passed with zero issues, all expert lenses passing, governed writes, and temp cleanup after every case.
+- 2026-06-27: Added scoped prewrite rerender custody for artifact-plan-only PatchSet repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now expands affected projection dependencies and declares which scopes still require full staged prewrite, `greenfield_preconfirm_patch_apply.py` records an auditable patch application ledger, `greenfield_preconfirm_engine.py` consumes that ledger on the next pass, and `greenfield_prewrite_projection_rerender.py` refreshes only the named package previews when the patch does not require semantic completion or Radar/program restaging. A pre-commit review caught and fixed two custody escapes: `program` must remain a first-class full-prewrite projection, and release-scope rerender must include Compass because release assignment feeds Compass acceptance preview state. Focused scoped-rerender tests passed 66 tests, the wider post-confirm quality pack passed 242 tests, and an eight-domain source-local standard-path matrix passed with zero issues, all expert lenses passing, governed writes, and temp cleanup after every case.
 - 2026-06-27: Tightened scoped semantic PatchSet custody and proposal-target routing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now returns a structured semantic application summary with operation ids, applied fields, affected projections, and completion posture; target routing depends on operation-kind allowlists and exact compatibility paths instead of token splitting; proposal-owned projection defects from package findings and quality lenses route to `ArtifactPlanIR` / `plan_patch`; and `greenfield_artifact_plan.py` maps structural envelopes such as `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` to sanctioned projection scope. Focused ArtifactPlanIR/semantic tests passed 17 tests, the post-confirm repair pack passed 74 tests, the widened quality pack passed 250 tests, and a temporary installed release matrix passed five consumer-lane domains in 18.227-19.788 seconds with zero quality issues, governed writes, and all expert lenses passing.
-- 2026-06-27: Made quality-lens repair ownership authoritative and removed the legacy proposal-repair lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_quality_lens_repair.py` is now a metadata-only owner contract, `greenfield_quality_lenses.py` emits that canonical owner for each reviewer check, `greenfield_post_confirm_findings.py` ignores per-check owner drift for known checks and fails unknown checks closed, and greenfield review/rescue/PatchSet custody no longer accepts `proposal_repair`. Focused proof passed 9 tests in 0.34s, the widened greenfield repair pack passed 252 tests in 354.43s, and a fresh installed consumer-lane matrix passed five domains in 18.244-19.934 seconds with zero quality issues, governed writes, and all expert lenses passing.
-- 2026-06-27: Removed semantic grammar authority from artifact-draft package repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Generated-copy and package-quality findings now route mixed action inflection, modal/base drift, malformed ownership pairs, malformed component responsibility, and other non-mechanical copy defects to typed artifact-plan repair or fail-closed blockers. `greenfield_post_confirm_repair.py` no longer runs visible-result, article, modal/base-form, or ownership-verb rewrites over rendered drafts, and only admits `artifact_draft_mechanical_copy` PatchSet operations from `artifact_draft_cleaner` when they carry no replacement fact, decision-ledger entry, or proof-obligation delta. Focused mechanical executor proof passed 7 tests in 0.29s, the post-confirm repair/prewrite pack passed 113 tests in 397.10s, the widened semantic/quality pack passed 194 tests in 327.84s, and a fresh installed consumer-lane matrix passed five domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.
-- 2026-06-27: Added brutal hard-min scoring and fixed action-chain actor recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `scripts/release/greenfield_post_confirm_matrix.py` now reports explicit 10/10 dimensions for completion, latency, semantic manifest, copy/semantic clarity, governance depth, traceability, operator usefulness, and PM/architect/engineer/domain-expert lenses; no-write remains score 0 and rendered artifact defects cap the release score. The scorer uses structured artifact packages rather than raw serialized JSON text. `prose_grammar.py` now recognizes the generic action `organize`, and `greenfield_confirmed_intent_recovery.py` rejects recovered actor labels whose prefix already contains an embedded action clause, preventing action chains from becoming fake actors. Focused score/recovery tests passed 10 tests in 13.58s; the failed retained replay passed source-local create in 17.5s at 10/10; and a final ten-domain source-local matrix passed with min score 10/10, max post-confirm 16.935s, governed writes, zero artifact issues, all expert lenses passing, and `all_cleaned=true`.
+- 2026-06-27: Made quality-lens repair ownership authoritative and removed the legacy proposal-repair lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_quality_lens_repair.py` is now a metadata-only owner contract, `greenfield_quality_lenses.py` emits that canonical owner for each reviewer check, `greenfield_preconfirm_findings.py` ignores per-check owner drift for known checks and fails unknown checks closed, and greenfield review/rescue/PatchSet custody no longer accepts `proposal_repair`. Focused proof passed 9 tests in 0.34s, the widened greenfield repair pack passed 252 tests in 354.43s, and a fresh installed consumer-lane matrix passed five domains in 18.244-19.934 seconds with zero quality issues, governed writes, and all expert lenses passing.
+- 2026-06-27: Removed semantic grammar authority from artifact-draft package repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Generated-copy and package-quality findings now route mixed action inflection, modal/base drift, malformed ownership pairs, malformed component responsibility, and other non-mechanical copy defects to typed artifact-plan repair or fail-closed blockers. `greenfield_preconfirm_repair.py` no longer runs visible-result, article, modal/base-form, or ownership-verb rewrites over rendered drafts, and only admits `artifact_draft_mechanical_copy` PatchSet operations from `artifact_draft_cleaner` when they carry no replacement fact, decision-ledger entry, or proof-obligation delta. Focused mechanical executor proof passed 7 tests in 0.29s, the post-confirm repair/prewrite pack passed 113 tests in 397.10s, the widened semantic/quality pack passed 194 tests in 327.84s, and a fresh installed consumer-lane matrix passed five domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.
+- 2026-06-27: Added brutal hard-min scoring and fixed action-chain actor recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `scripts/release/greenfield_preconfirm_matrix.py` now reports explicit 10/10 dimensions for completion, latency, semantic manifest, copy/semantic clarity, governance depth, traceability, operator usefulness, and PM/architect/engineer/domain-expert lenses; no-write remains score 0 and rendered artifact defects cap the release score. The scorer uses structured artifact packages rather than raw serialized JSON text. `prose_grammar.py` now recognizes the generic action `organize`, and `greenfield_confirmed_intent_recovery.py` rejects recovered actor labels whose prefix already contains an embedded action clause, preventing action chains from becoming fake actors. Focused score/recovery tests passed 10 tests in 13.58s; the failed retained replay passed source-local create in 17.5s at 10/10; and a final ten-domain source-local matrix passed with min score 10/10, max post-confirm 16.935s, governed writes, zero artifact issues, all expert lenses passing, and `all_cleaned=true`.
 - 2026-06-27: Repaired prompt-source role-purpose modalization without reopening infinitive drift. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_confirmed_prompt_source.py` now preserves `use to` infinitive action chains first, then converts human-role purpose tails before action words from `to` to `can`, including coordinated role clauses where distinct human roles have distinct purpose clauses. The owner remains regex-free and domain-neutral. Focused proof passed the retained wrapper failures, the infinitive guard, the actor-chain guard, and hard-score matrix unit tests.
 - 2026-06-27: Proved the brutal-score checkpoint through the fresh installed package. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Local release dist `odylith-local-release-0.1.15-ddecaf5e` passed the installed greenfield post-confirm matrix across five unrelated high-variance scenarios in 19.780-23.035 seconds. Every installed consumer-lane run scored 10/10, wrote governed records, reported zero issues, passed product-manager, architect, engineer, and domain-expert lenses, produced five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, and deleted temporary repos after proof.
 - 2026-06-27: Repaired a packaged Atlas clipping escape through generic semantic and projection ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_status_modifiers.py` now separates conservative artifact-tail status modifiers from result-status modifiers, first-path semantics keep result-state modifiers attached to the visible outcome, visible-result normalization rewrites noun/status result items such as `object established` into grammatical modifier order, possessive result items keep the status after the possessor, and the Atlas terminal flowchart label uses the semantic visible result only when the final step is a long clipping-risk reporting wrapper. `greenfield_component_kinds.py` owns source-backed adapter recovery, requiring strong evidence-boundary naming plus external source/repository/provider context so ordinary history/timeline views stay services. The clipped-label package gate remains unchanged and no domain-specific terms were added. Focused proof covers the retained saved-intent shape, the artifact-tail leak repro, the possessive result repro, and rejects the prior dangling-tail Mermaid output; the broader artifact-quality/prewrite pack passed 61 tests; local release dist `odylith-local-release-0.1.15-7e548d40` passed release smoke and the installed eight-case matrix in 19.887-22.399s with hard 10/10 scores, zero quality issues, governed writes, and all expert lenses passing. The post-commit local-release matrix repeats this proof requirement for the final installable package, including dense-technical standard proof under 60s and installed auto-rescue smoke under the 90-second rescue tier as wiring proof, not natural rescue-quality proof.
@@ -1741,13 +1741,13 @@ This section captures synchronized requirement and contract signals derived from
   rows. `greenfield_semantic_model.py` may use the shared term index for active
   domain terms, but proof-checkpoint rendering must not accept or compute dead
   `actor_terms`, `_actor_terms`, or local `seen`/`seen.add(...)` dedupe loops.
-- Confirmed-create completion must run after normalization and before any
+- Pre-confirm compilation completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,
   then reruns the greenfield Tribunal and governed artifact Tribunals. It may
   retry bounded deterministic omissions, but it must not invent source-backed
   implementation evidence or ask the host to hand-author proposal JSON.
-- Confirmed-create rescue must repair semantic or planning facts, not rendered
+- Pre-confirm compilation rescue must repair semantic or planning facts, not rendered
   prose. The durable architecture is a typed pipeline:
   `ConfirmedIntentIR -> SemanticModelIR -> ArtifactPlanIR -> ArtifactDraftSet ->
   ReviewReport -> PatchSet`. Host reasoning may adjudicate ambiguous actor,
@@ -1761,15 +1761,15 @@ This section captures synchronized requirement and contract signals derived from
   checks pass only when every active component has rendered spec or preview
   evidence. The lens must not fail a valid two-system confirmed create solely
   because a historical matrix usually emitted three components.
-- Post-confirm findings must be typed and lens-owned, not mutable English
+- Pre-confirm findings must be typed and lens-owned, not mutable English
   substrings. PM, architect, engineer, and domain-review checks may produce
   readable diagnostics, but repair routing must depend on finding codes,
   source-map targets, semantic node IDs, and affected projection IDs.
-- `greenfield_post_confirm_completion.py` owns package assembly and report
+- `greenfield_preconfirm_completion.py` owns package assembly and report
   custody only. Typed finding collection belongs in
-  `greenfield_post_confirm_findings.py`, typed review/finding schemas belong in
-  `greenfield_post_confirm_review.py`, and formal repair-target requests belong
-  in `greenfield_post_confirm_patchset.py`. `greenfield_post_confirm_patch_apply.py`
+  `greenfield_preconfirm_findings.py`, typed review/finding schemas belong in
+  `greenfield_preconfirm_review.py`, and formal repair-target requests belong
+  in `greenfield_preconfirm_patchset.py`. `greenfield_preconfirm_patch_apply.py`
   owns operation-level PatchSet application for proposal repair. Semantic-model
   patch execution belongs in `greenfield_semantic_patch_executor.py`, and
   artifact-plan patch execution belongs in
@@ -1778,7 +1778,7 @@ This section captures synchronized requirement and contract signals derived from
   target-layer sets, or source-name sets. Artifact-plan operations may update
   only sanctioned projection roots and must preserve structural metadata such
   as ids, slugs, schema versions, source paths, and timestamps.
-- `greenfield_post_confirm_patchset.py` must route proposal-owned projection
+- `greenfield_preconfirm_patchset.py` must route proposal-owned projection
   findings to `ArtifactPlanIR`, not `SemanticModelIR`. Findings that target
   `proposal.backlog`, `proposal.components`, `proposal.diagrams`,
   `proposal.release_plan`, `proposal.assumptions`,
@@ -1813,14 +1813,14 @@ This section captures synchronized requirement and contract signals derived from
   accepted-intent fields, and first-path visible-result fallback must ask the
   semantic compiler for high-confidence visible-result candidates instead of
   owning local visibility regexes or outcome word lists.
-- Post-confirm package findings must be source typed before repair. Raw package
+- Pre-confirm package findings must be source typed before repair. Raw package
   issue strings are diagnostic blockers only; they must not be classified by
-  message shape into semantic or plan repair. `greenfield_post_confirm_package_findings.py`
+  message shape into semantic or plan repair. `greenfield_preconfirm_package_findings.py`
   owns package-level typed findings for semantic coverage, release drift,
   Registry preview/spec shape, accepted-project drift, and the explicit
   safe-mechanical-copy subset.
 - Rescue/deep host reasoning must enter through
-  `greenfield_post_confirm_rescue_planner.py` and the general
+  `greenfield_preconfirm_rescue_planner.py` and the general
   `runtime/reasoning/tribunal_patch_planner.py` contract. Domain Intelligence
   may pass typed findings, review evidence, and PatchSet requests, but it must
   retain custody of operation identity, target layer, target path,
@@ -1829,7 +1829,7 @@ This section captures synchronized requirement and contract signals derived from
   provider timeout may fall back only when the missing operation names an exact
   schema-owned semantic target and the accepted proposal already contains a
   source-owned value for that target; the fallback must record a decision ledger
-  and still pass the final post-confirm gate before governed writes.
+  and still pass the final pre-confirm gate before governed writes.
 - Semantic PatchSet emission must fail closed unless the finding names an
   executable semantic slot. Generic reviewer-lens roots, whole
   `SemanticModelIR` roots, or other unpatchable semantic facts must not become
@@ -1861,7 +1861,7 @@ This section captures synchronized requirement and contract signals derived from
   or formatting support behind a named owner. It must not become the semantic
   repair mechanism, domain classifier, ambiguity resolver, or quality substitute
   for the typed host-reasoned pipeline.
-- Confirmed-create semantic rendering must run after deterministic completion
+- Pre-confirm semantic rendering must run after deterministic completion
   and before any source-truth write. It must compile first-path action,
   capability, and visible-result clauses once from the accepted semantic model,
   keep post-result follow-up from leaking into the first implementation slice,
@@ -2084,12 +2084,12 @@ This section captures synchronized requirement and contract signals derived from
   fields, event targets, and actor terms. Semantic-model stopwords may remain
   caller-owned, but `greenfield_semantic_model.py` must not reintroduce
   `_semantic_terms`, `_term_token`, or direct `normalize_domain_token` loops.
-- Post-confirm semantic drift, repetition, and overlap signatures must use
+- Pre-confirm semantic drift, repetition, and overlap signatures must use
   `greenfield_domain_term_index.ordered_terms`. The drift checker may retain
-  post-confirm stopwords and separator cleanup, but it must not reintroduce
+  pre-confirm stopwords and separator cleanup, but it must not reintroduce
   `_term_token`, local regex token loops, or direct `normalize_domain_token`
   calls.
-- Post-confirm repeated generated-term counts must use
+- Pre-confirm repeated generated-term counts must use
   `greenfield_domain_term_index.term_frequencies`, and generated sentence
   length filtering must use `greenfield_text.word_count`. The drift checker may
   retain stopwords, separator cleanup, repetition clustering, and thresholds,
@@ -2140,7 +2140,7 @@ This section captures synchronized requirement and contract signals derived from
 - Generated list-row coercion must stay in `greenfield_rows.py`. Confirmed
   prewrite gates, Tribunal checks, title repair, apply-prewrite remapping,
   confirmed completion, backlog impact, implementation handoff shaping,
-  component completion, component-contract differentiation, and post-confirm
+  component completion, component-contract differentiation, and pre-confirm
   semantic/package checks may call `mapping_rows`, `dict_rows`, `row_count`, or
   `mapping_count`, but they must not reintroduce local `_mapping_rows`,
   `_dict_rows`, `_component_rows`, `_created_rows`, `_row_count`, or
@@ -2226,7 +2226,7 @@ This section captures synchronized requirement and contract signals derived from
   orchestrator may call `completed_system_rows`, `system_labels`, and
   `state_label`, but it must not re-own fallback system generation, system
   label cleanup, system-description cleanup, or context-clause matching.
-- Confirmed-create prewrite gating must stay in
+- Pre-confirm prewrite gating must stay in
   `greenfield_confirmed_prewrite_gate.py`. The completion orchestrator may call
   `complete_semantic_model` and `preflight_issues`, but it must not re-own the
   greenfield Tribunal call, governed-artifact Tribunal aggregation, or local
@@ -2393,7 +2393,7 @@ This section captures synchronized requirement and contract signals derived from
   diagnostics. Each PM, architect, engineer, and domain-expert check must carry
   the stable role, check id, status, evidence, source-map target path,
   semantic-node id, projection id, repairability, and repair owner at the point
-  of judgment so post-confirm repair can route by structured custody instead of
+  of judgment so pre-confirm repair can route by structured custody instead of
   interpreting reviewer prose.
 - Quality-lens repair ownership must be declared in
   `greenfield_quality_lens_repair.py` and treated as authoritative by both the
@@ -2402,7 +2402,7 @@ This section captures synchronized requirement and contract signals derived from
   according to that contract. Unknown future lens checks must fail closed as
   unrepairable until their owner, target layer, and repairability are added to
   the contract. `proposal_repair` is not a valid greenfield repairability.
-- Auto-tier post-confirm repair must start on the standard 60-second budget.
+- Auto-tier pre-confirm repair must start on the standard 60-second budget.
   The engine may extend to the 90-second rescue budget only after a repairable
   final semantic or quality gate failure activates rescue. Deep 120-second
   repair remains explicit premium/CI mode, not the normal operator path.
@@ -2421,7 +2421,7 @@ This section captures synchronized requirement and contract signals derived from
   the 90-second rescue budget. Greenfield must not ask the provider to rewrite
   rendered Radar, Registry, Atlas, project-brief, release, Compass, or next-step
   prose.
-- The post-confirm engine owns rescue evidence custody. If a repair pass uses a
+- The pre-confirm engine owns rescue evidence custody. If a repair pass uses a
   provider-backed PatchSet, the final clean manifest must preserve that repair
   request as `last_repair_patchset_request` instead of rebuilding all evidence
   from the final no-issue report. The current `patchset_request` continues to
@@ -2446,7 +2446,7 @@ This section captures synchronized requirement and contract signals derived from
 - Rendered package scope drift is a projection custody failure. If the
   rendered Registry, Radar, Atlas, project-brief, or next-step package no
   longer matches the accepted semantic/artifact plan but the proposal facts are
-  otherwise valid, the post-confirm engine may schedule deterministic scoped
+  otherwise valid, the pre-confirm engine may schedule deterministic scoped
   prewrite rerender through `projection_rerender`. The engine must not turn
   that finding into a host semantic patch or artifact-draft cleanup. Direct
   engine callers that omit rerender custody must fail with an explicit
@@ -2474,7 +2474,7 @@ This section captures synchronized requirement and contract signals derived from
   so renderers project a typed fact instead of appending generic accepted-result
   prose or repairing rendered Markdown.
 - Confirmed-intent completion must render object phrases grammatically before
-  proposal validation and before the post-confirm package engine. One-word
+  proposal validation and before the pre-confirm package engine. One-word
   accepted state labels such as `Report` must become mid-sentence object
   phrases such as `the report`, not title-cased fragments after verbs such as
   `understand`.
@@ -2504,7 +2504,7 @@ This section captures synchronized requirement and contract signals derived from
   confirmed-intent override text needed to replay escaped operator-input
   shapes. External fresh-variance cases are loaded from explicit JSON case
   files by the release harness, not added to reusable platform defaults.
-  Persisted matrix proof must expose post-confirm manifest summaries and
+  Persisted matrix proof must expose pre-confirm manifest summaries and
   cleanup proof so standard, rescue, provider-backed patch planning, and
   leftover-temp behavior can be audited from the JSON artifact.
 - Installed release matrix artifact collection must preserve record custody:
@@ -2662,7 +2662,7 @@ This section captures synchronized requirement and contract signals derived from
   executable; Registry generated-copy defects map to component contract source
   leaves when the component row is identifiable; and package repetition cannot
   use root-level patches as a repair shortcut. Focused proof passed 130
-  source-address, PatchSet, post-confirm engine, quality-repair,
+  source-address, PatchSet, pre-confirm engine, quality-repair,
   source-addressed repair, quality-lens, and package-repetition tests plus
   py-compile, `git diff --check`, the 285-term platform domain-leakage guard,
   and governed validation after Atlas sync. This checkpoint strengthens the
@@ -2744,7 +2744,7 @@ This section captures synchronized requirement and contract signals derived from
   proof passing 12/12, natural rescue passing within the 90s rescue budget, and
   no failure clusters. Discovery proof remains a separate contract and cannot
   be claimed from release proof alone.
-- Post-confirm PatchSet custody update: Domain Intelligence treats executable
+- Pre-confirm PatchSet custody update: Domain Intelligence treats executable
   replacement facts as the boundary between reasoning and governed custody.
   Rescue may not call a repair callback for a semantic or artifact-plan
   operation until the shared Tribunal missing-fact contract recognizes an
@@ -2798,18 +2798,18 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_component_spec_quality.py`
 - `tests/unit/runtime/test_tribunal_lens.py`
 - `tests/unit/runtime/test_greenfield_quality_lens_repair.py`
-- `tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py`
-- `tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py`
-- `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py`
+- `tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py`
+- `tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py`
+- `tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`
 - `tests/unit/runtime/test_greenfield_sparse_confirmed_intent.py`
 - `tests/unit/runtime/test_greenfield_confirmed_surfaces.py`
 - `tests/unit/runtime/test_greenfield_general_artifact_quality.py`
-- `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py`
+- `tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py`
 - `tests/unit/runtime/test_greenfield_live_simulation_regressions.py`
-- `tests/unit/install/test_greenfield_post_confirm_matrix.py`
+- `tests/unit/install/test_greenfield_preconfirm_matrix.py`
 - `tests/unit/runtime/test_tribunal_patch_planner.py`
 - `tests/unit/runtime/test_odylith_reasoning.py`
 - `tests/unit/runtime/test_tribunal_engine.py`

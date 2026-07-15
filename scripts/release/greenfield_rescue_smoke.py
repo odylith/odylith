@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_probe import (
     rescue_probe_env,
 )
 
@@ -13,7 +13,7 @@ from greenfield_matrix_quality_scoring import elapsed_time_issues
 from greenfield_matrix_quality_scoring import required_domain_term_hits
 
 
-POST_CONFIRM_RESCUE_BUDGET_SECONDS = 90.0
+PRECONFIRM_RESCUE_BUDGET_SECONDS = 90.0
 
 
 def rescue_cli_issues(
@@ -30,7 +30,7 @@ def rescue_cli_issues(
     create_seconds: float,
     detail: str,
     expected_requested_tier: str = "auto",
-    expected_repaired_issue_code: str = "post_confirm_rescue_probe",
+    expected_repaired_issue_code: str = "preconfirm_rescue_probe",
     forbidden_repaired_issue_codes: Sequence[str] = (),
 ) -> tuple[str, ...]:
     """Return release-blocking issues for an installed CLI auto-rescue create."""
@@ -38,10 +38,10 @@ def rescue_cli_issues(
     issues: list[str] = []
     if create_returncode != 0:
         issues.append(f"auto-rescue create exited with code {create_returncode}: {str(detail or '').strip()[:800]}")
-    if create_seconds >= POST_CONFIRM_RESCUE_BUDGET_SECONDS:
-        issues.append(f"auto-rescue create exceeded {POST_CONFIRM_RESCUE_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
+    if create_seconds >= PRECONFIRM_RESCUE_BUDGET_SECONDS:
+        issues.append(f"auto-rescue create exceeded {PRECONFIRM_RESCUE_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
     if not manifest:
-        issues.append("auto-rescue post-confirm quality manifest missing")
+        issues.append("auto-rescue pre-confirm quality manifest missing")
     else:
         issues.extend(
             _manifest_issues(
@@ -91,7 +91,7 @@ def _manifest_issues(
         issues.append(f"auto-rescue manifest active tier is {manifest.get('repair_tier')!r}")
     if bool(manifest.get("rescue_activated")) is not True:
         issues.append("auto-rescue manifest did not mark rescue_activated")
-    if float(manifest.get("budget_seconds") or 0.0) != POST_CONFIRM_RESCUE_BUDGET_SECONDS:
+    if float(manifest.get("budget_seconds") or 0.0) != PRECONFIRM_RESCUE_BUDGET_SECONDS:
         issues.append(f"auto-rescue manifest budget is {manifest.get('budget_seconds')!r}")
     if int(manifest.get("passes") or 0) < 2:
         issues.append("auto-rescue manifest did not record a repair pass after the injected typed failure")
@@ -107,7 +107,7 @@ def _manifest_issues(
     issues.extend(f"auto-rescue {issue}" for issue in write_transaction_issues(manifest))
     issues.extend(
         f"auto-rescue {issue}"
-        for issue in elapsed_time_issues(manifest, budget_seconds=POST_CONFIRM_RESCUE_BUDGET_SECONDS)
+        for issue in elapsed_time_issues(manifest, budget_seconds=PRECONFIRM_RESCUE_BUDGET_SECONDS)
     )
     if str(as_mapping(manifest.get("quality_lenses")).get("status", "")).strip() != "passed":
         issues.append("auto-rescue quality lens report did not pass")
@@ -130,7 +130,7 @@ def _count_floor_issues(
 
 
 __all__ = [
-    "POST_CONFIRM_RESCUE_BUDGET_SECONDS",
+    "PRECONFIRM_RESCUE_BUDGET_SECONDS",
     "installed_auto_rescue_env",
     "rescue_cli_issues",
 ]

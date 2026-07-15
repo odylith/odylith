@@ -189,7 +189,7 @@ def build_greenfield_quality_lens_report(package: Any) -> dict[str, Any]:
 
 
 def greenfield_quality_lens_issues(package: Any) -> list[str]:
-    """Return issue strings suitable for the post-confirm completion gate."""
+    """Return issue strings suitable for the pre-confirm compilation gate."""
 
     report = build_greenfield_quality_lens_report(package)
     return [str(issue) for issue in report.get("issues", []) if str(issue).strip()]

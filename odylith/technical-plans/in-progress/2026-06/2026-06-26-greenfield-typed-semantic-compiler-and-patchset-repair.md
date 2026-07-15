@@ -749,7 +749,7 @@ vocabulary, or degraded packages.
   uses source-owned typed findings for semantic coverage, release drift,
   Registry preview/spec shape, and explicitly safe mechanical copy cleanup.
   Rescue/deep host reasoning is wired through
-  `greenfield_post_confirm_rescue_planner.py` and the general-purpose
+  `greenfield_preconfirm_rescue_planner.py` and the general-purpose
   `tribunal_patch_planner.py`; the host may fill only replacement facts,
   decision-ledger entries, proof-obligation deltas, rejected interpretations,
   and confidence for existing PatchSet operations after remaining-budget
@@ -978,14 +978,14 @@ vocabulary, or degraded packages.
       schema, and stable source-span IDs remain open.
 - [x] Convert final package validators to emit typed finding codes, source-map
       targets, semantic node IDs, projection IDs, severity, and repairability.
-      `greenfield_post_confirm_findings.py` now owns typed finding collection
+      `greenfield_preconfirm_findings.py` now owns typed finding collection
       for proposal, semantic, component, package, and quality-lens gates.
 - [x] Replace post-confirm issue-substring routing with typed finding routing.
       Internally generated reports classify and build failure signatures from
       typed findings. Untyped completion reports are now fail-closed
       `legacy_untyped_report` blockers, and raw package issue strings are
       `legacy_package_artifact_gate` blockers with no semantic repair
-      authority. `greenfield_post_confirm_patch_apply.py` consumes
+      authority. `greenfield_preconfirm_patch_apply.py` consumes
       operation-level `PatchSet` entries instead of target-layer/source sets,
       preserves target path plus semantic node context, and leaves
       artifact-draft-only operations out of proposal mutation.
@@ -1016,8 +1016,8 @@ vocabulary, or degraded packages.
       PatchSet operation from `artifact_draft_cleaner` carries no semantic
       replacement facts.
       `greenfield_artifact_plan.py` expands affected projection dependencies
-      and marks Radar/program scopes as full-prewrite, `greenfield_post_confirm_patch_apply.py`
-      records a patch application ledger, `greenfield_post_confirm_engine.py`
+      and marks Radar/program scopes as full-prewrite, `greenfield_preconfirm_patch_apply.py`
+      records a patch application ledger, `greenfield_preconfirm_engine.py`
       consumes that ledger on the next pass, and
       `greenfield_prewrite_projection_rerender.py` refreshes only the named
       prewrite package previews when staged recomputation is not required.
@@ -1201,13 +1201,13 @@ vocabulary, or degraded packages.
       after final package quality passes for the current prewrite transaction
       slice. The ecommerce handoff regression now passes, the widened
       greenfield slice passed with 231 tests in 137.78 seconds, and
-      `test_greenfield_post_confirm_engine.py` plus
+      `test_greenfield_preconfirm_engine.py` plus
       `test_greenfield_prewrite_transaction.py` passed with 75 tests in
       315.34 seconds.
 - [x] Focused seam validation passed with
-      `test_greenfield_post_confirm_engine.py`,
-      `test_greenfield_post_confirm_quality_repairs.py`,
-      `test_greenfield_post_confirm_slop_regressions.py`,
+      `test_greenfield_preconfirm_engine.py`,
+      `test_greenfield_preconfirm_quality_repairs.py`,
+      `test_greenfield_preconfirm_slop_regressions.py`,
       `test_greenfield_package_repetition_quality.py`, and
       `test_greenfield_radar_projection_quality.py`: 130 tests in 60.09
       seconds.
@@ -1257,7 +1257,7 @@ vocabulary, or degraded packages.
 - [x] Typed projection-contract proof: `test_greenfield_artifact_plan_ir.py`,
       `test_greenfield_artifact_plan_patch_executor.py`,
       `test_greenfield_semantic_compiler.py`,
-      `test_greenfield_post_confirm_engine.py`, and
+      `test_greenfield_preconfirm_engine.py`, and
       `test_greenfield_semantic_patch_executor.py` passed 60 tests in 26.47s;
       compile proof passed for the changed modules; `git diff --check` passed;
       Registry validation passed under `enforce-critical`; and
@@ -1653,11 +1653,11 @@ vocabulary, or degraded packages.
 - [x] Decomposed the installed release matrix after adding the sparse and
       quantum cases pushed the runner past the source-size threshold. The
       runner now owns install, timing, artifact collection, scoring, cleanup,
-      and rescue smoke; `greenfield_post_confirm_matrix_cases.py` owns only the
+      and rescue smoke; `greenfield_preconfirm_matrix_cases.py` owns only the
       high-variance case catalog. The runner is back under the hard threshold,
       and install-matrix unit proof passed.
 - [x] Closed the release-gate custody miss found by independent review: the
-      shared release proof lane now runs `greenfield_post_confirm_matrix.py`
+      shared release proof lane now runs `greenfield_preconfirm_matrix.py`
       after local release smoke, persists
       `greenfield-post-confirm-matrix.v1.json` in the dist directory, and fails
       release-candidate/preflight proof if the installed matrix fails. The
@@ -2217,7 +2217,7 @@ vocabulary, or degraded packages.
       path, attaches them to a compact action head before final title
       projection, and avoids domain vocabulary, post-render repair, or a new
       regex parser. Focused proof passed
-      `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py` and
+      `tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py` and
       `tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py` together:
       44/44.
 - [x] Rebuild the installable dist after the workstream-title source fix and
@@ -2244,7 +2244,7 @@ vocabulary, or degraded packages.
       per-case `leakage_terms`, falls back to required terms only for custom
       cases that still produce distinctive coverage, filters standalone generic
       product/platform-native words, and exposes a shared source/dist custody
-      scan. `greenfield_post_confirm_matrix.py` requires every selected case to
+      scan. `greenfield_preconfirm_matrix.py` requires every selected case to
       contribute at least one distinctive leakage term before serving the dist
       or creating temp repos. Focused proof passed 50 install/bootstrap tests,
       py_compile, a selected explicit platform-word phrase scan, and the
@@ -2566,7 +2566,7 @@ vocabulary, or degraded packages.
 - [x] Split release-matrix scoring out of the oversized runner.
       `greenfield_matrix_quality_scoring.py` now owns brutal score dimensions,
       expert-lens score assembly, write-commit checks, count minimums, browser
-      proof scoring, and score explanations. `greenfield_post_confirm_matrix.py`
+      proof scoring, and score explanations. `greenfield_preconfirm_matrix.py`
       is back under the hard source-size pressure and owns orchestration,
       install/create execution, artifact collection, cleanup, and persisted
       matrix output. Focused install/leakage tests passed after updating tests
@@ -2856,7 +2856,7 @@ vocabulary, or degraded packages.
       Product priority was clarified: post-confirm governed record creation is
       the first invariant, while premium artifact quality remains mandatory and
       visible as debt when it is not clean. The root cause was two-layered:
-      `run_greenfield_post_confirm_engine` refused to return when only typed
+      `run_greenfield_preconfirm_engine` refused to return when only typed
       rendered-projection quality findings remained after repair/rerender
       no-progress, and `write_greenfield_proposal` could still raise inside
       `GreenfieldApplyTransaction` on component-spec, next-step, or final

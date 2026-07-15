@@ -4,15 +4,15 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_patch_apply
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor import (
     apply_artifact_plan_patch_operations,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
     GreenfieldCompletionReport,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    GreenfieldPostConfirmRepairContext,
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    GreenfieldPreconfirmRepairContext,
 )
 
 
@@ -393,42 +393,42 @@ def test_path_value_patch_updates_nested_component_contract_field() -> None:
 
 def test_patchset_repair_executes_artifact_plan_operations(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "complete_confirmed_proposal",
         lambda proposal, *, release_selector: dict(proposal),
     )
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "ensure_apply_semantic_model",
         lambda proposal, **_kwargs: proposal,
     )
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("project brief preview missing release proof",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-102",
@@ -450,7 +450,7 @@ def test_patchset_repair_executes_artifact_plan_operations(monkeypatch: pytest.M
         rescue_activated=True,
     )
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         {"project_brief": {"project_outcome": "Old outcome."}},
         release_selector="0.0.1",
         repair_context=context,
@@ -467,39 +467,39 @@ def test_patchset_repair_skips_full_completion_for_scoped_artifact_plan_patch(
 ) -> None:
     calls: list[str] = []
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
 
     def unexpected_completion(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
         calls.append("completion")
         return {}
 
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("project brief preview missing release proof",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-SCOPED",
@@ -521,7 +521,7 @@ def test_patchset_repair_skips_full_completion_for_scoped_artifact_plan_patch(
         rescue_activated=True,
     )
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         {"project_brief": {"project_outcome": "Old outcome."}},
         release_selector="0.0.1",
         repair_context=context,
@@ -531,7 +531,7 @@ def test_patchset_repair_skips_full_completion_for_scoped_artifact_plan_patch(
     assert repaired["project_brief"]["project_outcome"] == (
         "Release 0.0.1 proves the accepted path with review evidence."
     )
-    application = repaired["post_confirm_patch_application_ledger"][-1]
+    application = repaired["preconfirm_patch_application_ledger"][-1]
     assert application["operation_ids"] == ("GF-PATCH-SCOPED",)
     assert application["affected_projections"] == ("project_brief",)
     assert application["rerender_projections"] == (
@@ -550,13 +550,13 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
 ) -> None:
     calls: list[str] = []
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
@@ -565,24 +565,24 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
         calls.append("completion")
         return {}
 
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
-    context = GreenfieldPostConfirmRepairContext(
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("program wave plan needs restaging",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-PROGRAM",
@@ -604,7 +604,7 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
         rescue_activated=True,
     )
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         {"program": {"waves": []}},
         release_selector="0.0.1",
         repair_context=context,
@@ -612,7 +612,7 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
 
     assert calls == []
     assert repaired["program"]["waves"] == [{"wave_id": "W1", "goal": "Prove the governed acceptance path."}]
-    application = repaired["post_confirm_patch_application_ledger"][-1]
+    application = repaired["preconfirm_patch_application_ledger"][-1]
     assert application["affected_projections"] == ("program",)
     assert application["rerender_projections"] == (
         "program",
@@ -631,13 +631,13 @@ def test_patchset_repair_release_scope_refreshes_compass_without_full_prewrite(
 ) -> None:
     calls: list[str] = []
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
@@ -646,24 +646,24 @@ def test_patchset_repair_release_scope_refreshes_compass_without_full_prewrite(
         calls.append("completion")
         return {}
 
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
-    context = GreenfieldPostConfirmRepairContext(
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("release assignment preview needs acceptance refresh",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-RELEASE",
@@ -685,7 +685,7 @@ def test_patchset_repair_release_scope_refreshes_compass_without_full_prewrite(
         rescue_activated=True,
     )
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         {"release_plan": {"strategy": "Old strategy."}},
         release_selector="0.0.1",
         repair_context=context,
@@ -693,7 +693,7 @@ def test_patchset_repair_release_scope_refreshes_compass_without_full_prewrite(
 
     assert calls == []
     assert repaired["release_plan"]["strategy"] == "Release 0.0.1 carries the acceptance evidence."
-    application = repaired["post_confirm_patch_application_ledger"][-1]
+    application = repaired["preconfirm_patch_application_ledger"][-1]
     assert application["affected_projections"] == ("release",)
     assert application["rerender_projections"] == (
         "release",

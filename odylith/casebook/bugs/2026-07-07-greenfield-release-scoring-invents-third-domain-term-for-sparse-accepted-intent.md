@@ -50,9 +50,9 @@
 
 - Agent Guardrails: When a replay declares fewer than three required terms, do not synthesize additional terms for scoring; inspect whether all declared accepted terms are grounded.
 
-- Preflight Checks: Run tests/unit/install/test_greenfield_post_confirm_matrix.py declared-domain-term regressions before rebuilding the dist.
+- Preflight Checks: Run tests/unit/install/test_greenfield_preconfirm_matrix.py declared-domain-term regressions before rebuilding the dist.
 
-- Regression Tests Added: tests/unit/install/test_greenfield_post_confirm_matrix.py::test_quality_verdict_accepts_sparse_case_when_all_declared_domain_terms_survive
+- Regression Tests Added: tests/unit/install/test_greenfield_preconfirm_matrix.py::test_quality_verdict_accepts_sparse_case_when_all_declared_domain_terms_survive
 
 - Monitoring Updates: Retain the exact failed-subset replay cluster domain.term.coverage.too.low.expected.least.found until the rebuilt dist passes.
 
@@ -70,4 +70,4 @@
 
 - Code References: - scripts/release/greenfield_matrix_quality_scoring.py
 - scripts/release/greenfield_rescue_smoke.py
-- tests/unit/install/test_greenfield_post_confirm_matrix.py
+- tests/unit/install/test_greenfield_preconfirm_matrix.py

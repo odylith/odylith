@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
     GreenfieldCompletionPackage,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_findings import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_package_findings import (
     package_artifact_findings,
 )
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues

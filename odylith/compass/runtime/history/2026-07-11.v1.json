@@ -151452,7 +151452,7 @@
         "odylith/casebook/casebook.html",
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "source": "git",
       "session_id": "",
@@ -152015,7 +152015,7 @@
       ],
       "files": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "source": "git",
       "session_id": "",
@@ -152634,8 +152634,8 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
       ],
       "source": "git",
       "session_id": "",
@@ -160159,7 +160159,7 @@
         "odylith/casebook/casebook.html",
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -160187,7 +160187,7 @@
             "odylith/casebook/casebook.html",
             "odylith/registry/source/components/release/CURRENT_SPEC.md",
             "src/odylith/bundle/assets/odylith/casebook/casebook.html",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py"
           ],
           "source": "git",
           "session_id": "",
@@ -161064,7 +161064,7 @@
       ],
       "files": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -161085,7 +161085,7 @@
           ],
           "files": [
             "odylith/registry/source/components/release/CURRENT_SPEC.md",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py"
           ],
           "source": "git",
           "session_id": "",
@@ -161997,8 +161997,8 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -162083,8 +162083,8 @@
             "src/odylith/bundle/assets/odylith/casebook/casebook.html",
             "src/odylith/bundle/assets/odylith/compass/compass.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py"
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
           ],
           "source": "git",
           "session_id": "",
@@ -162893,7 +162893,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_action_split.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_commit_result.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_stage_root.py",
@@ -162947,10 +162947,10 @@
         "tests/unit/runtime/test_greenfield_hiit_quality_regression.py",
         "tests/unit/runtime/test_greenfield_live_simulation_regressions.py",
         "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_intent_evidence_regression.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_intent_evidence_regression.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py",
         "tests/unit/runtime/test_greenfield_precompiled_baseline.py",
         "tests/unit/runtime/test_greenfield_precompiled_brand_assets.py",
         "tests/unit/runtime/test_greenfield_prewrite_transaction.py",

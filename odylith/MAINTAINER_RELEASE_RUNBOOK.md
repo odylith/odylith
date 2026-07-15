@@ -262,14 +262,14 @@ Run the targets in this order.
   and a local hosted-style installer proof for
   `install -> version -> doctor -> sync`.
 - `make release-preflight` must also fail closed unless the built local dist
-  passes the installed greenfield post-confirm release matrix. That matrix is
+  passes the installed greenfield pre-confirm compilation and commit-only release matrix. That matrix is
   part of shared release proof, must cover at least ten high-variance standard
   cases under the 60 second budget, must run per-case headless generated
   browser state proof for Radar, Registry, Atlas, Compass, Casebook, and
   tooling-shell surfaces, including normal shell routes, invalid-query
   recovery, and Casebook empty/filter fallback, must provision Playwright
   Chromium through the maintained proof wrapper, must persist
-  `greenfield-post-confirm-matrix.v1.json` in the dist directory, and must label
+  `greenfield-preconfirm-matrix.v1.json` in the dist directory, and must label
   installed rescue smoke as wiring-only unless a natural non-internal rescue
   scenario is also proven. `BROWSER_PROOF=0` is local debugging only and cannot
   support release readiness.

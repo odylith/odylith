@@ -20,7 +20,7 @@ from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribuna
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
-POST_CONFIRM_BUDGET_SECONDS = 60.0
+PRECONFIRM_BUDGET_SECONDS = 60.0
 QUALITY_SCORE_DIMENSIONS = (
     "completion",
     "latency",
@@ -51,7 +51,7 @@ def build_quality_verdict(
     create_seconds: float,
     create_detail: str = "",
 ) -> GreenfieldQualityVerdict:
-    manifest = mapping_copy(create_payload.get("post_confirm_quality_manifest"))
+    manifest = mapping_copy(create_payload.get("commit_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
     package_lens_report = mapping_copy(build_greenfield_quality_lens_report(package)) if create_returncode == 0 else {}
     package_lenses = _package_lenses(package_lens_report)
@@ -140,9 +140,9 @@ def completion_issues(
 ) -> tuple[str, ...]:
     issues: list[str] = []
     if create_returncode != 0:
-        issues.append(f"post-confirm create exited with code {create_returncode}")
-    if create_seconds >= POST_CONFIRM_BUDGET_SECONDS:
-        issues.append(f"post-confirm create exceeded {POST_CONFIRM_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
+        issues.append(f"commit-only create exited with code {create_returncode}")
+    if create_seconds >= PRECONFIRM_BUDGET_SECONDS:
+        issues.append(f"commit-only create exceeded {PRECONFIRM_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
     minimums = required_count_minimums()
     for label, value in _count_values(counts).items():
         if value < minimums[label]:
@@ -421,7 +421,7 @@ def _completion_score(*, manifest: Mapping[str, Any], counts: GreenfieldArtifact
 def _latency_score(*, create_returncode: int, create_seconds: float) -> int:
     if create_returncode != 0:
         return 0
-    if create_seconds < POST_CONFIRM_BUDGET_SECONDS:
+    if create_seconds < PRECONFIRM_BUDGET_SECONDS:
         return 10
     if create_seconds < 90.0:
         return 6
@@ -533,7 +533,7 @@ def _score_explanation(
     lenses: Mapping[str, bool],
 ) -> tuple[str, ...]:
     if create_returncode != 0 or not write_committed(manifest):
-        return ("score forced to 0 because post-confirm did not commit governed records",)
+        return ("score forced to 0 because commit-only create did not commit governed records",)
     explanations: list[str] = []
     if rendered_issues:
         explanations.append(f"copy/semantic artifact findings cap release score at 6; findings={len(tuple(rendered_issues))}")
@@ -625,28 +625,28 @@ def _manifest_issues(
     product_create_transaction: Mapping[str, Any] | None = None,
 ) -> tuple[str, ...]:
     if not manifest:
-        return ("post-confirm quality manifest missing",)
+        return ("pre-confirm quality manifest missing",)
     issues: list[str] = []
     if str(manifest.get("status", "")).strip() != "passed":
-        issues.append(f"post-confirm quality manifest status is {manifest.get('status')!r}")
+        issues.append(f"pre-confirm quality manifest status is {manifest.get('status')!r}")
     if str(manifest.get("validation_status", "")).strip() != "passed":
-        issues.append(f"post-confirm validation status is {manifest.get('validation_status')!r}")
+        issues.append(f"pre-confirm validation status is {manifest.get('validation_status')!r}")
     if int(manifest.get("issue_count") or 0) != 0:
-        issues.append(f"post-confirm quality manifest has {manifest.get('issue_count')} issue(s)")
+        issues.append(f"pre-confirm quality manifest has {manifest.get('issue_count')} issue(s)")
     issues.extend(
-        f"post-confirm {issue}"
+        f"commit-only {issue}"
         for issue in write_transaction_custody_issues(
             manifest,
             product_create_transaction=product_create_transaction,
         )
     )
     issues.extend(
-        f"post-confirm {issue}"
-        for issue in elapsed_time_issues(manifest, budget_seconds=POST_CONFIRM_BUDGET_SECONDS)
+        f"pre-confirm {issue}"
+        for issue in elapsed_time_issues(manifest, budget_seconds=PRECONFIRM_BUDGET_SECONDS)
     )
     lens_report = mapping_copy(manifest.get("quality_lenses"))
     if str(lens_report.get("status", "")).strip() != "passed":
-        issues.append("post-confirm quality lens report did not pass")
+        issues.append("pre-confirm quality lens report did not pass")
     return tuple(issues)
 
 
@@ -739,11 +739,11 @@ def _create_failure_detail_issues(*, create_returncode: int, create_detail: str)
     if create_returncode == 0:
         return ()
     detail = command_excerpt(create_detail)
-    return (f"post-confirm create failure detail: {detail}",) if detail else ()
+    return (f"commit-only create failure detail: {detail}",) if detail else ()
 
 
 __all__ = [
-    "POST_CONFIRM_BUDGET_SECONDS",
+    "PRECONFIRM_BUDGET_SECONDS",
     "QUALITY_SCORE_DIMENSIONS",
     "build_quality_verdict",
     "command_excerpt",

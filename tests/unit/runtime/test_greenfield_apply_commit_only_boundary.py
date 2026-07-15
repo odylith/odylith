@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import ast
+import inspect
 import json
 from pathlib import Path
 from typing import Any
@@ -13,8 +15,12 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_backlog_commit
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_component_commit
-from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
+from odylith.runtime.domain_intelligence import greenfield_confirmed_intent
+from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_rescue_planner
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stage
+from odylith.runtime.domain_intelligence import greenfield_prompt_intent_materialization
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
 from odylith.runtime.domain_intelligence import greenfield_programs
@@ -102,12 +108,29 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     greenfield_proposals.write_product_create_transaction_file(transaction_file, transaction)
 
     def forbidden(*_args: object, **_kwargs: object) -> None:
-        raise AssertionError("post-confirm create must not compile, repair, clean, or rebuild package projections")
+        raise AssertionError("commit-only create must not compile, repair, clean, or rebuild package projections")
 
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", forbidden)
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "apply_greenfield_patchset_repairs", forbidden)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "apply_greenfield_patchset_repairs", forbidden)
+    monkeypatch.setattr(greenfield_preconfirm_rescue_planner.odylith_reasoning, "provider_from_config", forbidden)
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        forbidden,
+    )
+    monkeypatch.setattr(
+        greenfield_prompt_intent_materialization,
+        "materialize_prompt_confirmed_intent",
+        forbidden,
+    )
+    monkeypatch.setattr(
+        greenfield_prompt_intent_materialization,
+        "materialize_prompt_intent_hypothesis",
+        forbidden,
+    )
+    monkeypatch.setattr(greenfield_confirmed_intent, "load_confirmed_intent_record", forbidden)
     monkeypatch.setattr(display_text, "strip_inline_markdown_emphasis_tree", forbidden)
     monkeypatch.setattr(greenfield_apply_prewrite, "build_prewrite_completion_package", forbidden)
     monkeypatch.setattr(greenfield_prewrite_surface_stage, "build_staged_surface_refresh_preview", forbidden)
@@ -157,6 +180,26 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
 
     assert rc == 0, output
     payload = json.loads(output)
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert payload["commit_manifest"]["write_transaction"]["commit_only"] is True
     assert payload["repository_write_set"]["status"] == "passed"
     assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
+
+
+def test_commit_executor_has_no_preconfirm_compiler_or_rescue_imports() -> None:
+    tree = ast.parse(inspect.getsource(greenfield_create_commit))
+    imported_modules = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    }
+    imported_modules.update(
+        node.module or ""
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+    )
+
+    assert not {
+        "odylith.runtime.domain_intelligence.greenfield_preconfirm_engine",
+        "odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_planner",
+    }.intersection(imported_modules)

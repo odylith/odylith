@@ -160,6 +160,6 @@ def test_commit_product_create_transaction_does_not_seed_brand_assets_after_conf
         started_at=0.0,
     )
 
-    assert result["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert result["commit_manifest"]["write_transaction"]["commit_only"] is True
     assert (tmp_path / "odylith/surfaces/brand/manifest.json").is_file()
     assert (tmp_path / "odylith/surfaces/brand/icon/odylith-icon.svg").is_file()

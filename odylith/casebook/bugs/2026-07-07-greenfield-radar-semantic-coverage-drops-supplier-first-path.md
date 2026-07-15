@@ -64,6 +64,6 @@
 
 - Public Response: pending
 
-- Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+- Code References: - src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
 - src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py

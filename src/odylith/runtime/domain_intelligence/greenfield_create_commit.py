@@ -19,14 +19,14 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_intent_authority,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    POST_CONFIRM_ENGINE_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
+    PRECONFIRM_ENGINE_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    POST_CONFIRM_QUALITY_MANIFEST_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
+    PRECONFIRM_QUALITY_MANIFEST_VERSION,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    finalize_greenfield_post_confirm_manifest,
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
+    finalize_greenfield_commit_manifest,
 )
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
@@ -90,7 +90,7 @@ def commit_greenfield_create_transaction(
                 write_set=transaction.prewrite_package.repository_write_set,
             )
             write_paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
-            final_manifest = finalize_greenfield_post_confirm_manifest(
+            final_manifest = finalize_greenfield_commit_manifest(
                 transaction.quality_manifest,
                 whole_project_elapsed_seconds=time.perf_counter() - started,
                 write_transaction_status="committed",
@@ -136,7 +136,7 @@ def commit_greenfield_create_transaction(
             recovery_path=write_transaction.recovery_path if write_transaction is not None else "",
         ) from exc
     final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
-    result["post_confirm_quality_manifest"] = final_manifest
+    result["commit_manifest"] = final_manifest
     result["product_create_transaction"] = transaction.summary()
     return result
 
@@ -190,8 +190,8 @@ def raise_for_unapproved_product_create_transaction(transaction: ProductCreateTr
         else {}
     )
     pre_confirm_write_sealed = (
-        str(transaction.quality_manifest.get("version", "")).strip() == POST_CONFIRM_QUALITY_MANIFEST_VERSION
-        and str(transaction.quality_manifest.get("engine", "")).strip() == POST_CONFIRM_ENGINE_VERSION
+        str(transaction.quality_manifest.get("version", "")).strip() == PRECONFIRM_QUALITY_MANIFEST_VERSION
+        and str(transaction.quality_manifest.get("engine", "")).strip() == PRECONFIRM_ENGINE_VERSION
         and str(write_transaction.get("status", "")).strip() == "not_started"
         and str(write_transaction.get("rollback_guard", "")).strip() == "enabled"
         and write_transaction.get("prewrite_clean_before_commit") is True

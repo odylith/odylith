@@ -48,24 +48,24 @@ from odylith.runtime.domain_intelligence.proposal_normalization import normalize
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_completion_ready
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_package_ready
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    GreenfieldPostConfirmRepairContext,
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import assert_greenfield_completion_ready
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import assert_greenfield_package_ready
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    GreenfieldPreconfirmRepairContext,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    POST_CONFIRM_MAX_PASSES,
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    PRECONFIRM_MAX_PASSES,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    run_greenfield_post_confirm_engine,
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    run_greenfield_preconfirm_engine,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_patch_apply import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_patch_apply import (
     apply_greenfield_patchset_repairs,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_patch_apply import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_patch_apply import (
     complete_greenfield_semantic_apply_payload,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_planner import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_planner import (
     enrich_rescue_patchset_with_structured_plan,
 )
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
@@ -227,9 +227,9 @@ _TITLE_ACRONYMS = {
     "ux": "UX",
 }
 
-_MAX_PACKAGE_REPAIR_PASSES = POST_CONFIRM_MAX_PASSES
-_DEFAULT_POST_CONFIRM_REPAIR_TIER = "auto"
-DEFAULT_POST_CONFIRM_REPAIR_TIER = _DEFAULT_POST_CONFIRM_REPAIR_TIER
+_MAX_PACKAGE_REPAIR_PASSES = PRECONFIRM_MAX_PASSES
+_DEFAULT_PRECONFIRM_REPAIR_TIER = "auto"
+DEFAULT_PRECONFIRM_REPAIR_TIER = _DEFAULT_PRECONFIRM_REPAIR_TIER
 
 
 def _title_token(token: str) -> str:
@@ -278,7 +278,7 @@ def source_evidence(repo_root: Path) -> dict[str, Any]:
 
 
 def _confirmed_intent_source_evidence(repo_root: Path) -> dict[str, Any]:
-    """Return post-confirm repo evidence without scanning source files."""
+    """Return pre-confirm repo evidence without scanning source files."""
 
     root = Path(repo_root).expanduser().resolve()
     return {
@@ -598,7 +598,7 @@ def _build_repaired_prewrite_package(
     proposal: Mapping[str, Any],
     release_selector: str,
     proposal_ready: bool = False,
-    repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
+    repair_tier: str = _DEFAULT_PRECONFIRM_REPAIR_TIER,
 ) -> tuple[Mapping[str, Any], Any, greenfield_apply_prewrite.GreenfieldPrewriteBuild, dict[str, Any]]:
     def build_prewrite(
         current_proposal: Mapping[str, Any],
@@ -613,7 +613,7 @@ def _build_repaired_prewrite_package(
             release_assignment_note=greenfield_apply_write.release_assignment_note(selector=release_selector),
         )
 
-    result = run_greenfield_post_confirm_engine(
+    result = run_greenfield_preconfirm_engine(
         proposal=proposal,
         release_selector=release_selector,
         build_prewrite=build_prewrite,
@@ -659,7 +659,7 @@ def compile_greenfield_create_transaction(
     proposal: Mapping[str, Any],
     release_selector: str,
     proposal_ready: bool = False,
-    repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
+    repair_tier: str = _DEFAULT_PRECONFIRM_REPAIR_TIER,
 ) -> ProductCreateTransaction:
     """Compile and quality-gate the complete create package before commit."""
 
@@ -700,7 +700,7 @@ def _repair_confirmed_apply_payload(
     proposal: Mapping[str, Any],
     *,
     release_selector: str,
-    repair_context: GreenfieldPostConfirmRepairContext | None = None,
+    repair_context: GreenfieldPreconfirmRepairContext | None = None,
     repo_root: Path | None = None,
 ) -> Mapping[str, Any]:
     repair_context = enrich_rescue_patchset_with_structured_plan(
@@ -718,9 +718,9 @@ def _repair_confirmed_apply_payload(
 def _prepare_confirmed_apply_repair_context(
     proposal: Mapping[str, Any],
     *,
-    repair_context: GreenfieldPostConfirmRepairContext,
+    repair_context: GreenfieldPreconfirmRepairContext,
     repo_root: Path | None,
-) -> GreenfieldPostConfirmRepairContext:
+) -> GreenfieldPreconfirmRepairContext:
     """Attach bounded structured repair evidence before the engine records custody."""
 
     enriched = enrich_rescue_patchset_with_structured_plan(
@@ -738,9 +738,9 @@ def apply_greenfield_proposal(
     confirm: bool,
     release_selector: str = "",
     proposal_ready: bool = True,
-    repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
+    repair_tier: str = _DEFAULT_PRECONFIRM_REPAIR_TIER,
 ) -> dict[str, Any]:
-    """Reject the removed post-confirm proposal-apply path."""
+    """Reject the removed non-commit proposal-apply path."""
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")

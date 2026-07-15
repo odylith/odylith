@@ -247,7 +247,7 @@ def raise_for_greenfield_rendered_surface_custody(*, repo_root: Path, diagram_id
             issues.append(f"{diagram_id}: missing Atlas reviewed_watch_fingerprints")
     if issues:
         detail = "\n".join(f"- {issue}" for issue in issues)
-        raise RuntimeError(f"greenfield post-confirm rendered surface custody failed with {len(issues)} issue(s):\n{detail}")
+        raise RuntimeError(f"greenfield pre-confirm rendered surface custody failed with {len(issues)} issue(s):\n{detail}")
     return {
         "status": "passed",
         "atlas_surface_count": len(required_surfaces),

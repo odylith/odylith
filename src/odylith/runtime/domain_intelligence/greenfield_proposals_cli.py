@@ -18,8 +18,8 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmEngineError
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_REPAIR_TIERS
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmEngineError
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_REPAIR_TIERS
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 
@@ -73,8 +73,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--release", default="")
     apply.add_argument(
         "--repair-tier",
-        choices=POST_CONFIRM_REPAIR_TIERS,
-        default=greenfield_proposals.DEFAULT_POST_CONFIRM_REPAIR_TIER,
+        choices=PRECONFIRM_REPAIR_TIERS,
+        default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
         help=(
             "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
             "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
@@ -127,8 +127,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument("--release", default="")
     compile_transaction.add_argument(
         "--repair-tier",
-        choices=POST_CONFIRM_REPAIR_TIERS,
-        default=greenfield_proposals.DEFAULT_POST_CONFIRM_REPAIR_TIER,
+        choices=PRECONFIRM_REPAIR_TIERS,
+        default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
         help=(
             "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
             "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
@@ -245,8 +245,8 @@ def _transaction_confirmation_text(
 def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
     if as_json:
         payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
-        if isinstance(exc, GreenfieldPostConfirmEngineError):
-            payload["post_confirm_quality_manifest"] = exc.manifest
+        if isinstance(exc, GreenfieldPreconfirmEngineError):
+            payload["commit_manifest"] = exc.manifest
         if isinstance(exc, greenfield_create_commit.GreenfieldCreateCommitError):
             payload["commit_failure"] = exc.to_dict()
         print(json.dumps(payload, indent=2, sort_keys=True))
@@ -254,7 +254,7 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
     print(str(exc))
 
 
-def _post_confirm_create_overrides(args: argparse.Namespace) -> list[str]:
+def _create_input_overrides(args: argparse.Namespace) -> list[str]:
     overrides: list[str] = []
     has_transaction_ref = bool(str(getattr(args, "transaction_file", "") or "").strip())
     if has_transaction_ref and str(getattr(args, "prompt", "") or "").strip():
@@ -407,7 +407,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         "first_word_rule": "Only the first command counts. Do not paste Odylith system commands in your reply.",
                         "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
                         "post_confirm_contract": (
-                            "CONFIRM commits only this hash-bound transaction; post-confirm create verifies the hash, "
+                            "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
                             "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
                             "guard, validates readback, and reports success or environment/IO failure."
                         ),
@@ -464,12 +464,13 @@ def main(argv: Sequence[str] | None = None) -> int:
                     + "` first, "
                     "then run create with --transaction-file, --transaction-hash, and --confirm."
                 )
-            post_confirm_overrides = _post_confirm_create_overrides(args)
-            if post_confirm_overrides:
+            create_input_overrides = _create_input_overrides(args)
+            if create_input_overrides:
                 raise ValueError(
-                    "greenfield create cannot accept post-confirm inputs: "
-                    + ", ".join(post_confirm_overrides)
-                    + ". Edit the Product Intent evidence and rebuild the ProductCreateTransaction; "
+                    "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm; "
+                    "unexpected options: "
+                    + ", ".join(create_input_overrides)
+                    + ". Use EDIT to add evidence and rebuild the ProductCreateTransaction; "
                     "create only verifies the hash and commits the compiled package."
                 )
             transaction = greenfield_proposals.load_product_create_transaction_args(args, repo_root=repo_root)
@@ -479,7 +480,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "Run `odylith greenfield propose --repo-root . --prompt "
                     + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
                     + "` first; "
-                    "post-confirm create only commits an already compiled ProductCreateTransaction."
+                    "commit-only create only commits an already compiled ProductCreateTransaction."
                 )
             result, captured = _run_with_optional_stdout_capture(
                 enabled=bool(args.as_json),

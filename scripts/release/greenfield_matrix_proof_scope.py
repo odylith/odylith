@@ -18,7 +18,7 @@ TEMP_CLEANUP_PATTERNS: tuple[str, ...] = (
 )
 
 
-def post_confirm_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]:
+def commit_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]:
     """Return the manifest facts needed for release-proof readback."""
 
     if not manifest:
@@ -74,7 +74,7 @@ def natural_rescue_quality_proven(results: Sequence[GreenfieldMatrixResult]) -> 
     """Return true only when a real installed case proves provider-backed rescue."""
 
     for result in results:
-        summary = dict(result.post_confirm_manifest_summary or {})
+        summary = dict(result.commit_manifest_summary or {})
         if result.status != "passed":
             continue
         if summary.get("status") != "passed" or summary.get("validation_status") != "passed":
@@ -82,7 +82,7 @@ def natural_rescue_quality_proven(results: Sequence[GreenfieldMatrixResult]) -> 
         if summary.get("repair_tier") not in {"rescue", "deep"} or not summary.get("rescue_activated"):
             continue
         repaired_codes = set(summary.get("repaired_issue_codes") or [])
-        if "post_confirm_rescue_probe" in repaired_codes:
+        if "preconfirm_rescue_probe" in repaired_codes:
             continue
         if not _structured_rescue_plan_or_fallback_proven(summary):
             continue
@@ -192,6 +192,6 @@ def _slug(value: Any) -> str:
 
 __all__ = [
     "natural_rescue_quality_proven",
-    "post_confirm_manifest_summary",
+    "commit_manifest_summary",
     "temp_cleanup_proof",
 ]

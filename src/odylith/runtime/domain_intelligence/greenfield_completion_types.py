@@ -7,8 +7,8 @@ from dataclasses import asdict
 from dataclasses import dataclass
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_report_from_findings
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import GreenfieldReviewFinding
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import review_report_from_findings
 
 
 @dataclass(frozen=True)

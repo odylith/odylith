@@ -52,9 +52,9 @@
 
 - Preflight Checks: Search Casebook for prior structured-rescue and replacement_fact failures; run focused post-confirm PatchSet and artifact-plan executor tests.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py covers missing-assumption refusal; tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py preserves assumption metadata by id; tests/unit/runtime/test_greenfield_post_confirm_executable_patchset.py guards executable PatchSet semantics.
+- Regression Tests Added: tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py covers missing-assumption refusal; tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py preserves assumption metadata by id; tests/unit/runtime/test_greenfield_preconfirm_executable_patchset.py guards executable PatchSet semantics.
 
-- Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
+- Code References: - src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
-- tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py
+- tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py
 - tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py

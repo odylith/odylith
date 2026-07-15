@@ -44,7 +44,7 @@
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
 
-- Trigger Path: scripts/release/greenfield_post_confirm_matrix.py custom cases using greenfield propose followed by greenfield create --confirm --release 0.0.1 --json
+- Trigger Path: scripts/release/greenfield_preconfirm_matrix.py custom cases using greenfield propose followed by greenfield create --confirm --release 0.0.1 --json
 
 - Ownership: Domain Intelligence greenfield post-confirm semantic compiler and final quality gate
 
@@ -200,7 +200,7 @@
   2026-06-28 evidence audit found a release-proof recurrence: this bug already
   required installed matrix proof by default, but the shared
   `run_release_proof_steps` lane still stopped after local release smoke and
-  did not run `greenfield_post_confirm_matrix.py`. The matrix was therefore
+  did not run `greenfield_preconfirm_matrix.py`. The matrix was therefore
   available as an explicit make target but not canonical release-gated. The
   same audit found the default matrix was still eight standard cases, rescue
   smoke could be read as full rescue-quality proof, and matrix JSON proof was
@@ -991,7 +991,7 @@
   them to a compact action head before final title rendering, and uses shared
   semantic-word extraction plus string partitioning instead of adding a new
   regex parser. Focused proof now passes
-  `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py` and
+  `tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py` and
   `tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py` together:
   44 tests passed in 6.46s. Installed matrix proof against the rebuilt package
   remains required because this source fix landed after dist `2308795e`.
@@ -1051,7 +1051,7 @@
   packages and governed evidence, and line tokenization is cached once per
   line so archive proof stays bounded. Focused proof passed
   `tests/unit/install/test_platform_domain_leakage_check.py` and
-  `tests/unit/install/test_greenfield_post_confirm_matrix.py` together:
+  `tests/unit/install/test_greenfield_preconfirm_matrix.py` together:
   52 tests passed in 0.24s. Source plus dist
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cd6cf643`
   then passed the strengthened platform domain-leakage check across 49
@@ -1675,8 +1675,8 @@
   prefixed duplicate actor labels. Focused proof passed
   `tests/unit/runtime/test_greenfield_semantic_compiler.py`,
   `tests/unit/runtime/test_greenfield_semantic_model_quality.py`,
-  `tests/unit/runtime/test_greenfield_post_confirm_engine.py`, the full
-  `test_greenfield_post_confirm_slop_regressions.py` file, and syntax proof
+  `tests/unit/runtime/test_greenfield_preconfirm_engine.py`, the full
+  `test_greenfield_preconfirm_slop_regressions.py` file, and syntax proof
   for the touched source. Source-local replay of the sparse confirmed intent
   then completed in 24.268s with a passed manifest, zero issues, 4 Radar
   records, 3 Registry specs, 6 Atlas diagrams, no `result result`, preserved
@@ -1855,7 +1855,7 @@
 - src/odylith/runtime/reasoning/tribunal_lens.py
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
 - src/odylith/runtime/common/mermaid_text.py
-- scripts/release/greenfield_post_confirm_matrix.py
+- scripts/release/greenfield_preconfirm_matrix.py
 - scripts/release/greenfield_rescue_smoke.py
 - src/odylith/runtime/project_intelligence/source_launch.py
 - src/odylith/runtime/domain_intelligence/greenfield_experience.py
@@ -1871,4 +1871,4 @@
 - scripts/release/publish_release_assets.py
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
 - tests/unit/runtime/test_greenfield_project_brief_rendering.py
-- tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py
+- tests/integration/runtime/test_greenfield_hiit_preconfirm_quality.py

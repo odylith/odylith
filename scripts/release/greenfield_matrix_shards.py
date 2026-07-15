@@ -24,7 +24,7 @@ from greenfield_matrix_stressors import required_stressors_from_values
 from greenfield_matrix_stressors import stressor_coverage
 from greenfield_matrix_stressors import variance_evaluation
 from greenfield_matrix_case_file import load_case_file
-from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
 SHARD_BUILDER_VERSION = "odylith.greenfield.matrix.shards.v1"

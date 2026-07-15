@@ -15,7 +15,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from greenfield_matrix_campaign import missing_required_stressors  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_leakage import case_preflight_leakage_terms  # noqa: E402
-from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 import platform_domain_leakage_check as platform_domain_leakage  # noqa: E402
 
 

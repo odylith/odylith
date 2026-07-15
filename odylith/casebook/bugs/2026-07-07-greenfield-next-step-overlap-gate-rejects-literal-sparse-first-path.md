@@ -52,7 +52,7 @@
 
 - Preflight Checks: Run focused next-step package tests and exact installed failed-subset replay before resuming volume or release-proof campaigns.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_operator_next_steps_accept_literal_sparse_first_path_preservation; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_operator_next_steps_reject_visible_result_only_first_path_fragment; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_operator_next_steps_reject_mutation_only_first_path_fragment
+- Regression Tests Added: tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_operator_next_steps_accept_literal_sparse_first_path_preservation; tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_operator_next_steps_reject_visible_result_only_first_path_fragment; tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_operator_next_steps_reject_mutation_only_first_path_fragment
 
 - Monitoring Updates: Track this signature in failed-subset replay clustering before release readiness.
 
@@ -68,5 +68,5 @@
 
 - Public Response: pending
 
-- Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
-- tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+- Code References: - src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
+- tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py

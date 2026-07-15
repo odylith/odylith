@@ -60,8 +60,8 @@
 
 - Related Incidents/Bugs: CB-205; 2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative
 
-- Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_repair.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+- Code References: - src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
 - src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py
 - src/odylith/runtime/artifact_quality/greenfield_package_quality.py
 - tests/unit/runtime/test_greenfield_proposals.py

@@ -145995,12 +145995,12 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_sections.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
         "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent.py",
         "tests/unit/runtime/test_greenfield_general_artifact_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
         "tests/unit/runtime/test_greenfield_proposals.py"
       ],
       "source": "git",
@@ -146171,7 +146171,7 @@
         "B-142"
       ],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
         "odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md",
         "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md"
@@ -146667,7 +146667,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_targets.py",
@@ -146846,7 +146846,7 @@
         "tests/unit/runtime/test_greenfield_atlas_contract.py",
         "tests/unit/runtime/test_greenfield_hiit_quality_regression.py",
         "tests/unit/runtime/test_greenfield_live_simulation_regressions.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py"
       ],
       "source": "git",
       "session_id": "",
@@ -147033,7 +147033,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
         "src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
         "tests/unit/runtime/test_greenfield_first_path_modal_semantics.py"
@@ -147488,14 +147488,14 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
         "src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py",
         "tests/unit/runtime/test_greenfield_artifact_plan_ir.py",
         "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py"
       ],
       "source": "git",
       "session_id": "",
@@ -147580,7 +147580,7 @@
       ],
       "files": [
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
@@ -147611,7 +147611,7 @@
       ],
       "files": [
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
@@ -147881,9 +147881,9 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
         "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
         "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
         "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py"
       ],
       "source": "git",
       "session_id": "",
@@ -147912,7 +147912,7 @@
       ],
       "files": [
         "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py"
       ],
       "source": "assistant",
       "session_id": "019eb25a-7d32-7d02-8ab4-edcadefe558a",
@@ -148721,11 +148721,11 @@
         "src/odylith/bundle/assets/odylith/compass/compass-style-execution-waves.v1.css",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
         "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
         "tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py",
         "tests/unit/runtime/test_greenfield_source_addressed_repair.py"
       ],
       "source": "git",
@@ -149071,10 +149071,10 @@
         "src/odylith/bundle/assets/odylith/radar/radar.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/common/safe_ledger_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
         "tests/unit/runtime/test_greenfield_semantic_patch_executor.py",
         "tests/unit/runtime/test_tribunal_patch_planner.py"
       ],
@@ -149107,7 +149107,7 @@
         "src/odylith/runtime/common/safe_ledger_text.py",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py"
       ],
       "source": "assistant",
       "session_id": "019eb25a-7d32-7d02-8ab4-edcadefe558a",
@@ -149215,8 +149215,8 @@
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py"
       ],
       "source": "git",
       "session_id": "",
@@ -149498,9 +149498,9 @@
         "src/odylith/runtime/common/prose_grammar.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
         "src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py",
         "src/odylith/runtime/project_intelligence/product_story_cards.py",
@@ -149509,9 +149509,9 @@
         "tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py",
         "tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
         "tests/unit/runtime/test_tribunal_patch_planner.py"
       ],
       "source": "git",
@@ -149725,17 +149725,17 @@
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_review.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_review.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/reasoning/tribunal_lens.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
         "tests/unit/runtime/test_greenfield_prewrite_transaction.py",
         "tests/unit/runtime/test_greenfield_semantic_patch_executor.py"
       ],
@@ -149765,7 +149765,7 @@
         "B-142"
       ],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
@@ -149925,8 +149925,8 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py"
       ],
       "source": "git",
       "session_id": "",
@@ -149954,7 +149954,7 @@
         "B-142"
       ],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
         "/private/tmp/odylith-natural-source-create.stdout"
       ],
       "source": "assistant",
@@ -150021,17 +150021,17 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_structured_rescue_proof.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_structured_rescue_proof.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py",
-        "tests/unit/install/test_greenfield_post_confirm_natural_rescue.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py",
+        "tests/unit/install/test_greenfield_preconfirm_natural_rescue.py",
         "tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_structured_rescue_proof.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_structured_rescue_proof.py"
       ],
       "source": "git",
       "session_id": "",
@@ -150059,7 +150059,7 @@
         "B-142"
       ],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "source": "assistant",
@@ -150200,7 +150200,7 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
       ],
       "source": "git",
       "session_id": "",
@@ -150528,7 +150528,7 @@
         "src/odylith/runtime/project_intelligence/utils.py",
         "src/odylith/runtime/surfaces/atlas_box_explanations.py",
         "src/odylith/runtime/surfaces/atlas_box_terms.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_atlas_box_terms.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
@@ -150676,10 +150676,10 @@
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py",
         "src/odylith/runtime/domain_intelligence/proposal_memory.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py",
         "tests/unit/runtime/test_greenfield_projection_contracts.py",
         "tests/unit/runtime/test_greenfield_semantic_compiler.py"
       ],
@@ -150812,7 +150812,7 @@
         "src/odylith/bundle/assets/odylith/index.html",
         "src/odylith/bundle/assets/odylith/radar/radar.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "source": "git",
@@ -151040,7 +151040,7 @@
         "src/odylith/bundle/assets/odylith/index.html",
         "src/odylith/bundle/assets/odylith/radar/radar.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "source": "git",
@@ -151140,7 +151140,7 @@
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/runtime/test_greenfield_confirmed_repair.py"
       ],
       "source": "git",
@@ -151224,7 +151224,7 @@
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_purpose_context.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
         "tests/unit/runtime/test_greenfield_first_path_modal_semantics.py"
@@ -151305,7 +151305,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "source": "git",
@@ -151539,8 +151539,8 @@
         "B-142"
       ],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd"
       ],
@@ -151627,8 +151627,8 @@
       ],
       "files": [
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
         "/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json"
       ],
       "source": "assistant",
@@ -151738,9 +151738,9 @@
         "B-142"
       ],
       "files": [
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
@@ -151977,7 +151977,7 @@
       ],
       "files": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "source": "assistant",
       "session_id": "019eb25a-7d32-7d02-8ab4-edcadefe558a",
@@ -152531,7 +152531,7 @@
       "files": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py",
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
         "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd"
@@ -152592,7 +152592,7 @@
       ],
       "files": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "source": "assistant",
@@ -153813,12 +153813,12 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_sections.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
         "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent.py",
         "tests/unit/runtime/test_greenfield_general_artifact_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
         "tests/unit/runtime/test_greenfield_proposals.py"
       ],
       "explicit_open": false,
@@ -153891,12 +153891,12 @@
             "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_sections.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
             "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
             "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent.py",
             "tests/unit/runtime/test_greenfield_general_artifact_quality.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
             "tests/unit/runtime/test_greenfield_proposals.py"
           ],
           "source": "git",
@@ -154160,7 +154160,7 @@
         "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
         "odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -154176,7 +154176,7 @@
             "B-142"
           ],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
             "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
             "odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md",
             "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md"
@@ -154954,7 +154954,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_targets.py",
@@ -155014,7 +155014,7 @@
             "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
             "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
             "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
             "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
             "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_targets.py",
@@ -155282,7 +155282,7 @@
         "tests/unit/runtime/test_greenfield_atlas_contract.py",
         "tests/unit/runtime/test_greenfield_hiit_quality_regression.py",
         "tests/unit/runtime/test_greenfield_live_simulation_regressions.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -155327,7 +155327,7 @@
             "tests/unit/runtime/test_greenfield_atlas_contract.py",
             "tests/unit/runtime/test_greenfield_hiit_quality_regression.py",
             "tests/unit/runtime/test_greenfield_live_simulation_regressions.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+            "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py"
           ],
           "source": "git",
           "session_id": "",
@@ -155601,7 +155601,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
         "src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
         "tests/unit/runtime/test_greenfield_first_path_modal_semantics.py"
@@ -155669,7 +155669,7 @@
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
             "src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py",
             "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/install/test_platform_domain_leakage_check.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
             "tests/unit/runtime/test_greenfield_first_path_modal_semantics.py"
@@ -156433,14 +156433,14 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
         "src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py",
         "tests/unit/runtime/test_greenfield_artifact_plan_ir.py",
         "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -156506,14 +156506,14 @@
             "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
             "src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py",
             "tests/unit/runtime/test_greenfield_artifact_plan_ir.py",
             "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py"
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py"
           ],
           "source": "git",
           "session_id": "",
@@ -156647,7 +156647,7 @@
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -156664,7 +156664,7 @@
           ],
           "files": [
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
             "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
             "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
           ],
@@ -156702,7 +156702,7 @@
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -156719,7 +156719,7 @@
           ],
           "files": [
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
             "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
             "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
           ],
@@ -157162,9 +157162,9 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
         "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
         "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
         "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -157224,9 +157224,9 @@
             "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
             "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
             "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
             "tests/unit/runtime/test_greenfield_package_repetition_quality.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py"
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py"
           ],
           "source": "git",
           "session_id": "",
@@ -157260,7 +157260,7 @@
       ],
       "files": [
         "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -157277,7 +157277,7 @@
           ],
           "files": [
             "src/odylith/runtime/artifact_quality/greenfield_package_repetition.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py"
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py"
           ],
           "source": "assistant",
           "session_id": "019eb25a-7d32-7d02-8ab4-edcadefe558a",
@@ -158727,11 +158727,11 @@
         "src/odylith/bundle/assets/odylith/compass/compass-style-execution-waves.v1.css",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
         "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
         "tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py",
         "tests/unit/runtime/test_greenfield_source_addressed_repair.py"
       ],
       "explicit_open": false,
@@ -158776,11 +158776,11 @@
             "src/odylith/bundle/assets/odylith/compass/compass-style-execution-waves.v1.css",
             "src/odylith/bundle/assets/odylith/compass/compass.html",
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
             "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
             "tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py",
             "tests/unit/runtime/test_greenfield_source_addressed_repair.py"
           ],
           "source": "git",
@@ -159308,10 +159308,10 @@
         "src/odylith/bundle/assets/odylith/radar/radar.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/common/safe_ledger_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
         "tests/unit/runtime/test_greenfield_semantic_patch_executor.py",
         "tests/unit/runtime/test_tribunal_patch_planner.py"
       ],
@@ -159401,10 +159401,10 @@
             "src/odylith/bundle/assets/odylith/radar/radar.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
             "src/odylith/runtime/common/safe_ledger_text.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
             "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
             "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
             "tests/unit/runtime/test_greenfield_semantic_patch_executor.py",
             "tests/unit/runtime/test_tribunal_patch_planner.py"
           ],
@@ -159440,7 +159440,7 @@
       ],
       "files": [
         "src/odylith/runtime/common/safe_ledger_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
@@ -159461,7 +159461,7 @@
             "src/odylith/runtime/common/safe_ledger_text.py",
             "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
             "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py"
           ],
           "source": "assistant",
           "session_id": "019eb25a-7d32-7d02-8ab4-edcadefe558a",
@@ -159574,13 +159574,13 @@
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py",
         "tests/unit/runtime/test_greenfield_prewrite_transaction.py",
         "tests/unit/runtime/test_greenfield_semantic_patch_executor.py",
         "tests/unit/runtime/test_tribunal_patch_planner.py"
@@ -159679,8 +159679,8 @@
             "src/odylith/bundle/assets/odylith/registry/registry.html",
             "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
             "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py"
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py"
           ],
           "source": "git",
           "session_id": "",
@@ -160133,9 +160133,9 @@
         "src/odylith/runtime/common/prose_grammar.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
         "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
         "src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py",
         "src/odylith/runtime/project_intelligence/product_story_cards.py",
@@ -160144,9 +160144,9 @@
         "tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py",
         "tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
         "tests/unit/runtime/test_tribunal_patch_planner.py"
       ],
       "explicit_open": false,
@@ -160202,9 +160202,9 @@
             "src/odylith/runtime/common/prose_grammar.py",
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
             "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
             "src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py",
             "src/odylith/runtime/project_intelligence/product_story_cards.py",
@@ -160213,9 +160213,9 @@
             "tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py",
             "tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
             "tests/unit/runtime/test_tribunal_patch_planner.py"
           ],
           "source": "git",
@@ -160537,17 +160537,17 @@
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_review.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_review.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
         "src/odylith/runtime/reasoning/tribunal_lens.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
         "tests/unit/runtime/test_greenfield_prewrite_transaction.py",
         "tests/unit/runtime/test_greenfield_semantic_patch_executor.py"
       ],
@@ -160619,17 +160619,17 @@
             "src/odylith/bundle/assets/odylith/compass/compass.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
             "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_review.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_review.py",
             "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
             "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
             "src/odylith/runtime/reasoning/tribunal_lens.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
             "tests/unit/runtime/test_greenfield_prewrite_transaction.py",
             "tests/unit/runtime/test_greenfield_semantic_patch_executor.py"
           ],
@@ -160668,7 +160668,7 @@
         "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py"
       ],
       "explicit_open": false,
@@ -160685,7 +160685,7 @@
             "B-142"
           ],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
             "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
             "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
             "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
@@ -160924,8 +160924,8 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -160973,8 +160973,8 @@
             "src/odylith/bundle/assets/odylith/casebook/casebook.html",
             "src/odylith/bundle/assets/odylith/compass/compass.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py"
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py"
           ],
           "source": "git",
           "session_id": "",
@@ -161008,7 +161008,7 @@
       ],
       "files": [
         "/private/tmp/odylith-natural-source-create.stdout",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -161024,7 +161024,7 @@
             "B-142"
           ],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
             "/private/tmp/odylith-natural-source-create.stdout"
           ],
           "source": "assistant",
@@ -161096,17 +161096,17 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_structured_rescue_proof.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_structured_rescue_proof.py",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py",
-        "tests/unit/install/test_greenfield_post_confirm_natural_rescue.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py",
+        "tests/unit/install/test_greenfield_preconfirm_natural_rescue.py",
         "tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_structured_rescue_proof.py"
+        "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_structured_rescue_proof.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -161160,17 +161160,17 @@
             "src/odylith/bundle/assets/odylith/casebook/casebook.html",
             "src/odylith/bundle/assets/odylith/compass/compass.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_structured_rescue_proof.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_structured_rescue_proof.py",
             "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py",
-            "tests/unit/install/test_greenfield_post_confirm_natural_rescue.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py",
+            "tests/unit/install/test_greenfield_preconfirm_natural_rescue.py",
             "tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_engine.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_structured_rescue_proof.py"
+            "tests/unit/runtime/test_greenfield_preconfirm_engine.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_structured_rescue_proof.py"
           ],
           "source": "git",
           "session_id": "",
@@ -161204,7 +161204,7 @@
       ],
       "files": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -161220,7 +161220,7 @@
             "B-142"
           ],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
             "odylith/registry/source/components/release/CURRENT_SPEC.md"
           ],
           "source": "assistant",
@@ -161427,7 +161427,7 @@
         "src/odylith/bundle/assets/odylith/casebook/casebook.html",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -161480,7 +161480,7 @@
             "src/odylith/bundle/assets/odylith/casebook/casebook.html",
             "src/odylith/bundle/assets/odylith/compass/compass.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py"
+            "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
           ],
           "source": "git",
           "session_id": "",
@@ -162022,7 +162022,7 @@
         "src/odylith/runtime/project_intelligence/utils.py",
         "src/odylith/runtime/surfaces/atlas_box_explanations.py",
         "src/odylith/runtime/surfaces/atlas_box_terms.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_atlas_box_terms.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
@@ -162100,7 +162100,7 @@
             "src/odylith/runtime/project_intelligence/utils.py",
             "src/odylith/runtime/surfaces/atlas_box_explanations.py",
             "src/odylith/runtime/surfaces/atlas_box_terms.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/install/test_platform_domain_leakage_check.py",
             "tests/unit/runtime/test_atlas_box_terms.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
@@ -162325,10 +162325,10 @@
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py",
         "src/odylith/runtime/domain_intelligence/proposal_memory.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py",
         "tests/unit/runtime/test_greenfield_projection_contracts.py",
         "tests/unit/runtime/test_greenfield_semantic_compiler.py"
       ],
@@ -162369,10 +162369,10 @@
             "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
             "src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py",
             "src/odylith/runtime/domain_intelligence/proposal_memory.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/install/test_platform_domain_leakage_check.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py",
             "tests/unit/runtime/test_greenfield_projection_contracts.py",
             "tests/unit/runtime/test_greenfield_semantic_compiler.py"
           ],
@@ -162552,7 +162552,7 @@
         "src/odylith/bundle/assets/odylith/index.html",
         "src/odylith/bundle/assets/odylith/radar/radar.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "explicit_open": false,
@@ -162616,7 +162616,7 @@
             "src/odylith/bundle/assets/odylith/index.html",
             "src/odylith/bundle/assets/odylith/radar/radar.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/install/test_platform_domain_leakage_check.py"
           ],
           "source": "git",
@@ -162950,7 +162950,7 @@
         "src/odylith/bundle/assets/odylith/index.html",
         "src/odylith/bundle/assets/odylith/radar/radar.html",
         "src/odylith/bundle/assets/odylith/registry/registry.html",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "explicit_open": false,
@@ -163018,7 +163018,7 @@
             "src/odylith/bundle/assets/odylith/index.html",
             "src/odylith/bundle/assets/odylith/radar/radar.html",
             "src/odylith/bundle/assets/odylith/registry/registry.html",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/install/test_platform_domain_leakage_check.py"
           ],
           "source": "git",
@@ -163140,7 +163140,7 @@
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/runtime/test_greenfield_confirmed_repair.py"
       ],
       "explicit_open": false,
@@ -163204,7 +163204,7 @@
             "src/odylith/bundle/assets/odylith/registry/registry.html",
             "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/runtime/test_greenfield_confirmed_repair.py"
           ],
           "source": "git",
@@ -163312,7 +163312,7 @@
         "src/odylith/bundle/assets/odylith/registry/registry.html",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_purpose_context.py",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_platform_domain_leakage_check.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
         "tests/unit/runtime/test_greenfield_first_path_modal_semantics.py"
@@ -163360,7 +163360,7 @@
             "src/odylith/bundle/assets/odylith/registry/registry.html",
             "src/odylith/runtime/domain_intelligence/greenfield_first_path_purpose_context.py",
             "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/install/test_platform_domain_leakage_check.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py",
             "tests/unit/runtime/test_greenfield_first_path_modal_semantics.py"
@@ -163446,7 +163446,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "explicit_open": false,
@@ -163513,7 +163513,7 @@
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
           ],
           "source": "git",
@@ -163910,8 +163910,8 @@
       "files": [
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -163927,8 +163927,8 @@
             "B-142"
           ],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
             "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
             "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd"
           ],
@@ -164063,8 +164063,8 @@
       "files": [
         "/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -164081,8 +164081,8 @@
           ],
           "files": [
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-            "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+            "tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py",
             "/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json"
           ],
           "source": "assistant",
@@ -164261,9 +164261,9 @@
         "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
         "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -164279,9 +164279,9 @@
             "B-142"
           ],
           "files": [
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py",
             "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
             "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
             "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
@@ -164678,7 +164678,7 @@
       ],
       "files": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -164695,7 +164695,7 @@
           ],
           "files": [
             "odylith/registry/source/components/release/CURRENT_SPEC.md",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py"
           ],
           "source": "assistant",
           "session_id": "019eb25a-7d32-7d02-8ab4-edcadefe558a",
@@ -165656,7 +165656,7 @@
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -165674,7 +165674,7 @@
           "files": [
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
             "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
-            "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+            "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py",
             "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
             "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
             "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd"
@@ -165763,7 +165763,7 @@
       "files": [
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "explicit_open": false,
       "explicit_closed": false,
@@ -165780,7 +165780,7 @@
           ],
           "files": [
             "odylith/registry/source/components/release/CURRENT_SPEC.md",
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py",
             "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
           ],
           "source": "assistant",

@@ -135,7 +135,7 @@ def format_proposal_issue_report(label: str, issues: list[str] | tuple[str, ...]
     if str(label).casefold() == "validation":
         remediation = "- needs operator/proposal input: provide the missing or underspecified product facts before governed writes."
     else:
-        remediation = "- internal repair required: fix the post-confirm semantic model, renderers, or quality gate before governed writes."
+        remediation = "- internal repair required: fix the pre-confirm semantic model, renderers, or quality gate before governed writes."
     return (
         f"greenfield proposal {label} failed with {len(rows)} issue(s):\n"
         f"{bullets}\n"

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_drift import (
     semantic_overlap_ratio,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import term_frequencies
@@ -14,7 +14,7 @@ DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
 
 
 def test_post_confirm_semantic_drift_terms_use_shared_index() -> None:
-    drift_source = (DOMAIN_INTELLIGENCE / "greenfield_post_confirm_semantic_drift.py").read_text(
+    drift_source = (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_semantic_drift.py").read_text(
         encoding="utf-8"
     )
     index_source = (DOMAIN_INTELLIGENCE / "greenfield_domain_term_index.py").read_text(

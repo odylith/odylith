@@ -179,7 +179,7 @@ def test_compiled_commit_skips_final_next_steps_quality_after_confirm(
         confirm=True,
     )
 
-    manifest = result["post_confirm_quality_manifest"]
+    manifest = result["commit_manifest"]
     assert manifest["write_transaction"]["status"] == "committed"
     assert "completion_priority" not in manifest
     accepted_project = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text())
@@ -232,7 +232,7 @@ def test_compiled_commit_skips_final_package_quality_after_confirm(
         confirm=True,
     )
 
-    manifest = result["post_confirm_quality_manifest"]
+    manifest = result["commit_manifest"]
     assert manifest["write_transaction"]["status"] == "committed"
     assert "completion_priority" not in manifest
     accepted_project = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text())
@@ -283,7 +283,7 @@ def test_compiled_commit_does_not_roll_back_on_late_source_truth_package_repetit
         confirm=True,
     )
 
-    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert result["commit_manifest"]["write_transaction"]["status"] == "committed"
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
 
@@ -320,7 +320,7 @@ def test_compiled_commit_does_not_roll_back_on_late_substantive_quality_finding(
         confirm=True,
     )
 
-    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert result["commit_manifest"]["write_transaction"]["status"] == "committed"
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
 
@@ -357,7 +357,7 @@ def test_compiled_commit_does_not_roll_back_on_late_generated_prose_finding(
         confirm=True,
     )
 
-    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert result["commit_manifest"]["write_transaction"]["status"] == "committed"
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").exists()
 

@@ -66,7 +66,7 @@ class GreenfieldMatrixResult:
     create_stderr_excerpt: str = ""
     platform_leakage_terms: tuple[str, ...] = ()
     platform_leakage_issues: tuple[str, ...] = ()
-    post_confirm_manifest_summary: Mapping[str, Any] | None = None
+    commit_manifest_summary: Mapping[str, Any] | None = None
     evidence: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -84,7 +84,7 @@ class GreenfieldMatrixResult:
             "create_stderr_excerpt": self.create_stderr_excerpt,
             "platform_leakage_terms": list(self.platform_leakage_terms),
             "platform_leakage_issues": list(self.platform_leakage_issues),
-            "post_confirm_manifest_summary": dict(self.post_confirm_manifest_summary or {}),
+            "commit_manifest_summary": dict(self.commit_manifest_summary or {}),
             "evidence": dict(self.evidence or {}),
         }
 

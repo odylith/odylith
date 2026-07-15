@@ -1,4 +1,4 @@
-"""Quality-lens repair ownership contract for greenfield post-confirm review."""
+"""Quality-lens repair ownership contract for greenfield pre-confirm review."""
 
 from __future__ import annotations
 

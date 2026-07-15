@@ -51,7 +51,7 @@ def _result(
             score_explanation=("diagnostic failure",),
         ),
         failure_detail=failure_detail,
-        post_confirm_manifest_summary=manifest_summary or {},
+        commit_manifest_summary=manifest_summary or {},
     )
 
 
@@ -112,7 +112,7 @@ def test_failure_cluster_prefers_structured_manifest_issue_ownership() -> None:
     module = _module()
     first = _result(
         name="alpha review board",
-        issue="post-confirm quality manifest has 4 issue(s)",
+        issue="pre-confirm quality manifest has 4 issue(s)",
         scores={"completion": 0, "copy_semantic_clarity": 0, "architect": 0},
         manifest_summary={
             "issue_signatures": [
@@ -123,7 +123,7 @@ def test_failure_cluster_prefers_structured_manifest_issue_ownership() -> None:
     )
     second = _result(
         name="beta review board",
-        issue="post-confirm quality manifest has 4 issue(s)",
+        issue="pre-confirm quality manifest has 4 issue(s)",
         scores={"completion": 0, "copy_semantic_clarity": 0, "architect": 0},
         manifest_summary={
             "issue_signatures": [
@@ -149,12 +149,12 @@ def test_failure_cluster_uses_actual_blocker_before_score_bucket() -> None:
     module = _module()
     result = _result(
         name="quantum review board",
-        issue="post-confirm create exited with code 2",
+        issue="commit-only create exited with code 2",
         scores={"completion": 0, "copy_semantic_clarity": 0, "architect": 0},
         failure_detail=json.dumps(
             {
                 "error": (
-                    "greenfield post-confirm final write quality failed with 2 issue(s):\n"
+                    "greenfield pre-confirm quality gate failed with 2 issue(s):\n"
                     "- Atlas Mermaid `odylith/atlas/source/domain-specific-first-path.mmd` "
                     "leaked mixed finite/base action in visible label"
                 ),
@@ -174,7 +174,7 @@ def test_failure_cluster_preserves_multiline_blocker_bullets() -> None:
     result = _result(
         name="plain text gate failure",
         issue=(
-            "greenfield post-confirm final write quality failed with 2 issue(s):\n"
+            "greenfield pre-confirm quality gate failed with 2 issue(s):\n"
             "Remediation: rerun from the accepted intent after platform repair.\n"
             "- Registry component spec Results Review Workspace has modal/base-form grammar drift near `to flags`"
         ),
@@ -215,7 +215,7 @@ def test_case_completed_event_carries_stable_case_identity() -> None:
     module = _module()
     result = _result(
         name="renamed display label",
-        issue="post-confirm create exited with code 2",
+        issue="commit-only create exited with code 2",
         scores={"completion": 0},
     )
     result = _types_module().GreenfieldMatrixResult(
@@ -309,7 +309,7 @@ def test_default_release_cases_cover_the_high_variance_taxonomy() -> None:
     module = _module()
     if str(SCRIPTS_ROOT) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_ROOT))
-    cases_module = importlib.import_module("greenfield_post_confirm_matrix_cases")
+    cases_module = importlib.import_module("greenfield_preconfirm_matrix_cases")
 
     cases = cases_module.default_cases()
     summary = module.stressor_coverage(cases, module.DEFAULT_HIGH_VARIANCE_STRESSORS)

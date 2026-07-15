@@ -28,7 +28,7 @@ def build_greenfield_commit_result_preview(
     release_target: Mapping[str, Any] | None,
     brand_asset_count: int,
 ) -> dict[str, Any]:
-    """Build the operator result without requiring post-confirm artifact parsing."""
+    """Build the operator result without requiring commit-time artifact parsing."""
 
     source = Path(source_root).expanduser().resolve()
     target = Path(target_root).expanduser().resolve()

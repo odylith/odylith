@@ -241,7 +241,7 @@ def test_projection_repair_targets_map_preview_findings_to_source_facts() -> Non
 
 
 def test_artifact_plan_ir_contract_replaces_private_projection_maps_in_callers() -> None:
-    patchset_source = (DOMAIN_INTELLIGENCE / "greenfield_post_confirm_patchset.py").read_text(encoding="utf-8")
+    patchset_source = (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_patchset.py").read_text(encoding="utf-8")
     executor_source = (DOMAIN_INTELLIGENCE / "greenfield_artifact_plan_patch_executor.py").read_text(encoding="utf-8")
 
     assert "def _projection_from_target_path" not in patchset_source

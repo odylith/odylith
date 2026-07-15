@@ -26,16 +26,16 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfie
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
     GreenfieldCompletionPackage,
     build_greenfield_completion_report,
     build_greenfield_package_report,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_drift import (
     contrastive_domain_drift_issues as _contrastive_domain_drift_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import semantic_overlap_ratio
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_drift import semantic_overlap_ratio
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_alignment import (
     rendered_spec_alignment_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
@@ -54,17 +54,17 @@ from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_g
 
 
 ROOT = Path(__file__).resolve().parents[3]
-POST_CONFIRM_COMPLETION_PATH = (
-    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py"
+PRECONFIRM_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py"
 )
-POST_CONFIRM_FINDINGS_PATH = (
-    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py"
+PRECONFIRM_FINDINGS_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py"
 )
-POST_CONFIRM_SEMANTIC_DRIFT_PATH = (
-    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py"
+PRECONFIRM_SEMANTIC_DRIFT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py"
 )
-POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH = (
-    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py"
+PRECONFIRM_SEMANTIC_ALIGNMENT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py"
 )
 PROPOSAL_TRIBUNAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/proposal_tribunal.py"
 PROPOSAL_TRIBUNAL_SUBSTANCE_PATH = (
@@ -72,11 +72,11 @@ PROPOSAL_TRIBUNAL_SUBSTANCE_PATH = (
 )
 
 
-def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> None:
-    parent_source = POST_CONFIRM_COMPLETION_PATH.read_text(encoding="utf-8")
-    findings_source = POST_CONFIRM_FINDINGS_PATH.read_text(encoding="utf-8")
-    drift_source = POST_CONFIRM_SEMANTIC_DRIFT_PATH.read_text(encoding="utf-8")
-    alignment_source = POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH.read_text(encoding="utf-8")
+def test_greenfield_preconfirm_semantic_drift_stays_in_dedicated_owner() -> None:
+    parent_source = PRECONFIRM_COMPLETION_PATH.read_text(encoding="utf-8")
+    findings_source = PRECONFIRM_FINDINGS_PATH.read_text(encoding="utf-8")
+    drift_source = PRECONFIRM_SEMANTIC_DRIFT_PATH.read_text(encoding="utf-8")
+    alignment_source = PRECONFIRM_SEMANTIC_ALIGNMENT_PATH.read_text(encoding="utf-8")
 
     assert len(parent_source.splitlines()) < 800
     assert "def _generated_artifact_sentences" not in parent_source
@@ -949,7 +949,7 @@ def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeli
         assert banned not in rendered
 
 
-def test_greenfield_post_confirm_completion_report_passes_for_protocol_fixture(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_report_passes_for_protocol_fixture(tmp_path: Path) -> None:
     proposal = _protocol_effect_tracking_proposal(tmp_path)
     report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
 
@@ -961,7 +961,7 @@ def test_greenfield_post_confirm_completion_report_passes_for_protocol_fixture(t
     assert report.tribunal_status == "passed"
 
 
-def test_greenfield_post_confirm_completion_fails_without_semantic_model(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_without_semantic_model(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal.pop("semantic_model")
 
@@ -971,7 +971,7 @@ def test_greenfield_post_confirm_completion_fails_without_semantic_model(tmp_pat
     assert "requires GreenfieldSemanticModel" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_on_component_semantic_drift(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_on_component_semantic_drift(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["semantic_model"]["components"][0]["produced_outputs"] = "drifted output"
 
@@ -981,7 +981,7 @@ def test_greenfield_post_confirm_completion_fails_on_component_semantic_drift(tm
     assert "drifted from proposal `produced_outputs`" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_on_workstream_semantic_drift(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_on_workstream_semantic_drift(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["semantic_model"]["workstreams"][0]["title"] = "Detached Workstream"
 
@@ -993,7 +993,7 @@ def test_greenfield_post_confirm_completion_fails_on_workstream_semantic_drift(t
     assert "not rendered by proposal" in joined
 
 
-def test_greenfield_post_confirm_completion_fails_on_workstream_contract_content_drift(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_on_workstream_contract_content_drift(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["semantic_model"]["workstreams"][0]["first_slice"] = "Detached first slice"
 
@@ -1003,7 +1003,7 @@ def test_greenfield_post_confirm_completion_fails_on_workstream_contract_content
     assert "drifted from proposal `first_slice`" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_on_release_diagram_drift(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_on_release_diagram_drift(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["semantic_model"]["diagram_event_graph"]["component_sequence"] = []
 
@@ -1013,7 +1013,7 @@ def test_greenfield_post_confirm_completion_fails_on_release_diagram_drift(tmp_p
     assert "DiagramEventGraph component sequence drifted" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_on_diagram_event_drift(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_on_diagram_event_drift(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["semantic_model"]["diagram_event_graph"]["events"][0]["text"] = "Detached diagram event"
 
@@ -1023,7 +1023,7 @@ def test_greenfield_post_confirm_completion_fails_on_diagram_event_drift(tmp_pat
     assert "DiagramEventGraph events drifted" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_when_deferred_component_leaks_into_diagram_graph(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_when_deferred_component_leaks_into_diagram_graph(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     component_id = proposal["components"][-1]["component_id"]
     proposal["components"][-1]["release_scope"] = "deferred"
@@ -1038,7 +1038,7 @@ def test_greenfield_post_confirm_completion_fails_when_deferred_component_leaks_
     assert "DiagramEventGraph component sequence drifted" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_without_first_path_and_release_proofs(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_without_first_path_and_release_proofs(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["semantic_model"]["proof_obligations"] = [
         row
@@ -1321,7 +1321,7 @@ def test_greenfield_completion_package_report_fails_release_assignment_preview_d
     assert "did not cover first-release workstream ids" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_on_rendered_registry_scope_drift(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_on_rendered_registry_scope_drift(tmp_path: Path) -> None:
     proposal = _protocol_effect_tracking_proposal(tmp_path)
 
     report = build_greenfield_completion_report(
@@ -1356,7 +1356,7 @@ def test_rendered_registry_scope_alignment_ignores_deferred_components(tmp_path:
     assert issues == []
 
 
-def test_greenfield_post_confirm_completion_fails_provider_call_leak(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_provider_call_leak(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["provider_calls"] = 1
 
@@ -1366,7 +1366,7 @@ def test_greenfield_post_confirm_completion_fails_provider_call_leak(tmp_path: P
     assert "provider-free" in "\n".join(report.issues)
 
 
-def test_greenfield_post_confirm_completion_fails_contrastive_unexplained_artifact_terms(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_contrastive_unexplained_artifact_terms(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     proposal["components"][0]["component_contract"]["outside_boundary"] += (
         ", outsiderterm state, outsiderterm signal, outsiderterm marker, outsiderterm handoff, "
@@ -1405,7 +1405,7 @@ def test_contrastive_domain_drift_allows_generic_provenance_governance_term(tmp_
     assert issues == []
 
 
-def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sentences(tmp_path: Path) -> None:
+def test_greenfield_preconfirm_completion_fails_near_duplicate_generated_sentences(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     repeated = (
         "Protocol intervention timing, dose, baseline measurement, follow-up measurement, "
@@ -1529,7 +1529,7 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
         release_selector="0.0.1",
     )
 
-    manifest = result["post_confirm_quality_manifest"]
+    manifest = result["commit_manifest"]
     assert manifest["status"] == "passed"
     assert manifest["validation_status"] == "passed"
     assert manifest["write_transaction"]["status"] == "committed"

@@ -50,7 +50,7 @@
 
 - Preflight Checks: Run the signal-processing confirmed-create regression, prior GLP and quantum confirmed-create regressions, post-confirm slop suite, and package repetition gate test before release.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_signal_pipeline_first_path_phrases_do_not_leak_modal_or_understand_fragments; tests/integration/runtime/test_greenfield_create_performance.py::test_greenfield_create_completes_signal_processing_pipeline_without_sentence_fragment_slop_under_sixty_seconds
+- Regression Tests Added: tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_signal_pipeline_first_path_phrases_do_not_leak_modal_or_understand_fragments; tests/integration/runtime/test_greenfield_create_performance.py::test_greenfield_create_completes_signal_processing_pipeline_without_sentence_fragment_slop_under_sixty_seconds
 
 - Version/Build: v0.1.15 local release candidate
 

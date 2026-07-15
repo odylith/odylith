@@ -15,8 +15,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
-from greenfield_post_confirm_matrix_cases import historical_domain_leakage_sentinels  # noqa: E402
+from greenfield_preconfirm_matrix_cases import default_cases  # noqa: E402
+from greenfield_preconfirm_matrix_cases import historical_domain_leakage_sentinels  # noqa: E402
 
 
 TEXT_SUFFIXES = frozenset(
@@ -52,7 +52,7 @@ SOURCE_SCAN_PATHS = (
 )
 MATRIX_FIXTURE_PATHS = frozenset(
     {
-        "scripts/release/greenfield_post_confirm_matrix_cases.py",
+        "scripts/release/greenfield_preconfirm_matrix_cases.py",
     }
 )
 GOVERNANCE_EVIDENCE_PARTS = frozenset(
@@ -74,7 +74,7 @@ EVALUATION_EVIDENCE_FILES = frozenset(
 )
 DIST_EVIDENCE_PREFIXES = (
     "greenfield-matrix-",
-    "greenfield-post-confirm-",
+    "greenfield-preconfirm-",
     "greenfield-rescue-proof-",
 )
 GENERIC_PRODUCT_TERMS = frozenset(

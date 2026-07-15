@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_apply_components import comp
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_risk_lines
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.governance import component_authoring
 
 
@@ -265,7 +265,7 @@ def raise_for_compiled_component_registry_readback(
             issues.append(f"{key}: committed component spec does not match compiled transaction spec")
     if issues:
         detail = "\n".join(f"- {issue}" for issue in dedupe_strings(issues))
-        raise ValueError(f"greenfield post-confirm compiled Registry readback failed with {len(issues)} issue(s):\n{detail}")
+        raise ValueError(f"greenfield commit-only Registry readback failed with {len(issues)} issue(s):\n{detail}")
 
 
 def write_repaired_component_spec(

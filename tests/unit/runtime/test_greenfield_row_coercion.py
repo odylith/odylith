@@ -14,12 +14,12 @@ def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
     assert "def dict_rows" in rows_source
     assert "def row_count" in rows_source
     assert "def mapping_count" in rows_source
-    assert not (DOMAIN_INTELLIGENCE / "greenfield_post_confirm_rows.py").exists()
+    assert not (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_rows.py").exists()
 
     for path in (
-        DOMAIN_INTELLIGENCE / "greenfield_post_confirm_completion.py",
-        DOMAIN_INTELLIGENCE / "greenfield_post_confirm_semantic_drift.py",
-        DOMAIN_INTELLIGENCE / "greenfield_post_confirm_semantic_alignment.py",
+        DOMAIN_INTELLIGENCE / "greenfield_preconfirm_completion.py",
+        DOMAIN_INTELLIGENCE / "greenfield_preconfirm_semantic_drift.py",
+        DOMAIN_INTELLIGENCE / "greenfield_preconfirm_semantic_alignment.py",
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_prewrite_gate.py",
         DOMAIN_INTELLIGENCE / "proposal_tribunal.py",
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_title_repair.py",
@@ -52,7 +52,7 @@ def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
     experience_source = (DOMAIN_INTELLIGENCE / "greenfield_experience.py").read_text(encoding="utf-8")
     assert "def _created_rows" not in experience_source
 
-    post_confirm_source = (DOMAIN_INTELLIGENCE / "greenfield_post_confirm_completion.py").read_text(encoding="utf-8")
+    post_confirm_source = (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_completion.py").read_text(encoding="utf-8")
     assert "def _row_count" not in post_confirm_source
     assert "def _mapping_count" not in post_confirm_source
     assert "from odylith.runtime.domain_intelligence.greenfield_rows import row_count" in post_confirm_source

@@ -158,7 +158,7 @@ _EXCLUDED_PUBLIC_KEYS = {
     "source_title",
     "status",
     "next_steps",
-    "post_confirm_quality_manifest",
+    "commit_manifest",
     "validation_gate",
     "validation_plan",
     "watch_paths",

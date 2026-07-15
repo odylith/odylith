@@ -27,7 +27,7 @@ def _modules():
     )
 
 
-def test_volume_corpus_is_source_grounded_diverse_and_campaign_ready() -> None:
+def test_volume_corpus_is_prompt_grounded_diverse_and_campaign_ready() -> None:
     case_file, campaign = _modules()
     cases = tuple(
         case

@@ -19,7 +19,7 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
@@ -49,8 +49,22 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_confirmed_product_posture_text.py",
     "runtime/domain_intelligence/greenfield_create_baseline.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",
+    "runtime/domain_intelligence/greenfield_create_manifest.py",
     "runtime/domain_intelligence/greenfield_create_transaction.py",
-    "runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_completion.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_findings.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_patch_apply.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_repair_context.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_rescue_probe.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_review.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py",
+    "runtime/domain_intelligence/greenfield_preconfirm_structured_rescue_proof.py",
     "runtime/domain_intelligence/greenfield_project_brief_fields.py",
     "runtime/domain_intelligence/greenfield_prewrite_commit_result.py",
     "runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
@@ -66,7 +80,7 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/surfaces/brand_assets.py",
     "runtime/surfaces/scaffold_mermaid_diagram.py",
 )
-_POST_CONFIRM_ALLOWED_OPERATIONS = (
+_PRECONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
     "verify_compiler_receipt",
     "verify_compiler_provenance",
@@ -75,7 +89,7 @@ _POST_CONFIRM_ALLOWED_OPERATIONS = (
     "validate_readback",
     "report_success",
 )
-_POST_CONFIRM_FORBIDDEN_OPERATIONS = (
+_PRECONFIRM_FORBIDDEN_OPERATIONS = (
     "product_interpretation",
     "artifact_generation",
     "semantic_repair",
@@ -219,8 +233,8 @@ def build_product_create_transaction_provenance(
         "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
         "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
         "compiler_identity": product_create_transaction_compiler_identity(),
-        "post_confirm_allowed_operations": list(_POST_CONFIRM_ALLOWED_OPERATIONS),
-        "post_confirm_forbidden_operations": list(_POST_CONFIRM_FORBIDDEN_OPERATIONS),
+        "post_confirm_allowed_operations": list(_PRECONFIRM_ALLOWED_OPERATIONS),
+        "post_confirm_forbidden_operations": list(_PRECONFIRM_FORBIDDEN_OPERATIONS),
     }
 
 
@@ -258,26 +272,30 @@ def require_product_create_transaction_compiler_provenance(
     for key, expected_value in expected.items():
         if str(provenance.get(key, "")).strip() != expected_value:
             raise ValueError(
-                "ProductCreateTransaction compiler provenance is not approved for this repo; "
-                "rebuild the pre-confirm transaction before committing governed records"
+                "ProductCreateTransaction compiler provenance was invalidated by a runtime or repository-context change; "
+                "no Product Intent was rejected and no governed records were written. "
+                "Rebuild the pre-confirm transaction before committing."
             )
     identity = provenance.get("compiler_identity") if isinstance(provenance.get("compiler_identity"), Mapping) else {}
     expected_identity = product_create_transaction_compiler_identity()
     for key, expected_value in expected_identity.items():
         if identity.get(key) != expected_value:
             raise ValueError(
-                "ProductCreateTransaction compiler identity does not match this runtime; "
-                "rebuild the pre-confirm transaction before committing governed records"
+                "ProductCreateTransaction compiler identity was invalidated by a runtime or compiler change; "
+                "no Product Intent or compiled artifact failed, and no governed records were written. "
+                "Rebuild the pre-confirm transaction before committing."
             )
-    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != _POST_CONFIRM_ALLOWED_OPERATIONS:
+    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != _PRECONFIRM_ALLOWED_OPERATIONS:
         raise ValueError(
-            "ProductCreateTransaction compiler provenance is missing the commit-only operation contract; "
-            "rebuild the pre-confirm transaction before committing governed records"
+            "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
+            "no Product Intent was rejected and no governed records were written. "
+            "Rebuild the pre-confirm transaction before committing."
         )
-    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != _POST_CONFIRM_FORBIDDEN_OPERATIONS:
+    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != _PRECONFIRM_FORBIDDEN_OPERATIONS:
         raise ValueError(
-            "ProductCreateTransaction compiler provenance is missing the post-confirm forbidden-operation contract; "
-            "rebuild the pre-confirm transaction before committing governed records"
+            "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
+            "no Product Intent was rejected and no governed records were written. "
+            "Rebuild the pre-confirm transaction before committing."
         )
 
 

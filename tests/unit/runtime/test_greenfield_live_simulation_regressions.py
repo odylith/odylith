@@ -13,8 +13,8 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import _first_path_readiness_summary
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -295,7 +295,7 @@ def test_generic_setup_sentences_do_not_project_as_review_actions() -> None:
     assert "review a buffer" not in readiness
 
 
-def test_arborcell_post_confirm_package_does_not_repeat_setup_or_malformed_copy(tmp_path: Path) -> None:
+def test_arborcell_preconfirm_package_does_not_repeat_setup_or_malformed_copy(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(_ARBORCELL_CONFIRMED_INTENT, prompt=_ARBORCELL_PROMPT)
     proposal = build_greenfield_proposal(
         repo_root=tmp_path,
@@ -443,7 +443,7 @@ def test_relative_actor_confirmation_does_not_promote_outcome_terms_to_people(tm
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 
 
-def test_sparse_model_lab_notebook_post_confirm_package_stays_clean(tmp_path: Path) -> None:
+def test_sparse_model_lab_notebook_preconfirm_package_stays_clean(tmp_path: Path) -> None:
     prompt = "model lab notebook"
 
     proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
@@ -530,7 +530,7 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
     assert build_greenfield_package_report(prewrite.package).issues == ()
 
 
-def test_wearable_health_visible_result_quotes_survive_post_confirm_package(tmp_path: Path) -> None:
+def test_wearable_health_visible_result_quotes_survive_preconfirm_package(tmp_path: Path) -> None:
     prompt = (
         "captures exhaustive metrics from a wearable and shows insight about metabolic age, chronic illness, "
         "athletic capabilities, biological age, and related health signals"

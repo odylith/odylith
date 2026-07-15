@@ -56,4 +56,4 @@
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py
 - src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py

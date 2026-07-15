@@ -22,7 +22,7 @@
 
 - Failure Signature: film festival accessibility screening scored 6/10: Project brief project-brief.v1.md has coordinated modal grammar drift near and prevents; greenfield create manifest reported zero issues and committed records
 
-- Trigger Path: scripts/release/greenfield_post_confirm_matrix.py --dist-dir odylith-local-release-0.1.15-2a389428 --case-file /tmp/odylith-fresh-variance-20260630-f853743a.json --include-browser-proof
+- Trigger Path: scripts/release/greenfield_preconfirm_matrix.py --dist-dir odylith-local-release-0.1.15-2a389428 --case-file /tmp/odylith-fresh-variance-20260630-f853743a.json --include-browser-proof
 
 - Ownership: Greenfield artifact package quality and post-confirm write-transaction custody
 
@@ -84,6 +84,6 @@
 
 - Code References: - src/odylith/runtime/artifact_quality/greenfield_package_quality.py
 - src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py
-- scripts/release/greenfield_post_confirm_matrix.py
+- scripts/release/greenfield_preconfirm_matrix.py
 
 - Runbook References: - B-142 greenfield typed semantic compiler and patchset repair plan

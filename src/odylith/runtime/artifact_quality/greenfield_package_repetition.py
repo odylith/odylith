@@ -81,7 +81,7 @@ def package_repetition_quality_findings(
                 projection_id=projection,
                 target_path=target_path or "prewrite_package.package.copy_quality",
                 code=_CODE,
-                surface=projection if projection != "artifact_draft_set" else "post_confirm_package",
+                surface=projection if projection != "artifact_draft_set" else "preconfirm_package",
                 semantic_node_id=_semantic_node_id(projection),
                 severity="medium",
                 repairability=repairability,

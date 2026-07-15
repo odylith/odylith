@@ -29,17 +29,17 @@ def test_local_release_assets_target_builds_maintainer_installable_assets() -> N
     assert "make local-release-assets" in help_text
 
 
-def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> None:
-    text = (REPO_ROOT / "bin" / "greenfield-post-confirm-matrix").read_text(encoding="utf-8")
+def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> None:
+    text = (REPO_ROOT / "bin" / "greenfield-preconfirm-matrix").read_text(encoding="utf-8")
     makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
     help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
     shared = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
 
-    assert "greenfield-post-confirm-matrix:" in makefile
-    assert './bin/greenfield-post-confirm-matrix "$(VERSION)" "$(DIST)"' in makefile
+    assert "greenfield-preconfirm-matrix:" in makefile
+    assert './bin/greenfield-preconfirm-matrix "$(VERSION)" "$(DIST)"' in makefile
     assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
     assert 'temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"' in text
-    assert 'scripts/release/greenfield_post_confirm_matrix.py \\' in text
+    assert 'scripts/release/greenfield_preconfirm_matrix.py \\' in text
     assert 'extra_args=()' in text
     assert 'rescue_smoke_enabled=1' in text
     assert "require_current_component_forensics" in text
@@ -56,7 +56,7 @@ def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> 
     assert '--proof-tier discovery' in text
     assert 'ensure_playwright_chromium' in text
     assert '"$odylith_python" -m playwright install chromium >/dev/null' in shared
-    assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-post-confirm-matrix.v1.json}"' in text
+    assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"' in text
     assert 'GREENFIELD_MATRIX_TELEMETRY_JSONL' in text
     assert 'GREENFIELD_MATRIX_CAMPAIGN_PHASE' in text
     assert 'GREENFIELD_MATRIX_STOP_AFTER_FAILURES' in text
@@ -69,8 +69,8 @@ def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> 
     assert '--version "$requested_version"' in text
     assert '--temp-parent "$temp_parent"' in text
     assert '--output-json "$proof_json"' in text
-    assert "make greenfield-post-confirm-matrix" in help_text
-    assert "write greenfield-post-confirm-matrix.v1.json" in help_text
+    assert "make greenfield-preconfirm-matrix" in help_text
+    assert "write greenfield-preconfirm-matrix.v1.json" in help_text
     assert "per-case generated browser surface state proof" in help_text
     assert "installed CLI auto-rescue wiring smoke" in help_text
     assert "host-planned structured rescue proof" in help_text
@@ -130,7 +130,7 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert "skip_proof_and_compare" in text
     assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
-    assert 'scripts/release/greenfield_post_confirm_matrix.py \\' in shared
+    assert 'scripts/release/greenfield_preconfirm_matrix.py \\' in shared
     assert "scripts/release/platform_domain_leakage_check.py" in shared
     assert 'sync-component-spec-requirements --repo-root "$odylith_repo_root" --check-only' in shared
     assert "Registry component forensics are stale for the checked-out source" in shared
@@ -138,7 +138,7 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert '--proof-tier release' in shared
     assert '--include-natural-rescue-proof' in shared
     assert '--include-browser-proof' in shared
-    assert '--output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"' in shared
+    assert '--output-json "$dist_dir/greenfield-preconfirm-matrix.v1.json"' in shared
     assert 'release_version_session.py' not in text
     assert 'release_worktree.py' not in text
     assert 'release-candidate:' in makefile

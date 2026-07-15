@@ -530,7 +530,7 @@ def test_scan_repo_blocks_fixture_terms_in_release_scripts(tmp_path: Path) -> No
 
 
 def test_scan_repo_allows_release_fixture_catalog_vocabulary(tmp_path: Path) -> None:
-    fixture = tmp_path / "scripts" / "release" / "greenfield_post_confirm_matrix_cases.py"
+    fixture = tmp_path / "scripts" / "release" / "greenfield_preconfirm_matrix_cases.py"
     fixture.parent.mkdir(parents=True)
     fixture.write_text('PROMPT = "quantum communication fixture lives here"\\n', encoding="utf-8")
 
@@ -631,7 +631,7 @@ def test_scan_dist_ignores_third_party_runtime_tarball_files(tmp_path: Path) -> 
 
 
 def test_scan_dist_allows_matrix_proof_json_as_evidence(tmp_path: Path) -> None:
-    proof = tmp_path / "greenfield-post-confirm-matrix-20260629.v1.json"
+    proof = tmp_path / "greenfield-preconfirm-matrix-20260629.v1.json"
     proof.write_text('{"case": "quantum communication lab"}\\n', encoding="utf-8")
 
     assert leakage.scan_dist(tmp_path, terms=("quantum",)) == ()

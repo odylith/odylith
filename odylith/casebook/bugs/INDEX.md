@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-14
+Last updated (UTC): 2026-07-15
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-247 | 2026-07-14 | Unpunctuated project brief detail made why rationale look like malformed grammar | P1 | domain-intelligence | Open | [2026-07-14-unpunctuated-project-brief-detail-made-why-rationale-look-like-malformed-grammar.md](2026-07-14-unpunctuated-project-brief-detail-made-why-rationale-look-like-malformed-grammar.md) |
 | CB-246 | 2026-07-14 | Greenfield commit lock misclassified guarded write failures | P1 | domain-intelligence | Open | [2026-07-14-greenfield-commit-lock-misclassified-guarded-write-failures.md](2026-07-14-greenfield-commit-lock-misclassified-guarded-write-failures.md) |
 | CB-245 | 2026-07-14 | Concurrent greenfield create transactions can lose a managed update | P2 | domain-intelligence | Open | [2026-07-14-concurrent-greenfield-create-transactions-can-lose-a-managed-update.md](2026-07-14-concurrent-greenfield-create-transactions-can-lose-a-managed-update.md) |
 | CB-243 | 2026-07-12 | Initial greenfield confirm starts compilation instead of committing a sealed tra | P1 | domain-intelligence | Open | [2026-07-12-initial-greenfield-confirm-starts-compilation-instead-of-committing-a-sealed-tra.md](2026-07-12-initial-greenfield-confirm-starts-compilation-instead-of-committing-a-sealed-tra.md) |

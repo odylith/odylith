@@ -19,12 +19,12 @@ from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
     build_greenfield_package_report,
     GreenfieldCompletionPackage,
     _component_preview_path_fidelity_issues,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_until_clean
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
@@ -1881,7 +1881,7 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
     )
 
     atlas_text = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
-    assert result["post_confirm_quality_manifest"]["status"] == "passed"
+    assert result["commit_manifest"]["status"] == "passed"
     assert target_allocation_calls == 0
     assert '["Optional"]' not in atlas_text
 
@@ -1917,7 +1917,7 @@ def test_greenfield_commit_does_not_rematerialize_component_specs_after_confirma
     )
 
     specs = list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
-    assert result["post_confirm_quality_manifest"]["status"] == "passed"
+    assert result["commit_manifest"]["status"] == "passed"
     assert materialize_calls == 0
     assert specs
     assert all("owns maintains state" not in path.read_text(encoding="utf-8") for path in specs)

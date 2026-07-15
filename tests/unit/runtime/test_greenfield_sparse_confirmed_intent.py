@@ -90,7 +90,7 @@ Trusted evidence custody and embargo decision.
     output = capsys.readouterr().out
     assert rc == 0, output
     payload = json.loads(output)
-    manifest = payload["post_confirm_quality_manifest"]
+    manifest = payload["commit_manifest"]
     assert manifest["status"] == "passed"
     assert manifest["write_transaction"]["status"] == "committed"
     structured_intent = json.loads(

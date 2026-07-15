@@ -64,8 +64,8 @@ def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
 
 def _approved_quality_manifest() -> dict[str, object]:
     return {
-        "version": greenfield_create_commit.POST_CONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": greenfield_create_commit.POST_CONFIRM_ENGINE_VERSION,
+        "version": greenfield_create_commit.PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": greenfield_create_commit.PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "issue_count": 0,
@@ -872,7 +872,7 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
             "components": [],
             "diagrams": [],
             "product_create_transaction": transaction.summary(),
-            "post_confirm_quality_manifest": {
+            "commit_manifest": {
                 "status": "passed",
                 "validation_status": "passed",
                 "write_transaction": {
@@ -889,7 +889,7 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
     monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "run_greenfield_post_confirm_engine", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "run_greenfield_preconfirm_engine", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", fake_commit)
 
@@ -912,7 +912,7 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     assert [name for name, _call in calls] == ["commit"]
     assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert payload["product_create_transaction"]["verified"] is True
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert payload["commit_manifest"]["write_transaction"]["commit_only"] is True
 
 
 def test_greenfield_create_cli_rejects_transaction_without_compiler_receipt(
@@ -960,7 +960,7 @@ def test_greenfield_create_cli_rejects_transaction_without_compiler_receipt(
         ("--repair-tier", "deep"),
     ),
 )
-def test_greenfield_create_cli_rejects_post_confirm_overrides(
+def test_greenfield_create_cli_rejects_uncompiled_input_overrides(
     tmp_path,
     monkeypatch,
     capsys,
@@ -997,9 +997,9 @@ def test_greenfield_create_cli_rejects_post_confirm_overrides(
 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 2
-    assert "greenfield create cannot accept post-confirm inputs" in payload["error"]
+    assert "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm" in payload["error"]
     assert flag in payload["error"]
-    assert "rebuild the ProductCreateTransaction" in payload["error"]
+    assert "Use EDIT to add evidence and rebuild the ProductCreateTransaction" in payload["error"]
 
 
 def test_greenfield_create_cli_rejects_intent_file_even_with_compiled_transaction(
@@ -1119,7 +1119,9 @@ def test_greenfield_create_cli_rejects_transaction_file_without_compiler_provena
 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 2
-    assert "compiler provenance is not approved for this repo" in payload["error"]
+    assert "invalidated by a runtime or repository-context change" in payload["error"]
+    assert "no Product Intent was rejected" in payload["error"]
+    assert "no governed records were written" in payload["error"]
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
@@ -1445,7 +1447,9 @@ def test_greenfield_create_cli_requires_compiled_transaction_before_writes(tmp_p
 
     out = capsys.readouterr().out
     assert rc == 2
-    assert "greenfield create cannot accept post-confirm inputs: --release" in out
+    assert "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm" in out
+    assert "unexpected options: --release" in out
+    assert "Use EDIT to add evidence and rebuild the ProductCreateTransaction" in out
     assert "create only verifies the hash and commits the compiled package" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()

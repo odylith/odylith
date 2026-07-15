@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
@@ -129,7 +129,7 @@ def commit_precompiled_greenfield_proposal(
     confirm: bool,
     release_selector: str = "",
     proposal_ready: bool = False,
-    repair_tier: str = greenfield_proposals.DEFAULT_POST_CONFIRM_REPAIR_TIER,
+    repair_tier: str = greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
 ) -> dict[str, Any]:
     """Test helper that models pre-confirm compile followed by commit-only create."""
 

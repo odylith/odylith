@@ -68,5 +68,5 @@
 
 - Public Response: pending
 
-- Code References: - scripts/release/greenfield_post_confirm_matrix.py
-- tests/unit/install/test_greenfield_post_confirm_matrix.py
+- Code References: - scripts/release/greenfield_preconfirm_matrix.py
+- tests/unit/install/test_greenfield_preconfirm_matrix.py

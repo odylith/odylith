@@ -32,8 +32,8 @@ from odylith.runtime.domain_intelligence.greenfield_apply_components import comp
 from odylith.runtime.domain_intelligence.greenfield_apply_components import first_release_component_rows
 from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import operator_component_spec_issues
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.governance import owned_surface_refresh
@@ -468,7 +468,7 @@ def _raise_for_final_package_quality(
     if issues:
         _record_or_raise_completion_quality_debt(
             issues,
-            error_prefix="greenfield post-confirm final write quality failed",
+            error_prefix="greenfield pre-confirm final package quality failed",
             debt_prefix="final write quality",
             completion_priority_write_policy=completion_priority_write_policy,
             completion_quality_debt=completion_quality_debt,
@@ -477,7 +477,7 @@ def _raise_for_final_package_quality(
     if package_debt_messages:
         _record_or_raise_structured_completion_quality_debt(
             package_debt_messages,
-            error_prefix="greenfield post-confirm final write quality failed",
+            error_prefix="greenfield pre-confirm final package quality failed",
             debt_prefix="final write quality",
             completion_priority_write_policy=completion_priority_write_policy,
             completion_quality_debt=completion_quality_debt,
@@ -496,7 +496,7 @@ def _raise_for_final_next_steps_quality(
     if issues:
         _record_or_raise_completion_quality_debt(
             issues,
-            error_prefix="greenfield post-confirm final next steps quality failed",
+            error_prefix="greenfield pre-confirm final next-steps quality failed",
             debt_prefix="final next steps quality",
             completion_priority_write_policy=completion_priority_write_policy,
             completion_quality_debt=completion_quality_debt,
@@ -763,7 +763,7 @@ def completion_priority_write_policy_from_manifest(manifest: Mapping[str, Any]) 
     return {
         "status": "write_allowed_with_projection_quality_debt",
         "policy": (
-            "post-confirm governed record creation takes priority when a final persisted-projection "
+            "pre-confirm governed record creation takes priority when a final persisted-projection "
             "quality gate finds non-critical debt after a clean prewrite manifest"
         ),
         "original_stop_reason": str(manifest.get("stop_reason", "")).strip() or "passed",

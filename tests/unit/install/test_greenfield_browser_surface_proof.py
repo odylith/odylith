@@ -133,4 +133,4 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     assert "browser surface project payload exposes fewer than five implementation prompts" in issues
     assert "browser surface project payload contains empty implementation prompt text" in issues
     assert "browser surface project rendered fewer than five implementation prompt cards" in issues
-    assert "browser surface project rendered the blank project state after post-confirm" in issues
+    assert "browser surface project rendered the blank project state after commit-only create" in issues

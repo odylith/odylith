@@ -1,0 +1,860 @@
+"""Bounded fixpoint engine for confirmed greenfield pre-confirm packages."""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import asdict
+from dataclasses import dataclass
+from dataclasses import replace
+import hashlib
+import inspect
+import json
+import time
+from typing import Any
+
+from odylith.runtime.common.safe_ledger_text import safe_ledger_value
+from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.common.value_coercion import normalize_string_list
+from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.artifact_quality.greenfield_package_repetition import (
+    package_repetition_sample_matches_source_truth,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
+    PRECONFIRM_ENGINE_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
+    PRECONFIRM_QUALITY_MANIFEST_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
+    GreenfieldCompletionReport,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
+    assert_greenfield_completion_ready,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
+    raise_for_failed_greenfield_completion,
+)
+from odylith.runtime.artifact_quality.greenfield_quality_lenses import (
+    build_greenfield_quality_lens_report,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_patchset import (
+    patchset_request_from_findings,
+)
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import inspect_greenfield_package
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import (
+    GreenfieldReviewFinding,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import review_finding
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import (
+    review_report_from_findings,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_probe import (
+    RESCUE_PROBE_CODE,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_structured_rescue_proof import (
+    STRUCTURED_RESCUE_PROOF_CODE,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
+    compile_greenfield_semantics,
+)
+from odylith.runtime.domain_intelligence.proposal_tribunal import (
+    raise_for_failed_greenfield_tribunal,
+)
+from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from odylith.runtime.reasoning import tribunal_patch_planner
+
+
+PRECONFIRM_STANDARD_BUDGET_SECONDS = 60.0
+PRECONFIRM_RESCUE_BUDGET_SECONDS = 90.0
+PRECONFIRM_DEEP_BUDGET_SECONDS = 120.0
+PRECONFIRM_BUDGET_SECONDS = PRECONFIRM_STANDARD_BUDGET_SECONDS
+PRECONFIRM_MAX_PASSES = 4
+PRECONFIRM_RESCUE_MAX_PASSES = 6
+PRECONFIRM_DEEP_MAX_PASSES = 8
+PRECONFIRM_REPAIR_TIERS = ("auto", "standard", "rescue", "deep")
+PRECONFIRM_COMPLETION_PRIORITY_STATUS = "passed_with_quality_debt"
+
+
+@dataclass(frozen=True)
+class GreenfieldPreconfirmIssue:
+    code: str
+    surface: str
+    path: str
+    severity: str
+    repairability: str
+    owner: str
+    message: str
+    projection_id: str = ""
+    semantic_node_id: str = ""
+    source: str = ""
+    lens: str = ""
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class GreenfieldPreconfirmPass:
+    pass_index: int
+    status: str
+    elapsed_seconds: float
+    package_repair_passes: int
+    package_changed: bool
+    issue_count: int
+    issue_codes: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class GreenfieldPreconfirmRepairContext:
+    pass_index: int
+    elapsed_seconds: float
+    budget_seconds: float
+    report: GreenfieldCompletionReport
+    issues: tuple[GreenfieldPreconfirmIssue, ...]
+    review_report: Mapping[str, Any]
+    patchset_request: Mapping[str, Any]
+    quality_lenses: Mapping[str, Any]
+    semantic_compiler: Mapping[str, Any]
+    repair_tier: str = "standard"
+    rescue_activated: bool = False
+
+
+@dataclass(frozen=True)
+class GreenfieldPreconfirmEngineResult:
+    proposal: Mapping[str, Any]
+    tribunal: Any
+    prewrite_build: Any
+    report: GreenfieldCompletionReport
+    manifest: dict[str, Any]
+
+
+class GreenfieldPreconfirmEngineError(ValueError):
+    """Pre-confirm fixpoint failure with a structured quality manifest."""
+
+    def __init__(self, message: str, *, manifest: Mapping[str, Any]) -> None:
+        super().__init__(message)
+        self.manifest = dict(manifest)
+
+
+def run_greenfield_preconfirm_engine(
+    *,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+    build_prewrite: Callable[[Mapping[str, Any], Any], Any],
+    repair_proposal: Callable[..., Mapping[str, Any]],
+    prepare_repair_context: Callable[
+        [Mapping[str, Any], GreenfieldPreconfirmRepairContext],
+        GreenfieldPreconfirmRepairContext,
+    ]
+    | None = None,
+    rerender_prewrite: Callable[..., Any] | None = None,
+    proposal_ready: bool = False,
+    max_passes: int = PRECONFIRM_MAX_PASSES,
+    budget_seconds: float = PRECONFIRM_BUDGET_SECONDS,
+    repair_tier: str = "auto",
+    clock: Callable[[], float] = time.perf_counter,
+) -> GreenfieldPreconfirmEngineResult:
+    """Build, repair, and revalidate pre-confirm output before governed writes."""
+
+    started = clock()
+    requested_tier = _normalize_repair_tier(repair_tier)
+    active_tier = _initial_active_tier(requested_tier)
+    rescue_activated = active_tier in {"rescue", "deep"}
+    active_budget_seconds = _tier_budget_seconds(active_tier, fallback=budget_seconds)
+    effective_budget_seconds = active_budget_seconds
+    seen_failures: set[str] = set()
+    pass_records: list[GreenfieldPreconfirmPass] = []
+    repaired_issue_codes: set[str] = set()
+    last_report: GreenfieldCompletionReport | None = None
+    last_prewrite_build: Any = None
+    last_repair_patchset_request: Mapping[str, Any] | None = None
+    pending_prewrite_build: Any = None
+    pending_rerender_projections: tuple[str, ...] = ()
+    current = proposal
+    bounded_passes = max(1, int(max_passes))
+    if active_tier == "rescue":
+        bounded_passes = max(bounded_passes, PRECONFIRM_RESCUE_MAX_PASSES)
+    elif active_tier == "deep":
+        bounded_passes = max(bounded_passes, PRECONFIRM_DEEP_MAX_PASSES)
+    stop_reason = "max_passes"
+    tribunal: Any = None
+    pass_index = 0
+
+    while pass_index < bounded_passes:
+        elapsed = max(0.0, clock() - started)
+        if elapsed >= effective_budget_seconds:
+            stop_reason = "time_budget_exhausted"
+            break
+
+        tribunal = run_greenfield_tribunal(current, release_selector=release_selector)
+        raise_for_failed_greenfield_tribunal(tribunal)
+        if not (proposal_ready and pass_index == 0):
+            assert_greenfield_completion_ready(current, release_selector=release_selector)
+
+        if pending_rerender_projections and pending_prewrite_build is not None and rerender_prewrite is not None:
+            prewrite_build = rerender_prewrite(
+                current_proposal=current,
+                tribunal=tribunal,
+                previous_prewrite_build=pending_prewrite_build,
+                projections=pending_rerender_projections,
+            )
+        else:
+            prewrite_build = build_prewrite(current, tribunal)
+        pending_prewrite_build = None
+        pending_rerender_projections = ()
+        package_inspection = inspect_greenfield_package(prewrite_build.package)
+        report = package_inspection.report
+        typed_issues = classify_greenfield_preconfirm_issues(report)
+        quality_lenses = build_greenfield_quality_lens_report(prewrite_build.package)
+        semantic_compiler = compile_greenfield_semantics(prewrite_build.package.proposal).to_dict()
+        pass_records.append(
+            GreenfieldPreconfirmPass(
+                pass_index=pass_index,
+                status=report.status,
+                elapsed_seconds=round(max(0.0, clock() - started), 3),
+                package_repair_passes=package_inspection.passes,
+                package_changed=package_inspection.changed,
+                issue_count=len(report.issues),
+                issue_codes=tuple(sorted({issue.code for issue in typed_issues})),
+            )
+        )
+
+        last_report = report
+        last_prewrite_build = prewrite_build
+        if report.passed:
+            stop_reason = "passed"
+            return GreenfieldPreconfirmEngineResult(
+                proposal=current,
+                tribunal=tribunal,
+                prewrite_build=prewrite_build,
+                report=report,
+                manifest=build_greenfield_preconfirm_manifest(
+                    report=report,
+                    status="passed",
+                    stop_reason=stop_reason,
+                    elapsed_seconds=max(0.0, clock() - started),
+                    passes=len(pass_records),
+                    pass_records=pass_records,
+                    repaired_issue_codes=repaired_issue_codes,
+                    max_passes=bounded_passes,
+                    budget_seconds=active_budget_seconds,
+                    requested_repair_tier=requested_tier,
+                    active_repair_tier=active_tier,
+                    rescue_activated=rescue_activated,
+                    quality_lenses=quality_lenses,
+                    semantic_compiler=semantic_compiler,
+                    last_repair_patchset_request=last_repair_patchset_request,
+                ),
+            )
+
+        failure_signature = _failure_signature(report)
+        if failure_signature in seen_failures:
+            stop_reason = "no_progress"
+            break
+        seen_failures.add(failure_signature)
+        patchset_request = patchset_request_from_findings(report.findings).to_dict()
+        direct_rerender_projections = _direct_rerender_projections(typed_issues)
+        if direct_rerender_projections:
+            if rerender_prewrite is None:
+                last_report = _projection_rerender_contract_report(
+                    report,
+                    projections=direct_rerender_projections,
+                )
+                stop_reason = "missing_projection_rerender_callback"
+                break
+            pending_rerender_projections = direct_rerender_projections
+            pending_prewrite_build = prewrite_build
+            pass_index += 1
+            continue
+        if active_tier == "standard" and requested_tier == "auto":
+            if not _rescue_eligible(typed_issues, patchset_request=patchset_request):
+                stop_reason = "not_rescue_eligible"
+                break
+            active_tier = "rescue"
+            rescue_activated = True
+            active_budget_seconds = PRECONFIRM_RESCUE_BUDGET_SECONDS
+            effective_budget_seconds = PRECONFIRM_RESCUE_BUDGET_SECONDS
+            bounded_passes = max(bounded_passes, PRECONFIRM_RESCUE_MAX_PASSES)
+        previous = current
+        repair_context = GreenfieldPreconfirmRepairContext(
+            pass_index=pass_index,
+            elapsed_seconds=round(max(0.0, clock() - started), 3),
+            budget_seconds=float(active_budget_seconds),
+            report=report,
+            issues=typed_issues,
+            review_report=review_report_from_findings(report.findings).to_dict(),
+            patchset_request=patchset_request,
+            quality_lenses=quality_lenses,
+            semantic_compiler=semantic_compiler,
+            repair_tier=active_tier,
+            rescue_activated=rescue_activated,
+        )
+        if prepare_repair_context is not None:
+            repair_context = prepare_repair_context(current, repair_context)
+        if not _patchset_has_executable_operations(repair_context.patchset_request):
+            last_repair_patchset_request = repair_context.patchset_request
+            stop_reason = "no_executable_patchset"
+            break
+        if _patchset_has_operations(repair_context.patchset_request):
+            last_repair_patchset_request = repair_context.patchset_request
+        current = _repair_proposal_with_context(
+            repair_proposal,
+            current,
+            repair_context,
+        )
+        if current != previous:
+            repaired_issue_codes.update(
+                issue.code
+                for issue in typed_issues
+                if issue.repairability in {"semantic_patch", "plan_patch"}
+            )
+        pending_rerender_projections = _scoped_rerender_projections(current)
+        if pending_rerender_projections:
+            pending_prewrite_build = prewrite_build
+        proposal_ready = False
+        pass_index += 1
+
+    if last_report is None:
+        last_report = GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-pre-confirm-completion-v1",
+            semantic_model=False,
+            artifact_counts={},
+            tribunal_status="not_run",
+            issues=("pre-confirm fixpoint exhausted before a package report could be built",),
+        )
+    manifest = build_greenfield_preconfirm_manifest(
+        report=last_report,
+        status="failed",
+        stop_reason=stop_reason,
+        elapsed_seconds=max(0.0, clock() - started),
+        passes=len(pass_records),
+        pass_records=pass_records,
+        repaired_issue_codes=repaired_issue_codes,
+        max_passes=bounded_passes,
+        budget_seconds=active_budget_seconds,
+        requested_repair_tier=requested_tier,
+        active_repair_tier=active_tier,
+        rescue_activated=rescue_activated,
+        quality_lenses=(
+            build_greenfield_quality_lens_report(last_prewrite_build.package)
+            if last_prewrite_build is not None
+            else None
+        ),
+        semantic_compiler=(
+            compile_greenfield_semantics(last_prewrite_build.package.proposal).to_dict()
+            if last_prewrite_build is not None
+            else None
+        ),
+        last_repair_patchset_request=last_repair_patchset_request,
+    )
+    completion_debt = _completion_priority_debt_issues(
+        classify_greenfield_preconfirm_issues(last_report),
+        package=last_prewrite_build.package if last_prewrite_build is not None else None,
+    )
+    if last_prewrite_build is not None and tribunal is not None and completion_debt:
+        manifest = _attach_completion_priority_debt(
+            manifest,
+            debt_issues=completion_debt,
+            stop_reason=stop_reason,
+        )
+        return GreenfieldPreconfirmEngineResult(
+            proposal=current,
+            tribunal=tribunal,
+            prewrite_build=last_prewrite_build,
+            report=last_report,
+            manifest=manifest,
+        )
+    try:
+        raise_for_failed_greenfield_completion(last_report)
+    except ValueError as exc:
+        raise GreenfieldPreconfirmEngineError(str(exc), manifest=manifest) from exc
+    raise RuntimeError(f"greenfield pre-confirm engine stopped before completion: {manifest['stop_reason']}")
+
+
+def classify_greenfield_preconfirm_issues(
+    report: GreenfieldCompletionReport,
+) -> tuple[GreenfieldPreconfirmIssue, ...]:
+    """Return issue records without deriving repair semantics from prose."""
+
+    if report.findings:
+        finding_messages = {normalize_string(finding.message) for finding in report.findings}
+        legacy_issues = tuple(
+            _legacy_untyped_issue(issue)
+            for issue in report.issues
+            if normalize_string(issue) and normalize_string(issue) not in finding_messages
+        )
+        return (
+            *tuple(_issue_from_review_finding(finding) for finding in report.findings),
+            *legacy_issues,
+        )
+    return tuple(_legacy_untyped_issue(issue) for issue in report.issues if str(issue or "").strip())
+
+
+def _normalize_repair_tier(value: str) -> str:
+    tier = str(value or "auto").strip().casefold().replace("_", "-")
+    aliases = {
+        "default": "auto",
+        "premium": "deep",
+        "deep-repair": "deep",
+        "ci": "deep",
+        "ci-simulation": "deep",
+    }
+    tier = aliases.get(tier, tier)
+    if tier not in PRECONFIRM_REPAIR_TIERS:
+        return "auto"
+    return tier
+
+
+def _normalize_active_repair_tier(value: str) -> str:
+    tier = _normalize_repair_tier(value)
+    return "standard" if tier == "auto" else tier
+
+
+def _initial_active_tier(requested_tier: str) -> str:
+    tier = _normalize_repair_tier(requested_tier)
+    return "standard" if tier == "auto" else tier
+
+
+def _tier_budget_seconds(tier: str, *, fallback: float) -> float:
+    active = _normalize_active_repair_tier(tier)
+    if active == "deep":
+        return PRECONFIRM_DEEP_BUDGET_SECONDS
+    if active == "rescue":
+        return PRECONFIRM_RESCUE_BUDGET_SECONDS
+    try:
+        value = float(fallback)
+    except (TypeError, ValueError):
+        value = PRECONFIRM_STANDARD_BUDGET_SECONDS
+    return min(value if value > 0 else PRECONFIRM_STANDARD_BUDGET_SECONDS, PRECONFIRM_STANDARD_BUDGET_SECONDS)
+
+
+def _rescue_eligible(
+    issues: Sequence[GreenfieldPreconfirmIssue],
+    *,
+    patchset_request: Mapping[str, Any] | None = None,
+) -> bool:
+    if not issues:
+        return False
+    if any(issue.repairability == "unrepairable" for issue in issues):
+        return False
+    if patchset_request is not None and not _patchset_has_operations(patchset_request):
+        return False
+    rescue_codes = {
+        "artifact_shape_drift",
+        "atlas_render_quality",
+        "component_contract_quality",
+        "generated_copy_quality",
+        "missing_semantic_model",
+        RESCUE_PROBE_CODE,
+        STRUCTURED_RESCUE_PROOF_CODE,
+        "preconfirm_contract",
+        "proposal_quality_gate",
+        "quality_lens_gap",
+        "release_package_drift",
+        "semantic_alignment",
+        "semantic_compiler",
+        "semantic_drift",
+    }
+    repairable_types = {"semantic_patch", "plan_patch"}
+    return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
+
+
+def _completion_priority_debt_issues(
+    issues: Sequence[GreenfieldPreconfirmIssue],
+    *,
+    package: Any | None = None,
+) -> tuple[GreenfieldPreconfirmIssue, ...]:
+    """Return issues that may be committed as explicit projection quality debt."""
+
+    if not issues:
+        return ()
+    if any(not _completion_priority_debt_issue(issue, package=package) for issue in issues):
+        return ()
+    return tuple(issues)
+
+
+def _completion_priority_debt_issue(issue: GreenfieldPreconfirmIssue, *, package: Any | None = None) -> bool:
+    if issue.repairability == "unrepairable" and _typed_projection_repetition_debt_issue(issue, package=package):
+        return True
+    if issue.repairability not in {"plan_patch", "projection_rerender"}:
+        return False
+    if issue.severity == "critical":
+        return False
+    if issue.code in {"missing_semantic_model", "semantic_alignment", "semantic_compiler", "semantic_drift"}:
+        return False
+    if issue.surface in {"release", "semantic_model", "tribunal"}:
+        return False
+    if issue.source in {"quality_lens", "semantic_compiler", "semantic_projection_alignment"}:
+        return False
+    allowed_codes = {
+        "artifact_shape_drift",
+        "atlas_render_quality",
+        "component_contract_quality",
+        "package_repetition",
+        "proposal_quality_gate",
+    }
+    if issue.code not in allowed_codes:
+        return False
+    return bool(issue.projection_id and issue.projection_id != "review_report")
+
+
+def _typed_projection_repetition_debt_issue(
+    issue: GreenfieldPreconfirmIssue,
+    *,
+    package: Any | None = None,
+) -> bool:
+    if issue.code != "package_repetition":
+        return False
+    if issue.source != "package_repetition_quality":
+        return False
+    if issue.severity not in {"low", "medium"}:
+        return False
+    if not issue.projection_id or issue.projection_id == "review_report":
+        return False
+    if issue.surface in {"release", "semantic_model", "tribunal"}:
+        return False
+    if not issue.semantic_node_id.startswith("ArtifactPlanIR."):
+        return False
+    if package is not None and package_repetition_sample_matches_source_truth(
+        package,
+        _package_repetition_sample_from_message(issue.message),
+    ):
+        return False
+    return bool(issue.owner == "typed_package_artifact_gate" or issue.owner.endswith("_renderer"))
+
+
+def _package_repetition_sample_from_message(message: str) -> str:
+    text = normalize_string(message)
+    _head, marker, tail = text.partition("`")
+    if not marker:
+        return ""
+    sample, _end, _rest = tail.partition("`")
+    return normalize_string(sample)
+
+
+def _attach_completion_priority_debt(
+    manifest: Mapping[str, Any],
+    *,
+    debt_issues: Sequence[GreenfieldPreconfirmIssue],
+    stop_reason: str,
+) -> dict[str, Any]:
+    payload = dict(manifest)
+    payload["status"] = PRECONFIRM_COMPLETION_PRIORITY_STATUS
+    payload["stop_reason"] = "completion_priority_quality_debt"
+    payload["hard_blocker"] = None
+    payload["completion_priority"] = {
+        "status": "write_allowed_with_projection_quality_debt",
+        "policy": (
+            "pre-confirm governed record creation takes priority after typed repair or rerender "
+            "cannot make progress on non-critical rendered-projection quality issues"
+        ),
+        "original_stop_reason": stop_reason,
+        "debt_issue_count": len(debt_issues),
+        "debt_issue_codes": sorted({issue.code for issue in debt_issues}),
+        "hard_blocker_count": 0,
+    }
+    transaction = dict(payload.get("write_transaction") if isinstance(payload.get("write_transaction"), Mapping) else {})
+    transaction["prewrite_clean_before_commit"] = False
+    transaction["quality_debt_guard"] = "typed_noncritical_projection_debt_only"
+    payload["write_transaction"] = transaction
+    return payload
+
+
+def _patchset_has_operations(patchset_request: Mapping[str, Any]) -> bool:
+    operations = patchset_request.get("operations")
+    return isinstance(operations, Sequence) and not isinstance(operations, (str, bytes)) and bool(operations)
+
+
+def _patchset_has_executable_operations(patchset_request: Mapping[str, Any]) -> bool:
+    operations = patchset_request.get("operations")
+    if not isinstance(operations, Sequence) or isinstance(operations, (str, bytes, bytearray)):
+        return False
+    return any(_operation_has_executable_replacement(operation) for operation in operations if isinstance(operation, Mapping))
+
+
+def _operation_has_executable_replacement(operation: Mapping[str, Any]) -> bool:
+    replacement = operation.get("replacement_fact")
+    if tribunal_patch_planner.replacement_fact_missing(replacement, operation):
+        return False
+    layer = normalize_token(operation.get("target_layer"))
+    if layer == "semantic_model":
+        return isinstance(replacement, Mapping) or (
+            isinstance(replacement, Sequence) and not isinstance(replacement, (str, bytes, bytearray))
+        )
+    if layer == "artifact_plan":
+        return _artifact_plan_replacement_present(replacement)
+    return isinstance(replacement, Mapping)
+
+
+def _artifact_plan_replacement_present(value: Any) -> bool:
+    if not isinstance(value, Mapping):
+        return False
+    path = normalize_string(value.get("path") or value.get("target_path"))
+    if path and "value" in value:
+        return _patch_value_present(value.get("value"))
+    return any(_patch_value_present(item) for key, item in value.items() if normalize_string(key))
+
+
+def _patch_value_present(value: Any) -> bool:
+    if isinstance(value, str):
+        return bool(normalize_string(value))
+    if isinstance(value, Mapping):
+        return any(_patch_value_present(item) for item in value.values())
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return any(_patch_value_present(item) for item in value)
+    return value not in (None, "")
+
+
+def _direct_rerender_projections(issues: Sequence[GreenfieldPreconfirmIssue]) -> tuple[str, ...]:
+    projections = tuple(
+        dict.fromkeys(
+            issue.projection_id
+            for issue in issues
+            if issue.repairability == "projection_rerender" and issue.projection_id
+        )
+    )
+    if not projections:
+        return ()
+    expanded = patch_expand_projection_scope(projections)
+    if patch_scope_requires_full_prewrite(expanded):
+        return ()
+    return expanded
+
+
+def _projection_rerender_contract_report(
+    report: GreenfieldCompletionReport,
+    *,
+    projections: Sequence[str],
+) -> GreenfieldCompletionReport:
+    scope = ", ".join(projections) or "unknown projection"
+    message = (
+        "pre-confirm projection rerender required for "
+        f"{scope}, but no rerender_prewrite callback was configured"
+    )
+    finding = review_finding(
+        code="preconfirm_contract",
+        surface="preconfirm",
+        target_path="rerender_prewrite",
+        projection_id="review_report",
+        semantic_node_id="PostConfirmEngine.rerender_prewrite",
+        severity="critical",
+        repairability="unrepairable",
+        owner="preconfirm_engine",
+        source="projection_rerender_contract",
+        message=message,
+    )
+    return replace(
+        report,
+        status="failed",
+        issues=(message, *tuple(report.issues)),
+        findings=(finding, *tuple(report.findings)),
+    )
+
+
+def build_greenfield_preconfirm_manifest(
+    *,
+    report: GreenfieldCompletionReport,
+    status: str,
+    stop_reason: str,
+    elapsed_seconds: float,
+    passes: int,
+    pass_records: Sequence[GreenfieldPreconfirmPass],
+    repaired_issue_codes: set[str],
+    max_passes: int,
+    budget_seconds: float,
+    requested_repair_tier: str = "standard",
+    active_repair_tier: str = "standard",
+    rescue_activated: bool = False,
+    whole_project_elapsed_seconds: float | None = None,
+    write_transaction_status: str = "not_started",
+    quality_lenses: Mapping[str, Any] | None = None,
+    semantic_compiler: Mapping[str, Any] | None = None,
+    last_repair_patchset_request: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build the operator-visible quality manifest for the pre-confirm path."""
+
+    typed_issues = classify_greenfield_preconfirm_issues(report)
+    hard_blocker = next((issue.to_dict() for issue in typed_issues if issue.repairability == "unrepairable"), None)
+    manifest: dict[str, Any] = {
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
+        "status": status,
+        "validation_status": report.status,
+        "stop_reason": stop_reason,
+        "budget_seconds": float(budget_seconds),
+        "standard_budget_seconds": PRECONFIRM_STANDARD_BUDGET_SECONDS,
+        "rescue_budget_seconds": PRECONFIRM_RESCUE_BUDGET_SECONDS,
+        "deep_budget_seconds": PRECONFIRM_DEEP_BUDGET_SECONDS,
+        "requested_repair_tier": _normalize_repair_tier(requested_repair_tier),
+        "repair_tier": _normalize_active_repair_tier(active_repair_tier),
+        "rescue_activated": bool(rescue_activated),
+        "repair_tier_policy": {
+            "standard": "under 60s when no host-semantic rescue is needed",
+            "rescue": "up to 90s only after a repairable final semantic or quality gate failure",
+            "deep": "up to 120s only when explicitly requested for premium/deep repair or CI simulation",
+        },
+        "elapsed_seconds": round(float(elapsed_seconds), 3),
+        "passes": int(passes),
+        "max_passes": int(max_passes),
+        "artifact_counts": dict(report.artifact_counts),
+        "issue_count": len(typed_issues),
+        "issue_codes": sorted({issue.code for issue in typed_issues}),
+        "issues": [issue.to_dict() for issue in typed_issues],
+        "review_report": review_report_from_findings(report.findings).to_dict(),
+        "patchset_request": patchset_request_from_findings(report.findings).to_dict(),
+        "repaired_issue_codes": sorted(repaired_issue_codes),
+        "hard_blocker": hard_blocker,
+        "pass_records": [record.to_dict() for record in pass_records],
+        "quality_lenses": dict(quality_lenses or {}),
+        "semantic_compiler": dict(semantic_compiler or {}),
+        "write_transaction": {
+            "status": write_transaction_status,
+            "rollback_guard": "enabled",
+            "prewrite_clean_before_commit": status == "passed",
+        },
+    }
+    if last_repair_patchset_request is not None:
+        manifest["last_repair_patchset_request"] = _safe_manifest_patchset_request(last_repair_patchset_request)
+    if whole_project_elapsed_seconds is not None:
+        manifest["whole_project_elapsed_seconds"] = round(float(whole_project_elapsed_seconds), 3)
+    return manifest
+
+
+def _safe_manifest_patchset_request(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        result: dict[str, Any] = {}
+        for key, item in value.items():
+            clean_key = normalize_string(key)
+            if not clean_key:
+                continue
+            if clean_key == "replacement_fact":
+                result[clean_key] = item
+                continue
+            result[clean_key] = _safe_manifest_patchset_request(item)
+        return result
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [_safe_manifest_patchset_request(item) for item in value]
+    if isinstance(value, str):
+        return safe_ledger_value(value)
+    return value
+
+
+def _repair_proposal_with_context(
+    repair_proposal: Callable[..., Mapping[str, Any]],
+    proposal: Mapping[str, Any],
+    context: GreenfieldPreconfirmRepairContext,
+) -> Mapping[str, Any]:
+    if _accepts_repair_context(repair_proposal):
+        return repair_proposal(proposal, context)
+    return repair_proposal(proposal)
+
+
+def _accepts_repair_context(callback: Callable[..., Any]) -> bool:
+    try:
+        parameters = inspect.signature(callback).parameters.values()
+    except (TypeError, ValueError):
+        return True
+    positional_capacity = 0
+    for parameter in parameters:
+        if parameter.kind == inspect.Parameter.VAR_POSITIONAL:
+            return True
+        if parameter.kind in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }:
+            positional_capacity += 1
+    return positional_capacity >= 2
+
+
+def _scoped_rerender_projections(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    ledger = proposal.get("preconfirm_patch_application_ledger")
+    if not isinstance(ledger, list) or not ledger:
+        return ()
+    latest = ledger[-1]
+    if not isinstance(latest, Mapping):
+        return ()
+    if latest.get("rerender_scope") != "affected_projections":
+        return ()
+    if latest.get("full_prewrite_required"):
+        return ()
+    return tuple(normalize_string_list(latest.get("rerender_projections"), limit=16))
+
+
+def _legacy_untyped_issue(message: str) -> GreenfieldPreconfirmIssue:
+    text = str(message or "").strip()
+    return GreenfieldPreconfirmIssue(
+        code="legacy_untyped_report",
+        surface="preconfirm",
+        path="",
+        severity="critical",
+        repairability="unrepairable",
+        owner="typed_review_report",
+        message=text,
+        source="legacy_untyped_report",
+    )
+
+
+def _issue_from_review_finding(finding: GreenfieldReviewFinding) -> GreenfieldPreconfirmIssue:
+    return GreenfieldPreconfirmIssue(
+        code=finding.code,
+        surface=finding.surface,
+        path=finding.target_path,
+        severity=finding.severity,
+        repairability=finding.repairability,
+        owner=finding.owner,
+        message=finding.message,
+        projection_id=finding.projection_id,
+        semantic_node_id=finding.semantic_node_id,
+        source=finding.source,
+        lens=finding.lens,
+    )
+
+
+def _failure_signature(report: GreenfieldCompletionReport) -> str:
+    finding_signature = [
+        {
+            "code": finding.code,
+            "surface": finding.surface,
+            "target_path": finding.target_path,
+            "projection_id": finding.projection_id,
+            "semantic_node_id": finding.semantic_node_id,
+            "repairability": finding.repairability,
+            "source": finding.source,
+            "message": finding.message,
+        }
+        for finding in report.findings
+    ]
+    payload = {
+        "status": report.status,
+        "findings": finding_signature,
+        "issues": [] if finding_signature else list(report.issues),
+        "artifact_counts": dict(report.artifact_counts),
+    }
+    encoded = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+__all__ = [
+    "GreenfieldPreconfirmEngineResult",
+    "GreenfieldPreconfirmEngineError",
+    "GreenfieldPreconfirmIssue",
+    "GreenfieldPreconfirmRepairContext",
+    "PRECONFIRM_BUDGET_SECONDS",
+    "PRECONFIRM_COMPLETION_PRIORITY_STATUS",
+    "PRECONFIRM_DEEP_BUDGET_SECONDS",
+    "PRECONFIRM_ENGINE_VERSION",
+    "PRECONFIRM_MAX_PASSES",
+    "PRECONFIRM_QUALITY_MANIFEST_VERSION",
+    "PRECONFIRM_REPAIR_TIERS",
+    "PRECONFIRM_RESCUE_BUDGET_SECONDS",
+    "PRECONFIRM_STANDARD_BUDGET_SECONDS",
+    "build_greenfield_preconfirm_manifest",
+    "classify_greenfield_preconfirm_issues",
+    "run_greenfield_preconfirm_engine",
+]

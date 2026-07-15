@@ -21,7 +21,7 @@ def require_complete_compiled_greenfield_package(
     *,
     release_selector: str,
 ) -> None:
-    """Reject transaction packages that would need post-confirm artifact generation."""
+    """Reject transaction packages that would need artifact generation during commit."""
 
     proposal = prewrite_package.proposal if isinstance(prewrite_package.proposal, Mapping) else {}
     issues: list[str] = []

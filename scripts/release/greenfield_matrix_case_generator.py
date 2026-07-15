@@ -1,4 +1,4 @@
-"""Source-grounded case generation for high-variance Greenfield matrix runs."""
+"""Prompt-grounded case generation for high-variance Greenfield matrix runs."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from greenfield_matrix_stressors import missing_required_stressors  # noqa: E402
 from greenfield_matrix_stressors import required_stressors_from_values  # noqa: E402
 from greenfield_matrix_stressors import stressor_coverage  # noqa: E402
 from greenfield_matrix_stressors import variance_evaluation  # noqa: E402
-from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 
 
 CASE_GENERATOR_VERSION = "odylith.greenfield.matrix.case-generator.v1"

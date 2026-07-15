@@ -56,7 +56,7 @@ MATRIX_STRESSOR_TAXONOMY = (
     ),
     MatrixStressorClass(
         "final-memory-pressure",
-        "post-confirm custody",
+        "commit-only custody",
         "Accepted exclusions, assumptions, or proof boundaries must survive final write projection.",
     ),
     MatrixStressorClass(

@@ -29,7 +29,7 @@ def _case_summary(result: Any) -> dict[str, Any]:
     issues = list(getattr(result, "browser_surface_issues", ()) or ())
     attempted = bool(getattr(result, "browser_surface_proof_attempted", False))
     if not attempted:
-        issues.append("browser proof skipped because post-confirm create did not pass")
+        issues.append("browser proof skipped because commit-only create did not pass")
     return {
         "name": str(getattr(result, "name", "") or ""),
         "status": _case_status(attempted=attempted, issues=issues),

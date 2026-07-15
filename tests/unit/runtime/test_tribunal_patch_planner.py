@@ -12,7 +12,7 @@ from odylith.runtime.reasoning.tribunal_patch_planner import (
 
 def _patchset_request() -> dict[str, Any]:
     return {
-        "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+        "version": "odylith.greenfield.preconfirm.patchset_request.v1",
         "status": "repairable",
         "operation_count": 1,
         "operations": [

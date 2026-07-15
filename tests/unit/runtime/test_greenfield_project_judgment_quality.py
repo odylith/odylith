@@ -4,7 +4,7 @@ from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfi
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import inline_first_path_scope_fragment
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 
 
 def _proposal(*, state_object: str = "A review record with owner, status, final outcome, and audit history.") -> dict[str, object]:

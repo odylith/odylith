@@ -23,7 +23,7 @@ from threading import Event
 from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-MATRIX_SCRIPT = SCRIPT_DIR / "greenfield_post_confirm_matrix.py"
+MATRIX_SCRIPT = SCRIPT_DIR / "greenfield_preconfirm_matrix.py"
 
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))

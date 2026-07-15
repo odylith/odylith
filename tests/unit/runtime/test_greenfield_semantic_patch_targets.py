@@ -4,14 +4,14 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_patch_apply
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import (
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionReport
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmRepairContext
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_patchset import (
     patchset_request_from_findings,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import review_finding
 
 
 def test_patchset_maps_registered_semantic_ontology_slot_without_local_string_branch() -> None:
@@ -41,38 +41,38 @@ def test_patchset_maps_registered_semantic_ontology_slot_without_local_string_br
 def test_registered_semantic_target_declares_full_prewrite_scope_and_source_mirror(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "ensure_apply_semantic_model",
         lambda proposal, **_kwargs: dict(proposal),
     )
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("non-goal boundary drifted from accepted intent",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-NON-GOALS",
@@ -108,7 +108,7 @@ def test_registered_semantic_target_declares_full_prewrite_scope_and_source_mirr
         },
     }
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         proposal,
         release_selector="0.0.1",
         repair_context=context,
@@ -116,7 +116,7 @@ def test_registered_semantic_target_declares_full_prewrite_scope_and_source_mirr
 
     assert repaired["intent"]["non_goals"] == ["Forecasting automation remains deferred."]
     assert repaired["non_goals"] == ["Forecasting automation remains deferred."]
-    application = repaired["post_confirm_patch_application_ledger"][-1]
+    application = repaired["preconfirm_patch_application_ledger"][-1]
     assert application["affected_projections"] == ("project_brief", "radar", "atlas")
     assert application["full_prewrite_required"] is True
     assert application["rerender_scope"] == "full_prewrite"

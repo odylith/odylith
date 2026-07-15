@@ -563,7 +563,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py`;
   `.venv/bin/python -m pytest -q
-  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py
   tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`21
   passed`); `.venv/bin/python -m pytest -q
@@ -789,7 +789,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   intact. Proof: `.venv/bin/python -m pytest -q
   tests/unit/runtime/test_greenfield_general_artifact_quality.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py
-  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
   tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py
   tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed
@@ -834,14 +834,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - 2026-06-03 post-confirm semantic drift decomposition moved contrastive
   domain-drift detection, semantic repetition clustering, generated-artifact
   sentence extraction, intent/component signature building, and semantic
-  overlap scoring into `greenfield_post_confirm_semantic_drift.py`. The
+  overlap scoring into `greenfield_preconfirm_semantic_drift.py`. The
   post-confirm completion gate now keeps package orchestration, prewrite
   preview checks, and formatted failure reporting separate from drift-token
-  ownership (`greenfield_post_confirm_completion.py`: 1214 to 853 lines), while
+  ownership (`greenfield_preconfirm_completion.py`: 1214 to 853 lines), while
   `test_greenfield_general_artifact_quality.py` pins the dedicated owner and
   parent line-count ceiling. Proof: `.venv/bin/python -m py_compile
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
   `.venv/bin/python -m pytest -q
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
@@ -855,17 +855,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - 2026-06-03 post-confirm semantic-alignment decomposition moved semantic model
   shape checks, component/workstream/diagram alignment, rendered Registry spec
   alignment, component ID fallback, and first-release scope checks into
-  `greenfield_post_confirm_semantic_alignment.py`. Shared post-confirm list row
-  coercion now lives in `greenfield_post_confirm_rows.py`, so the completion
+  `greenfield_preconfirm_semantic_alignment.py`. Shared post-confirm list row
+  coercion now lives in `greenfield_preconfirm_rows.py`, so the completion
   parent and drift owner no longer carry local `_mapping_rows` clones. The
   package completion parent now stays below the soft source-size limit
-  (`greenfield_post_confirm_completion.py`: 853 to 691 lines), and
+  (`greenfield_preconfirm_completion.py`: 853 to 691 lines), and
   `test_greenfield_general_artifact_quality.py` pins the alignment, drift, and
   row-helper ownership boundaries. Proof: `.venv/bin/python -m py_compile
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rows.py
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
   `.venv/bin/python -m pytest -q
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
@@ -1026,7 +1026,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py
   src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py
   src/odylith/runtime/domain_intelligence/greenfield_proposals.py
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py
   tests/unit/runtime/test_greenfield_confirmed_body_comp.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed; focused
@@ -1075,7 +1075,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   py_compile
   src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
   src/odylith/runtime/domain_intelligence/greenfield_apply_write.py
-  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py
+  src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py
   src/odylith/runtime/domain_intelligence/greenfield_proposals.py
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_prewrite_transaction.py
@@ -1092,13 +1092,13 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `greenfield_first_path_types.py`. `greenfield_first_path_semantics.py` now
   owns first-path parsing and model extraction only (`1054` to `358` lines),
   while the clause owner is `734` lines and the type owner is `27` lines.
-  `test_greenfield_post_confirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner`
+  `test_greenfield_preconfirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner`
   pins the owner boundary. Proof: `.venv/bin/python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py
   src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py
   src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py
   src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py
-  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py`
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py`
   passed; first-path slop proof passed (`14 passed in 2.73s`); broader
   artifact-quality proof passed (`61 passed in 174.67s`); the full
   confirmed-greenfield regression bundle passed (`131 passed in 322.94s`);
@@ -1173,7 +1173,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   index now owns display-token counting for first-path parser thresholds.
   Touched files remain below limits (`greenfield_first_path_semantics.py`: 364
   lines; `greenfield_domain_term_index.py`: 131 lines;
-  `test_greenfield_post_confirm_slop_regressions.py`: 699 lines). Proof:
+  `test_greenfield_preconfirm_slop_regressions.py`: 699 lines). Proof:
   syntax proof passed for the touched module and test; focused post-confirm
   first-path proof passed (`14 passed in 1.33s`); wider greenfield artifact
   proof passed (`162 passed in 192.42s`); and confirmed-create performance
@@ -1282,7 +1282,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   semantic/package checks. The former post-confirm-specific row owner was
   deleted instead of left as a wrapper, so row coercion is no longer coupled to
   one package phase (`greenfield_rows.py`: 12 lines;
-  `greenfield_post_confirm_completion.py`: 693 lines;
+  `greenfield_preconfirm_completion.py`: 693 lines;
   `proposal_tribunal.py`: 519 lines; `greenfield_apply_prewrite.py`: 456
   lines). `tests/unit/runtime/test_greenfield_row_coercion.py` now pins the
   shared owner and prevents private `_mapping_rows` helpers from returning.
@@ -1300,7 +1300,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   same row-coercion contract as mapping rows (`greenfield_rows.py`: 30 lines;
   `greenfield_confirmed_completion.py`: 587 lines;
   `greenfield_confirmed_prewrite_gate.py`: 118 lines;
-  `greenfield_post_confirm_completion.py`: 687 lines), and
+  `greenfield_preconfirm_completion.py`: 687 lines), and
   `tests/unit/runtime/test_greenfield_row_coercion.py` prevents private row
   coercion and count helpers from returning. Proof: syntax proof passed for
   the touched row/completion/prewrite/post-confirm modules; focused
@@ -1522,12 +1522,12 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - 2026-06-04 post-confirm drift term-index follow-through moved semantic
   repetition signatures, overlap signatures, and contrastive drift term
   signatures onto `greenfield_domain_term_index.ordered_terms`.
-  `greenfield_post_confirm_semantic_drift.py` now owns only post-confirm
+  `greenfield_preconfirm_semantic_drift.py` now owns only post-confirm
   stopwords and separator cleanup, and no longer imports
   `normalize_domain_token` or loops over regex tokens locally. The enforcement
   guard lives in a dedicated small test instead of growing the oversized
   aggregate artifact-quality suite. Touched files remain below limits
-  (`greenfield_post_confirm_semantic_drift.py`: 389 lines;
+  (`greenfield_preconfirm_semantic_drift.py`: 389 lines;
   `test_greenfield_semantic_drift_terms.py`: 32 lines). Proof: syntax proof
   passed for the touched module and test; focused drift proof passed
   (`2 passed in 0.11s`); wider artifact/proposal/post-confirm proof passed
@@ -1678,7 +1678,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   and UX. This prevents later plain-actor follow-up actions from bleeding into a
   qualified actor's first path after a visible result. Touched files remain below
   limits (`greenfield_first_path_clauses.py`: 742 lines;
-  `test_greenfield_post_confirm_slop_regressions.py`: 674 lines). Proof:
+  `test_greenfield_preconfirm_slop_regressions.py`: 674 lines). Proof:
   syntax proof passed for the touched module and test; focused post-confirm slop
   proof passed (`14 passed in 2.78s`); wider greenfield proof passed (`151
   passed in 237.66s`); and confirmed-create performance proof passed (`1 passed
@@ -1693,7 +1693,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   signature subject. Touched files remain below limits
   (`greenfield_first_path_clauses.py`: 742 lines;
   `greenfield_domain_term_index.py`: 131 lines;
-  `test_greenfield_post_confirm_slop_regressions.py`: 701 lines). Proof:
+  `test_greenfield_preconfirm_slop_regressions.py`: 701 lines). Proof:
   syntax proof passed for the touched module and test; focused post-confirm
   first-path proof passed (`14 passed in 1.37s`); wider greenfield artifact
   proof passed (`162 passed in 193.05s`); and confirmed-create performance
@@ -1830,14 +1830,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   in 194.91s`); and confirmed-create performance proof passed (`1 passed in
   9.55s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 post-confirm drift frequency follow-through moved repeated
-  contrastive term counting in `greenfield_post_confirm_semantic_drift.py`
+  contrastive term counting in `greenfield_preconfirm_semantic_drift.py`
   onto `greenfield_domain_term_index.term_frequencies` and moved generated
   sentence length filtering onto `greenfield_text.word_count`. The drift owner
   still owns post-confirm stopwords, signature separator cleanup, repetition
   clustering, and overlap policy, while shared text and term-index owners handle
   reusable token counting with one normalized pass instead of one regex scan per
   term. Touched files remain below limits
-  (`greenfield_post_confirm_semantic_drift.py`: 398 lines;
+  (`greenfield_preconfirm_semantic_drift.py`: 398 lines;
   `greenfield_domain_term_index.py`: 193 lines; `greenfield_text.py`: 149
   lines; `greenfield_confirmed_text.py`: 413 lines;
   `test_greenfield_semantic_drift_terms.py`: 63 lines). Proof: syntax proof
@@ -2150,7 +2150,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `alongside` rewrite forks. Touched files remain below limits
   (`greenfield_component_terms.py`: 774 lines;
   `greenfield_first_path_clauses.py`: 758 lines;
-  `test_greenfield_post_confirm_slop_regressions.py`: 736 lines;
+  `test_greenfield_preconfirm_slop_regressions.py`: 736 lines;
   `greenfield_confirmed_system_rows.py`: 691 lines;
   `greenfield_confirmed_intent_completion.py`: 643 lines;
   `greenfield_product_risks.py`: 554 lines;
@@ -2169,7 +2169,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   diagram text owner no longer keeps local proof-lead regex forks. Touched files
   remain below limits (`greenfield_confirmed_diagram_text.py`: 517 lines;
   `greenfield_text.py`: 248 lines;
-  `test_greenfield_post_confirm_slop_regressions.py`: 767 lines). Proof:
+  `test_greenfield_preconfirm_slop_regressions.py`: 767 lines). Proof:
   syntax proof passed for the touched modules and test; focused proof-boundary
   and Atlas surface proof passed (`2 passed in 0.17s`); wider greenfield
   artifact proof passed (`186 passed in 203.82s`); and confirmed-create
@@ -2280,7 +2280,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`greenfield_first_path_clauses.py`: 749 lines;
   `greenfield_first_path_semantics.py`: 357 lines;
   `greenfield_semantic_quality.py`: 466 lines; `greenfield_text.py`: 279
-  lines; `test_greenfield_post_confirm_slop_regressions.py`: 803 lines).
+  lines; `test_greenfield_preconfirm_slop_regressions.py`: 803 lines).
   Proof: syntax proof passed for the touched modules and test; focused
   cleaned-text proof passed (`4 passed in 0.32s`); wider greenfield artifact
   proof passed (`192 passed in 234.56s`); and confirmed-create performance
@@ -2614,7 +2614,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
 - Run focused unit tests for domain intelligence, host routing, component
   authoring, CLI dispatch, show capabilities, and Compass transaction filtering
   with the repo-local interpreter, for example `.venv/bin/python -m pytest -q
-  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py`.
 - For confirmed-create speed and artifact quality, run `.venv/bin/python -m
   pytest -q tests/integration/runtime/test_greenfield_create_performance.py`;

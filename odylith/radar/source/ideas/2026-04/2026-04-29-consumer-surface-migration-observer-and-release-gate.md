@@ -194,6 +194,10 @@ Add a migration observer to the migration-runtime release gate. It scans changed
 - `migration-observer:0.1.15:public-docs-and-release-guidance:0d35800e39ae`
 - `migration-observer:0.1.15:browser-surfaces:e63657fa618c`
 - `migration-observer:0.1.15:install-managed-assets:cc8febc09545`
+- `migration-observer:0.1.15:browser-surfaces:9f49b86fc097`
+- `migration-observer:0.1.15:install-managed-assets:db3c601706b2`
+- `migration-observer:0.1.15:browser-surfaces:4da3cbd34d6a`
+- `migration-observer:0.1.15:browser-surfaces:b63a47af14ed`
 
 The v0.1.15 browser-surface assessment covers the Radar detail-page template
 change that loads Mermaid only when the page actually contains Mermaid content.
@@ -2316,3 +2320,8 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   assets. The updated transaction kernel rejects stale confirmation data before
   any governed write and rolls back true filesystem failures without rewriting
   consumer-owned source truth.
+- The `CB-247` Project Brief rationale-layout repair is covered by
+  `migration-observer:0.1.15:browser-surfaces:da53fd85c073` and
+  `migration-observer:0.1.15:install-managed-assets:571737d67a1f`. Existing
+  installs retain all governed source truth; normal managed refresh updates the
+  renderer and the generated Casebook/browser assets only.

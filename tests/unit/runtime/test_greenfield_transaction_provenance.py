@@ -18,9 +18,9 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     product_create_transaction_compiler_identity,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
-    POST_CONFIRM_QUALITY_MANIFEST_VERSION,
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
+    PRECONFIRM_QUALITY_MANIFEST_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
@@ -30,8 +30,8 @@ from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_wit
 
 def _quality_manifest() -> dict[str, Any]:
     return {
-        "version": POST_CONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": POST_CONFIRM_ENGINE_VERSION,
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "hard_blocker": False,

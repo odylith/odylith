@@ -351,12 +351,12 @@ PY
   local matrix_temp_parent
   matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
   ensure_playwright_chromium
-  "$odylith_python" scripts/release/greenfield_post_confirm_matrix.py \
+  "$odylith_python" scripts/release/greenfield_preconfirm_matrix.py \
     --version "$resolved_version" \
     --dist-dir "$dist_dir" \
     --temp-parent "$matrix_temp_parent" \
     --proof-tier release \
     --include-natural-rescue-proof \
     --include-browser-proof \
-    --output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"
+    --output-json "$dist_dir/greenfield-preconfirm-matrix.v1.json"
 }

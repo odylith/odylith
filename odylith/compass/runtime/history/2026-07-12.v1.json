@@ -147039,17 +147039,17 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:tests/unit/install/test_greenfield_post_confirm_matrix.py",
+      "id": "local:M:tests/unit/install/test_greenfield_preconfirm_matrix.py",
       "kind": "local_change",
       "ts_iso": "2026-07-12T19:07:08-07:00",
-      "summary": "Modified tests/unit/install/test_greenfield_post_confirm_matrix.py",
+      "summary": "Modified tests/unit/install/test_greenfield_preconfirm_matrix.py",
       "author": "local",
       "sha": "",
       "workstreams": [
         "B-142"
       ],
       "files": [
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "source": "local",
       "session_id": "",
@@ -155655,7 +155655,7 @@
         "odylith/SECURITY_POSTURE.md",
         "odylith/agents-guidelines/SECURITY_AND_TRUST.md",
         "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
         "tests/unit/install/test_local_release_smoke.py",
         "tests/unit/runtime/test_greenfield_cli_paths.py",
         "tests/unit/test_cli.py"
@@ -155690,17 +155690,17 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:tests/unit/install/test_greenfield_post_confirm_matrix.py",
+          "id": "local:M:tests/unit/install/test_greenfield_preconfirm_matrix.py",
           "kind": "local_change",
           "ts_iso": "2026-07-12T19:07:08-07:00",
-          "summary": "Modified tests/unit/install/test_greenfield_post_confirm_matrix.py",
+          "summary": "Modified tests/unit/install/test_greenfield_preconfirm_matrix.py",
           "author": "local",
           "sha": "",
           "workstreams": [
             "B-142"
           ],
           "files": [
-            "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+            "tests/unit/install/test_greenfield_preconfirm_matrix.py"
           ],
           "source": "local",
           "session_id": "",

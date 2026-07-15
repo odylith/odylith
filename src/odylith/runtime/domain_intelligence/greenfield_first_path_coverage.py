@@ -1,4 +1,4 @@
-"""Typed first-path coverage helpers for post-confirm package gates."""
+"""Typed first-path coverage helpers for pre-confirm package gates."""
 
 from __future__ import annotations
 

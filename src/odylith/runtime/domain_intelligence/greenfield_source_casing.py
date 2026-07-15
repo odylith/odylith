@@ -8,7 +8,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_token_casing
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 

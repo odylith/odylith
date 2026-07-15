@@ -70,5 +70,5 @@
 
 - Code References: - scripts/release/greenfield_matrix_quality_scoring.py
 - scripts/release/greenfield_matrix_proof_scope.py
-- tests/unit/install/test_greenfield_post_confirm_matrix.py
-- tests/unit/install/test_greenfield_post_confirm_matrix_proof_scope.py
+- tests/unit/install/test_greenfield_preconfirm_matrix.py
+- tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py

@@ -4,9 +4,9 @@ from typing import Any
 
 import pytest
 
-from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_patch_apply
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmRepairContext
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import apply_semantic_patch_operations
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import (
@@ -495,33 +495,33 @@ def test_semantic_patch_executor_requires_completion_without_explicit_scope() ->
 def test_patchset_repair_applies_host_replacement_before_semantic_model_regeneration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "complete_confirmed_proposal",
         lambda proposal, *, release_selector: dict(proposal),
     )
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("prewrite Radar package missing semantic coverage for first path",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "host-semantic-repair",
@@ -560,7 +560,7 @@ def test_patchset_repair_applies_host_replacement_before_semantic_model_regenera
         "semantic_model": {"stale": True},
     }
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         proposal,
         release_selector="0.0.1",
         repair_context=context,
@@ -582,9 +582,9 @@ def test_patchset_repair_skips_completion_for_scoped_non_first_path_semantic_pat
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
@@ -593,29 +593,29 @@ def test_patchset_repair_skips_completion_for_scoped_non_first_path_semantic_pat
         calls.append("completion")
         return {}
 
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("project brief preview state object needs repair",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-STATE",
@@ -634,7 +634,7 @@ def test_patchset_repair_skips_completion_for_scoped_non_first_path_semantic_pat
         rescue_activated=True,
     )
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         {"intent": {"title": "Evidence Decision Workspace", "state_object": "Old state."}, "semantic_model": {}},
         release_selector="0.0.1",
         repair_context=context,
@@ -642,7 +642,7 @@ def test_patchset_repair_skips_completion_for_scoped_non_first_path_semantic_pat
 
     assert calls == []
     assert repaired["intent"]["state_object"] == "A decision record with owner, status, and result."
-    application = repaired["post_confirm_patch_application_ledger"][-1]
+    application = repaired["preconfirm_patch_application_ledger"][-1]
     assert application["affected_projections"] == ("project_brief",)
     assert application["rerender_projections"] == (
         "project_brief",
@@ -661,9 +661,9 @@ def test_patchset_repair_keeps_first_path_semantic_patch_completion_required(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
@@ -672,33 +672,33 @@ def test_patchset_repair_keeps_first_path_semantic_patch_completion_required(
         calls.append(f"complete:{release_selector}")
         return dict(proposal)
 
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", complete)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "complete_confirmed_proposal", complete)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "ensure_apply_semantic_model",
         lambda proposal, **_kwargs: dict(proposal),
     )
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("first path needs semantic repair",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-FIRST-PATH",
@@ -719,7 +719,7 @@ def test_patchset_repair_keeps_first_path_semantic_patch_completion_required(
         rescue_activated=True,
     )
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         {
             "intent": {
                 "title": "Evidence Decision Workspace",
@@ -732,7 +732,7 @@ def test_patchset_repair_keeps_first_path_semantic_patch_completion_required(
     )
 
     assert calls == ["complete:0.0.1"]
-    application = repaired["post_confirm_patch_application_ledger"][-1]
+    application = repaired["preconfirm_patch_application_ledger"][-1]
     assert application["affected_projections"] == ("project_brief",)
     assert application["completion_required"] is True
     assert application["full_prewrite_required"] is True
@@ -743,9 +743,9 @@ def test_patchset_repair_does_not_synthesize_first_path_when_structured_fact_is_
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "normalize_host_reasoned_proposal",
         lambda proposal: dict(proposal),
     )
@@ -754,29 +754,29 @@ def test_patchset_repair_does_not_synthesize_first_path_when_structured_fact_is_
         calls.append("completion")
         return {}
 
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
     monkeypatch.setattr(
-        greenfield_post_confirm_patch_apply,
+        greenfield_preconfirm_patch_apply,
         "repair_greenfield_semantic_projections",
         lambda _proposal: False,
     )
-    context = GreenfieldPostConfirmRepairContext(
+    context = GreenfieldPreconfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
         budget_seconds=90.0,
         report=GreenfieldCompletionReport(
             status="failed",
-            version="greenfield-post-confirm-completion-v1",
+            version="greenfield-preconfirm-completion-v1",
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
             issues=("first path needs semantic repair",),
         ),
         issues=(),
-        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
         patchset_request={
-            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
                     "operation_id": "GF-PATCH-FIRST-PATH",
@@ -802,7 +802,7 @@ def test_patchset_repair_does_not_synthesize_first_path_when_structured_fact_is_
         "semantic_model": {},
     }
 
-    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+    repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
         proposal,
         release_selector="0.0.1",
         repair_context=context,
@@ -811,4 +811,4 @@ def test_patchset_repair_does_not_synthesize_first_path_when_structured_fact_is_
     assert calls == []
     assert repaired["intent"]["first_path"] == "A decision workspace for review."
     assert repaired["semantic_model"] == {}
-    assert "post_confirm_patch_application_ledger" not in repaired
+    assert "preconfirm_patch_application_ledger" not in repaired

@@ -41,7 +41,7 @@ class GreenfieldApplySemanticInput:
 
 
 def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = False) -> dict[str, Any]:
-    """Compile legacy confirmed apply payloads into the post-confirm semantic model."""
+    """Compile legacy confirmed apply payloads into the pre-confirm semantic model."""
 
     existing_model = isinstance(proposal.get("semantic_model"), Mapping)
     existing_input = _has_current_apply_semantic_input(proposal)

@@ -218,7 +218,7 @@ def _project_state_assertion_issues(
     if not has_prompt_grid:
         issues.append("browser surface project did not render the implementation prompt grid")
     if has_blank_state:
-        issues.append("browser surface project rendered the blank project state after post-confirm")
+        issues.append("browser surface project rendered the blank project state after commit-only create")
     if not has_implementation_prompts:
         issues.append("browser surface project did not render the expected implementation prompt labels")
     if max_prompt_overflow > 4:

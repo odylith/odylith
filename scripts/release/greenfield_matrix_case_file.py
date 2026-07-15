@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from greenfield_matrix_leakage import term_present
-from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
 

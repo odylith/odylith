@@ -17,8 +17,8 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_intent_authority
 from odylith.runtime.domain_intelligence.greenfield_proposals import load_confirmed_intent_args
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     materialize_prompt_confirmed_intent,
     materialize_prompt_intent_hypothesis,
@@ -73,8 +73,8 @@ Release 0.0.1 is proven only when the same lab evidence package can be opened, r
 
 def _approved_quality_manifest() -> dict[str, Any]:
     return {
-        "version": POST_CONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": POST_CONFIRM_ENGINE_VERSION,
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "hard_blocker": False,

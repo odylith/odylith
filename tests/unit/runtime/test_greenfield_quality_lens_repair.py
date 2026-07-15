@@ -8,8 +8,8 @@ import pytest
 
 from odylith.runtime.artifact_quality.greenfield_quality_lenses import build_greenfield_quality_lens_report
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import package_review_findings
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_findings import package_review_findings
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
     QUALITY_LENS_GATE_ONLY_CHECKS,
 )
@@ -591,7 +591,7 @@ def test_gate_only_quality_lens_check_stays_non_patchable(
     package = GreenfieldCompletionPackage(proposal=proposal, release_selector="0.0.1")
 
     monkeypatch.setattr(
-        "odylith.runtime.domain_intelligence.greenfield_post_confirm_findings.build_greenfield_quality_lens_report",
+        "odylith.runtime.domain_intelligence.greenfield_preconfirm_findings.build_greenfield_quality_lens_report",
         lambda _package: {
             "lenses": {
                 "engineer": {

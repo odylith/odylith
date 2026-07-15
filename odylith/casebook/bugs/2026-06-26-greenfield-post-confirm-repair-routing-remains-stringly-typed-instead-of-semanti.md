@@ -22,7 +22,7 @@
 
 - Failure Signature: Post-confirm issue classification and rescue routing used to depend on substring matching; the current internal report path now emits typed findings first, but package repair still recursively rewrites rendered public copy instead of applying semantic or artifact-plan patches.
 
-- Trigger Path: Architecture review of src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py and greenfield_post_confirm_repair.py during greenfield post-confirm hardening.
+- Trigger Path: Architecture review of src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py and greenfield_preconfirm_repair.py during greenfield post-confirm hardening.
 
 - Ownership: Greenfield semantic compiler, post-confirm repair engine, package quality gates, host reasoning integration, and artifact projection boundaries.
 
@@ -34,7 +34,7 @@
   moved those repairs upstream into Radar validation projection and
   artifact-enrichment sentence preservation instead of re-enabling rendered
   Markdown cleanup. A later checkpoint extracted
-  `greenfield_post_confirm_patch_apply.py` so the proposal repair callback
+  `greenfield_preconfirm_patch_apply.py` so the proposal repair callback
   consumes operation-level `PatchSet` entries, preserves field target plus
   semantic-node context, carries rejected-interpretation text into semantic
   operations, and refuses proposal mutation for artifact-draft-only operations.
@@ -216,9 +216,9 @@
   three Registry component specs, six Atlas diagrams, and temp repo deletion
   before the next scenario.
   A later architecture review found that `ArtifactPlanIR` was still mostly a
-  contract: `greenfield_post_confirm_patchset.py` could emit
+  contract: `greenfield_preconfirm_patchset.py` could emit
   `target_layer: artifact_plan` operations, but
-  `greenfield_post_confirm_patch_apply.py` executed only semantic operations.
+  `greenfield_preconfirm_patch_apply.py` executed only semantic operations.
   That left plan-level rescue unable to change project brief, Radar, Registry,
   Atlas, release, program, assumption, risk, question, or validation projection
   facts through a typed operation. The new
@@ -292,7 +292,7 @@
 
 - Preflight Checks: Read CB-207 and this bug before changing post-confirm repair; verify whether the change patches SemanticModelIR or ArtifactPlanIR rather than rendered strings.
 
-- Regression Tests Added: `tests/unit/runtime/test_greenfield_post_confirm_engine.py`
+- Regression Tests Added: `tests/unit/runtime/test_greenfield_preconfirm_engine.py`
   now proves typed findings override unclassifiable message text, typed
   quality-lens checks do not become generic artifact drift, repair contexts
   carry typed `ReviewReport` and `PatchSet` request payloads, manifests
@@ -302,7 +302,7 @@
   `tests/unit/runtime/test_greenfield_radar_projection_quality.py`
   proves Radar validation rows use the shared article normalizer and
   artifact-enrichment preserves complete `validate that` predicates.
-  `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py` proves
+  `tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py` proves
   risk projection uses semantic visible-result evidence instead of raw
   first-path action chains. `tests/unit/runtime/test_greenfield_projection_contracts.py`
   proves visible result objects stay modal-safe in `user can` projections and
@@ -311,9 +311,9 @@
   `tests/unit/runtime/test_greenfield_semantic_patch_executor.py` proves
   host-authored semantic patches preserve proof-obligation deltas and do not
   route by incidental substrings such as `reactor` or `ecosystem`.
-  `tests/unit/runtime/test_greenfield_post_confirm_engine.py` proves package
+  `tests/unit/runtime/test_greenfield_preconfirm_engine.py` proves package
   repair preserves structural path metadata while still repairing public prose.
-  `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py` also
+  `tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py` also
   proves proof-ledger labels do not duplicate proof-record wording and
   result-term coverage matches simple inflected result words to base action
   words. `tests/unit/runtime/test_greenfield_general_artifact_quality.py`
@@ -323,7 +323,7 @@
   proves evidence-role Registry openings stay component-local instead of
   repeating a generic sentence. `tests/unit/runtime/test_greenfield_confirmed_text.py`
   proves sentence-start visible results lower safely and terminal proof noun
-  phrases become visible outcomes. `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py`
+  phrases become visible outcomes. `tests/unit/runtime/test_greenfield_preconfirm_quality_repairs.py`
   proves abstract boundary actors become review roles and workstream titles
   compact `while keeping` clauses before they reach governed anchors.
   `tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py` proves
@@ -394,12 +394,12 @@
   returned formal patch against evidence and schema, and feed the existing
   semantic and artifact-plan executors without mutating rendered prose.
   The next cleanup checkpoint removed the highest-risk compatibility repair
-  path instead of adding more message rules. `greenfield_post_confirm_engine.py`
+  path instead of adding more message rules. `greenfield_preconfirm_engine.py`
   now treats raw `report.issues` strings as `legacy_untyped_report` blockers
   with no repair authority when typed findings are absent.
-  `greenfield_post_confirm_findings.py` treats raw package issue strings as
+  `greenfield_preconfirm_findings.py` treats raw package issue strings as
   `legacy_package_artifact_gate` blockers, while
-  `greenfield_post_confirm_package_findings.py` emits source-owned package
+  `greenfield_preconfirm_package_findings.py` emits source-owned package
   findings for semantic coverage, release drift, Registry preview/spec shape,
   and explicitly safe mechanical copy cleanup. This prevents a human-readable
   gate sentence from becoming the semantic routing API again.
@@ -417,7 +417,7 @@
   `package_repetition` code, sample text, occurrence paths, occurrence
   projections, occurrence surfaces, artifact/occurrence counts, owner, severity,
   repairability, and a sanctioned ArtifactPlanIR target root when all occurrences
-  belong to one projection. `greenfield_post_confirm_package_findings.py`
+  belong to one projection. `greenfield_preconfirm_package_findings.py`
   converts those source-owned findings into typed `GreenfieldReviewFinding`
   records before `package_review_findings` handles raw `package_issues`, so the
   source-owned path no longer degrades to `legacy_package_artifact_gate`. Raw
@@ -431,7 +431,7 @@
   touched modules; source-local sync passed; `git diff --check` passed; and the
   platform domain-leakage guard passed across 285 distinctive fixture terms.
   The same checkpoint wired rescue/deep host reasoning through
-  `greenfield_post_confirm_rescue_planner.py` and
+  `greenfield_preconfirm_rescue_planner.py` and
   `runtime/reasoning/tribunal_patch_planner.py`. The planner can fill only
   replacement facts, decision-ledger entries, proof-obligation deltas, rejected
   interpretations, and confidence on existing PatchSet operations; Odylith
@@ -531,10 +531,10 @@
   owns explicit projection dependency expansion and full-prewrite triggers, so
   project-brief, Registry, Atlas, accepted-project, Compass, next-step, and
   release-preview updates can carry an auditable rerender scope while Radar and
-  program changes still require staged prewrite recomputation. `greenfield_post_confirm_patch_apply.py`
+  program changes still require staged prewrite recomputation. `greenfield_preconfirm_patch_apply.py`
   records a post-confirm patch application ledger with operation ids, affected
   projections, expanded rerender projections, completion requirements, and
-  full-prewrite posture. `greenfield_post_confirm_engine.py` now consumes that
+  full-prewrite posture. `greenfield_preconfirm_engine.py` now consumes that
   ledger on the next pass and calls `greenfield_prewrite_projection_rerender.py`
   to refresh only the named package previews against the current package. This
   does not claim full generic SemanticModelIR scoped rerender; semantic patches
@@ -621,7 +621,7 @@
   mixed action inflection, compact action inflection, and malformed component
   responsibility now route to `plan_patch`, while non-mechanical package
   quality findings become source-owned artifact-plan findings instead of raw
-  legacy blockers. `greenfield_post_confirm_repair.py` no longer calls the
+  legacy blockers. `greenfield_preconfirm_repair.py` no longer calls the
   visible-result normalizer, article normalizer, modal/base-form fixer, or
   ownership-verb fixer over rendered drafts. Its repair executor now admits
   only PatchSet operations with the full mechanical contract:
@@ -695,7 +695,7 @@
   project-brief records, and the matrix plus temporary local release directory
   were pruned after proof. Final code-hygiene proof split the oversized
   post-confirm engine test owner into focused patch-payload and package-repair
-  owners, bringing `test_greenfield_post_confirm_engine.py` down to 1409 lines
+  owners, bringing `test_greenfield_preconfirm_engine.py` down to 1409 lines
   while preserving behavior coverage; the moved projection, patch-payload,
   package-repair, and post-confirm engine tests passed 66 tests in 29.12s,
   and the widened post-confirm repair pack passed 185 tests in 77.48s after
@@ -1148,7 +1148,7 @@
   post-confirm repair/engine/projection-rerender set passed 76 tests in 50.17s.
   A 2026-06-30 rescue-custody audit found a remaining failed mechanism:
   source-owned findings could still mark generic `SemanticModelIR` or
-  reviewer-lens roots as `semantic_patch`, `greenfield_post_confirm_patchset.py`
+  reviewer-lens roots as `semantic_patch`, `greenfield_preconfirm_patchset.py`
   would emit a generic `semantic_fact` operation, and the semantic executor
   would correctly no-op because no concrete patchable slot was named. That made
   auto-rescue look repairable while it had no executable target. The source fix
@@ -1260,14 +1260,14 @@
 
 - Related Incidents/Bugs: CB-207
 
-- Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_probe.py
+- Code References: - src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_findings.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_package_findings.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patch_apply.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_probe.py
 - src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py
@@ -1291,7 +1291,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py
 - src/odylith/runtime/reasoning/tribunal_lens.py
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
 - src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py
 - src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py
@@ -1318,14 +1318,14 @@
 - src/odylith/runtime/surfaces/generated_flowchart_assets.py
 - scripts/release/greenfield_rescue_smoke.py
 - scripts/release/local_release_smoke.py
-- scripts/release/greenfield_post_confirm_matrix.py
+- scripts/release/greenfield_preconfirm_matrix.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
-- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+- src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
 - src/odylith/runtime/domain_intelligence/greenfield_experience.py
 - src/odylith/runtime/project_intelligence/source_launch.py
-- tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py
-- tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py
+- tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py
+- tests/unit/runtime/test_greenfield_preconfirm_projection_rerender.py
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
-- tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py
+- tests/integration/runtime/test_greenfield_hiit_preconfirm_quality.py
 - odylith/atlas/source/domain-intelligence-greenfield-governance.mmd
 - odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd

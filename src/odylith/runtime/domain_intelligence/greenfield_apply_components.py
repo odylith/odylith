@@ -31,7 +31,7 @@ def render_prewrite_component_specs(
     backlog_result: Mapping[str, Any],
     program_result: Mapping[str, Any],
 ) -> dict[str, str]:
-    """Render Registry specs in memory for the post-confirm completion gate."""
+    """Render Registry specs in memory for the pre-confirm completion gate."""
 
     specs: dict[str, str] = {}
     for row in component_authoring_prewrite_inputs(

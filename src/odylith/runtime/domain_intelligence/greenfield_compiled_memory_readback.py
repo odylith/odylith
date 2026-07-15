@@ -9,7 +9,7 @@ from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common.value_coercion import dedupe_strings
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 
 
 def raise_for_compiled_memory_readback(
@@ -40,7 +40,7 @@ def raise_for_compiled_memory_readback(
         issues.append("Compass memory event record does not match persisted stream event")
     if issues:
         detail = "\n".join(f"- {issue}" for issue in dedupe_strings(issues))
-        raise ValueError(f"greenfield post-confirm compiled memory readback failed with {len(issues)} issue(s):\n{detail}")
+        raise ValueError(f"greenfield commit-only memory readback failed with {len(issues)} issue(s):\n{detail}")
 
 
 def _read_persisted_compass_event(

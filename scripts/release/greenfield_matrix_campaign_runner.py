@@ -12,7 +12,7 @@ from typing import Any
 from typing import Mapping
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-MATRIX_SCRIPT = SCRIPT_DIR / "greenfield_post_confirm_matrix.py"
+MATRIX_SCRIPT = SCRIPT_DIR / "greenfield_preconfirm_matrix.py"
 CAMPAIGN_RUNNER_VERSION = "odylith.greenfield.matrix.tiered-campaign.v1"
 DEFAULT_DISCOVERY_WORKERS_BY_TIER = {
     "failed-subset": 1,

@@ -260,7 +260,7 @@ _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
     ("explicit confirmation", ("--confirm",)),
     ("atomic readback", ("rollback guard", "readback")),
     (
-        "post-confirm no-work boundary",
+        "commit-only no-work boundary",
         ("no product reinterpretation", "does not parse", "does not generate", "commit-only", "only verifies", "verifies receipt"),
     ),
     ("proposal JSON boundary", ("proposal JSON",)),

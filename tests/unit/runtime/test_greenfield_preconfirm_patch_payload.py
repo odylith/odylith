@@ -1,0 +1,736 @@
+from __future__ import annotations
+
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
+from typing import Mapping
+
+import pytest
+
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_patch_apply
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_rescue_planner
+from odylith.runtime.domain_intelligence import greenfield_preconfirm_engine as engine
+from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
+    GreenfieldCompletionReport,
+)
+
+
+def test_repair_payload_enriches_rescue_patchset_with_structured_planner(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = SimpleNamespace(
+        provider_name="fake-provider",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = SimpleNamespace(
+        model="planner-model",
+        codex_reasoning_effort="high",
+        claude_reasoning_effort="high",
+    )
+
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda *, repo_root: config,
+    )
+
+    def fake_provider_from_config(
+        resolved_config: Any,
+        *,
+        repo_root: Path,
+        allow_implicit_local_provider: bool,
+    ) -> Any:
+        assert resolved_config is config
+        assert repo_root == tmp_path.resolve()
+        assert allow_implicit_local_provider is True
+        return provider
+
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        fake_provider_from_config,
+    )
+
+    def fake_plan_structured_patch(**kwargs: Any) -> dict[str, Any]:
+        assert kwargs["provider"] is provider
+        assert kwargs["patchset_request"]["operations"][0]["operation_id"] == "GF-PATCH-001"
+        assert kwargs["evidence"]["intent"]["title"] == "Structured Repair"
+        assert "quality_lenses" not in kwargs["evidence"]
+        assert "semantic_compiler" not in kwargs["evidence"]
+        assert kwargs["evidence"]["patch_targets"][0]["operation_id"] == "GF-PATCH-001"
+        assert kwargs["model"] == "planner-model"
+        assert kwargs["reasoning_effort"] == ""
+        assert kwargs["timeout_seconds"] == 60.0
+        return {
+            "version": greenfield_preconfirm_rescue_planner.tribunal_patch_planner.TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "operation_count": 1,
+            "decision_summary": "Repair the first path fact.",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "replacement_fact": {
+                        "first_path": "A reviewer checks the submitted record and sees the saved decision."
+                    },
+                    "decision_ledger_entry": {"chosen_interpretation": "first path is a user-visible decision"},
+                    "proof_obligation_delta": {"visible_result_required": True},
+                    "rejected_interpretation": "first path as a title-only noun phrase",
+                    "confidence": 0.91,
+                }
+            ],
+            "rejections": [],
+            "provider": {},
+        }
+
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        fake_plan_structured_patch,
+    )
+    captured: dict[str, Any] = {}
+
+    def fake_apply(
+        proposal: Mapping[str, Any],
+        *,
+        release_selector: str,
+        repair_context: engine.GreenfieldPreconfirmRepairContext | None,
+    ) -> Mapping[str, Any]:
+        captured["proposal"] = proposal
+        captured["release_selector"] = release_selector
+        captured["repair_context"] = repair_context
+        return proposal
+
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", fake_apply)
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=10.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("typed first path finding",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "issue_code": "semantic_alignment",
+                    "source_finding": "semantic_workstream_alignment",
+                    "affected_projections": ["radar", "project_brief"],
+                    "requested_action": "Return a semantic patch.",
+                    "replacement_fact": "",
+                }
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={"status": "failed"},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Structured Repair"}},
+        release_selector="0.0.1",
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    enriched_context = captured["repair_context"]
+    operation = enriched_context.patchset_request["operations"][0]
+    assert operation["replacement_fact"]["first_path"].startswith("A reviewer checks")
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == "first path is a user-visible decision"
+    assert enriched_context.patchset_request["tribunal_patch_plan"]["status"] == "planned"
+
+
+def test_structured_rescue_planner_uses_cheap_profile_for_local_provider(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = SimpleNamespace(
+        provider_name="codex-cli",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = greenfield_preconfirm_rescue_planner.odylith_reasoning.ReasoningConfig(
+        mode="auto",
+        provider="codex-cli",
+        model="",
+        base_url="",
+        api_key="",
+        scope_cap=5,
+        timeout_seconds=35.0,
+        codex_bin="codex",
+        codex_reasoning_effort="high",
+        claude_bin="claude",
+        claude_reasoning_effort="high",
+    )
+    monkeypatch.delenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", raising=False)
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda *, repo_root: config,
+    )
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        lambda *_args, **_kwargs: provider,
+    )
+    captured: dict[str, Any] = {}
+
+    def fake_plan_structured_patch(**kwargs: Any) -> dict[str, Any]:
+        captured.update(kwargs)
+        return {
+            "version": greenfield_preconfirm_rescue_planner.tribunal_patch_planner.TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "provider_failed",
+            "operation_count": 0,
+            "decision_summary": "Codex CLI exceeded 60.0s.",
+            "operations": [],
+            "rejections": [],
+            "provider": {
+                "provider": "codex-cli",
+                "code": "timeout",
+                "detail": "Codex CLI exceeded 60.0s.",
+                "model": "gpt-5.3-codex-spark",
+                "reasoning_effort": "low",
+            },
+        }
+
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        fake_plan_structured_patch,
+    )
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=10.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("structured rescue proof",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.domain_ontology.external_systems",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+                    "issue_code": "structured_rescue_semantic_patch",
+                    "operation_kind": "semantic_external_systems",
+                    "replacement_fact": "",
+                }
+            ],
+        },
+        quality_lenses={"status": "passed", "lenses": {"architect": {"status": "passed"}}},
+        semantic_compiler={"status": "passed", "visible_result": {"text": "Release proof"}},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    enriched = greenfield_preconfirm_rescue_planner.enrich_rescue_patchset_with_structured_plan(
+        {
+            "intent": {"title": "Structured Rescue"},
+            "semantic_model": {"domain_ontology": {"external_systems": ["mail gateway"]}},
+        },
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert enriched is not None
+    assert captured["model"] == "gpt-5.3-codex-spark"
+    assert captured["reasoning_effort"] == "low"
+    assert captured["timeout_seconds"] == 12.0
+    assert captured["patchset_request"]["operations"][0]["target_path"] == (
+        "semantic_model.domain_ontology.external_systems"
+    )
+    assert "quality_lenses" not in captured["evidence"]
+    assert captured["evidence"]["semantic_model_targets"][0]["current_value"] == ["mail gateway"]
+    operation = enriched.patchset_request["operations"][0]
+    assert operation["replacement_fact"] == {"external_systems": ["mail gateway"]}
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "preserve the accepted schema-owned semantic fact"
+    )
+    assert enriched.patchset_request["tribunal_patch_plan"]["status"] == "provider_failed"
+    assert enriched.patchset_request["structured_patch_fallback"] == {
+        "version": "odylith.greenfield.preconfirm.structured_patch_fallback.v1",
+        "status": "applied",
+        "source": "source_anchored_semantic_fact",
+        "operation_count": 1,
+        "provider_failure": {
+            "provider": "codex-cli",
+            "code": "timeout",
+            "detail": "Codex CLI exceeded 60.0s.",
+            "model": "gpt-5.3-codex-spark",
+            "reasoning_effort": "low",
+        },
+    }
+
+
+def test_repair_payload_skips_structured_planner_on_standard_tier(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("standard path called host planner")),
+    )
+    captured: dict[str, Any] = {}
+    monkeypatch.setattr(
+        greenfield_proposals,
+        "apply_greenfield_patchset_repairs",
+        lambda proposal, *, release_selector, repair_context: captured.setdefault("repair_context", repair_context)
+        or proposal,
+    )
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=60.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("typed first path finding",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "replacement_fact": "",
+                }
+            ],
+        },
+        quality_lenses={},
+        semantic_compiler={},
+        repair_tier="standard",
+        rescue_activated=False,
+    )
+
+    greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Standard Repair"}},
+        release_selector="0.0.1",
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert captured["repair_context"] is context
+
+
+def test_rescue_patchset_uses_deterministic_component_contract_source_patch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("host planner should not be called")),
+    )
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=8.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("registry component contract grammar drift",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "artifact_plan",
+                    "target_path": "components[0].component_contract.produced_outputs",
+                    "semantic_node_id": "ArtifactPlanIR.components[0].component_contract.produced_outputs",
+                    "issue_code": "component_contract_quality",
+                    "source_finding": "package_artifact_gate",
+                    "affected_projections": ["registry"],
+                    "requested_action": "Return an artifact-plan patch.",
+                    "replacement_fact": "",
+                    "confidence": 0.2,
+                }
+            ],
+        },
+        quality_lenses={},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "components": [
+            {
+                "component_id": "review-workspace",
+                "source_system_description": "shows reviewed results with confidence and downloadable evidence",
+                "component_contract": {"produced_outputs": "Reviewed results to flags"},
+            }
+        ]
+    }
+
+    enriched = greenfield_preconfirm_rescue_planner.enrich_rescue_patchset_with_structured_plan(
+        proposal,
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert enriched is not None
+    operation = enriched.patchset_request["operations"][0]
+    assert operation["replacement_fact"] == {
+        "path": "components[0].component_contract.produced_outputs",
+        "value": (
+            "shows reviewed results with confidence and downloadable evidence, "
+            "blocked-state detail, reviewer explanation, next-step context, and handoff context"
+        ),
+    }
+    assert "tribunal_patch_plan" not in enriched.patchset_request
+    assert operation["confidence"] == 0.86
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "component contract output repaired from the localized component source fact"
+    )
+
+
+def test_rescue_patchset_uses_deterministic_assumptions_source_patch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_preconfirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("host planner should not be called")),
+    )
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=8.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("quality lens domain_expert missing high-risk accepted assumption coverage",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "artifact_plan",
+                    "target_path": "assumptions",
+                    "semantic_node_id": "ArtifactPlanIR.assumptions",
+                    "issue_code": "quality_lens_gap",
+                    "source_finding": "quality_lens",
+                    "affected_projections": ["project_brief"],
+                    "requested_action": "Return an artifact-plan patch.",
+                    "replacement_fact": "",
+                    "confidence": 0.2,
+                }
+            ],
+        },
+        quality_lenses={},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "intent": {
+            "proof_boundary": "Evidence custody and embargo decision.",
+        },
+        "assumptions": [
+            {
+                "id": "ASM-001",
+                "tier": "user_intent",
+                "statement": "The first release records evidence only.",
+            }
+        ],
+    }
+
+    enriched = greenfield_preconfirm_rescue_planner.enrich_rescue_patchset_with_structured_plan(
+        proposal,
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert enriched is not None
+    operation = enriched.patchset_request["operations"][0]
+    assert operation["replacement_fact"]["path"] == "assumptions"
+    assert operation["replacement_fact"]["value"] == [
+        "ASM-001: The first release records evidence only.",
+        (
+            "ASM-002: High-risk proof remains review-only until authorized reviewers confirm "
+            "Evidence custody and embargo decision from accepted records."
+        ),
+    ]
+    assert "tribunal_patch_plan" not in enriched.patchset_request
+    assert operation["confidence"] == 0.86
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "assumption coverage repaired from accepted assumptions and proof boundary"
+    )
+    assert operation["proof_obligation_delta"]["summary"] == (
+        "No proof obligation change; this patch clarifies accepted assumption coverage before rerender."
+    )
+
+
+def test_deterministic_assumption_rescue_refuses_to_invent_missing_assumptions() -> None:
+    proposal = {
+        "intent": {
+            "proof_boundary": "Evidence custody and embargo decision.",
+        },
+    }
+
+    assert greenfield_preconfirm_rescue_planner._assumptions_patch_value(proposal) == []
+
+
+def test_deterministic_assumption_rescue_does_not_add_generic_boundary_without_source_boundary() -> None:
+    proposal = {
+        "assumptions": [
+            {
+                "id": "ASM-001",
+                "tier": "user_intent",
+                "statement": "The first release records evidence only.",
+            }
+        ],
+    }
+
+    assert greenfield_preconfirm_rescue_planner._assumptions_patch_value(proposal) == [
+        "ASM-001: The first release records evidence only."
+    ]
+
+
+def test_structured_patch_planner_uses_medium_effort_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", raising=False)
+    provider = SimpleNamespace(
+        provider_name="codex-cli",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = SimpleNamespace(codex_reasoning_effort="high", claude_reasoning_effort="high")
+
+    profile = greenfield_preconfirm_rescue_planner.odylith_reasoning.StructuredReasoningProfile(
+        provider="codex-cli",
+        model="gpt-5.3-codex-spark",
+        reasoning_effort="medium",
+    )
+
+    assert greenfield_preconfirm_rescue_planner._provider_reasoning_effort(config, provider, profile=profile) == "medium"
+
+
+def test_structured_patch_planner_honors_explicit_effort_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", "high")
+    provider = SimpleNamespace(
+        provider_name="codex-cli",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = SimpleNamespace(codex_reasoning_effort="high", claude_reasoning_effort="medium")
+
+    assert greenfield_preconfirm_rescue_planner._provider_reasoning_effort(config, provider) == "high"
+
+
+def test_structured_patch_planner_keeps_rescue_timeout_inside_budget() -> None:
+    assert greenfield_preconfirm_rescue_planner._structured_patch_timeout_seconds(85.0) == 60.0
+    assert (
+        greenfield_preconfirm_rescue_planner._structured_patch_timeout_seconds(
+            85.0,
+            source_fallback_ready=True,
+        )
+        == 12.0
+    )
+    assert greenfield_preconfirm_rescue_planner._structured_patch_timeout_seconds(40.0) == 32.0
+    assert greenfield_preconfirm_rescue_planner._structured_patch_timeout_seconds(12.0) == 0.0
+
+
+def test_structured_patch_planner_treats_empty_list_semantic_fact_as_executable() -> None:
+    assert (
+        greenfield_preconfirm_rescue_planner._needs_structured_patch_plan(
+            {
+                "operations": [
+                    {
+                        "target_layer": "semantic_model",
+                        "target_path": "semantic_model.domain_ontology.external_systems",
+                        "operation_kind": "semantic_external_systems",
+                        "replacement_fact": {"external_systems": []},
+                    }
+                ]
+            }
+        )
+        is False
+    )
+    assert (
+        greenfield_preconfirm_rescue_planner._needs_structured_patch_plan(
+            {
+                "operations": [
+                    {
+                        "target_layer": "semantic_model",
+                        "target_path": "semantic_model.domain_ontology.external_systems",
+                        "operation_kind": "semantic_external_systems",
+                        "replacement_fact": "",
+                    }
+                ]
+            }
+        )
+        is True
+    )
+
+
+def test_repair_payload_consumes_structured_semantic_patch_targets(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_preconfirm_patch_apply,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: {**proposal, "completed_for": release_selector},
+    )
+    monkeypatch.setattr(
+        greenfield_preconfirm_patch_apply,
+        "ensure_apply_semantic_model",
+        lambda proposal, **_kwargs: {**proposal, "semantic_target_seen": True},
+    )
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.domain_ontology.state_object",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.state_object",
+                    "source_finding": "quality_lens",
+                    "replacement_fact": {"state_object": "patchset routed state"},
+                },
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Patchset Routed"}},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert repaired["semantic_target_seen"] is True
+    assert repaired["intent"]["state_object"] == "patchset routed state"
+
+
+def test_quality_lens_operation_without_structured_fact_does_not_rehydrate_proposal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_preconfirm_patch_apply,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: dict(proposal),
+    )
+    monkeypatch.setattr(
+        greenfield_preconfirm_patch_apply,
+        "ensure_apply_semantic_model",
+        lambda proposal, **_kwargs: dict(proposal),
+    )
+    monkeypatch.setattr(greenfield_preconfirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = engine.GreenfieldPreconfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-preconfirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.preconfirm.patchset_request.v1",
+            "operations": [
+                {
+                    "target_layer": "semantic_model",
+                    "source_finding": "quality_lens",
+                    "issue_code": "quality_lens_gap",
+                    "replacement_fact": "",
+                },
+            ],
+        },
+        quality_lenses={
+            "lenses": {
+                "product_manager": {
+                    "checks": [
+                        {"name": "decision_boundary", "status": "failed"},
+                    ]
+                }
+            }
+        },
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Quality Lens Empty Patch"}, "backlog": [{"title": "First path"}]},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert "assumptions" not in repaired
+    assert "open_questions" not in repaired
+    assert "validation_strategy" not in repaired

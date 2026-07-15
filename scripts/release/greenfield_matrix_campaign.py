@@ -386,7 +386,7 @@ def _extract_embedded_json_issue(value: str) -> str:
 
 
 def _manifest_issue_cluster_key(result: GreenfieldMatrixResult) -> str:
-    summary = result.post_confirm_manifest_summary
+    summary = result.commit_manifest_summary
     if not isinstance(summary, Mapping):
         return ""
     signatures = _string_rows(summary.get("issue_signatures"))

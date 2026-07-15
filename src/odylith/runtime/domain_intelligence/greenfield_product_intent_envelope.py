@@ -157,7 +157,7 @@ def build_product_intent_envelope(
     source_path: Path | str | None = None,
     source_format: str = "",
 ) -> dict[str, Any]:
-    """Build the typed custody record that post-confirm compilers can trust."""
+    """Build the typed custody record trusted by pre-confirm compilers."""
 
     facts = product_facts_payload(intent)
     sections = confirmed_intent_sections(source_text) if source_text else {}

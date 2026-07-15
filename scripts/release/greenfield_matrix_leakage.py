@@ -7,7 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from greenfield_matrix_types import GreenfieldMatrixResult
-from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 import platform_domain_leakage_check as platform_domain_leakage
 
 

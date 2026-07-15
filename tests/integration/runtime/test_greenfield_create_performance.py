@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 
-POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS = 60.0
+PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS = 60.0
 
 
 def _run_proposed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[int, dict, float]:
@@ -136,7 +136,7 @@ def _generated_visible_surface_payload(root) -> str:
 
 
 def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float) -> None:
-    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert elapsed < PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
     assert payload["product_create_transaction"]["verified"] is True
     assert payload["product_create_transaction"]["surface_refresh_preview"]["status"] == "passed"
@@ -147,7 +147,7 @@ def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float
         "compass",
         "tooling_shell",
     ]
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert payload["commit_manifest"]["write_transaction"]["commit_only"] is True
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
     assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
@@ -176,7 +176,7 @@ def test_greenfield_create_cli_completes_whole_project_under_sixty_seconds(tmp_p
         tmp_path=tmp_path,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
         env=env,
-        timeout=POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS,
+        timeout=PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS,
     )
 
     assert result.returncode == 0, result.stderr + result.stdout
@@ -198,24 +198,24 @@ def test_yacht_greenfield_confirm_repairs_quality_failures_and_commits_under_six
     generated_source = _generated_source_payload(tmp_path)
 
     assert rc == 0
-    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert elapsed < PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
-    assert payload["post_confirm_quality_manifest"]["status"] == "passed"
-    assert payload["post_confirm_quality_manifest"]["issue_count"] == 0
-    assert payload["post_confirm_quality_manifest"]["quality_lenses"]["status"] == "passed"
-    assert set(payload["post_confirm_quality_manifest"]["quality_lenses"]["lenses"]) == {
+    assert payload["commit_manifest"]["status"] == "passed"
+    assert payload["commit_manifest"]["issue_count"] == 0
+    assert payload["commit_manifest"]["quality_lenses"]["status"] == "passed"
+    assert set(payload["commit_manifest"]["quality_lenses"]["lenses"]) == {
         "product_manager",
         "architect",
         "engineer",
         "domain_expert",
     }
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert payload["commit_manifest"]["write_transaction"]["status"] == "committed"
+    assert payload["commit_manifest"]["write_transaction"]["commit_only"] is True
     assert payload["product_create_transaction"]["verified"] is True
     assert (
-        payload["post_confirm_quality_manifest"]["whole_project_elapsed_seconds"]
-        < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+        payload["commit_manifest"]["whole_project_elapsed_seconds"]
+        < PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     )
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) >= 5
@@ -1018,7 +1018,7 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     sequence_source = sequence["mermaid_source"].casefold()
 
     assert rc == 0
-    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert elapsed < PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
@@ -1079,7 +1079,7 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
     )
 
     assert rc == 0
-    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert elapsed < PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
@@ -1142,7 +1142,7 @@ def test_greenfield_create_completes_compound_public_response_path_under_sixty_s
     sequence_source = sequence["mermaid_source"].casefold()
 
     assert rc == 0
-    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert elapsed < PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"

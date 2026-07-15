@@ -68,7 +68,7 @@
 
 - Preflight Checks: Run focused parser/projection tests before installed replay; do not claim release readiness from source-local proof.
 
-- Regression Tests Added: tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_using_evidence_list_does_not_become_user_can_action; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_using_evidence_tail_can_still_split_follow_on_carried_subject_actions; tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py::test_final_explanation_result_does_not_become_user_can_plan_action; tests/unit/runtime/test_greenfield_first_path_modal_semantics.py::test_actor_led_open_action_rejects_bare_final_recommendation_noun
+- Regression Tests Added: tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_using_evidence_list_does_not_become_user_can_action; tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_using_evidence_tail_can_still_split_follow_on_carried_subject_actions; tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py::test_final_explanation_result_does_not_become_user_can_plan_action; tests/unit/runtime/test_greenfield_first_path_modal_semantics.py::test_actor_led_open_action_rejects_bare_final_recommendation_noun
 
 - Related Incidents/Bugs: CB-215, CB-221, CB-222
 

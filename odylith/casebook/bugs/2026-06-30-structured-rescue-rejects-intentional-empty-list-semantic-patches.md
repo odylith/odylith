@@ -22,7 +22,7 @@
 
 - Failure Signature: structured_rescue_semantic_patch requested semantic_model.domain_ontology.external_systems; Tribunal returned a decision summary to remove the unsupported external boundary but zero operations, rejection reason replacement_fact is empty, create_returncode=2, no governed records written
 
-- Trigger Path: scripts/release/greenfield_post_confirm_matrix.py rescue proof path invoking greenfield create --repair-tier auto with provider-backed Tribunal patch planning
+- Trigger Path: scripts/release/greenfield_preconfirm_matrix.py rescue proof path invoking greenfield create --repair-tier auto with provider-backed Tribunal patch planning
 
 - Ownership: Tribunal structured patch planner replacement-fact custody and Domain Intelligence rescue patch application
 
@@ -79,7 +79,7 @@
   SemanticModelIR clears remain executable typed repairs.
 
 - Follow-Up Verification (2026-07-05): Focused source proof includes
-  `tests/unit/runtime/test_greenfield_post_confirm_executable_patchset.py`,
+  `tests/unit/runtime/test_greenfield_preconfirm_executable_patchset.py`,
   which asserts explicit empty semantic list facts are executable, plus the
   widened post-confirm rescue and semantic patch suite (`110 passed` across
   PatchSet, artifact-plan executor, post-confirm engine, Tribunal planner, and

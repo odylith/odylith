@@ -10,8 +10,8 @@ from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import POST_CONFIRM_QUALITY_MANIFEST_VERSION
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
@@ -21,8 +21,8 @@ from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_wit
 
 def _approved_quality_manifest() -> dict[str, Any]:
     return {
-        "version": POST_CONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": POST_CONFIRM_ENGINE_VERSION,
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "hard_blocker": False,
@@ -122,7 +122,7 @@ def test_greenfield_create_cli_uses_transaction_authority_not_mutable_intent_fil
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
     assert payload["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
-    assert payload["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert payload["commit_manifest"]["write_transaction"]["commit_only"] is True
     assert "commit_failure" not in payload
     assert calls == ["compiled_write"]
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []

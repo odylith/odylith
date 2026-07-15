@@ -33,7 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
@@ -312,8 +312,8 @@ def _write_compass_memory_event(root: Path, event: Mapping[str, Any]) -> Path:
 
 def _approved_quality_manifest(**overrides: Any) -> dict[str, Any]:
     manifest: dict[str, Any] = {
-        "version": greenfield_create_commit.POST_CONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": greenfield_create_commit.POST_CONFIRM_ENGINE_VERSION,
+        "version": greenfield_create_commit.PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": greenfield_create_commit.PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "issue_count": 0,
@@ -634,7 +634,7 @@ def test_product_create_commit_owner_stays_separate_from_proposal_generation() -
     assert "ensure_greenfield_create_baseline" not in commit_source
     assert "write_greenfield_proposal" not in commit_source
     forbidden_commit_tokens = (
-        "run_greenfield_post_confirm_engine",
+        "run_greenfield_preconfirm_engine",
         "complete_confirmed_proposal",
         "complete_greenfield_semantic_apply_payload",
         "apply_greenfield_patchset_repairs",
@@ -657,7 +657,7 @@ def test_commit_product_create_transaction_is_commit_only(
         raise AssertionError("commit must not run product interpretation, generation, repair, or surface refresh")
 
     monkeypatch.setattr(greenfield_proposals, "_build_repaired_prewrite_package", forbidden)
-    monkeypatch.setattr(greenfield_proposals, "run_greenfield_post_confirm_engine", forbidden)
+    monkeypatch.setattr(greenfield_proposals, "run_greenfield_preconfirm_engine", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_confirmed_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "complete_greenfield_semantic_apply_payload", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
@@ -678,10 +678,10 @@ def test_commit_product_create_transaction_is_commit_only(
     assert result["product_create_transaction"]["transaction_hash"] == transaction.transaction_hash
     assert result["product_create_transaction"]["verified"] is True
     assert result["repository_write_set"]["status"] == "passed"
-    assert result["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
-    assert result["post_confirm_quality_manifest"]["write_transaction"]["commit_only"] is True
+    assert result["commit_manifest"]["write_transaction"]["status"] == "committed"
+    assert result["commit_manifest"]["write_transaction"]["commit_only"] is True
     assert (
-        result["post_confirm_quality_manifest"]["write_transaction"]["product_create_transaction_hash"]
+        result["commit_manifest"]["write_transaction"]["product_create_transaction_hash"]
         == transaction.transaction_hash
     )
 
