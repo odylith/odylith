@@ -302,7 +302,7 @@ def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_author
     ),
 )
 def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_path: Path, prompt: str) -> None:
-    with pytest.raises(ValueError, match="what should the first person complete and what result should they see"):
+    with pytest.raises(ValueError, match="first complete task the product should help a person finish"):
         materialize_prompt_intent_hypothesis(
             prompt=prompt,
             repo_root=tmp_path,

@@ -91,7 +91,7 @@ def materialize_prompt_intent_hypothesis(
         raise prompt_only_material_decision_error()
     raw_edit = _without_edit_command(edit_evidence)
     if _requires_first_path_clarification(prompt=prompt, edit_evidence=raw_edit):
-        raise prompt_only_material_decision_error(product_name=fallback_title)
+        raise prompt_only_material_decision_error()
     baseline = normalize_confirmed_intent(
         intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True),
         prompt=prompt,
@@ -151,11 +151,9 @@ def render_product_intent_preview(intent: Mapping[str, Any]) -> str:
     )
 
 
-def prompt_only_material_decision_error(*, product_name: str = "") -> GreenfieldClarificationRequired:
-    subject = str(product_name or "this product").strip()
+def prompt_only_material_decision_error() -> GreenfieldClarificationRequired:
     return GreenfieldClarificationRequired(
-        f"For {subject}, what should the first person complete and what result should they see? "
-        "One plain-language sentence is enough."
+        "What is the first complete task the product should help a person finish, and what result should they see?"
     )
 
 

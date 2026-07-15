@@ -1106,6 +1106,37 @@ def test_explicit_clarification_expectation_rejects_extra_payload_fields(monkeyp
     assert "clarification proposal must contain only mode and clarification" in result.quality.issues
 
 
+def test_explicit_clarification_expectation_rejects_reply_instruction_inside_question(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "propose" in command:
+            payload = _clarification_payload()
+            payload["clarification"]["question"] = (
+                "What is the first complete path a site coordinator follows? One sentence is enough."
+            )
+            return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="ambiguous cell therapy",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+            expectation="clarification_required",
+        ),
+        repo_root=tmp_path / "clarification-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "failed"
+    assert "clarification payload must contain exactly one plain-language question" in result.quality.issues
+
+
 def test_release_proof_rejects_clarification_only_cases(tmp_path: Path) -> None:
     module = _module()
 

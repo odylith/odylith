@@ -418,7 +418,7 @@ def test_greenfield_propose_cli_asks_one_product_question_for_a_bare_title(tmp_p
     output = capsys.readouterr().out
     assert rc == 0
     assert "Odylith needs one product decision." in output
-    assert "what should the first person complete and what result should they see" in output.casefold()
+    assert "first complete task the product should help a person finish" in output.casefold()
     assert "No transaction or governed records were created." in output
     assert "ProductCreateTransaction ready for final command" not in output
     assert not transaction_path.exists()
@@ -440,7 +440,7 @@ def test_greenfield_propose_cli_asks_one_product_question_for_a_title_like_path(
     output = capsys.readouterr().out
     assert rc == 0
     assert "Odylith needs one product decision." in output
-    assert "what should the first person complete and what result should they see" in output.casefold()
+    assert "first complete task the product should help a person finish" in output.casefold()
     assert "No transaction or governed records were created." in output
     assert "ProductCreateTransaction ready for final command" not in output
     assert not transaction_path.exists()
@@ -471,11 +471,7 @@ def test_greenfield_propose_cli_returns_typed_clarification_without_staging(tmp_
     assert payload == {
         "mode": "clarification_required",
         "clarification": {
-            "question": (
-                "For Regional Cell-therapy Network Needs A Product For Autologous CAR-T Operations Across Collection "
-                "Clinics, Apheresis Couriers, Manufacturing, what should the first person complete and what result "
-                "should they see? One plain-language sentence is enough."
-            ),
+            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
             "required_fields": ["first_path"],
         },
     }

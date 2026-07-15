@@ -1,6 +1,6 @@
 - Bug ID: CB-251
 
-- Status: Open
+- Status: InProgress
 
 - Created: 2026-07-15
 
@@ -20,7 +20,7 @@
 
 - Detected By: Fresh installed 240-case discovery campaign
 
-- Failure Signature: cell-therapy-chain-of-identity exits code 2 with a one-question first-path prompt and no staged records.
+- Failure Signature: The original cell-therapy-chain-of-identity replay exited code 2 with a first-path question and no staged records. After the typed-outcome fix, fresh installed replay reached exit code 0 and made no writes, but rejected the structured question because the `question` field contained reply guidance after its question mark.
 
 - Trigger Path: ./bin/greenfield-matrix-campaign 0.1.15 /private/tmp/odylith-greenfield-release-0.1.15 with science-deeptech fixture
 
@@ -38,15 +38,15 @@
 
 - Invariant Violated: Material uncertainty must render one plain-language clarification state, not a fatal Product Intent failure.
 
-- Root Cause: The materiality gate communicates through ValueError rather than a typed clarification result, and the matrix has no accepted clarification outcome.
+- Root Cause: The materiality gate communicated through ValueError rather than a typed clarification result, and the matrix had no accepted clarification outcome. The first typed implementation also put a reply instruction inside the structured `question` field, violating the single-question contract.
 
-- Solution: Introduce a typed no-write clarification result through proposal CLI, Codex and Claude adapters, and the installed matrix; verify exactly one focused question, no transaction, and no writes.
+- Solution: Introduce a typed no-write clarification result through proposal CLI, Codex and Claude adapters, and the installed matrix. Keep the structured field to one focused question; render any reply guidance only outside that field. Verify no transaction and no writes.
 
 - Rollback/Forward Fix: Forward fix only; no accepted package or governed consumer record was committed.
 
-- Verification: Replay the exact failed subset against a fresh installed dist, then resume discovery only after it accepts clarification as a valid pre-confirm outcome.
+- Verification: The focused CLI and installed-matrix suite passed 135 tests after the copy fix. Rebuild and replay the exact failed subset against a fresh installed dist; resume discovery only after that replay accepts the clarification as a valid no-write pre-confirm outcome.
 
-- Prevention: Keep detailed ambiguous multi-role prompts in the installed corpus with explicit expected clarification assertions.
+- Prevention: Keep detailed ambiguous multi-role prompts in the installed corpus with explicit expected clarification assertions, including a check that the structured question has exactly one question mark and no trailing reply instruction.
 
 - Agent Guardrails: Never recover from material ambiguity by inventing a first path or converting the user question into an exception-shaped failure.
 
