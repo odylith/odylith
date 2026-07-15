@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
@@ -33,6 +34,8 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
@@ -47,6 +50,13 @@ from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenf
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 COMPILED_ACCEPTED_AT = "2026-07-07T00:00:00-07:00"
+
+
+def test_create_transaction_reuses_shared_mapping_coercion() -> None:
+    source = Path(greenfield_create_transaction.__file__).read_text(encoding="utf-8")
+
+    assert "value_coercion import mapping_copy" in source
+    assert "def _mapping(" not in source
 
 
 def _proposal() -> dict[str, Any]:
@@ -312,8 +322,8 @@ def _write_compass_memory_event(root: Path, event: Mapping[str, Any]) -> Path:
 
 def _approved_quality_manifest(**overrides: Any) -> dict[str, Any]:
     manifest: dict[str, Any] = {
-        "version": greenfield_create_commit.PRECONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": greenfield_create_commit.PRECONFIRM_ENGINE_VERSION,
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "issue_count": 0,
@@ -877,36 +887,21 @@ def test_commit_product_create_transaction_rejects_unapproved_provenance_before_
         ),
     ),
 )
-def test_commit_product_create_transaction_rejects_unapproved_manifest_before_write(
+def test_build_product_create_transaction_rejects_unapproved_manifest_before_confirmation(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     quality_manifest: Mapping[str, Any],
 ) -> None:
     base = _transaction(repo_root=tmp_path)
-    transaction = build_product_create_transaction(
-        proposal=base.proposal,
-        release_selector=base.release_selector,
-        validation_gate=base.validation_gate,
-        prewrite_package=base.prewrite_package,
-        backlog_result=base.backlog_result,
-        intent_authority=base.intent_authority,
-        quality_manifest=quality_manifest,
-        repo_root=tmp_path,
-    )
-
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("unapproved ProductCreateTransaction must not enter the write path")
-
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
-
-    with pytest.raises(ValueError, match="quality manifest is not approved"):
-        greenfield_create_commit.commit_greenfield_create_transaction(
+    with pytest.raises(ValueError, match="pre-confirm ProductCreateTransaction quality manifest is not approved"):
+        build_product_create_transaction(
+            proposal=base.proposal,
+            release_selector=base.release_selector,
+            validation_gate=base.validation_gate,
+            prewrite_package=base.prewrite_package,
+            backlog_result=base.backlog_result,
+            intent_authority=base.intent_authority,
+            quality_manifest=quality_manifest,
             repo_root=tmp_path,
-            transaction=transaction,
-            confirm=True,
-            started_at=0.0,
         )
 
 

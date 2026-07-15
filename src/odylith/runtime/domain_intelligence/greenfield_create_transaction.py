@@ -17,8 +17,11 @@ from typing import Any
 from odylith import __version__
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.common import derivation_provenance
+from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
@@ -171,6 +174,7 @@ def build_product_create_transaction(
         prewrite_package,
         release_selector=release_text,
     )
+    require_product_create_transaction_quality_approved(quality_manifest)
     transaction = ProductCreateTransaction(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=release_text,
@@ -195,6 +199,38 @@ def _authority_from_proposal(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
     if isinstance(authority, Mapping):
         return dict(authority)
     raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
+
+
+def require_product_create_transaction_quality_approved(quality_manifest: Mapping[str, Any]) -> None:
+    """Require every product-quality decision before a transaction can be confirmed."""
+
+    manifest = dict(quality_manifest)
+    quality_status = str(manifest.get("status", "")).strip()
+    validation_status = str(manifest.get("validation_status", "")).strip()
+    hard_blocker = manifest.get("hard_blocker")
+    issue_count = int(manifest.get("issue_count", 0) or 0)
+    write_transaction = manifest.get("write_transaction")
+    write_transaction = write_transaction if isinstance(write_transaction, Mapping) else {}
+    pre_confirm_write_sealed = (
+        str(manifest.get("version", "")).strip() == PRECONFIRM_QUALITY_MANIFEST_VERSION
+        and str(manifest.get("engine", "")).strip() == PRECONFIRM_ENGINE_VERSION
+        and str(write_transaction.get("status", "")).strip() == "not_started"
+        and str(write_transaction.get("rollback_guard", "")).strip() == "enabled"
+        and write_transaction.get("prewrite_clean_before_commit") is True
+        and "commit_only" not in write_transaction
+    )
+    if (
+        quality_status == "passed"
+        and validation_status in {"", "passed"}
+        and not hard_blocker
+        and issue_count == 0
+        and pre_confirm_write_sealed
+    ):
+        return
+    raise ValueError(
+        "pre-confirm ProductCreateTransaction quality manifest is not approved; "
+        "repair or clarify before showing CONFIRM"
+    )
 
 
 def require_product_create_transaction_verified(transaction: ProductCreateTransaction) -> None:
@@ -336,13 +372,13 @@ def product_create_transaction_from_dict(payload: Mapping[str, Any]) -> ProductC
     transaction = ProductCreateTransaction(
         version=version,
         release_selector=str(payload.get("release_selector", "")).strip(),
-        proposal=_mapping(payload.get("proposal")),
-        validation_gate=_mapping(payload.get("validation_gate")),
-        prewrite_package=_completion_package_from_payload(_mapping(payload.get("prewrite_package"))),
-        backlog_result=_backlog_result_from_payload(_mapping(payload.get("backlog_result"))),
-        intent_authority=_mapping(payload.get("intent_authority")),
-        quality_manifest=_mapping(payload.get("quality_manifest")),
-        compiler_provenance=_mapping(payload.get("compiler_provenance")),
+        proposal=mapping_copy(payload.get("proposal")),
+        validation_gate=mapping_copy(payload.get("validation_gate")),
+        prewrite_package=_completion_package_from_payload(mapping_copy(payload.get("prewrite_package"))),
+        backlog_result=_backlog_result_from_payload(mapping_copy(payload.get("backlog_result"))),
+        intent_authority=mapping_copy(payload.get("intent_authority")),
+        quality_manifest=mapping_copy(payload.get("quality_manifest")),
+        compiler_provenance=mapping_copy(payload.get("compiler_provenance")),
         transaction_hash=str(payload.get("transaction_hash", "")).strip(),
     )
     require_product_create_transaction_hash_verified(transaction)
@@ -465,10 +501,6 @@ def _json_ready(value: Any) -> Any:
     return value
 
 
-def _mapping(value: Any) -> Mapping[str, Any]:
-    return value if isinstance(value, Mapping) else {}
-
-
 def _backlog_result_from_payload(payload: Mapping[str, Any]) -> Mapping[str, Any]:
     result = dict(payload)
     candidate_specs = result.get("_candidate_idea_specs")
@@ -484,9 +516,9 @@ def _backlog_result_from_payload(payload: Mapping[str, Any]) -> Mapping[str, Any
 def _idea_spec_from_payload(payload: Mapping[str, Any]) -> backlog_contract.IdeaSpec:
     return backlog_contract.IdeaSpec(
         path=Path(str(payload.get("path", ""))),
-        metadata={str(key): str(value) for key, value in _mapping(payload.get("metadata")).items()},
+        metadata={str(key): str(value) for key, value in mapping_copy(payload.get("metadata")).items()},
         sections={str(value) for value in _sequence(payload.get("sections"))},
-        section_bodies={str(key): str(value) for key, value in _mapping(payload.get("section_bodies")).items()},
+        section_bodies={str(key): str(value) for key, value in mapping_copy(payload.get("section_bodies")).items()},
     )
 
 
@@ -528,6 +560,7 @@ __all__ = [
     "product_create_transaction_hash",
     "product_create_transaction_repo_fingerprint",
     "product_create_transaction_to_dict",
+    "require_product_create_transaction_quality_approved",
     "require_product_create_transaction_compiler_provenance",
     "require_product_create_transaction_intent_authority",
     "require_product_create_transaction_verified",

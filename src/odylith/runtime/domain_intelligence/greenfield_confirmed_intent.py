@@ -50,6 +50,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document im
     has_explicit_section_boundaries as _has_explicit_section_boundaries,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document import (
+    has_unheaded_confirmation_shape as _has_unheaded_confirmation_shape,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document import (
     looks_like_operator_instruction_line as _looks_like_operator_instruction_line,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document import (
@@ -207,9 +210,18 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
         _allow_prompt_validation_recovery=False,
     )
     source_sections = _sections(text)
+    unheaded_confirmation = _has_unheaded_confirmation_shape(
+        text,
+        source_sections,
+        str(intent.get("title") or fallback_title),
+    )
     source_format = (
         "operator_prompt"
-        if not _has_explicit_section_boundaries(source_sections) and _thin_operator_intent_source(text, prompt="")
+        if (
+            not _has_explicit_section_boundaries(source_sections)
+            and not unheaded_confirmation
+            and _thin_operator_intent_source(text, prompt="")
+        )
         else "markdown"
     )
     envelope = build_product_intent_envelope(
@@ -622,17 +634,6 @@ def _thin_recovery_source_text(text: str, sections: Mapping[str, list[str]], tit
     title_text = _clean(title)
     source = _clean(". ".join([title_text, *paragraphs] if title_text else paragraphs))
     return source or _clean(text)
-
-
-def _has_unheaded_confirmation_shape(text: str, sections: Mapping[str, list[str]], title: str) -> bool:
-    paragraphs = _product_context_paragraphs(text, sections, title)
-    if len(paragraphs) < 3:
-        return False
-    state = _derived_state_paragraph(paragraphs)
-    first_path = _derived_first_path_paragraph(paragraphs)
-    proof = _derived_proof_boundary_paragraph(paragraphs)
-    story = _derived_product_story(paragraphs, state=state, first_path=first_path, proof_boundary=proof)
-    return bool(state and first_path and story)
 
 
 def _operator_request_source(value: str) -> str:

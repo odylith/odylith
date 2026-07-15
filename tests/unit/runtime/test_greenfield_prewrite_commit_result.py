@@ -59,3 +59,31 @@ def test_compiled_package_rejects_incomplete_text_report_before_confirmation(
             replace(package, commit_result_preview=preview),
             release_selector="0.0.1",
         )
+
+
+@pytest.mark.parametrize(
+    ("preview_update", "message"),
+    (
+        ({"dashboard_refresh": {"status": "failed"}}, "missing surface refresh proof"),
+        ({"completion_priority_quality_debt": ["unresolved"]}, "unresolved quality debt"),
+    ),
+)
+def test_compiled_package_rejects_quality_preview_before_confirmation(
+    tmp_path: Path,
+    preview_update: dict[str, object],
+    message: str,
+) -> None:
+    proposal = {
+        "intent": {"title": "Receipt Contract Workspace"},
+        "backlog": [{"title": "Prove the receipt contract"}],
+        "components": [],
+        "diagrams": [],
+    }
+    package = compiled_greenfield_package_fixture(proposal, repo_root=tmp_path)
+    preview = {**dict(package.commit_result_preview or {}), **preview_update}
+
+    with pytest.raises(ValueError, match=message):
+        greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
+            replace(package, commit_result_preview=preview),
+            release_selector="0.0.1",
+        )

@@ -176,6 +176,13 @@ def build_product_intent_envelope(
         product_claim_span_ids_by_field=product_claim_span_ids_by_field,
         source_text=source_text,
     )
+    _add_unheaded_material_source_spans(
+        facts,
+        spans=spans,
+        source_span_ids_by_field=source_span_ids_by_field,
+        product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+        source_sections=sections,
+    )
     ignored = [span for span in spans if span.get("classification") == "ignored_instruction"]
     supporting = [span for span in spans if span.get("classification") == "supporting_evidence"]
     source_sha256 = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest() if source_text else ""
@@ -535,6 +542,70 @@ def _add_source_story_span(
     )
     source_span_ids_by_field["product_story"] = [span_id]
     product_claim_span_ids_by_field["product_story"] = [span_id]
+
+
+def _add_unheaded_material_source_spans(
+    facts: Mapping[str, Any],
+    *,
+    spans: list[dict[str, Any]],
+    source_span_ids_by_field: dict[str, list[str]],
+    product_claim_span_ids_by_field: dict[str, list[str]],
+    source_sections: Mapping[str, Sequence[str]],
+) -> None:
+    """Preserve paragraph-level custody when a complete intent has no headings."""
+
+    if any(key != "preamble" for key in source_sections):
+        return
+    preamble_rows = [
+        (index, clean_markdown_text(row))
+        for index, row in enumerate(source_sections.get("preamble", ()), start=1)
+        if clean_markdown_text(row)
+    ]
+    for key in MATERIAL_FACT_KEYS:
+        if source_span_ids_by_field.get(key):
+            continue
+        matched_rows = _unheaded_source_rows_for_fact(key=key, value=facts.get(key), rows=preamble_rows)
+        if not matched_rows:
+            continue
+        span_ids: list[str] = []
+        for row_index, text in matched_rows:
+            span_id = f"{key}:source-preamble:{row_index}"
+            spans.append(
+                {
+                    "span_id": span_id,
+                    "section_key": key,
+                    "row_index": row_index,
+                    "classification": "product_claim",
+                    "text": text,
+                }
+            )
+            span_ids.append(span_id)
+        source_span_ids_by_field[key] = span_ids
+        product_claim_span_ids_by_field[key] = span_ids
+
+
+def _unheaded_source_rows_for_fact(
+    *,
+    key: str,
+    value: Any,
+    rows: Sequence[tuple[int, str]],
+) -> list[tuple[int, str]]:
+    if key != "human_actors":
+        fact = clean_markdown_text(value).casefold()
+        return [(index, text) for index, text in rows if fact and fact in text.casefold()]
+    labels = [
+        clean_markdown_text(actor).split(":", 1)[0].casefold()
+        for actor in confirmed_text_values(value)
+        if clean_markdown_text(actor)
+    ]
+    matched: list[tuple[int, str]] = []
+    for label in labels:
+        row = next(((index, text) for index, text in rows if label and label in text.casefold()), None)
+        if row is None:
+            return []
+        if row not in matched:
+            matched.append(row)
+    return matched
 
 
 def _span_classification(section_key: str) -> str:

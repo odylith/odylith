@@ -14,13 +14,27 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import writ
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
     intent_hypothesis_from_operator_evidence,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_from_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
+
+
+_CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
+    r"\b(?:device|controller|sensor|monitor)\b[^.!?]{0,160}\bthat\s+[a-z]",
+    flags=re.IGNORECASE,
+)
+_ANAPHORIC_FIRST_PATH_ACTOR_RE = re.compile(
+    r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"
+    r"(?:can|should|must|needs?\s+to)\s+(?:complete|own|handle)\s+"
+    r"(?:it|this|that|the\s+(?:first\s+)?(?:path|workflow|release))\.?$",
+    flags=re.IGNORECASE,
+)
 
 
 def materialize_prompt_confirmed_intent(
@@ -64,6 +78,9 @@ def materialize_prompt_intent_hypothesis(
 
     if not prompt.strip():
         raise prompt_only_material_decision_error()
+    raw_edit = _without_edit_command(edit_evidence)
+    if _requires_first_path_clarification(prompt=prompt, edit_evidence=raw_edit):
+        raise prompt_only_material_decision_error(product_name=fallback_title)
     baseline = normalize_confirmed_intent(
         intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True),
         prompt=prompt,
@@ -71,7 +88,6 @@ def materialize_prompt_intent_hypothesis(
         allow_prompt_validation_recovery=False,
     )
     root = Path(repo_root).expanduser().resolve()
-    raw_edit = _without_edit_command(edit_evidence)
     intent = _merge_edit_evidence(
         baseline=baseline,
         prompt=prompt,
@@ -124,11 +140,45 @@ def render_product_intent_preview(intent: Mapping[str, Any]) -> str:
     )
 
 
-def prompt_only_material_decision_error() -> ValueError:
+def prompt_only_material_decision_error(*, product_name: str = "") -> ValueError:
+    subject = str(product_name or "this product").strip()
     return ValueError(
-        "What should the first user be able to complete and visibly achieve? "
-        "Answer in normal product language; Odylith will infer the remaining non-material details."
+        f"For {subject}, what should the first person complete and what result should they see? "
+        "One plain-language sentence is enough."
     )
+
+
+def _requires_first_path_clarification(*, prompt: str, edit_evidence: str) -> bool:
+    """Ask only when the supplied evidence has no usable first user path."""
+
+    edit_sections = confirmed_intent_sections(edit_evidence)
+    edited_first_path = _section_first_path_text(edit_sections)
+    if edited_first_path and not _anaphoric_first_path_actor(edited_first_path):
+        return not _has_usable_first_path_evidence(edit_evidence)
+    return not any(
+        _has_usable_first_path_evidence(evidence)
+        for evidence in (prompt, edit_evidence)
+        if evidence.strip()
+    )
+
+
+def _has_usable_first_path_evidence(evidence: str) -> bool:
+    sections = confirmed_intent_sections(evidence)
+    source = prompt_intent_source(evidence)
+    path_source = _section_first_path_text(sections) or source.first_path
+    path = first_path_model(path_source)
+    if _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence):
+        return True
+    return len(path.steps) >= 2
+
+
+def _section_first_path_text(sections: Mapping[str, Any]) -> str:
+    return " ".join(confirmed_text_values(sections.get("first_path"))).strip()
+
+
+def _anaphoric_first_path_actor(value: str) -> str:
+    match = _ANAPHORIC_FIRST_PATH_ACTOR_RE.fullmatch(str(value or "").strip())
+    return _sentence_start(match.group("actor")) if match else ""
 
 
 def _render_confirmed_intent_markdown(intent: Mapping[str, Any]) -> str:
@@ -188,6 +238,10 @@ def _merge_edit_evidence(
         return dict(baseline)
     sections = confirmed_intent_sections(edit_evidence)
     overrides = _explicit_edit_overrides(sections)
+    actor_correction = _anaphoric_first_path_actor(_section_first_path_text(sections))
+    if actor_correction:
+        overrides.pop("first_path", None)
+        overrides.update(_first_path_actor_overrides(actor=actor_correction, baseline=baseline))
     document_title = _document_title_override(edit_evidence)
     if document_title and "title" not in overrides:
         overrides["title"] = document_title

@@ -66,6 +66,37 @@ def test_write_compiled_greenfield_package_rejects_missing_write_set_before_writ
     assert not (tmp_path / "odylith/index.html").exists()
 
 
+def test_write_compiled_greenfield_package_reports_sealed_preview_without_quality_recheck(
+    tmp_path: Path,
+) -> None:
+    transaction = _transaction(repo_root=tmp_path)
+    staged_root = tmp_path / "staged"
+    staged_index = staged_root / "odylith/index.html"
+    staged_index.parent.mkdir(parents=True, exist_ok=True)
+    staged_index.write_text("sealed project surface\n", encoding="utf-8")
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=tmp_path,
+        staged_root=staged_root,
+    )
+    preview = dict(transaction.prewrite_package.commit_result_preview or {})
+    preview["dashboard_refresh"] = {"status": "failed"}
+    preview["completion_priority_quality_debt"] = ["pre-confirm fixture debt"]
+    transaction = replace(
+        transaction,
+        prewrite_package=replace(
+            transaction.prewrite_package,
+            repository_write_set=write_set,
+            commit_result_preview=preview,
+        ),
+    )
+
+    result = greenfield_compiled_write.write_compiled_greenfield_package(root=tmp_path, transaction=transaction)
+
+    assert result["dashboard_refresh"]["status"] == "failed"
+    assert result["completion_priority_quality_debt"] == ["pre-confirm fixture debt"]
+    assert (tmp_path / "odylith/index.html").read_text(encoding="utf-8") == "sealed project surface\n"
+
+
 def test_record_compiled_greenfield_acceptance_does_not_reuse_timestamp_drift(tmp_path: Path) -> None:
     stream_path = tmp_path / "odylith/compass/runtime/agent-stream.v1.jsonl"
     stream_path.parent.mkdir(parents=True, exist_ok=True)

@@ -11,6 +11,8 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
@@ -64,8 +66,8 @@ def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
 
 def _approved_quality_manifest() -> dict[str, object]:
     return {
-        "version": greenfield_create_commit.PRECONFIRM_QUALITY_MANIFEST_VERSION,
-        "engine": greenfield_create_commit.PRECONFIRM_ENGINE_VERSION,
+        "version": PRECONFIRM_QUALITY_MANIFEST_VERSION,
+        "engine": PRECONFIRM_ENGINE_VERSION,
         "status": "passed",
         "validation_status": "passed",
         "issue_count": 0,
@@ -181,14 +183,17 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
     assert normalize_domain_token("readings") == "reading"
 
 
-def test_greenfield_text_compiles_thin_prompt_into_transaction_with_assumptions(tmp_path, capsys) -> None:
+def test_greenfield_text_compiles_concrete_prompt_into_transaction_with_assumptions(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Design a mathematics research workspace for spectral graph theory",
+            (
+                "Design a mathematics research workspace where researchers record a spectral graph question, "
+                "run one analysis, review the derivation, and save a reproducible result."
+            ),
         ]
     )
 
@@ -363,7 +368,10 @@ def test_greenfield_propose_shows_single_transaction_handoff(tmp_path, capsys) -
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Draft a greenfield proposal for a municipal permit review workspace",
+            (
+                "Create a municipal permit review workspace where permit clerks intake applications, validate zoning "
+                "attachments, route reviewer decisions, and show applicants a clear approval packet with blockers and proof."
+            ),
         ]
     )
 
@@ -398,6 +406,40 @@ def test_greenfield_propose_shows_single_transaction_handoff(tmp_path, capsys) -
     assert "active-proposal.v1.json" not in output
     assert "host_instruction" not in output
     assert "reasoning_contract" not in output
+
+
+def test_greenfield_propose_cli_asks_one_product_question_for_a_bare_title(tmp_path, capsys) -> None:
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+
+    rc = greenfield_proposals.main(
+        ["propose", "--repo-root", str(tmp_path), "--prompt", "Create assay review."]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 2
+    assert "what should the first person complete and what result should they see" in output.casefold()
+    assert "ProductCreateTransaction ready for final command" not in output
+    assert not transaction_path.exists()
+
+
+def test_greenfield_propose_cli_asks_one_product_question_for_a_title_like_path(tmp_path, capsys) -> None:
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Create a booking workspace for repairs and scheduling.",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 2
+    assert "what should the first person complete and what result should they see" in output.casefold()
+    assert "ProductCreateTransaction ready for final command" not in output
+    assert not transaction_path.exists()
 
 
 def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:
@@ -454,7 +496,10 @@ def test_greenfield_text_full_detail_keeps_single_commit_path_available(tmp_path
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Draft a greenfield proposal for a municipal permit review workspace",
+            (
+                "Create a municipal permit review workspace where permit clerks intake applications, validate zoning "
+                "attachments, route reviewer decisions, and show applicants a clear approval packet with blockers and proof."
+            ),
             "--detail",
             "full",
         ]
@@ -509,7 +554,10 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Build a statistics notebook repo",
+            (
+                "Build a statistics notebook workspace where analysts upload a dataset, run one reproducible analysis, "
+                "review the output, and save a notebook result with its source data and method."
+            ),
             "--format",
             "json",
         ]
@@ -535,7 +583,10 @@ def test_greenfield_cli_json_is_transaction_audit_from_typed_prompt_evidence(tmp
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Draft a greenfield proposal for a municipal permit review workspace",
+            (
+                "Create a municipal permit review workspace where permit clerks intake applications, validate zoning "
+                "attachments, route reviewer decisions, and show applicants a clear approval packet with blockers and proof."
+            ),
             "--format",
             "json",
         ]
@@ -597,7 +648,7 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Draft a greenfield proposal for a home automation product with a physical device and a care outcome.",
+            "Draft a greenfield proposal for a plant-care irrigation device that waters and monitors houseplants.",
         ]
     )
     out = capsys.readouterr().out
@@ -617,7 +668,7 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
             "--repo-root",
             str(tmp_path),
             "--prompt",
-            "Draft a greenfield proposal for a home automation product with a physical device and a care outcome.",
+            "Draft a greenfield proposal for a plant-care irrigation device that waters and monitors houseplants.",
             "--confirm-intent",
         ]
     )
@@ -950,6 +1001,51 @@ def test_greenfield_create_cli_rejects_transaction_without_compiler_receipt(
     payload = json.loads(capsys.readouterr().out)
     assert rc == 2
     assert "missing its pre-confirm compiler receipt" in payload["error"]
+
+
+def test_greenfield_create_cli_rejects_rehashed_manifest_drift_before_commit(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _proposal, transaction = _compiled_transaction_for_cli(tmp_path)
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
+    candidate = replace(
+        transaction,
+        quality_manifest={**dict(transaction.quality_manifest), "status": "failed"},
+    )
+    forged = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
+    transaction_path.write_text(
+        json.dumps(product_create_transaction_to_dict(forged), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("a receipt-drifted transaction must fail before the commit boundary")
+
+    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            "--transaction-hash",
+            forged.transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "file does not match its pre-confirm compiler receipt" in payload["error"]
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
+    assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
 
 
 @pytest.mark.parametrize(

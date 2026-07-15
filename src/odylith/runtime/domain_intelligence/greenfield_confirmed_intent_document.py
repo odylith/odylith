@@ -197,6 +197,23 @@ def derived_product_story(
     return _clean(" ".join(story_rows))
 
 
+def has_unheaded_confirmation_shape(
+    text: str,
+    sections: Mapping[str, list[str]],
+    title: str,
+) -> bool:
+    """Return true when unheaded paragraphs contain a complete product intent."""
+
+    paragraphs = product_context_paragraphs(text, sections, title)
+    if len(paragraphs) < 3:
+        return False
+    state = derived_state_paragraph(paragraphs)
+    first_path = derived_first_path_paragraph(paragraphs)
+    proof = derived_proof_boundary_paragraph(paragraphs)
+    story = derived_product_story(paragraphs, state=state, first_path=first_path, proof_boundary=proof)
+    return bool(state and first_path and story)
+
+
 def strip_list_marker(value: object) -> str:
     return re.sub(r"^\s*(?:[-*\u2022]|\d+[.)])\s*", "", str(value or "")).strip()
 

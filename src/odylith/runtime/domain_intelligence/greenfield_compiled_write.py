@@ -7,7 +7,6 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence import greenfield_prewrite_commit_result
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 
@@ -25,11 +24,9 @@ def write_compiled_greenfield_package(
     write_set = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
         package.repository_write_set,
     )
-    result = deepcopy(
-        greenfield_prewrite_commit_result.require_greenfield_commit_result_preview(
-            package.commit_result_preview,
-        )
-    )
+    # Preview completeness and quality are compiler contracts. The confirmed
+    # path reports the sealed preview without re-adjudicating product quality.
+    result = deepcopy(dict(package.commit_result_preview or {}))
     expected_readback = {
         "version": str(write_set["version"]),
         "status": "passed",

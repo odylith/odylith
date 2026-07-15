@@ -5,7 +5,6 @@ from __future__ import annotations
 from contextlib import contextmanager
 import fcntl
 import time
-from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -19,12 +18,6 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_intent_authority,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
-    PRECONFIRM_ENGINE_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
-    PRECONFIRM_QUALITY_MANIFEST_VERSION,
-)
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
     finalize_greenfield_commit_manifest,
 )
@@ -80,7 +73,6 @@ def commit_greenfield_create_transaction(
     require_product_create_transaction_verified(transaction)
     require_product_create_transaction_intent_authority(transaction, repo_root=root)
     require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
-    raise_for_unapproved_product_create_transaction(transaction)
     started = time.perf_counter() if started_at is None else float(started_at)
     write_transaction: GreenfieldApplyTransaction | None = None
     try:
@@ -179,40 +171,7 @@ def _greenfield_commit_lock(repo_root: Path):
             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
-def raise_for_unapproved_product_create_transaction(transaction: ProductCreateTransaction) -> None:
-    quality_status = str(transaction.quality_manifest.get("status", "")).strip()
-    validation_status = str(transaction.quality_manifest.get("validation_status", "")).strip()
-    hard_blocker = transaction.quality_manifest.get("hard_blocker")
-    issue_count = int(transaction.quality_manifest.get("issue_count", 0) or 0)
-    write_transaction = (
-        transaction.quality_manifest.get("write_transaction")
-        if isinstance(transaction.quality_manifest.get("write_transaction"), Mapping)
-        else {}
-    )
-    pre_confirm_write_sealed = (
-        str(transaction.quality_manifest.get("version", "")).strip() == PRECONFIRM_QUALITY_MANIFEST_VERSION
-        and str(transaction.quality_manifest.get("engine", "")).strip() == PRECONFIRM_ENGINE_VERSION
-        and str(write_transaction.get("status", "")).strip() == "not_started"
-        and str(write_transaction.get("rollback_guard", "")).strip() == "enabled"
-        and write_transaction.get("prewrite_clean_before_commit") is True
-        and "commit_only" not in write_transaction
-    )
-    if (
-        quality_status == "passed"
-        and validation_status in {"", "passed"}
-        and not hard_blocker
-        and issue_count == 0
-        and pre_confirm_write_sealed
-    ):
-        return
-    raise ValueError(
-        "ProductCreateTransaction quality manifest is not approved for commit; "
-        "rebuild the pre-confirm transaction before committing governed records"
-    )
-
-
 __all__ = [
     "GreenfieldCreateCommitError",
     "commit_greenfield_create_transaction",
-    "raise_for_unapproved_product_create_transaction",
 ]

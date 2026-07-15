@@ -293,6 +293,91 @@ def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_author
     assert authority["markdown_source_path"].endswith("candidate-evidence.md")
 
 
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        "Create assay review.",
+        "Build a review workspace.",
+        "Create a booking workspace for repairs and scheduling.",
+    ),
+)
+def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_path: Path, prompt: str) -> None:
+    with pytest.raises(ValueError, match="what should the first person complete and what result should they see"):
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title=(
+                "Assay Review"
+                if "assay" in prompt
+                else "Repair Booking Workspace"
+                if "booking" in prompt
+                else "Review Workspace"
+            ),
+        )
+
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_structured_edit_supplies_a_missing_first_path_without_a_second_question(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt="Draft a greenfield proposal for a learner choice practice journal.",
+        repo_root=tmp_path,
+        fallback_title="Learner Choice Practice Journal",
+        edit_evidence=(
+            "## First complete path\n"
+            "A learner chooses one scenario, records a reflection, and sees a concise progress recap."
+        ),
+    )
+
+    assert "learner" in intent["first_path"].casefold()
+    assert "progress recap" in intent["first_path"].casefold()
+
+
+@pytest.mark.parametrize(
+    ("prompt", "fallback_title"),
+    (
+        (
+            "Create a repair booking workspace where residents select an appointment window, coordinators confirm "
+            "the appointment, and the appointment is approved.",
+            "Repair Booking Workspace",
+        ),
+        (
+            "Create a release review workspace where reviewers collect evidence, resolve blockers, and approve the release.",
+            "Release Review Workspace",
+        ),
+    ),
+)
+def test_concrete_multistep_prompt_compiles_without_a_keyword_specific_outcome(
+    tmp_path: Path,
+    prompt: str,
+    fallback_title: str,
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=fallback_title,
+    )
+
+    assert intent["first_path"]
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.md").is_file()
+
+
+def test_anaphoric_headed_actor_edit_preserves_the_prompt_first_path(tmp_path: Path) -> None:
+    prompt = (
+        "Build a flood shelter intake workspace where city staff register displaced residents, match household needs "
+        "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
+    )
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Flood Shelter Intake Workspace",
+        edit_evidence="## First complete path\nShelter coordinators should complete it.",
+    )
+
+    assert "shelter coordinators" in intent["first_path"].casefold()
+    assert "placement readiness" in intent["first_path"].casefold()
+
+
 def test_edit_evidence_rebuilds_typed_candidate_with_separate_raw_custody(tmp_path: Path) -> None:
     prompt = (
         "Build a flood shelter intake workspace where city staff register displaced residents, match household needs "
@@ -438,6 +523,29 @@ def test_confirmed_intent_file_rejects_raw_prompt_and_host_guidance(tmp_path: Pa
 
     with pytest.raises(ValueError, match="cannot treat"):
         load_confirmed_intent_args(args, repo_root=tmp_path)
+
+
+def test_confirmed_intent_file_accepts_rich_unheaded_confirmation_as_markdown(tmp_path: Path) -> None:
+    path = tmp_path / "intent.md"
+    path.write_text(
+        """# Neighborhood Repair Booking
+
+Residents need a simple way to get small home repairs scheduled without repeated calls or unclear availability.
+
+The central record keeps a repair request, contact details, category, appointment windows, reviewer decision, and confirmation status.
+
+A resident describes a repair, selects appointment windows, and submits the request. A repair coordinator reviews the same request and the resident sees a scheduling decision with next steps.
+
+Release 0.0.1 succeeds when the resident can submit one request, see the decision, and the coordinator can reopen the same evidence.
+""",
+        encoding="utf-8",
+    )
+    args = Namespace(intent_file=str(path), prompt="Create a neighborhood repair booking workspace.")
+
+    intent = load_confirmed_intent_args(args, repo_root=tmp_path)
+
+    assert intent[PRODUCT_INTENT_AUTHORITY_KEY]["source_format"] == "markdown"
+    assert intent["first_path"].startswith("A resident describes a repair")
 
 
 @pytest.mark.parametrize("damage", ("missing_sidecar", "invalid_sidecar", "source_drift", "envelope_drift"))
