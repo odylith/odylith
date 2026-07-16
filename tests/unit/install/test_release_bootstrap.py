@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import hashlib
 import json
 import os
 import subprocess
@@ -21,6 +22,45 @@ def _load_module():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_publish_release_asset_download_uses_a_bounded_identified_request(monkeypatch, tmp_path: Path) -> None:
+    module = _load_module()
+    payload = b"managed-runtime"
+    destination = tmp_path / "runtime.tar.gz"
+    observed: dict[str, object] = {}
+
+    class _Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, size: int) -> bytes:
+            offset = int(observed.get("offset", 0))
+            observed["offset"] = offset + size
+            return payload[offset : offset + size]
+
+    def _fake_urlopen(request, timeout: int):  # noqa: ANN001
+        observed["request"] = request
+        observed["timeout"] = timeout
+        return _Response()
+
+    monkeypatch.setattr(module.urllib.request, "urlopen", _fake_urlopen)
+
+    result = module._download(
+        "https://github.com/astral-sh/python-build-standalone/releases/download/example/runtime.tar.gz",
+        destination,
+        sha256=hashlib.sha256(payload).hexdigest(),
+    )
+
+    assert result == destination
+    assert destination.read_bytes() == payload
+    assert observed["timeout"] == module.RELEASE_DOWNLOAD_TIMEOUT_SECONDS
+    request = observed["request"]
+    assert request.full_url.startswith("https://github.com/")
+    assert request.headers["User-agent"] == "odylith-release-assets"
 
 
 def _extract_shell_function(script_text: str, name: str, next_name: str) -> str:

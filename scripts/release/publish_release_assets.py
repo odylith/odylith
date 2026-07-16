@@ -61,6 +61,8 @@ AUTHORITATIVE_RELEASE_ACTOR = "freedom-research"
 WORKFLOW_PATH = ".github/workflows/release.yml"
 WORKFLOW_REF = "refs/heads/main"
 OIDC_ISSUER = "https://token.actions.githubusercontent.com"
+RELEASE_DOWNLOAD_TIMEOUT_SECONDS = 90
+RELEASE_DOWNLOAD_CHUNK_SIZE = 1024 * 1024
 
 
 def _sha256(path: Path) -> str:
@@ -152,13 +154,23 @@ def _target_python_site_packages(*, runtime_root: Path) -> Path:
 
 def _download(url: str, destination: Path, *, sha256: str | None = None) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with urllib.request.urlopen(url) as response:  # noqa: S310 - trusted release asset url
-        payload = response.read()
-    if sha256:
-        digest = hashlib.sha256(payload).hexdigest()
-        if digest != sha256:
-            raise ValueError(f"upstream asset sha256 mismatch for {destination.name}: {digest} != {sha256}")
-    destination.write_bytes(payload)
+    temporary_path = destination.with_name(f".{destination.name}.download")
+    request = urllib.request.Request(url, headers={"User-Agent": "odylith-release-assets"})
+    digest = hashlib.sha256()
+    try:
+        with urllib.request.urlopen(request, timeout=RELEASE_DOWNLOAD_TIMEOUT_SECONDS) as response:  # noqa: S310 - trusted release asset url
+            with temporary_path.open("wb") as handle:
+                for chunk in iter(lambda: response.read(RELEASE_DOWNLOAD_CHUNK_SIZE), b""):
+                    digest.update(chunk)
+                    handle.write(chunk)
+        if sha256 and digest.hexdigest() != sha256:
+            raise ValueError(
+                f"upstream asset sha256 mismatch for {destination.name}: {digest.hexdigest()} != {sha256}"
+            )
+        os.replace(temporary_path, destination)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
     return destination
 
 
