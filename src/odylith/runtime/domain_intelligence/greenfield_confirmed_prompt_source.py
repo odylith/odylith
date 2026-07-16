@@ -15,6 +15,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_evidence_requirement
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
+from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import WORD_SENSE_REPORTING_CONTENT_VERBS
@@ -177,6 +181,8 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     )
     words = _request_words(text)
     start, command_led = _request_content_start(words)
+    need_actor, need_action = need_product_actor_action(text)
+    need_first_path = f"{need_actor} can {need_action}" if need_actor and need_action else ""
     grant_actor, grant_first_path = _path_grant_actor_action(text)
     workflow_actor, workflow_first_path = _workflow_where_actor_action(text)
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(text)
@@ -187,6 +193,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         grant_first_path
         or workflow_first_path
         or multi_role_first_path
+        or need_first_path
         or actor_led_first_path
         or direct_first_path
         or _first_path_source_from_text(text)
@@ -195,39 +202,20 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     resolved_actor = next(
         (
             candidate
-            for candidate in (grant_actor, workflow_actor, multi_role_actor, actor, direct_actor, context_actor)
+            for candidate in (grant_actor, workflow_actor, multi_role_actor, need_actor, actor, direct_actor, context_actor)
             if _is_bounded_prompt_actor(candidate)
         ),
         "",
     )
     return PromptIntentSource(
-        title=_product_focus_after_need_sentence(text)
+        title=product_focus_after_need_sentence(text)
+        or contextual_product_title(text)
         or _project_title_source_from_words(words, start=start, command_led=command_led)
         or _direct_path_title_source(direct_first_path, actor=direct_actor),
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
     )
-
-
-def _product_focus_after_need_sentence(value: str) -> str:
-    """Name the product focus in a non-command `needs a product for` request."""
-
-    for sentence in _sentence_fragments(value):
-        match = re.search(
-            r"\bneeds?\s+(?:a|the)\s+product\s+for\s+(?P<focus>.+)$",
-            sentence,
-            flags=re.IGNORECASE,
-        )
-        if not match:
-            continue
-        focus = re.split(r"\s+\b(?:at|before|after|with|while|when)\b", match.group("focus"), maxsplit=1)[0]
-        focus = re.sub(r"^(?:a|an|the)\s+", "", focus, flags=re.IGNORECASE).strip(" .")
-        words = _request_words(focus)
-        if not 2 <= len(words) <= 6 or looks_like_action_clause(focus):
-            continue
-        return focus
-    return ""
 
 
 def _first_path_source_from_text(value: str) -> str:
@@ -1134,6 +1122,8 @@ def _request_words(value: str) -> list[str]:
 
 def _looks_like_product_title_phrase(words: list[str]) -> bool:
     if not words or len(words) > _REQUEST_TITLE_MAX_WORDS:
+        return False
+    if is_requester_product_framing(" ".join(words)):
         return False
     lowered = [word.casefold().strip(".,:;") for word in words]
     if set(lowered) <= {"new", "simple", "small", "greenfield"} | _REQUEST_PRODUCT_WORDS:

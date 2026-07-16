@@ -96,8 +96,14 @@ def _compact_first_path_scope_fragment(value: str) -> str:
     except ImportError:
         return ""
     model = first_path_model(value)
-    max_scope_steps = min(max(6, len(model.steps)), 10)
-    scope_limit = 620 if max_scope_steps > 6 else 320
+    step_count = len(model.steps)
+    max_scope_steps = min(max(6, step_count), 10)
+    if step_count > 6:
+        scope_limit = 620
+    elif step_count == 6:
+        scope_limit = 420
+    else:
+        scope_limit = 320
     compact = readable_action_chain_phrase(
         value,
         fallback="",

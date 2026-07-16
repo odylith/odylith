@@ -120,6 +120,59 @@ def test_scope_fragment_preserves_long_confirmed_path_tail() -> None:
     assert "public record" in fragment
 
 
+def test_scope_fragment_preserves_six_step_laundry_repair_tail() -> None:
+    first_path = (
+        "Residents can see washer status, join a dryer queue. Residents can report a water leak without calling "
+        "the property desk. The first path starts when a tenant scans the machine label, claims an available washer. "
+        "The first path gets a cycle reminder. Either releases the dryer queue or flag an outage. A maintenance "
+        "coordinator reviews leak photos and close the repair after a test cycle."
+    )
+    fragment = inline_first_path_scope_fragment(first_path)
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Tenant Utility Workspace",
+            state_object=(
+                "A laundry room service record tracks the machine label, washer status, dryer queue, outage report, "
+                "leak photos, and repair closure."
+            ),
+            first_path=first_path,
+            proof_boundary=(
+                "Release 0.0.1 succeeds when a tenant can complete the machine path and a maintenance coordinator "
+                "can close a repair after a test cycle."
+            ),
+            components=[],
+            human_actors=["Residents", "Maintenance Coordinator"],
+        )
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={**_proposal(), "semantic_model": semantic_model},
+        project_brief_preview={
+            "customization_options": [
+                {
+                    "recommended": (
+                        "Keep 0.0.1 to the accepted first path and non-goals: "
+                        f"Do not expand beyond {fragment} until the first outcome works."
+                    )
+                }
+            ]
+        },
+    )
+
+    assert "review leak photos and close the repair after a test cycle" in fragment
+    assert greenfield_project_judgment_issues(package) == ()
+
+
+def test_scope_fragment_keeps_short_path_within_the_compact_budget() -> None:
+    first_path = "A reviewer records a detailed submission with " + " ".join(
+        f"evidence{index}" for index in range(80)
+    )
+
+    fragment = inline_first_path_scope_fragment(first_path)
+
+    assert len(fragment) <= 320
+    assert "evidence35" not in fragment
+
+
 def test_semantic_model_preserves_terminal_handoff_visible_result() -> None:
     semantic = semantic_model_mapping(
         build_greenfield_semantic_model(
