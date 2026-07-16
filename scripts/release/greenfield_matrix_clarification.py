@@ -103,7 +103,7 @@ def clarification_quality_verdict(issues: Sequence[str]) -> GreenfieldQualityVer
         score_explanation=(
             "clarification-required pre-confirm contract verified without a transaction or governed write"
             if passed
-            else "clarification-required pre-confirm contract failed"
+            else "clarification-required pre-confirm contract failed",
         ),
         score_basis="clarification_required_no_write_contract",
     )

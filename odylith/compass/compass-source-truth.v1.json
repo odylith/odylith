@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-07-16T14:10:31Z",
+  "generated_utc": "2026-07-16T14:29:58Z",
   "release_summary": {
     "catalog": [
       {
@@ -318,19 +318,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 6,
-            "local_change_count": 13,
-            "file_touch_count": 179
+            "commit_count": 7,
+            "local_change_count": 1,
+            "file_touch_count": 203
           },
           "48h": {
-            "commit_count": 9,
-            "local_change_count": 13,
-            "file_touch_count": 676
+            "commit_count": 10,
+            "local_change_count": 1,
+            "file_touch_count": 688
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-15T20:56:38-07:00",
+          "last_activity_iso": "2026-07-16T07:12:06-07:00",
           "age_days": 20,
           "eta_days": 4,
           "eta_confidence": "high"
@@ -395,14 +395,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 500,
+            "meaningful_change_count": 495,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -627,14 +627,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 503,
+            "meaningful_change_count": 498,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -767,12 +767,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 453
           }
         },
@@ -794,7 +794,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
@@ -938,12 +938,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 451
           }
         },
@@ -965,7 +965,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 65,
+            "index": 67,
             "band": "Medium"
           },
           "48h": {
@@ -1004,7 +1004,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -1110,12 +1110,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 450
           }
         },
@@ -1139,7 +1139,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 65,
+            "index": 67,
             "band": "Medium"
           },
           "48h": {
@@ -1171,7 +1171,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 494,
+            "meaningful_change_count": 493,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -1284,12 +1284,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 453
           }
         },
@@ -1313,7 +1313,7 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 81,
+            "index": 83,
             "band": "High"
           },
           "48h": {
@@ -1437,19 +1437,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 172
           }
         },
         "timeline": {
           "start_date": "2026-07-16",
-          "last_activity_iso": "2026-07-16T07:09:37-07:00",
+          "last_activity_iso": "2026-07-16T07:12:06-07:00",
           "age_days": 0,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1465,11 +1465,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -1694,7 +1694,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -2228,7 +2228,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -2621,7 +2621,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -2954,7 +2954,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 472,
+            "meaningful_change_count": 471,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -3135,7 +3135,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -3290,14 +3290,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 454,
+            "meaningful_change_count": 453,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -3469,14 +3469,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 469,
+            "meaningful_change_count": 468,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -3664,7 +3664,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -4458,7 +4458,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -4624,7 +4624,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -4783,7 +4783,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -4947,14 +4947,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 481,
+            "meaningful_change_count": 480,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -5993,14 +5993,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 494,
+            "meaningful_change_count": 493,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -6181,14 +6181,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 490,
+            "meaningful_change_count": 489,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -6672,14 +6672,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 484,
+            "meaningful_change_count": 483,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -6838,7 +6838,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -7831,14 +7831,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 476,
+            "meaningful_change_count": 475,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -8489,14 +8489,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 470,
+            "meaningful_change_count": 469,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -8661,14 +8661,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 470,
+            "meaningful_change_count": 469,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -9325,14 +9325,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 490,
+            "meaningful_change_count": 489,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -9484,7 +9484,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -9644,7 +9644,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -10116,7 +10116,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -10496,7 +10496,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -10986,7 +10986,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -11149,7 +11149,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -11475,7 +11475,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -11802,14 +11802,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 476,
+            "meaningful_change_count": 475,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -12295,14 +12295,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 454,
+            "meaningful_change_count": 453,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -12457,7 +12457,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -12613,7 +12613,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -12918,14 +12918,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 465,
+            "meaningful_change_count": 464,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -13074,14 +13074,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 465,
+            "meaningful_change_count": 464,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -13230,14 +13230,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 465,
+            "meaningful_change_count": 464,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -13549,7 +13549,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -13709,7 +13709,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -14149,14 +14149,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 493,
+            "meaningful_change_count": 492,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -14493,7 +14493,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -14724,7 +14724,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -14879,7 +14879,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 466,
+            "meaningful_change_count": 465,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -16516,14 +16516,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 483,
+            "meaningful_change_count": 482,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -17832,14 +17832,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 447,
+            "meaningful_change_count": 446,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -19562,7 +19562,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -21838,14 +21838,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 470,
+            "meaningful_change_count": 469,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -22646,14 +22646,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 480,
+            "meaningful_change_count": 479,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -23834,14 +23834,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 494,
+            "meaningful_change_count": 493,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -24009,7 +24009,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24234,7 +24234,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24459,7 +24459,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24684,7 +24684,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -25096,7 +25096,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29609,7 +29609,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29816,14 +29816,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 491,
+            "meaningful_change_count": 487,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -29967,19 +29967,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 6,
-            "local_change_count": 13,
-            "file_touch_count": 179
+            "commit_count": 7,
+            "local_change_count": 1,
+            "file_touch_count": 203
           },
           "48h": {
-            "commit_count": 9,
-            "local_change_count": 13,
-            "file_touch_count": 676
+            "commit_count": 10,
+            "local_change_count": 1,
+            "file_touch_count": 688
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-15T20:56:38-07:00",
+          "last_activity_iso": "2026-07-16T07:12:06-07:00",
           "age_days": 20,
           "eta_days": 4,
           "eta_confidence": "high"
@@ -30044,14 +30044,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 500,
+            "meaningful_change_count": 495,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -30276,14 +30276,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 503,
+            "meaningful_change_count": 498,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -30388,12 +30388,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 451
           }
         },
@@ -30415,7 +30415,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 65,
+            "index": 67,
             "band": "Medium"
           },
           "48h": {
@@ -30454,7 +30454,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -30588,12 +30588,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 453
           }
         },
@@ -30615,7 +30615,7 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 45,
+            "index": 47,
             "band": "Medium"
           },
           "48h": {
@@ -30759,12 +30759,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 450
           }
         },
@@ -30788,7 +30788,7 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 65,
+            "index": 67,
             "band": "Medium"
           },
           "48h": {
@@ -30820,7 +30820,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 494,
+            "meaningful_change_count": 493,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -30933,12 +30933,12 @@
         "activity": {
           "24h": {
             "commit_count": 3,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 52
           },
           "48h": {
             "commit_count": 6,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 453
           }
         },
@@ -30962,7 +30962,7 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 81,
+            "index": 83,
             "band": "High"
           },
           "48h": {
@@ -31133,7 +31133,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -31921,14 +31921,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 481,
+            "meaningful_change_count": 480,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -32235,14 +32235,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 491,
+            "meaningful_change_count": 487,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -32326,19 +32326,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 172
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 172
           }
         },
         "timeline": {
           "start_date": "2026-07-16",
-          "last_activity_iso": "2026-07-16T07:09:37-07:00",
+          "last_activity_iso": "2026-07-16T07:12:06-07:00",
           "age_days": 0,
           "eta_days": null,
           "eta_confidence": "low"
@@ -32354,11 +32354,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           }
         },
@@ -32625,14 +32625,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 494,
+            "meaningful_change_count": 493,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -33116,7 +33116,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -33769,14 +33769,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 493,
+            "meaningful_change_count": 492,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -33945,7 +33945,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -35144,14 +35144,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 483,
+            "meaningful_change_count": 482,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -36041,7 +36041,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -37201,14 +37201,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 470,
+            "meaningful_change_count": 469,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -38009,14 +38009,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 480,
+            "meaningful_change_count": 479,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -39197,14 +39197,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 494,
+            "meaningful_change_count": 493,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -39769,7 +39769,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -40121,7 +40121,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -40291,7 +40291,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -40624,7 +40624,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 472,
+            "meaningful_change_count": 471,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -40805,7 +40805,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -40960,14 +40960,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 454,
+            "meaningful_change_count": 453,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -41139,14 +41139,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 469,
+            "meaningful_change_count": 468,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -41334,7 +41334,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -42128,7 +42128,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -42294,7 +42294,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -42453,7 +42453,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -43440,14 +43440,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 490,
+            "meaningful_change_count": 489,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -43771,14 +43771,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 484,
+            "meaningful_change_count": 483,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -43937,7 +43937,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -44766,14 +44766,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 476,
+            "meaningful_change_count": 475,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -45424,14 +45424,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 470,
+            "meaningful_change_count": 469,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -45596,14 +45596,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 470,
+            "meaningful_change_count": 469,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -46096,14 +46096,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 490,
+            "meaningful_change_count": 489,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -46255,7 +46255,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -46727,7 +46727,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -46895,7 +46895,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -47385,7 +47385,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -47548,7 +47548,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -47874,7 +47874,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -48201,14 +48201,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 476,
+            "meaningful_change_count": 475,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -48694,14 +48694,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 454,
+            "meaningful_change_count": 453,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -48856,7 +48856,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -49012,7 +49012,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -49317,14 +49317,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 465,
+            "meaningful_change_count": 464,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -49473,14 +49473,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 465,
+            "meaningful_change_count": 464,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -49629,14 +49629,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 465,
+            "meaningful_change_count": 464,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -49948,7 +49948,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -50108,7 +50108,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -50435,7 +50435,7 @@
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 0,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -50590,7 +50590,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 466,
+            "meaningful_change_count": 465,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -52408,14 +52408,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 447,
+            "meaningful_change_count": 446,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 1,
+            "synthetic_count": 0,
             "unsafe_closeout": false,
             "verified_completion": true
           },
@@ -54377,7 +54377,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54602,7 +54602,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54827,7 +54827,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55052,7 +55052,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -55277,7 +55277,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+            "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -59617,19 +59617,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 13,
-          "file_touch_count": 179
+          "commit_count": 7,
+          "local_change_count": 1,
+          "file_touch_count": 203
         },
         "48h": {
-          "commit_count": 9,
-          "local_change_count": 13,
-          "file_touch_count": 676
+          "commit_count": 10,
+          "local_change_count": 1,
+          "file_touch_count": 688
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-15T20:56:38-07:00",
+        "last_activity_iso": "2026-07-16T07:12:06-07:00",
         "age_days": 20,
         "eta_days": 4,
         "eta_confidence": "high"
@@ -59694,14 +59694,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 500,
+          "meaningful_change_count": 495,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -59926,14 +59926,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 503,
+          "meaningful_change_count": 498,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -60038,12 +60038,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 451
         }
       },
@@ -60065,7 +60065,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 65,
+          "index": 67,
           "band": "Medium"
         },
         "48h": {
@@ -60104,7 +60104,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -60238,12 +60238,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 453
         }
       },
@@ -60265,7 +60265,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
@@ -60409,12 +60409,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 450
         }
       },
@@ -60438,7 +60438,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 65,
+          "index": 67,
           "band": "Medium"
         },
         "48h": {
@@ -60470,7 +60470,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -60583,12 +60583,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 453
         }
       },
@@ -60612,7 +60612,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 81,
+          "index": 83,
           "band": "High"
         },
         "48h": {
@@ -60783,7 +60783,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -61571,14 +61571,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 481,
+          "meaningful_change_count": 480,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -61885,14 +61885,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 491,
+          "meaningful_change_count": 487,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -61976,19 +61976,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 172
         }
       },
       "timeline": {
         "start_date": "2026-07-16",
-        "last_activity_iso": "2026-07-16T07:09:37-07:00",
+        "last_activity_iso": "2026-07-16T07:12:06-07:00",
         "age_days": 0,
         "eta_days": null,
         "eta_confidence": "low"
@@ -62004,11 +62004,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },
@@ -62275,14 +62275,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -62766,7 +62766,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -63419,14 +63419,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 493,
+          "meaningful_change_count": 492,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -63595,7 +63595,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -64794,14 +64794,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 483,
+          "meaningful_change_count": 482,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -65691,7 +65691,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -66851,14 +66851,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 469,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -67659,14 +67659,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 480,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -68847,14 +68847,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -69419,7 +69419,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -69771,7 +69771,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -69941,7 +69941,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -70274,7 +70274,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 472,
+          "meaningful_change_count": 471,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -70455,7 +70455,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -70610,14 +70610,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 454,
+          "meaningful_change_count": 453,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -70789,14 +70789,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 469,
+          "meaningful_change_count": 468,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -70984,7 +70984,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -71778,7 +71778,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -71944,7 +71944,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -72103,7 +72103,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -73090,14 +73090,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 490,
+          "meaningful_change_count": 489,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -73421,14 +73421,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 484,
+          "meaningful_change_count": 483,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -73587,7 +73587,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -74416,14 +74416,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 475,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -75074,14 +75074,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 469,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -75246,14 +75246,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 469,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -75746,14 +75746,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 490,
+          "meaningful_change_count": 489,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -75905,7 +75905,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -76377,7 +76377,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -76545,7 +76545,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -77035,7 +77035,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -77198,7 +77198,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -77524,7 +77524,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -77851,14 +77851,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 475,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -78344,14 +78344,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 454,
+          "meaningful_change_count": 453,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -78506,7 +78506,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -78662,7 +78662,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -78967,14 +78967,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 465,
+          "meaningful_change_count": 464,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -79123,14 +79123,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 465,
+          "meaningful_change_count": 464,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -79279,14 +79279,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 465,
+          "meaningful_change_count": 464,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -79598,7 +79598,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -79758,7 +79758,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -80085,7 +80085,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -80240,7 +80240,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 466,
+          "meaningful_change_count": 465,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -82058,14 +82058,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 447,
+          "meaningful_change_count": 446,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -84027,7 +84027,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84252,7 +84252,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84477,7 +84477,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84702,7 +84702,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84927,7 +84927,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -89314,7 +89314,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -89848,7 +89848,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -90241,7 +90241,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -90574,7 +90574,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 472,
+          "meaningful_change_count": 471,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -90755,7 +90755,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -90910,14 +90910,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 454,
+          "meaningful_change_count": 453,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -91089,14 +91089,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 469,
+          "meaningful_change_count": 468,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -91229,12 +91229,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 453
         }
       },
@@ -91256,7 +91256,7 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 45,
+          "index": 47,
           "band": "Medium"
         },
         "48h": {
@@ -91483,7 +91483,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -92277,7 +92277,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -92443,7 +92443,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -92602,7 +92602,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -92766,14 +92766,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 481,
+          "meaningful_change_count": 480,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -93805,14 +93805,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 503,
+          "meaningful_change_count": 498,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -93954,19 +93954,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 6,
-          "local_change_count": 13,
-          "file_touch_count": 179
+          "commit_count": 7,
+          "local_change_count": 1,
+          "file_touch_count": 203
         },
         "48h": {
-          "commit_count": 9,
-          "local_change_count": 13,
-          "file_touch_count": 676
+          "commit_count": 10,
+          "local_change_count": 1,
+          "file_touch_count": 688
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-15T20:56:38-07:00",
+        "last_activity_iso": "2026-07-16T07:12:06-07:00",
         "age_days": 20,
         "eta_days": 4,
         "eta_confidence": "high"
@@ -94031,14 +94031,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 500,
+          "meaningful_change_count": 495,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -94270,14 +94270,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -94458,14 +94458,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 490,
+          "meaningful_change_count": 489,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -94886,12 +94886,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 451
         }
       },
@@ -94913,7 +94913,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 65,
+          "index": 67,
           "band": "Medium"
         },
         "48h": {
@@ -94952,7 +94952,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -95121,14 +95121,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 484,
+          "meaningful_change_count": 483,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -95287,7 +95287,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -96280,14 +96280,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 475,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -96938,14 +96938,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 469,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -97110,14 +97110,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 469,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -97774,14 +97774,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 490,
+          "meaningful_change_count": 489,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -97933,7 +97933,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -98093,7 +98093,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -98565,7 +98565,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -98945,7 +98945,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -99435,7 +99435,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -99598,7 +99598,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -99924,7 +99924,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -100251,14 +100251,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 475,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -100744,14 +100744,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 454,
+          "meaningful_change_count": 453,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -100906,7 +100906,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101062,7 +101062,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101367,14 +101367,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 465,
+          "meaningful_change_count": 464,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101523,14 +101523,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 465,
+          "meaningful_change_count": 464,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101679,14 +101679,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 465,
+          "meaningful_change_count": 464,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -101998,7 +101998,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -102158,7 +102158,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -102598,14 +102598,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 493,
+          "meaningful_change_count": 492,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -102942,7 +102942,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -103119,12 +103119,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 450
         }
       },
@@ -103148,7 +103148,7 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 65,
+          "index": 67,
           "band": "Medium"
         },
         "48h": {
@@ -103180,7 +103180,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -103347,7 +103347,7 @@
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 0,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -103502,7 +103502,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 466,
+          "meaningful_change_count": 465,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -103927,12 +103927,12 @@
       "activity": {
         "24h": {
           "commit_count": 3,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 52
         },
         "48h": {
           "commit_count": 6,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 453
         }
       },
@@ -103956,7 +103956,7 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 81,
+          "index": 83,
           "band": "High"
         },
         "48h": {
@@ -105313,14 +105313,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 483,
+          "meaningful_change_count": 482,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -106629,14 +106629,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 447,
+          "meaningful_change_count": 446,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -108359,7 +108359,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -110635,14 +110635,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 469,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -111443,14 +111443,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 480,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -112631,14 +112631,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": true
         },
@@ -112806,7 +112806,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113031,7 +113031,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113256,7 +113256,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113481,7 +113481,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113893,7 +113893,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -118406,7 +118406,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "7a323e862fb92b68d2049008beb42e382cc2b463",
+          "local_head": "71955bb39c2f2ec69460688e07ac8d4d83c9292f",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -118613,14 +118613,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 491,
+          "meaningful_change_count": 487,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 1,
+          "synthetic_count": 0,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -118704,19 +118704,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 172
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 172
         }
       },
       "timeline": {
         "start_date": "2026-07-16",
-        "last_activity_iso": "2026-07-16T07:09:37-07:00",
+        "last_activity_iso": "2026-07-16T07:12:06-07:00",
         "age_days": 0,
         "eta_days": null,
         "eta_confidence": "low"
@@ -118732,11 +118732,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         }
       },

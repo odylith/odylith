@@ -6,6 +6,7 @@ Last updated (UTC): 2026-07-16
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-254 | 2026-07-16 | Clarification matrix summary splits a verdict into characters | P2 | odylith | Open | [2026-07-16-clarification-matrix-summary-splits-a-verdict-into-characters.md](2026-07-16-clarification-matrix-summary-splits-a-verdict-into-characters.md) |
 | CB-248 | 2026-07-15 | Release proof accepted synthetic greenfield corpus evidence | P1 | odylith | Open | [2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md](2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md) |
 | CB-249 | 2026-07-15 | Post confirm create re adjudicated pre confirm quality | P1 | odylith | Open | [2026-07-15-post-confirm-create-re-adjudicated-pre-confirm-quality.md](2026-07-15-post-confirm-create-re-adjudicated-pre-confirm-quality.md) |
 | CB-252 | 2026-07-15 | Greenfield release proof accepts unbound audit and source provenance evidence | P1 | odylith | FixedPendingRelease | [2026-07-15-greenfield-release-proof-accepts-unbound-audit-and-source-provenance-evidence.md](2026-07-15-greenfield-release-proof-accepts-unbound-audit-and-source-provenance-evidence.md) |

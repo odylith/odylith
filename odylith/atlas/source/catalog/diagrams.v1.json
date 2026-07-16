@@ -2148,7 +2148,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-07-15",
+      "last_reviewed_utc": "2026-07-16",
       "source_mmd": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.mmd",
       "source_svg": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.svg",
       "source_png": "odylith/atlas/source/odylith-canonical-release-version-session-and-publish-lane.png",
@@ -2225,7 +2225,7 @@
         "odylith",
         "release"
       ],
-      "render_source_fingerprint": "fa3c5fa7cc66517cc56b79a78e36e585f1ce432c98c8db0ab5fd4e902a89ce3f",
+      "render_source_fingerprint": "c9b485d31a45c56387f7a768de8163f94fe78df5d28336180c89942ef421a055",
       "reviewed_watch_fingerprints": {
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md": "144394af246ee71229fa52513abfdce9f6321b0eaa4173cd154b0b45b13e1e01",
@@ -2255,7 +2255,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-07-15",
+      "last_reviewed_utc": "2026-07-16",
       "source_mmd": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
       "source_svg": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.svg",
       "source_png": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.png",
@@ -2327,7 +2327,7 @@
         "odylith",
         "release"
       ],
-      "render_source_fingerprint": "2e4fe22f32c669a6da65a3498206eaadc3d5fbec937367566e0f0be4d778b2f4",
+      "render_source_fingerprint": "9af5e483d0b95455646b04b272bccad90f986be41a74438163385abff70bc9b0",
       "reviewed_watch_fingerprints": {
         "README.md": "997990582a2ad392c9ddbeba8250bc9e9e2c59284cd4b6269c10fdf206d5af75",
         "odylith/INSTALL.md": "eebc88d9db5c7cac2be2ad4fe6909e9c04a67c72020e598c19670b6e4bd9888a",
@@ -4463,7 +4463,7 @@
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "bf424ec608fc91bf6ebcb1305ca6412537d82ee319c4934d5a1410d7dd4665ff",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "245fd3dd67cb0b638e45bfdaf864a8c962de58a6d1a2b71b14f0161bde12f05e"
       },
-      "render_source_fingerprint": "b149b0d249325d25261c9ac55aab011b4211e19f55cd94e37d2c317360b61179"
+      "render_source_fingerprint": "068e048e0bf8c351b6caef6e4b27594be24616f5ed15c1b5f067ccb6fdb0ba53"
     },
     {
       "diagram_id": "D-044",
