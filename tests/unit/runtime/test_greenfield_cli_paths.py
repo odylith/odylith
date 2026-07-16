@@ -205,6 +205,88 @@ def test_greenfield_text_compiles_concrete_prompt_into_transaction_with_assumpti
     assert "Commit this exact validated package now" in output
 
 
+def test_greenfield_propose_compiles_an_explicit_single_step_actor_action(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            (
+                "Create a tool for extension publishers to assemble release notes from approved changelog fragments, "
+                "breaking-change notices, and compatibility windows."
+            ),
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["mode"] == "product_create_transaction"
+    assert payload["product_create_transaction"]["quality_status"] == "passed"
+    assert payload["transaction_file"].endswith("product-create-transaction.v1.json")
+    assert "assemble release notes" in payload["intent_hypothesis"]["first_path"].casefold()
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        "An AI agent can assemble release notes from approved changelog fragments.",
+        "An AI assistant can assemble release notes from approved changelog fragments.",
+        "An AI-powered assistant can assemble release notes from approved changelog fragments.",
+        "An artificial intelligence assistant can assemble release notes from approved changelog fragments.",
+        "An autonomous agent can assemble release notes from approved changelog fragments.",
+        "An LLM assistant can assemble release notes from approved changelog fragments.",
+        "A workflow assistant can assemble release notes from approved changelog fragments.",
+        "A coordinator bot can assemble release notes from approved changelog fragments.",
+    ),
+)
+def test_greenfield_propose_clarifies_a_nonhuman_single_step_actor(tmp_path, capsys, prompt: str) -> None:
+    rc = greenfield_proposals.main(
+        ["propose", "--repo-root", str(tmp_path), "--prompt", prompt, "--format", "json"]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["mode"] == "clarification_required"
+    assert payload["clarification"]["required_fields"] == ["first_path"]
+    assert not (tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
+
+
+def test_greenfield_edit_rebuilds_a_generic_use_request_without_a_malformed_title(tmp_path, capsys) -> None:
+    prompt = "Create a tool for extension publishers to use for release notes."
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--edit",
+            (
+                "EDIT\n\nFirst complete path: Extension publishers assemble approved changelog fragments into "
+                "release notes and see a review-ready package."
+            ),
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    rendered = json.dumps(payload, sort_keys=True)
+
+    assert rc == 0
+    assert payload["mode"] == "product_create_transaction"
+    assert payload["product_create_transaction"]["quality_status"] == "passed"
+    assert payload["intent_hypothesis"]["title"] == "Release Notes Workspace"
+    assert "For Release Notes" not in rendered
+    assert "use for release notes" not in rendered.casefold()
+    assert not (tmp_path / "odylith/radar/source").exists()
+
+
 def test_greenfield_edit_rebuilds_the_staged_transaction_without_governed_writes(tmp_path, capsys) -> None:
     prompt = (
         "Create a flood shelter intake system that helps city staff register displaced residents, match household needs "

@@ -337,6 +337,16 @@ def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_author
         "Create assay review.",
         "Build a review workspace.",
         "Create a booking workspace for repairs and scheduling.",
+        "Create a tool for extension publishers to use for release notes.",
+        "Create a cell therapy proposal with several possible operating paths.",
+        "An AI agent can assemble release notes from approved changelog fragments.",
+        "An AI assistant can assemble release notes from approved changelog fragments.",
+        "An AI-powered assistant can assemble release notes from approved changelog fragments.",
+        "An artificial intelligence assistant can assemble release notes from approved changelog fragments.",
+        "An autonomous agent can assemble release notes from approved changelog fragments.",
+        "An LLM assistant can assemble release notes from approved changelog fragments.",
+        "A workflow assistant can assemble release notes from approved changelog fragments.",
+        "A coordinator bot can assemble release notes from approved changelog fragments.",
     ),
 )
 def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_path: Path, prompt: str) -> None:
@@ -356,6 +366,50 @@ def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
 
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        (
+            "Create a tool for extension publishers to assemble release notes from approved changelog fragments, "
+            "breaking-change notices, and compatibility windows."
+        ),
+        (
+            "Extension publishers assemble release notes from approved changelog fragments and see a final "
+            "release note package."
+        ),
+    ),
+)
+def test_explicit_single_step_actor_action_compiles_without_a_clarification(tmp_path: Path, prompt: str) -> None:
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Release Notes Workspace",
+    )
+
+    assert "extension publishers" in str(intent["first_path"]).casefold()
+    assert "assemble release notes" in str(intent["first_path"]).casefold()
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.md").is_file()
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        "A machine learning engineer can assemble release notes from approved changelog fragments.",
+        "An AI research assistant can assemble release notes from approved changelog fragments.",
+    ),
+)
+def test_human_technical_roles_do_not_trigger_nonhuman_actor_clarification(tmp_path: Path, prompt: str) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Release Notes Workspace",
+    )
+
+    assert "assemble release notes" in str(intent["first_path"]).casefold()
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.md").is_file()
+
+
 def test_structured_edit_supplies_a_missing_first_path_without_a_second_question(tmp_path: Path) -> None:
     intent = materialize_prompt_intent_hypothesis(
         prompt="Draft a greenfield proposal for a learner choice practice journal.",
@@ -369,6 +423,74 @@ def test_structured_edit_supplies_a_missing_first_path_without_a_second_question
 
     assert "learner" in intent["first_path"].casefold()
     assert "progress recap" in intent["first_path"].casefold()
+
+
+def test_edit_rebuilds_an_unusable_prompt_path_from_the_accepted_first_path(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt="Create a tool for extension publishers to use for release notes.",
+        repo_root=tmp_path,
+        fallback_title="Release Notes Workspace",
+        edit_evidence=(
+            "## First complete path\n"
+            "Extension publishers assemble approved changelog fragments into release notes and see a review-ready package."
+        ),
+    )
+
+    rendered = render_product_intent_preview(intent).casefold()
+
+    assert "assemble approved changelog fragments" in str(intent["prompt"]).casefold()
+    assert "use for release notes" not in rendered
+    assert "a review-ready package workspace" not in rendered
+    assert "release notes workspace" in str(intent["product_story"]).casefold()
+    assert "release notes workspace" in str(intent["product_view"]).casefold()
+    assert all("release notes" in row.casefold() for row in intent["internal_systems"])
+    assert any("extension publishers" in row.casefold() for row in intent["human_actors"])
+    assert any("review-ready package" in row.casefold() for row in intent["success_metrics"])
+    assert "review-ready package" in rendered
+
+
+def test_edit_rebuilds_all_title_dependent_facts_from_the_accepted_title(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt="Create a tool for extension publishers to use for release notes.",
+        repo_root=tmp_path,
+        fallback_title="Release Notes Workspace",
+        edit_evidence=(
+            "## Title\nRelease Brief Builder\n\n## First complete path\n"
+            "Extension publishers assemble approved changelog fragments into release notes and see a review-ready package."
+        ),
+    )
+
+    rendered = render_product_intent_preview(intent).casefold()
+
+    assert intent["title"] == "Release Brief Builder"
+    assert "release brief builder" in str(intent["product_story"]).casefold()
+    assert "release brief builder" in str(intent["product_view"]).casefold()
+    assert all("release brief builder" in row.casefold() for row in intent["internal_systems"])
+    assert "release notes workspace" not in rendered
+
+
+def test_edit_preserves_an_accepted_release_boundary_without_leaking_exclusions(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=(
+            "Create a tool for extension publishers to use for release notes. The first release boundary is one "
+            "workspace per extension, a review queue, and an exportable release brief while marketplace publishing "
+            "and telemetry are out of scope."
+        ),
+        repo_root=tmp_path,
+        fallback_title="Release Notes Workspace",
+        edit_evidence=(
+            "## First complete path\n"
+            "Extension publishers assemble approved changelog fragments into release notes and see a review-ready package."
+        ),
+    )
+
+    rendered = render_product_intent_preview(intent).casefold()
+
+    assert "review queue" in str(intent["proof_boundary"]).casefold()
+    assert "marketplace publishing" not in str(intent["proof_boundary"]).casefold()
+    assert "telemetry" not in str(intent["proof_boundary"]).casefold()
+    assert "use for release notes" not in rendered
+    assert "a review-ready package workspace" not in rendered
 
 
 @pytest.mark.parametrize(

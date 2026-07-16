@@ -294,16 +294,31 @@ def _material_action(steps: Sequence[str]) -> str:
             setup_fallback = setup_fallback or step
             continue
         match = _OPEN_PLUS_MATERIAL_RE.match(step)
-        if match and _MATERIAL_ACTION_RE.search(match.group("material")):
-            return _sentence_case(_action_chain_fragment(step))
-        if _MATERIAL_ACTION_RE.search(step):
+        if match and _has_material_action(match.group("material")):
             return _sentence_case(_action_chain_fragment(step))
         actor, action = _actor_led_action_parts(step)
+        if actor and action and _has_material_action(action) and not _is_transformation_action(action):
+            return _sentence_case(f"{actor} {action}")
+        if _has_material_action(step):
+            return _sentence_case(_action_chain_fragment(step))
         if actor and action:
             return _sentence_case(f"{actor} {action}")
     if setup_fallback:
         return _sentence_case(_action_chain_fragment(setup_fallback))
     return _sentence_case(_action_chain_fragment(steps[0]))
+
+
+def _has_material_action(value: str) -> bool:
+    """Ignore action-shaped adjectives such as ``review-ready`` in result nouns."""
+
+    return any(
+        not _action_word_inside_compound_noun(value, match.start())
+        for match in _MATERIAL_ACTION_RE.finditer(value)
+    )
+
+
+def _is_transformation_action(value: str) -> bool:
+    return bool(re.match(r"^(?:convert|transform|turn)\b.+\binto\b", value, flags=re.IGNORECASE))
 
 def _visible_outcome(steps: Sequence[str]) -> str:
     terminal_choice = _terminal_choice_outcome(steps)

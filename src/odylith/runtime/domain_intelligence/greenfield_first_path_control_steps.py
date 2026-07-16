@@ -75,6 +75,16 @@ _QUALITY_CONTROL_TERMS = frozenset(
     }
 )
 _STATE_CONTROL_TERMS = frozenset({"approval", "release", "review", "separate", "state", "states"})
+_FIRST_RELEASE_BOUNDARY_RE = re.compile(
+    r"\b(?:the\s+)?first\s+release(?:\s+boundary)?\s*(?:(?:is|includes?|covers?)\s+|:\s*)(?P<items>[^.!?]+)",
+    flags=re.IGNORECASE,
+)
+_FIRST_RELEASE_EXCLUSION_TAIL_RE = re.compile(
+    r"\s*(?:;\s*|,?\s+(?:while|but|with)\s+|,?\s+and\s+(?!(?:a|an|the|one)\b))[^.!?]*"
+    r"\b(?:exclude(?:s|d|ing)?|(?:does|do|did)\s+not\s+include|not\s+(?:include(?:d)?|part)|"
+    r"out(?:\s+of)?\s+scope|outside)\b[^.!?]*$",
+    flags=re.IGNORECASE,
+)
 _OPERATOR_LENS_ROLE_PHRASES = {
     "architect": "architect",
     "domain expert": "domain-expert",
@@ -369,6 +379,46 @@ def operator_review_lens_obligations(value: str) -> list[str]:
     return rows
 
 
+def first_release_boundary_requirements(value: str) -> tuple[str, ...]:
+    """Return affirmative requirements explicitly named for the first release."""
+
+    requirements: list[str] = []
+    seen: set[str] = set()
+    for match in _FIRST_RELEASE_BOUNDARY_RE.finditer(_clean(value)):
+        items = _FIRST_RELEASE_EXCLUSION_TAIL_RE.sub("", match.group("items")).strip(" ,;.")
+        for item in re.split(r",\s*|\s+and\s+(?=(?:a|an|the|one)\b)", items, flags=re.IGNORECASE):
+            requirement = re.sub(r"^(?:and\s+)", "", item, flags=re.IGNORECASE).strip(" ,;.")
+            key = requirement.casefold()
+            if requirement and key not in seen:
+                seen.add(key)
+                requirements.append(requirement)
+    return tuple(requirements)
+
+
+def proof_boundary_with_first_release_requirements(proof_boundary: str, source: str) -> str:
+    """Keep explicit release scope in the hash-bound proof contract."""
+
+    proof = str(proof_boundary or "").strip()
+    requirements = first_release_boundary_requirements(source)
+    if not requirements:
+        return proof
+    normalized_proof = proof.rstrip(" .")
+    missing = tuple(requirement for requirement in requirements if requirement.casefold() not in normalized_proof.casefold())
+    if not missing:
+        return normalized_proof
+    summary = _join_requirement_phrases(missing)
+    suffix = f"The first release includes {summary}."
+    return f"{normalized_proof}. {suffix}" if normalized_proof else suffix
+
+
+def _join_requirement_phrases(values: Sequence[str]) -> str:
+    if len(values) == 1:
+        return values[0]
+    if len(values) == 2:
+        return f"{values[0]} and {values[1]}"
+    return f"{', '.join(values[:-1])}, and {values[-1]}"
+
+
 def is_scope_or_deferred_statement(value: str) -> bool:
     """Return whether a clause describes release limits, not first-path behavior."""
 
@@ -629,11 +679,13 @@ __all__ = [
     "drop_requirement_control_steps",
     "contains_requirement_control_clause",
     "contains_word_sense_metadata_clause",
+    "first_release_boundary_requirements",
     "is_declarative_visible_result_prefix",
     "is_operator_review_lens_step",
     "is_release_evidence_requirement",
     "is_requirement_control_step",
     "operator_review_lens_obligations",
+    "proof_boundary_with_first_release_requirements",
     "is_scope_or_deferred_statement",
     "strip_requirement_control_tail",
     "strip_trailing_requirement_control_steps",

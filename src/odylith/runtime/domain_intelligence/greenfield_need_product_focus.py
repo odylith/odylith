@@ -1,4 +1,4 @@
-"""Recover product nouns from non-command `needs a product for` requests."""
+"""Recover product nouns from generic-container request framing."""
 
 from __future__ import annotations
 
@@ -6,6 +6,8 @@ import re
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import is_noncompleting_action_head
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -29,6 +31,28 @@ _TITLE_STOP_WORDS = frozenset(
     {"after", "at", "before", "between", "by", "from", "in", "on", "through", "using", "when", "where", "while", "with"}
 )
 _REQUEST_CONTAINER_PATTERN = r"(?:app|application|product|service|system|tool)"
+_REQUEST_COMMAND_PATTERN = r"(?:build|create|design|draft|develop|make|plan|propose)"
+
+
+def product_focus_after_command_sentence(value: str) -> str:
+    """Return an action object when a command wraps a generic product container."""
+
+    for sentence in _sentence_fragments(value):
+        match = re.search(
+            rf"\b{_REQUEST_COMMAND_PATTERN}\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PATTERN}\s+for\s+(?P<focus>.+)$",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            continue
+        focus = match.group("focus")
+        action_object = _action_object_focus(focus)
+        if action_object:
+            return action_object
+        use_for_object = _use_for_object_focus(focus)
+        if use_for_object:
+            return use_for_object
+    return ""
 
 
 def product_focus_after_need_sentence(value: str) -> str:
@@ -92,8 +116,33 @@ def _action_object_focus(value: str) -> str:
     for index, word in enumerate(words[:-2]):
         if _word_key(word) != "to" or not _looks_like_prompt_actor(words[:index]):
             continue
+        action = _word_key(words[index + 1])
+        if is_noncompleting_action_head(action) or not MATERIAL_ACTION_RE.fullmatch(action):
+            continue
         candidate: list[str] = []
         for raw in words[index + 2 :]:
+            if _word_key(raw) in _TITLE_STOP_WORDS:
+                break
+            candidate.append(raw.strip(".,:;"))
+        while candidate and _word_key(candidate[0]) in {"a", "an", "the", "one"}:
+            candidate.pop(0)
+        title = " ".join(candidate).strip(" .")
+        if 1 <= len(candidate) <= 6 and not looks_like_action_clause(title):
+            return title
+    return ""
+
+
+def _use_for_object_focus(value: str) -> str:
+    """Return a title object from a generic access request, never a first path."""
+
+    words = _request_words(value)
+    for index, word in enumerate(words[:-3]):
+        if _word_key(word) != "to" or not _looks_like_prompt_actor(words[:index]):
+            continue
+        if _word_key(words[index + 1]) != "use" or _word_key(words[index + 2]) != "for":
+            continue
+        candidate: list[str] = []
+        for raw in words[index + 3 :]:
             if _word_key(raw) in _TITLE_STOP_WORDS:
                 break
             candidate.append(raw.strip(".,:;"))
@@ -142,4 +191,9 @@ def _word_key(value: str) -> str:
     return str(value or "").casefold().strip(".,:;")
 
 
-__all__ = ["is_requester_product_framing", "need_product_actor_action", "product_focus_after_need_sentence"]
+__all__ = [
+    "is_requester_product_framing",
+    "need_product_actor_action",
+    "product_focus_after_command_sentence",
+    "product_focus_after_need_sentence",
+]

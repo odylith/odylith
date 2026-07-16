@@ -9,7 +9,11 @@ from odylith.runtime.domain_intelligence.greenfield_operational_constraints impo
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import first_release_boundary_requirements
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    proof_boundary_with_first_release_requirements,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
@@ -45,6 +49,81 @@ Next step
 Compile transaction: odylith greenfield compile-transaction --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
 Commit transaction after hash confirmation: odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 """
+
+
+def test_first_release_boundary_requirements_keep_in_scope_capabilities() -> None:
+    prompt = (
+        "The first release boundary is one workspace per extension, a review queue, and an exportable release brief; "
+        "marketplace publishing, telemetry, and code scanning are outside this release."
+    )
+
+    assert first_release_boundary_requirements(prompt) == (
+        "one workspace per extension",
+        "a review queue",
+        "an exportable release brief",
+    )
+
+
+def test_first_release_boundary_requirements_drop_natural_language_exclusions() -> None:
+    prompt = (
+        "The first release boundary is one workspace per extension, a review queue, and an exportable release brief "
+        "while marketplace publishing and telemetry are out of scope."
+    )
+
+    assert first_release_boundary_requirements(prompt) == (
+        "one workspace per extension",
+        "a review queue",
+        "an exportable release brief",
+    )
+    assert proof_boundary_with_first_release_requirements("Release proof.", prompt) == (
+        "Release proof. The first release includes one workspace per extension, a review queue, and an "
+        "exportable release brief."
+    )
+
+
+def test_first_release_boundary_requirements_drop_active_exclusions() -> None:
+    prefixes = (
+        "and excludes marketplace publishing and telemetry",
+        "but does not include marketplace publishing and telemetry",
+        "with marketplace publishing and telemetry excluded",
+    )
+
+    for suffix in prefixes:
+        prompt = (
+            "The first release boundary is one workspace per extension, a review queue, and an exportable release "
+            f"brief {suffix}."
+        )
+        assert first_release_boundary_requirements(prompt) == (
+            "one workspace per extension",
+            "a review queue",
+            "an exportable release brief",
+        )
+
+
+def test_first_release_requirements_accept_plain_includes_framing() -> None:
+    prompt = (
+        "The first release includes one workspace per extension, a review queue, and an exportable release brief "
+        "while marketplace publishing and telemetry are out of scope."
+    )
+
+    assert first_release_boundary_requirements(prompt) == (
+        "one workspace per extension",
+        "a review queue",
+        "an exportable release brief",
+    )
+
+
+def test_first_release_requirements_accept_colon_scope_framing() -> None:
+    prompt = (
+        "First release: one workspace per extension, a review queue, and an exportable release brief; "
+        "marketplace publishing and telemetry are out of scope."
+    )
+
+    assert first_release_boundary_requirements(prompt) == (
+        "one workspace per extension",
+        "a review queue",
+        "an exportable release brief",
+    )
 
 
 def test_prompt_source_keeps_domain_expert_modal_clause_out_of_actor_label() -> None:

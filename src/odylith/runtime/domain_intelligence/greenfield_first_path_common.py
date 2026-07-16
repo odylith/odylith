@@ -17,6 +17,7 @@ MATERIAL_ACTION_RE = re.compile(
     rf"(?<![A-Za-z0-9_-])(?:{action_verb_pattern()})(?![A-Za-z0-9_-])",
     re.IGNORECASE,
 )
+_NONCOMPLETING_ACTION_HEADS = frozenset({"use"})
 _FIRST_PATH_DANGLING_WORDS = frozenset(
     {
         "a",
@@ -65,6 +66,13 @@ def lowercase_leading_article(value: str) -> str:
     )
     match = MATERIAL_ACTION_RE.search(text)
     return lower_plain_title_subject_fragment(text, action_offset=match.start() if match else 0)
+
+
+def is_noncompleting_action_head(value: str) -> bool:
+    """Return whether an action head names access rather than a complete task."""
+
+    head = str(value or "").split(maxsplit=1)[0].casefold().strip(".,:;")
+    return head in _NONCOMPLETING_ACTION_HEADS
 
 
 def inline_first_path_scope_fragment(value: str) -> str:
@@ -264,5 +272,6 @@ __all__ = [
     "clean_first_path_text",
     "clip_first_path_phrase",
     "inline_first_path_scope_fragment",
+    "is_noncompleting_action_head",
     "lowercase_leading_article",
 ]

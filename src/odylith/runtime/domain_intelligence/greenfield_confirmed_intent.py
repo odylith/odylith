@@ -102,6 +102,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     clean_first_path_text as _clean_first_path,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import proof_boundary_with_first_release_requirements
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import has_presentation_only_title_marker
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
@@ -562,6 +563,10 @@ def _restore_prompt_material_first_path(
     prompt_source = _clean(result.get("prompt"))
     if not prompt_source:
         return result
+    result["proof_boundary"] = proof_boundary_with_first_release_requirements(
+        str(result.get("proof_boundary") or ""),
+        prompt_source,
+    )
     prompt_first_path = _accepted_first_path(prompt_first_path_source(prompt_source))
     current_first_path = _accepted_first_path(result.get("first_path"))
     if not prompt_first_path or prompt_first_path.casefold() == current_first_path.casefold():

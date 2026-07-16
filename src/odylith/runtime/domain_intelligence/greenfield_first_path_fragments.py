@@ -20,6 +20,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import (
     modal_actor_action_parts,
     strip_action_subject,
 )
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase, lowercase_leading_article
@@ -85,7 +87,15 @@ def is_system_generated_action(value: str) -> bool:
     )
     if re.match(rf"^(?:the\s+)?(?:{system_subject})\s+(?:{system_verb})\b", text, flags=re.IGNORECASE):
         return True
-    return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{1,}}\s+(?:{system_verb})\b", text))
+    component_match = re.match(rf"^(?P<subject>[A-Z][A-Za-z0-9_-]{{1,}})\s+(?:{system_verb})\b", text)
+    if not component_match:
+        return False
+    subject = component_match.group("subject")
+    singular_subject = subject[:-1] if subject.casefold().endswith("s") else subject
+    return not (
+        word_has_actor_role_signal(subject)
+        or looks_actor_term(singular_subject)
+    )
 
 def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
@@ -643,12 +653,13 @@ def primary_actor_signature(model: FirstPathModel) -> str:
             return actor
     return ""
 
-def gerund_action_fragment(value: str) -> str:
+def gerund_action_fragment(value: str, *, preserve_action_source: bool = False) -> str:
     text = clean_first_path_text(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
-    text = action_chain_fragment(text) or text
+    if not preserve_action_source:
+        text = action_chain_fragment(text) or text
     return _gerund_following_action_verbs(text).strip(" ,.") or _lower_initial_for_fragment(text)
 
 def _gerund_following_action_verbs(value: str) -> str:

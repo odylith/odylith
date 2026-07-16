@@ -6,6 +6,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -28,6 +29,39 @@ def test_need_product_request_uses_action_object_not_requester_framing() -> None
     assert source.title == "release notes"
     assert "needs a product" not in source.title.casefold()
     assert source.first_path.startswith("extension publishers can assemble release notes")
+    assert "first release boundary" not in source.first_path.casefold()
+    assert "marketplace publishing" not in source.first_path.casefold()
+
+
+def test_command_request_uses_action_object_not_generic_container_and_actor_title() -> None:
+    prompt = (
+        "Create a tool for extension publishers to assemble release notes from approved changelog fragments, "
+        "breaking-change notices, and compatibility windows."
+    )
+
+    assert product_focus_after_command_sentence(prompt) == "release notes"
+    assert prompt_intent_source(prompt).title == "release notes"
+
+
+def test_command_container_focus_does_not_overwrite_an_explicit_product_title() -> None:
+    prompt = "Create a volunteer scheduling tool for a neighborhood library where staff can assign shifts."
+
+    assert product_focus_after_command_sentence(prompt) == ""
+    assert prompt_intent_source(prompt).title == "volunteer scheduling tool"
+
+
+def test_command_container_focus_does_not_overwrite_a_named_product() -> None:
+    prompt = "Create an Extension Publisher Console for extension publishers to manage submissions."
+
+    assert product_focus_after_command_sentence(prompt) == ""
+    assert prompt_intent_source(prompt).title == "Extension Publisher Console"
+
+
+def test_command_container_recovers_a_use_for_title_without_completing_the_path() -> None:
+    prompt = "Create a tool for extension publishers to use for release notes."
+
+    assert product_focus_after_command_sentence(prompt) == "release notes"
+    assert prompt_intent_source(prompt).title == "release notes"
 
 
 def test_need_product_request_keeps_named_product_focus() -> None:
@@ -97,5 +131,9 @@ Next step
 
     assert intent["title"] == "Release Notes Workspace"
     assert proposal["intent"]["title"] == "Release Notes Workspace"
+    assert "review queue" in intent["proof_boundary"].casefold()
+    assert "marketplace publishing" not in intent["proof_boundary"].casefold()
+    assert "review queue" in proposal["semantic_model"]["domain_ontology"]["proof_boundary"].casefold()
     assert "Our Developer-experience Group Needs" not in rendered
+    assert "review queue" in rendered.casefold()
     assert greenfield_quality_issues(proposal) == []

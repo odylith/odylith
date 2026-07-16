@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
 from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -208,7 +209,8 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         "",
     )
     return PromptIntentSource(
-        title=product_focus_after_need_sentence(text)
+        title=product_focus_after_command_sentence(text)
+        or product_focus_after_need_sentence(text)
         or contextual_product_title(text)
         or _project_title_source_from_words(words, start=start, command_led=command_led)
         or _direct_path_title_source(direct_first_path, actor=direct_actor),

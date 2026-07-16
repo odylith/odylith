@@ -6,7 +6,9 @@ import re
 from typing import Any, Sequence
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import gerund_action_verb
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase as _clip_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
@@ -15,8 +17,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts as _source_actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment as _gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import outcome_capability_fragment as _outcome_capability_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_inside_compound_noun
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import FirstPathStepView
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_step_view
@@ -317,10 +321,26 @@ def _is_context_setup_step(step: FirstPathStepView) -> bool:
 def _step_fragment(step: FirstPathStepView, *, gerund: bool) -> str:
     if not gerund:
         return step.fragment
-    _actor, actor_action = _actor_led_action_parts(step.text)
+    _actor, actor_action = _source_actor_led_action_parts(step.text)
     if actor_action:
-        return _gerund_action_fragment(actor_action)
+        compact = _gerund_action_fragment(actor_action)
+        preserved = _gerund_action_fragment(actor_action, preserve_action_source=True)
+        if _material_action_was_lost(actor_action, compact):
+            return preserved
+        return compact
     return _gerund_action_fragment(step.fragment or step.text)
+
+
+def _material_action_was_lost(source: str, rendered: str) -> bool:
+    """Keep an accepted action when result extraction treats an adjective as a verb."""
+
+    rendered_terms = {term.casefold() for term in re.findall(r"[A-Za-z]+", rendered)}
+    for match in MATERIAL_ACTION_RE.finditer(source):
+        if action_word_inside_compound_noun(source, match.start()):
+            continue
+        gerund = gerund_action_verb(match.group(0))
+        return bool(gerund and gerund not in rendered_terms)
+    return False
 
 
 def _readable_action_steps(

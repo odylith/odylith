@@ -14,9 +14,20 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import writ
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
     intent_hypothesis_from_operator_evidence,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import (
+    internal_system_rows_from_recovered_title,
+)
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import is_noncompleting_action_head
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    proof_boundary_with_first_release_requirements,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraints_after_first_path_edit
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
@@ -29,6 +40,11 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
     r"\b(?:device|controller|sensor|monitor)\b[^.!?]{0,160}\bthat\s+[a-z]",
     flags=re.IGNORECASE,
+)
+_ACTOR_MODAL_SUFFIX_RE = re.compile(r"\b(?:can|could|should|must|will)$", flags=re.IGNORECASE)
+_NONHUMAN_ACTOR_TERMS = frozenset({"bot"})
+_NONHUMAN_ASSISTANT_MODIFIERS = frozenset(
+    {"ai", "automated", "autonomous", "digital", "llm", "virtual", "workflow"}
 )
 
 
@@ -179,7 +195,48 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
     path = first_path_model(path_source)
     if _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence):
         return True
-    return len(path.steps) >= 2
+    return len(path.steps) >= 2 or _has_explicit_single_step_actor_action(path_source)
+
+
+def _has_explicit_single_step_actor_action(path_source: str) -> bool:
+    """Accept one complete actor-action path without accepting a product noun phrase."""
+
+    actor, action = actor_led_action_parts(path_source)
+    if not actor or not action:
+        return False
+    actor_without_modal = _ACTOR_MODAL_SUFFIX_RE.sub("", actor).strip()
+    actor_words = tuple(word.casefold().strip(".,;:()[]{}") for word in actor_without_modal.split())
+    if _is_nonhuman_actor(actor_words):
+        return False
+    has_human_role = any(
+        word_has_actor_role_signal(word)
+        or looks_actor_term(word[:-1] if word.casefold().endswith("s") else word)
+        for word in actor_words
+    )
+    action_head = action.split(maxsplit=1)[0].casefold()
+    return (
+        has_human_role
+        and not is_noncompleting_action_head(action_head)
+        and bool(MATERIAL_ACTION_RE.match(action))
+    )
+
+
+def _is_nonhuman_actor(words: tuple[str, ...]) -> bool:
+    normalized_words = tuple(re.findall(r"[a-z]+", " ".join(words).casefold()))
+    if set(normalized_words) & _NONHUMAN_ACTOR_TERMS:
+        return True
+    for index, role in enumerate(normalized_words):
+        if role not in {"agent", "assistant"}:
+            continue
+        immediate_modifier = normalized_words[index - 1] if index else ""
+        if immediate_modifier in _NONHUMAN_ASSISTANT_MODIFIERS:
+            return True
+        if tuple(normalized_words[max(0, index - 2) : index]) in {
+            ("ai", "powered"),
+            ("artificial", "intelligence"),
+        }:
+            return True
+    return False
 
 
 def _section_first_path_text(sections: Mapping[str, Any]) -> str:
@@ -275,8 +332,18 @@ def _merge_edit_evidence(
         _clear_first_path_derivatives(merged)
     elif _material_edit_rebuilds_dependent_facts(overrides):
         _clear_stale_baseline_derivatives(merged, overrides=overrides)
+        if "first_path" in overrides and _requires_first_path_clarification(prompt=prompt, edit_evidence=""):
+            merged = _recompile_unusable_baseline_from_first_path(
+                baseline=baseline,
+                prompt=prompt,
+                first_path=overrides["first_path"],
+                title=str(overrides.get("title") or baseline.get("title") or "").strip(),
+            )
     _rebuild_operational_constraints_after_first_path_edit(merged, overrides=overrides)
     merged.update(overrides)
+    if "first_path" in overrides:
+        # The edit is the accepted product path; the original prompt remains evidence in the envelope.
+        merged["prompt"] = str(overrides["first_path"])
     return normalize_confirmed_intent(
         merged,
         prompt=prompt,
@@ -573,6 +640,49 @@ def _clear_stale_baseline_derivatives(intent: dict[str, Any], *, overrides: Mapp
     for field in ("customer", "problem", "opportunity", "product_view", "success_metrics"):
         if field not in overrides:
             intent.pop(field, None)
+
+
+def _recompile_unusable_baseline_from_first_path(
+    *,
+    baseline: Mapping[str, Any],
+    prompt: str,
+    first_path: Any,
+    title: str,
+) -> dict[str, Any]:
+    """Build product facts from the accepted path when the original prompt needed clarification."""
+
+    rebuilt = intent_hypothesis_from_operator_evidence(str(first_path), prefer_product_title=True)
+    if title:
+        rebuilt = _retitle_recompiled_intent(rebuilt, title=title)
+        rebuilt["internal_systems"] = tuple(internal_system_rows_from_recovered_title(title))
+    rebuilt["proof_boundary"] = proof_boundary_with_first_release_requirements(
+        str(rebuilt.get("proof_boundary") or ""),
+        prompt,
+    )
+    return rebuilt
+
+
+def _retitle_recompiled_intent(intent: Mapping[str, Any], *, title: str) -> dict[str, Any]:
+    """Keep regenerated projections aligned with the accepted product title."""
+
+    rebuilt = dict(intent)
+    previous_title = str(rebuilt.get("title") or "").strip()
+    if not previous_title or previous_title.casefold() == title.casefold():
+        rebuilt["title"] = title
+        return rebuilt
+    for key, value in tuple(rebuilt.items()):
+        if isinstance(value, str):
+            rebuilt[key] = re.sub(re.escape(previous_title), title, value, flags=re.IGNORECASE)
+        elif isinstance(value, (list, tuple)):
+            rows = [
+                re.sub(re.escape(previous_title), title, row, flags=re.IGNORECASE)
+                if isinstance(row, str)
+                else row
+                for row in value
+            ]
+            rebuilt[key] = tuple(rows) if isinstance(value, tuple) else rows
+    rebuilt["title"] = title
+    return rebuilt
 
 
 def _rebuild_operational_constraints_after_first_path_edit(

@@ -50,6 +50,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import proof_boundary_with_first_release_requirements
 
 _ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
 _NON_HUMAN_ACTOR_TERMS = frozenset(
@@ -283,6 +284,7 @@ def confirmation_from_operator_intent(
     if evaluation.proof_boundary:
         proof = evaluation.proof_boundary
     proof = _proof_with_reviewer_obligations(proof, reviewer_obligations)
+    proof = proof_boundary_with_first_release_requirements(proof, raw_source)
     problem = (
         f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
         "together scattered context."

@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -63,6 +64,18 @@ def test_first_path_steps_repair_carried_modal_base_form_drift() -> None:
     ]
 
 
+def test_capability_keeps_capitalized_human_actor_actions() -> None:
+    first_path = (
+        "Researchers record a spectral graph question, run one analysis, review the derivation, and save a "
+        "reproducible result."
+    )
+
+    assert first_path_capability_phrase(first_path, gerund=True) == (
+        "recording a spectral graph question, running one analysis, reviewing the derivation, and saving a "
+        "reproducible result"
+    )
+
+
 def test_first_path_steps_drop_workflow_requirement_control_clause_after_real_actions() -> None:
     first_path = (
         "Physicists tune magnetic confinement parameters, impurity injection timing, sensor channels, "
@@ -78,6 +91,17 @@ def test_first_path_steps_drop_workflow_requirement_control_clause_after_real_ac
     assert model.visible_outcome == "Disruption prediction results"
     assert not any("Workflow" in step for step in model.steps)
     assert "next path" not in model.visible_outcome.casefold()
+
+
+def test_first_path_prefers_a_real_actor_action_over_a_review_ready_result_adjective() -> None:
+    first_path = "Extension publishers assemble approved changelog fragments into release notes and see a review-ready package."
+    model = first_path_model(first_path)
+
+    assert model.material_action == "Extension publishers assemble approved changelog fragments into release notes and see a review-ready package"
+    assert model.visible_outcome == "A review-ready package"
+    assert first_path_capability_phrase(first_path, gerund=True) == (
+        "assembling approved changelog fragments into release notes and seeing a review-ready package"
+    )
 
 
 def test_first_path_steps_drop_role_led_architecture_and_delivery_requirements() -> None:
