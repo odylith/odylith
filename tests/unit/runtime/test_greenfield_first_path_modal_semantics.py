@@ -12,12 +12,15 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import actor_led_open_action_parts
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_subject
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
@@ -252,8 +255,9 @@ def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_i
         repo_name="flood-shelter",
         observed_source={"source_posture": "docs_only"},
     )
+    confirmation_text = format_product_intent_confirmation_text(confirmation)
     confirmed_intent = parse_confirmed_intent_text(
-        format_product_intent_confirmation_text(confirmation),
+        confirmation_text,
         prompt=FLOOD_SHELTER_PROMPT,
         fallback_title="Flood Shelter Intake Coordination System",
     )
@@ -329,7 +333,8 @@ def test_confirmed_completion_keeps_action_title_out_of_sentence_projection() ->
     workflow_subject = backlog_workstream_subject(component_labels[str(raw_workflow["component_focus"][0])])
 
     assert modal_issues == []
-    assert title.startswith("Let Crane Dispatcher Reconcile")
+    assert title.startswith("Let Berth Planner Reconcile Container Discharge")
+    assert completed["semantic_model"]["first_path_contract"]["visible_result"] == "whether the vessel can sail"
     assert title.casefold() not in raw_sentence_projection.casefold()
     assert title.casefold() not in completed_sentence_projection.casefold()
     assert workflow_subject in raw_sentence_projection
@@ -343,6 +348,58 @@ def test_workstream_subject_uses_generic_fallback_only_without_component_ownersh
         {"title": "Let Crane Dispatcher Reconcile Vessel Readiness", "component_focus": []},
         fallback="Container Berth Turnaround Control",
     ) == "This workstream"
+
+
+def test_confirmed_port_workflow_keeps_specific_operational_site_anchor() -> None:
+    confirmation = build_product_intent_confirmation(
+        prompt=PORT_OPERATIONS_PROMPT,
+        title="Container Berth Turnaround Control",
+        repo_name="container-berth-turnaround-control",
+        observed_source={"source_posture": "confirmed_intent_only"},
+    )
+    confirmation_text = format_product_intent_confirmation_text(confirmation)
+    confirmed_intent = parse_confirmed_intent_text(
+        confirmation_text,
+        prompt=PORT_OPERATIONS_PROMPT,
+        fallback_title="Container Berth Turnaround Control",
+    )
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=str(confirmed_intent["prompt"]),
+        title=str(confirmed_intent["title"]),
+        observed_source={"source_posture": "confirmed_intent_only"},
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+    )
+
+    assert "Pier 7" not in confirmed_intent["evidence_requirements"]
+    assert "Pier 7" in confirmed_intent["operational_constraints"]
+    assert "Pier 7" in proposal["intent"]["operational_constraints"]
+    assert confirmation_text.index("Operational constraints") < confirmation_text.index("Human actors")
+    constraint_section = next(
+        row
+        for row in proposal["project_brief"]["blueprint_sections"]
+        if row["section"] == "Operational constraints"
+    )
+    assert "Pier 7" in constraint_section["must_capture"]
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    refreshed = ensure_apply_semantic_model(proposal, refresh=True)
+
+    assert "Pier 7" in compiler_input.operational_constraints
+    assert compiler_input.source_requirements == tuple(proposal["intent"]["evidence_requirements"])
+    assert dict(compiler_input.source_paths)["operational_constraints"] == "intent.operational_constraints"
+    assert "Pier 7" in refreshed["semantic_model"]["domain_ontology"]["operational_constraints"]
+
+    refreshed["project_brief"]["project_outcome"] = (
+        "Operators should trust the visible result produced by "
+        f"{refreshed['intent']['proof_boundary']}"
+    )
+    assert repair_greenfield_semantic_projections(refreshed) is True
+    repaired_constraint_section = next(
+        row
+        for row in refreshed["project_brief"]["blueprint_sections"]
+        if row["section"] == "Operational constraints"
+    )
+    assert "Pier 7" in repaired_constraint_section["must_capture"]
 
 
 def test_confirmed_completion_preserves_plural_actor_for_ambiguous_decision_evidence_prompt() -> None:

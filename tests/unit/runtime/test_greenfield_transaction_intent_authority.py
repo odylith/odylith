@@ -268,6 +268,44 @@ def test_prompt_only_materialization_preserves_concrete_first_path_claim_custody
     assert first_path["product_claim_span_ids"] == ["first_path:1"]
 
 
+def test_prompt_materialization_persists_operational_constraints_through_preview_round_trip(
+    tmp_path: Path,
+) -> None:
+    prompt = (
+        "Build a berth turnaround control workspace where a terminal coordinator opens the morning vessel call "
+        "at Pier 7, reconciles carrier manifests with berth assignments, records an exception, and sees a signed "
+        "handoff receipt."
+    )
+
+    intent = materialize_prompt_confirmed_intent(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Berth Turnaround Control",
+    )
+    path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    persisted = load_confirmed_intent_record(path, prompt=prompt, fallback_title="Berth Turnaround Control")
+    markdown = path.read_text(encoding="utf-8")
+
+    assert "Pier 7" in intent["operational_constraints"]
+    assert "Pier 7" in persisted.product_facts["operational_constraints"]
+    assert "## Operational constraints\n- Pier 7" in markdown
+    assert markdown.index("## Operational constraints") < markdown.index("## Human actors")
+
+
+def test_product_intent_preview_lists_operational_constraints_before_human_actors() -> None:
+    preview = render_product_intent_preview(
+        {
+            "title": "Berth Turnaround Control",
+            "first_path": "A berth planner reviews one vessel call and sees the handoff receipt.",
+            "operational_constraints": ["Pier 7"],
+            "human_actors": ["Berth planner"],
+        }
+    )
+
+    assert "## Operational constraints\n- Pier 7" in preview
+    assert preview.index("## Operational constraints") < preview.index("## Human actors")
+
+
 def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_authority(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

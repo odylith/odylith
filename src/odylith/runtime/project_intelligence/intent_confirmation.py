@@ -42,7 +42,7 @@ def build_product_intent_confirmation(
             "time_budget": "20_to_30_seconds_to_read",
             "format_contract": [
                 "Render the visible confirmation as sectioned Markdown, not as one long paragraph.",
-                "Use this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Evidence requirements when present; Ambiguities; Proof boundary.",
+                "Use this order: Product story; State object; First complete path; Operational constraints when present; Human actors; External systems; Internal product systems; Critical assumptions; Evidence requirements when present; Ambiguities; Proof boundary.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
                 "Do not render CONFIRM, EDIT, or REJECT in this preview. Odylith must compile and validate the complete transaction first, then render the sole command rail from that transaction.",
@@ -53,6 +53,7 @@ def build_product_intent_confirmation(
                 "the product story you believe the user means, written as concise narrative prose",
                 "the state object that changes through the first journey",
                 "the first complete path the product should prove before broader scope",
+                "source-stated operating constraints such as a specific site or time window, kept separate from proof evidence",
                 "the main human actors and why each matters",
                 "external systems separated from internal product systems",
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
@@ -153,6 +154,12 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
 
 def _fallback_confirmation_markdown(*, prompt: str, title: str) -> str:
     clean_prompt = prompt or title
+    try:
+        from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
+    except ImportError:
+        operational_constraints = ()
+    else:
+        operational_constraints = operational_constraint_phrases(clean_prompt)
     lines = [
         f"# {title} - Product Intent Confirmation",
         "",
@@ -164,6 +171,15 @@ def _fallback_confirmation_markdown(*, prompt: str, title: str) -> str:
         "",
         "First complete path",
         f"The first user provides the source input, reviews the result, and sees the {title.lower()} status with proof.",
+        *(
+            [
+                "",
+                "Operational constraints",
+                *(f"- {row}" for row in operational_constraints),
+            ]
+            if operational_constraints
+            else []
+        ),
         "",
         "Human actors",
         f"- Primary user: completes the first {title.lower()} path and reviews the result.",

@@ -40,6 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_visible_result_object
@@ -199,12 +200,13 @@ def confirmation_from_operator_intent(
     prompt_title_source = _canonical_recovered_title_source(prompt_source.title)
     evaluation = recovered_evaluation_context(
         source=raw_source,
-        title_source=title_source or prompt_title_source,
+        title_source=prompt_title_source or title_source,
         first_path_source=recovered_first_path_source,
     )
     title = normalize_project_title(
         _recovered_title(
             evaluation.title_source
+            or prompt_title_source
             or title_source
             or first_path_outcome_phrase(recovered_first_path_source, fallback="")
         ),
@@ -303,6 +305,7 @@ def confirmation_from_operator_intent(
         "The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
     )
     evidence_requirements = evidence_anchor_phrases(raw_source)
+    operational_constraints = operational_constraint_phrases(raw_source)
     hypothesis: dict[str, object] = {
         "title": title,
         "prompt": raw_source,
@@ -320,6 +323,7 @@ def confirmation_from_operator_intent(
         "ambiguities": tuple(ambiguities),
         "proof_boundary": proof,
         "evidence_requirements": tuple(evidence_requirements),
+        "operational_constraints": tuple(operational_constraints),
     }
     if as_mapping:
         return hypothesis
@@ -330,6 +334,11 @@ def confirmation_from_operator_intent(
         "Product story\n" + story,
         "State object\n" + state,
         "First complete path\n" + first_path.rstrip(".") + ".",
+    ]
+    if operational_constraints:
+        sections.append("Operational constraints\n" + "\n".join(f"- {row}" for row in operational_constraints))
+    sections.extend(
+        (
         "Human actors\n" + actor_lines,
         "External systems\n- No external systems are required for the first proof path unless the operator adds one during edit.",
         "Internal product systems\n" + system_lines,
@@ -338,7 +347,8 @@ def confirmation_from_operator_intent(
         "Product view\n" + product_view,
         "Success metrics\n" + "\n".join(f"- {row}" for row in success_metrics),
         "Critical assumptions\n" + "\n".join(f"- {row}" for row in assumptions),
-    ]
+        )
+    )
     if evidence_requirements:
         sections.append("Evidence requirements\n" + "\n".join(f"- {row}" for row in evidence_requirements))
     sections.extend(

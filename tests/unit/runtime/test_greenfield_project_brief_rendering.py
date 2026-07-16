@@ -60,6 +60,53 @@ def test_confirmed_project_brief_checkpoint_done_when_text_is_checkpoint_specifi
     assert "The answer is visible in the accepted proposal" not in json.dumps(brief)
 
 
+def test_project_brief_rejects_missing_declared_operational_constraint_section() -> None:
+    brief = confirmed_project_brief(
+        label="Berth Turnaround Control",
+        prompt="Coordinate the vessel call at Pier 7.",
+        release="0.0.1",
+        state_object="Berth turnaround record",
+        evidence_record="Vessel call proof record",
+        product_story="Terminal staff coordinate a vessel call with a reviewable berth turnaround record.",
+        first_path="A berth planner reviews a vessel call and sees the berth turnaround record.",
+        proof_boundary="Release 0.0.1 proves one reviewed vessel call with replayable proof.",
+        human_actors=["Berth planner", "Terminal superintendent"],
+        internal_systems=["Berth intake service", "Turnaround review workspace", "Proof ledger"],
+        operational_constraints=["Pier 7"],
+    )
+    brief["blueprint_sections"] = [
+        row for row in brief["blueprint_sections"] if row["section"] != "Operational constraints"
+    ]
+
+    issues = project_brief_issues(brief, operational_constraints=["Pier 7"])
+
+    assert "proposal `project_brief` is missing the Operational constraints section" in issues
+
+
+def test_project_brief_requires_an_exact_operational_constraint_match() -> None:
+    brief = confirmed_project_brief(
+        label="Berth Turnaround Control",
+        prompt="Coordinate the vessel call at Pier 7.",
+        release="0.0.1",
+        state_object="Berth turnaround record",
+        evidence_record="Vessel call proof record",
+        product_story="Terminal staff coordinate a vessel call with a reviewable berth turnaround record.",
+        first_path="A berth planner reviews a vessel call and sees the berth turnaround record.",
+        proof_boundary="Release 0.0.1 proves one reviewed vessel call with replayable proof.",
+        human_actors=["Berth planner", "Terminal superintendent"],
+        internal_systems=["Berth intake service", "Turnaround review workspace", "Proof ledger"],
+        operational_constraints=["Pier 7"],
+    )
+    constraint_section = next(
+        row for row in brief["blueprint_sections"] if row["section"] == "Operational constraints"
+    )
+    constraint_section["must_capture"] = "Pier 70"
+
+    issues = project_brief_issues(brief, operational_constraints=["Pier 7"])
+
+    assert "proposal `project_brief` is missing operational constraint(s): Pier 7" in issues
+
+
 def test_project_brief_rendering_stays_in_project_brief_owner() -> None:
     proposal_source = (DOMAIN_INTELLIGENCE / "proposal_rendering.py").read_text(encoding="utf-8")
     owner_source = (DOMAIN_INTELLIGENCE / "greenfield_project_brief.py").read_text(encoding="utf-8")

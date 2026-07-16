@@ -15,7 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
 
-APPLY_SEMANTIC_INPUT_VERSION = "odylith.greenfield.apply_semantic_input.v1"
+APPLY_SEMANTIC_INPUT_VERSION = "odylith.greenfield.apply_semantic_input.v2"
 _VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.9
 _FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.8
 
@@ -35,6 +35,7 @@ class GreenfieldApplySemanticInput:
     internal_systems: tuple[str, ...]
     external_systems: tuple[str, ...]
     non_goals: tuple[str, ...]
+    operational_constraints: tuple[str, ...]
     workstreams: tuple[Mapping[str, Any], ...]
     source_requirements: tuple[str, ...]
     source_paths: tuple[tuple[str, str], ...]
@@ -63,6 +64,7 @@ def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = Fal
             internal_systems=compiler_input.internal_systems,
             external_systems=compiler_input.external_systems,
             non_goals=compiler_input.non_goals,
+            operational_constraints=compiler_input.operational_constraints,
             workstreams=compiler_input.workstreams,
             source_requirements=compiler_input.source_requirements,
         )
@@ -84,6 +86,7 @@ def apply_semantic_input_mapping(compiler_input: GreenfieldApplySemanticInput) -
         "internal_systems": list(compiler_input.internal_systems),
         "external_systems": list(compiler_input.external_systems),
         "non_goals": list(compiler_input.non_goals),
+        "operational_constraints": list(compiler_input.operational_constraints),
         "source_requirements": list(compiler_input.source_requirements),
         "components": [dict(row) for row in compiler_input.components],
         "workstreams": [dict(row) for row in compiler_input.workstreams],
@@ -143,6 +146,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
         internal_systems=tuple(text_values(intent.get("internal_systems"))),
         external_systems=tuple(external_systems),
         non_goals=tuple(text_values(proposal.get("non_goals") or intent.get("non_goals"))),
+        operational_constraints=tuple(text_values(intent.get("operational_constraints"))),
         workstreams=tuple(backlog_rows),
         source_requirements=tuple(text_values(intent.get("evidence_requirements"))),
         source_paths=(
@@ -156,6 +160,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
             ("internal_systems", "intent.internal_systems"),
             ("external_systems", _external_source),
             ("non_goals", "proposal.non_goals|intent.non_goals"),
+            ("operational_constraints", "intent.operational_constraints"),
             ("workstreams", "proposal.backlog"),
             ("source_requirements", "intent.evidence_requirements"),
         ),

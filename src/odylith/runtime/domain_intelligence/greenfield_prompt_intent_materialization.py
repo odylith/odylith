@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraints_after_first_path_edit
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_from_envelope,
@@ -204,6 +205,12 @@ def _render_confirmed_intent_markdown(intent: Mapping[str, Any]) -> str:
         "## First complete path",
         str(intent.get("first_path") or "").strip(),
         "",
+        "## Operational constraints",
+        *_bullet_lines(
+            intent.get("operational_constraints"),
+            empty_text="No site or time constraint narrows the first proof path.",
+        ),
+        "",
         "## Human actors",
         *_bullet_lines(intent.get("human_actors"), empty_text="Primary user: completes the first proof path."),
         "",
@@ -268,6 +275,7 @@ def _merge_edit_evidence(
         _clear_first_path_derivatives(merged)
     elif _material_edit_rebuilds_dependent_facts(overrides):
         _clear_stale_baseline_derivatives(merged, overrides=overrides)
+    _rebuild_operational_constraints_after_first_path_edit(merged, overrides=overrides)
     merged.update(overrides)
     return normalize_confirmed_intent(
         merged,
@@ -297,6 +305,7 @@ def _explicit_edit_overrides(sections: Mapping[str, list[str]]) -> dict[str, Any
         "ambiguities",
         "non_goals",
         "evidence_requirements",
+        "operational_constraints",
     }
     list_fields = {
         "success_metrics",
@@ -308,11 +317,17 @@ def _explicit_edit_overrides(sections: Mapping[str, list[str]]) -> dict[str, Any
         "ambiguities",
         "non_goals",
         "evidence_requirements",
+        "operational_constraints",
     }
     overrides: dict[str, Any] = {}
     for field, rows in sections.items():
         values = _edit_evidence_values(rows)
-        if field not in editable or not values:
+        if field not in editable:
+            continue
+        if field == "operational_constraints" and _explicitly_clears_operational_constraints(values):
+            overrides[field] = []
+            continue
+        if not values:
             continue
         overrides[field] = values if field in list_fields else " ".join(values)
     return overrides
@@ -325,6 +340,17 @@ def _edit_evidence_values(rows: object) -> list[str]:
         if cleaned:
             values.append(cleaned)
     return values
+
+
+def _explicitly_clears_operational_constraints(values: list[str]) -> bool:
+    return bool(
+        values
+        and all(
+            value.casefold().strip(" .")
+            in {"none", "no constraints", "no operational constraints"}
+            for value in values
+        )
+    )
 
 
 def _document_title_override(value: str) -> str:
@@ -547,6 +573,23 @@ def _clear_stale_baseline_derivatives(intent: dict[str, Any], *, overrides: Mapp
     for field in ("customer", "problem", "opportunity", "product_view", "success_metrics"):
         if field not in overrides:
             intent.pop(field, None)
+
+
+def _rebuild_operational_constraints_after_first_path_edit(
+    intent: dict[str, Any],
+    *,
+    overrides: Mapping[str, Any],
+) -> None:
+    """Apply path evidence without discarding unrelated accepted conditions."""
+
+    if "operational_constraints" in overrides or "first_path" not in overrides:
+        return
+    intent["operational_constraints"] = list(
+        operational_constraints_after_first_path_edit(
+            intent.get("operational_constraints"),
+            overrides["first_path"],
+        )
+    )
 
 
 def _without_edit_command(value: str) -> str:

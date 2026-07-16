@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_is_present
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -53,6 +54,9 @@ def normalize_project_brief(
         required_keys=("checkpoint", "operator_question", "done_when"),
     )
     result["coding_readiness_gates"] = normalize_text_list(result.get("coding_readiness_gates"))
+    result["operational_constraints"] = normalize_text_list(
+        result.get("operational_constraints") or intent.get("operational_constraints")
+    )
     result["host_independent_paths"] = _normalize_brief_rows(
         result.get("host_independent_paths"),
         required_keys=("path", "command", "works_in", "use_when"),
@@ -88,7 +92,11 @@ def project_outcome_text(
     return text
 
 
-def project_brief_issues(value: Any) -> list[str]:
+def project_brief_issues(
+    value: Any,
+    *,
+    operational_constraints: Sequence[str] = (),
+) -> list[str]:
     """Return validation issues for the proposal project-first brief."""
 
     issues: list[str] = []
@@ -144,7 +152,36 @@ def project_brief_issues(value: Any) -> list[str]:
         issues.append(
             "proposal `project_brief.host_independent_paths` must not expose a separate compile-before-confirm rail"
         )
+    _operational_constraint_issues(
+        value,
+        expected=normalize_text_list(operational_constraints),
+        issues=issues,
+    )
     return issues
+
+
+def _operational_constraint_issues(
+    brief: Mapping[str, Any],
+    *,
+    expected: Sequence[str],
+    issues: list[str],
+) -> None:
+    if not expected:
+        return
+    sections = mapping_rows(brief.get("blueprint_sections"))
+    constraint_section = next(
+        (row for row in sections if clean_text(row.get("section")).casefold() == "operational constraints"),
+        None,
+    )
+    if constraint_section is None:
+        issues.append("proposal `project_brief` is missing the Operational constraints section")
+        return
+    captured = clean_text(constraint_section.get("must_capture"))
+    missing = [constraint for constraint in expected if not operational_constraint_is_present(constraint, captured)]
+    if missing:
+        issues.append(
+            "proposal `project_brief` is missing operational constraint(s): " + ", ".join(missing)
+        )
 
 
 def _project_outcome_candidates(

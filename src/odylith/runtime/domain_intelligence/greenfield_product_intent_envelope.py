@@ -58,6 +58,7 @@ PRODUCT_FACT_KEYS = (
     "ambiguities",
     "non_goals",
     "evidence_requirements",
+    "operational_constraints",
 )
 
 LIST_FACT_KEYS = frozenset(
@@ -71,6 +72,7 @@ LIST_FACT_KEYS = frozenset(
         "ambiguities",
         "non_goals",
         "evidence_requirements",
+        "operational_constraints",
     }
 )
 

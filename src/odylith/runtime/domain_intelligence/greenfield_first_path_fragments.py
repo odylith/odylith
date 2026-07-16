@@ -458,6 +458,13 @@ def visible_result_object(value: str) -> str:
     handoff_result = handoff_visible_result_object(text)
     if handoff_result:
         return handoff_result
+    conditional_result = re.search(
+        r"\b(?:sees?|shows?|views?|reviews?)\s+(?P<result>whether\s+.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if conditional_result:
+        return clean_first_path_text(conditional_result.group("result")).strip(" .")
     if _routing_action_clause(text, strip_subject=strip_action_subject):
         return ""
     nominal = nominal_visible_result_object(text)

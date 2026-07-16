@@ -354,7 +354,14 @@ def _project_brief_preview_issues(
 ) -> list[str]:
     issues = [
         issue.replace("proposal `project_brief`", "project brief preview")
-        for issue in project_brief_issues(project_brief_preview)
+        for issue in project_brief_issues(
+            project_brief_preview,
+            operational_constraints=text_values(
+                package.proposal.get("intent", {}).get("operational_constraints", ())
+                if isinstance(package.proposal.get("intent"), Mapping)
+                else ()
+            ),
+        )
     ]
     if clean_text(project_brief_preview.get("schema_version")) != PROJECT_BRIEF_SCHEMA_VERSION:
         issues.append("project brief preview has an unsupported schema version")

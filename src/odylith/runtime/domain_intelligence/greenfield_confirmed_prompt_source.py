@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
@@ -103,6 +104,7 @@ _NON_HUMAN_SUBJECT_TERMS = frozenset(
     }
 )
 _REQUEST_LEAD_CONNECTORS = ("where", "that", "who", "so", "for", "to")
+_MULTI_ROLE_MODAL_TOKENS = frozenset({"can", "could", "must", "should", "will"})
 _PATH_GRANT_PATH_MODIFIERS = frozenset(
     {
         "a",
@@ -177,12 +179,14 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     start, command_led = _request_content_start(words)
     grant_actor, grant_first_path = _path_grant_actor_action(text)
     workflow_actor, workflow_first_path = _workflow_where_actor_action(text)
+    multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(text)
     actor, actor_led_first_path = _actor_led_relative_clause(text)
     direct_actor, direct_first_path = _direct_actor_action_sentence(text)
     context_actor = _for_role_actor_context(text)
     first_path_source = (
         grant_first_path
         or workflow_first_path
+        or multi_role_first_path
         or actor_led_first_path
         or direct_first_path
         or _first_path_source_from_text(text)
@@ -191,18 +195,39 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     resolved_actor = next(
         (
             candidate
-            for candidate in (grant_actor, workflow_actor, actor, direct_actor, context_actor)
+            for candidate in (grant_actor, workflow_actor, multi_role_actor, actor, direct_actor, context_actor)
             if _is_bounded_prompt_actor(candidate)
         ),
         "",
     )
     return PromptIntentSource(
-        title=_project_title_source_from_words(words, start=start, command_led=command_led)
+        title=_product_focus_after_need_sentence(text)
+        or _project_title_source_from_words(words, start=start, command_led=command_led)
         or _direct_path_title_source(direct_first_path, actor=direct_actor),
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
     )
+
+
+def _product_focus_after_need_sentence(value: str) -> str:
+    """Name the product focus in a non-command `needs a product for` request."""
+
+    for sentence in _sentence_fragments(value):
+        match = re.search(
+            r"\bneeds?\s+(?:a|the)\s+product\s+for\s+(?P<focus>.+)$",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            continue
+        focus = re.split(r"\s+\b(?:at|before|after|with|while|when)\b", match.group("focus"), maxsplit=1)[0]
+        focus = re.sub(r"^(?:a|an|the)\s+", "", focus, flags=re.IGNORECASE).strip(" .")
+        words = _request_words(focus)
+        if not 2 <= len(words) <= 6 or looks_like_action_clause(focus):
+            continue
+        return focus
+    return ""
 
 
 def _first_path_source_from_text(value: str) -> str:
@@ -256,6 +281,44 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             action = f"{_base_direct_gerund(verb) or verb} {tail}".strip(" .")
             return actor, f"{actor} can {action}"
         return actor, f"{actor} {action}"
+    return "", ""
+
+
+def _multi_role_modal_first_path(value: str) -> tuple[str, str]:
+    """Select one accountable role from a multi-role modal workflow sentence."""
+
+    for sentence in _sentence_fragments(value):
+        text = clean_markdown_text(sentence).strip(" .")
+        if not text or _looks_like_trailing_operator_instruction(text):
+            continue
+        words = _request_words(text)
+        for modal_index, word in enumerate(words[1:], start=1):
+            if _word_key(word) not in _MULTI_ROLE_MODAL_TOKENS:
+                continue
+            actor_words = words[:modal_index]
+            comma_index = next(
+                (index for index, actor_word in enumerate(actor_words) if str(actor_word).rstrip().endswith(",")),
+                -1,
+            )
+            if comma_index <= 0:
+                continue
+            primary = _strip_leading_actor_article(" ".join(actor_words[: comma_index + 1])).strip(" ,.")
+            if not primary or not any(word_has_actor_role_signal(token) for token in _request_words(primary)):
+                continue
+            action = " ".join(words[modal_index + 1 :]).strip(" .")
+            candidate = f"{primary} can {action}".strip(" .")
+            before_sail = re.match(
+                r"(?P<action>.+?)\s+before\s+(?P<subject>the\s+.+?)\s+can\s+(?P<verb>[A-Za-z]+)$",
+                action,
+                flags=re.IGNORECASE,
+            )
+            if before_sail:
+                candidate = (
+                    f"{primary} can {before_sail.group('action')}, then see whether "
+                    f"{before_sail.group('subject')} can {before_sail.group('verb')}"
+                )
+            if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
+                return primary, candidate
     return "", ""
 
 

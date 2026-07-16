@@ -1309,6 +1309,9 @@ def _repair_bad_project_brief_projection(proposal: dict[str, Any]) -> bool:
         assumptions=[clean_text(value) for value in text_values(intent.get("assumptions")) if clean_text(value)],
         ambiguities=[clean_text(value) for value in text_values(intent.get("ambiguities")) if clean_text(value)],
         non_goals=[clean_text(value) for value in text_values(intent.get("non_goals")) if clean_text(value)],
+        operational_constraints=[
+            clean_text(value) for value in text_values(intent.get("operational_constraints")) if clean_text(value)
+        ],
     )
     return True
 

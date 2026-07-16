@@ -51,6 +51,24 @@ def test_semantic_model_prefers_terminal_visible_outcome_over_mid_path_confirmat
     ]
 
 
+def test_semantic_model_preserves_conditional_visible_outcome() -> None:
+    first_path = (
+        "Berth planner can reconcile container discharge, quay crane availability, tug window, and berth occupancy, "
+        "then see whether the vessel can sail."
+    )
+    model = build_greenfield_semantic_model(
+        title="Morning Vessel Call",
+        state_object="A vessel call record with berth, crane, tug, and occupancy readiness.",
+        first_path=first_path,
+        proof_boundary="One berth planner can reconcile vessel-call readiness before sail time.",
+        components=[],
+        human_actors=["Berth Planner"],
+    )
+
+    assert first_path_outcome_phrase(first_path) == "whether the vessel can sail"
+    assert model.first_path_contract.visible_result == "whether the vessel can sail"
+
+
 def test_first_path_outcome_does_not_concatenate_title_cased_actor_and_action() -> None:
     first_path = (
         "Home Cook picks a recipe, the controller validates the robot is ready, runs the step sequence, "

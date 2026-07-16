@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import project
 from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
 from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
@@ -101,7 +102,11 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     capture(lambda: _require_nonempty_sequence(proposal, "validation_strategy"))
     project_brief = capture(lambda: _require_mapping(proposal, "project_brief"))
     if isinstance(project_brief, Mapping):
-        for issue in project_brief_issues(project_brief):
+        intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+        for issue in project_brief_issues(
+            project_brief,
+            operational_constraints=text_values(intent.get("operational_constraints")),
+        ):
             issues.append(issue)
     project_intelligence = capture(lambda: _require_mapping(proposal, "project_intelligence"))
     if isinstance(project_intelligence, Mapping):

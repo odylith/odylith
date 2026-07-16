@@ -120,6 +120,7 @@ class DomainOntology:
     internal_systems: tuple[str, ...]
     external_systems: tuple[str, ...]
     non_goals: tuple[str, ...]
+    operational_constraints: tuple[str, ...]
     domain_terms: tuple[str, ...]
 
 
@@ -182,6 +183,7 @@ def build_greenfield_semantic_model(
     internal_systems: Sequence[str] = (),
     external_systems: Sequence[str] = (),
     non_goals: Sequence[str] = (),
+    operational_constraints: Sequence[str] = (),
     workstreams: Sequence[Mapping[str, Any]] = (),
     source_requirements: Sequence[str] = (),
 ) -> GreenfieldSemanticModel:
@@ -218,6 +220,7 @@ def build_greenfield_semantic_model(
         internal_systems=component_labels or tuple(_clean(row) for row in internal_systems if _clean(row)),
         external_systems=tuple(_clean(row) for row in external_systems if _clean(row)),
         non_goals=tuple(_clean(row) for row in non_goals if _clean(row)),
+        operational_constraints=tuple(_clean(row) for row in operational_constraints if _clean(row)),
         domain_terms=tuple(
             sorted(
                 ordered_terms(

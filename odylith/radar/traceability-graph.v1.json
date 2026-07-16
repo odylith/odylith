@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "d00e4f853962f5eb0860aedc8bd53d35bfe9dc6771e93925529c4926146f98e8",
-    "file_count": 314,
+    "digest": "66f64d9b2970ef925b98fcd98af94106a921de6fb4467c02efdf4303718375b7",
+    "file_count": 315,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -156,6 +156,7 @@
       "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
       "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
       "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+      "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
       "odylith/radar/source/programs/B-072.execution-waves.v1.json",
       "odylith/radar/source/programs/B-096.execution-waves.v1.json",
       "odylith/radar/source/programs/B-099.execution-waves.v1.json",
@@ -8642,6 +8643,42 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-144",
+      "title": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -10716,6 +10753,14 @@
       "file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md"
     },
     {
+      "id": "B-144",
+      "type": "workstream",
+      "label": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md"
+    },
+    {
       "id": "component:atlas",
       "type": "component",
       "label": "Atlas",
@@ -11583,7 +11628,8 @@
         "B-131",
         "B-141",
         "B-142",
-        "B-143"
+        "B-143",
+        "B-144"
       ],
       "diagrams": [
         "D-001",
@@ -20638,6 +20684,11 @@
       "edge_type": "diagram_linkage"
     },
     {
+      "source": "B-144",
+      "target": "component:odylith",
+      "edge_type": "component_linkage"
+    },
+    {
       "source": "component:atlas",
       "target": "diagram:D-001",
       "edge_type": "component_diagram"
@@ -24669,6 +24720,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-144": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -24763,10 +24821,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 260,
-      "structural_edge_count": 1709,
+      "spine_node_count": 261,
+      "structural_edge_count": 1710,
       "connected_component_count": 3,
-      "largest_component_size": 258,
+      "largest_component_size": 259,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -24776,18 +24834,18 @@
     "findings": []
   },
   "summary": {
-    "workstream_count": 143,
+    "workstream_count": 144,
     "release_count": 5,
     "component_count": 30,
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 351,
-    "edge_count": 1813,
+    "node_count": 352,
+    "edge_count": 1814,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-07-16 01:00:57Z"
+  "generated_utc": "2026-07-16 14:10:38Z"
 }

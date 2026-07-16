@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
@@ -16,6 +18,15 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import _explicit_edit_overrides
+from odylith.runtime.project_intelligence.intent_confirmation import _fallback_confirmation_markdown
+
+
+ROOT = Path(__file__).resolve().parents[3]
+PORT_OPERATIONS_PROMPT = json.loads(
+    (ROOT / "tests/fixtures/greenfield-volume/logistics-infrastructure.v1.json").read_text(encoding="utf-8")
+)["cases"][0]["prompt"]
 
 
 def _guidance_envelope(prompt: str) -> str:
@@ -417,6 +428,71 @@ def test_evidence_anchors_keep_command_context_nouns_without_source_prose() -> N
 
     assert anchors == ("limited taxis", "rehearsal dinner", "accessibility request")
     assert all("guests traveling to a small town" not in anchor for anchor in anchors)
+
+
+def test_evidence_anchors_exclude_first_path_action_fragments() -> None:
+    prompt = (
+        "Build a berth turnaround control workspace where a terminal coordinator opens the morning vessel call "
+        "at Pier 7, reconciles carrier manifests with berth assignments, records an exception, and sees a signed "
+        "handoff receipt."
+    )
+
+    anchors = evidence_anchor_phrases(prompt)
+
+    assert anchors == ("berth assignments",)
+    assert "sees a signed handoff receipt" not in anchors
+
+
+def test_multi_role_port_prompt_separates_product_path_from_evidence_directives() -> None:
+    source = prompt_intent_source(PORT_OPERATIONS_PROMPT)
+    anchors = evidence_anchor_phrases(PORT_OPERATIONS_PROMPT)
+
+    assert source.title == "morning vessel call"
+    assert source.actor == "berth planner"
+    assert source.first_path == (
+        "berth planner can reconcile container discharge, quay crane availability, tug window, and berth occupancy, "
+        "then see whether the vessel can sail"
+    )
+    assert anchors == ("carrier manifests",)
+    assert "carrier manifests" not in source.first_path
+    assert "weather holds" not in source.first_path
+    assert "customs clearance" not in source.first_path
+
+
+def test_operational_constraints_keep_site_identifiers_separate_from_evidence() -> None:
+    prompt = (
+        "A terminal coordinator needs a product for the morning vessel call at Pier 7, "
+        "the secondary handoff at Terminal A, and the review in Room 12. "
+        "Keep carrier manifests as evidence."
+    )
+
+    assert operational_constraint_phrases(prompt) == ("morning vessel call", "Pier 7", "Terminal A", "Room 12")
+    assert operational_constraint_phrases("The owner reviews the vessel call on Pier 7 for Terminal A.") == (
+        "Pier 7",
+        "Terminal A",
+    )
+    assert operational_constraint_phrases("The coordinator works for the morning shift only and closes before noon.") == (
+        "morning shift",
+        "before noon",
+    )
+    assert "Pier 7" not in evidence_anchor_phrases(prompt)
+
+
+def test_operational_constraints_are_editable_and_rendered_in_host_independent_fallback() -> None:
+    overrides = _explicit_edit_overrides(
+        confirmed_intent_sections(
+            "## Operational constraints\n- Pier 7\n\n## Evidence requirements\n- Carrier manifests"
+        )
+    )
+    fallback = _fallback_confirmation_markdown(
+        prompt="A berth planner coordinates the vessel call at Pier 7.",
+        title="Berth Turnaround Control",
+    )
+
+    assert overrides["operational_constraints"] == ["Pier 7"]
+    assert overrides["evidence_requirements"] == ["Carrier manifests"]
+    assert "Operational constraints\n- Pier 7" in fallback
+    assert fallback.index("Operational constraints") < fallback.index("Human actors")
 
 
 def test_prompt_source_prioritizes_where_workflow_over_expert_lens_sentence() -> None:

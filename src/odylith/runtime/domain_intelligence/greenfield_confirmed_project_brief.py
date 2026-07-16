@@ -56,6 +56,7 @@ def confirmed_project_brief(
     ambiguities: list[str] | None = None,
     non_goals: list[str] | None = None,
     evidence_requirements: list[str] | None = None,
+    operational_constraints: list[str] | None = None,
     visible_result: str = "",
 ) -> dict[str, Any]:
     label_lower = sentence_label(label)
@@ -109,6 +110,7 @@ def confirmed_project_brief(
         limit=520,
     )
     evidence_summary = _brief_clause(join_confirmed_items((evidence_requirements or [])[:8]), limit=520)
+    constraint_summary = _brief_clause(join_confirmed_items((operational_constraints or [])[:8]), limit=520)
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     )
@@ -122,6 +124,7 @@ def confirmed_project_brief(
     proposal_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
     return {
         "schema_version": "odylith.greenfield.project_brief.v1",
+        "operational_constraints": list(operational_constraints or []),
         "purpose": _purpose_text(story=story, problem=problem, first=first),
         "operating_principle": (
             f"Every release {release} claim must stay attached to the user capability, domain state, "
@@ -166,6 +169,17 @@ def confirmed_project_brief(
                     }
                 ]
                 if evidence_summary
+                else []
+            ),
+            *(
+                [
+                    {
+                        "section": "Operational constraints",
+                        "must_capture": constraint_summary,
+                        "why_it_matters": "The first release must retain source-stated operating scope without treating it as proof evidence.",
+                    }
+                ]
+                if constraint_summary
                 else []
             ),
             {
@@ -246,6 +260,7 @@ def confirmed_project_brief(
             ),
             f"Release {release} has proof checks for success, failure, replay, access, and review evidence.",
             *([f"Source and proof must preserve prompt-grounded evidence anchors: {evidence_summary}."] if evidence_summary else []),
+            *([f"First-path scope must retain source-stated operational constraints: {constraint_summary}."] if constraint_summary else []),
             f"External dependencies for {label_lower} are simulated, sandboxed, source-backed, or explicitly deferred.",
         ],
         "host_independent_paths": [

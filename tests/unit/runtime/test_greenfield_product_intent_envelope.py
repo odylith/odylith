@@ -76,6 +76,13 @@ Release 0.0.1 is proven only when the same workflow record can be opened, update
 """
 
 
+def test_product_facts_hash_tracks_operational_constraints() -> None:
+    baseline = {"title": "Berth Turnaround Control", "first_path": "Planner reviews one vessel call."}
+    constrained = {**baseline, "operational_constraints": ["Pier 7"]}
+
+    assert product_facts_hash(baseline) != product_facts_hash(constrained)
+
+
 def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_sections(tmp_path: Path) -> None:
     path = tmp_path / "confirmed-intent.md"
     path.write_text(_hostile_confirmation(), encoding="utf-8")

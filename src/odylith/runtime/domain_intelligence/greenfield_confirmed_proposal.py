@@ -115,6 +115,7 @@ def build_confirmed_greenfield_proposal(
             source_anchors=confirmed_intent_list(confirmed_intent, "evidence_requirements"),
         )
     )
+    operational_constraints = confirmed_intent_list(confirmed_intent, "operational_constraints")
     if not (product_story and state_object and first_path and proof_boundary and human_actors and len(internal_systems) >= 2):
         raise ValueError(
             "confirmed greenfield proposal requires product story, state object, first path, proof boundary, "
@@ -200,6 +201,7 @@ def build_confirmed_greenfield_proposal(
             external_systems=external_systems,
             non_goals=non_goals,
             workstreams=backlog_rows,
+            operational_constraints=operational_constraints,
             source_requirements=evidence_requirements,
         )
     )
@@ -235,6 +237,7 @@ def build_confirmed_greenfield_proposal(
             "product_view": product_view_summary,
             "success_metrics": success_metrics,
             "evidence_requirements": evidence_requirements,
+            "operational_constraints": operational_constraints,
         },
         "observed_source": dict(observed_source),
         "classification": {
@@ -327,6 +330,7 @@ def build_confirmed_greenfield_proposal(
             ambiguities=ambiguities,
             non_goals=non_goals,
             evidence_requirements=evidence_requirements,
+            operational_constraints=operational_constraints,
             visible_result=semantic_visible_result,
         ),
         "project_intelligence": _project_intelligence(

@@ -54,6 +54,7 @@ def complete_semantic_model(
             internal_systems=text_values(intent.get("internal_systems")),
             external_systems=text_values(intent.get("external_systems")),
             non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
+            operational_constraints=text_values(intent.get("operational_constraints")),
             workstreams=mapping_rows(proposal.get("backlog")),
             source_requirements=text_values(intent.get("evidence_requirements")),
         )

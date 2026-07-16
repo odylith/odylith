@@ -8,6 +8,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_requirement_control_step
@@ -229,7 +230,7 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
             continue
         for anchor in (
             *_contextual_product_evidence_anchors(sentence),
-            *_coordinated_action_evidence_anchors(sentence),
+            *_explicit_evidence_anchors(sentence),
             *_contextual_difference_anchors(sentence),
             *_preservation_list_anchors(sentence),
         ):
@@ -271,6 +272,7 @@ def _contextual_product_evidence_anchors(value: str) -> tuple[str, ...]:
             anchor
             for anchor in anchors
             if not ({_word_key(word) for word in anchor.split()} & _CONTEXTUAL_EVIDENCE_ACTION_TOKENS)
+            and not looks_like_finite_action(anchor)
         )
     return ()
 
@@ -292,21 +294,14 @@ def _contextual_difference_anchors(value: str) -> tuple[str, ...]:
     )
 
 
-def _coordinated_action_evidence_anchors(value: str) -> tuple[str, ...]:
+def _explicit_evidence_anchors(value: str) -> tuple[str, ...]:
     text = clean_text(value).strip(" .")
-    if "," not in text:
-        return ()
-    anchors: list[str] = []
-    for clause in re.split(r"\s*,\s*|\s+and\s+", text, flags=re.IGNORECASE):
-        match = re.search(
-            r"\b(?:approves?|captures?|compares?|confirms?|records?|reviews?|tracks?|verifies?)\s+"
-            r"(?:the\s+)?(?P<object>[A-Za-z][A-Za-z0-9 /&'-]{1,56})$",
-            clause,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            anchors.append(match.group("object").strip(" ."))
-    return tuple(anchors)
+    match = re.search(
+        r"\b(?:keep|preserve|retain)\s+(?P<items>.+?)\s+as\s+evidence\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return _anchor_list_items(match.group("items")) if match else ()
 
 
 def _preservation_list_anchors(value: str) -> tuple[str, ...]:
@@ -317,6 +312,8 @@ def _preservation_list_anchors(value: str) -> tuple[str, ...]:
         text,
         flags=re.IGNORECASE,
     )
+    if match and re.search(r"\bas\s+evidence\b", match.group("items"), flags=re.IGNORECASE):
+        return ()
     return _anchor_list_items(match.group("items")) if match else ()
 
 

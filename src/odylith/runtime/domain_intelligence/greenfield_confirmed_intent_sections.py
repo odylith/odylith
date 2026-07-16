@@ -721,6 +721,8 @@ def classify_confirmed_intent_heading(value: str) -> str:
         return "success_metrics"
     if normalized in {"evidence requirement", "evidence requirements", "evidence obligation", "evidence obligations"}:
         return "evidence_requirements"
+    if normalized in {"operational constraint", "operational constraints", "operating constraint", "operating constraints"}:
+        return "operational_constraints"
     if "human actor" in normalized or normalized in {
         "actors",
         "primary actors",

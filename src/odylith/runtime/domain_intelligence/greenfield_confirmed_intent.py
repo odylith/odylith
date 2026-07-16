@@ -282,6 +282,7 @@ def normalize_confirmed_intent(
         "product_view": _clean(payload.get("product_view")),
         "success_metrics": confirmed_text_values(payload.get("success_metrics") or payload.get("proof_metrics")),
         "evidence_requirements": confirmed_text_values(payload.get("evidence_requirements")),
+        "operational_constraints": confirmed_text_values(payload.get("operational_constraints")),
         "component_responsibilities": component_rows,
         "human_actors": _role_or_system_rows(payload.get("human_actors") or payload.get("actors")),
         "external_systems": confirmed_text_values(payload.get("external_systems")),
@@ -451,6 +452,7 @@ def parse_confirmed_intent_text(
         "product_view": _section_text(sections, "product_view"),
         "success_metrics": _section_list(sections, "success_metrics"),
         "evidence_requirements": _section_list(sections, "evidence_requirements"),
+        "operational_constraints": _section_list(sections, "operational_constraints"),
         "component_responsibilities": _section_list(sections, "component_responsibilities"),
         "human_actors": _section_list(sections, "human_actors"),
         "external_systems": _section_list(sections, "external_systems")
