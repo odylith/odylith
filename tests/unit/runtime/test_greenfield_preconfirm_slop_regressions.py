@@ -3435,6 +3435,23 @@ def test_generated_public_copy_rejects_duplicate_status_and_clipped_terminals() 
     ) == ()
     assert generated_public_copy_issues(
         "accepted-project memory preview",
+        {
+            "proof_obligations": [
+                {
+                    "required_evidence": (
+                        "Fixture includes required fields: late-fee, rule, apartment, resident, drill, return; "
+                        "mutation evidence for drill, persistence, visible result, and recovery behavior."
+                    )
+                }
+            ]
+        },
+    ) == ()
+    assert generated_public_copy_issues(
+        "accepted-project memory preview",
+        "Fixture includes required fields: late-fee, rule, apartment, resident, drill, return",
+    ) == ("accepted-project memory preview leaked clipped or dangling public copy",)
+    assert generated_public_copy_issues(
+        "accepted-project memory preview",
         (
             "Accepts request intake state, request intake, intake state, and actor context. "
             "Plan: odylith/radar/radar.html?view=plan. "

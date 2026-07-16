@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-15
+Last updated: 2026-07-16
 
 
 ## Overview
@@ -26,6 +26,8 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-16 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
 - **2026-07-15 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
   - Evidence: 2 tracked artifact references retained
 - **2026-07-15 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 tracked artifact reference retained.
@@ -37,8 +39,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: 3 tracked artifact references retained
 - **2026-07-15 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
   - Evidence: 4 tracked artifact references retained
-- **2026-07-15 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

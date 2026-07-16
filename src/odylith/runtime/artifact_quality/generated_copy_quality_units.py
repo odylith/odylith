@@ -14,6 +14,9 @@ from odylith.runtime.domain_intelligence.greenfield_structural_copy import struc
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
+_SENTENCE_TERMINATORS = frozenset(".!?\n\r")
+
+
 def text_quality_units(value: Any) -> tuple[ArtifactQualityUnit, ...]:
     """Return typed text chunks that should be inspected for prose quality."""
 
@@ -94,7 +97,7 @@ def _append_text_quality_units_for_key(units: list[ArtifactQualityUnit], value: 
         return
     current: list[str] = []
     for char in str(value or ""):
-        if char in ".!?\n\r;":
+        if char in _SENTENCE_TERMINATORS:
             _append_quality_chunk(units, current, key=key)
             current = []
         else:
@@ -127,7 +130,7 @@ def _append_unit_text_quality_units(units: list[ArtifactQualityUnit], unit: Arti
         return
     current: list[str] = []
     for char in text:
-        if char in ".!?\n\r;":
+        if char in _SENTENCE_TERMINATORS:
             _append_quality_chunk(units, current, key=unit.surface_role, template=unit)
             current = []
         else:
