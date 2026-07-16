@@ -20,6 +20,8 @@ QUALITY_LENS_PLAN_REPAIR_CHECKS = frozenset(
         "atlas_topology",
         "component_topology",
         "decision_boundary",
+        "first_release_requirements_implementation_handoff",
+        "first_release_requirements_project_brief",
         "first_release_scope",
         "high_risk_assumptions",
         "implementation_readiness",

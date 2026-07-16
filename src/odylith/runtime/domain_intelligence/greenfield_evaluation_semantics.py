@@ -8,6 +8,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
@@ -221,6 +222,7 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
     """Return prompt-grounded evidence phrases that must survive projection."""
 
     rows: list[str] = []
+    direct_need = bool(re.search(r"\bneeds?\s+to\b", clean_text(value), flags=re.IGNORECASE))
     for source in source_anchors:
         normalized = _normalize_anchor(source)
         if _meaningful_anchor(normalized):
@@ -233,6 +235,7 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
             *_explicit_evidence_anchors(sentence),
             *_contextual_difference_anchors(sentence),
             *_preservation_list_anchors(sentence),
+            *(_coordinated_action_object_anchors(sentence) if direct_need else ()),
         ):
             normalized = _normalize_anchor(anchor)
             if _meaningful_anchor(normalized):
@@ -251,6 +254,39 @@ def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -
             if _meaningful_anchor(normalized):
                 rows.append(normalized)
     return tuple(dict.fromkeys(rows))[:12]
+
+
+def _coordinated_action_object_anchors(value: str) -> tuple[str, ...]:
+    """Keep direct-need comparison objects from a coordinated evidence decision."""
+
+    text = clean_text(value).strip(" .")
+    clauses = [
+        clause.strip(" .")
+        for clause in re.split(r",\s*(?:and\s+)?(?=(?:the|a|an)\s+)", text, flags=re.IGNORECASE)
+        if clause.strip(" .")
+    ]
+    if len(clauses) < 2:
+        return ()
+    anchors: list[str] = []
+    for clause in clauses:
+        match = re.search(
+            r"\b(?:compares|inspects|validates|verifies)\s+(?P<object>.+)$",
+            clause,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            continue
+        actor = clause[: match.start()].strip(" ,.")
+        if not any(looks_like_actor_role_term(token) for token in actor.split()):
+            continue
+        object_text = re.sub(
+            r"\s+(?:after|before|so that|when|where|while)\b.+$",
+            "",
+            match.group("object"),
+            flags=re.IGNORECASE,
+        ).strip(" .")
+        anchors.extend(_anchor_list_items(object_text))
+    return tuple(anchors)
 
 
 def _contextual_product_evidence_anchors(value: str) -> tuple[str, ...]:

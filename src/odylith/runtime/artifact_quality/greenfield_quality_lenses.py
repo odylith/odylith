@@ -7,6 +7,9 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    first_release_boundary_requirements,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import quality_lens_repair_owner
@@ -63,6 +66,22 @@ _CHECK_TARGETS = {
         "surface": "release",
         "target_path": "proposal.release_plan",
         "semantic_node_id": "ArtifactPlanIR.release_plan",
+        "repairability": "plan_patch",
+        "owner": "artifact_plan_projector",
+    },
+    "first_release_requirements_project_brief": {
+        "role": "Product manager",
+        "surface": "project_brief",
+        "target_path": "prewrite_package.project_brief",
+        "semantic_node_id": "ArtifactDraftSet.project_brief",
+        "repairability": "plan_patch",
+        "owner": "artifact_plan_projector",
+    },
+    "first_release_requirements_implementation_handoff": {
+        "role": "Product manager",
+        "surface": "next_steps",
+        "target_path": "prewrite_package.next_steps_preview.implementation_prompt",
+        "semantic_node_id": "ArtifactPlanIR.next_steps",
         "repairability": "plan_patch",
         "owner": "artifact_plan_projector",
     },
@@ -211,6 +230,22 @@ def _product_manager_checks(
     backlog_rows = mapping_rows(proposal.get("backlog"))
     assumptions = _rows_or_text_values(proposal.get("assumptions"))
     ambiguities = _rows_or_text_values(proposal.get("open_questions"))
+    domain = _as_mapping(semantic.get("domain_ontology"))
+    release_requirements = first_release_boundary_requirements(normalize_string(domain.get("proof_boundary")))
+    project_brief_text = normalize_string(" ".join(text_values(getattr(package, "project_brief_preview", None))))
+    implementation_prompt = normalize_string(
+        _as_mapping(getattr(package, "next_steps_preview", None)).get("implementation_prompt")
+    )
+    brief_release_requirements = tuple(
+        requirement
+        for requirement in release_requirements
+        if _normalized_phrase(requirement) in _normalized_phrase(project_brief_text)
+    )
+    handoff_release_requirements = tuple(
+        requirement
+        for requirement in release_requirements
+        if _normalized_phrase(requirement) in _normalized_phrase(implementation_prompt)
+    )
     required_events = 3 if _strict_confirmed_create_payload(proposal) else 2
     release_ids = tuple(
         str(item).strip()
@@ -239,6 +274,24 @@ def _product_manager_checks(
             "first_release_scope",
             f"{len(release_ids)} first-release workstream id(s)",
             "quality lens product_manager missing first-release workstream scope",
+        ),
+        _check(
+            len(brief_release_requirements) == len(release_requirements),
+            "first_release_requirements_project_brief",
+            (
+                f"{len(brief_release_requirements)} of {len(release_requirements)} accepted first-release "
+                "requirement(s) visible in the project brief"
+            ),
+            "quality lens product_manager missing accepted first-release requirements in the project brief",
+        ),
+        _check(
+            len(handoff_release_requirements) == len(release_requirements),
+            "first_release_requirements_implementation_handoff",
+            (
+                f"{len(handoff_release_requirements)} of {len(release_requirements)} accepted first-release "
+                "requirement(s) visible in the implementation handoff"
+            ),
+            "quality lens product_manager missing accepted first-release requirements in the implementation handoff",
         ),
         _check(
             len(assumptions) >= 2 and len(ambiguities) >= 1,
@@ -427,7 +480,14 @@ def _check(condition: bool, name: str, evidence: str, issue: str) -> dict[str, s
 
 
 def _lens_for_check(name: str) -> str:
-    if name in {"complete_first_path", "measurable_success", "first_release_scope", "decision_boundary"}:
+    if name in {
+        "complete_first_path",
+        "measurable_success",
+        "first_release_scope",
+        "first_release_requirements_project_brief",
+        "first_release_requirements_implementation_handoff",
+        "decision_boundary",
+    }:
         return "product_manager"
     if name in {"state_object", "component_topology", "atlas_topology", "system_boundary"}:
         return "architect"
@@ -548,6 +608,14 @@ def _terms(value: str) -> set[str]:
             stem_ing=True,
             stem_ing_minimum_length=5,
         )
+    )
+
+
+def _normalized_phrase(value: str) -> str:
+    return " ".join(
+        word
+        for word in normalize_string(value).casefold().split()
+        if word not in {"a", "an", "the"}
     )
 
 

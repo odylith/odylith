@@ -134,6 +134,14 @@ Next step
     assert "review queue" in intent["proof_boundary"].casefold()
     assert "marketplace publishing" not in intent["proof_boundary"].casefold()
     assert "review queue" in proposal["semantic_model"]["domain_ontology"]["proof_boundary"].casefold()
+    boundary = next(
+        row
+        for row in proposal["project_brief"]["blueprint_sections"]
+        if row["section"] == "First-release boundary"
+    )
     assert "Our Developer-experience Group Needs" not in rendered
     assert "review queue" in rendered.casefold()
+    assert boundary["must_capture"] == (
+        "The first release includes one workspace per extension, a review queue, and an exportable release brief."
+    )
     assert greenfield_quality_issues(proposal) == []

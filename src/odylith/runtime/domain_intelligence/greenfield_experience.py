@@ -25,6 +25,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIR
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    first_release_boundary_summary,
+)
 
 _HANDOFF_MATCH_STOPWORDS = frozenset(
     {
@@ -122,6 +125,7 @@ def build_next_steps(
     validation_items = _validation_items(row=proposal_row, wave=active_wave)
     first_slice = _first_slice_text(proposal_row)
     first_path = _first_path_summary(proposal)
+    release_requirements = _first_release_requirement_sentence(proposal)
     title = str(start_row.get("title", "")).strip()
     project_title = str(umbrella_row.get("title", "")).strip() or str(
         proposal.get("intent", {}).get("title", "the greenfield project")
@@ -153,6 +157,7 @@ def build_next_steps(
             title=title,
             first_slice=first_slice,
             first_path=first_path,
+            release_requirements=release_requirements,
         ),
         "customization_options": customization_options,
         "coding_readiness_gates": readiness_gates,
@@ -459,6 +464,16 @@ def _first_path_summary(proposal: Mapping[str, Any]) -> str:
     return ""
 
 
+def _first_release_requirement_sentence(proposal: Mapping[str, Any]) -> str:
+    """Render affirmative release scope without recasting it as the first user path."""
+
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    proof_boundary = str(ontology.get("proof_boundary") or intent.get("proof_boundary") or "").strip()
+    return first_release_boundary_summary(proof_boundary)
+
+
 def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:
     apply_input = proposal.get("apply_semantic_input") if isinstance(proposal.get("apply_semantic_input"), Mapping) else {}
     text = _preview_safe_fragment(apply_input.get("first_path"), limit=460) if isinstance(apply_input, Mapping) else ""
@@ -696,7 +711,14 @@ def _project_first_prompt(*, project_id: str, project_title: str, start_id: str,
     )
 
 
-def _implementation_prompt(*, start_id: str, title: str, first_slice: str, first_path: str = "") -> str:
+def _implementation_prompt(
+    *,
+    start_id: str,
+    title: str,
+    first_slice: str,
+    first_path: str = "",
+    release_requirements: str = "",
+) -> str:
     if not start_id:
         return (
             "After the project-first scope is accepted, select the first targeted child workstream, write a technical "
@@ -709,16 +731,21 @@ def _implementation_prompt(*, start_id: str, title: str, first_slice: str, first
     first_path_text = str(first_path or "").strip()
     if first_path_text and first_path_text[-1] not in ".!?":
         first_path_text = f"{first_path_text}."
+    release_requirements_text = str(release_requirements or "").strip()
+    if release_requirements_text and release_requirements_text[-1] not in ".!?":
+        release_requirements_text = f"{release_requirements_text}."
     if first_path_text:
         return (
             f"After project-first scope is accepted, start {start_id}. "
             f"Preserve this accepted first path: {first_path_text} "
+            f"{release_requirements_text + ' ' if release_requirements_text else ''}"
             f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
             "replay, and handoff evidence is written and reviewed."
         )
     scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     return (
         f"After project-first scope is accepted, start {start_id}: {scope_sentence}"
+        f"{release_requirements_text + ' ' if release_requirements_text else ''}"
         f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
         "replay, and handoff evidence is written and reviewed."
     )

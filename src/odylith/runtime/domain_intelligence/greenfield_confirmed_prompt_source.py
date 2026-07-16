@@ -9,6 +9,7 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import direct_actor_action_match
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
@@ -293,7 +294,13 @@ def _multi_role_modal_first_path(value: str) -> tuple[str, str]:
             if comma_index <= 0:
                 continue
             primary = _strip_leading_actor_article(" ".join(actor_words[: comma_index + 1])).strip(" ,.")
-            if not primary or not any(word_has_actor_role_signal(token) for token in _request_words(primary)):
+            if not primary or not _looks_like_actor_purpose_left(_request_words(primary)):
+                recovered = leading_actor_action_match(text)
+                if recovered:
+                    recovered_actor, recovered_action = recovered
+                    candidate = f"{recovered_actor} can {recovered_action}".strip(" .")
+                    if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
+                        return recovered_actor, candidate
                 continue
             action = " ".join(words[modal_index + 1 :]).strip(" .")
             candidate = f"{primary} can {action}".strip(" .")

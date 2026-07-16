@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import first_release_boundary_requirements
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import first_release_boundary_summary
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
     proof_boundary_with_first_release_requirements,
@@ -78,6 +79,9 @@ def test_first_release_boundary_requirements_drop_natural_language_exclusions() 
     assert proof_boundary_with_first_release_requirements("Release proof.", prompt) == (
         "Release proof. The first release includes one workspace per extension, a review queue, and an "
         "exportable release brief."
+    )
+    assert first_release_boundary_summary(prompt) == (
+        "The first release includes one workspace per extension, a review queue, and an exportable release brief."
     )
 
 
@@ -497,6 +501,28 @@ def test_evidence_anchors_ignore_word_sense_metadata_requirements() -> None:
     assert "so ownership must be explicit" not in anchors
 
 
+def test_evidence_anchors_preserve_coordinated_action_objects() -> None:
+    prompt = (
+        "A mining company needs to allocate one critical haul-truck hydraulic pump between two sites after both "
+        "report failures. The maintenance planner verifies the part number, the reliability engineer compares "
+        "failure analysis, and the site superintendent approves the transport priority."
+    )
+
+    anchors = evidence_anchor_phrases(prompt)
+
+    assert {"part number", "failure analysis"} <= set(anchors)
+    assert all("maintenance planner verifies" not in anchor for anchor in anchors)
+
+
+def test_evidence_anchors_do_not_promote_generic_coordinated_workflow_objects() -> None:
+    prompt = (
+        "Create a greenfield proposal for quality review. The analyst reviews the exception record, the supervisor "
+        "approves the release decision, and the operator sees a signed audit receipt."
+    )
+
+    assert evidence_anchor_phrases(prompt) == ()
+
+
 def test_evidence_anchors_keep_command_context_nouns_without_source_prose() -> None:
     prompt = (
         "Make a wedding weekend guide for guests traveling to a small town with limited taxis, a rehearsal dinner, "
@@ -706,6 +732,35 @@ def test_prompt_source_preserves_short_command_title_before_focus_workflow() -> 
     assert "Recorded Using Structure" not in rendered
     assert "Protein Design Wetlab Handoff Workspace" in rendered
     assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_rejects_action_bearing_multi_role_actor_label() -> None:
+    prompt = (
+        "Draft a greenfield proposal for a federated agent incident command ledger. "
+        "Human operators assign investigation cases, review model-generated hypotheses, record state changes, "
+        "route cross-team claims, maintain audit evidence, and decide what can be released to partners "
+        "after legal approval."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "Human operators"
+    assert source.first_path.startswith("Human operators can assign investigation cases")
+    assert source.actor != "Human operators assign investigation cases"
+    assert "assign investigation cases can be released" not in source.first_path
+
+
+def test_prompt_source_preserves_actor_after_leading_contextual_clause() -> None:
+    prompt = (
+        "Draft a greenfield proposal for a release board. During incident review, human operators assign "
+        "investigation cases, record state changes, and decide what can be released to partners after legal approval."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "human operators"
+    assert source.first_path.startswith("human operators can assign investigation cases")
+    assert "during incident can" not in source.first_path.casefold()
 
 
 def test_prompt_source_strips_multi_role_review_lens_bundle_from_first_path() -> None:

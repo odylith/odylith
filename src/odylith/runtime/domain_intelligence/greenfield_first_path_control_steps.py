@@ -395,6 +395,13 @@ def first_release_boundary_requirements(value: str) -> tuple[str, ...]:
     return tuple(requirements)
 
 
+def first_release_boundary_summary(value: str) -> str:
+    """Render affirmative first-release scope from the same parsed requirements."""
+
+    requirements = first_release_boundary_requirements(value)
+    return f"The first release includes {_join_requirement_phrases(requirements)}." if requirements else ""
+
+
 def proof_boundary_with_first_release_requirements(proof_boundary: str, source: str) -> str:
     """Keep explicit release scope in the hash-bound proof contract."""
 
@@ -680,6 +687,7 @@ __all__ = [
     "contains_requirement_control_clause",
     "contains_word_sense_metadata_clause",
     "first_release_boundary_requirements",
+    "first_release_boundary_summary",
     "is_declarative_visible_result_prefix",
     "is_operator_review_lens_step",
     "is_release_evidence_requirement",

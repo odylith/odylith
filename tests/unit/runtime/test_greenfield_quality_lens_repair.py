@@ -370,6 +370,92 @@ def test_domain_expert_lens_fails_when_scientific_source_terms_disappear() -> No
     assert "domain term coverage" in checks["domain_term_coverage"]["issue"]
 
 
+def test_product_manager_lens_requires_explicit_first_release_requirements_in_scored_surfaces() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "proof_boundary": (
+                        "Release succeeds when the release brief is reviewable. "
+                        "The first release includes one workspace per extension and a review queue."
+                    ),
+                },
+                "first_path_contract": {
+                    "capability": "Extension publishers assemble one release brief.",
+                    "visible_result": "A reviewable release brief.",
+                    "events": [{"action": "assemble"}, {"action": "review"}],
+                },
+            },
+            "intent": {"state_object": "Release brief record"},
+            "assumptions": [{"statement": "Use one workspace per extension."}],
+            "open_questions": [{"question": "Which release channel is first?"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        project_brief_preview={"purpose": "Extension publishers assemble a release brief."},
+        rendered_atlas_sources={},
+        rendered_component_specs={},
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["product_manager"]["checks"]}
+
+    assert checks["first_release_requirements_project_brief"]["status"] == "failed"
+    assert checks["first_release_requirements_implementation_handoff"]["status"] == "failed"
+    assert "accepted first-release requirements" in checks["first_release_requirements_project_brief"]["issue"]
+    assert "accepted first-release requirements" in checks["first_release_requirements_implementation_handoff"]["issue"]
+
+
+def test_product_manager_lens_accepts_article_free_release_requirement_copy() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "proof_boundary": (
+                        "Release succeeds when the release brief is reviewable. "
+                        "The first release includes one workspace per extension and a review queue."
+                    ),
+                },
+                "first_path_contract": {
+                    "capability": "Extension publishers assemble one release brief.",
+                    "visible_result": "A reviewable release brief.",
+                    "events": [{"action": "assemble"}, {"action": "review"}],
+                },
+            },
+            "intent": {"state_object": "Release brief record"},
+            "assumptions": [{"statement": "Use one workspace per extension."}],
+            "open_questions": [{"question": "Which release channel is first?"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        project_brief_preview={"boundary": "The first release includes one workspace per extension and review queue."},
+        next_steps_preview={"implementation_prompt": "Keep one workspace per extension and review queue in the first coding scope."},
+        rendered_atlas_sources={},
+        rendered_component_specs={},
+        component_registry_preview=(),
+        backlog_result={},
+        program_result={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["product_manager"]["checks"]}
+
+    assert checks["first_release_requirements_project_brief"]["status"] == "passed"
+    assert checks["first_release_requirements_implementation_handoff"]["status"] == "passed"
+
+
 def test_domain_expert_lens_fails_when_high_risk_assumption_is_not_rendered() -> None:
     package = SimpleNamespace(
         proposal={

@@ -270,6 +270,30 @@ def test_direct_product_need_recovery_preserves_domain_contract(
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 
 
+def test_explicit_first_release_boundary_survives_scored_prewrite_surfaces(tmp_path: Path) -> None:
+    prompt = (
+        "Our developer-experience group needs a product for extension publishers to assemble release notes from approved "
+        "changelog fragments, breaking-change notices, and compatibility windows. Support engineers and publisher maintainers "
+        "need the same review view before a release is announced. The first release boundary is one workspace per extension, "
+        "a review queue, and an exportable release brief; marketplace publishing, telemetry, and code scanning are outside this release."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    projected = "\n".join(
+        [
+            prewrite.package.project_brief_record_text,
+            str(prewrite.package.next_steps_preview.get("implementation_prompt", "")),
+        ]
+    ).casefold()
+
+    assert "review queue" in proposal["semantic_model"]["domain_ontology"]["proof_boundary"].casefold()
+    for term in ("one workspace per extension", "review queue", "exportable release brief"):
+        assert term in projected
+    for excluded in ("marketplace publishing", "telemetry", "code scanning"):
+        assert excluded not in projected
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_generic_setup_sentences_do_not_project_as_review_actions() -> None:
     first_path = (
         "A records team opens a reconciliation run. "

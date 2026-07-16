@@ -23,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import inline_first_path_scope_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    first_release_boundary_summary,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
@@ -91,6 +94,7 @@ def confirmed_project_brief(
         f"Release {release} succeeds only when {state_ref} and "
         f"{evidence_ref} can be reviewed together."
     )
+    release_requirement_summary = first_release_boundary_summary(raw_proof_source)
     proof_source = normalize_confirmed_proof_boundary_sentence(raw_proof_source) or raw_proof_source
     proof = project_outcome_text(
         _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300),
@@ -147,6 +151,20 @@ def confirmed_project_brief(
                     "A narrow first path keeps the first release testable and prevents broad platform drift."
                 ),
             },
+            *(
+                [
+                    {
+                        "section": "First-release boundary",
+                        "must_capture": release_requirement_summary,
+                        "why_it_matters": (
+                            "The accepted release requirements must stay visible through planning, implementation, "
+                            "and proof."
+                        ),
+                    }
+                ]
+                if release_requirement_summary
+                else []
+            ),
             {
                 "section": "State and ownership",
                 "must_capture": (
