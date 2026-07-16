@@ -569,6 +569,7 @@ def confirmed_backlog_rows(
         external_systems=external_systems,
         non_goals=non_goals,
         source_requirements=evidence_requirements or [],
+        prose_subject=primary_component,
         workstream_type="program_parent",
     )
     workflow = _backlog_row(
@@ -616,6 +617,7 @@ def confirmed_backlog_rows(
         external_systems=external_systems,
         non_goals=non_goals,
         source_requirements=evidence_requirements or [],
+        prose_subject=primary_component,
     )
     boundary = _backlog_row(
         label=label,
@@ -660,6 +662,7 @@ def confirmed_backlog_rows(
         external_systems=external_systems,
         non_goals=non_goals,
         source_requirements=evidence_requirements or [],
+        prose_subject=second_component,
     )
     proof = _backlog_row(
         label=label,
@@ -706,6 +709,7 @@ def confirmed_backlog_rows(
         external_systems=external_systems,
         non_goals=non_goals,
         source_requirements=evidence_requirements or [],
+        prose_subject=proof_component,
     )
     return [parent, workflow, boundary, proof]
 

@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import copy
+import json
+from pathlib import Path
+
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
+    workstream_subject as backlog_workstream_subject,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
@@ -10,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
@@ -27,6 +35,11 @@ DECISION_EVIDENCE_PROMPT = (
     "Create a greenfield proposal for a decision evidence room where multiple teams bring requests, "
     "review supporting facts, decide what is ready, preserve rationale, and publish proof for later governance review."
 )
+
+ROOT = Path(__file__).resolve().parents[3]
+PORT_OPERATIONS_PROMPT = json.loads(
+    (ROOT / "tests/fixtures/greenfield-volume/logistics-infrastructure.v1.json").read_text(encoding="utf-8")
+)["cases"][0]["prompt"]
 
 
 def test_first_path_steps_repair_carried_modal_base_form_drift() -> None:
@@ -265,6 +278,71 @@ def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_i
         if "modal/base-form grammar drift" in issue
     ]
     assert modal_issues == []
+
+
+def test_confirmed_completion_keeps_action_title_out_of_sentence_projection() -> None:
+    confirmation = build_product_intent_confirmation(
+        prompt=PORT_OPERATIONS_PROMPT,
+        title="Container Berth Turnaround Control",
+        repo_name="container-berth-turnaround-control",
+        observed_source={"source_posture": "confirmed_intent_only"},
+    )
+    confirmed_intent = parse_confirmed_intent_text(
+        format_product_intent_confirmation_text(confirmation),
+        prompt=PORT_OPERATIONS_PROMPT,
+        fallback_title="Container Berth Turnaround Control",
+    )
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=str(confirmed_intent["prompt"]),
+        title=str(confirmed_intent["title"]),
+        observed_source={"source_posture": "confirmed_intent_only"},
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+    )
+    raw_proposal = copy.deepcopy(proposal)
+    raw_workflow = raw_proposal["backlog"][1]
+    completed = complete_confirmed_proposal(
+        normalize_host_reasoned_proposal(proposal),
+        release_selector="0.0.1",
+    )
+
+    modal_issues = [
+        issue
+        for issue in generated_semantic_slop_issues(completed, root="proposal")
+        if "modal/base-form grammar drift" in issue
+    ]
+    workflow = completed["backlog"][1]
+    title = str(workflow["title"])
+    raw_sentence_projection = "\n".join(
+        [
+            *[str(line) for line in raw_workflow["rationale_lines"]],
+            json.dumps(raw_workflow["domain_intelligence"], sort_keys=True),
+        ]
+    )
+    completed_sentence_projection = "\n".join(
+        [
+            *[str(line) for line in workflow["rationale_lines"]],
+            json.dumps(workflow["domain_intelligence"], sort_keys=True),
+        ]
+    )
+    component_labels = {str(row["component_id"]): str(row["label"]) for row in raw_proposal["components"]}
+    workflow_subject = backlog_workstream_subject(component_labels[str(raw_workflow["component_focus"][0])])
+
+    assert modal_issues == []
+    assert title.startswith("Let Crane Dispatcher Reconcile")
+    assert title.casefold() not in raw_sentence_projection.casefold()
+    assert title.casefold() not in completed_sentence_projection.casefold()
+    assert workflow_subject in raw_sentence_projection
+    assert workflow_subject in completed_sentence_projection
+    assert "This workstream" not in raw_sentence_projection
+    assert "This workstream" not in completed_sentence_projection
+
+
+def test_workstream_subject_uses_generic_fallback_only_without_component_ownership() -> None:
+    assert workstream_subject(
+        {"title": "Let Crane Dispatcher Reconcile Vessel Readiness", "component_focus": []},
+        fallback="Container Berth Turnaround Control",
+    ) == "This workstream"
 
 
 def test_confirmed_completion_preserves_plural_actor_for_ambiguous_decision_evidence_prompt() -> None:

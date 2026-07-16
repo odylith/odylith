@@ -433,13 +433,12 @@ def _looks_like_predicate_result(value: str) -> bool:
 
 def workstream_subject(row: Mapping[str, Any], *, fallback: str, components: Sequence[Mapping[str, Any]] = ()) -> str:
     component = _clean(next(iter(text_values(row.get("component_focus"))), ""))
-    title = _clean(row.get("title")) or fallback
     if component:
         label = _component_label_for_id(component, components)
         if label:
             return label
         return human_label(component)
-    return re.sub(r"^(?:make|build|show|keep|let)\s+", "", title, flags=re.I).strip(" .") or title
+    return "This workstream"
 
 
 def _component_label_for_id(component_id: str, components: Sequence[Mapping[str, Any]]) -> str:

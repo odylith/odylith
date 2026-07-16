@@ -346,7 +346,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         outcome = completion_text.outcome_phrase(proposal)
         outcome_action = completion_text.outcome_action_phrase(outcome)
         drifted = completion_text.row_drifted_from_component(row, component)
-        row_title = _clean(row.get("title")) or label
+        row_title = completion_text.workstream_subject(row, fallback=label, components=components)
         if _text_needs_repair(row.get("product_view")):
             row["product_view"] = (
                 f"{label} should support the user action: {action}. "
@@ -618,21 +618,22 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
     outcome = completion_text.outcome_phrase(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
     proof_capability = completion_text.proof_capability_phrase(proposal)
+    components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     changed = False
     for row in dict_rows(proposal.get("backlog")):
-        title = _clean(row.get("title")) or label
+        subject = completion_text.workstream_subject(row, fallback=label, components=components)
         metrics = [
-            _sentence(f"{title} success proof for release {release} includes {proof_capability}.", limit=700),
-            _sentence(f"{title} result proof confirms the user can {outcome_action} with a clear explanation.", limit=500),
-            _sentence(f"{title} explains missing or invalid input before a result is presented.", limit=500),
-            _sentence(f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.", limit=500),
-            _sentence(f"{title} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
+            _sentence(f"{subject} success proof for release {release} includes {proof_capability}.", limit=700),
+            _sentence(f"{subject} result proof confirms the user can {outcome_action} with a clear explanation.", limit=500),
+            _sentence(f"{subject} explains missing or invalid input before a result is presented.", limit=500),
+            _sentence(f"{subject} preserves enough {state_object} context to explain the actor, status, result, and recovery path.", limit=500),
+            _sentence(f"{subject} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
         ]
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "replay", "evidence")):
             changed |= _set_list(row, "success_metrics", metrics, limit=1000)
         validation = [
-            _sentence(f"Validate a successful {_path_phrase(title)}, a blocked path, replay, role access, privacy handling, and evidence visibility.", limit=360),
-            _sentence(f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.", limit=420),
+            _sentence(f"Validate a successful {_path_phrase(subject)}, a blocked path, replay, role access, privacy handling, and evidence visibility.", limit=360),
+            _sentence(f"Reject release readiness when {subject} cannot explain its result, changed state, access posture, or recovery path.", limit=420),
         ]
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block", "replay")):
             changed |= _set_list(row, "validation", validation)
@@ -675,6 +676,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
     primary_actor = completion_text.primary_actor_phrase(proposal)
     actor_phrase = _actor_phrase_for_sentence(actors)
     outcome_action = completion_text.outcome_action_phrase(outcome)
+    components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     intent = proposal.get("intent")
     if isinstance(intent, dict):
         changed |= _repair_bad_scalar(
@@ -706,7 +708,11 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
     if _validation_strategy_needs_repair(proposal):
         changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
     for row in dict_rows(proposal.get("backlog")):
-        title = _clean(row.get("title")) or completion_text.project_title(proposal)
+        title = completion_text.workstream_subject(
+            row,
+            fallback=completion_text.project_title(proposal),
+            components=components,
+        )
         changed |= _repair_bad_scalar(
             row,
             "problem",

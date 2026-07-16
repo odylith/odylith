@@ -38,9 +38,11 @@ def build_backlog_row(
     non_goals: list[str],
     source_requirements: list[str] | None = None,
     intelligence_actors: list[str] | None = None,
+    prose_subject: str = "",
     workstream_type: str = "implementation",
 ) -> dict[str, Any]:
     clean_title = _row_text(title)
+    clean_prose_subject = _row_text(prose_subject) or "This workstream"
     clean_problem = _row_text(problem)
     clean_opportunity = _row_text(opportunity)
     clean_product_view = _row_text(product_view)
@@ -69,7 +71,7 @@ def build_backlog_row(
         "evidence_tier": "user_intent" if workstream_type == "program_parent" else "odylith_assumption",
         "rationale_lines": backlog_text.rationale_lines(
             label=label,
-            title=clean_title,
+            title=clean_prose_subject,
             opportunity=clean_opportunity,
             first_slice=clean_first_slice,
             proof_boundary=proof_boundary,
@@ -77,7 +79,7 @@ def build_backlog_row(
         ),
         "domain_intelligence": build_workstream_domain_intelligence(
             label=label,
-            row_title=clean_title,
+            row_title=clean_prose_subject,
             problem=clean_problem,
             opportunity=clean_opportunity,
             product_view=clean_product_view,
