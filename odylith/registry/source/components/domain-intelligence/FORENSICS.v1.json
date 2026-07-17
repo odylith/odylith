@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 487,
+    "explicit_event_count": 488,
     "mapped_workstream_evidence_count": 421,
     "recent_path_match_count": 0,
     "spec_history_event_count": 261,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 487
+    "timeline_event_count": 488
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,28 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4"
+      ],
+      "confidence": "high",
+      "event_index": 1081,
+      "explicit_components": [
+        "domain-intelligence"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "ts_iso": "2026-07-17T13:31:22-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 2,
       "artifacts": [
