@@ -226,7 +226,7 @@ def _mapping(value: Any) -> Mapping[str, Any]:
 
 def _stale_runtime_message() -> str:
     return (
-        "ProductCreateTransaction compiler identity was invalidated because the commit-only runtime contract changed; "
+        "ProductCreateTransaction compiler identity was invalidated by a runtime or repository-context change; "
         "no Product Intent was rejected and no governed records were written. Rebuild the pre-confirm transaction before committing."
     )
 
