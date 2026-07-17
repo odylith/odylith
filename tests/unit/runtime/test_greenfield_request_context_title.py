@@ -28,3 +28,14 @@ def test_contextual_title_keeps_explicit_command_titles() -> None:
     for prompt, expected_title in prompts.items():
         assert contextual_product_title(prompt) == ""
         assert prompt_intent_source(prompt).title == expected_title
+
+
+def test_contextual_title_does_not_discard_domain_nouns_that_resemble_roles() -> None:
+    prompts = {
+        "Build a weather utility for a mountain station where rangers can see forecasts.": "weather utility",
+        "Build a washer utility for a shared laundry room where residents can see machine availability.": "washer utility",
+    }
+
+    for prompt, expected_title in prompts.items():
+        assert contextual_product_title(prompt) == ""
+        assert prompt_intent_source(prompt).title == expected_title

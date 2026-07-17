@@ -620,11 +620,12 @@ def test_confirmed_intent_parser_word_count_stays_in_text_owner() -> None:
     confirmed_intent_source = (
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_intent.py"
     ).read_text(encoding="utf-8")
+    confirmed_input_source = (
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_intent_input.py"
+    ).read_text(encoding="utf-8")
 
     assert "def word_count" in text_source
-    assert (
-        "greenfield_confirmed_text import word_count as _word_count"
-        in confirmed_intent_source
-    )
+    assert "greenfield_confirmed_text import word_count" in confirmed_input_source
     assert "def _word_count" not in confirmed_intent_source
+    assert "def word_count" not in confirmed_input_source
     assert word_count("Accepted `AI` review/triage keeps status visible.") == 7

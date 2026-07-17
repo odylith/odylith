@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_status_modifiers import RESU
 from odylith.runtime.domain_intelligence.greenfield_status_modifiers import RESULT_STATE_MODIFIER_LEADS
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import omit_actor_from_material_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text as _clean
@@ -297,12 +298,14 @@ def _material_action(steps: Sequence[str]) -> str:
         if match and _has_material_action(match.group("material")):
             return _sentence_case(_action_chain_fragment(step))
         actor, action = _actor_led_action_parts(step)
-        if actor and action and _has_material_action(action) and not _is_transformation_action(action):
-            return _sentence_case(f"{actor} {action}")
+        if actor and action:
+            actor_action = action if omit_actor_from_material_action(actor) else f"{actor} {action}"
+            if _has_material_action(action) and not _is_transformation_action(action):
+                return _sentence_case(actor_action)
         if _has_material_action(step):
             return _sentence_case(_action_chain_fragment(step))
         if actor and action:
-            return _sentence_case(f"{actor} {action}")
+            return _sentence_case(actor_action)
     if setup_fallback:
         return _sentence_case(_action_chain_fragment(setup_fallback))
     return _sentence_case(_action_chain_fragment(steps[0]))

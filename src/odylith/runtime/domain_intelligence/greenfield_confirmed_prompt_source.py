@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import re
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import direct_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import before_can_outcome_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
@@ -304,16 +304,9 @@ def _multi_role_modal_first_path(value: str) -> tuple[str, str]:
                 continue
             action = " ".join(words[modal_index + 1 :]).strip(" .")
             candidate = f"{primary} can {action}".strip(" .")
-            before_sail = re.match(
-                r"(?P<action>.+?)\s+before\s+(?P<subject>the\s+.+?)\s+can\s+(?P<verb>[A-Za-z]+)$",
-                action,
-                flags=re.IGNORECASE,
-            )
-            if before_sail:
-                candidate = (
-                    f"{primary} can {before_sail.group('action')}, then see whether "
-                    f"{before_sail.group('subject')} can {before_sail.group('verb')}"
-                )
+            outcome_clause = before_can_outcome_clause(action)
+            if outcome_clause:
+                candidate = f"{primary} can {outcome_clause}"
             if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
                 return primary, candidate
     return "", ""

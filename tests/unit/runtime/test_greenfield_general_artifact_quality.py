@@ -91,6 +91,9 @@ def test_greenfield_preconfirm_semantic_drift_stays_in_dedicated_owner() -> None
     assert "semantic_repetition_issues as _semantic_repetition_issues" in findings_source
     assert "semantic_overlap_ratio as _semantic_overlap_ratio" in parent_source
     assert "semantic_model_shape_issues as _semantic_model_shape_issues" not in parent_source
+    assert "greenfield_preconfirm_package_hygiene import" in parent_source
+    assert "def _same_component_artifact_path" not in parent_source
+    assert "def _prewrite_path_leak_issues" not in parent_source
     assert "semantic_model_shape_issues as _semantic_model_shape_issues" in findings_source
     assert "def contrastive_domain_drift_issues" in drift_source
     assert "def semantic_repetition_issues" in drift_source

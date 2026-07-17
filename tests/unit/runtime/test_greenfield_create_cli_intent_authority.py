@@ -98,7 +98,7 @@ def test_greenfield_create_cli_uses_transaction_authority_not_mutable_intent_fil
 
     def fake_compiled_write(**_kwargs: Any) -> dict[str, Any]:
         calls.append("compiled_write")
-        return {"status": "created"}
+        return greenfield_compiled_write.compiled_greenfield_commit_result(transaction=transaction)
 
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)

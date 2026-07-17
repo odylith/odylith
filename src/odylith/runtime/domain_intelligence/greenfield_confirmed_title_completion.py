@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import state_label as _state_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import system_labels as _system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import GENERIC_TITLE_WORDS as _GENERIC_TITLE_WORDS
@@ -161,6 +162,8 @@ def _usable_title_phrase(value: str, *, noun: str) -> bool:
         "wants",
     }
     if any(word in banned_words for word in lowered.split()):
+        return False
+    if looks_like_action_clause(text):
         return False
     if noun.casefold() in lowered:
         return False

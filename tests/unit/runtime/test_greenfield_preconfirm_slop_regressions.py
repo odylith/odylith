@@ -356,7 +356,7 @@ def test_plural_actor_subjects_and_decision_pair_outcomes_render_as_reviewable_r
     assert first_path_action_phrase(first_path, max_fragments=1) == "submit permit packets"
     assert (
         first_path_capability_phrase(first_path)
-        == "submit permit packets, add site findings, and approve or reject the permit with an auditable rationale"
+        == "submit permit packets, check zoning evidence, add site findings, and approve or reject the permit with an auditable rationale"
     )
     assert (
         outcome_action_phrase("Supervisors approve or reject the permit with an auditable rationale")

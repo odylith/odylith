@@ -10,7 +10,9 @@ from odylith.install.fs import atomic_write_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import PRECONFIRM_STAGING_MARKER
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_typed_candidate_intent_files
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
     intent_hypothesis_from_operator_evidence,
 )
@@ -18,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
     internal_system_rows_from_recovered_title,
 )
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
@@ -28,6 +31,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
     proof_boundary_with_first_release_requirements,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_action_split import split_action_pieces
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraints_after_first_path_edit
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
@@ -35,6 +40,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality import (
+    title_supports_conservative_first_path,
+)
 
 
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
@@ -42,10 +50,6 @@ _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _ACTOR_MODAL_SUFFIX_RE = re.compile(r"\b(?:can|could|should|must|will)$", flags=re.IGNORECASE)
-_NONHUMAN_ACTOR_TERMS = frozenset({"bot"})
-_NONHUMAN_ASSISTANT_MODIFIERS = frozenset(
-    {"ai", "automated", "autonomous", "digital", "llm", "virtual", "workflow"}
-)
 
 
 class GreenfieldClarificationRequired(ValueError):
@@ -115,6 +119,12 @@ def materialize_prompt_intent_hypothesis(
         fallback_title=fallback_title,
         allow_prompt_validation_recovery=False,
     )
+    uses_title_only_first_path_hypothesis = _uses_title_only_first_path_hypothesis(
+        prompt=prompt,
+        edit_evidence=raw_edit,
+    )
+    if uses_title_only_first_path_hypothesis:
+        _add_title_hypothesis_assumption(baseline)
     root = Path(repo_root).expanduser().resolve()
     intent = _merge_edit_evidence(
         baseline=baseline,
@@ -122,8 +132,14 @@ def materialize_prompt_intent_hypothesis(
         edit_evidence=raw_edit,
         fallback_title=fallback_title,
     )
+    if uses_title_only_first_path_hypothesis:
+        _add_title_hypothesis_assumption(intent)
     path = root / ".odylith" / "runtime" / "greenfield" / "candidate-intent.md"
-    atomic_write_text(path, _render_confirmed_intent_markdown(intent), encoding="utf-8")
+    atomic_write_text(
+        path,
+        f"{PRECONFIRM_STAGING_MARKER}\n{_render_confirmed_intent_markdown(intent)}",
+        encoding="utf-8",
+    )
     evidence_path = root / ".odylith" / "runtime" / "greenfield" / "candidate-evidence.md"
     prompt_evidence_path = root / ".odylith" / "runtime" / "greenfield" / "operator-prompt.txt"
     atomic_write_text(prompt_evidence_path, prompt.strip() + "\n", encoding="utf-8")
@@ -148,7 +164,12 @@ def materialize_prompt_intent_hypothesis(
             else []
         ),
     ]
-    structured_path = write_structured_confirmed_intent_file(path, intent, envelope=envelope)
+    structured_path, _evidence_ledger_path = write_typed_candidate_intent_files(
+        path,
+        intent,
+        envelope=envelope,
+        evidence_path=root / ".odylith" / "runtime" / "greenfield" / "candidate-evidence.v1.json",
+    )
     authority = product_intent_authority_from_envelope(
         envelope,
         structured_intent_path=structured_path,
@@ -182,10 +203,29 @@ def _requires_first_path_clarification(*, prompt: str, edit_evidence: str) -> bo
     if edited_first_path and not _anaphoric_first_path_actor(edited_first_path):
         return not _has_usable_first_path_evidence(edit_evidence)
     return not any(
-        _has_usable_first_path_evidence(evidence)
+        _has_usable_first_path_evidence(evidence) or _title_supports_first_path_hypothesis(evidence)
         for evidence in (prompt, edit_evidence)
         if evidence.strip()
     )
+
+
+def _uses_title_only_first_path_hypothesis(*, prompt: str, edit_evidence: str) -> bool:
+    evidence = tuple(value for value in (prompt, edit_evidence) if value.strip())
+    return not any(_has_usable_first_path_evidence(value) for value in evidence) and any(
+        _title_supports_first_path_hypothesis(value) for value in evidence
+    )
+
+
+def _title_supports_first_path_hypothesis(evidence: str) -> bool:
+    source = prompt_intent_source(evidence)
+    return title_supports_conservative_first_path(title=source.title, evidence=evidence)
+
+
+def _add_title_hypothesis_assumption(intent: dict[str, Any]) -> None:
+    assumption = "The product title supplies the initial first-path hypothesis for this proposal."
+    assumptions = confirmed_text_values(intent.get("assumptions"))
+    if assumption not in assumptions:
+        intent["assumptions"] = [*assumptions, assumption]
 
 
 def _has_usable_first_path_evidence(evidence: str) -> bool:
@@ -206,7 +246,7 @@ def _has_explicit_single_step_actor_action(path_source: str) -> bool:
         return False
     actor_without_modal = _ACTOR_MODAL_SUFFIX_RE.sub("", actor).strip()
     actor_words = tuple(word.casefold().strip(".,;:()[]{}") for word in actor_without_modal.split())
-    if _is_nonhuman_actor(actor_words):
+    if is_automated_actor(actor_without_modal):
         return False
     has_human_role = any(
         word_has_actor_role_signal(word)
@@ -219,24 +259,6 @@ def _has_explicit_single_step_actor_action(path_source: str) -> bool:
         and not is_noncompleting_action_head(action_head)
         and bool(MATERIAL_ACTION_RE.match(action))
     )
-
-
-def _is_nonhuman_actor(words: tuple[str, ...]) -> bool:
-    normalized_words = tuple(re.findall(r"[a-z]+", " ".join(words).casefold()))
-    if set(normalized_words) & _NONHUMAN_ACTOR_TERMS:
-        return True
-    for index, role in enumerate(normalized_words):
-        if role not in {"agent", "assistant"}:
-            continue
-        immediate_modifier = normalized_words[index - 1] if index else ""
-        if immediate_modifier in _NONHUMAN_ASSISTANT_MODIFIERS:
-            return True
-        if tuple(normalized_words[max(0, index - 2) : index]) in {
-            ("ai", "powered"),
-            ("artificial", "intelligence"),
-        }:
-            return True
-    return False
 
 
 def _section_first_path_text(sections: Mapping[str, Any]) -> str:
@@ -327,10 +349,15 @@ def _merge_edit_evidence(
             "What should change about the first complete path? "
             "Describe that correction in normal product language."
         )
-    merged = dict(baseline)
+    title_override = str(overrides.get("title") or "").strip()
+    title_only_rebuild = bool(title_override and "first_path" not in overrides)
+    if title_only_rebuild:
+        merged = _recompile_title_only_baseline(title=title_override)
+    else:
+        merged = dict(baseline)
     if plain_language_recovery:
         _clear_first_path_derivatives(merged)
-    elif _material_edit_rebuilds_dependent_facts(overrides):
+    elif _material_edit_rebuilds_dependent_facts(overrides) and not title_only_rebuild:
         _clear_stale_baseline_derivatives(merged, overrides=overrides)
         if "first_path" in overrides and _requires_first_path_clarification(prompt=prompt, edit_evidence=""):
             merged = _recompile_unusable_baseline_from_first_path(
@@ -344,12 +371,15 @@ def _merge_edit_evidence(
     if "first_path" in overrides:
         # The edit is the accepted product path; the original prompt remains evidence in the envelope.
         merged["prompt"] = str(overrides["first_path"])
-    return normalize_confirmed_intent(
+    normalized = normalize_confirmed_intent(
         merged,
         prompt=prompt,
         fallback_title=fallback_title,
         allow_prompt_validation_recovery=False,
     )
+    if "first_path" in overrides:
+        normalized["prompt"] = str(normalized["first_path"])
+    return normalized
 
 
 def _explicit_edit_overrides(sections: Mapping[str, list[str]]) -> dict[str, Any]:
@@ -522,7 +552,8 @@ def _first_path_visible_result_overrides(*, result: str, baseline: Mapping[str, 
     visible_action = f"see {result.strip(' .')}"
     for index in range(len(actions) - 1, -1, -1):
         if _action_describes_visible_result(actions[index]):
-            actions[index] = visible_action
+            preceding_action = _action_before_visible_result(actions[index])
+            actions[index : index + 1] = [preceding_action, visible_action] if preceding_action else [visible_action]
             break
     else:
         actions.append(visible_action)
@@ -560,6 +591,16 @@ def _action_describes_visible_result(value: str) -> bool:
     )
 
 
+def _action_before_visible_result(value: str) -> str:
+    match = re.match(
+        r"^(?P<action>.+?)(?:,\s*(?:and\s+)?|\s+and\s+)"
+        r"(?:see|view|review|receive|publish|show|confirm)\b",
+        str(value or "").strip(),
+        flags=re.IGNORECASE,
+    )
+    return match.group("action").strip(" .,") if match else ""
+
+
 def _sentence_start(value: str) -> str:
     text = str(value or "").strip()
     return text[:1].upper() + text[1:] if text else ""
@@ -567,16 +608,13 @@ def _sentence_start(value: str) -> str:
 
 def _baseline_first_path_actions(baseline: Mapping[str, Any]) -> list[str]:
     first_path = str(baseline.get("first_path") or "").strip()
-    actor = _baseline_actor_label(baseline)
-    if not first_path or not actor:
+    if not first_path:
         return []
-    actions: list[str] = []
-    for sentence in re.split(r"(?<=[.!?])\s+", first_path):
-        text = re.sub(rf"^{re.escape(actor)}\s+", "", sentence.strip(), flags=re.IGNORECASE).strip(" .")
-        if not text:
-            continue
-        actions.append(_base_form_leading_verb(text))
-    return actions
+    return [
+        action
+        for step in split_action_pieces(first_path)
+        if (action := action_chain_fragment(step))
+    ]
 
 
 def _baseline_actor_label(baseline: Mapping[str, Any]) -> str:
@@ -585,24 +623,6 @@ def _baseline_actor_label(baseline: Mapping[str, Any]) -> str:
         if label:
             return label
     return ""
-
-
-def _base_form_leading_verb(value: str) -> str:
-    text = str(value or "").strip()
-    match = re.match(r"^(?P<verb>[A-Za-z]+)(?P<rest>\b.*)$", text)
-    if not match:
-        return text
-    verb = match.group("verb")
-    lowered = verb.casefold()
-    if lowered.endswith("ies") and len(verb) > 3:
-        base = verb[:-3] + "y"
-    elif lowered.endswith(("sses", "shes", "ches", "xes", "zes", "oes")) and len(verb) > 2:
-        base = verb[:-2]
-    elif lowered.endswith("s") and not lowered.endswith(("ss", "us")) and len(verb) > 1:
-        base = verb[:-1]
-    else:
-        base = verb
-    return base + match.group("rest")
 
 
 def _clear_first_path_derivatives(intent: dict[str, Any]) -> None:
@@ -662,6 +682,11 @@ def _recompile_unusable_baseline_from_first_path(
     return rebuilt
 
 
+def _recompile_title_only_baseline(*, title: str) -> dict[str, Any]:
+    rebuilt = intent_hypothesis_from_operator_evidence(title, prefer_product_title=True)
+    return _retitle_recompiled_intent(rebuilt, title=title)
+
+
 def _retitle_recompiled_intent(intent: Mapping[str, Any], *, title: str) -> dict[str, Any]:
     """Keep regenerated projections aligned with the accepted product title."""
 
@@ -714,7 +739,7 @@ def _without_edit_command(value: str) -> str:
 
 
 def _combined_evidence_source(*, prompt: str, edit_evidence: str) -> str:
-    rows = ["# Operator prompt evidence", "", prompt.strip()]
+    rows = [PRECONFIRM_STAGING_MARKER, "", "# Operator prompt evidence", "", prompt.strip()]
     if edit_evidence:
         rows.extend(("", "# Operator edit evidence", "", edit_evidence.strip()))
     return "\n".join(rows).rstrip() + "\n"

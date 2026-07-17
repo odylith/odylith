@@ -6,7 +6,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import con
 from odylith.runtime.domain_intelligence.greenfield_first_path_actor import FirstPathActorAction
 from odylith.runtime.domain_intelligence.greenfield_first_path_actor import resolve_first_path_events
 from odylith.runtime.domain_intelligence.greenfield_first_path_actor import select_first_path_actor_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import first_path_has_distinct_outcome
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
+from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_rich_material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 
@@ -270,3 +272,29 @@ def test_qualified_system_action_with_modifier_cannot_supply_human_title(
 def test_concise_first_path_requires_an_actor_led_action() -> None:
     assert has_concise_coordinated_first_path("A reviewer opens and approves one record.")
     assert not has_concise_coordinated_first_path("The dashboard is working and shows project status.")
+
+
+def test_material_first_path_action_excludes_the_actor_from_detail_thresholds() -> None:
+    weak_paths = (
+        "reviewer capture notes, approvals, and status",
+        "screening scientist record replicate, viability, and off-target evidence",
+    )
+
+    for path in weak_paths:
+        assert not has_rich_material_first_path_action(path, semantic_term_count=8)
+
+    assert has_rich_material_first_path_action(
+        "A reviewer evaluates each evidence item against policy before recording a release decision",
+        semantic_term_count=9,
+    )
+
+
+def test_first_path_outcome_compares_against_the_actor_action_not_the_actor_label() -> None:
+    assert not first_path_has_distinct_outcome(
+        "reviewer capture notes, approvals, and status",
+        "Captured notes, approvals, and status",
+    )
+    assert first_path_has_distinct_outcome(
+        "A reviewer captures the evidence and approves the record",
+        "An approved record is visible to the requester",
+    )

@@ -59,3 +59,16 @@ def leading_actor_action_match(value: str) -> tuple[str, str] | None:
                 actor = re.sub(r"^(?:a|an|the)\s+", "", " ".join(actor_words), flags=re.IGNORECASE)
                 return actor, action
     return None
+
+
+def before_can_outcome_clause(value: str) -> str:
+    """Rewrite a terminal before-can clause as a readable pending outcome."""
+
+    match = re.match(
+        r"(?P<action>.+?)\s+before\s+(?P<subject>the\s+.+?)\s+can\s+(?P<verb>[A-Za-z]+)$",
+        value,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    return f"{match.group('action')}, then see whether {match.group('subject')} can {match.group('verb')}"

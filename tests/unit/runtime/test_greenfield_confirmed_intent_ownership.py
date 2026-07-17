@@ -36,6 +36,7 @@ CONFIRMED_SYSTEM_COMPLETION_PATH = (
 CONFIRMED_INTENT_VALIDATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py"
 )
+CONFIRMED_INTENT_INPUT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_input.py"
 CONFIRMED_INTENT_PARSER_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
 
 
@@ -81,6 +82,20 @@ def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
     assert "def _semantic_terms" not in validation_source
     assert "semantic_terms" in validation_source
     assert "def has_progression_or_outcome" in validation_source
+
+
+def test_confirmed_intent_input_recovery_stays_in_dedicated_owner() -> None:
+    parser_source = CONFIRMED_INTENT_PARSER_PATH.read_text(encoding="utf-8")
+    input_source = CONFIRMED_INTENT_INPUT_PATH.read_text(encoding="utf-8")
+
+    assert len(parser_source.splitlines()) < 800
+    assert "greenfield_confirmed_intent_input import" in parser_source
+    assert "recover_host_guidance_confirmation as _recover_host_guidance_confirmation" in parser_source
+    assert "thin_operator_intent_source as _thin_operator_intent_source" in parser_source
+    assert "def _recover_host_guidance_confirmation" not in parser_source
+    assert "def _thin_operator_intent_source" not in parser_source
+    assert "def recover_host_guidance_confirmation" in input_source
+    assert "def thin_operator_intent_source" in input_source
 
 
 def test_confirmed_intent_progression_markers_use_shared_text_owner() -> None:

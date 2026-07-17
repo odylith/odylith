@@ -16,10 +16,25 @@ def write_compiled_greenfield_package(
     root: Path,
     transaction: ProductCreateTransaction,
     completion_priority_write_policy: Mapping[str, Any] | None = None,
+    temporary_directory: Path | None = None,
 ) -> dict[str, Any]:
     """Apply only repository bytes and deletions sealed before confirmation."""
 
     _ = completion_priority_write_policy
+    result = compiled_greenfield_commit_result(transaction=transaction)
+    actual_readback = greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
+        repo_root=Path(root).expanduser().resolve(),
+        write_set=transaction.prewrite_package.repository_write_set,
+        temporary_directory=temporary_directory,
+    )
+    if actual_readback != result["repository_write_set"]:
+        raise RuntimeError("compiled repository write-set readback summary drifted after materialization")
+    return result
+
+
+def compiled_greenfield_commit_result(*, transaction: ProductCreateTransaction) -> dict[str, Any]:
+    """Build the exact sealed result persisted before the first governed write."""
+
     package = transaction.prewrite_package
     write_set = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
         package.repository_write_set,
@@ -37,13 +52,7 @@ def write_compiled_greenfield_package(
         "delete_count": int(write_set["delete_count"]),
     }
     result["repository_write_set"] = expected_readback
-    actual_readback = greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
-        repo_root=Path(root).expanduser().resolve(),
-        write_set=write_set,
-    )
-    if actual_readback != expected_readback:
-        raise RuntimeError("compiled repository write-set readback summary drifted after materialization")
     return result
 
 
-__all__ = ["write_compiled_greenfield_package"]
+__all__ = ["compiled_greenfield_commit_result", "write_compiled_greenfield_package"]

@@ -1,15 +1,24 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-16
+Last updated (UTC): 2026-07-17
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-265 | 2026-07-17 | Typed edit evidence can leak first path editorial framing into product facts | P1 | odylith | Open | [2026-07-17-typed-edit-evidence-can-leak-first-path-editorial-framing-into-product-facts.md](2026-07-17-typed-edit-evidence-can-leak-first-path-editorial-framing-into-product-facts.md) |
+| CB-266 | 2026-07-17 | Staged candidate intent co locates raw evidence with typed product facts | P1 | odylith | Open | [2026-07-17-staged-candidate-intent-co-locates-raw-evidence-with-typed-product-facts.md](2026-07-17-staged-candidate-intent-co-locates-raw-evidence-with-typed-product-facts.md) |
+| CB-269 | 2026-07-17 | Sparse edits can retain stale title hypothesis product facts | P2 | domain-intelligence | Open | [2026-07-17-sparse-edits-can-retain-stale-title-hypothesis-product-facts.md](2026-07-17-sparse-edits-can-retain-stale-title-hypothesis-product-facts.md) |
+| CB-268 | 2026-07-17 | Pre confirm staging artifacts can be reentered as confirmed authority | P2 | domain-intelligence | Open | [2026-07-17-pre-confirm-staging-artifacts-can-be-reentered-as-confirmed-authority.md](2026-07-17-pre-confirm-staging-artifacts-can-be-reentered-as-confirmed-authority.md) |
+| CB-267 | 2026-07-17 | Normalized setup action can become the canonical greenfield title | P2 | domain-intelligence | Open | [2026-07-17-normalized-setup-action-can-become-the-canonical-greenfield-title.md](2026-07-17-normalized-setup-action-can-become-the-canonical-greenfield-title.md) |
+| CB-263 | 2026-07-17 | Greenfield interrupted recovery can overwrite a later operator mutation | P0 | odylith | Open | [2026-07-17-greenfield-interrupted-recovery-can-overwrite-a-later-operator-mutation.md](2026-07-17-greenfield-interrupted-recovery-can-overwrite-a-later-operator-mutation.md) |
+| CB-262 | 2026-07-17 | Full runtime suite loses its repository working directory | P1 | tooling-quality | Open | [2026-07-17-full-runtime-suite-loses-its-repository-working-directory.md](2026-07-17-full-runtime-suite-loses-its-repository-working-directory.md) |
+| CB-264 | 2026-07-17 | Automated actor prefixes leak into pre confirm material actions | P2 | domain-intelligence | Open | [2026-07-17-automated-actor-prefixes-leak-into-pre-confirm-material-actions.md](2026-07-17-automated-actor-prefixes-leak-into-pre-confirm-material-actions.md) |
 | CB-255 | 2026-07-16 | Repair library accepted project preview emits clipped proof copy | P1 | odylith | Open | [2026-07-16-repair-library-accepted-project-preview-emits-clipped-proof-copy.md](2026-07-16-repair-library-accepted-project-preview-emits-clipped-proof-copy.md) |
 | CB-256 | 2026-07-16 | Prompt title extraction promotes requester framing to canonical title | P1 | domain-intelligence | Open | [2026-07-16-prompt-title-extraction-promotes-requester-framing-to-canonical-title.md](2026-07-16-prompt-title-extraction-promotes-requester-framing-to-canonical-title.md) |
 | CB-257 | 2026-07-16 | Preconfirm package gate rejects a complete laundry outage path as truncated | P1 | domain-intelligence | Open | [2026-07-16-preconfirm-package-gate-rejects-a-complete-laundry-outage-path-as-truncated.md](2026-07-16-preconfirm-package-gate-rejects-a-complete-laundry-outage-path-as-truncated.md) |
 | CB-260 | 2026-07-16 | Installed release notes package omits the accepted review queue boundary | P1 | domain-intelligence | Open | [2026-07-16-installed-release-notes-package-omits-the-accepted-review-queue-boundary.md](2026-07-16-installed-release-notes-package-omits-the-accepted-review-queue-boundary.md) |
+| CB-261 | 2026-07-16 | Greenfield post confirm rollback is not crash safe or idempotent | P0 | domain-intelligence-greenfield | Open | [2026-07-16-greenfield-post-confirm-rollback-is-not-crash-safe-or-idempotent.md](2026-07-16-greenfield-post-confirm-rollback-is-not-crash-safe-or-idempotent.md) |
 | CB-254 | 2026-07-16 | Clarification matrix summary splits a verdict into characters | P2 | odylith | Open | [2026-07-16-clarification-matrix-summary-splits-a-verdict-into-characters.md](2026-07-16-clarification-matrix-summary-splits-a-verdict-into-characters.md) |
 | CB-259 | 2026-07-16 | Cb 259 installed release notes proposal omits its compiled transaction receipt | P1 | domain-intelligence | Open | [2026-07-16-cb-259-installed-release-notes-proposal-omits-its-compiled-transaction-receipt.md](2026-07-16-cb-259-installed-release-notes-proposal-omits-its-compiled-transaction-receipt.md) |
 | CB-258 | 2026-07-16 | Cb 258 installed term lens rejects the complete laundry utility after package co | P1 | domain-intelligence | Open | [2026-07-16-cb-258-installed-term-lens-rejects-the-complete-laundry-utility-after-package-co.md](2026-07-16-cb-258-installed-term-lens-rejects-the-complete-laundry-utility-after-package-co.md) |

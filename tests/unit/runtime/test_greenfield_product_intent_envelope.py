@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -11,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
+from odylith.runtime.domain_intelligence.greenfield_proposals import load_confirmed_intent_args
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
 )
@@ -106,12 +109,13 @@ def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_secti
 
 
 def test_source_spans_exclude_smallest_version_editorial_loop_from_product_claims(tmp_path: Path) -> None:
-    source = _source_span_confirmation(
+    raw_first_path = (
         "A new user records their first entry - rates today's status, taps the factors that applied, and logs "
         "one action they tried. The next day they log again. After a handful of entries, the app shows a simple "
         "trend: status over time, and which logged actions line up with better days. That loop - log, repeat, see "
         "the pattern - is the smallest version of the whole product working end to end."
     )
+    source = _source_span_confirmation(raw_first_path)
     path = tmp_path / "confirmed-intent.md"
     path.write_text(source, encoding="utf-8")
 
@@ -152,6 +156,152 @@ def test_source_spans_exclude_smallest_version_editorial_loop_from_product_claim
     )
     assert path.read_text(encoding="utf-8") == source
     assert record.envelope["source_evidence"]["source_sha256"] == hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+    normalized_mapping = normalize_confirmed_intent(
+        {**record.product_facts, "first_path": raw_first_path},
+        allow_prompt_validation_recovery=False,
+    )
+    assert "smallest version of the whole product" not in normalized_mapping["first_path"]
+
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt="Build a workflow evidence workspace.",
+        repo_root=tmp_path,
+        fallback_title="Workflow Evidence Workspace",
+        edit_evidence=source,
+    )
+    persisted_candidate = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8")
+    )
+    persisted_evidence = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/candidate-evidence.v1.json").read_text(encoding="utf-8")
+    )
+    assert "smallest version of the whole product" not in candidate["first_path"]
+    assert "smallest version of the whole product" not in candidate["prompt"]
+    assert "smallest version of the whole product" not in persisted_candidate["product_facts"]["prompt"]
+    assert "source_evidence" not in persisted_candidate
+    assert any(
+        "smallest version of the whole product" in span["text"]
+        for span in persisted_evidence["source_evidence"]["spans"]
+        if span["classification"] == "supporting_evidence"
+    )
+
+
+def test_typed_candidate_cannot_be_loaded_as_confirmed_intent(tmp_path: Path) -> None:
+    prompt = "Draft a greenfield proposal for a city zoning permit review app."
+    materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="City Zoning Permit Review",
+    )
+    candidate_path = tmp_path / ".odylith/runtime/greenfield/candidate-intent.json"
+
+    with pytest.raises(ValueError, match="pre-confirm staging artifact"):
+        load_confirmed_intent_file(candidate_path, prompt=prompt)
+    with pytest.raises(ValueError, match="pre-confirm staging artifact"):
+        load_confirmed_intent_args(
+            argparse.Namespace(intent_file=str(candidate_path), prompt=prompt),
+            repo_root=tmp_path,
+        )
+
+
+def test_preconfirm_markdown_artifacts_cannot_promote_candidate_authority(tmp_path: Path) -> None:
+    prompt = "Draft a greenfield proposal for a city zoning permit review app."
+    materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="City Zoning Permit Review",
+        edit_evidence="EDIT\nThe visible result should be an occupancy decision packet.",
+    )
+    runtime = tmp_path / ".odylith/runtime/greenfield"
+    candidate_payload = json.loads((runtime / "candidate-intent.json").read_text(encoding="utf-8"))
+
+    for name in (
+        "candidate-intent.md",
+        "candidate-evidence.md",
+        "candidate-evidence.v1.json",
+        "operator-prompt.txt",
+        "edit-evidence.md",
+    ):
+        staged_path = runtime / name
+        with pytest.raises(ValueError, match="pre-confirm staging artifact"):
+            load_confirmed_intent_file(staged_path, prompt=prompt)
+        with pytest.raises(ValueError, match="pre-confirm staging artifact"):
+            load_confirmed_intent_args(
+                argparse.Namespace(intent_file=str(staged_path), prompt=prompt),
+                repo_root=tmp_path,
+        )
+        assert json.loads((runtime / "candidate-intent.json").read_text(encoding="utf-8")) == candidate_payload
+
+    for name in ("candidate-intent.md", "candidate-intent.json", "candidate-evidence.md", "candidate-evidence.v1.json"):
+        staged_path = runtime / name
+        copied_path = tmp_path / f"copied-{name}"
+        copied_path.write_bytes(staged_path.read_bytes())
+        with pytest.raises(ValueError, match="pre-confirm staging artifact"):
+            load_confirmed_intent_file(copied_path, prompt=prompt)
+        with pytest.raises(ValueError, match="pre-confirm staging artifact"):
+            load_confirmed_intent_args(
+                argparse.Namespace(intent_file=str(copied_path), prompt=prompt),
+                repo_root=tmp_path,
+            )
+
+
+def test_title_hypothesis_assumption_survives_assumption_only_edit(tmp_path: Path) -> None:
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt="Draft a greenfield proposal for a city zoning permit review app.",
+        repo_root=tmp_path,
+        fallback_title="City Zoning Permit Review",
+        edit_evidence="""EDIT
+## Assumptions
+- The first release uses one municipality's zoning rules.
+""",
+    )
+
+    assumptions = candidate["assumptions"]
+    assert "The first release uses one municipality's zoning rules." in assumptions
+    assert (
+        "The product title supplies the initial first-path hypothesis for this proposal."
+        in assumptions
+    )
+
+
+def test_visible_result_edit_retains_a_complete_title_derived_first_path(tmp_path: Path) -> None:
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt="Draft a greenfield proposal for a city zoning permit review app.",
+        repo_root=tmp_path,
+        fallback_title="City Zoning Permit Review",
+        edit_evidence="EDIT\nThe visible result should be an occupancy decision packet.",
+    )
+
+    first_path = candidate["first_path"].casefold()
+    assert "review" in first_path
+    assert "record" in first_path
+    assert "occupancy decision packet" in first_path
+    assert first_path != "representative user can see an occupancy decision packet."
+    assert (
+        "The product title supplies the initial first-path hypothesis for this proposal."
+        in candidate["assumptions"]
+    )
+
+
+def test_title_only_edit_rebuilds_title_derived_product_facts(tmp_path: Path) -> None:
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt="Draft a greenfield proposal for a city zoning permit review app.",
+        repo_root=tmp_path,
+        fallback_title="City Zoning Permit Review",
+        edit_evidence="EDIT\n## Title\nNeighborhood Occupancy Certificate Review\n",
+    )
+
+    assert candidate["title"] == "Neighborhood Occupancy Certificate Review"
+    assert "city zoning permit" not in "\n".join(
+        [
+            candidate["product_story"],
+            candidate["state_object"],
+            candidate["first_path"],
+            *candidate["human_actors"],
+            *candidate["internal_systems"],
+        ]
+    ).casefold()
+    assert "occupancy certificate review" in candidate["first_path"].casefold()
 
 
 def test_terminal_flow_works_end_to_end_stays_supporting_evidence(tmp_path: Path) -> None:

@@ -11,6 +11,26 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
+from odylith.install.fs import atomic_write_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
+    canonical_prompt_text as _canonical_prompt_text,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
+    has_structured_body_sections as _has_structured_body_sections,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
+    is_host_guidance_envelope as _is_host_guidance_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
+    recover_host_guidance_confirmation as _recover_host_guidance_confirmation,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
+    thin_operator_intent_source as _thin_operator_intent_source,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
+    thin_recovery_source_text as _thin_recovery_source_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import (
     contains_meta_narration as _contains_meta_narration,
 )
@@ -31,7 +51,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import preferred_internal_rows as _preferred_internal_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import role_or_system_rows as _role_or_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document import (
@@ -89,13 +108,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_facts_payload,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
-    confirmed_intent_heading_key as _heading_key,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     confirmed_intent_sections as _sections,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
-    normalize_confirmed_intent_heading as _normalize_heading,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
@@ -143,6 +156,19 @@ _PROMPT_MATERIAL_TERM_STOPWORDS = frozenset(
         "workspace",
     }
 )
+PRECONFIRM_STAGING_MARKER = "<!-- odylith:preconfirm-staging -->"
+_TYPED_CANDIDATE_SCHEMA_VERSION = "odylith.greenfield.typed_candidate.v1"
+_CANDIDATE_EVIDENCE_SCHEMA_VERSION = "odylith.greenfield.candidate_evidence.v1"
+_PRECONFIRM_STAGING_FILENAMES = frozenset(
+    {
+        "candidate-intent.md",
+        "candidate-intent.json",
+        "candidate-evidence.md",
+        "candidate-evidence.v1.json",
+        "edit-evidence.md",
+        "operator-prompt.txt",
+    }
+)
 
 
 def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
@@ -154,7 +180,7 @@ def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: 
 def is_host_guidance_envelope(value: str) -> bool:
     """Return whether input is a host-control envelope rather than product evidence."""
 
-    return _looks_like_host_guidance_envelope(value)
+    return _is_host_guidance_envelope(value)
 
 
 def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title: str = "") -> ConfirmedIntentRecord:
@@ -166,11 +192,21 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
     text = source.read_text(encoding="utf-8")
     if not text.strip():
         raise ValueError(f"confirmed intent file is empty: {source}")
+    if _is_preconfirm_staging_path(source) or PRECONFIRM_STAGING_MARKER in text:
+        raise ValueError(
+            "a pre-confirm staging artifact cannot be used as confirmed intent; "
+            "use CONFIRM to commit its transaction or EDIT to rebuild it"
+        )
     if source.suffix.lower() == ".json":
         try:
             payload = json.loads(text)
         except json.JSONDecodeError as exc:
             raise ValueError(f"confirmed intent JSON is invalid: {exc}") from exc
+        if _is_typed_candidate_intent(payload) or _is_candidate_evidence_ledger(payload):
+            raise ValueError(
+                "a pre-confirm staging artifact cannot be used as confirmed intent; "
+                "use CONFIRM to commit its transaction or EDIT to rebuild it"
+            )
         verified_markdown = _verified_markdown_source_for_json(source, payload)
         if verified_markdown:
             markdown_path, markdown_text = verified_markdown
@@ -342,6 +378,67 @@ def write_structured_confirmed_intent_file(
     return target
 
 
+def write_typed_candidate_intent_files(
+    path: Path,
+    intent: Mapping[str, Any],
+    *,
+    envelope: Mapping[str, Any],
+    evidence_path: Path,
+) -> tuple[Path, Path]:
+    """Persist typed candidate facts separately from their untrusted evidence ledger."""
+
+    target = structured_confirmed_intent_path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    facts = product_facts_payload(intent)
+    materiality_gate = envelope.get("materiality_gate") if isinstance(envelope.get("materiality_gate"), Mapping) else {}
+    decision_record = dict(envelope.get("decision_record")) if isinstance(envelope.get("decision_record"), Mapping) else {}
+    decision_record[PRODUCT_FACTS_HASH_KEY] = product_facts_hash(facts)
+    typed_payload = {
+        "schema_version": _TYPED_CANDIDATE_SCHEMA_VERSION,
+        "product_facts": facts,
+        "materiality_gate": dict(materiality_gate),
+        "decision_record": decision_record,
+    }
+    atomic_write_text(target, json.dumps({**typed_payload, **facts}, indent=2, sort_keys=True) + "\n")
+
+    ledger_target = Path(evidence_path)
+    ledger_target.parent.mkdir(parents=True, exist_ok=True)
+    source_evidence = envelope.get("source_evidence") if isinstance(envelope.get("source_evidence"), Mapping) else {}
+    custody_ledger = envelope.get("custody_ledger") if isinstance(envelope.get("custody_ledger"), Mapping) else {}
+    evidence_payload = {
+        "schema_version": _CANDIDATE_EVIDENCE_SCHEMA_VERSION,
+        "source_evidence": dict(source_evidence),
+        "custody_ledger": dict(custody_ledger),
+    }
+    atomic_write_text(ledger_target, json.dumps(evidence_payload, indent=2, sort_keys=True) + "\n")
+    return target, ledger_target
+
+
+def _is_typed_candidate_intent(payload: object) -> bool:
+    return bool(
+        isinstance(payload, Mapping)
+        and _clean(payload.get("schema_version")) == _TYPED_CANDIDATE_SCHEMA_VERSION
+    )
+
+
+def _is_candidate_evidence_ledger(payload: object) -> bool:
+    return bool(
+        isinstance(payload, Mapping)
+        and _clean(payload.get("schema_version")) == _CANDIDATE_EVIDENCE_SCHEMA_VERSION
+    )
+
+
+def _is_preconfirm_staging_path(source: Path) -> bool:
+    if source.name.casefold() not in _PRECONFIRM_STAGING_FILENAMES:
+        return False
+    parent = source.parent
+    return (
+        parent.name == "greenfield"
+        and parent.parent.name == "runtime"
+        and parent.parent.parent.name == ".odylith"
+    )
+
+
 def _verified_markdown_source_for_json(source: Path, payload: object) -> tuple[Path, str] | None:
     if not is_product_intent_envelope(payload) or not isinstance(payload, Mapping):
         return None
@@ -408,7 +505,7 @@ def parse_confirmed_intent_text(
 ) -> dict[str, Any]:
     """Parse the human Product Intent Confirmation that the host already showed."""
 
-    generated_confirmation = _looks_like_host_guidance_envelope(text)
+    generated_confirmation = _is_host_guidance_envelope(text)
     text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
     raw_title_candidate = _title_from_sections(sections) or _title_from_text(text) or _title_from_preamble(sections) or fallback_title
@@ -592,7 +689,7 @@ def _restore_prompt_material_first_path(
 
 
 def _accepted_first_path(value: Any) -> str:
-    return strip_requirement_control_tail(_clean_first_path(value))
+    return strip_requirement_control_tail(normalize_first_path(_clean_first_path(value)))
 
 
 def _material_prompt_terms(value: Any) -> set[str]:
@@ -604,139 +701,6 @@ def _material_prompt_terms(value: Any) -> set[str]:
                 continue
             terms.add(token)
     return terms
-
-
-def _recover_host_guidance_confirmation(text: str, *, prompt: str = "") -> str:
-    """Recover product intent when an Odylith guidance envelope is passed by mistake."""
-
-    raw = str(text or "")
-    if not _looks_like_host_guidance_envelope(raw):
-        return raw
-    intent_text = _host_guidance_original_intent(raw) or _clean(prompt)
-    if not intent_text:
-        sections = _sections(raw)
-        if _has_structured_body_sections(sections):
-            return raw
-        return raw
-    return confirmation_from_operator_intent(intent_text, prefer_product_title=True)
-
-
-def _thin_operator_intent_source(text: str, *, prompt: str = "") -> str:
-    """Return an operator request that can be lifted into a full confirmation."""
-
-    raw = _clean(text)
-    if not raw:
-        return ""
-    for candidate in (raw, _clean(prompt)):
-        source = _operator_request_source(candidate)
-        if source:
-            return source
-    return ""
-
-
-def _thin_recovery_source_text(text: str, sections: Mapping[str, list[str]], title: str) -> str:
-    if not _has_explicit_section_boundaries(sections):
-        return _clean(text)
-    paragraphs = _product_context_paragraphs(text, sections, title)
-    title_text = _clean(title)
-    source = _clean(". ".join([title_text, *paragraphs] if title_text else paragraphs))
-    return source or _clean(text)
-
-
-def _operator_request_source(value: str) -> str:
-    text = _clean(value)
-    if not text:
-        return ""
-    first_path_source = prompt_first_path_source(text)
-    if _word_count(first_path_source) < 6:
-        return ""
-    model = first_path_model(first_path_source)
-    if len(model.steps) >= 2 or model.material_action or model.visible_outcome:
-        return text
-    return ""
-
-
-def _looks_like_host_guidance_envelope(text: str) -> bool:
-    lowered = str(text or "").casefold()
-    return (
-        "product intent confirmation needed" in lowered
-        and "visible format contract" in lowered
-        and "original user intent" in lowered
-    )
-
-
-def _host_guidance_original_intent(text: str) -> str:
-    lines = str(text or "").splitlines()
-    collecting = False
-    values: list[str] = []
-    for raw_line in lines:
-        line = raw_line.strip()
-        normalized = _normalize_heading(line.rstrip(":"))
-        if normalized == "original user intent":
-            collecting = True
-            if ":" in line:
-                tail = _clean(line.split(":", 1)[1])
-                if tail:
-                    values.append(tail)
-            continue
-        if collecting and _host_guidance_boundary_heading(line, normalized):
-            break
-        if collecting and line:
-            values.append(line)
-    return _clean(" ".join(values))
-
-
-_HOST_GUIDANCE_BOUNDARY_HEADINGS = frozenset(
-    {
-        "confirmed cli after confirmation",
-        "do not",
-        "host reasoning task",
-        "next step",
-        "visible format contract",
-        "write in chat",
-    }
-)
-
-
-def _host_guidance_boundary_heading(line: str, normalized: str) -> bool:
-    if normalized in _HOST_GUIDANCE_BOUNDARY_HEADINGS:
-        return True
-    if line.casefold().startswith("confirmed cli after confirmation:"):
-        return True
-    return bool(_heading_key(line) and normalized != "original user intent")
-
-
-def _has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:
-    return any(
-        key
-        in {
-            "state_object",
-            "first_path",
-            "proof_boundary",
-            "human_actors",
-            "internal_systems",
-            "external_systems",
-            "component_responsibilities",
-        }
-        for key in sections
-    )
-
-
-def _canonical_prompt_text(value: Any, *, title_normalization: Any) -> str:
-    """Keep raw provisional title text out of normalized public prompt fields."""
-
-    text = _clean(value)
-    if not text:
-        return ""
-    raw_title = _clean(getattr(title_normalization, "raw_title", ""))
-    canonical_title = _clean(getattr(title_normalization, "canonical_title", ""))
-    if raw_title and canonical_title and text.casefold() == raw_title.casefold():
-        return canonical_title
-    if raw_title and canonical_title and raw_title != canonical_title:
-        text = re.sub(re.escape(raw_title), canonical_title, text, flags=re.IGNORECASE)
-    text = prompt_first_path_source(text)
-    text = normalize_project_title(text, fallback=canonical_title or "Greenfield Project").canonical_title
-    return _clean(text)
 
 
 def confirmed_intent_summary(intent: Mapping[str, Any] | None, key: str, fallback: str) -> str:
@@ -789,6 +753,7 @@ def _clean(value: object) -> str:
 
 __all__ = [
     "ConfirmedIntentRecord",
+    "PRECONFIRM_STAGING_MARKER",
     "confirmed_intent_list",
     "confirmed_intent_product_facts",
     "confirmed_intent_summary",
@@ -799,5 +764,6 @@ __all__ = [
     "normalize_confirmed_intent",
     "parse_confirmed_intent_text",
     "structured_confirmed_intent_path",
+    "write_typed_candidate_intent_files",
     "write_structured_confirmed_intent_file",
 ]

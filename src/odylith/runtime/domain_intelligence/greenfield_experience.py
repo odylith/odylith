@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_w
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
@@ -446,7 +447,7 @@ def _first_path_summary(proposal: Mapping[str, Any]) -> str:
         return brief_first_path
     semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    raw_path = str(first_path.get("raw_path", "")).strip() if isinstance(first_path, Mapping) else ""
+    raw_path = normalize_first_path(str(first_path.get("raw_path", ""))) if isinstance(first_path, Mapping) else ""
     if raw_path:
         action = readable_action_chain_sentence(
             raw_path,
@@ -476,11 +477,13 @@ def _first_release_requirement_sentence(proposal: Mapping[str, Any]) -> str:
 
 def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:
     apply_input = proposal.get("apply_semantic_input") if isinstance(proposal.get("apply_semantic_input"), Mapping) else {}
-    text = _preview_safe_fragment(apply_input.get("first_path"), limit=460) if isinstance(apply_input, Mapping) else ""
+    source = normalize_first_path(str(apply_input.get("first_path", ""))) if isinstance(apply_input, Mapping) else ""
+    text = _preview_safe_fragment(source, limit=460)
     if text:
         return text
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return _preview_safe_fragment(intent.get("first_path"), limit=460) if isinstance(intent, Mapping) else ""
+    source = normalize_first_path(str(intent.get("first_path", ""))) if isinstance(intent, Mapping) else ""
+    return _preview_safe_fragment(source, limit=460)
 
 
 def _project_brief_first_path(proposal: Mapping[str, Any]) -> str:

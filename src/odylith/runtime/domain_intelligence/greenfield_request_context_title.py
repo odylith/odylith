@@ -11,9 +11,13 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_t
 _GENERIC_PRODUCT_TERMS = frozenset(
     {"app", "application", "platform", "product", "service", "system", "tool", "utility", "workspace"}
 )
-_PLACE_TERMS = frozenset({"building", "clinic", "facility", "home", "library", "room", "station", "studio", "venue", "workshop"})
-_REQUEST_COMMAND_TERMS = frozenset({"build", "create", "design", "draft", "develop", "make", "plan", "propose", "set", "up"})
-_ROLE_QUALIFIER_TERMS = frozenset({"consumer", "customer", "member", "resident", "tenant", "user"})
+_PLACE_TERMS = frozenset(
+    {"building", "clinic", "facility", "home", "library", "room", "station", "studio", "venue", "workshop"}
+)
+_REQUEST_COMMAND_TERMS = frozenset(
+    {"build", "create", "design", "draft", "develop", "make", "plan", "propose", "set", "up"}
+)
+_CONTEXTUAL_ROLE_TERMS = frozenset({"tenant"})
 
 
 def contextual_product_title(value: str) -> str:
@@ -44,14 +48,18 @@ def _role_qualified_generic_product_term(value: str) -> str:
         product = words[index]
         if product not in _GENERIC_PRODUCT_TERMS:
             continue
-        qualifiers = [word for word in words[:index] if word not in _REQUEST_COMMAND_TERMS and word not in {"a", "an", "the"}]
+        qualifiers = [
+            word
+            for word in words[:index]
+            if word not in _REQUEST_COMMAND_TERMS and word not in {"a", "an", "the"}
+        ]
         if qualifiers and all(_is_role_qualifier(word) for word in qualifiers):
             return product
     return ""
 
 
 def _is_role_qualifier(value: str) -> bool:
-    return value in _ROLE_QUALIFIER_TERMS or word_has_actor_role_signal(value)
+    return value in _CONTEXTUAL_ROLE_TERMS or word_has_actor_role_signal(value)
 
 
 def _sentences(value: str) -> tuple[str, ...]:

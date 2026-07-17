@@ -9,17 +9,21 @@ from pathlib import Path
 
 
 def fsync_directory(path: Path) -> None:
+    """Synchronize a directory entry or surface the durability failure."""
+
     directory = Path(path)
-    try:
-        fd = os.open(directory, os.O_RDONLY)
-    except OSError:
-        return
+    fd = os.open(directory, os.O_RDONLY)
     try:
         os.fsync(fd)
-    except OSError:
-        pass
     finally:
         os.close(fd)
+
+
+def fsync_file(path: Path) -> None:
+    """Synchronize a regular file or surface the durability failure."""
+
+    with Path(path).open("rb") as handle:
+        os.fsync(handle.fileno())
 
 
 def atomic_write_text(path: Path, text: str, *, encoding: str = "utf-8") -> Path:
@@ -42,22 +46,36 @@ def atomic_write_text(path: Path, text: str, *, encoding: str = "utf-8") -> Path
     return destination
 
 
-def atomic_write_bytes(path: Path, data: bytes) -> Path:
+def atomic_write_bytes(
+    path: Path,
+    data: bytes,
+    *,
+    mode: int | None = None,
+    temporary_directory: Path | None = None,
+) -> Path:
     """Replace one regular file durably without exposing a partial payload."""
 
     destination = Path(path)
     if destination.is_symlink():
         raise ValueError(f"refusing to write through symlink: {destination}")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp_name = tempfile.mkstemp(prefix=f".{destination.name}.", suffix=".tmp", dir=str(destination.parent))
+    temp_parent = destination.parent if temporary_directory is None else Path(temporary_directory)
+    if temp_parent.exists() and (temp_parent.is_symlink() or not temp_parent.is_dir()):
+        raise ValueError(f"atomic write temporary directory is not a safe directory: {temp_parent}")
+    temp_parent.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix=f".{destination.name}.", suffix=".tmp", dir=str(temp_parent))
     temp_path = Path(temp_name)
     try:
         with os.fdopen(fd, "wb") as handle:
             handle.write(data)
+            if mode is not None:
+                os.fchmod(handle.fileno(), mode)
             handle.flush()
             os.fsync(handle.fileno())
         temp_path.replace(destination)
         fsync_directory(destination.parent)
+        if temp_parent != destination.parent:
+            fsync_directory(temp_parent)
     except BaseException:
         temp_path.unlink(missing_ok=True)
         raise

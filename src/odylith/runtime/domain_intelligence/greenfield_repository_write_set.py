@@ -6,7 +6,6 @@ import base64
 from collections.abc import Mapping, Sequence
 import hashlib
 import json
-import os
 from pathlib import Path
 import re
 import stat
@@ -14,6 +13,7 @@ from typing import Any
 
 from odylith.install.fs import atomic_write_bytes
 from odylith.install.fs import fsync_directory
+from odylith.install.fs import fsync_file
 
 
 GREENFIELD_REPOSITORY_WRITE_SET_VERSION = "odylith.greenfield.repository_write_set.v2"
@@ -170,7 +170,27 @@ def require_greenfield_repository_preconditions(*, repo_root: Path, write_set: o
     return payload
 
 
-def apply_compiled_greenfield_repository_write_set(*, repo_root: Path, write_set: object) -> dict[str, Any]:
+def require_greenfield_repository_after_state(*, repo_root: Path, write_set: object) -> dict[str, Any]:
+    """Verify that a prior sealed write still owns the entire managed boundary."""
+
+    payload = require_compiled_greenfield_repository_write_set(write_set)
+    root = Path(repo_root).expanduser().resolve()
+    expected = _fingerprint_mapping(payload.get("after_fingerprints"), label="after")
+    actual = _managed_fingerprints(root)
+    changed = [path for path in GREENFIELD_REPOSITORY_WRITE_PATHS if actual[path] != expected[path]]
+    if changed:
+        raise ValueError(
+            "ProductCreateTransaction committed repository state changed after confirmation: " + ", ".join(changed)
+        )
+    return payload
+
+
+def apply_compiled_greenfield_repository_write_set(
+    *,
+    repo_root: Path,
+    write_set: object,
+    temporary_directory: Path | None = None,
+) -> dict[str, Any]:
     """Apply sealed bytes and validate final tree fingerprints."""
 
     root = Path(repo_root).expanduser().resolve()
@@ -180,12 +200,20 @@ def apply_compiled_greenfield_repository_write_set(*, repo_root: Path, write_set
     writes = _mapping_rows(payload.get("writes"), label="writes")
     deletes = _mapping_rows(payload.get("deletes"), label="deletes")
 
+    synced_directories: set[Path] = set()
     for row in directories:
-        _target_path(root=root, token=str(row["path"]), allow_missing=True).mkdir(parents=True, exist_ok=True)
+        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
+        target.mkdir(parents=True, exist_ok=True)
+        _fsync_directory_chain(root=root, target=target, synced=synced_directories)
     for row in writes:
         target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
-        atomic_write_bytes(target, _decoded_write_bytes(row))
-        os.chmod(target, int(row["mode"]))
+        atomic_write_bytes(
+            target,
+            _decoded_write_bytes(row),
+            mode=int(row["mode"]),
+            temporary_directory=temporary_directory,
+        )
+        fsync_file(target)
         fsync_directory(target.parent)
     for row in deletes:
         target = _target_path(root=root, token=str(row["path"]), allow_missing=False)
@@ -198,13 +226,14 @@ def apply_compiled_greenfield_repository_write_set(*, repo_root: Path, write_set
         target.rmdir()
         fsync_directory(target.parent)
 
-    expected_after = _fingerprint_mapping(payload.get("after_fingerprints"), label="after")
-    actual_after = _managed_fingerprints(root)
-    changed = [path for path in GREENFIELD_REPOSITORY_WRITE_PATHS if actual_after[path] != expected_after[path]]
-    if changed:
-        raise RuntimeError(
-            "compiled repository write-set readback drifted after materialization: " + ", ".join(changed)
+    try:
+        require_greenfield_repository_after_state(repo_root=root, write_set=payload)
+    except ValueError as exc:
+        message = str(exc).replace(
+            "ProductCreateTransaction committed repository state changed after confirmation",
+            "compiled repository write-set readback drifted after materialization",
         )
+        raise RuntimeError(message) from exc
     return {
         "version": GREENFIELD_REPOSITORY_WRITE_SET_VERSION,
         "status": "passed",
@@ -214,6 +243,19 @@ def apply_compiled_greenfield_repository_write_set(*, repo_root: Path, write_set
         "write_count": len(writes),
         "delete_count": len(deletes),
     }
+
+
+def _fsync_directory_chain(*, root: Path, target: Path, synced: set[Path]) -> None:
+    """Persist every parent entry created by a sealed directory write."""
+
+    current = target
+    while True:
+        if current not in synced:
+            fsync_directory(current)
+            synced.add(current)
+        if current == root:
+            return
+        current = current.parent
 
 
 def greenfield_repository_write_paths(write_set: object) -> tuple[str, ...]:
@@ -236,6 +278,36 @@ def greenfield_repository_write_paths(write_set: object) -> tuple[str, ...]:
             continue
         result.append(path)
     return tuple(result)
+
+
+def greenfield_repository_recovery_paths(write_set: object) -> tuple[str, ...]:
+    """Return affected governed roots whose complete prestate protects rollback."""
+
+    changed = greenfield_repository_write_paths(write_set)
+    return tuple(
+        root
+        for root in GREENFIELD_REPOSITORY_WRITE_PATHS
+        if any(path == root or path.startswith(root + "/") for path in changed)
+    )
+
+
+def require_greenfield_repository_recovery_preconditions(*, repo_root: Path, write_set: object) -> dict[str, Any]:
+    """Verify only roots restored from an interrupted commit snapshot."""
+
+    payload = require_compiled_greenfield_repository_write_set(write_set)
+    root = Path(repo_root).expanduser().resolve()
+    expected = _fingerprint_mapping(payload.get("before_fingerprints"), label="before")
+    actual = _managed_fingerprints(root)
+    changed = [
+        path
+        for path in greenfield_repository_recovery_paths(payload)
+        if actual[path] != expected[path]
+    ]
+    if changed:
+        raise ValueError(
+            "ProductCreateTransaction recovery roots changed after rollback: " + ", ".join(changed)
+        )
+    return payload
 
 
 def _write_entry(*, path: str, data: bytes, mode: int, previous: bytes | None) -> dict[str, Any]:
@@ -416,7 +488,10 @@ __all__ = [
     "GREENFIELD_REPOSITORY_WRITE_SET_VERSION",
     "apply_compiled_greenfield_repository_write_set",
     "compile_greenfield_repository_write_set",
+    "greenfield_repository_recovery_paths",
     "greenfield_repository_write_paths",
     "require_compiled_greenfield_repository_write_set",
+    "require_greenfield_repository_after_state",
     "require_greenfield_repository_preconditions",
+    "require_greenfield_repository_recovery_preconditions",
 ]

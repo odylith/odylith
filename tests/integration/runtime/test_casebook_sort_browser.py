@@ -160,7 +160,7 @@ def test_casebook_discards_unknown_status_filter_and_humanizes_compact_status(br
     status_options = casebook.locator("#statusFilter option").evaluate_all(
         """nodes => nodes.map((node) => (node.textContent || "").trim())"""
     )
-    assert status_options == ["All statuses", "Open", "Fixed pending release", "Closed"]
+    assert status_options == ["All statuses", "Open", "In progress", "Fixed pending release", "Closed"]
     assert casebook.locator("#listMeta").inner_text().strip() != "0 visible"
     facts = casebook.locator("#detailPane .summary-fact").evaluate_all(
         """nodes => Object.fromEntries(nodes.map((node) => [

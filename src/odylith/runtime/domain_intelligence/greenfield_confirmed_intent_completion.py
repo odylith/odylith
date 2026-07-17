@@ -33,7 +33,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import first_path_has_distinct_outcome
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
+from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_rich_material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, has_presentation_only_title_marker, material_first_path_action, normalize_project_title
@@ -81,7 +83,7 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     for key in ("product_story", "first_path", "problem", "product_view"):
         text = _clean(intent.get(key))
         if text:
-            normalized = _normalize_first_path(text) if key == "first_path" else _normalize_visible_result_language(_strip_prompt_prefixes(text))
+            normalized = normalize_first_path(text) if key == "first_path" else _normalize_visible_result_language(_strip_prompt_prefixes(text))
             normalized = _normalize_understand_object_phrase(normalized)
             intent[key] = _sentence(normalized)
     state = _clean(intent.get("state_object"))
@@ -265,7 +267,7 @@ def _normalize_visible_result_language(value: str) -> str:
     return _clean(text)
 
 
-def _normalize_first_path(value: str) -> str:
+def normalize_first_path(value: str) -> str:
     text = _strip_inline_meta_loop_clauses(
         _normalize_visible_result_language(_strip_prompt_prefixes(value))
     )
@@ -469,7 +471,7 @@ def _first_path_is_complete_enough(value: str) -> bool:
         return True
     action = first_path_action_phrase(text, fallback="", max_fragments=2)
     outcome = first_path_outcome_phrase(text, fallback="", limit=160)
-    if _clean(action) and _clean(outcome) and _first_path_has_distinct_outcome(text, outcome) and len(_semantic_terms(text)) >= 4:
+    if _clean(action) and _clean(outcome) and first_path_has_distinct_outcome(text, outcome) and len(_semantic_terms(text)) >= 4:
         return True
     material_action = material_first_path_action(text)
     model = first_path_model(text)
@@ -484,7 +486,10 @@ def _first_path_is_complete_enough(value: str) -> bool:
         and len(_semantic_terms(text)) >= 7
     ):
         return True
-    return _material_first_path_is_rich_enough(material_action)
+    return has_rich_material_first_path_action(
+        material_action,
+        semantic_term_count=len(_semantic_terms(material_action)),
+    )
 
 
 def _actor_modal_path_is_complete(value: str) -> bool:
@@ -498,60 +503,6 @@ def _actor_modal_path_is_complete(value: str) -> bool:
     if not any(word_has_actor_role_signal(word) or word in _ACTOR_MODAL_ROLE_WORDS for word in actor_words):
         return False
     return len(_semantic_terms(value)) >= 4
-
-
-_LOW_SPECIFICITY_FIRST_ACTIONS = frozenset(
-    {
-        "add",
-        "capture",
-        "collect",
-        "enter",
-        "provide",
-        "record",
-        "save",
-        "store",
-        "submit",
-        "upload",
-    }
-)
-
-
-def _material_first_path_is_rich_enough(value: str) -> bool:
-    text = _clean(value).strip(" .")
-    if not text:
-        return False
-    first = text.split(maxsplit=1)[0].casefold().strip(".,:;")
-    min_words = 8 if first in _LOW_SPECIFICITY_FIRST_ACTIONS else 6
-    min_terms = 6 if first in _LOW_SPECIFICITY_FIRST_ACTIONS else 4
-    return _word_count(text) >= min_words and len(_semantic_terms(text)) >= min_terms
-
-
-def _first_path_has_distinct_outcome(path: str, outcome: str) -> bool:
-    model = first_path_model(path)
-    if len(model.steps) >= 2:
-        return True
-    material = _clean(material_first_path_action(path)).strip(" .")
-    result = _clean(outcome).strip(" .")
-    if not material or not result:
-        return False
-    material_first = material.split(maxsplit=1)[0].casefold().strip(".,:;")
-    result_first = result.split(maxsplit=1)[0].casefold().strip(".,:;")
-    if result_first == _regular_action_state_form(material_first):
-        return False
-    material_terms = _semantic_terms(material)
-    result_terms = _semantic_terms(result)
-    return bool(result_terms - material_terms)
-
-
-def _regular_action_state_form(value: str) -> str:
-    term = str(value or "").casefold().strip()
-    if len(term) < 4:
-        return ""
-    if term.endswith("e"):
-        return f"{term}d"
-    if len(term) > 2 and term.endswith("y") and term[-2] not in {"a", "e", "i", "o", "u"}:
-        return f"{term[:-1]}ied"
-    return f"{term}ed"
 
 
 def _modal_action_clause(value: str) -> str:
@@ -787,4 +738,4 @@ def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) ->
     return f"{_focus_label(title)} users need to {path} and understand the outcome."
 
 
-__all__ = ["complete_confirmed_intent"]
+__all__ = ["complete_confirmed_intent", "normalize_first_path"]

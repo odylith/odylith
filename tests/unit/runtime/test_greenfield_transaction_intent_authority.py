@@ -367,6 +367,43 @@ def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_
 
 
 @pytest.mark.parametrize(
+    ("prompt", "fallback_title", "first_path_term"),
+    (
+        (
+            "Draft a greenfield proposal for a city zoning permit review app.",
+            "City Zoning Permit Review App",
+            "city zoning permit review",
+        ),
+        (
+            "Draft a greenfield proposal for a food safety recall traceability system.",
+            "Food Safety Recall Traceability System",
+            "food safety recall traceability",
+        ),
+        (
+            "Draft a greenfield proposal for a quantum chemistry catalyst screening platform.",
+            "Quantum Chemistry Catalyst Screening Platform",
+            "quantum chemistry catalyst screening",
+        ),
+    ),
+)
+def test_domain_anchored_title_compiles_with_a_visible_preconfirm_assumption(
+    tmp_path: Path,
+    prompt: str,
+    fallback_title: str,
+    first_path_term: str,
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=fallback_title,
+    )
+
+    assert "initial first-path hypothesis" in " ".join(intent["assumptions"])
+    assert first_path_term in intent["first_path"].casefold()
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.md").is_file()
+
+
+@pytest.mark.parametrize(
     "prompt",
     (
         (

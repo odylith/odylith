@@ -9,6 +9,10 @@ import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 
+from odylith.install.fs import atomic_write_text
+from odylith.install.fs import fsync_directory
+from odylith.install.fs import fsync_file
+
 
 class GreenfieldApplyTransaction:
     """Restore greenfield-owned source truth when apply fails mid-write."""
@@ -27,10 +31,18 @@ class GreenfieldApplyTransaction:
         "odylith/tooling-app.v1.js",
     )
 
-    def __init__(self, repo_root: Path, *, paths: Sequence[str] | None = None) -> None:
+    def __init__(
+        self,
+        repo_root: Path,
+        *,
+        paths: Sequence[str] | None = None,
+        snapshot_root: Path | None = None,
+        retain_snapshot: bool = False,
+    ) -> None:
         self.repo_root = Path(repo_root).expanduser().resolve()
         self._snapshot_paths = _validated_snapshot_paths(paths or self._SNAPSHOT_PATHS)
-        self._snapshot_root: Path | None = None
+        self._snapshot_root = Path(snapshot_root).expanduser().resolve() if snapshot_root is not None else None
+        self._retain_snapshot = retain_snapshot
         self._committed = False
         self._rolled_back = False
         self._rollback_error = ""
@@ -54,8 +66,18 @@ class GreenfieldApplyTransaction:
     def recovery_path(self) -> str:
         return str(self._snapshot_root) if self._rollback_error and self._snapshot_root is not None else ""
 
+    @property
+    def snapshot_root(self) -> Path | None:
+        return self._snapshot_root
+
     def __enter__(self) -> "GreenfieldApplyTransaction":
-        self._snapshot_root = Path(tempfile.mkdtemp(prefix="odylith-greenfield-rollback-"))
+        if self._snapshot_root is None:
+            self._snapshot_root = Path(tempfile.mkdtemp(prefix="odylith-greenfield-rollback-"))
+        elif self._snapshot_root.exists() or self._snapshot_root.is_symlink():
+            raise ValueError(f"greenfield rollback snapshot already exists: {self._snapshot_root}")
+        else:
+            self._snapshot_root.mkdir(parents=True, exist_ok=False)
+            fsync_directory(self._snapshot_root.parent)
         for token in self._snapshot_paths:
             source = self.repo_root / token
             target = self._snapshot_root / token
@@ -63,8 +85,10 @@ class GreenfieldApplyTransaction:
             marker.parent.mkdir(parents=True, exist_ok=True)
             if source.exists() or source.is_symlink():
                 _copy_path(source, target)
+                _sync_path(target)
             else:
-                marker.write_text("missing\n", encoding="utf-8")
+                atomic_write_text(marker, "missing\n")
+        fsync_directory(self._snapshot_root)
         self._install_signal_guard()
         return self
 
@@ -83,7 +107,7 @@ class GreenfieldApplyTransaction:
                     raise
                 self._rolled_back = True
         finally:
-            if self._snapshot_root is not None and not self._rollback_error:
+            if self._snapshot_root is not None and not self._rollback_error and not self._retain_snapshot:
                 shutil.rmtree(self._snapshot_root, ignore_errors=True)
         return False
 
@@ -113,10 +137,34 @@ class GreenfieldApplyTransaction:
             marker = _missing_marker(self._snapshot_root, token)
             if target.exists() or target.is_symlink():
                 _remove_path(target)
+                fsync_directory(target.parent)
             if snapshot.exists() or snapshot.is_symlink():
                 _copy_path(snapshot, target)
+                _sync_path(target)
+                fsync_directory(target.parent)
             elif not marker.exists():
                 target.mkdir(parents=True, exist_ok=True)
+                fsync_directory(target.parent)
+
+    @classmethod
+    def restore_snapshot(
+        cls,
+        repo_root: Path,
+        *,
+        paths: Sequence[str],
+        snapshot_root: Path,
+    ) -> None:
+        """Durably restore a snapshot retained by an interrupted commit."""
+
+        transaction = cls(
+            repo_root,
+            paths=paths,
+            snapshot_root=snapshot_root,
+            retain_snapshot=True,
+        )
+        if transaction._snapshot_root is None or not transaction._snapshot_root.is_dir():
+            raise RuntimeError(f"greenfield rollback snapshot is missing: {snapshot_root}")
+        transaction._restore()
 
 
 def _validated_snapshot_paths(paths: Sequence[str]) -> tuple[str, ...]:
@@ -159,6 +207,21 @@ def _remove_path(target: Path) -> None:
         target.unlink()
     elif target.is_dir():
         shutil.rmtree(target)
+
+
+def _sync_path(path: Path) -> None:
+    if path.is_symlink():
+        fsync_directory(path.parent)
+        return
+    if path.is_file():
+        fsync_file(path)
+        fsync_directory(path.parent)
+        return
+    if path.is_dir():
+        for child in sorted(path.iterdir(), key=lambda item: item.name):
+            _sync_path(child)
+        fsync_directory(path)
+        fsync_directory(path.parent)
 
 
 __all__ = ["GreenfieldApplyTransaction", "GreenfieldCommitInterrupted"]

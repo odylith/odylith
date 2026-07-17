@@ -18,6 +18,7 @@ from odylith.runtime.common import display_text
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_source_casing
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 
@@ -393,9 +394,10 @@ def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:
     apply_input = proposal.get("apply_semantic_input") if isinstance(proposal.get("apply_semantic_input"), Mapping) else {}
     text = _clean(apply_input.get("first_path")) if isinstance(apply_input, Mapping) else ""
     if text:
-        return text
+        return normalize_first_path(text)
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return _clean(intent.get("first_path")) if isinstance(intent, Mapping) else ""
+    text = _clean(intent.get("first_path")) if isinstance(intent, Mapping) else ""
+    return normalize_first_path(text) if text else ""
 
 
 def _mutable_child(payload: dict[str, Any], key: str) -> dict[str, Any]:

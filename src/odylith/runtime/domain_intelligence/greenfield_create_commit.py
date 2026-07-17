@@ -17,10 +17,14 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     require_product_create_transaction_intent_authority,
 )
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    require_product_create_transaction_verified,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
     finalize_greenfield_commit_manifest,
 )
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
+from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournalError
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
 
@@ -75,36 +79,81 @@ def commit_greenfield_create_transaction(
     require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
     started = time.perf_counter() if started_at is None else float(started_at)
     write_transaction: GreenfieldApplyTransaction | None = None
+    journal: GreenfieldCommitJournal | None = None
     try:
         with _greenfield_commit_lock(root):
+            GreenfieldCommitJournal.recover_pending_journals(
+                repo_root=root,
+                excluding_transaction_hash=transaction.transaction_hash,
+            )
+            sealed_write_set = transaction.prewrite_package.repository_write_set
+            journal = GreenfieldCommitJournal(
+                repo_root=root,
+                transaction_hash=transaction.transaction_hash,
+                write_set=sealed_write_set,
+            )
+            committed_result = journal.recover_or_return_committed()
+            if committed_result is not None:
+                return committed_result
             write_set = greenfield_repository_write_set.require_greenfield_repository_preconditions(
                 repo_root=root,
-                write_set=transaction.prewrite_package.repository_write_set,
+                write_set=sealed_write_set,
             )
-            write_paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
-            final_manifest = finalize_greenfield_commit_manifest(
-                transaction.quality_manifest,
-                whole_project_elapsed_seconds=time.perf_counter() - started,
-                write_transaction_status="committed",
+            journal.prepare()
+            write_transaction = GreenfieldApplyTransaction(
+                root,
+                paths=journal.paths,
+                snapshot_root=journal.snapshot_root,
+                retain_snapshot=True,
             )
-            final_manifest["product_create_transaction"] = transaction.summary()
-            write_manifest = dict(final_manifest.get("write_transaction") or {})
-            write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
-            write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
-            write_manifest["commit_only"] = True
-            final_manifest["write_transaction"] = write_manifest
-            write_transaction = GreenfieldApplyTransaction(root, paths=write_paths)
             with write_transaction:
-                result = greenfield_compiled_write.write_compiled_greenfield_package(
+                journal.mark_prepared()
+                result = greenfield_compiled_write.compiled_greenfield_commit_result(transaction=transaction)
+                final_manifest = finalize_greenfield_commit_manifest(
+                    transaction.quality_manifest,
+                    whole_project_elapsed_seconds=time.perf_counter() - started,
+                    write_transaction_status="committed",
+                )
+                final_manifest["product_create_transaction"] = transaction.summary()
+                write_manifest = dict(final_manifest.get("write_transaction") or {})
+                write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
+                write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
+                write_manifest["commit_only"] = True
+                final_manifest["write_transaction"] = write_manifest
+                final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
+                result["commit_manifest"] = final_manifest
+                result["product_create_transaction"] = transaction.summary()
+                journal.mark_applying(result)
+                actual_result = greenfield_compiled_write.write_compiled_greenfield_package(
                     root=root,
                     transaction=transaction,
+                    temporary_directory=journal.staging_root,
                 )
+                expected_result = greenfield_compiled_write.compiled_greenfield_commit_result(
+                    transaction=transaction,
+                )
+                if actual_result != expected_result:
+                    raise RuntimeError("compiled Greenfield commit result drifted after materialization")
                 write_transaction.commit()
+                result = journal.mark_committed(result)
+            try:
+                journal.discard_committed_snapshot()
+            except OSError:
+                pass
     except BaseException as exc:
         if isinstance(exc, GreenfieldCreateCommitError):
             raise
         if isinstance(exc, ValueError) and write_transaction is None:
             raise
+        if (
+            journal is not None
+            and write_transaction is not None
+            and write_transaction.rollback_status == "rolled_back"
+        ):
+            try:
+                journal.mark_rolled_back()
+            except GreenfieldCommitJournalError:
+                pass
         rollback_status = write_transaction.rollback_status if write_transaction is not None else "not_started"
         rollback_phrase = (
             "rollback completed; no governed records were committed"
@@ -119,17 +168,24 @@ def commit_greenfield_create_transaction(
             rollback_error=write_transaction.rollback_error if write_transaction is not None else "",
             root_cause=exc,
             failure_kind=(
-                "post_confirm_commit_interrupted"
+                exc.failure_kind
+                if isinstance(exc, GreenfieldCommitJournalError)
+                else "post_confirm_commit_interrupted"
                 if isinstance(exc, (GreenfieldCommitInterrupted, KeyboardInterrupt, SystemExit))
                 else "post_confirm_commit_environment_or_io_failure"
                 if isinstance(exc, OSError)
                 else "post_confirm_commit_invariant_failure"
             ),
-            recovery_path=write_transaction.recovery_path if write_transaction is not None else "",
+            recovery_path=(
+                write_transaction.recovery_path
+                if write_transaction is not None and write_transaction.recovery_path
+                else exc.recovery_path
+                if isinstance(exc, GreenfieldCommitJournalError)
+                else journal.recovery_path
+                if journal is not None
+                else ""
+            ),
         ) from exc
-    final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
-    result["commit_manifest"] = final_manifest
-    result["product_create_transaction"] = transaction.summary()
     return result
 
 

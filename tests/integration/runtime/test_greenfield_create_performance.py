@@ -155,6 +155,7 @@ def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float
     assert len(payload["components"]) >= 4
     assert len(payload["diagrams"]) == 6
     assert (root / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
+    assert (root / ".odylith/runtime/greenfield/candidate-evidence.v1.json").is_file()
     assert (root / "odylith/runtime/source/accepted-project.v1.json").is_file()
     assert (root / "odylith/radar/radar.html").is_file()
     assert (root / "odylith/registry/registry.html").is_file()
@@ -744,14 +745,17 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
     candidate_intent = json.loads(
         (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8")
     )
+    candidate_evidence = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/candidate-evidence.v1.json").read_text(encoding="utf-8")
+    )
     product_claim_spans = [
         span
-        for span in candidate_intent["source_evidence"]["spans"]
+        for span in candidate_evidence["source_evidence"]["spans"]
         if span["classification"] == "product_claim"
     ]
     supporting_spans = [
         span
-        for span in candidate_intent["source_evidence"]["spans"]
+        for span in candidate_evidence["source_evidence"]["spans"]
         if span["classification"] == "supporting_evidence"
     ]
     written_product_truth = json.dumps(
