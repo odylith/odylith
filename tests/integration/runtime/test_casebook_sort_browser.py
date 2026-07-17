@@ -206,32 +206,23 @@ def test_casebook_empty_search_state_is_visible_and_honest(browser_context) -> N
 def test_casebook_workstream_action_chips_omit_radar_prefix(browser_context) -> None:  # noqa: ANN001
     base_url, context = browser_context
     page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
-    response = page.goto(base_url + "/odylith/index.html?tab=casebook", wait_until="domcontentloaded")
+    bug_route = "CB-230"
+    response = page.goto(
+        base_url + f"/odylith/index.html?tab=casebook&bug={bug_route}",
+        wait_until="domcontentloaded",
+    )
     assert response is not None and response.ok
 
     casebook = page.frame_locator("#frame-casebook")
     casebook.locator(".hero-title", has_text="Casebook").wait_for(timeout=15000)
-    rows = casebook.locator("button.bug-row")
-    row_count = min(rows.count(), 40)
-    found_workstream_chip = False
-
-    for index in range(row_count):
-        row = rows.nth(index)
-        bug_route = str(row.get_attribute("data-bug") or "").strip()
-        if not bug_route:
-            continue
-        row.click()
-        _wait_for_shell_query_param(page, tab="casebook", key="bug", value=bug_route)
-        casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
-        labels = casebook.locator("#detailPane a.action-chip").evaluate_all(
-            """nodes => nodes.map((node) => (node.textContent || "").trim()).filter(Boolean)"""
-        )
-        assert not any(re.fullmatch(r"Radar B-\d+", label) for label in labels)
-        if any(re.fullmatch(r"B-\d+", label) for label in labels):
-            found_workstream_chip = True
-            break
-
-    assert found_workstream_chip, "expected at least one Casebook workstream chip"
+    casebook.locator(f'button.bug-row.active[data-bug="{bug_route}"]').wait_for(timeout=15000)
+    chip = casebook.locator('#detailPane a.action-chip[href*="workstream=B-142"]')
+    chip.wait_for(timeout=15000)
+    assert chip.inner_text().strip() == "B-142"
+    labels = casebook.locator("#detailPane a.action-chip").evaluate_all(
+        """nodes => nodes.map((node) => (node.textContent || "").trim()).filter(Boolean)"""
+    )
+    assert not any(re.fullmatch(r"Radar B-\d+", label) for label in labels)
     _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
 
 

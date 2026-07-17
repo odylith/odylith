@@ -52,6 +52,7 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_confirmed_product_posture_text.py",
     "runtime/domain_intelligence/greenfield_create_baseline.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",
+    "runtime/domain_intelligence/greenfield_commit_journal.py",
     "runtime/domain_intelligence/greenfield_create_manifest.py",
     "runtime/domain_intelligence/greenfield_create_transaction.py",
     "runtime/domain_intelligence/greenfield_preconfirm_completion.py",

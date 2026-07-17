@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import _COMPILER_IDENTITY_SOURCE_FILES
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
     product_create_transaction_compiler_identity,
@@ -94,6 +95,10 @@ def test_product_create_transaction_provenance_carries_compiler_identity(tmp_pat
         transaction.compiler_provenance["compiler_identity"]["version"]
         == PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
     )
+
+
+def test_compiler_identity_fingerprints_the_commit_journal_runtime() -> None:
+    assert "runtime/domain_intelligence/greenfield_commit_journal.py" in _COMPILER_IDENTITY_SOURCE_FILES
 
 
 @pytest.mark.parametrize(
