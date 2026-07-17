@@ -111,6 +111,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             required_terms=("security", "disclosure", "embargo", "evidence"),
             leakage_terms=("security disclosure council", "embargo decisions", "public advisory"),
             stressors=("multi-role-tribunal", "final-memory-pressure", "modal-expert-lens", "path-grant"),
+            expectation=CLARIFICATION_REQUIRED_EXPECTATION,
         ),
         GreenfieldMatrixCase(
             name="open source security embargo",
@@ -186,6 +187,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             required_terms=("assay", "drift", "prediction", "model"),
             leakage_terms=("assay drift", "prediction model", "assay drift prediction"),
             stressors=("scientific-casing", "domain-depth-obligations", "registry-contract-pressure", "latency-pressure"),
+            expectation=CLARIFICATION_REQUIRED_EXPECTATION,
         ),
         GreenfieldMatrixCase(
             name="sparse disclosure confirmation",

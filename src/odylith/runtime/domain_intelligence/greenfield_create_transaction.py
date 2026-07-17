@@ -69,6 +69,7 @@ _COMPILER_IDENTITY_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py",
     "runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py",
     "runtime/domain_intelligence/greenfield_preconfirm_structured_rescue_proof.py",
+    "runtime/domain_intelligence/greenfield_product_intent_envelope.py",
     "runtime/domain_intelligence/greenfield_project_brief_fields.py",
     "runtime/domain_intelligence/greenfield_prewrite_commit_result.py",
     "runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",

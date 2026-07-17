@@ -77,6 +77,9 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert "personalized notification" in sparse_prompt
     assert "first release" in sparse_prompt
     assert sparse_case.required_terms == ("disclosure", "council", "evidence", "embargo")
+    for name in ("security disclosure council", "assay drift prediction model"):
+        case = next(case for case in cases if case.name == name)
+        assert case.expectation == "clarification_required"
     quantum_case = next(case for case in cases if case.name == "quantum communication lab")
     quantum_prompt = quantum_case.prompt.casefold()
     assert "communication run" in quantum_prompt
@@ -1184,7 +1187,8 @@ def test_unannotated_clarification_stays_a_failed_transaction_expectation(monkey
     assert result.status == "failed"
     assert result.quality.passed is False
     assert result.create_returncode == 2
-    assert "ProductCreateTransaction" in result.failure_detail
+    assert result.failure_detail == "greenfield proposal requires a material clarification before compiling a transaction"
+    assert json.loads(result.create_stdout_excerpt)["mode"] == "clarification_required"
     assert not any(command[1:3] == ["greenfield", "create"] for command in commands)
 
 
@@ -2122,6 +2126,37 @@ def test_greenfield_create_times_only_hash_bound_commit_phase(monkeypatch, tmp_p
 
     assert response is created
     assert create_seconds == 0.2
+
+
+def test_greenfield_create_retains_material_clarification_payload(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    proposed = SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps(
+            {
+                "mode": "clarification_required",
+                "clarification": {
+                    "question": "What is the first complete task the product should help a person finish?",
+                    "required_fields": ["first_path"],
+                },
+            }
+        ),
+        stderr="",
+    )
+
+    monkeypatch.setattr(module, "_run", lambda **_kwargs: proposed)
+
+    response, create_seconds = module._run_compiled_greenfield_create(  # noqa: SLF001
+        repo_root=tmp_path,
+        env={},
+        prompt="Create a product with several possible operating paths.",
+        timeout=120,
+    )
+
+    assert response.returncode == 2
+    assert json.loads(response.stdout) == json.loads(proposed.stdout)
+    assert response.stderr == "greenfield proposal requires a material clarification before compiling a transaction"
+    assert create_seconds == 0.0
 
 
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:

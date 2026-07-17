@@ -867,6 +867,15 @@ def _run_compiled_greenfield_create(
     transaction_hash = str(transaction_summary.get("transaction_hash") or "").strip()
     transaction_file = str(proposed_payload.get("transaction_file") or "").strip()
     proposal_mode = str(proposed_payload.get("mode") or "").strip()
+    if proposal_mode == "clarification_required":
+        return (
+            SimpleNamespace(
+                returncode=2,
+                stdout=proposed.stdout,
+                stderr="greenfield proposal requires a material clarification before compiling a transaction",
+            ),
+            0.0,
+        )
     if not transaction_hash or (proposal_mode == "product_create_transaction" and not transaction_file):
         return (
             SimpleNamespace(

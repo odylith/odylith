@@ -101,6 +101,13 @@ def test_compiler_identity_fingerprints_the_commit_journal_runtime() -> None:
     assert "runtime/domain_intelligence/greenfield_commit_journal.py" in _COMPILER_IDENTITY_SOURCE_FILES
 
 
+def test_compiler_identity_fingerprints_the_product_intent_authority_runtime() -> None:
+    assert (
+        "runtime/domain_intelligence/greenfield_product_intent_envelope.py"
+        in _COMPILER_IDENTITY_SOURCE_FILES
+    )
+
+
 @pytest.mark.parametrize(
     "identity",
     (
