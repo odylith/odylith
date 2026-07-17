@@ -394,6 +394,11 @@ def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
         row["case_id"] = case.case_id
     if case.confirmed_intent_markdown:
         row["confirmed_intent_markdown"] = case.confirmed_intent_markdown
+    if case.input_style_declared:
+        row["input_style"] = str(case.input_style)
+    if case.metamorphic_group:
+        row["metamorphic_group"] = case.metamorphic_group
+        row["metamorphic_transform"] = case.metamorphic_transform
     provenance = case_provenance_to_dict(case.provenance)
     if provenance and provenance.get("corpus_tier") != "synthetic_regression":
         row["provenance"] = provenance

@@ -226,3 +226,138 @@ def test_case_generator_selects_rare_required_stressor_before_common_cases(tmp_p
     selected_names = [case["name"] for case in json.loads(Path(payload["output_json"]).read_text())["cases"]]
 
     assert "rare atlas" in selected_names
+
+
+def test_case_generator_requires_explicit_input_styles_and_complete_metamorphic_pairs(tmp_path: Path) -> None:
+    module = _module()
+    case_file = _case_file_module()
+    source = tmp_path / "axis-cases.json"
+    source.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "intake-direct",
+                        "name": "intake review direct request",
+                        "prompt": (
+                            "Create a greenfield proposal for an intake review workspace that records source "
+                            "evidence and publishes a review proof."
+                        ),
+                        "required_terms": ("intake", "evidence"),
+                        "leakage_terms": ("intake review",),
+                        "input_style": "direct_request",
+                        "metamorphic_group": "intake_review",
+                        "metamorphic_transform": "direct_prompt",
+                    },
+                    {
+                        "case_id": "intake-brief",
+                        "name": "intake review pasted brief",
+                        "prompt": (
+                            "Product brief: create an intake review workspace that records source evidence "
+                            "and publishes a review proof."
+                        ),
+                        "required_terms": ("intake", "evidence"),
+                        "leakage_terms": ("intake review",),
+                        "input_style": "pasted_brief",
+                        "metamorphic_group": "intake_review",
+                        "metamorphic_transform": "brief_format",
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = module.generate_case_file(
+        source_case_files=(source,),
+        output_json=tmp_path / "generated.json",
+        target_count=2,
+        required_input_styles=("direct_request", "pasted_brief"),
+        min_cases_per_input_style=1,
+        min_metamorphic_groups=1,
+        min_variance_score=0,
+        min_stressor_density=0.0,
+    )
+    loaded = case_file.load_case_file(Path(payload["output_json"]))
+
+    assert payload["evaluation"]["input_style_counts"] == {
+        "direct_request": 1,
+        "pasted_brief": 1,
+    }
+    assert payload["evaluation"]["metamorphic_group_transforms"] == {
+        "intake_review": ["brief_format", "direct_prompt"]
+    }
+    assert all(case.input_style_declared for case in loaded)
+    assert {case.metamorphic_transform for case in loaded} == {"brief_format", "direct_prompt"}
+
+
+def test_case_generator_rejects_implicit_default_style_for_required_axis(tmp_path: Path) -> None:
+    module = _module()
+    source = tmp_path / "legacy-cases.json"
+    _write_pool(source)
+
+    try:
+        module.generate_case_file(
+            source_case_files=(source,),
+            output_json=tmp_path / "generated.json",
+            target_count=4,
+            required_input_styles=("direct_request",),
+            min_variance_score=0,
+            min_stressor_density=0.0,
+        )
+    except RuntimeError as exc:
+        assert "input styles" in str(exc)
+    else:  # pragma: no cover - defensive
+        raise AssertionError("expected implicit input style to fail the required axis")
+
+
+def test_case_loader_rejects_invalid_or_incomplete_axis_metadata(tmp_path: Path) -> None:
+    case_file = _case_file_module()
+    source = tmp_path / "invalid-axis-cases.json"
+    source.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "name": "invalid axis case",
+                        "prompt": "Create an invalid axis evidence review.",
+                        "required_terms": ("axis", "evidence"),
+                        "leakage_terms": ("axis evidence",),
+                        "input_style": "freeform_chat",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        case_file.load_case_file(source)
+    except RuntimeError as exc:
+        assert "invalid matrix axis metadata" in str(exc)
+    else:  # pragma: no cover - defensive
+        raise AssertionError("expected invalid input_style to fail")
+
+    source.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "name": "incomplete pair case",
+                        "prompt": "Create an incomplete pair evidence review.",
+                        "required_terms": ("pair", "evidence"),
+                        "leakage_terms": ("pair evidence",),
+                        "metamorphic_group": "incomplete_pair",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        case_file.load_case_file(source)
+    except RuntimeError as exc:
+        assert "both metamorphic_group and metamorphic_transform" in str(exc)
+    else:  # pragma: no cover - defensive
+        raise AssertionError("expected incomplete metamorphic pair to fail")

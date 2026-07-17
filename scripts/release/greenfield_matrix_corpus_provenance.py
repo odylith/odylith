@@ -14,6 +14,8 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
+from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
+from greenfield_matrix_input_axes import normalize_input_style
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
 
 
@@ -68,6 +70,9 @@ class ReleaseCorpusPolicy:
     maximum_cases_per_source_id: int = 1
     maximum_cases_per_source_uri: int = 1
     minimum_cases_per_stressor: int = 8
+    required_input_styles: tuple[str, ...] = RELEASE_INPUT_STYLES
+    minimum_cases_per_input_style: int = 8
+    minimum_complete_metamorphic_groups: int = 20
     audit_fraction: float = 0.20
     minimum_audited_cases: int = 24
     near_duplicate_jaccard_threshold: float = 0.85
@@ -218,6 +223,9 @@ def evaluate_release_corpus(
     source_id_uris: dict[str, set[str]] = {}
     source_uri_ids: dict[str, set[str]] = {}
     stressors: Counter[str] = Counter()
+    input_styles: Counter[str] = Counter()
+    undeclared_input_style_labels: list[str] = []
+    metamorphic_cases: dict[str, list[Any]] = {}
     provenance_failures: list[str] = []
     artifact_hash_cache: dict[Path, str] = {}
     review_evidence_hash_cache: dict[Path, str] = {}
@@ -257,6 +265,19 @@ def evaluate_release_corpus(
             source_uri_ids.setdefault(uri_identity, set()).add(provenance.source_id)
         for stressor in _case_stressors(case):
             stressors[stressor] += 1
+        if not bool(getattr(case, "input_style_declared", False)):
+            undeclared_input_style_labels.append(label)
+        else:
+            try:
+                input_styles[normalize_input_style(getattr(case, "input_style", ""))] += 1
+            except ValueError as exc:
+                issues.append(f"{label}: invalid input_style: {exc}")
+        metamorphic_group = str(getattr(case, "metamorphic_group", "") or "").strip()
+        metamorphic_transform = str(getattr(case, "metamorphic_transform", "") or "").strip()
+        if bool(metamorphic_group) != bool(metamorphic_transform):
+            issues.append(f"{label}: metamorphic_group and metamorphic_transform must be declared together")
+        elif metamorphic_group:
+            metamorphic_cases.setdefault(metamorphic_group, []).append(case)
 
     issues.extend(provenance_failures[:60])
     for prompt_hash, labels in sorted(prompt_hashes.items()):
@@ -308,6 +329,29 @@ def evaluate_release_corpus(
                 f"stressor `{stressor}` has {stressor_count(stressors, stressor)} cases; release proof requires at least "
                 f"{policy.minimum_cases_per_stressor}"
             )
+    if undeclared_input_style_labels:
+        issues.append(
+            "release corpus has cases without an explicit input_style: "
+            + ", ".join(undeclared_input_style_labels[:6])
+        )
+    for style in policy.required_input_styles:
+        if input_styles[style] < policy.minimum_cases_per_input_style:
+            issues.append(
+                f"input_style `{style}` has {input_styles[style]} cases; release proof requires at least "
+                f"{policy.minimum_cases_per_input_style}"
+            )
+    complete_metamorphic_groups = _complete_metamorphic_groups(metamorphic_cases)
+    incomplete_metamorphic_groups = sorted(set(metamorphic_cases) - set(complete_metamorphic_groups))
+    if incomplete_metamorphic_groups:
+        issues.append(
+            "release corpus has incomplete metamorphic groups: " + ", ".join(incomplete_metamorphic_groups[:6])
+        )
+    if len(complete_metamorphic_groups) < policy.minimum_complete_metamorphic_groups:
+        issues.append(
+            "release proof requires at least "
+            f"{policy.minimum_complete_metamorphic_groups} complete metamorphic groups; received "
+            f"{len(complete_metamorphic_groups)}"
+        )
 
     audit_issues, audited_case_ids = _audit_issues(
         cases_by_id=cases_by_id,
@@ -325,6 +369,10 @@ def evaluate_release_corpus(
         "source_id_count": len(source_ids),
         "source_uri_count": len(source_uris),
         "stressor_counts": {key: int(stressors[key]) for key in DEFAULT_HIGH_VARIANCE_STRESSORS},
+        "input_style_counts": dict(sorted(input_styles.items())),
+        "undeclared_input_style_count": len(undeclared_input_style_labels),
+        "complete_metamorphic_group_count": len(complete_metamorphic_groups),
+        "complete_metamorphic_groups": complete_metamorphic_groups,
         "audit_count": len(audited_case_ids),
         "minimum_audit_count": policy.minimum_audit_count(len(records)),
         "policy": asdict(policy),
@@ -351,6 +399,32 @@ def discovery_corpus_summary(cases: Sequence[Any]) -> dict[str, Any]:
 
 def stressor_count(counts: Counter[str], stressor: str) -> int:
     return int(counts.get(stressor) or 0)
+
+
+def _complete_metamorphic_groups(groups: Mapping[str, Sequence[Any]]) -> dict[str, list[str]]:
+    complete: dict[str, list[str]] = {}
+    for group, cases in sorted(groups.items()):
+        transforms = sorted(
+            {
+                str(getattr(case, "metamorphic_transform", "") or "").strip()
+                for case in cases
+                if str(getattr(case, "metamorphic_transform", "") or "").strip()
+            }
+        )
+        provenances = [getattr(case, "provenance", GreenfieldCaseProvenance()) for case in cases]
+        artifact_hashes = {
+            str(getattr(provenance, "source_artifact_sha256", "") or "").strip()
+            for provenance in provenances
+            if str(getattr(provenance, "source_artifact_sha256", "") or "").strip()
+        }
+        spans = {
+            str(getattr(provenance, "source_span", "") or "").strip()
+            for provenance in provenances
+            if str(getattr(provenance, "source_span", "") or "").strip()
+        }
+        if len(transforms) >= 2 and len(artifact_hashes) == 1 and len(spans) >= 2:
+            complete[group] = transforms
+    return complete
 
 
 def _case_provenance_issues(

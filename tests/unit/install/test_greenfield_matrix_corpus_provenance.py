@@ -32,22 +32,30 @@ def _release_corpus(tmp_path: Path):
     cases = []
     audits = []
     stressors = tuple(importlib.import_module("greenfield_matrix_stressors").DEFAULT_HIGH_VARIANCE_STRESSORS)
+    input_styles = (
+        "direct_request",
+        "edited_confirmation",
+        "pasted_brief",
+        "research_evidence",
+        "thin_request",
+    )
     for index in range(200):
-        source = tmp_path / "evidence" / f"source-{index:03d}.txt"
+        source_index = index // 2 if index < 40 else index
+        source = tmp_path / "evidence" / f"source-{source_index:03d}.txt"
         source.parent.mkdir(parents=True, exist_ok=True)
         source_text = (
-            f"Public source artifact {index} with unique domain reference {index * 17}.\n"
-            f"Supplemental source context {index} remains outside the declared span.\n"
+            f"Public source artifact {source_index} baseline context.\n"
+            f"Public source artifact {source_index} variant context.\n"
         )
         source.write_text(source_text, encoding="utf-8")
         source_path = source.relative_to(tmp_path).as_posix()
-        source_excerpt = source_text.splitlines()[0]
+        span = "line 1" if index % 2 == 0 else "line 2"
+        source_excerpt = source_text.splitlines()[0 if span == "line 1" else 1]
         prompt = (
             f"Create a proposal for locus{index} nexus{index * 7} evidence review where operator{index} "
             f"records signal{index * 13}, approves checkpoint{index * 19}, preserves proof{index * 23}, "
             f"and reads back outcome{index * 29}."
         )
-        span = "line 1"
         case_id = f"release-{index:03d}"
         source_hash = _sha256(source_text)
         case = cases_module.GreenfieldMatrixCase(
@@ -58,6 +66,10 @@ def _release_corpus(tmp_path: Path):
             case_id=case_id,
             tags=(f"family-{index % 10}", "release"),
             stressors=(stressors[index % len(stressors)],),
+            input_style=input_styles[index % len(input_styles)],
+            input_style_declared=True,
+            metamorphic_group=f"source-pair-{index // 2:03d}" if index < 40 else "",
+            metamorphic_transform=("baseline" if index % 2 == 0 else "source_variant") if index < 40 else "",
             provenance=provenance.GreenfieldCaseProvenance(
                 corpus_tier="source_provenanced",
                 schema_version=provenance.CASE_PROVENANCE_VERSION,
@@ -132,6 +144,23 @@ def test_release_corpus_accepts_audited_source_provenanced_diverse_evidence(tmp_
     assert evaluation.summary["audit_count"] == 40
 
 
+def test_release_corpus_rejects_implicit_input_style_and_incomplete_metamorphic_pair(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    unlabeled = replace(cases[0], input_style_declared=False)
+    unpaired = replace(cases[1], metamorphic_transform="baseline")
+
+    evaluation = provenance.evaluate_release_corpus(
+        (unlabeled, unpaired, *cases[2:]),
+        audits,
+        repo_root=tmp_path,
+    )
+
+    issues = "\n".join(evaluation.issues)
+    assert not evaluation.passed
+    assert "without an explicit input_style" in issues
+    assert "incomplete metamorphic groups" in issues
+
+
 def test_release_corpus_rejects_duplicate_prompt_and_unreviewed_audit_coverage(tmp_path: Path) -> None:
     provenance, cases, audits = _release_corpus(tmp_path)
     duplicate = cases[1].__class__(
@@ -155,7 +184,7 @@ def test_release_corpus_rejects_duplicate_prompt_and_unreviewed_audit_coverage(t
 
 def test_release_corpus_rejects_an_excerpt_outside_its_declared_source_span(tmp_path: Path) -> None:
     provenance, cases, audits = _release_corpus(tmp_path)
-    off_span_excerpt = "Supplemental source context 0 remains outside the declared span."
+    off_span_excerpt = "Public source artifact 0 variant context."
     altered_provenance = replace(
         cases[0].provenance,
         source_excerpt=off_span_excerpt,

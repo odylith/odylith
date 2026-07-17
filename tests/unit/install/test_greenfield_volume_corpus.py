@@ -50,3 +50,16 @@ def test_volume_corpus_is_prompt_grounded_diverse_and_campaign_ready() -> None:
     assert coverage["cases_without_stressors"] == []
     assert variance["status"] == "passed"
     assert variance["score"] == 10
+
+
+def test_volume_corpus_is_discovery_only_until_it_carries_explicit_axis_and_source_evidence() -> None:
+    case_file, _campaign = _modules()
+    cases = tuple(
+        case
+        for file_name in CASE_FILES
+        for case in case_file.load_case_file(CORPUS_ROOT / file_name)
+    )
+
+    assert all(not case.input_style_declared for case in cases)
+    assert all(not case.metamorphic_group and not case.metamorphic_transform for case in cases)
+    assert {case.provenance.corpus_tier for case in cases} == {"synthetic_regression"}

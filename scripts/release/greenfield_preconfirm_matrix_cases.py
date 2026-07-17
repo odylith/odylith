@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from dataclasses import field
 
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
+from greenfield_matrix_input_axes import DEFAULT_INPUT_STYLE
 
 
 DEFAULT_CASE_EXPECTATION = "transaction_committed"
@@ -31,6 +32,10 @@ class GreenfieldMatrixCase:
     source_file: str = ""
     provenance: GreenfieldCaseProvenance = field(default_factory=GreenfieldCaseProvenance)
     expectation: str = DEFAULT_CASE_EXPECTATION
+    input_style: str = DEFAULT_INPUT_STYLE
+    input_style_declared: bool = False
+    metamorphic_group: str = ""
+    metamorphic_transform: str = ""
 
     @property
     def slug(self) -> str:

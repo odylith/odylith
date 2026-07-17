@@ -17,6 +17,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_input_axes import normalize_input_style  # noqa: E402
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS  # noqa: E402
 from greenfield_matrix_stressors import case_stratification  # noqa: E402
 from greenfield_matrix_stressors import case_stressors  # noqa: E402
@@ -50,9 +51,14 @@ class CasePoolEvaluation:
     selected_case_count: int
     source_case_count: int
     required_stressors: tuple[str, ...]
+    required_input_styles: tuple[str, ...]
+    min_cases_per_input_style: int
+    min_metamorphic_groups: int
     coverage: Mapping[str, Any]
     variance: Mapping[str, Any]
     stratification: Mapping[str, Any]
+    input_style_counts: Mapping[str, int]
+    metamorphic_group_transforms: Mapping[str, tuple[str, ...]]
     warnings: tuple[str, ...]
 
     def to_dict(self) -> dict[str, Any]:
@@ -62,9 +68,16 @@ class CasePoolEvaluation:
             "selected_case_count": self.selected_case_count,
             "source_case_count": self.source_case_count,
             "required_stressors": list(self.required_stressors),
+            "required_input_styles": list(self.required_input_styles),
+            "min_cases_per_input_style": self.min_cases_per_input_style,
+            "min_metamorphic_groups": self.min_metamorphic_groups,
             "coverage": dict(self.coverage),
             "variance": dict(self.variance),
             "stratification": dict(self.stratification),
+            "input_style_counts": dict(self.input_style_counts),
+            "metamorphic_group_transforms": {
+                group: list(transforms) for group, transforms in self.metamorphic_group_transforms.items()
+            },
             "warnings": list(self.warnings),
         }
 
@@ -75,6 +88,9 @@ def generate_case_file(
     output_json: Path,
     target_count: int = DEFAULT_TARGET_COUNT,
     required_stressors: Sequence[str] = (),
+    required_input_styles: Sequence[str] = (),
+    min_cases_per_input_style: int = 1,
+    min_metamorphic_groups: int = 0,
     min_variance_score: int = 10,
     min_stressor_density: float = DEFAULT_MIN_STRESSOR_DENSITY,
     fail_on_warnings: bool = False,
@@ -89,15 +105,21 @@ def generate_case_file(
     if not source_cases:
         raise RuntimeError("greenfield case generator requires at least one external source case")
     required = required_stressors_from_values(required_stressors)
+    required_styles = _required_input_styles(required_input_styles)
     selected = _balanced_select(
         source_cases,
         target_count=_bounded_target(target_count, len(source_cases)),
         required_stressors=required,
+        required_input_styles=required_styles,
+        min_cases_per_input_style=max(1, int(min_cases_per_input_style)),
     )
     evaluation = evaluate_case_pool(
         source_cases=source_cases,
         selected_cases=selected,
         required_stressors=required,
+        required_input_styles=required_styles,
+        min_cases_per_input_style=max(1, int(min_cases_per_input_style)),
+        min_metamorphic_groups=max(0, int(min_metamorphic_groups)),
         min_variance_score=min_variance_score,
         min_stressor_density=min_stressor_density,
     )
@@ -112,6 +134,9 @@ def generate_case_file(
         "target_count": int(_bounded_target(target_count, len(source_cases))),
         "case_count": len(selected),
         "required_stressors": list(required),
+        "required_input_styles": list(required_styles),
+        "min_cases_per_input_style": max(1, int(min_cases_per_input_style)),
+        "min_metamorphic_groups": max(0, int(min_metamorphic_groups)),
         "selection_strategy": "balanced-missing-rare-stressor-max-coverage",
         "source_stratification": case_stratification(source_cases),
         "evaluation": evaluation.to_dict(),
@@ -125,6 +150,9 @@ def generate_case_file(
         "source_case_count": len(source_cases),
         "selected_case_count": len(selected),
         "required_stressors": list(required),
+        "required_input_styles": list(required_styles),
+        "min_cases_per_input_style": max(1, int(min_cases_per_input_style)),
+        "min_metamorphic_groups": max(0, int(min_metamorphic_groups)),
         "evaluation": evaluation.to_dict(),
         "campaign_next_steps": [
             "Build failed-subset, 60-case, 120-case, 240-case, and release shards from output_json.",
@@ -139,21 +167,39 @@ def evaluate_case_pool(
     source_cases: Sequence[GreenfieldMatrixCase],
     selected_cases: Sequence[GreenfieldMatrixCase],
     required_stressors: Sequence[str],
-    min_variance_score: int,
-    min_stressor_density: float,
+    required_input_styles: Sequence[str] = (),
+    min_cases_per_input_style: int = 1,
+    min_metamorphic_groups: int = 0,
+    min_variance_score: int = 10,
+    min_stressor_density: float = DEFAULT_MIN_STRESSOR_DENSITY,
 ) -> CasePoolEvaluation:
     coverage = stressor_coverage(selected_cases, required_stressors)
     variance = variance_evaluation(selected_cases, required_stressors)
     stratification = case_stratification(selected_cases)
+    required_styles = _required_input_styles(required_input_styles)
+    input_style_counts = _input_style_counts(selected_cases)
+    metamorphic_group_transforms = _metamorphic_group_transforms(selected_cases)
     warnings = _case_pool_warnings(
         source_cases=source_cases,
         selected_cases=selected_cases,
         coverage=coverage,
         variance=variance,
+        input_style_counts=input_style_counts,
+        required_input_styles=required_styles,
+        min_cases_per_input_style=max(1, int(min_cases_per_input_style)),
+        metamorphic_group_transforms=metamorphic_group_transforms,
+        min_metamorphic_groups=max(0, int(min_metamorphic_groups)),
         min_variance_score=max(0, int(min_variance_score)),
         min_stressor_density=max(0.0, float(min_stressor_density)),
     )
-    blocking = missing_required_stressors(selected_cases, required_stressors)
+    missing_styles = tuple(
+        style
+        for style in required_styles
+        if input_style_counts.get(style, 0) < max(1, int(min_cases_per_input_style))
+    )
+    insufficient_metamorphic_groups = len(metamorphic_group_transforms) < max(0, int(min_metamorphic_groups))
+    blocking = bool(missing_required_stressors(selected_cases, required_stressors)) or bool(missing_styles)
+    blocking = blocking or insufficient_metamorphic_groups
     status = "failed" if blocking else "warning" if warnings else "passed"
     return CasePoolEvaluation(
         status=status,
@@ -161,9 +207,14 @@ def evaluate_case_pool(
         selected_case_count=len(selected_cases),
         source_case_count=len(source_cases),
         required_stressors=tuple(required_stressors),
+        required_input_styles=required_styles,
+        min_cases_per_input_style=max(1, int(min_cases_per_input_style)),
+        min_metamorphic_groups=max(0, int(min_metamorphic_groups)),
         coverage=coverage,
         variance=variance,
         stratification=stratification,
+        input_style_counts=input_style_counts,
+        metamorphic_group_transforms=metamorphic_group_transforms,
         warnings=warnings,
     )
 
@@ -173,17 +224,22 @@ def _balanced_select(
     *,
     target_count: int,
     required_stressors: Sequence[str],
+    required_input_styles: Sequence[str],
+    min_cases_per_input_style: int,
 ) -> tuple[GreenfieldMatrixCase, ...]:
     target = max(0, min(int(target_count), len(cases)))
     if target <= 0:
         return ()
     required = tuple(required_stressors)
+    required_styles = tuple(required_input_styles)
     remaining = sorted(cases, key=_case_identity)
     selected: list[GreenfieldMatrixCase] = []
     selected_keys: set[str] = set()
     stressor_counts: Counter[str] = Counter()
     tag_counts: Counter[str] = Counter()
     source_counts: Counter[str] = Counter()
+    input_style_counts: Counter[str] = Counter()
+    metamorphic_group_counts: Counter[str] = Counter()
 
     while len(selected) < target and remaining:
         case = max(
@@ -191,9 +247,13 @@ def _balanced_select(
             key=lambda candidate: _selection_score(
                 candidate,
                 required_stressors=required,
+                required_input_styles=required_styles,
+                min_cases_per_input_style=min_cases_per_input_style,
                 stressor_counts=stressor_counts,
                 tag_counts=tag_counts,
                 source_counts=source_counts,
+                input_style_counts=input_style_counts,
+                metamorphic_group_counts=metamorphic_group_counts,
                 selected_count=len(selected),
             ),
         )
@@ -210,6 +270,12 @@ def _balanced_select(
         source = str(getattr(case, "source_file", "") or "")
         if source:
             source_counts[source] += 1
+        input_style = _case_input_style(case)
+        if input_style:
+            input_style_counts[input_style] += 1
+        metamorphic_group = _case_metamorphic_group(case)
+        if metamorphic_group:
+            metamorphic_group_counts[metamorphic_group] += 1
     return tuple(selected)
 
 
@@ -217,9 +283,13 @@ def _selection_score(
     case: GreenfieldMatrixCase,
     *,
     required_stressors: Sequence[str],
+    required_input_styles: Sequence[str],
+    min_cases_per_input_style: int,
     stressor_counts: Counter[str],
     tag_counts: Counter[str],
     source_counts: Counter[str],
+    input_style_counts: Counter[str],
+    metamorphic_group_counts: Counter[str],
     selected_count: int,
 ) -> tuple[float, int, str]:
     stressors = case_stressors(case)
@@ -229,9 +299,25 @@ def _selection_score(
     source = str(getattr(case, "source_file", "") or "")
     source_gain = 1.0 / float(source_counts[source] + 1) if source else 0.0
     depth_gain = min(len(stressors), 5) / 5.0
+    input_style = _case_input_style(case)
+    input_style_gain = (
+        6.0
+        if input_style in required_input_styles and input_style_counts[input_style] < min_cases_per_input_style
+        else 0.0
+    )
+    metamorphic_group = _case_metamorphic_group(case)
+    metamorphic_gain = 1.0 / float(metamorphic_group_counts[metamorphic_group] + 1) if metamorphic_group else 0.0
     if selected_count == 0:
         required_missing += 1 if any(stressor in required_stressors for stressor in stressors) else 0
-    score = (required_missing * 8.0) + (rare_stressor_gain * 3.0) + tag_gain + source_gain + depth_gain
+    score = (
+        (required_missing * 8.0)
+        + input_style_gain
+        + (rare_stressor_gain * 3.0)
+        + tag_gain
+        + source_gain
+        + metamorphic_gain
+        + depth_gain
+    )
     return (score, len(stressors), _case_identity(case))
 
 
@@ -241,6 +327,11 @@ def _case_pool_warnings(
     selected_cases: Sequence[GreenfieldMatrixCase],
     coverage: Mapping[str, Any],
     variance: Mapping[str, Any],
+    input_style_counts: Mapping[str, int],
+    required_input_styles: Sequence[str],
+    min_cases_per_input_style: int,
+    metamorphic_group_transforms: Mapping[str, tuple[str, ...]],
+    min_metamorphic_groups: int,
     min_variance_score: int,
     min_stressor_density: float,
 ) -> tuple[str, ...]:
@@ -250,6 +341,23 @@ def _case_pool_warnings(
     missing = tuple(str(item) for item in coverage.get("missing_required", ()) if str(item).strip())
     if missing:
         warnings.append("selected case set is missing required stressors: " + ", ".join(missing))
+    missing_input_styles = tuple(
+        style
+        for style in required_input_styles
+        if input_style_counts.get(style, 0) < min_cases_per_input_style
+    )
+    if missing_input_styles:
+        warnings.append(
+            "selected case set has fewer than "
+            f"{min_cases_per_input_style} case(s) for required input styles: "
+            + ", ".join(missing_input_styles)
+        )
+    if len(metamorphic_group_transforms) < min_metamorphic_groups:
+        warnings.append(
+            "selected case set has only "
+            f"{len(metamorphic_group_transforms)} complete metamorphic group(s); "
+            f"requires at least {min_metamorphic_groups}"
+        )
     if int(variance.get("score") or 0) < min_variance_score:
         warnings.append(
             f"selected case variance score {int(variance.get('score') or 0)}/10 is below required {min_variance_score}/10"
@@ -334,6 +442,11 @@ def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
         row["case_id"] = case.case_id
     if case.confirmed_intent_markdown:
         row["confirmed_intent_markdown"] = case.confirmed_intent_markdown
+    if case.input_style_declared:
+        row["input_style"] = str(case.input_style)
+    if case.metamorphic_group:
+        row["metamorphic_group"] = case.metamorphic_group
+        row["metamorphic_transform"] = case.metamorphic_transform
     return row
 
 
@@ -346,6 +459,52 @@ def _case_identity(case: GreenfieldMatrixCase) -> str:
 
 def _case_tags(case: GreenfieldMatrixCase) -> tuple[str, ...]:
     return tuple(dict.fromkeys(_slug(tag) for tag in getattr(case, "tags", ()) or () if str(tag).strip()))
+
+
+def _required_input_styles(values: Sequence[str]) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            normalize_input_style(value)
+            for value in values
+            if str(value or "").strip()
+        )
+    )
+
+
+def _case_input_style(case: GreenfieldMatrixCase) -> str:
+    if not bool(getattr(case, "input_style_declared", False)):
+        return ""
+    return normalize_input_style(getattr(case, "input_style", ""))
+
+
+def _input_style_counts(cases: Sequence[GreenfieldMatrixCase]) -> dict[str, int]:
+    counts: Counter[str] = Counter()
+    for case in cases:
+        if style := _case_input_style(case):
+            counts[style] += 1
+    return dict(sorted(counts.items()))
+
+
+def _case_metamorphic_group(case: GreenfieldMatrixCase) -> str:
+    group = str(getattr(case, "metamorphic_group", "") or "").strip()
+    transform = str(getattr(case, "metamorphic_transform", "") or "").strip()
+    return group if group and transform else ""
+
+
+def _metamorphic_group_transforms(
+    cases: Sequence[GreenfieldMatrixCase],
+) -> dict[str, tuple[str, ...]]:
+    transforms_by_group: dict[str, set[str]] = {}
+    for case in cases:
+        group = _case_metamorphic_group(case)
+        if not group:
+            continue
+        transforms_by_group.setdefault(group, set()).add(str(case.metamorphic_transform))
+    return {
+        group: tuple(sorted(transforms))
+        for group, transforms in sorted(transforms_by_group.items())
+        if len(transforms) >= 2
+    }
 
 
 def _bounded_target(target_count: int, source_count: int) -> int:
@@ -388,6 +547,9 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument("--min-stressor-density", type=float, default=DEFAULT_MIN_STRESSOR_DENSITY)
     parser.add_argument("--require-high-variance-stressors", action="store_true")
     parser.add_argument("--required-stressor", action="append", default=None)
+    parser.add_argument("--required-input-style", action="append", default=None)
+    parser.add_argument("--min-cases-per-input-style", type=int, default=1)
+    parser.add_argument("--min-metamorphic-groups", type=int, default=0)
     parser.add_argument("--fail-on-warnings", action="store_true")
     return parser.parse_args(argv)
 
@@ -403,6 +565,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_json=Path(args.output_json),
         target_count=max(1, int(args.target_count)),
         required_stressors=required,
+        required_input_styles=tuple(args.required_input_style or ()),
+        min_cases_per_input_style=max(1, int(args.min_cases_per_input_style)),
+        min_metamorphic_groups=max(0, int(args.min_metamorphic_groups)),
         min_variance_score=max(0, int(args.min_variance_score)),
         min_stressor_density=max(0.0, float(args.min_stressor_density)),
         fail_on_warnings=bool(args.fail_on_warnings),

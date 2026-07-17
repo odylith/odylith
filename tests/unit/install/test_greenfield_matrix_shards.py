@@ -93,6 +93,57 @@ def test_shard_builder_writes_stratified_tier_files_and_campaign_env(tmp_path: P
     assert loaded[0].confirmed_intent_markdown.startswith("# Case")
 
 
+def test_shard_builder_preserves_explicit_input_style_and_metamorphic_pair(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "cases.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "axis-001",
+                        "name": "axis evidence review",
+                        "prompt": "Create an axis evidence review with governed proof.",
+                        "required_terms": ("axis", "evidence"),
+                        "leakage_terms": ("axis evidence",),
+                        "input_style": "research_evidence",
+                        "metamorphic_group": "axis_review",
+                        "metamorphic_transform": "source_excerpt",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    failed_result = tmp_path / "failed.json"
+    failed_result.write_text(
+        json.dumps(
+            {
+                "results": [
+                    {
+                        "status": "failed",
+                        "evidence": {"case": {"id": "axis-001"}},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = module.build_shards(
+        case_files=(case_file,),
+        output_dir=tmp_path / "shards",
+        failed_result_jsons=(failed_result,),
+        failed_subset_only=True,
+    )
+    generated = module.load_case_file(Path(payload["tiers"]["failed-subset"]["files"][0]))
+
+    assert generated[0].input_style == "research_evidence"
+    assert generated[0].input_style_declared is True
+    assert generated[0].metamorphic_group == "axis_review"
+    assert generated[0].metamorphic_transform == "source_excerpt"
+
+
 def test_shard_builder_extracts_failed_subset_from_matrix_and_campaign_payloads(tmp_path: Path) -> None:
     module = _module()
     case_file = tmp_path / "cases.json"

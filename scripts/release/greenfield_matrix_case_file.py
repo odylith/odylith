@@ -9,6 +9,8 @@ from typing import Any
 
 from greenfield_matrix_leakage import term_present
 from greenfield_matrix_corpus_provenance import case_provenance_from_mapping
+from greenfield_matrix_input_axes import normalize_axis_token
+from greenfield_matrix_input_axes import normalize_input_style
 from greenfield_preconfirm_matrix_cases import DEFAULT_CASE_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS
@@ -80,6 +82,17 @@ def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> Green
             f"{source} case {index} ({name}) has ungrounded leakage_terms: {', '.join(missing_leakage_terms)}; "
             "leakage_terms must be source-grounded in the case prompt or confirmed intent"
         )
+    try:
+        input_style_token = normalize_axis_token(row.get("input_style"))
+        input_style = normalize_input_style(input_style_token)
+        metamorphic_group = normalize_axis_token(row.get("metamorphic_group"))
+        metamorphic_transform = normalize_axis_token(row.get("metamorphic_transform"))
+    except ValueError as exc:
+        raise RuntimeError(f"{source} case {index} ({name}) has invalid matrix axis metadata: {exc}") from exc
+    if bool(metamorphic_group) != bool(metamorphic_transform):
+        raise RuntimeError(
+            f"{source} case {index} ({name}) must define both metamorphic_group and metamorphic_transform"
+        )
     return GreenfieldMatrixCase(
         name=name,
         prompt=prompt,
@@ -92,6 +105,10 @@ def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> Green
         source_file=str(source),
         provenance=provenance,
         expectation=_case_expectation(row.get("expectation"), index=index, name=name, source=source),
+        input_style=input_style,
+        input_style_declared=bool(input_style_token),
+        metamorphic_group=metamorphic_group,
+        metamorphic_transform=metamorphic_transform,
     )
 
 
@@ -165,4 +182,9 @@ def _canonical_block_text(value: Any) -> str:
     return "\n".join(dedupe_adjacent_words(line).strip() for line in text.splitlines()).strip()
 
 
-__all__ = ["load_case_file", "ungrounded_leakage_terms", "ungrounded_required_terms"]
+__all__ = [
+    "load_case_file",
+    "normalize_input_style",
+    "ungrounded_leakage_terms",
+    "ungrounded_required_terms",
+]
