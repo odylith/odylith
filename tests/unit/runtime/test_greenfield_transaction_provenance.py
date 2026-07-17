@@ -165,6 +165,39 @@ def test_sealed_commit_loader_rejects_tampered_transaction_bytes(tmp_path: Path)
         load_sealed_product_create_commit(transaction_path)
 
 
+def test_canonical_create_classifies_malformed_transaction_before_writes(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
+    transaction_path.write_text("{not-json\n", encoding="utf-8")
+
+    result = cli.main(
+        [
+            "greenfield",
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--transaction-file",
+            str(transaction_path),
+            "--transaction-hash",
+            transaction.transaction_hash,
+            "--confirm",
+            "--json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert result == 2
+    assert payload["mode"] == "error"
+    assert "ProductCreateTransaction or compiler receipt is malformed" in payload["error"]
+    assert "no Product Intent was rejected" in payload["error"]
+    assert "no governed records were written" in payload["error"]
+    assert "Expecting property name" not in payload["error"]
+
+
 def test_canonical_create_cli_commits_the_sealed_transaction_file(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     transaction = _transaction(tmp_path)
     transaction_path = tmp_path / "product-create-transaction.v1.json"

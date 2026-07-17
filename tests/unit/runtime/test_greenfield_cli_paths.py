@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith import cli
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
@@ -797,6 +798,17 @@ def test_greenfield_apply_cli_rejects_legacy_confirm_path_before_compile(tmp_pat
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
+
+
+def test_greenfield_help_marks_apply_as_disabled_and_create_as_confirmed_write_path(capsys) -> None:
+    with pytest.raises(SystemExit) as exit_error:
+        cli.main(["greenfield", "--help"])
+
+    output = capsys.readouterr().out
+    assert exit_error.value.code == 0
+    assert "Disabled legacy command; confirmed writes use create." in output
+    assert "create" in output
+    assert "Commit a compiled ProductCreateTransaction." in output
 
 
 def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_path, capsys) -> None:

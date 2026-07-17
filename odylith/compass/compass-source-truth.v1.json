@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-07-17T21:10:48Z",
+  "generated_utc": "2026-07-17T22:45:29Z",
   "release_summary": {
     "catalog": [
       {
@@ -318,19 +318,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 17,
-            "local_change_count": 0,
-            "file_touch_count": 240
+            "commit_count": 14,
+            "local_change_count": 1,
+            "file_touch_count": 231
           },
           "48h": {
-            "commit_count": 26,
-            "local_change_count": 0,
-            "file_touch_count": 565
+            "commit_count": 24,
+            "local_change_count": 1,
+            "file_touch_count": 564
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-17T13:34:36-07:00",
+          "last_activity_iso": "2026-07-17T15:22:36-07:00",
           "age_days": 21,
           "eta_days": 4,
           "eta_confidence": "high"
@@ -387,7 +387,7 @@
             "cross_surface_conflict": false,
             "decision_count": 34,
             "decision_evidence": true,
-            "explicit_count": 655,
+            "explicit_count": 657,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
@@ -396,14 +396,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 513,
+            "meaningful_change_count": 514,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -619,7 +619,7 @@
             "cross_surface_conflict": false,
             "decision_count": 34,
             "decision_evidence": true,
-            "explicit_count": 645,
+            "explicit_count": 647,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
@@ -628,14 +628,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 516,
+            "meaningful_change_count": 517,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 3,
+            "synthetic_count": 2,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -667,6 +667,180 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-141"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-063",
+        "title": "Release Planning and Workstream Targeting",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
+          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
+          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
+          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
+          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
+          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "atlas",
+            "name": "Atlas"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "radar",
+            "name": "Radar"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-08",
+          "updated": "2026-04-08",
+          "all_total_tasks": 63,
+          "all_done_tasks": 63,
+          "total_tasks": 28,
+          "done_tasks": 28,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 28/28",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 7,
+            "local_change_count": 1,
+            "file_touch_count": 58
+          },
+          "48h": {
+            "commit_count": 11,
+            "local_change_count": 1,
+            "file_touch_count": 107
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-08",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
+          "age_days": 100,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [
+            "B-065"
+          ],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 75,
+            "band": "High"
+          },
+          "48h": {
+            "index": 75,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 30,
+            "decision_evidence": true,
+            "explicit_count": 642,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 440,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 501,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 1,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-063"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-063"
           }
         ],
         "proof_summary_lines": []
@@ -767,14 +941,14 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 48
+            "file_touch_count": 47
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 10,
             "local_change_count": 2,
-            "file_touch_count": 111
+            "file_touch_count": 108
           }
         },
         "timeline": {
@@ -938,14 +1112,14 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 48
+            "file_touch_count": 47
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 10,
             "local_change_count": 2,
-            "file_touch_count": 111
+            "file_touch_count": 108
           }
         },
         "timeline": {
@@ -1045,180 +1219,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-063",
-        "title": "Release Planning and Workstream Targeting",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
-          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
-          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
-          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
-          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
-          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "atlas",
-            "name": "Atlas"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "radar",
-            "name": "Radar"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-08",
-          "updated": "2026-04-08",
-          "all_total_tasks": 63,
-          "all_done_tasks": 63,
-          "total_tasks": 28,
-          "done_tasks": 28,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 28/28",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 8,
-            "local_change_count": 0,
-            "file_touch_count": 59
-          },
-          "48h": {
-            "commit_count": 12,
-            "local_change_count": 0,
-            "file_touch_count": 110
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-08",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
-          "age_days": 100,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [
-            "B-065"
-          ],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 75,
-            "band": "High"
-          },
-          "48h": {
-            "index": 75,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 30,
-            "decision_evidence": true,
-            "explicit_count": 642,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 440,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 501,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 1,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-063"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-063"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-005",
         "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
         "status": "finished",
@@ -1286,14 +1286,14 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 6,
             "local_change_count": 0,
-            "file_touch_count": 46
+            "file_touch_count": 45
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 10,
             "local_change_count": 0,
-            "file_touch_count": 104
+            "file_touch_count": 102
           }
         },
         "timeline": {
@@ -1458,18 +1458,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 43
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 110,
           "eta_days": 16,
           "eta_confidence": "high"
@@ -1485,12 +1485,12 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           },
           "48h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -1637,18 +1637,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 48
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 99,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1664,11 +1664,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 74,
+            "index": 76,
             "band": "High"
           },
           "48h": {
-            "index": 74,
+            "index": 76,
             "band": "High"
           }
         },
@@ -1796,18 +1796,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 43
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 112,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1823,12 +1823,12 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           },
           "48h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -1956,18 +1956,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 57
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 109,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1983,12 +1983,12 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           },
           "48h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -3091,18 +3091,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 53
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 99,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -3279,18 +3279,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 35
           }
         },
         "timeline": {
           "start_date": "2026-04-12",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 96,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -3306,11 +3306,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 30,
+            "index": 32,
             "band": "Low"
           },
           "48h": {
-            "index": 30,
+            "index": 32,
             "band": "Low"
           }
         },
@@ -5157,7 +5157,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -15666,7 +15666,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -19412,7 +19412,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -23859,7 +23859,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24084,7 +24084,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24309,7 +24309,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24534,7 +24534,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24946,7 +24946,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29459,7 +29459,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29657,7 +29657,7 @@
             "cross_surface_conflict": false,
             "decision_count": 28,
             "decision_evidence": true,
-            "explicit_count": 617,
+            "explicit_count": 619,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
@@ -29666,14 +29666,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 505,
+            "meaningful_change_count": 506,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -29968,19 +29968,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 17,
-            "local_change_count": 0,
-            "file_touch_count": 240
+            "commit_count": 14,
+            "local_change_count": 1,
+            "file_touch_count": 231
           },
           "48h": {
-            "commit_count": 26,
-            "local_change_count": 0,
-            "file_touch_count": 565
+            "commit_count": 24,
+            "local_change_count": 1,
+            "file_touch_count": 564
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-17T13:34:36-07:00",
+          "last_activity_iso": "2026-07-17T15:22:36-07:00",
           "age_days": 21,
           "eta_days": 4,
           "eta_confidence": "high"
@@ -30037,7 +30037,7 @@
             "cross_surface_conflict": false,
             "decision_count": 34,
             "decision_evidence": true,
-            "explicit_count": 655,
+            "explicit_count": 657,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
@@ -30046,14 +30046,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 513,
+            "meaningful_change_count": 514,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -30269,7 +30269,7 @@
             "cross_surface_conflict": false,
             "decision_count": 34,
             "decision_evidence": true,
-            "explicit_count": 645,
+            "explicit_count": 647,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
@@ -30278,14 +30278,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 516,
+            "meaningful_change_count": 517,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 3,
+            "synthetic_count": 2,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -30317,6 +30317,180 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-141"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-063",
+        "title": "Release Planning and Workstream Targeting",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
+          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
+          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
+          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
+          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
+          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "atlas",
+            "name": "Atlas"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "radar",
+            "name": "Radar"
+          },
+          {
+            "component_id": "release",
+            "name": "Release"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "Removed from 0.1.11",
+        "plan": {
+          "created": "2026-04-08",
+          "updated": "2026-04-08",
+          "all_total_tasks": 63,
+          "all_done_tasks": 63,
+          "total_tasks": 28,
+          "done_tasks": 28,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 28/28",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 7,
+            "local_change_count": 1,
+            "file_touch_count": 58
+          },
+          "48h": {
+            "commit_count": 11,
+            "local_change_count": 1,
+            "file_touch_count": 107
+          }
+        },
+        "timeline": {
+          "start_date": "2026-04-08",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
+          "age_days": 100,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [
+            "B-065"
+          ],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 75,
+            "band": "High"
+          },
+          "48h": {
+            "index": 75,
+            "band": "High"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 30,
+            "decision_evidence": true,
+            "explicit_count": 642,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 440,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 501,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 1,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-063"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-063"
           }
         ],
         "proof_summary_lines": []
@@ -30417,14 +30591,14 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 48
+            "file_touch_count": 47
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 10,
             "local_change_count": 2,
-            "file_touch_count": 111
+            "file_touch_count": 108
           }
         },
         "timeline": {
@@ -30588,14 +30762,14 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 6,
             "local_change_count": 2,
-            "file_touch_count": 48
+            "file_touch_count": 47
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 10,
             "local_change_count": 2,
-            "file_touch_count": 111
+            "file_touch_count": 108
           }
         },
         "timeline": {
@@ -30695,180 +30869,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-063",
-        "title": "Release Planning and Workstream Targeting",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
-          "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
-          "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
-          "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
-          "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
-          "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-          "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "atlas",
-            "name": "Atlas"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "radar",
-            "name": "Radar"
-          },
-          {
-            "component_id": "release",
-            "name": "Release"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "Removed from 0.1.11",
-        "plan": {
-          "created": "2026-04-08",
-          "updated": "2026-04-08",
-          "all_total_tasks": 63,
-          "all_done_tasks": 63,
-          "total_tasks": 28,
-          "done_tasks": 28,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 28/28",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 8,
-            "local_change_count": 0,
-            "file_touch_count": 59
-          },
-          "48h": {
-            "commit_count": 12,
-            "local_change_count": 0,
-            "file_touch_count": 110
-          }
-        },
-        "timeline": {
-          "start_date": "2026-04-08",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
-          "age_days": 100,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [
-            "B-065"
-          ],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 75,
-            "band": "High"
-          },
-          "48h": {
-            "index": 75,
-            "band": "High"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 30,
-            "decision_evidence": true,
-            "explicit_count": 642,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 440,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 501,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 1,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-063"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-063"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-005",
         "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
         "status": "finished",
@@ -30936,14 +30936,14 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 7,
+            "commit_count": 6,
             "local_change_count": 0,
-            "file_touch_count": 46
+            "file_touch_count": 45
           },
           "48h": {
-            "commit_count": 11,
+            "commit_count": 10,
             "local_change_count": 0,
-            "file_touch_count": 104
+            "file_touch_count": 102
           }
         },
         "timeline": {
@@ -31108,18 +31108,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 43
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 110,
           "eta_days": 16,
           "eta_confidence": "high"
@@ -31135,12 +31135,12 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           },
           "48h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -31287,18 +31287,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 48
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 99,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31314,11 +31314,11 @@
         "cost": {
           "base_index": 71,
           "24h": {
-            "index": 74,
+            "index": 76,
             "band": "High"
           },
           "48h": {
-            "index": 74,
+            "index": 76,
             "band": "High"
           }
         },
@@ -31390,157 +31390,6 @@
         "proof_summary_lines": []
       },
       {
-        "idea_id": "B-144",
-        "title": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
-        "status": "queued",
-        "priority": "P1",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "greenfield_semantic_compiler.py is 1,418 LOC and combines visible-result extraction, candidate selection, validation, and projection repair; transaction-safety fixes now touch it without a clear phase boundary.",
-          "customer": "Odylith maintainers need a small, auditable semantic compiler so pre-confirm transaction behavior can change without coupling unrelated result-selection and repair paths.",
-          "proposed_solution": "Create the workstream for Decompose Greenfield Semantic Compiler Into Result and Projection Owners and refine the exact implementation plan during execution.",
-          "opportunity": "Split result selection and projection repair into dedicated owners while preserving the current pre-confirm contracts and avoiding duplicate semantic helpers.",
-          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-          "founder_pov": "Maintainers can change one semantic phase through an explicit owner with focused contract tests and a root compiler below the source-size limit."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
-          "plan_file": ""
-        },
-        "registry_components": [
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "",
-          "updated": "",
-          "all_total_tasks": 0,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.0,
-          "display_progress_label": "0% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "not_started",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 0,
-            "local_change_count": 0,
-            "file_touch_count": 0
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 172
-          }
-        },
-        "timeline": {
-          "start_date": "2026-07-16",
-          "last_activity_iso": "2026-07-16T07:12:06-07:00",
-          "age_days": 1,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 35,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 38,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 22,
-            "decision_evidence": true,
-            "explicit_count": 559,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 390,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 468,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 1,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-144"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-144"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
         "idea_id": "B-004",
         "title": "Self-Hosting Posture Hardening",
         "status": "finished",
@@ -31597,18 +31446,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 43
           }
         },
         "timeline": {
           "start_date": "2026-03-27",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 112,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31624,12 +31473,12 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           },
           "48h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -31757,18 +31606,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 57
           }
         },
         "timeline": {
           "start_date": "2026-03-30",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 109,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -31784,12 +31633,12 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           },
           "48h": {
-            "index": 38,
-            "band": "Low"
+            "index": 40,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -32892,18 +32741,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 53
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 99,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33080,18 +32929,18 @@
         "activity": {
           "24h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 29
           },
           "48h": {
             "commit_count": 1,
-            "local_change_count": 0,
+            "local_change_count": 1,
             "file_touch_count": 35
           }
         },
         "timeline": {
           "start_date": "2026-04-12",
-          "last_activity_iso": "2026-07-17T13:32:35-07:00",
+          "last_activity_iso": "2026-07-17T15:45:19-07:00",
           "age_days": 96,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -33107,11 +32956,11 @@
         "cost": {
           "base_index": 27,
           "24h": {
-            "index": 30,
+            "index": 32,
             "band": "Low"
           },
           "48h": {
-            "index": 30,
+            "index": 32,
             "band": "Low"
           }
         },
@@ -33179,6 +33028,157 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-079"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-144",
+        "title": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
+        "status": "queued",
+        "priority": "P1",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "greenfield_semantic_compiler.py is 1,418 LOC and combines visible-result extraction, candidate selection, validation, and projection repair; transaction-safety fixes now touch it without a clear phase boundary.",
+          "customer": "Odylith maintainers need a small, auditable semantic compiler so pre-confirm transaction behavior can change without coupling unrelated result-selection and repair paths.",
+          "proposed_solution": "Create the workstream for Decompose Greenfield Semantic Compiler Into Result and Projection Owners and refine the exact implementation plan during execution.",
+          "opportunity": "Split result selection and projection repair into dedicated owners while preserving the current pre-confirm contracts and avoiding duplicate semantic helpers.",
+          "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+          "founder_pov": "Maintainers can change one semantic phase through an explicit owner with focused contract tests and a root compiler below the source-size limit."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
+          "plan_file": ""
+        },
+        "registry_components": [
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "",
+          "updated": "",
+          "all_total_tasks": 0,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 0.0,
+          "display_progress_label": "0% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "not_started",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 0
+          },
+          "48h": {
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 172
+          }
+        },
+        "timeline": {
+          "start_date": "2026-07-16",
+          "last_activity_iso": "2026-07-16T07:12:06-07:00",
+          "age_days": 1,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 35,
+            "band": "Low"
+          },
+          "48h": {
+            "index": 38,
+            "band": "Low"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 22,
+            "decision_evidence": true,
+            "explicit_count": 559,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 390,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 468,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 1,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-144"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-144"
           }
         ],
         "proof_summary_lines": []
@@ -34958,7 +34958,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -45467,7 +45467,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -49213,7 +49213,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -53660,7 +53660,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -53885,7 +53885,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54110,7 +54110,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54335,7 +54335,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54747,7 +54747,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -59260,7 +59260,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+            "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -59458,7 +59458,7 @@
             "cross_surface_conflict": false,
             "decision_count": 28,
             "decision_evidence": true,
-            "explicit_count": 617,
+            "explicit_count": 619,
             "frontier_phase": "",
             "generated_only_churn": false,
             "governance_only_local_change": false,
@@ -59467,14 +59467,14 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 505,
+            "meaningful_change_count": 506,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
             "proof_blocker": false,
             "proof_status": "",
             "stale_authority": false,
-            "synthetic_count": 2,
+            "synthetic_count": 1,
             "unsafe_closeout": false,
             "verified_completion": false
           },
@@ -59619,19 +59619,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 17,
-          "local_change_count": 0,
-          "file_touch_count": 240
+          "commit_count": 14,
+          "local_change_count": 1,
+          "file_touch_count": 231
         },
         "48h": {
-          "commit_count": 26,
-          "local_change_count": 0,
-          "file_touch_count": 565
+          "commit_count": 24,
+          "local_change_count": 1,
+          "file_touch_count": 564
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-17T13:34:36-07:00",
+        "last_activity_iso": "2026-07-17T15:22:36-07:00",
         "age_days": 21,
         "eta_days": 4,
         "eta_confidence": "high"
@@ -59688,7 +59688,7 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 655,
+          "explicit_count": 657,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -59697,14 +59697,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 513,
+          "meaningful_change_count": 514,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -59920,7 +59920,7 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 645,
+          "explicit_count": 647,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -59929,14 +59929,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 516,
+          "meaningful_change_count": 517,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -59968,6 +59968,180 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-141"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-063",
+      "title": "Release Planning and Workstream Targeting",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
+        "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
+        "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
+        "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
+        "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
+        "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
+        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "atlas",
+          "name": "Atlas"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "radar",
+          "name": "Radar"
+        },
+        {
+          "component_id": "release",
+          "name": "Release"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "Removed from 0.1.11",
+      "plan": {
+        "created": "2026-04-08",
+        "updated": "2026-04-08",
+        "all_total_tasks": 63,
+        "all_done_tasks": 63,
+        "total_tasks": 28,
+        "done_tasks": 28,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 28/28",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 7,
+          "local_change_count": 1,
+          "file_touch_count": 58
+        },
+        "48h": {
+          "commit_count": 11,
+          "local_change_count": 1,
+          "file_touch_count": 107
+        }
+      },
+      "timeline": {
+        "start_date": "2026-04-08",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
+        "age_days": 100,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [
+          "B-065"
+        ],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 55,
+        "24h": {
+          "index": 75,
+          "band": "High"
+        },
+        "48h": {
+          "index": 75,
+          "band": "High"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 30,
+          "decision_evidence": true,
+          "explicit_count": 642,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 440,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 501,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 1,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-063"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-063"
         }
       ],
       "proof_summary_lines": []
@@ -60068,14 +60242,14 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 48
+          "file_touch_count": 47
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 10,
           "local_change_count": 2,
-          "file_touch_count": 111
+          "file_touch_count": 108
         }
       },
       "timeline": {
@@ -60239,14 +60413,14 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 48
+          "file_touch_count": 47
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 10,
           "local_change_count": 2,
-          "file_touch_count": 111
+          "file_touch_count": 108
         }
       },
       "timeline": {
@@ -60346,180 +60520,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-063",
-      "title": "Release Planning and Workstream Targeting",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith can publish releases, author release notes, and track backlog workstreams, but it has no first-class release-planning object that backlog work can target directly. Maintainers still have to imply release membership through plan prose, release-note titles, or local memory instead of saying simple things like \"add B-063 to current release\" or \"move B-060 to next release\" and having the product enforce one truthful answer everywhere.",
-        "customer": "- Primary: Odylith maintainers and advanced operators planning what is in or out of a release before the publication lane runs. - Secondary: Radar, Compass, Context Engine, and future agent workflows that need one canonical release target for a workstream instead of inferring it from prose or semver folklore.",
-        "proposed_solution": "- add a Radar source subtree for release definitions plus append-only workstream assignment history - make `release_id` the immutable source key, with optional `version`, `tag`, and `name` fields plus explicit aliases such as `current` and `next` - keep one active target release per workstream and record carry or move history explicitly instead of allowing ambiguous simultaneous ownership - expose release authoring through `odylith release create|update|list|show|add|remove|move` - project release catalog and release membership through Radar, Compass, Context Engine, and traceability outputs without collapsing the contract into execution waves or publication-only release notes",
-        "opportunity": "Add a repo-generic release-planning layer with a simple authoring surface and strict contracts so release intent becomes durable product truth instead of maintainer memory.",
-        "why_now": "Release planning is already happening in practice, but the product still makes it feel informal. That mismatch is now expensive because Odylith has enough release rigor everywhere else that this missing layer stands out.",
-        "founder_pov": "Release should be a first-class planning object, not just a publication event. If backlog work is truly part of a release, Odylith should be able to say so directly and enforce that truth across surfaces."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-        "plan_file": "odylith/technical-plans/done/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "atlas",
-          "name": "Atlas"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "radar",
-          "name": "Radar"
-        },
-        {
-          "component_id": "release",
-          "name": "Release"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "Removed from 0.1.11",
-      "plan": {
-        "created": "2026-04-08",
-        "updated": "2026-04-08",
-        "all_total_tasks": 63,
-        "all_done_tasks": 63,
-        "total_tasks": 28,
-        "done_tasks": 28,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 28/28",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 8,
-          "local_change_count": 0,
-          "file_touch_count": 59
-        },
-        "48h": {
-          "commit_count": 12,
-          "local_change_count": 0,
-          "file_touch_count": 110
-        }
-      },
-      "timeline": {
-        "start_date": "2026-04-08",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
-        "age_days": 100,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [
-          "B-065"
-        ],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 55,
-        "24h": {
-          "index": 75,
-          "band": "High"
-        },
-        "48h": {
-          "index": 75,
-          "band": "High"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 30,
-          "decision_evidence": true,
-          "explicit_count": 642,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 440,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 501,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 1,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-063"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-063"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-005",
       "title": "Release Reset, Full-Stack Runtime Packaging, and Hosted-Asset Proof",
       "status": "finished",
@@ -60587,14 +60587,14 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 6,
           "local_change_count": 0,
-          "file_touch_count": 46
+          "file_touch_count": 45
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 10,
           "local_change_count": 0,
-          "file_touch_count": 104
+          "file_touch_count": 102
         }
       },
       "timeline": {
@@ -60759,18 +60759,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 43
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 110,
         "eta_days": 16,
         "eta_confidence": "high"
@@ -60786,12 +60786,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -60938,18 +60938,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 48
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 99,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60965,11 +60965,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 74,
+          "index": 76,
           "band": "High"
         },
         "48h": {
-          "index": 74,
+          "index": 76,
           "band": "High"
         }
       },
@@ -61041,157 +61041,6 @@
       "proof_summary_lines": []
     },
     {
-      "idea_id": "B-144",
-      "title": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
-      "status": "queued",
-      "priority": "P1",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "greenfield_semantic_compiler.py is 1,418 LOC and combines visible-result extraction, candidate selection, validation, and projection repair; transaction-safety fixes now touch it without a clear phase boundary.",
-        "customer": "Odylith maintainers need a small, auditable semantic compiler so pre-confirm transaction behavior can change without coupling unrelated result-selection and repair paths.",
-        "proposed_solution": "Create the workstream for Decompose Greenfield Semantic Compiler Into Result and Projection Owners and refine the exact implementation plan during execution.",
-        "opportunity": "Split result selection and projection repair into dedicated owners while preserving the current pre-confirm contracts and avoiding duplicate semantic helpers.",
-        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
-        "founder_pov": "Maintainers can change one semantic phase through an explicit owner with focused contract tests and a root compiler below the source-size limit."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
-        "plan_file": ""
-      },
-      "registry_components": [
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "",
-        "updated": "",
-        "all_total_tasks": 0,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.0,
-        "display_progress_label": "0% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "not_started",
-        "checklist_label": "",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 0,
-          "local_change_count": 0,
-          "file_touch_count": 0
-        },
-        "48h": {
-          "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 172
-        }
-      },
-      "timeline": {
-        "start_date": "2026-07-16",
-        "last_activity_iso": "2026-07-16T07:12:06-07:00",
-        "age_days": 1,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 35,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 38,
-          "band": "Low"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 22,
-          "decision_evidence": true,
-          "explicit_count": 559,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 390,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 468,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 1,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-144"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-144"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
       "idea_id": "B-004",
       "title": "Self-Hosting Posture Hardening",
       "status": "finished",
@@ -61248,18 +61097,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 43
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 112,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61275,12 +61124,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -61408,18 +61257,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 57
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 109,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -61435,12 +61284,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -62543,18 +62392,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 53
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 99,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -62731,18 +62580,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 35
         }
       },
       "timeline": {
         "start_date": "2026-04-12",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 96,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -62758,11 +62607,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 30,
+          "index": 32,
           "band": "Low"
         },
         "48h": {
-          "index": 30,
+          "index": 32,
           "band": "Low"
         }
       },
@@ -62830,6 +62679,157 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-079"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-144",
+      "title": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
+      "status": "queued",
+      "priority": "P1",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "greenfield_semantic_compiler.py is 1,418 LOC and combines visible-result extraction, candidate selection, validation, and projection repair; transaction-safety fixes now touch it without a clear phase boundary.",
+        "customer": "Odylith maintainers need a small, auditable semantic compiler so pre-confirm transaction behavior can change without coupling unrelated result-selection and repair paths.",
+        "proposed_solution": "Create the workstream for Decompose Greenfield Semantic Compiler Into Result and Projection Owners and refine the exact implementation plan during execution.",
+        "opportunity": "Split result selection and projection repair into dedicated owners while preserving the current pre-confirm contracts and avoiding duplicate semantic helpers.",
+        "why_now": "This slice is active enough that it should exist as explicit backlog truth now.",
+        "founder_pov": "Maintainers can change one semantic phase through an explicit owner with focused contract tests and a root compiler below the source-size limit."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
+        "plan_file": ""
+      },
+      "registry_components": [
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "",
+        "updated": "",
+        "all_total_tasks": 0,
+        "all_done_tasks": 0,
+        "total_tasks": 0,
+        "done_tasks": 0,
+        "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 0.0,
+        "display_progress_label": "0% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "not_started",
+        "checklist_label": "",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 0
+        },
+        "48h": {
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 172
+        }
+      },
+      "timeline": {
+        "start_date": "2026-07-16",
+        "last_activity_iso": "2026-07-16T07:12:06-07:00",
+        "age_days": 1,
+        "eta_days": null,
+        "eta_confidence": "low"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 35,
+          "band": "Low"
+        },
+        "48h": {
+          "index": 38,
+          "band": "Low"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 22,
+          "decision_evidence": true,
+          "explicit_count": 559,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 390,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 468,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 1,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-144"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-144"
         }
       ],
       "proof_summary_lines": []
@@ -64609,7 +64609,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -75118,7 +75118,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -78864,7 +78864,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83311,7 +83311,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83536,7 +83536,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83761,7 +83761,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83986,7 +83986,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -84398,7 +84398,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -88911,7 +88911,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -89109,7 +89109,7 @@
           "cross_surface_conflict": false,
           "decision_count": 28,
           "decision_evidence": true,
-          "explicit_count": 617,
+          "explicit_count": 619,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -89118,14 +89118,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 505,
+          "meaningful_change_count": 506,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -89603,18 +89603,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 43
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 110,
         "eta_days": 16,
         "eta_confidence": "high"
@@ -89630,12 +89630,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -91033,18 +91033,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 48
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 99,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -91060,11 +91060,11 @@
       "cost": {
         "base_index": 71,
         "24h": {
-          "index": 74,
+          "index": 76,
           "band": "High"
         },
         "48h": {
-          "index": 74,
+          "index": 76,
           "band": "High"
         }
       },
@@ -91231,14 +91231,14 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 48
+          "file_touch_count": 47
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 10,
           "local_change_count": 2,
-          "file_touch_count": 111
+          "file_touch_count": 108
         }
       },
       "timeline": {
@@ -91486,7 +91486,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -93799,7 +93799,7 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 645,
+          "explicit_count": 647,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -93808,14 +93808,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 516,
+          "meaningful_change_count": 517,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 3,
+          "synthetic_count": 2,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -93957,19 +93957,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 17,
-          "local_change_count": 0,
-          "file_touch_count": 240
+          "commit_count": 14,
+          "local_change_count": 1,
+          "file_touch_count": 231
         },
         "48h": {
-          "commit_count": 26,
-          "local_change_count": 0,
-          "file_touch_count": 565
+          "commit_count": 24,
+          "local_change_count": 1,
+          "file_touch_count": 564
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-17T13:34:36-07:00",
+        "last_activity_iso": "2026-07-17T15:22:36-07:00",
         "age_days": 21,
         "eta_days": 4,
         "eta_confidence": "high"
@@ -94026,7 +94026,7 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 655,
+          "explicit_count": 657,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -94035,14 +94035,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 513,
+          "meaningful_change_count": 514,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },
@@ -94718,18 +94718,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 43
         }
       },
       "timeline": {
         "start_date": "2026-03-27",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 112,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -94745,12 +94745,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -94889,14 +94889,14 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 6,
           "local_change_count": 0,
-          "file_touch_count": 46
+          "file_touch_count": 45
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 10,
           "local_change_count": 0,
-          "file_touch_count": 104
+          "file_touch_count": 102
         }
       },
       "timeline": {
@@ -98031,18 +98031,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 57
         }
       },
       "timeline": {
         "start_date": "2026-03-30",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 109,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -98058,12 +98058,12 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         },
         "48h": {
-          "index": 38,
-          "band": "Low"
+          "index": 40,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -102946,7 +102946,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -103122,19 +103122,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 0,
-          "file_touch_count": 59
+          "commit_count": 7,
+          "local_change_count": 1,
+          "file_touch_count": 58
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 0,
-          "file_touch_count": 110
+          "commit_count": 11,
+          "local_change_count": 1,
+          "file_touch_count": 107
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 100,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103930,14 +103930,14 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 7,
+          "commit_count": 6,
           "local_change_count": 2,
-          "file_touch_count": 48
+          "file_touch_count": 47
         },
         "48h": {
-          "commit_count": 11,
+          "commit_count": 10,
           "local_change_count": 2,
-          "file_touch_count": 111
+          "file_touch_count": 108
         }
       },
       "timeline": {
@@ -105258,18 +105258,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 53
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 99,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -106574,18 +106574,18 @@
       "activity": {
         "24h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 29
         },
         "48h": {
           "commit_count": 1,
-          "local_change_count": 0,
+          "local_change_count": 1,
           "file_touch_count": 35
         }
       },
       "timeline": {
         "start_date": "2026-04-12",
-        "last_activity_iso": "2026-07-17T13:32:35-07:00",
+        "last_activity_iso": "2026-07-17T15:45:19-07:00",
         "age_days": 96,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -106601,11 +106601,11 @@
       "cost": {
         "base_index": 27,
         "24h": {
-          "index": 30,
+          "index": 32,
           "band": "Low"
         },
         "48h": {
-          "index": 30,
+          "index": 32,
           "band": "Low"
         }
       },
@@ -108363,7 +108363,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112810,7 +112810,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113035,7 +113035,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113260,7 +113260,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113485,7 +113485,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113897,7 +113897,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -118410,7 +118410,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "8d7bba144c0373f72733f76fdff7944fdde85c2e",
+          "local_head": "49ff6b75c7539ce08de938ffeb899ee8ae1498c3",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -118608,7 +118608,7 @@
           "cross_surface_conflict": false,
           "decision_count": 28,
           "decision_evidence": true,
-          "explicit_count": 617,
+          "explicit_count": 619,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
@@ -118617,14 +118617,14 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 505,
+          "meaningful_change_count": 506,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
           "proof_blocker": false,
           "proof_status": "",
           "stale_authority": false,
-          "synthetic_count": 2,
+          "synthetic_count": 1,
           "unsafe_closeout": false,
           "verified_completion": false
         },

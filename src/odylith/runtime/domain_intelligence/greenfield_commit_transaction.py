@@ -103,6 +103,11 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
         raise ValueError(
             "ProductCreateTransaction is missing its pre-confirm compiler receipt; rebuild it with greenfield propose"
         ) from error
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(
+            "ProductCreateTransaction or compiler receipt is malformed; no Product Intent was rejected and no governed records were written. "
+            "Rebuild the pre-confirm transaction before committing."
+        ) from error
     except OSError as error:
         raise RuntimeError(
             "environment/IO failure while reading the pre-confirm ProductCreateTransaction; no governed records were written"
