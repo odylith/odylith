@@ -49,6 +49,14 @@ def clean_text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def normalize_terminal_punctuation(value: Any) -> str:
+    """Remove malformed punctuation pairs from generated public prose."""
+
+    text = clean_text(value)
+    text = re.sub(r"[,;:]\s*([.!?])", r"\1", text)
+    return re.sub(r"([.!?])\s*[,;:]", r"\1", text)
+
+
 def dedupe_adjacent_words(value: Any) -> str:
     """Collapse adjacent duplicate word tokens in generated prose."""
 

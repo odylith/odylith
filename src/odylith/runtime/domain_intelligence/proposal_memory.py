@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_terminal_punctuation
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
 PROJECT_BRIEF_SOURCE_PATH = "odylith/runtime/source/project-brief.v1.md"
@@ -243,7 +244,7 @@ def _normalize_accepted_memory_copy(value: Any, *, key: str = "") -> Any:
     if isinstance(value, str):
         if _structural_memory_key(key):
             return value
-        return base_adverbial_note_action(value)
+        return normalize_terminal_punctuation(base_adverbial_note_action(value))
     if isinstance(value, Mapping):
         return {item_key: _normalize_accepted_memory_copy(item, key=str(item_key)) for item_key, item in value.items()}
     if isinstance(value, list):

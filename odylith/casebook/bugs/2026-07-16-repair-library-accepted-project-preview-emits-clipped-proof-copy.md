@@ -1,6 +1,6 @@
 - Bug ID: CB-255
 
-- Status: Open
+- Status: InProgress
 
 - Created: 2026-07-16
 
@@ -68,3 +68,11 @@
 
 - Code References: - scripts/release/greenfield_preconfirm_matrix.py
 - src/odylith/runtime/artifact_quality/greenfield_package_quality.py
+
+- Follow-Up Failure (2026-07-17): The maintained clean-head installed matrix passed all fourteen standard cases and the synthetic rescue probe, but the real installed structured-rescue proof failed before confirmation after a valid Tribunal semantic patch. The accepted-project memory preview contained malformed terminal punctuation and the Tribunal correctly stopped with `generated_copy_quality`; no transaction or governed write was created.
+
+- Follow-Up Root Cause (2026-07-17): Accepted-project memory normalized action grammar and Markdown emphasis but had no shared normalization for impossible terminal punctuation pairs such as `, .`, `; .`, or `.,`. A host-planned semantic repair can rerender a valid public-memory field with one of those mechanical pairs, leaving the pre-confirm repair loop without an executable plan patch.
+
+- Follow-Up Solution (2026-07-17): Normalize malformed terminal punctuation only in non-structural accepted-memory public prose before the pre-confirm copy gate. Preserve the fail-closed gate, typed semantic repair path, transaction hash boundary, structural IDs, paths, versions, and source evidence unchanged.
+
+- Follow-Up Verification (2026-07-17): Added `tests/unit/runtime/test_greenfield_accepted_project_memory_copy.py`; focused accepted-memory, quality, source-casing, structured-rescue, and generated-copy regression suites passed. A direct installed structured-rescue replay passed after the failed matrix evidence was captured; a fresh packaged matrix replay remains required before release readiness.
