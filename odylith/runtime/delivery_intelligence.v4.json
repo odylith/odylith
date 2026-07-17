@@ -1617,7 +1617,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2576,7 +2576,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -2982,7 +2982,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3102,7 +3102,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3222,7 +3222,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3342,7 +3342,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3663,7 +3663,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -3783,7 +3783,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4086,7 +4086,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4212,7 +4212,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4338,7 +4338,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4462,7 +4462,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -4982,7 +4982,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -6328,7 +6328,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -8223,7 +8223,7 @@
       ]
     }
   ],
-  "generated_utc": "2026-07-17 13:48:36Z",
+  "generated_utc": "2026-07-17 16:27:34Z",
   "indexes": {
     "cases": {
       "case-component-atlas": "component:atlas",
@@ -8557,8 +8557,8 @@
         "policy": 0,
         "renderer": 4123,
         "runbook": 0,
-        "runtime": 206797,
-        "spec": 138803
+        "runtime": 206860,
+        "spec": 139013
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -9046,7 +9046,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9565,7 +9565,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -9678,8 +9678,8 @@
         "policy": 0,
         "renderer": 1989,
         "runbook": 0,
-        "runtime": 101396,
-        "spec": 68431
+        "runtime": 101426,
+        "spec": 68536
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -10306,7 +10306,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -10419,8 +10419,8 @@
         "policy": 0,
         "renderer": 1989,
         "runbook": 0,
-        "runtime": 101396,
-        "spec": 68431
+        "runtime": 101426,
+        "spec": 68536
       },
       "claim_guard": {
         "blocked_terms": [],
@@ -11047,7 +11047,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -11160,7 +11160,7 @@
         "policy": 0,
         "renderer": 36,
         "runbook": 0,
-        "runtime": 2466,
+        "runtime": 2469,
         "spec": 1012
       },
       "claim_guard": {
@@ -11674,7 +11674,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -15417,8 +15417,8 @@
         "policy": 0,
         "renderer": 20,
         "runbook": 0,
-        "runtime": 754,
-        "spec": 507
+        "runtime": 755,
+        "spec": 511
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -15427,10 +15427,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 1,
-        "explicit_count": 636,
+        "explicit_count": 639,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md",
-        "implementation_count": 435,
+        "implementation_count": 438,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -15440,7 +15440,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 169,
+        "shared_component_event_count": 172,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -15448,8 +15448,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -15461,8 +15462,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -15531,8 +15531,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -16029,8 +16030,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-27T20:20:06-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "compass",
@@ -16177,16 +16178,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 636,
+          "explicit_count": 639,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 435,
+          "implementation_count": 438,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 494,
+          "meaningful_change_count": 495,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -17122,8 +17123,8 @@
         "policy": 0,
         "renderer": 20,
         "runbook": 0,
-        "runtime": 732,
-        "spec": 506
+        "runtime": 733,
+        "spec": 510
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -17132,10 +17133,10 @@
         "decision_count": 27,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 618,
+        "explicit_count": 621,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-28-odylith-ga-promotion-and-supported-platform-contract.md",
-        "implementation_count": 422,
+        "implementation_count": 425,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -17145,7 +17146,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 151,
+        "shared_component_event_count": 154,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -17153,8 +17154,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -17166,8 +17168,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -17236,8 +17237,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -17726,8 +17728,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "odylith",
@@ -17856,16 +17858,16 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 618,
+          "explicit_count": 621,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 422,
+          "implementation_count": 425,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 486,
+          "meaningful_change_count": 487,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -28692,8 +28694,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 746,
-        "spec": 504
+        "runtime": 747,
+        "spec": 508
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -28702,10 +28704,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 1,
-        "explicit_count": 625,
+        "explicit_count": 628,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
-        "implementation_count": 425,
+        "implementation_count": 428,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -28715,7 +28717,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 158,
+        "shared_component_event_count": 161,
         "status": "implementation",
         "successor_event_count": 5,
         "synthetic_count": 2
@@ -28723,8 +28725,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -28736,8 +28739,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -28806,8 +28808,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -29306,8 +29309,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-05T19:43:45-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "benchmark",
@@ -29440,16 +29443,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 625,
+          "explicit_count": 628,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 425,
+          "implementation_count": 428,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 496,
+          "meaningful_change_count": 497,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -32778,8 +32781,8 @@
         "policy": 0,
         "renderer": 3,
         "runbook": 0,
-        "runtime": 644,
-        "spec": 424
+        "runtime": 645,
+        "spec": 428
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -32788,10 +32791,10 @@
         "decision_count": 12,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 540,
+        "explicit_count": 543,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-release-tag-reuse-and-published-release-anchoring.md",
-        "implementation_count": 384,
+        "implementation_count": 387,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -32801,7 +32804,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 72,
+        "shared_component_event_count": 75,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 1
@@ -32809,8 +32812,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -32822,8 +32826,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
           "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-          "odylith/casebook/bugs/2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -32887,8 +32890,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -33344,8 +33348,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "release"
@@ -33467,16 +33471,16 @@
           "cross_surface_conflict": false,
           "decision_count": 12,
           "decision_evidence": true,
-          "explicit_count": 540,
+          "explicit_count": 543,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 384,
+          "implementation_count": 387,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 453,
+          "meaningful_change_count": 454,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -33543,8 +33547,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 710,
-        "spec": 494
+        "runtime": 711,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -33553,10 +33557,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 601,
+        "explicit_count": 604,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-lane-boundary-runtime-and-toolchain-clarity.md",
-        "implementation_count": 411,
+        "implementation_count": 414,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -33566,7 +33570,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 134,
+        "shared_component_event_count": 137,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -33574,8 +33578,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -33587,8 +33592,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -33657,8 +33661,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -34139,8 +34144,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -34262,16 +34267,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 601,
+          "explicit_count": 604,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 411,
+          "implementation_count": 414,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 478,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -35976,8 +35981,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 739,
-        "spec": 507
+        "runtime": 740,
+        "spec": 511
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -35986,10 +35991,10 @@
         "decision_count": 27,
         "developer_doc_count": 0,
         "direct_event_count": 1,
-        "explicit_count": 623,
+        "explicit_count": 626,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-consumer-upgrade-release-spotlight-and-shell-refresh.md",
-        "implementation_count": 427,
+        "implementation_count": 430,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -35999,7 +36004,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 156,
+        "shared_component_event_count": 159,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -36007,8 +36012,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -36020,8 +36026,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -36090,8 +36095,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -36586,8 +36592,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-27T15:19:58-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "atlas",
@@ -36763,16 +36769,16 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 623,
+          "explicit_count": 626,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 427,
+          "implementation_count": 430,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 492,
+          "meaningful_change_count": 493,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -37668,8 +37674,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 753,
-        "spec": 507
+        "runtime": 754,
+        "spec": 511
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -37678,10 +37684,10 @@
         "decision_count": 27,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 625,
+        "explicit_count": 628,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-5-agent-first-operator-workflow-and-recovery-polish.md",
-        "implementation_count": 427,
+        "implementation_count": 430,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -37691,7 +37697,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 158,
+        "shared_component_event_count": 161,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -37699,8 +37705,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -37712,8 +37719,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -37782,8 +37788,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -38284,8 +38291,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "atlas",
@@ -38467,16 +38474,16 @@
           "cross_surface_conflict": false,
           "decision_count": 27,
           "decision_evidence": true,
-          "explicit_count": 625,
+          "explicit_count": 628,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 427,
+          "implementation_count": 430,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 498,
+          "meaningful_change_count": 499,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -38545,8 +38552,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 752,
-        "spec": 508
+        "runtime": 753,
+        "spec": 512
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -38555,10 +38562,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 638,
+        "explicit_count": 641,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-v0-1-6-release-hardening-product-explanation-and-refactor-discipline.md",
-        "implementation_count": 438,
+        "implementation_count": 441,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -38568,7 +38575,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 171,
+        "shared_component_event_count": 174,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -38576,8 +38583,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -38589,8 +38597,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -38659,8 +38666,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -39161,8 +39169,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "atlas",
@@ -39353,16 +39361,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 638,
+          "explicit_count": 641,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 438,
+          "implementation_count": 441,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 498,
+          "meaningful_change_count": 499,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -41126,8 +41134,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 723,
-        "spec": 503
+        "runtime": 724,
+        "spec": 507
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -41136,10 +41144,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 621,
+        "explicit_count": 624,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-product-canon-tab-for-feature-narrative.md",
-        "implementation_count": 423,
+        "implementation_count": 426,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -41149,7 +41157,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 154,
+        "shared_component_event_count": 157,
         "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -41157,8 +41165,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -41170,8 +41179,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -41240,8 +41248,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -41727,8 +41736,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "compass",
@@ -41901,16 +41910,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 621,
+          "explicit_count": 624,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 423,
+          "implementation_count": 426,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 483,
+          "meaningful_change_count": 484,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -41976,8 +41985,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 717,
-        "spec": 494
+        "runtime": 718,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -41986,10 +41995,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 602,
+        "explicit_count": 605,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-30-odylith-live-benchmarks-drawer-and-dynamic-metric-readout.md",
-        "implementation_count": 412,
+        "implementation_count": 415,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -41999,7 +42008,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 135,
+        "shared_component_event_count": 138,
         "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -42007,8 +42016,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -42020,8 +42030,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -42090,8 +42099,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -42576,8 +42586,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "benchmark",
@@ -42750,16 +42760,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 602,
+          "explicit_count": 605,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 412,
+          "implementation_count": 415,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 482,
+          "meaningful_change_count": 483,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -44416,8 +44426,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 710,
-        "spec": 494
+        "runtime": 711,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -44426,10 +44436,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 602,
+        "explicit_count": 605,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-01-odylith-runtime-integrity-supply-chain-hardening-and-security-posture.md",
-        "implementation_count": 411,
+        "implementation_count": 414,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -44439,7 +44449,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 135,
+        "shared_component_event_count": 138,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -44447,8 +44457,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -44460,8 +44471,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -44530,8 +44540,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -45012,8 +45023,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -45188,16 +45199,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 602,
+          "explicit_count": 605,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 411,
+          "implementation_count": 414,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 478,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -45263,8 +45274,8 @@
         "policy": 0,
         "renderer": 15,
         "runbook": 0,
-        "runtime": 694,
-        "spec": 463
+        "runtime": 695,
+        "spec": 467
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -45273,10 +45284,10 @@
         "decision_count": 18,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 575,
+        "explicit_count": 578,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-02-odylith-swe-bench-external-harness-predictions-contract-and-reproducible-verified-adapter.md",
-        "implementation_count": 393,
+        "implementation_count": 396,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -45286,7 +45297,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 107,
+        "shared_component_event_count": 110,
         "status": "queued",
         "successor_event_count": 1,
         "synthetic_count": 1
@@ -45294,8 +45305,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -45307,8 +45319,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
           "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-          "odylith/casebook/bugs/2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -45372,8 +45383,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -45852,8 +45864,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "benchmark",
@@ -45969,16 +45981,16 @@
           "cross_surface_conflict": false,
           "decision_count": 18,
           "decision_evidence": true,
-          "explicit_count": 575,
+          "explicit_count": 578,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 393,
+          "implementation_count": 396,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 477,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -50681,8 +50693,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 714,
-        "spec": 496
+        "runtime": 715,
+        "spec": 500
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -50691,10 +50703,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 607,
+        "explicit_count": 610,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-v0-1-8-migration-recovery-runtime-trust-and-sync-unblock.md",
-        "implementation_count": 415,
+        "implementation_count": 418,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -50704,7 +50716,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 140,
+        "shared_component_event_count": 143,
         "status": "implementation",
         "successor_event_count": 1,
         "synthetic_count": 2
@@ -50712,8 +50724,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -50725,8 +50738,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -50795,8 +50807,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -51277,8 +51290,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -51414,16 +51427,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 607,
+          "explicit_count": 610,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 415,
+          "implementation_count": 418,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 478,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -51489,8 +51502,8 @@
         "policy": 0,
         "renderer": 10,
         "runbook": 0,
-        "runtime": 702,
-        "spec": 494
+        "runtime": 703,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -51499,10 +51512,10 @@
         "decision_count": 23,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 594,
+        "explicit_count": 597,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-macos-runtime-trust-ignores-os-metadata-noise.md",
-        "implementation_count": 406,
+        "implementation_count": 409,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -51512,7 +51525,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 127,
+        "shared_component_event_count": 130,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -51520,8 +51533,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -51533,8 +51547,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -51593,8 +51606,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -52073,8 +52087,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "odylith",
@@ -52186,16 +52200,16 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 597,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 406,
+          "implementation_count": 409,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 477,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -52262,8 +52276,8 @@
         "policy": 0,
         "renderer": 10,
         "runbook": 0,
-        "runtime": 702,
-        "spec": 494
+        "runtime": 703,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -52272,10 +52286,10 @@
         "decision_count": 23,
         "developer_doc_count": 0,
         "direct_event_count": 1,
-        "explicit_count": 594,
+        "explicit_count": 597,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-repair-and-reinstall-converge-after-partial-runtime-failure.md",
-        "implementation_count": 406,
+        "implementation_count": 409,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -52285,7 +52299,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 127,
+        "shared_component_event_count": 130,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -52293,8 +52307,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -52306,8 +52321,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -52366,8 +52380,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -52846,8 +52861,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-27T21:33:02-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "odylith",
@@ -52959,16 +52974,16 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 597,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 406,
+          "implementation_count": 409,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 477,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -56859,8 +56874,8 @@
         "policy": 0,
         "renderer": 10,
         "runbook": 0,
-        "runtime": 702,
-        "spec": 494
+        "runtime": 703,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -56869,10 +56884,10 @@
         "decision_count": 23,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 594,
+        "explicit_count": 597,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-trust-bootstrap-warning-suppression-and-success-clarity.md",
-        "implementation_count": 406,
+        "implementation_count": 409,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -56882,7 +56897,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 127,
+        "shared_component_event_count": 130,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -56890,8 +56905,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -56903,8 +56919,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -56963,8 +56978,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -57443,8 +57459,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "odylith",
@@ -57556,16 +57572,16 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 597,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 406,
+          "implementation_count": 409,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 477,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -57632,8 +57648,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 710,
-        "spec": 494
+        "runtime": 711,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -57642,10 +57658,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 601,
+        "explicit_count": 604,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-06-odylith-machine-level-verified-runtime-store-for-cross-repo-reuse.md",
-        "implementation_count": 411,
+        "implementation_count": 414,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -57655,7 +57671,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 134,
+        "shared_component_event_count": 137,
         "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -57663,8 +57679,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -57676,8 +57693,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -57741,8 +57757,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -58223,8 +58240,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -58338,16 +58355,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 601,
+          "explicit_count": 604,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 411,
+          "implementation_count": 414,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 478,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -60109,8 +60126,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 730,
-        "spec": 503
+        "runtime": 731,
+        "spec": 507
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -60119,10 +60136,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 2,
-        "explicit_count": 622,
+        "explicit_count": 625,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-07-odylith-v0-1-10-release-feedback-closure-benchmark-reproof-and-ga-lane-hardening.md",
-        "implementation_count": 424,
+        "implementation_count": 427,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -60132,7 +60149,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 155,
+        "shared_component_event_count": 158,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -60140,8 +60157,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -60153,8 +60171,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -60223,8 +60240,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -60714,8 +60732,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-07T17:08:28-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "benchmark",
@@ -60894,16 +60912,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 622,
+          "explicit_count": 625,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 424,
+          "implementation_count": 427,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 487,
+          "meaningful_change_count": 488,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -62539,7 +62557,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -62650,8 +62668,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 757,
-        "spec": 508
+        "runtime": 758,
+        "spec": 512
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -62660,10 +62678,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 639,
+        "explicit_count": 642,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-odylith-release-planning-and-workstream-targeting.md",
-        "implementation_count": 437,
+        "implementation_count": 440,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -62673,7 +62691,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 172,
+        "shared_component_event_count": 175,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -62681,8 +62699,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -62694,8 +62713,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -62764,8 +62782,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -63268,8 +63287,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "atlas",
@@ -63399,16 +63418,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 639,
+          "explicit_count": 642,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 437,
+          "implementation_count": 440,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 500,
+          "meaningful_change_count": 501,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -64287,8 +64306,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 689,
-        "spec": 477
+        "runtime": 690,
+        "spec": 481
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -64297,10 +64316,10 @@
         "decision_count": 25,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 594,
+        "explicit_count": 597,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-current-active-release-visibility-until-explicit-ga.md",
-        "implementation_count": 403,
+        "implementation_count": 406,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -64310,7 +64329,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 126,
+        "shared_component_event_count": 129,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 1
@@ -64318,8 +64337,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -64331,8 +64351,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
           "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-          "odylith/casebook/bugs/2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -64401,8 +64420,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -64875,8 +64895,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "compass",
@@ -65035,16 +65055,16 @@
           "cross_surface_conflict": false,
           "decision_count": 25,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 597,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 403,
+          "implementation_count": 406,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 470,
+          "meaningful_change_count": 471,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -65111,8 +65131,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 693,
-        "spec": 497
+        "runtime": 694,
+        "spec": 501
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -65121,10 +65141,10 @@
         "decision_count": 30,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 605,
+        "explicit_count": 608,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-08-completed-release-members-stay-visible-until-explicit-ga.md",
-        "implementation_count": 407,
+        "implementation_count": 410,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -65134,7 +65154,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 137,
+        "shared_component_event_count": 140,
         "status": "finished",
         "successor_event_count": 0,
         "synthetic_count": 1
@@ -65142,8 +65162,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -65155,8 +65176,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
           "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py",
-          "odylith/casebook/bugs/2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md"
+          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -65225,8 +65245,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materiality.py",
@@ -65702,8 +65723,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "compass",
@@ -65868,16 +65889,16 @@
           "cross_surface_conflict": false,
           "decision_count": 30,
           "decision_evidence": true,
-          "explicit_count": 605,
+          "explicit_count": 608,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 407,
+          "implementation_count": 410,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 473,
+          "meaningful_change_count": 474,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -79705,7 +79726,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -82216,8 +82237,8 @@
         "policy": 0,
         "renderer": 10,
         "runbook": 0,
-        "runtime": 702,
-        "spec": 494
+        "runtime": 703,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -82226,10 +82247,10 @@
         "decision_count": 23,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 594,
+        "explicit_count": 597,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-codex-host-runtime-parity-cli-dispatch-and-target-release-wording-hardening.md",
-        "implementation_count": 406,
+        "implementation_count": 409,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -82239,7 +82260,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 127,
+        "shared_component_event_count": 130,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -82247,8 +82268,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -82260,8 +82282,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -82330,8 +82351,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -82810,8 +82832,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "odylith",
@@ -82969,16 +82991,16 @@
           "cross_surface_conflict": false,
           "decision_count": 23,
           "decision_evidence": true,
-          "explicit_count": 594,
+          "explicit_count": 597,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 406,
+          "implementation_count": 409,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 476,
+          "meaningful_change_count": 477,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -83046,8 +83068,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 710,
-        "spec": 494
+        "runtime": 711,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -83056,10 +83078,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 2,
-        "explicit_count": 601,
+        "explicit_count": 604,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
-        "implementation_count": 411,
+        "implementation_count": 414,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -83069,7 +83091,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 134,
+        "shared_component_event_count": 137,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -83077,8 +83099,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -83090,8 +83113,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -83160,8 +83182,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -83642,8 +83665,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-11T17:40:14-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -83810,16 +83833,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 601,
+          "explicit_count": 604,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 411,
+          "implementation_count": 414,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 478,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -83887,8 +83910,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 710,
-        "spec": 494
+        "runtime": 711,
+        "spec": 498
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -83897,10 +83920,10 @@
         "decision_count": 24,
         "developer_doc_count": 0,
         "direct_event_count": 3,
-        "explicit_count": 601,
+        "explicit_count": 604,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
-        "implementation_count": 411,
+        "implementation_count": 414,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -83910,7 +83933,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 134,
+        "shared_component_event_count": 137,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -83918,8 +83941,9 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -83931,8 +83955,7 @@
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
           "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
           "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
-          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
-          "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+          "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -84001,8 +84024,9 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+          "tests/unit/install/test_greenfield_matrix_failure_response.py",
           "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -84483,8 +84507,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-04-11T19:44:39-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -84651,16 +84675,16 @@
           "cross_surface_conflict": false,
           "decision_count": 24,
           "decision_evidence": true,
-          "explicit_count": 601,
+          "explicit_count": 604,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 411,
+          "implementation_count": 414,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 478,
+          "meaningful_change_count": 479,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -89388,7 +89412,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -101465,7 +101489,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -102319,7 +102343,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -103173,7 +103197,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -104027,7 +104051,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -105627,7 +105651,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -124478,7 +124502,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -124590,8 +124614,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 790,
-        "spec": 514
+        "runtime": 792,
+        "spec": 517
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -124600,10 +124624,10 @@
         "decision_count": 34,
         "developer_doc_count": 0,
         "direct_event_count": 20,
-        "explicit_count": 640,
+        "explicit_count": 643,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
-        "implementation_count": 441,
+        "implementation_count": 444,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -124613,7 +124637,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 174,
+        "shared_component_event_count": 177,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 3
@@ -124621,9 +124645,11 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
-          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_greenfield_commit_journal.py",
+          "tests/unit/runtime/test_greenfield_repository_write_set.py",
+          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -124633,9 +124659,7 @@
           "tests/unit/runtime/test_greenfield_transaction_provenance.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -124704,9 +124728,11 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
-          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_greenfield_commit_journal.py",
+          "tests/unit/runtime/test_greenfield_repository_write_set.py",
+          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -125219,8 +125245,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-05-03T10:46:04-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "benchmark",
@@ -125377,16 +125403,16 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 640,
+          "explicit_count": 643,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 441,
+          "implementation_count": 444,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 511,
+          "meaningful_change_count": 513,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -125454,8 +125480,8 @@
         "policy": 0,
         "renderer": 20,
         "runbook": 0,
-        "runtime": 778,
-        "spec": 518
+        "runtime": 780,
+        "spec": 521
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -125464,10 +125490,10 @@
         "decision_count": 34,
         "developer_doc_count": 0,
         "direct_event_count": 394,
-        "explicit_count": 650,
+        "explicit_count": 653,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-        "implementation_count": 452,
+        "implementation_count": 455,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": true,
         "live_reason": "Implementation workstream is still live.",
@@ -125477,7 +125503,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 183,
+        "shared_component_event_count": 186,
         "status": "implementation",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -125485,9 +125511,11 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
-          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_greenfield_commit_journal.py",
+          "tests/unit/runtime/test_greenfield_repository_write_set.py",
+          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -125497,9 +125525,7 @@
           "tests/unit/runtime/test_greenfield_transaction_provenance.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -125568,9 +125594,11 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
-          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_greenfield_commit_journal.py",
+          "tests/unit/runtime/test_greenfield_repository_write_set.py",
+          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -126080,8 +126108,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "2026-07-17T06:45:02-07:00",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "atlas",
@@ -126245,16 +126273,16 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 650,
+          "explicit_count": 653,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 452,
+          "implementation_count": 455,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 508,
+          "meaningful_change_count": 510,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -126320,8 +126348,8 @@
         "policy": 0,
         "renderer": 19,
         "runbook": 0,
-        "runtime": 768,
-        "spec": 505
+        "runtime": 770,
+        "spec": 508
       },
       "confidence": "Medium",
       "diagnostics": {
@@ -126330,10 +126358,10 @@
         "decision_count": 28,
         "developer_doc_count": 0,
         "direct_event_count": 0,
-        "explicit_count": 612,
+        "explicit_count": 615,
         "fresh_diagrams": true,
         "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
-        "implementation_count": 427,
+        "implementation_count": 430,
         "latest_event_attribution": "shared_component_only",
         "live_actionable": false,
         "live_reason": "",
@@ -126343,7 +126371,7 @@
         "reasoning_state": "",
         "render_drift": false,
         "runbook_count": 0,
-        "shared_component_event_count": 145,
+        "shared_component_event_count": 148,
         "status": "queued",
         "successor_event_count": 0,
         "synthetic_count": 2
@@ -126351,9 +126379,11 @@
       "evidence_bundle": {
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
-          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_greenfield_commit_journal.py",
+          "tests/unit/runtime/test_greenfield_repository_write_set.py",
+          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -126363,9 +126393,7 @@
           "tests/unit/runtime/test_greenfield_transaction_provenance.py",
           "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
           "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
-          "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py"
+          "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
         ],
         "code_references": [],
         "evidence_refs": [
@@ -126424,9 +126452,11 @@
         "blast_radius_class": "cross-surface",
         "changed_artifacts": [
           "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
-          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "tests/unit/runtime/test_greenfield_commit_journal.py",
+          "tests/unit/runtime/test_greenfield_repository_write_set.py",
+          "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+          "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
           "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
           "AGENTS.md",
           "odylith/casebook/bugs/2026-07-17-greenfield-materiality-heuristic-ships-protected-domain-vocabulary.md",
@@ -126928,8 +126958,8 @@
         "freshness": "current",
         "latest_direct_event_ts_iso": "",
         "latest_event_attribution": "shared_component_only",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "dashboard",
@@ -127037,16 +127067,16 @@
           "cross_surface_conflict": false,
           "decision_count": 28,
           "decision_evidence": true,
-          "explicit_count": 612,
+          "explicit_count": 615,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 427,
+          "implementation_count": 430,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 500,
+          "meaningful_change_count": 502,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -129203,7 +129233,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -129640,7 +129670,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -130083,7 +130113,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -130472,7 +130502,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -130587,7 +130617,7 @@
         "policy": 0,
         "renderer": 1,
         "runbook": 0,
-        "runtime": 217,
+        "runtime": 219,
         "spec": 66
       },
       "confidence": "Medium",
@@ -130595,9 +130625,9 @@
         "blast_radius_class": "cross-surface",
         "decision_count": 11,
         "developer_doc_count": 0,
-        "explicit_count": 477,
+        "explicit_count": 480,
         "fresh_diagrams": true,
-        "implementation_count": 370,
+        "implementation_count": 373,
         "live_actionable": true,
         "live_reason": "Linked to live workstream B-141 and B-142.",
         "reasoning_confidence": 0.0,
@@ -130674,8 +130704,8 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "domain-intelligence"
@@ -130821,12 +130851,12 @@
           "cross_surface_conflict": false,
           "decision_count": 11,
           "decision_evidence": true,
-          "explicit_count": 477,
+          "explicit_count": 480,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 370,
+          "implementation_count": 373,
           "implementation_evidence": true,
           "linked_child_count": 3,
           "linked_surface_count": 5,
@@ -132749,7 +132779,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -133134,7 +133164,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -133587,7 +133617,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -134558,7 +134588,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -134903,7 +134933,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -135249,7 +135279,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -135633,7 +135663,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -136487,7 +136517,7 @@
         "policy": 0,
         "renderer": 0,
         "runbook": 0,
-        "runtime": 86,
+        "runtime": 87,
         "spec": 57
       },
       "confidence": "Medium",
@@ -136495,9 +136525,9 @@
         "blast_radius_class": "cross-surface",
         "decision_count": 5,
         "developer_doc_count": 0,
-        "explicit_count": 253,
+        "explicit_count": 256,
         "fresh_diagrams": true,
-        "implementation_count": 151,
+        "implementation_count": 154,
         "live_actionable": true,
         "live_reason": "Linked to live workstream B-021, B-033, and +6 more.",
         "reasoning_confidence": 0.0,
@@ -136574,8 +136604,8 @@
         "basis": "mixed",
         "blast_radius_class": "cross-surface",
         "freshness": "current",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
-        "latest_explicit_ts_iso": "2026-07-17T06:45:02-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
+        "latest_explicit_ts_iso": "2026-07-17T09:23:27-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
           "release"
@@ -136735,12 +136765,12 @@
           "cross_surface_conflict": false,
           "decision_count": 5,
           "decision_evidence": true,
-          "explicit_count": 253,
+          "explicit_count": 256,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 151,
+          "implementation_count": 154,
           "implementation_evidence": true,
           "linked_child_count": 24,
           "linked_surface_count": 5,
@@ -138353,7 +138383,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -139053,7 +139083,7 @@
         ],
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -144443,9 +144473,9 @@
       "diagnostics": {
         "blast_radius_class": "contract-level",
         "decision_count": 5,
-        "explicit_count": 253,
+        "explicit_count": 256,
         "fresh_diagrams": true,
-        "implementation_count": 151,
+        "implementation_count": 154,
         "live_actionable": true,
         "live_reason": "Newer activity outruns the last explicit checkpoint.",
         "reasoning_confidence": 0.0,
@@ -144522,7 +144552,7 @@
         "basis": "mixed",
         "blast_radius_class": "contract-level",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
         "latest_explicit_ts_iso": "2026-03-27T16:07:04-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -144641,12 +144671,12 @@
           "cross_surface_conflict": false,
           "decision_count": 5,
           "decision_evidence": true,
-          "explicit_count": 253,
+          "explicit_count": 256,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 151,
+          "implementation_count": 154,
           "implementation_evidence": true,
           "linked_child_count": 1,
           "linked_surface_count": 5,
@@ -145886,7 +145916,7 @@
         "current_blocker": "No shared proof-state lane keeps the primary blocker, frontier, and falsification memory pinned across delivery, Tribunal, grounded packets, shell previews, Compass, Registry, and chatter.",
         "deployment_truth": {
           "last_live_failing_commit": "unknown",
-          "local_head": "99a93f5ba990d8bc573907231e9a87e824015e51",
+          "local_head": "336b8cf7e062d5d2fc8db6a150fd63e771521741",
           "published_source_commit": "unknown",
           "pushed_head": "unknown",
           "runner_fingerprint": "unknown"
@@ -150637,9 +150667,9 @@
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 34,
-        "explicit_count": 618,
+        "explicit_count": 621,
         "fresh_diagrams": true,
-        "implementation_count": 433,
+        "implementation_count": 436,
         "live_actionable": true,
         "live_reason": "Newer activity outruns the last explicit checkpoint.",
         "reasoning_confidence": 0.0,
@@ -150716,7 +150746,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
         "latest_explicit_ts_iso": "2026-03-01T21:38:40-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -150886,12 +150916,12 @@
           "cross_surface_conflict": false,
           "decision_count": 34,
           "decision_evidence": true,
-          "explicit_count": 618,
+          "explicit_count": 621,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 433,
+          "implementation_count": 436,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 3,
@@ -151294,9 +151324,9 @@
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 11,
-        "explicit_count": 477,
+        "explicit_count": 480,
         "fresh_diagrams": true,
-        "implementation_count": 370,
+        "implementation_count": 373,
         "live_actionable": true,
         "live_reason": "Newer activity outruns the last explicit checkpoint.",
         "reasoning_confidence": 0.0,
@@ -151373,7 +151403,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
         "latest_explicit_ts_iso": "2026-05-01T12:49:51-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -151519,12 +151549,12 @@
           "cross_surface_conflict": false,
           "decision_count": 11,
           "decision_evidence": true,
-          "explicit_count": 477,
+          "explicit_count": 480,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 370,
+          "implementation_count": 373,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 3,
@@ -151595,9 +151625,9 @@
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 19,
-        "explicit_count": 525,
+        "explicit_count": 528,
         "fresh_diagrams": true,
-        "implementation_count": 400,
+        "implementation_count": 403,
         "live_actionable": true,
         "live_reason": "Newer activity outruns the last explicit checkpoint.",
         "reasoning_confidence": 0.0,
@@ -151674,7 +151704,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
         "latest_explicit_ts_iso": "2026-03-03T13:56:10-08:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -151826,12 +151856,12 @@
           "cross_surface_conflict": false,
           "decision_count": 19,
           "decision_evidence": true,
-          "explicit_count": 525,
+          "explicit_count": 528,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 400,
+          "implementation_count": 403,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 3,
@@ -151902,9 +151932,9 @@
       "diagnostics": {
         "blast_radius_class": "local",
         "decision_count": 14,
-        "explicit_count": 550,
+        "explicit_count": 554,
         "fresh_diagrams": true,
-        "implementation_count": 396,
+        "implementation_count": 400,
         "live_actionable": true,
         "live_reason": "Newer activity outruns the last explicit checkpoint.",
         "reasoning_confidence": 0.0,
@@ -151981,7 +152011,7 @@
         "basis": "mixed",
         "blast_radius_class": "local",
         "freshness": "fresh",
-        "latest_event_ts_iso": "2026-07-17T06:48:15-07:00",
+        "latest_event_ts_iso": "2026-07-17T09:27:19-07:00",
         "latest_explicit_ts_iso": "2026-03-27T16:07:04-07:00",
         "latest_signal_kind": "workspace_activity",
         "linked_components": [
@@ -152133,12 +152163,12 @@
           "cross_surface_conflict": false,
           "decision_count": 14,
           "decision_evidence": true,
-          "explicit_count": 550,
+          "explicit_count": 554,
           "frontier_phase": "",
           "generated_only_churn": false,
           "governance_only_local_change": false,
           "has_any_signal": true,
-          "implementation_count": 396,
+          "implementation_count": 400,
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 3,
