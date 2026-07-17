@@ -467,10 +467,14 @@ def _failure_replay_paths(tier_results: Sequence[Mapping[str, Any]]) -> dict[str
             if not failed:
                 continue
             payload = _read_json(path) if path else {}
-            if _exact_failed_subset_available(payload):
+            case_file = _shard_replay_case_file(payload) or str(shard.get("case_file") or "").strip()
+            if _exact_failed_subset_available(
+                payload,
+                case_file=case_file,
+                failed_case_count=int(shard.get("failed_case_count") or 0),
+            ):
                 failed_result_jsons.append(path)
                 continue
-            case_file = _shard_replay_case_file(payload) or str(shard.get("case_file") or "").strip()
             if case_file:
                 shard_replay_case_files.append(case_file)
     return {
@@ -479,21 +483,31 @@ def _failure_replay_paths(tier_results: Sequence[Mapping[str, Any]]) -> dict[str
     }
 
 
-def _exact_failed_subset_available(payload: Mapping[str, Any]) -> bool:
-    if payload.get("exact_failed_subset_available") is True:
-        return True
+def _exact_failed_subset_available(
+    payload: Mapping[str, Any],
+    *,
+    case_file: str,
+    failed_case_count: int,
+) -> bool:
     if str(payload.get("replay_scope") or "") == "source-shard":
         return False
     campaign = _mapping(payload.get("campaign"))
-    if campaign.get("exact_failed_subset_available") is True:
-        return True
     if str(campaign.get("replay_scope") or "") == "source-shard":
         return False
-    if _clusters_have_exact_identity(_mapping_rows(campaign.get("failure_clusters"))):
-        return True
-    if _clusters_have_exact_identity(_mapping_rows(payload.get("failure_clusters"))):
-        return True
-    return any(_result_failed(result) for result in _mapping_rows(payload.get("results")))
+    source_cases = _source_cases(case_file)
+    if not source_cases:
+        return False
+    matched_cases = _matched_failed_source_cases(
+        payload,
+        source_cases=source_cases,
+    )
+    if matched_cases is None:
+        return False
+    expected_count = _reported_failure_count(
+        failed_case_count=failed_case_count,
+        payload=payload,
+    )
+    return expected_count > 0 and len(matched_cases) == expected_count
 
 
 def _shard_replay_case_file(payload: Mapping[str, Any]) -> str:
@@ -508,11 +522,123 @@ def _shard_replay_case_file(payload: Mapping[str, Any]) -> str:
     return ""
 
 
-def _clusters_have_exact_identity(clusters: Sequence[Mapping[str, Any]]) -> bool:
-    for cluster in clusters:
-        if _cluster_values((cluster,), "case_ids") or _cluster_values((cluster,), "case_fingerprints"):
+def _source_cases(case_file: str) -> tuple[Any, ...]:
+    token = str(case_file or "").strip()
+    if not token:
+        return ()
+    try:
+        return load_case_file(Path(token))
+    except RuntimeError:
+        return ()
+
+
+def _matched_failed_source_cases(
+    payload: Mapping[str, Any],
+    *,
+    source_cases: Sequence[Any],
+) -> set[int] | None:
+    matches: set[int] = set()
+    failed_results = [result for result in _mapping_rows(payload.get("results")) if _result_failed(result)]
+    for result in failed_results:
+        case_index = _single_source_case_match(_result_identity_mappings(result), source_cases)
+        if case_index is None:
+            return None
+        matches.add(case_index)
+    for cluster in _payload_failure_clusters(payload):
+        count = int(cluster.get("count") or 0)
+        identity_mappings = _cluster_identity_mappings(cluster)
+        if count <= 0 or len(identity_mappings) < count:
+            return None
+        for identity in identity_mappings:
+            case_index = _single_source_case_match((identity,), source_cases)
+            if case_index is not None:
+                matches.add(case_index)
+        if len(matches) < count:
+            return None
+    return matches or None
+
+
+def _result_identity_mappings(result: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+    mappings = (
+        _mapping(result.get("case")),
+        _mapping(_mapping(result.get("evidence")).get("case")),
+        _mapping(_mapping(result.get("result")).get("case")),
+    )
+    return tuple(mapping for mapping in mappings if mapping)
+
+
+def _cluster_identity_mappings(cluster: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+    mappings: list[Mapping[str, Any]] = []
+    for case_id in _string_values(cluster.get("case_ids")):
+        mappings.append({"id": case_id})
+    for fingerprint in _string_values(cluster.get("case_fingerprints")):
+        mappings.append(
+            {
+                "prompt_sha256": fingerprint,
+                "confirmed_intent_sha256": fingerprint,
+            }
+        )
+    return tuple(mappings)
+
+
+def _single_source_case_match(
+    identity_mappings: Sequence[Mapping[str, Any]],
+    source_cases: Sequence[Any],
+) -> int | None:
+    matches: set[int] = set()
+    for index, case in enumerate(source_cases):
+        if any(_case_matches_identity(case, identity) for identity in identity_mappings):
+            matches.add(index)
+    return next(iter(matches)) if len(matches) == 1 else None
+
+
+def _case_matches_identity(case: Any, identity: Mapping[str, Any]) -> bool:
+    case_id = str(getattr(case, "case_id", "") or "").strip()
+    if case_id and case_id == str(identity.get("id") or "").strip():
+        return True
+    for key, source_value in (
+        ("prompt_sha256", getattr(case, "prompt", "")),
+        ("confirmed_intent_sha256", getattr(case, "confirmed_intent_markdown", "")),
+    ):
+        token = str(identity.get(key) or "").strip().casefold()
+        if _is_sha256(token) and token == _sha256_text(source_value):
             return True
     return False
+
+
+def _payload_failure_clusters(payload: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+    candidates = (
+        *_mapping_rows(payload.get("failure_clusters")),
+        *_mapping_rows(_mapping(payload.get("campaign")).get("failure_clusters")),
+    )
+    unique: list[Mapping[str, Any]] = []
+    seen: set[str] = set()
+    for cluster in candidates:
+        key = json.dumps(cluster, sort_keys=True, separators=(",", ":"))
+        if key not in seen:
+            seen.add(key)
+            unique.append(cluster)
+    return tuple(unique)
+
+
+def _reported_failure_count(*, failed_case_count: int, payload: Mapping[str, Any]) -> int:
+    if failed_case_count > 0:
+        return failed_case_count
+    campaign = _mapping(payload.get("campaign"))
+    campaign_count = int(campaign.get("failed_case_count") or 0)
+    if campaign_count > 0:
+        return campaign_count
+    return sum(int(cluster.get("count") or 0) for cluster in _payload_failure_clusters(payload))
+
+
+def _string_values(value: Any) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes, bytearray)) or not isinstance(value, Sequence):
+        return ()
+    return tuple(str(item).strip() for item in value if str(item).strip())
+
+
+def _is_sha256(value: str) -> bool:
+    return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
 
 
 def _read_json(path: str) -> Mapping[str, Any]:

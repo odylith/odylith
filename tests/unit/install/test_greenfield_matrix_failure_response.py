@@ -122,6 +122,245 @@ def test_failure_response_uses_source_shard_replay_when_result_json_is_unreadabl
     assert "shard_replay_case_files" in response["operator_loop"][2]
 
 
+def test_failure_response_uses_source_shard_replay_for_name_only_failure(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "duplicate-name-shard.json"
+    result_json = tmp_path / "out" / "failed.json"
+    result_json.parent.mkdir()
+    result_json.write_text(
+        json.dumps(
+            {
+                "results": [
+                    {
+                        "name": "shared review",
+                        "status": "failed",
+                        "quality": {"passed": False},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    response = module.failure_response_plan(
+        tier_results=[
+            {
+                "tier": "volume-discovery",
+                "shards": [
+                    {
+                        "name": "duplicate-name-shard",
+                        "case_file": str(case_file),
+                        "output_json": str(result_json),
+                        "failed_case_count": 1,
+                        "failure_clusters": [{"cluster": "manifest.copy", "count": 1}],
+                    }
+                ],
+            }
+        ],
+        failure_clusters=[{"cluster": "manifest.copy", "count": 1}],
+        stopped_reason="volume-discovery:failure-threshold:1",
+        release_readiness_proven=False,
+    )
+
+    assert response["exact_failed_subset_available"] is False
+    assert response["failed_result_jsons"] == []
+    assert response["shard_replay_case_files"] == [str(case_file)]
+    assert "shard_replay_case_files" in response["operator_loop"][2]
+
+
+def test_failure_response_does_not_trust_exact_replay_claim_without_identity(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "source-shard.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "case-001",
+                        "name": "shared review",
+                        "prompt": "Create a greenfield proposal for shared review recovery.",
+                        "required_terms": ("shared", "recovery"),
+                        "leakage_terms": ("shared review",),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    result_json = tmp_path / "out" / "claimed-exact.json"
+    result_json.parent.mkdir()
+    result_json.write_text(
+        json.dumps(
+            {
+                "exact_failed_subset_available": True,
+                "results": [{"name": "shared review", "status": "failed"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    response = module.failure_response_plan(
+        tier_results=[
+            {
+                "tier": "volume-discovery",
+                "shards": [
+                    {
+                        "name": "claimed-exact-shard",
+                        "case_file": str(case_file),
+                        "output_json": str(result_json),
+                        "failed_case_count": 1,
+                        "failure_clusters": [{"cluster": "manifest.copy", "count": 1}],
+                    }
+                ],
+            }
+        ],
+        failure_clusters=[{"cluster": "manifest.copy", "count": 1}],
+        stopped_reason="volume-discovery:failure-threshold:1",
+        release_readiness_proven=False,
+    )
+
+    assert response["exact_failed_subset_available"] is False
+    assert response["failed_result_jsons"] == []
+    assert response["shard_replay_case_files"] == [str(case_file)]
+
+
+def test_failure_response_rejects_partial_cluster_identity_coverage(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "source-shard.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "case-001",
+                        "name": "case one",
+                        "prompt": "Create a greenfield proposal for case one recovery.",
+                        "required_terms": ("case", "recovery"),
+                        "leakage_terms": ("case one",),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    result_json = tmp_path / "out" / "partial-cluster.json"
+    result_json.parent.mkdir()
+    result_json.write_text(
+        json.dumps(
+            {
+                "results": [
+                    {
+                        "name": "case one",
+                        "status": "failed",
+                        "evidence": {"case": {"id": "case-001"}},
+                    }
+                ],
+                "campaign": {
+                    "failed_case_count": 2,
+                    "failure_clusters": [
+                        {
+                            "cluster": "manifest.copy",
+                            "count": 2,
+                            "case_ids": ["case-001"],
+                        }
+                    ],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    response = module.failure_response_plan(
+        tier_results=[
+            {
+                "tier": "volume-discovery",
+                "shards": [
+                    {
+                        "name": "partial-cluster-shard",
+                        "case_file": str(case_file),
+                        "output_json": str(result_json),
+                        "failed_case_count": 2,
+                        "failure_clusters": [{"cluster": "manifest.copy", "count": 2}],
+                    }
+                ],
+            }
+        ],
+        failure_clusters=[{"cluster": "manifest.copy", "count": 2}],
+        stopped_reason="volume-discovery:failure-threshold:2",
+        release_readiness_proven=False,
+    )
+
+    assert response["exact_failed_subset_available"] is False
+    assert response["failed_result_jsons"] == []
+    assert response["shard_replay_case_files"] == [str(case_file)]
+
+
+def test_failure_response_rejects_derived_slug_without_source_case_id(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "duplicate-slug-source.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "name": "shared review",
+                        "prompt": "Create a greenfield proposal for shared review path one.",
+                        "required_terms": ("shared", "review"),
+                        "leakage_terms": ("shared review",),
+                    },
+                    {
+                        "name": "shared review",
+                        "prompt": "Create a greenfield proposal for shared review path two.",
+                        "required_terms": ("shared", "review"),
+                        "leakage_terms": ("shared review",),
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    result_json = tmp_path / "out" / "derived-slug.json"
+    result_json.parent.mkdir()
+    result_json.write_text(
+        json.dumps(
+            {
+                "results": [
+                    {
+                        "name": "shared review",
+                        "status": "failed",
+                        "evidence": {"case": {"id": "shared-review"}},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    response = module.failure_response_plan(
+        tier_results=[
+            {
+                "tier": "volume-discovery",
+                "shards": [
+                    {
+                        "name": "derived-slug-shard",
+                        "case_file": str(case_file),
+                        "output_json": str(result_json),
+                        "failed_case_count": 1,
+                        "failure_clusters": [{"cluster": "manifest.copy", "count": 1}],
+                    }
+                ],
+            }
+        ],
+        failure_clusters=[{"cluster": "manifest.copy", "count": 1}],
+        stopped_reason="volume-discovery:failure-threshold:1",
+        release_readiness_proven=False,
+    )
+
+    assert response["exact_failed_subset_available"] is False
+    assert response["failed_result_jsons"] == []
+    assert response["shard_replay_case_files"] == [str(case_file)]
+
+
 def test_campaign_failure_clusters_do_not_double_count_tier_and_shard_aggregates() -> None:
     module = _module()
 
@@ -171,6 +410,23 @@ def test_campaign_failure_clusters_do_not_double_count_tier_and_shard_aggregates
 
 def test_failure_response_ignores_interrupted_sibling_without_failure_evidence(tmp_path: Path) -> None:
     module = _module()
+    case_file = tmp_path / "failed-case.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "failed-case-001",
+                        "name": "failed case",
+                        "prompt": "Create a greenfield proposal for a failed case recovery path.",
+                        "required_terms": ("failed", "recovery"),
+                        "leakage_terms": ("failed case",),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
     failed_result_json = tmp_path / "failed.json"
     failed_result_json.write_text(
         json.dumps(
@@ -194,6 +450,7 @@ def test_failure_response_ignores_interrupted_sibling_without_failure_evidence(t
                 "shards": [
                     {
                         "name": "failed-shard",
+                        "case_file": str(case_file),
                         "status": "failed",
                         "failed_case_count": 1,
                         "output_json": str(failed_result_json),

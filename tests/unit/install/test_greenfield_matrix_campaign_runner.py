@@ -1214,6 +1214,13 @@ def test_failed_campaign_payload_includes_failure_response_for_casebook_and_repl
     monkeypatch,
 ) -> None:
     module = _module()
+    case_file = tmp_path / "volume-01.json"
+    _write_case_file(
+        case_file,
+        name="case one",
+        stressors=("registry-contract-pressure",),
+        case_id="case-001",
+    )
 
     def fake_run(**kwargs):  # noqa: ANN001
         command = kwargs["command"]
@@ -1251,7 +1258,7 @@ def test_failed_campaign_payload_includes_failure_response_for_casebook_and_repl
         temp_parent=tmp_path / "tmp",
         output_dir=tmp_path / "out",
         telemetry_dir=tmp_path / "telemetry",
-        volume_case_files=(tmp_path / "volume-01.json",),
+        volume_case_files=(case_file,),
         discovery_max_workers=1,
         stop_after_failures=1,
     )
