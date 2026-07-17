@@ -23,7 +23,7 @@ def test_domain_anchored_titles_can_seed_a_conservative_first_path(title: str, e
     ("title", "evidence"),
     (
         ("assay review", "Create assay review."),
-        ("booking workspace for repairs and scheduling", "Create a booking workspace for repairs and scheduling."),
+        ("service workspace for repairs and scheduling", "Create a service workspace for repairs and scheduling."),
         ("extension publisher release notes tool", "Create a tool for extension publishers to use for release notes."),
         ("cell therapy proposal", "Create a cell therapy proposal with several possible operating paths."),
     ),

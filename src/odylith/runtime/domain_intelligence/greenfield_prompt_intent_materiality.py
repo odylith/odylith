@@ -27,7 +27,6 @@ PRODUCT_CONTAINER_TERMS = frozenset(
 )
 GENERIC_SCOPE_TERMS = frozenset(
     {
-        "booking",
         "build",
         "create",
         "dashboard",
