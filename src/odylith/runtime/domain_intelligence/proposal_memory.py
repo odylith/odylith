@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
+from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_terminal_punctuation
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
@@ -111,56 +112,11 @@ def _context_item_text(value: Any, *, fields: Sequence[str]) -> str:
     return _clean(value)
 
 
-_STRUCTURAL_MEMORY_KEYS = frozenset(
-    {
-        "accepted_project",
-        "artifact",
-        "artifacts",
-        "component",
-        "component_id",
-        "component_ids",
-        "components",
-        "diagram",
-        "diagram_id",
-        "diagram_ids",
-        "diagrams",
-        "id",
-        "ids",
-        "origin",
-        "path",
-        "paths",
-        "project_brief",
-        "registry_path",
-        "release_id",
-        "release_selector",
-        "schema_version",
-        "source",
-        "source_path",
-        "spec_path",
-        "status",
-        "stream",
-        "title",
-        "validation_gate",
-        "version",
-        "workstream",
-        "workstreams",
-    }
-)
-_STRUCTURAL_MEMORY_SUFFIXES = (
-    "_id",
-    "_ids",
-    "_path",
-    "_paths",
-    "_selector",
-    "_version",
-)
-
-
 def _strip_memory_public_copy_emphasis(value: Any, *, key: str = "") -> Any:
     """Strip Markdown emphasis only from public prose, never typed memory fields."""
 
     if isinstance(value, str):
-        return value if _structural_memory_key(key) else display_text.strip_inline_markdown_emphasis_tokens(value)
+        return value if _structural_memory_value(key=key, value=value) else display_text.strip_inline_markdown_emphasis_tokens(value)
     if isinstance(value, Mapping):
         return {
             item_key: _strip_memory_public_copy_emphasis(item_value, key=str(item_key))
@@ -175,11 +131,11 @@ def _strip_memory_public_copy_emphasis(value: Any, *, key: str = "") -> Any:
     return value
 
 
-def _structural_memory_key(key: str) -> bool:
+def _structural_memory_value(*, key: str, value: str) -> bool:
     token = str(key or "").strip().casefold()
     if token in {"first_path", "raw_path"}:
         return False
-    return bool(token and (token in _STRUCTURAL_MEMORY_KEYS or token.endswith(_STRUCTURAL_MEMORY_SUFFIXES)))
+    return structural_copy_value(key=token, value=value)
 
 
 def _accepted_project_source_path(repo_root: Path) -> Path:
@@ -242,7 +198,7 @@ def build_greenfield_acceptance_event_preview(
 
 def _normalize_accepted_memory_copy(value: Any, *, key: str = "") -> Any:
     if isinstance(value, str):
-        if _structural_memory_key(key):
+        if _structural_memory_value(key=key, value=value):
             return value
         return normalize_terminal_punctuation(base_adverbial_note_action(value))
     if isinstance(value, Mapping):

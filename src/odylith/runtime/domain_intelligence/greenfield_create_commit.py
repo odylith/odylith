@@ -10,16 +10,8 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-    require_product_create_transaction_compiler_provenance,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-    require_product_create_transaction_intent_authority,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-    require_product_create_transaction_verified,
-)
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_provenance
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
     finalize_greenfield_commit_manifest,
 )
@@ -65,7 +57,7 @@ class GreenfieldCreateCommitError(RuntimeError):
 def commit_greenfield_create_transaction(
     *,
     repo_root: Path,
-    transaction: ProductCreateTransaction,
+    transaction: Any,
     confirm: bool,
     started_at: float | None = None,
 ) -> dict[str, Any]:
@@ -74,9 +66,8 @@ def commit_greenfield_create_transaction(
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
-    require_product_create_transaction_verified(transaction)
-    require_product_create_transaction_intent_authority(transaction, repo_root=root)
-    require_product_create_transaction_compiler_provenance(transaction, repo_root=root)
+    require_sealed_commit_transaction(transaction)
+    require_sealed_commit_provenance(transaction, repo_root=root)
     started = time.perf_counter() if started_at is None else float(started_at)
     write_transaction: GreenfieldApplyTransaction | None = None
     journal: GreenfieldCommitJournal | None = None

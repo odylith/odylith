@@ -162,6 +162,34 @@ def test_source_casing_custody_prefers_lower_first_mixed_case_source_token() -> 
     assert "MRNA Stability" not in restored.project_brief_preview["project_outcome"]
 
 
+def test_source_casing_restores_slash_titles_without_rewriting_typed_metadata() -> None:
+    proposal = {
+        "intent": {
+            "title": "mRNA/GLP-1 Evidence Review",
+        },
+        "confirmed_intent": {
+            "title": "mRNA/GLP-1 Evidence Review",
+        },
+    }
+    payload = build_accepted_project_source_payload(
+        proposal=proposal,
+        backlog_items=(),
+        component_items=(
+            {
+                "component_id": "mrna-glp-review",
+                "owner": "mrna/glp-1 reviewer",
+            },
+        ),
+        diagram_ids=(),
+        release_selector="0.0.1",
+        release_id="R1",
+        validation_gate={"status": "passed"},
+    )
+
+    assert payload["title"] == "mRNA/GLP-1 Evidence Review"
+    assert payload["created"]["components"][0]["owner"] == "mrna/glp-1 reviewer"
+
+
 def test_accepted_project_memory_restores_mixed_case_visible_actors() -> None:
     proposal = {
         "intent": {

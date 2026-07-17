@@ -14,12 +14,24 @@ import json
 from pathlib import Path
 from typing import Any
 
-from odylith import __version__
 from odylith.install.fs import atomic_write_text
-from odylith.runtime.common import derivation_provenance
 from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    build_product_create_transaction_compiler_identity,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_COMPILER
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
@@ -32,59 +44,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
-PRODUCT_CREATE_TRANSACTION_VERSION = "odylith.greenfield.product_create_transaction.v1"
-PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1"
-PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v1"
-PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "compiler_receipt_hash_verified_commit_only"
-PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION = "odylith.greenfield.compiler_receipt.v1"
-_COMPILER_IDENTITY_SOURCE_FILES = (
-    "install/fs.py",
-    "runtime/domain_intelligence/greenfield_apply_diagrams.py",
-    "runtime/domain_intelligence/greenfield_apply_prewrite.py",
-    "runtime/domain_intelligence/greenfield_apply_write.py",
-    "runtime/domain_intelligence/greenfield_compiled_package_contract.py",
-    "runtime/domain_intelligence/greenfield_compiled_readback.py",
-    "runtime/domain_intelligence/greenfield_compiled_write.py",
-    "runtime/domain_intelligence/greenfield_completion_types.py",
-    "runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py",
-    "runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-    "runtime/domain_intelligence/greenfield_confirmed_intent_document.py",
-    "runtime/domain_intelligence/greenfield_confirmed_product_posture_text.py",
-    "runtime/domain_intelligence/greenfield_create_baseline.py",
-    "runtime/domain_intelligence/greenfield_create_commit.py",
-    "runtime/domain_intelligence/greenfield_commit_journal.py",
-    "runtime/domain_intelligence/greenfield_create_manifest.py",
-    "runtime/domain_intelligence/greenfield_create_transaction.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_completion.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_engine.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_findings.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_package_findings.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_patch_apply.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_patchset.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_repair.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_repair_context.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_rescue_probe.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_review.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py",
-    "runtime/domain_intelligence/greenfield_preconfirm_structured_rescue_proof.py",
-    "runtime/domain_intelligence/greenfield_product_intent_envelope.py",
-    "runtime/domain_intelligence/greenfield_project_brief_fields.py",
-    "runtime/domain_intelligence/greenfield_prewrite_commit_result.py",
-    "runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
-    "runtime/domain_intelligence/greenfield_prewrite_stage_root.py",
-    "runtime/domain_intelligence/greenfield_prewrite_stale_cleanup.py",
-    "runtime/domain_intelligence/greenfield_prewrite_surface_stage.py",
-    "runtime/domain_intelligence/greenfield_prewrite_transaction_seal.py",
-    "runtime/domain_intelligence/greenfield_proposals.py",
-    "runtime/domain_intelligence/greenfield_proposals_cli.py",
-    "runtime/domain_intelligence/greenfield_repository_write_set.py",
-    "runtime/domain_intelligence/greenfield_surface_refresh_proof.py",
-    "runtime/domain_intelligence/greenfield_transaction.py",
-    "runtime/surfaces/brand_assets.py",
-    "runtime/surfaces/scaffold_mermaid_diagram.py",
-)
 _PRECONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
     "verify_compiler_receipt",
@@ -277,14 +236,7 @@ def build_product_create_transaction_provenance(
 
 
 def product_create_transaction_compiler_identity() -> dict[str, Any]:
-    source_root = Path(__file__).resolve().parents[2]
-    paths = tuple(source_root / name for name in _COMPILER_IDENTITY_SOURCE_FILES)
-    return {
-        "version": PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
-        "odylith_version": __version__,
-        "source_files_sha256": derivation_provenance.fingerprint_source_files(paths),
-        "source_file_count": len(paths),
-    }
+    return build_product_create_transaction_compiler_identity()
 
 
 def product_create_transaction_repo_fingerprint(repo_root: Path) -> str:

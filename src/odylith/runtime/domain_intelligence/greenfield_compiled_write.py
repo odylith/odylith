@@ -8,13 +8,12 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 
 
 def write_compiled_greenfield_package(
     *,
     root: Path,
-    transaction: ProductCreateTransaction,
+    transaction: Any,
     completion_priority_write_policy: Mapping[str, Any] | None = None,
     temporary_directory: Path | None = None,
 ) -> dict[str, Any]:
@@ -32,7 +31,7 @@ def write_compiled_greenfield_package(
     return result
 
 
-def compiled_greenfield_commit_result(*, transaction: ProductCreateTransaction) -> dict[str, Any]:
+def compiled_greenfield_commit_result(*, transaction: Any) -> dict[str, Any]:
     """Build the exact sealed result persisted before the first governed write."""
 
     package = transaction.prewrite_package

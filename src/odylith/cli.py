@@ -169,6 +169,7 @@ _CODEX_HOST_COMMAND_MODULES = {
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
 _GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals"
+_GREENFIELD_CREATE_MODULE = "odylith.runtime.domain_intelligence.greenfield_create_cli"
 _GREENFIELD_COMMANDS = (
     ("propose", "Draft a provider-free greenfield governance proposal."),
     ("apply", "Apply a confirmed greenfield governance proposal."),
@@ -2397,6 +2398,11 @@ def _cmd_show(args: argparse.Namespace) -> int:
 
 
 def _cmd_greenfield(args: argparse.Namespace) -> int:
+    if args.greenfield_command == "create":
+        return _run_module_main(
+            _GREENFIELD_CREATE_MODULE,
+            ensure_repo_root_args(repo_root=args.repo_root, argv=args.forwarded),
+        )
     return _run_module_main(
         _GREENFIELD_PROPOSALS_MODULE,
         ensure_nested_subcommand_repo_root_args(repo_root=args.repo_root, argv=[args.greenfield_command, *args.forwarded]),

@@ -9,67 +9,8 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_token_casing
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
-
-
-_STRUCTURAL_KEY_EXACT = frozenset(
-    {
-        "anchor",
-        "anchors",
-        "backlog_index",
-        "catalog",
-        "checksum",
-        "component_focus",
-        "component_id",
-        "component_ids",
-        "component_sequence",
-        "diagram_id",
-        "diagram_ids",
-        "fingerprint",
-        "fingerprints",
-        "hash",
-        "href",
-        "id",
-        "ids",
-        "key",
-        "kind",
-        "path",
-        "path_prefixes",
-        "paths",
-        "release_id",
-        "repo_root",
-        "route",
-        "schema_version",
-        "selector",
-        "sha",
-        "slug",
-        "source_mmd",
-        "source_path",
-        "source_png",
-        "source_svg",
-        "spec_ref",
-        "spec_path",
-        "status",
-        "target_path",
-        "url",
-        "version",
-    }
-)
-_STRUCTURAL_KEY_SUFFIXES = (
-    "_fingerprint",
-    "_fingerprints",
-    "_hash",
-    "_href",
-    "_id",
-    "_ids",
-    "_path",
-    "_paths",
-    "_route",
-    "_sha",
-    "_slug",
-    "_slugs",
-    "_url",
-)
 
 
 def proposal_source_casing_text(proposal: Mapping[str, Any]) -> str:
@@ -102,7 +43,7 @@ def restore_source_casing_in_public_copy(value: Any, *, source_text: str, key: s
     if not source_text:
         return value
     if isinstance(value, str):
-        return value if _structural_key(key) else restore_source_token_casing(value, source_text)
+        return value if structural_copy_value(key=key, value=value) else restore_source_token_casing(value, source_text)
     if isinstance(value, Mapping):
         return {
             item_key: restore_source_casing_in_public_copy(
@@ -180,11 +121,6 @@ def package_with_source_casing(package: GreenfieldCompletionPackage) -> Greenfie
             source_text=source_text,
         ),
     )
-
-
-def _structural_key(key: str) -> bool:
-    token = str(key or "").strip().casefold()
-    return bool(token and (token in _STRUCTURAL_KEY_EXACT or token.endswith(_STRUCTURAL_KEY_SUFFIXES)))
 
 
 def _has_source_casing_token(value: str) -> bool:
