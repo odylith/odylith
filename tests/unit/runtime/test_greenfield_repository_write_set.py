@@ -209,6 +209,55 @@ def test_repository_write_set_rolls_back_mid_write_failures(
     assert second.read_text(encoding="utf-8") == "second before\n"
 
 
+def test_repository_write_set_rolls_back_after_file_delete_when_directory_delete_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    stage = tmp_path / "stage"
+    kept = source / "odylith/radar/source/keep.md"
+    deleted = source / "odylith/radar/source/delete.md"
+    removed_directory = source / "odylith/radar/source/obsolete/empty"
+    _write(kept, "keep before\n")
+    _write(deleted, "delete before\n")
+    removed_directory.mkdir(parents=True)
+    _stage_from_source(source, stage)
+    _write(stage / "odylith/radar/source/keep.md", "keep after\n")
+    (stage / "odylith/radar/source/delete.md").unlink()
+    (stage / "odylith/radar/source/obsolete/empty").rmdir()
+    (stage / "odylith/radar/source/obsolete").rmdir()
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=source,
+        staged_root=stage,
+    )
+    real_rmdir = greenfield_repository_write_set.Path.rmdir
+
+    def fail_removed_directory(path: Path) -> None:
+        if path == removed_directory:
+            raise OSError("directory delete failed")
+        real_rmdir(path)
+
+    monkeypatch.setattr(greenfield_repository_write_set.Path, "rmdir", fail_removed_directory)
+    paths = greenfield_repository_write_set.greenfield_repository_write_paths(write_set)
+    transaction = GreenfieldApplyTransaction(source, paths=paths)
+
+    with pytest.raises(OSError, match="directory delete failed"):
+        with transaction:
+            greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
+                repo_root=source,
+                write_set=write_set,
+            )
+
+    assert transaction.rollback_status == "rolled_back"
+    greenfield_repository_write_set.require_greenfield_repository_recovery_preconditions(
+        repo_root=source,
+        write_set=write_set,
+    )
+    assert kept.read_text(encoding="utf-8") == "keep before\n"
+    assert deleted.read_text(encoding="utf-8") == "delete before\n"
+    assert removed_directory.is_dir()
+
+
 def test_atomic_write_removes_temp_sibling_when_interrupted_after_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

@@ -49,6 +49,21 @@ def _new_directory_write_set(root: Path) -> dict[str, object]:
     )
 
 
+def _delete_write_set(root: Path) -> dict[str, object]:
+    stage = root.parent / "stage"
+    _write(root / "odylith/radar/source/first.md", "first before\n")
+    _write(root / "odylith/radar/source/delete.md", "delete before\n")
+    _write(root / "odylith/radar/source/delete-second.md", "delete second before\n")
+    shutil.copytree(root / "odylith", stage / "odylith")
+    _write(stage / "odylith/radar/source/first.md", "first after\n")
+    (stage / "odylith/radar/source/delete.md").unlink()
+    (stage / "odylith/radar/source/delete-second.md").unlink()
+    return greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=root,
+        staged_root=stage,
+    )
+
+
 def _prepared_journal(
     root: Path,
     write_set: dict[str, object],
@@ -119,6 +134,15 @@ with transaction:
                 os.kill(os.getpid(), signal.SIGKILL)
             return result
         greenfield_repository_write_set.atomic_write_bytes = kill_after_first
+    if mode == "after_delete":
+        original = Path.unlink
+        deleted = root / "odylith/radar/source/delete-second.md"
+        def kill_after_delete(path, *, missing_ok=False):
+            result = original(path, missing_ok=missing_ok)
+            if path == deleted:
+                os.kill(os.getpid(), signal.SIGKILL)
+            return result
+        Path.unlink = kill_after_delete
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,
@@ -454,6 +478,28 @@ def test_sigkill_after_first_sealed_write_recovers_the_preconfirm_tree(
     assert recovered is None
     assert (root / "odylith/radar/source/first.md").read_text(encoding="utf-8") == "first before\n"
     assert (root / "odylith/radar/source/second.md").read_text(encoding="utf-8") == "second before\n"
+
+
+def test_sigkill_after_sealed_delete_recovers_the_preconfirm_tree(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "repo"
+    write_set = _delete_write_set(root)
+
+    child = _kill_commit_child(root=root, write_set=write_set, mode="after_delete")
+    recovered = GreenfieldCommitJournal(
+        repo_root=root,
+        transaction_hash="a" * 64,
+        write_set=write_set,
+    ).recover_or_return_committed()
+
+    assert child.returncode == -signal.SIGKILL, child.stderr
+    assert recovered is None
+    assert (root / "odylith/radar/source/first.md").read_text(encoding="utf-8") == "first before\n"
+    assert (root / "odylith/radar/source/delete.md").read_text(encoding="utf-8") == "delete before\n"
+    assert (
+        root / "odylith/radar/source/delete-second.md"
+    ).read_text(encoding="utf-8") == "delete second before\n"
 
 
 def test_sigkill_after_final_readback_finalizes_the_durable_receipt(
