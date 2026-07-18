@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 507,
+    "explicit_event_count": 509,
     "mapped_workstream_evidence_count": 422,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 261,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 508
+    "timeline_event_count": 509
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,50 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 1110,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-07-18T08:01:36-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 1109,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-07-18T07:43:18-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 2,
       "artifacts": [
@@ -41,23 +85,6 @@
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
       "ts_iso": "2026-07-18T06:53:20-07:00",
-      "workstreams": []
-    },
-    {
-      "artifact_count": 1,
-      "artifacts": [
-        "tracked_artifact_1"
-      ],
-      "confidence": "high",
-      "event_index": 1109,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-07-18T06:11:58-07:00",
       "workstreams": []
     },
     {

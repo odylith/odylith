@@ -227,6 +227,8 @@ def write_transaction_custody_issues(
         issues.append("write transaction did not enable rollback")
     if not _is_sha256_digest(transaction.get("product_create_transaction_hash")):
         issues.append("write transaction is missing a valid ProductCreateTransaction hash")
+    if not _is_sha256_digest(transaction.get("product_facts_sha256")):
+        issues.append("write transaction is missing a valid Product Intent facts hash")
     if not _is_sha256_digest(transaction.get("repository_write_set_hash")):
         issues.append("write transaction is missing a valid repository write-set hash")
     issues.extend(
@@ -262,11 +264,16 @@ def _transaction_hash_match_issues(
         return (f"{source} ProductCreateTransaction summary is missing",)
     issues: list[str] = []
     expected_transaction_hash = str(expected.get("transaction_hash", "")).strip()
+    expected_product_facts_hash = str(expected.get("product_facts_sha256", "")).strip()
     expected_write_set_hash = str(expected.get("repository_write_set_hash", "")).strip()
     if not _is_sha256_digest(expected_transaction_hash):
         issues.append(f"{source} ProductCreateTransaction hash is invalid")
     elif str(transaction.get("product_create_transaction_hash", "")).strip() != expected_transaction_hash:
         issues.append(f"write transaction ProductCreateTransaction hash does not match the {source} summary")
+    if not _is_sha256_digest(expected_product_facts_hash):
+        issues.append(f"{source} Product Intent facts hash is invalid")
+    elif str(transaction.get("product_facts_sha256", "")).strip() != expected_product_facts_hash:
+        issues.append(f"write transaction Product Intent facts hash does not match the {source} summary")
     if not _is_sha256_digest(expected_write_set_hash):
         issues.append(f"{source} repository write-set hash is invalid")
     elif str(transaction.get("repository_write_set_hash", "")).strip() != expected_write_set_hash:

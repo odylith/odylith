@@ -128,10 +128,15 @@ def test_runtime_identity_rejects_a_maintainer_source_import(tmp_path: Path, mon
 def test_receipt_identity_rejects_a_stale_or_unbound_success_payload() -> None:
     module = _module()
     payload = {
-        "product_create_transaction": {"transaction_hash": "a" * 64},
+        "product_create_transaction": {
+            "transaction_hash": "a" * 64,
+            "product_facts_sha256": "c" * 64,
+        },
         "commit_manifest": {
+            "product_create_transaction": {"product_facts_sha256": "c" * 64},
             "write_transaction": {
                 "product_create_transaction_hash": "a" * 64,
+                "product_facts_sha256": "c" * 64,
                 "repository_write_set_hash": "b" * 64,
             }
         },
@@ -140,19 +145,47 @@ def test_receipt_identity_rejects_a_stale_or_unbound_success_payload() -> None:
     module._require_receipt_identity(  # noqa: SLF001
         payload,
         transaction_hash="a" * 64,
+        product_facts_hash="c" * 64,
         write_set_hash="b" * 64,
     )
-    payload["commit_manifest"]["write_transaction"]["repository_write_set_hash"] = "c" * 64
+    payload["product_create_transaction"]["product_facts_sha256"] = "d" * 64
     try:
         module._require_receipt_identity(  # noqa: SLF001
             payload,
             transaction_hash="a" * 64,
+            product_facts_hash="c" * 64,
             write_set_hash="b" * 64,
         )
     except RuntimeError as exc:
-        assert "sealed repository write set" in str(exc)
+        assert "sealed Product Intent facts hash" in str(exc)
     else:
         raise AssertionError("receipt identity mismatch should fail the installed proof")
+    payload["product_create_transaction"]["product_facts_sha256"] = "c" * 64
+    payload["commit_manifest"]["product_create_transaction"]["product_facts_sha256"] = "d" * 64
+    try:
+        module._require_receipt_identity(  # noqa: SLF001
+            payload,
+            transaction_hash="a" * 64,
+            product_facts_hash="c" * 64,
+            write_set_hash="b" * 64,
+        )
+    except RuntimeError as exc:
+        assert "sealed Product Intent facts hash" in str(exc)
+    else:
+        raise AssertionError("manifest Product Intent facts mismatch should fail the installed proof")
+    payload["commit_manifest"]["product_create_transaction"]["product_facts_sha256"] = "c" * 64
+    payload["commit_manifest"]["write_transaction"]["product_facts_sha256"] = "d" * 64
+    try:
+        module._require_receipt_identity(  # noqa: SLF001
+            payload,
+            transaction_hash="a" * 64,
+            product_facts_hash="c" * 64,
+            write_set_hash="b" * 64,
+        )
+    except RuntimeError as exc:
+        assert "sealed Product Intent facts hash" in str(exc)
+    else:
+        raise AssertionError("write transaction Product Intent facts mismatch should fail the installed proof")
 
 
 def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp_path: Path, monkeypatch) -> None:
@@ -166,6 +199,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
                 "transaction_hash": "a" * 64,
                 "intent_authority": {
                     "source_format": "operator_prompt_with_edit_evidence",
+                    "product_facts_sha256": "c" * 64,
                     "markdown_source_sha256": module.hashlib.sha256(
                         module.combined_prompt_evidence_source(
                             prompt="Create the exact recovery-bound product.",
@@ -187,7 +221,10 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
             returncode=0,
             stdout=json.dumps(
                 {
-                    "product_create_transaction": {"transaction_hash": "a" * 64},
+                    "product_create_transaction": {
+                        "transaction_hash": "a" * 64,
+                        "product_facts_sha256": "c" * 64,
+                    },
                     "transaction_file": transaction_file,
                 }
             ),
@@ -201,11 +238,13 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
         confirmed_intent_markdown="# Confirmed Recovery Intent\n\n## State\nA durable record.",
     )
 
-    assert module._compile_transaction(  # noqa: SLF001
+    compiled = module._compile_transaction(  # noqa: SLF001
         repo_root=tmp_path,
         env={"PATH": "/usr/bin"},
         case=case,
-    ).transaction_hash == "a" * 64
+    )
+    assert compiled.transaction_hash == "a" * 64
+    assert compiled.product_facts_hash == "c" * 64
     command = captured["command"]
     assert command[command.index("--prompt") + 1] == case.prompt
     assert command[command.index("--edit") + 1] == case.confirmed_intent_markdown
@@ -222,6 +261,7 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
                 "transaction_hash": "a" * 64,
                 "intent_authority": {
                     "source_format": "operator_prompt_with_edit_evidence",
+                    "product_facts_sha256": "c" * 64,
                     "markdown_source_sha256": "f" * 64,
                 },
                 "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
@@ -236,7 +276,10 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
             returncode=0,
             stdout=json.dumps(
                 {
-                    "product_create_transaction": {"transaction_hash": "a" * 64},
+                    "product_create_transaction": {
+                        "transaction_hash": "a" * 64,
+                        "product_facts_sha256": "c" * 64,
+                    },
                     "transaction_file": transaction_file,
                 }
             ),
@@ -291,6 +334,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         operator_conflict_recovery_path_bound=True,
         installed_runtime_module_path="/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         installed_runtime_version="0.1.15",
+        product_facts_sha256="c" * 64,
         recovery_case=recovery_case,
     )
 
@@ -321,8 +365,17 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         "operator_conflict_recovery_path_bound": True,
         "installed_runtime_module_path": "/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         "installed_runtime_version": "0.1.15",
+        "product_facts_sha256": "c" * 64,
         "recovery_case": recovery_case,
     }
+
+
+def test_recovery_proof_requires_a_persisted_product_intent_facts_hash() -> None:
+    module = _module()
+
+    issues = module._missing_required_evidence({})  # noqa: SLF001
+
+    assert "installed recovery proof did not record a valid Product Intent facts hash" in issues
 
 
 def test_recovery_proof_rejects_a_success_record_missing_required_observations() -> None:
@@ -381,12 +434,13 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
         return {
             "sigkill_returncode": -9,
             "recovery_returncode": 0,
-            "same_hash_retry_returncode": 0,
-            "journal_state_after_crash": "applying",
-            "journal_state_after_recovery": "committed",
-            "governed_write_observed_after_crash": True,
-            "installed_runtime_module_path": "/tmp/managed/odylith/__init__.py",
-            "installed_runtime_version": "0.1.15",
+                "same_hash_retry_returncode": 0,
+                "journal_state_after_crash": "applying",
+                "journal_state_after_recovery": "committed",
+                "governed_write_observed_after_crash": True,
+                "installed_runtime_module_path": "/tmp/managed/odylith/__init__.py",
+                "installed_runtime_version": "0.1.15",
+                "product_facts_sha256": "c" * 64,
         }
 
     def conflict_phase(**kwargs):  # noqa: ANN001
@@ -405,12 +459,13 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
         captured_cases.append(kwargs["case"])
         return {
             "fsync_failure_returncode": 2,
-            "fsync_retry_returncode": 0,
-            "fsync_same_hash_retry_returncode": 0,
-            "fsync_journal_state_after_failure": "rolled_back",
-            "fsync_journal_state_after_retry": "committed",
-            "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
-        }
+                "fsync_retry_returncode": 0,
+                "fsync_same_hash_retry_returncode": 0,
+                "fsync_journal_state_after_failure": "rolled_back",
+                "fsync_journal_state_after_retry": "committed",
+                "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
+                "product_facts_sha256": "c" * 64,
+            }
 
     monkeypatch.setattr(module, "_run_sigkill_recovery_phase", sigkill_phase)
     monkeypatch.setattr(module, "_run_operator_conflict_recovery_phase", conflict_phase)
@@ -424,7 +479,25 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     )
 
     assert proof.passed
+    assert proof.product_facts_sha256 == "c" * 64
     assert captured_cases == [case, case, case]
+
+    def mismatched_fsync_phase(**kwargs):  # noqa: ANN001
+        facts = fsync_phase(**kwargs)
+        facts["product_facts_sha256"] = "d" * 64
+        return facts
+
+    monkeypatch.setattr(module, "_run_fsync_rollback_phase", mismatched_fsync_phase)
+
+    mismatch = module.run_installed_commit_recovery_proof(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        recovery_case=case,
+    )
+
+    assert not mismatch.passed
+    assert "installed recovery phases did not retain the same sealed Product Intent facts hash" in mismatch.issues
     assert all(captured is case for captured in captured_cases)
     assert proof.recovery_case["id"] == case.case_id
     assert proof.recovery_case["binding_scope"] == "campaign-case-v1"
@@ -445,6 +518,7 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
         lambda **_kwargs: module._CompiledRecoveryTransaction(  # noqa: SLF001
             transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
             transaction_hash=transaction_hash,
+            product_facts_hash="c" * 64,
             write_set_hash="b" * 64,
             intent_authority={},
         ),

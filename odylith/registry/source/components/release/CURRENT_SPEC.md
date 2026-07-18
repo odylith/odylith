@@ -610,14 +610,14 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: 2 tracked artifact references retained
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
   - Evidence: 2 tracked artifact references retained
-- **2026-07-18 · Decision:** Decision evidence linked this component to governed work with 2 tracked artifact references retained.
+- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
   - Evidence: 2 tracked artifact references retained
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
   - Evidence: 2 tracked artifact references retained
 - **2026-07-18 · Decision:** Decision evidence linked this component to governed work with 2 tracked artifact references retained.
   - Evidence: 2 tracked artifact references retained
+- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

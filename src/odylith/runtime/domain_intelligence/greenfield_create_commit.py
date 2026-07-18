@@ -119,15 +119,17 @@ def commit_greenfield_create_transaction(
                     whole_project_elapsed_seconds=time.perf_counter() - started,
                     write_transaction_status="committed",
                 )
-                final_manifest["product_create_transaction"] = transaction.summary()
+                transaction_summary = transaction.summary()
+                final_manifest["product_create_transaction"] = transaction_summary
                 write_manifest = dict(final_manifest.get("write_transaction") or {})
                 write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
+                write_manifest["product_facts_sha256"] = str(transaction_summary["product_facts_sha256"])
                 write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
                 write_manifest["commit_only"] = True
                 final_manifest["write_transaction"] = write_manifest
                 final_manifest["whole_project_elapsed_seconds"] = round(time.perf_counter() - started, 3)
                 result["commit_manifest"] = final_manifest
-                result["product_create_transaction"] = transaction.summary()
+                result["product_create_transaction"] = transaction_summary
                 journal.mark_applying(result)
                 actual_result = greenfield_compiled_write.write_compiled_greenfield_package(
                     root=root,

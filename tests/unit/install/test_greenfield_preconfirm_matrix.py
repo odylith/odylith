@@ -764,6 +764,7 @@ def _passing_write_transaction() -> dict[str, object]:
         "prewrite_clean_before_commit": True,
         "rollback_guard": "enabled",
         "product_create_transaction_hash": "a" * 64,
+        "product_facts_sha256": "c" * 64,
         "repository_write_set_hash": "b" * 64,
     }
 
@@ -771,6 +772,7 @@ def _passing_write_transaction() -> dict[str, object]:
 def _passing_transaction_summary() -> dict[str, object]:
     return {
         "transaction_hash": "a" * 64,
+        "product_facts_sha256": "c" * 64,
         "repository_write_set_hash": "b" * 64,
     }
 
