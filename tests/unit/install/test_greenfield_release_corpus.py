@@ -156,7 +156,12 @@ def _approved_review(case_id: str, audit_request_sha256: str) -> dict[str, Any]:
     }
 
 
-def _prepared_single_audit(module: Any, tmp_path: Path) -> tuple[Path, Any, Mapping[str, Any], Path, Path, Any]:
+def _prepared_single_audit(
+    module: Any,
+    tmp_path: Path,
+    *,
+    confirmed_intent_markdown: str = "",
+) -> tuple[Path, Any, Mapping[str, Any], Path, Path, Any]:
     source_root, _manifest = _capture_fixture(module, tmp_path)
     case_file = tmp_path / "cases.json"
     module.build_release_case_file(
@@ -166,18 +171,19 @@ def _prepared_single_audit(module: Any, tmp_path: Path) -> tuple[Path, Any, Mapp
         paired_artifacts_per_family=0,
     )
     loader = sys.modules["greenfield_matrix_case_file"].load_case_file
+    if confirmed_intent_markdown:
+        case_payload = json.loads(case_file.read_text(encoding="utf-8"))
+        case_payload["cases"][0]["confirmed_intent_markdown"] = confirmed_intent_markdown
+        case_file.write_text(_json_text(case_payload), encoding="utf-8")
     case = loader(case_file)[0]
     verifier = sys.modules["greenfield_release_audit_verification"]
-    request = _audit_request(
-        case_id=case.case_id,
-        source_id=case.provenance.source_id,
-        source_uri=case.provenance.source_uri,
-        prompt_sha256=case.provenance.derived_prompt_sha256,
-        source_artifact_sha256=case.provenance.source_artifact_sha256,
-        source_excerpt_sha256=case.provenance.source_excerpt_sha256,
-        source_family=case.provenance.source_family,
-        stressors=case.stressors,
+    evidence = sys.modules["greenfield_matrix_release_audit_evidence"]
+    request = evidence.audit_request_for_case(
+        case,
+        source_verification_method="github-repository-api-check-v1",
+        source_verification_uri=f"https://api.github.com/repositories/{case.provenance.source_id.rsplit(':', 1)[1]}",
     )
+    request["audit_request_sha256"] = evidence.audit_request_sha256(request)
     plan_path = tmp_path / "audit-plan.json"
     plan_path.write_text(
         _json_text(
@@ -678,6 +684,41 @@ def test_audit_writer_binds_explicit_review_results_to_verified_source_records(t
     assert bundle["claim_class"] == "operator-supplied-hash-bound-review-evidence"
     assert len(audits) == 1
     assert not any(f"release audit `{case.case_id}`" in issue for issue in evaluation.issues)
+
+
+def test_audit_writer_binds_edited_intent_hash_into_the_reviewed_record(tmp_path: Path) -> None:
+    module = _module()
+    edit = "# Edited Intent\n\n## First Complete Path\nAn operator records one evidence-backed decision."
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(
+        module,
+        tmp_path,
+        confirmed_intent_markdown=edit,
+    )
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=tmp_path / "audit-bundle",
+        repo_root=tmp_path,
+    )
+
+    expected_hash = hashlib.sha256(edit.encode("utf-8")).hexdigest()
+    assert bundle["audits"][0]["confirmed_intent_sha256"] == expected_hash
+    evidence_path = tmp_path / bundle["audits"][0]["review_evidence_path"]
+    assert json.loads(evidence_path.read_text(encoding="utf-8"))["confirmed_intent_sha256"] == expected_hash
 
 
 @pytest.mark.parametrize(

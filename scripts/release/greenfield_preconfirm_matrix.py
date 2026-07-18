@@ -40,7 +40,6 @@ from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
-from greenfield_matrix_corpus_provenance import case_provenance_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
@@ -64,9 +63,11 @@ from greenfield_matrix_run_lease import write_matrix_payload  # noqa: E402
 from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402
 from greenfield_commit_recovery_proof import PROOF_SCOPE as COMMIT_RECOVERY_PROOF_SCOPE  # noqa: E402
 from greenfield_commit_recovery_proof import run_installed_commit_recovery_proof  # noqa: E402
+from greenfield_commit_recovery_proof import select_recovery_case  # noqa: E402
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION  # noqa: E402
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: E402
+from greenfield_preconfirm_matrix_cases import case_evidence  # noqa: E402
 from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
 from greenfield_preconfirm_matrix_cases import default_cases, rescue_smoke_case  # noqa: E402
 from greenfield_preconfirm_matrix_cases import raise_for_release_case_expectations  # noqa: E402
@@ -911,7 +912,7 @@ def _run_compiled_greenfield_create(
             ),
             0.0,
         )
-    if not transaction_hash or (proposal_mode == "product_create_transaction" and not transaction_file):
+    if proposal_mode != "product_create_transaction" or not transaction_hash or not transaction_file:
         return (
             SimpleNamespace(
                 returncode=2,
@@ -926,8 +927,6 @@ def _run_compiled_greenfield_create(
             ),
             0.0,
         )
-    if not transaction_file:
-        transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     started = time.perf_counter()
     create = _run(
         cwd=repo_root,
@@ -1047,23 +1046,7 @@ def _failed_case_evidence_manifest(
 
 
 def _case_evidence(case: GreenfieldMatrixCase) -> Mapping[str, Any]:
-    evidence = {
-        "id": str(getattr(case, "case_id", "") or case.slug),
-        "name": case.name,
-        "slug": case.slug,
-        "source_file": str(getattr(case, "source_file", "") or ""),
-        "expectation": case_expectation(case),
-        "tags": list(getattr(case, "tags", ()) or ()),
-        "stressors": list(getattr(case, "stressors", ()) or ()),
-        "prompt_sha256": _sha256_text(case.prompt),
-        "required_terms": list(case.required_terms),
-        "leakage_terms": list(getattr(case, "leakage_terms", ()) or ()),
-        "provenance": case_provenance_summary(getattr(case, "provenance", None)),
-    }
-    confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
-    if confirmed_intent:
-        evidence["confirmed_intent_sha256"] = _sha256_text(confirmed_intent)
-    return evidence
+    return case_evidence(case)
 
 
 def _artifact_text_inventory(package: Any) -> list[Mapping[str, str]]:
@@ -1963,6 +1946,21 @@ def _execute_matrix_campaign(
 
     temp_parent = lease.temp_namespace
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
+    approved_audit_bindings = (
+        corpus_provenance.summary.get("approved_audit_bindings")
+        if campaign_config.proof_tier == "release"
+        and isinstance(corpus_provenance.summary.get("approved_audit_bindings"), Mapping)
+        else {}
+    )
+    recovery_case = (
+        select_recovery_case(
+            planned_cases,
+            proof_tier=campaign_config.proof_tier,
+            approved_audit_bindings=approved_audit_bindings,
+        )
+        if bool(args.include_commit_recovery_proof)
+        else None
+    )
     with command_lifecycle_observer(_matrix_command_observer(telemetry)):
         results = run_matrix(
             dist_dir=Path(args.dist_dir),
@@ -1986,6 +1984,14 @@ def _execute_matrix_campaign(
                 dist_dir=Path(args.dist_dir),
                 version=str(args.version),
                 temp_parent=temp_parent,
+                recovery_case=recovery_case,
+                require_release_binding=campaign_config.proof_tier == "release",
+                release_audit_binding=(
+                    approved_audit_bindings.get(recovery_case.case_id)
+                    if recovery_case is not None
+                    and isinstance(approved_audit_bindings.get(recovery_case.case_id), Mapping)
+                    else None
+                ),
             )
             if bool(args.include_commit_recovery_proof)
             else None

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -154,8 +155,118 @@ def test_receipt_identity_rejects_a_stale_or_unbound_success_payload() -> None:
         raise AssertionError("receipt identity mismatch should fail the installed proof")
 
 
+def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path = tmp_path / transaction_file
+    transaction_path.parent.mkdir(parents=True)
+    transaction_path.write_text(
+        json.dumps(
+            {
+                "transaction_hash": "a" * 64,
+                "intent_authority": {
+                    "source_format": "operator_prompt_with_edit_evidence",
+                    "markdown_source_sha256": module.hashlib.sha256(
+                        module.combined_prompt_evidence_source(
+                            prompt="Create the exact recovery-bound product.",
+                            edit_evidence="# Confirmed Recovery Intent\n\n## State\nA durable record.",
+                        ).encode("utf-8")
+                    ).hexdigest(),
+                },
+                "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **kwargs: captured.update(kwargs)
+        or SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "product_create_transaction": {"transaction_hash": "a" * 64},
+                    "transaction_file": transaction_file,
+                }
+            ),
+            stderr="",
+        ),
+    )
+    case = module.GreenfieldMatrixCase(
+        name="bound recovery case",
+        prompt="Create the exact recovery-bound product.",
+        required_terms=("recovery",),
+        confirmed_intent_markdown="# Confirmed Recovery Intent\n\n## State\nA durable record.",
+    )
+
+    assert module._compile_transaction(  # noqa: SLF001
+        repo_root=tmp_path,
+        env={"PATH": "/usr/bin"},
+        case=case,
+    ).transaction_hash == "a" * 64
+    command = captured["command"]
+    assert command[command.index("--prompt") + 1] == case.prompt
+    assert command[command.index("--edit") + 1] == case.confirmed_intent_markdown
+
+
+def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_evidence(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_path = tmp_path / transaction_file
+    transaction_path.parent.mkdir(parents=True)
+    transaction_path.write_text(
+        json.dumps(
+            {
+                "transaction_hash": "a" * 64,
+                "intent_authority": {
+                    "source_format": "operator_prompt_with_edit_evidence",
+                    "markdown_source_sha256": "f" * 64,
+                },
+                "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **_kwargs: SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "product_create_transaction": {"transaction_hash": "a" * 64},
+                    "transaction_file": transaction_file,
+                }
+            ),
+            stderr="",
+        ),
+    )
+    case = module.GreenfieldMatrixCase(
+        name="bound recovery case",
+        prompt="Create the exact recovery-bound product.",
+        required_terms=("recovery",),
+        confirmed_intent_markdown="# Confirmed Recovery Intent\n\n## State\nA durable record.",
+    )
+
+    try:
+        module._compile_transaction(repo_root=tmp_path, env={"PATH": "/usr/bin"}, case=case)  # noqa: SLF001
+    except RuntimeError as exc:
+        assert "did not bind the exact prompt and edit evidence" in str(exc)
+    else:
+        raise AssertionError("unbound edit evidence should fail installed recovery compilation")
+
+
 def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
     module = _module()
+    case = module.GreenfieldMatrixCase(
+        name="bound recovery case",
+        prompt="Create the exact recovery-bound product.",
+        required_terms=("recovery",),
+        case_id="release-bound-recovery",
+    )
+    recovery_case = module.recovery_case_evidence(case)
     proof = module.GreenfieldInstalledCommitRecoveryProof(
         status="passed",
         issues=(),
@@ -180,12 +291,14 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         operator_conflict_recovery_path_bound=True,
         installed_runtime_module_path="/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         installed_runtime_version="0.1.15",
+        recovery_case=recovery_case,
     )
 
     assert proof.passed
     assert proof.to_dict() == {
         "status": "passed",
         "scope": "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback",
+        "recovery_case_scope": "one_selected_campaign_case_all_recovery_phases",
         "issues": [],
         "sigkill_returncode": -9,
         "recovery_returncode": 0,
@@ -208,6 +321,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         "operator_conflict_recovery_path_bound": True,
         "installed_runtime_module_path": "/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         "installed_runtime_version": "0.1.15",
+        "recovery_case": recovery_case,
     }
 
 
@@ -235,6 +349,85 @@ def test_recovery_proof_rejects_a_success_record_missing_required_observations()
     assert "installed recovery proof did not retain the conflict recovery snapshot" in issues
     assert "installed recovery proof did not report the retained conflict recovery path" in issues
     assert "installed recovery proof did not record required installed_runtime_module_path" in issues
+    assert "installed recovery proof did not record required recovery_case.id" in issues
+
+
+def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    install_script = dist_dir / "install.sh"
+    install_script.parent.mkdir()
+    install_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    case = module.GreenfieldMatrixCase(
+        name="bound recovery case",
+        prompt="Create the exact recovery-bound product.",
+        required_terms=("recovery",),
+        case_id="campaign-recovery-case",
+    )
+    captured_cases: list[object] = []
+
+    class _Server:
+        def shutdown(self) -> None:
+            return None
+
+        def server_close(self) -> None:
+            return None
+
+    monkeypatch.setattr(module, "_serve_directory", lambda _path: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_installed_release_env", lambda **_kwargs: {"PATH": "/usr/bin"})
+
+    def sigkill_phase(**kwargs):  # noqa: ANN001
+        captured_cases.append(kwargs["case"])
+        return {
+            "sigkill_returncode": -9,
+            "recovery_returncode": 0,
+            "same_hash_retry_returncode": 0,
+            "journal_state_after_crash": "applying",
+            "journal_state_after_recovery": "committed",
+            "governed_write_observed_after_crash": True,
+            "installed_runtime_module_path": "/tmp/managed/odylith/__init__.py",
+            "installed_runtime_version": "0.1.15",
+        }
+
+    def conflict_phase(**kwargs):  # noqa: ANN001
+        captured_cases.append(kwargs["case"])
+        return {
+            "operator_conflict_returncode": 2,
+            "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
+            "operator_conflict_rollback_status": "not_started",
+            "operator_conflict_journal_state": "applying",
+            "operator_mutation_preserved": True,
+            "operator_conflict_snapshot_retained": True,
+            "operator_conflict_recovery_path_bound": True,
+        }
+
+    def fsync_phase(**kwargs):  # noqa: ANN001
+        captured_cases.append(kwargs["case"])
+        return {
+            "fsync_failure_returncode": 2,
+            "fsync_retry_returncode": 0,
+            "fsync_same_hash_retry_returncode": 0,
+            "fsync_journal_state_after_failure": "rolled_back",
+            "fsync_journal_state_after_retry": "committed",
+            "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
+        }
+
+    monkeypatch.setattr(module, "_run_sigkill_recovery_phase", sigkill_phase)
+    monkeypatch.setattr(module, "_run_operator_conflict_recovery_phase", conflict_phase)
+    monkeypatch.setattr(module, "_run_fsync_rollback_phase", fsync_phase)
+
+    proof = module.run_installed_commit_recovery_proof(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        recovery_case=case,
+    )
+
+    assert proof.passed
+    assert captured_cases == [case, case, case]
+    assert all(captured is case for captured in captured_cases)
+    assert proof.recovery_case["id"] == case.case_id
+    assert proof.recovery_case["binding_scope"] == "campaign-case-v1"
 
 
 def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_path: Path, monkeypatch) -> None:
@@ -249,7 +442,12 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
     monkeypatch.setattr(
         module,
         "_compile_transaction",
-        lambda **_kwargs: (".odylith/runtime/greenfield/product-create-transaction.v1.json", transaction_hash, "b" * 64),
+        lambda **_kwargs: module._CompiledRecoveryTransaction(  # noqa: SLF001
+            transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            transaction_hash=transaction_hash,
+            write_set_hash="b" * 64,
+            intent_authority={},
+        ),
     )
 
     def fake_faulted_create(**_kwargs):  # noqa: ANN001
@@ -278,6 +476,11 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
         run_root=tmp_path,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
+        case=module.GreenfieldMatrixCase(
+            name="bound recovery case",
+            prompt="Create the exact recovery-bound product.",
+            required_terms=("recovery",),
+        ),
     )
 
     assert facts == {

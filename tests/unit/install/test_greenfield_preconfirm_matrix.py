@@ -2102,7 +2102,7 @@ def test_greenfield_create_times_only_hash_bound_commit_phase(monkeypatch, tmp_p
     clock = {"seconds": 0.0}
     proposed = SimpleNamespace(
         returncode=0,
-        stdout=json.dumps({"product_create_transaction": {"transaction_hash": "sealed-hash"}}),
+        stdout=json.dumps(_proposed_transaction_payload()),
         stderr="",
     )
     created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
@@ -2126,6 +2126,43 @@ def test_greenfield_create_times_only_hash_bound_commit_phase(monkeypatch, tmp_p
 
     assert response is created
     assert create_seconds == 0.2
+
+
+def test_greenfield_create_rejects_an_unexpected_proposal_mode_without_running_create(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    stale_transaction = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    stale_transaction.parent.mkdir(parents=True)
+    stale_transaction.write_text('{"transaction_hash":"stale"}\n', encoding="utf-8")
+    proposed = SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps(
+            {
+                "mode": "unexpected_success_mode",
+                "product_create_transaction": {"transaction_hash": "stale"},
+            }
+        ),
+        stderr="",
+    )
+    commands: list[list[str]] = []
+
+    def fake_run(*, command, **_kwargs):  # noqa: ANN001
+        commands.append(command)
+        return proposed
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    response, create_seconds = module._run_compiled_greenfield_create(  # noqa: SLF001
+        repo_root=tmp_path,
+        env={},
+        prompt="Create a concise project.",
+        timeout=120,
+    )
+
+    assert response.returncode == 2
+    assert json.loads(response.stdout)["mode"] == "error"
+    assert create_seconds == 0.0
+    assert len(commands) == 1
+    assert commands[0][1:3] == ["greenfield", "propose"]
 
 
 def test_greenfield_create_retains_material_clarification_payload(monkeypatch, tmp_path: Path) -> None:

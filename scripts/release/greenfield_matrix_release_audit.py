@@ -13,6 +13,7 @@ from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_release_artifacts import sha256_text
 from greenfield_matrix_release_audit_evidence import AUTOMATED_ADVERSARIAL_REVIEWER_KIND
 from greenfield_matrix_release_audit_evidence import audit_evidence_issues
+from greenfield_matrix_release_audit_evidence import case_confirmed_intent_sha256
 from greenfield_matrix_release_audit_evidence import audit_request_for_case
 from greenfield_matrix_release_audit_evidence import audit_request_sha256
 from greenfield_matrix_release_audit_evidence import audit_source_verification_issues
@@ -41,6 +42,7 @@ class GreenfieldReleaseAudit:
     review_status: str
     review_evidence_path: str
     review_evidence_sha256: str
+    confirmed_intent_sha256: str = ""
 
 
 def evaluate_release_audits(
@@ -49,12 +51,11 @@ def evaluate_release_audits(
     audits: Sequence[GreenfieldReleaseAudit],
     policy: Any,
     root: Path,
-) -> tuple[list[str], set[str]]:
-    """Return audit failures and the case IDs that satisfy the hash-bound review contract."""
+) -> tuple[list[str], dict[str, GreenfieldReleaseAudit]]:
+    """Return audit failures and evaluator-approved records keyed by case ID."""
 
     issues: list[str] = []
-    approved: set[str] = set()
-    approved_audits: list[GreenfieldReleaseAudit] = []
+    approved: dict[str, GreenfieldReleaseAudit] = {}
     seen: set[str] = set()
     verification_hashes: dict[Path, str] = {}
     review_hashes: dict[Path, str] = {}
@@ -74,6 +75,9 @@ def evaluate_release_audits(
         expected_prompt_hash = sha256_text(str(getattr(case, "prompt", "") or ""))
         if audit.prompt_sha256 != expected_prompt_hash:
             issues.append(f"release audit `{audit.case_id}` does not match prompt_sha256")
+            continue
+        if audit.confirmed_intent_sha256 != case_confirmed_intent_sha256(case):
+            issues.append(f"release audit `{audit.case_id}` does not match confirmed_intent_sha256")
             continue
         if audit.source_artifact_sha256 != getattr(provenance, "source_artifact_sha256", ""):
             issues.append(f"release audit `{audit.case_id}` does not match source_artifact_sha256")
@@ -151,9 +155,8 @@ def evaluate_release_audits(
         if evidence_issues:
             issues.extend(f"release audit `{audit.case_id}` {issue}" for issue in evidence_issues)
             continue
-        approved.add(audit.case_id)
-        approved_audits.append(audit)
-    _coverage_issues(cases_by_id, approved, approved_audits, policy, issues)
+        approved[audit.case_id] = audit
+    _coverage_issues(cases_by_id, approved, policy, issues)
     return issues, approved
 
 
@@ -252,8 +255,7 @@ def _verified_file_text(
 
 def _coverage_issues(
     cases_by_id: Mapping[str, Any],
-    approved: set[str],
-    approved_audits: Sequence[GreenfieldReleaseAudit],
+    approved: Mapping[str, GreenfieldReleaseAudit],
     policy: Any,
     issues: list[str],
 ) -> None:
@@ -264,7 +266,7 @@ def _coverage_issues(
             f"{required_audits} approved hash-bound automated reviews; received {len(approved)}"
         )
     review_context_counts: dict[str, int] = {}
-    for audit in approved_audits:
+    for audit in approved.values():
         label = audit.review_context_label
         review_context_counts[label] = review_context_counts.get(label, 0) + 1
     minimum_reviewer_count = int(getattr(policy, "minimum_distinct_review_context_labels", 1))

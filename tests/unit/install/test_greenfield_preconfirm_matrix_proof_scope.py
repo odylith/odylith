@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import json
 import sys
@@ -25,6 +26,23 @@ def _module():
     if str(SCRIPTS_ROOT) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_ROOT))
     return _load_module(SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py", "greenfield_preconfirm_matrix")
+
+
+def _release_audit_binding(case) -> dict[str, str]:  # noqa: ANN001
+    audit_evidence = importlib.import_module("greenfield_matrix_release_audit_evidence")
+    source_verification_method = "github-rest-v3"
+    source_verification_uri = "https://api.github.com/repositories/295992065"
+    request = audit_evidence.audit_request_for_case(
+        case,
+        source_verification_method=source_verification_method,
+        source_verification_uri=source_verification_uri,
+    )
+    return {
+        "audit_request_sha256": audit_evidence.audit_request_sha256(request),
+        "confirmed_intent_sha256": audit_evidence.case_confirmed_intent_sha256(case),
+        "source_verification_method": source_verification_method,
+        "source_verification_uri": source_verification_uri,
+    }
 
 
 def _write(path: Path, text: str) -> None:
@@ -342,6 +360,209 @@ def test_main_fails_when_installed_commit_recovery_proof_fails(monkeypatch, tmp_
     assert payload["status"] == "failed"
     assert payload["proof_scope"]["commit_recovery_path"] == module.COMMIT_RECOVERY_PROOF_SCOPE
     assert payload["commit_recovery_proof"]["issues"] == ["installed recovery failed"]
+
+
+def test_main_binds_commit_recovery_to_the_selected_external_case(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    external_case = module.GreenfieldMatrixCase(
+        name="external recovery case",
+        prompt="Create an externally supplied recovery-bound product.",
+        required_terms=("external", "recovery"),
+        case_id="release-external-recovery",
+        confirmed_intent_markdown="# External Intent\n\n## State\nA durable record.",
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(module, "_load_cli_case_files", lambda _paths: (external_case,))
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+
+    def fake_commit_recovery(**kwargs):  # noqa: ANN001
+        captured.update(kwargs)
+        return module.GreenfieldInstalledCommitRecoveryProof(
+            status="passed",
+            issues=(),
+            recovery_case=module.case_evidence(kwargs["recovery_case"]),
+        )
+
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
+
+    exit_code = module.main(
+        [
+            "--case-file",
+            str(tmp_path / "external-cases.json"),
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--proof-tier",
+            "discovery",
+            "--include-commit-recovery-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert captured["recovery_case"] is external_case
+    assert payload["commit_recovery_proof"]["recovery_case"]["id"] == external_case.case_id
+    assert payload["commit_recovery_proof"]["recovery_case"]["confirmed_intent_sha256"]
+
+
+def test_recovery_case_selection_ignores_clarification_cases_and_rejects_unproven_release_cases() -> None:
+    module = _module()
+    clarification_case = module.GreenfieldMatrixCase(
+        name="clarification case",
+        prompt="Clarify this product first.",
+        required_terms=("clarify",),
+        case_id="a-clarification",
+        expectation=module.CLARIFICATION_REQUIRED_EXPECTATION,
+    )
+    committed_case = module.GreenfieldMatrixCase(
+        name="committed case",
+        prompt="Create the committed product.",
+        required_terms=("committed",),
+        case_id="b-committed",
+    )
+
+    assert module.select_recovery_case(
+        (clarification_case, committed_case),
+        proof_tier="discovery",
+    ) == committed_case
+    with pytest.raises(RuntimeError, match="approved audit binding"):
+        module.select_recovery_case((committed_case,), proof_tier="release")
+
+
+def test_release_recovery_selection_requires_an_edited_source_provenanced_case() -> None:
+    module = _module()
+    source_cases = module.load_case_file(
+        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v1.json"
+    )
+
+    confirmed_case = next(case for case in source_cases if case.case_id == "release-accessibility-002-topic")
+    binding = _release_audit_binding(confirmed_case)
+    audit_binding = {
+        confirmed_case.case_id: binding
+    }
+
+    selected = module.select_recovery_case(
+        source_cases,
+        proof_tier="release",
+        approved_audit_bindings=audit_binding,
+    )
+
+    assert selected.case_id == "release-accessibility-002-topic"
+    assert selected.confirmed_intent_markdown
+    assert selected.provenance.corpus_tier == "source_provenanced"
+    assert selected.provenance.derived_prompt_sha256
+
+    with pytest.raises(RuntimeError, match="matching audited confirmed intent hash"):
+        module.select_recovery_case(
+            source_cases,
+            proof_tier="release",
+            approved_audit_bindings={
+                confirmed_case.case_id: {
+                    "audit_request_sha256": binding["audit_request_sha256"],
+                    "confirmed_intent_sha256": "f" * 64,
+                    "source_verification_method": binding["source_verification_method"],
+                    "source_verification_uri": binding["source_verification_uri"],
+                }
+            },
+        )
+
+    with pytest.raises(RuntimeError, match="audited request bound to current case semantics"):
+        module.select_recovery_case(
+            source_cases,
+            proof_tier="release",
+            approved_audit_bindings={
+                confirmed_case.case_id: {
+                    **audit_binding[confirmed_case.case_id],
+                    "audit_request_sha256": "a" * 64,
+                }
+            },
+        )
+
+
+def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recovery(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    module = _module()
+    source_cases = module.load_case_file(
+        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v1.json"
+    )
+    recovery_case = next(case for case in source_cases if case.case_id == "release-accessibility-002-topic")
+    binding = _release_audit_binding(recovery_case)
+    captured: dict[str, object] = {}
+    args = module.argparse.Namespace(
+        dist_dir=str(tmp_path / "dist"),
+        version="0.1.15",
+        include_browser_proof=True,
+        install_mode="fresh",
+        allow_partial_stressor_coverage=False,
+        include_commit_recovery_proof=True,
+        include_rescue_smoke=False,
+        include_natural_rescue_proof=False,
+        json_output=True,
+    )
+    config = module.MatrixCampaignConfig(
+        phase=module.campaign_phase_from_value("gate"),
+        proof_tier=module.proof_tier_from_value("release"),
+        telemetry_jsonl=None,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        required_stressors=(),
+    )
+    corpus = type(
+        "ReleaseCorpus",
+        (),
+        {
+            "summary": {"approved_audit_bindings": {recovery_case.case_id: binding}},
+            "to_dict": lambda self: {"status": "passed"},
+        },
+    )()
+    lease = type(
+        "Lease",
+        (),
+        {
+            "temp_namespace": tmp_path,
+            "to_dict": lambda self: {"temporary_namespace": str(tmp_path)},
+        },
+    )()
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
+    monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
+
+    def fake_commit_recovery(**kwargs):  # noqa: ANN001
+        captured.update(kwargs)
+        return module.GreenfieldInstalledCommitRecoveryProof(
+            status="passed",
+            issues=(),
+            recovery_case={"binding_scope": "release-confirmed-intent-v1"},
+        )
+
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
+
+    exit_code = module._execute_matrix_campaign(  # noqa: SLF001
+        args=args,
+        selected_cases=(recovery_case,),
+        planned_cases=(recovery_case,),
+        release_audits=(),
+        campaign_config=config,
+        corpus_provenance=corpus,
+        output_path=None,
+        lease=lease,
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert captured["recovery_case"] is recovery_case
+    assert captured["require_release_binding"] is True
+    assert captured["release_audit_binding"] == binding
+    assert payload["commit_recovery_proof"]["recovery_case"]["binding_scope"] == "release-confirmed-intent-v1"
 
 
 def test_temp_cleanup_proof_finds_leftover_files_and_symlinks(tmp_path: Path) -> None:

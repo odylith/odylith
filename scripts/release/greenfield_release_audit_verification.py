@@ -28,7 +28,7 @@ from greenfield_release_source_capture import sync_file
 from greenfield_release_source_capture import validated_timestamp
 
 
-AUDIT_REQUEST_PLAN_VERSION = "odylith.greenfield.matrix.audit-request-plan.v2"
+AUDIT_REQUEST_PLAN_VERSION = "odylith.greenfield.matrix.audit-request-plan.v3"
 AUDIT_SOURCE_VERIFICATION_VERSION = "odylith.greenfield.matrix.audit-source-verification.v2"
 AUDIT_SOURCE_VERIFICATION_MANIFEST = "source-verifications.v2.json"
 

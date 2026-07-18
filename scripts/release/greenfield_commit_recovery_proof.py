@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
@@ -12,8 +12,15 @@ import signal
 from typing import Any
 import uuid
 
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+    combined_prompt_evidence_source,
+)
+
 from greenfield_process import run_command_with_group_timeout as _run
-from greenfield_preconfirm_matrix_cases import default_cases
+from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
+from greenfield_commit_recovery_cases import recovery_case_evidence
+from greenfield_commit_recovery_cases import select_recovery_case
+from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from local_release_smoke import _cleanup_smoke_temp_root
 from local_release_smoke import _local_release_env
 from local_release_smoke import _serve_directory
@@ -85,6 +92,7 @@ class GreenfieldInstalledCommitRecoveryProof:
     operator_conflict_recovery_path_bound: bool = False
     installed_runtime_module_path: str = ""
     installed_runtime_version: str = ""
+    recovery_case: Mapping[str, Any] = field(default_factory=dict)
 
     @property
     def passed(self) -> bool:
@@ -94,6 +102,7 @@ class GreenfieldInstalledCommitRecoveryProof:
         return {
             "status": self.status,
             "scope": PROOF_SCOPE,
+            "recovery_case_scope": RECOVERY_CASE_SCOPE,
             "issues": list(self.issues),
             "sigkill_returncode": self.sigkill_returncode,
             "recovery_returncode": self.recovery_returncode,
@@ -116,7 +125,18 @@ class GreenfieldInstalledCommitRecoveryProof:
             "operator_conflict_recovery_path_bound": self.operator_conflict_recovery_path_bound,
             "installed_runtime_module_path": self.installed_runtime_module_path,
             "installed_runtime_version": self.installed_runtime_version,
+            "recovery_case": dict(self.recovery_case),
         }
+
+
+@dataclass(frozen=True)
+class _CompiledRecoveryTransaction:
+    """Sealed transaction identity and the authority that bound its input evidence."""
+
+    transaction_file: str
+    transaction_hash: str
+    write_set_hash: str
+    intent_authority: Mapping[str, Any]
 
 
 def run_installed_commit_recovery_proof(
@@ -124,14 +144,23 @@ def run_installed_commit_recovery_proof(
     dist_dir: Path,
     version: str,
     temp_parent: Path,
+    recovery_case: GreenfieldMatrixCase,
+    require_release_binding: bool = False,
+    release_audit_binding: Mapping[str, Any] | None = None,
 ) -> GreenfieldInstalledCommitRecoveryProof:
-    """Prove installed hard-crash recovery, exact retry, and fsync rollback."""
+    """Prove installed recovery against one deterministic campaign case."""
 
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-commit-recovery-{uuid.uuid4().hex}"
     server = None
     issues: list[str] = []
     facts: dict[str, Any] = {}
     try:
+        case_binding = recovery_case_evidence(
+            recovery_case,
+            require_release_binding=require_release_binding,
+            release_audit_binding=release_audit_binding,
+        )
+        facts["recovery_case"] = case_binding
         release_dir = Path(dist_dir).expanduser().resolve()
         install_script = release_dir / "install.sh"
         if not install_script.is_file():
@@ -145,6 +174,7 @@ def run_installed_commit_recovery_proof(
                 install_script=install_script,
                 env=env,
                 version=version,
+                case=recovery_case,
             )
         )
         facts.update(
@@ -152,9 +182,17 @@ def run_installed_commit_recovery_proof(
                 run_root=run_root,
                 install_script=install_script,
                 env=env,
+                case=recovery_case,
             )
         )
-        facts.update(_run_fsync_rollback_phase(run_root=run_root, install_script=install_script, env=env))
+        facts.update(
+            _run_fsync_rollback_phase(
+                run_root=run_root,
+                install_script=install_script,
+                env=env,
+                case=recovery_case,
+            )
+        )
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         issues.append(str(exc))
     finally:
@@ -193,6 +231,7 @@ def run_installed_commit_recovery_proof(
         operator_conflict_recovery_path_bound=bool(facts.get("operator_conflict_recovery_path_bound")),
         installed_runtime_module_path=str(facts.get("installed_runtime_module_path") or ""),
         installed_runtime_version=str(facts.get("installed_runtime_version") or ""),
+        recovery_case=_mapping(facts.get("recovery_case")),
     )
 
 
@@ -235,6 +274,36 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
     for key in ("installed_runtime_module_path", "installed_runtime_version"):
         if not str(facts.get(key) or "").strip():
             missing.append(f"installed recovery proof did not record required {key}")
+    recovery_case = _mapping(facts.get("recovery_case"))
+    for key in ("id", "prompt_sha256"):
+        if not str(recovery_case.get(key) or "").strip():
+            missing.append(f"installed recovery proof did not record required recovery_case.{key}")
+    binding_scope = str(recovery_case.get("binding_scope") or "")
+    if binding_scope not in {"campaign-case-v1", "release-confirmed-intent-v1"}:
+        missing.append("installed recovery proof did not record a recognized recovery_case.binding_scope")
+    if binding_scope == "release-confirmed-intent-v1":
+        for key in ("confirmed_intent_sha256",):
+            if not str(recovery_case.get(key) or "").strip():
+                missing.append(f"installed recovery proof did not record required recovery_case.{key}")
+        provenance = _mapping(recovery_case.get("provenance"))
+        for key in (
+            "corpus_tier",
+            "source_id",
+            "source_family",
+            "source_artifact_sha256",
+            "source_excerpt_sha256",
+            "derived_prompt_sha256",
+        ):
+            if not str(provenance.get(key) or "").strip():
+                missing.append(f"installed recovery proof did not record required recovery_case.provenance.{key}")
+        if provenance.get("derived_prompt_sha256") != recovery_case.get("prompt_sha256"):
+            missing.append("installed recovery proof did not retain a recovery_case prompt hash bound to provenance")
+        audit_binding = _mapping(recovery_case.get("release_audit_binding"))
+        audit_request_sha256 = str(audit_binding.get("audit_request_sha256") or "")
+        if len(audit_request_sha256) != 64 or any(char not in "0123456789abcdef" for char in audit_request_sha256):
+            missing.append("installed recovery proof did not retain a valid release audit request hash")
+        if audit_binding.get("confirmed_intent_sha256") != recovery_case.get("confirmed_intent_sha256"):
+            missing.append("installed recovery proof did not retain a release audit binding for the confirmed intent")
     return missing
 
 
@@ -244,13 +313,21 @@ def _run_sigkill_recovery_phase(
     install_script: Path,
     env: Mapping[str, str],
     version: str,
+    case: GreenfieldMatrixCase,
 ) -> dict[str, Any]:
     repo_root = run_root / "sigkill-same-hash"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
     runtime_identity = _installed_runtime_identity(repo_root=repo_root, env=env, version=version)
-    transaction_file, transaction_hash, write_set_hash = _compile_transaction(repo_root=repo_root, env=env)
+    compiled = _compile_transaction(
+        repo_root=repo_root,
+        env=env,
+        case=case,
+    )
     before = _governed_fingerprint(repo_root)
-    command = _create_command(transaction_file=transaction_file, transaction_hash=transaction_hash)
+    command = _create_command(
+        transaction_file=compiled.transaction_file,
+        transaction_hash=compiled.transaction_hash,
+    )
     crashed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_SIGKILL_FAULT)
     if crashed.returncode != -signal.SIGKILL:
         raise RuntimeError(
@@ -260,31 +337,31 @@ def _run_sigkill_recovery_phase(
     after_crash = _governed_fingerprint(repo_root)
     if not after_crash or after_crash == before:
         raise RuntimeError("SIGKILL proof did not observe a partial sealed governed write before recovery")
-    journal = _journal_state(repo_root=repo_root, transaction_hash=transaction_hash)
+    journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if journal.get("state") != "applying":
         raise RuntimeError("SIGKILL proof did not leave the installed commit journal in applying state")
     recovered = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     recovery_payload = _require_success_payload(recovered, label="installed SIGKILL recovery create")
     _require_receipt_identity(
         recovery_payload,
-        transaction_hash=transaction_hash,
-        write_set_hash=write_set_hash,
+        transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash,
     )
     after_recovery = _governed_fingerprint(repo_root)
     if not after_recovery or after_recovery == before:
         raise RuntimeError("installed SIGKILL recovery did not materialize the sealed governed package")
-    completed_journal = _journal_state(repo_root=repo_root, transaction_hash=transaction_hash)
+    completed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if completed_journal.get("state") != "committed":
         raise RuntimeError("installed SIGKILL recovery did not produce a committed durable receipt")
-    journal_root = _journal_root(repo_root, transaction_hash)
+    journal_root = _journal_root(repo_root, compiled.transaction_hash)
     if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
         raise RuntimeError("installed SIGKILL recovery retained rollback artifacts after durable commit")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     retry_payload = _require_success_payload(retried, label="installed same-hash retry")
     _require_receipt_identity(
         retry_payload,
-        transaction_hash=transaction_hash,
-        write_set_hash=write_set_hash,
+        transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash,
     )
     if retry_payload != recovery_payload:
         raise RuntimeError("installed same-hash retry did not return the durable commit receipt")
@@ -306,14 +383,22 @@ def _run_operator_conflict_recovery_phase(
     run_root: Path,
     install_script: Path,
     env: Mapping[str, str],
+    case: GreenfieldMatrixCase,
 ) -> dict[str, Any]:
     """Prove recovery preserves a later operator mutation instead of restoring over it."""
 
     repo_root = run_root / "operator-conflict"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    transaction_file, transaction_hash, _write_set_hash = _compile_transaction(repo_root=repo_root, env=env)
+    compiled = _compile_transaction(
+        repo_root=repo_root,
+        env=env,
+        case=case,
+    )
     before = _governed_fingerprint(repo_root)
-    command = _create_command(transaction_file=transaction_file, transaction_hash=transaction_hash)
+    command = _create_command(
+        transaction_file=compiled.transaction_file,
+        transaction_hash=compiled.transaction_hash,
+    )
     crashed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_SIGKILL_FAULT)
     if crashed.returncode != -signal.SIGKILL:
         raise RuntimeError(
@@ -342,10 +427,10 @@ def _run_operator_conflict_recovery_phase(
             "installed conflict recovery reported unexpected rollback status: "
             f"{rollback_status or 'missing'}"
         )
-    journal = _journal_state(repo_root=repo_root, transaction_hash=transaction_hash)
+    journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if journal.get("state") != "applying":
         raise RuntimeError("installed conflict recovery changed the interrupted journal state")
-    journal_root = _journal_root(repo_root, transaction_hash)
+    journal_root = _journal_root(repo_root, compiled.transaction_hash)
     recovery_path = Path(str(commit_failure.get("recovery_path") or "")).expanduser()
     if not recovery_path.is_absolute():
         recovery_path = repo_root / recovery_path
@@ -366,12 +451,25 @@ def _run_operator_conflict_recovery_phase(
     }
 
 
-def _run_fsync_rollback_phase(*, run_root: Path, install_script: Path, env: Mapping[str, str]) -> dict[str, Any]:
+def _run_fsync_rollback_phase(
+    *,
+    run_root: Path,
+    install_script: Path,
+    env: Mapping[str, str],
+    case: GreenfieldMatrixCase,
+) -> dict[str, Any]:
     repo_root = run_root / "fsync-rollback"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
-    transaction_file, transaction_hash, write_set_hash = _compile_transaction(repo_root=repo_root, env=env)
+    compiled = _compile_transaction(
+        repo_root=repo_root,
+        env=env,
+        case=case,
+    )
     before = _governed_fingerprint(repo_root)
-    command = _create_command(transaction_file=transaction_file, transaction_hash=transaction_hash)
+    command = _create_command(
+        transaction_file=compiled.transaction_file,
+        transaction_hash=compiled.transaction_hash,
+    )
     failed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_FSYNC_FAILURE_FAULT)
     failure_payload = _require_error_payload(failed, label="installed fsync rollback create")
     commit_failure = _mapping(failure_payload.get("commit_failure"))
@@ -382,23 +480,23 @@ def _run_fsync_rollback_phase(*, run_root: Path, install_script: Path, env: Mapp
         raise RuntimeError("installed fsync failure did not report a completed rollback")
     if _governed_fingerprint(repo_root) != before:
         raise RuntimeError("installed fsync failure left partial governed writes after rollback")
-    failed_journal = _journal_state(repo_root=repo_root, transaction_hash=transaction_hash)
+    failed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if failed_journal.get("state") != "rolled_back":
         raise RuntimeError("installed fsync failure did not persist a rolled_back journal state")
-    journal_root = _journal_root(repo_root, transaction_hash)
+    journal_root = _journal_root(repo_root, compiled.transaction_hash)
     if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
         raise RuntimeError("installed fsync failure retained rollback artifacts after cleanup")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     retry_payload = _require_success_payload(retried, label="installed fsync rollback retry")
     _require_receipt_identity(
         retry_payload,
-        transaction_hash=transaction_hash,
-        write_set_hash=write_set_hash,
+        transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash,
     )
     after_retry = _governed_fingerprint(repo_root)
     if not after_retry:
         raise RuntimeError("installed fsync rollback retry did not materialize the sealed governed package")
-    completed_journal = _journal_state(repo_root=repo_root, transaction_hash=transaction_hash)
+    completed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if completed_journal.get("state") != "committed":
         raise RuntimeError("installed fsync rollback retry did not produce a committed durable receipt")
     if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
@@ -407,8 +505,8 @@ def _run_fsync_rollback_phase(*, run_root: Path, install_script: Path, env: Mapp
     same_hash_payload = _require_success_payload(same_hash_retry, label="installed fsync same-hash retry")
     _require_receipt_identity(
         same_hash_payload,
-        transaction_hash=transaction_hash,
-        write_set_hash=write_set_hash,
+        transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash,
     )
     if same_hash_payload != retry_payload:
         raise RuntimeError("installed fsync same-hash retry did not return the durable commit receipt")
@@ -437,21 +535,30 @@ def _install_repo(*, repo_root: Path, install_script: Path, env: Mapping[str, st
     _require_success(installed, label="installed commit recovery install")
 
 
-def _compile_transaction(*, repo_root: Path, env: Mapping[str, str]) -> tuple[str, str, str]:
+def _compile_transaction(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    case: GreenfieldMatrixCase,
+) -> _CompiledRecoveryTransaction:
+    command = [
+        "./.odylith/bin/odylith",
+        "greenfield",
+        "propose",
+        "--repo-root",
+        ".",
+        "--prompt",
+        case.prompt,
+        "--format",
+        "json",
+    ]
+    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
+    if confirmed_intent:
+        command.extend(["--edit", confirmed_intent])
     proposed = _run(
         cwd=repo_root,
         env=dict(env),
-        command=[
-            "./.odylith/bin/odylith",
-            "greenfield",
-            "propose",
-            "--repo-root",
-            ".",
-            "--prompt",
-            _proof_prompt(),
-            "--format",
-            "json",
-        ],
+        command=command,
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
     payload = _require_success_payload(proposed, label="installed commit recovery propose")
@@ -473,7 +580,34 @@ def _compile_transaction(*, repo_root: Path, env: Mapping[str, str]) -> tuple[st
     write_set_hash = str(sealed_write_set.get("write_set_hash") or "").strip()
     if sealed_hash != transaction_hash or not write_set_hash:
         raise RuntimeError("installed greenfield propose returned an inconsistent sealed transaction identity")
-    return transaction_file, transaction_hash, write_set_hash
+    intent_authority = _mapping(sealed_transaction.get("intent_authority"))
+    _require_case_evidence_bound_to_transaction(case=case, intent_authority=intent_authority)
+    return _CompiledRecoveryTransaction(
+        transaction_file=transaction_file,
+        transaction_hash=transaction_hash,
+        write_set_hash=write_set_hash,
+        intent_authority=intent_authority,
+    )
+
+
+def _require_case_evidence_bound_to_transaction(
+    *,
+    case: GreenfieldMatrixCase,
+    intent_authority: Mapping[str, Any],
+) -> None:
+    """Prove the sealed transaction authority contains the exact recovery inputs."""
+
+    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
+    expected_source_format = "operator_prompt_with_edit_evidence" if confirmed_intent else "operator_prompt"
+    if str(intent_authority.get("source_format") or "").strip() != expected_source_format:
+        raise RuntimeError("installed greenfield transaction authority did not record the expected input format")
+    expected_evidence = combined_prompt_evidence_source(
+        prompt=case.prompt,
+        edit_evidence=confirmed_intent,
+    )
+    expected_hash = hashlib.sha256(expected_evidence.encode("utf-8")).hexdigest()
+    if str(intent_authority.get("markdown_source_sha256") or "").strip() != expected_hash:
+        raise RuntimeError("installed greenfield transaction authority did not bind the exact prompt and edit evidence")
 
 
 def _run_faulted_create(*, repo_root: Path, env: Mapping[str, str], command: list[str], fault_script: str):
@@ -529,12 +663,6 @@ def _installed_runtime_identity(*, repo_root: Path, env: Mapping[str, str], vers
         "installed_runtime_module_path": str(module_path),
         "installed_runtime_version": installed_version,
     }
-
-
-def _proof_prompt() -> str:
-    """Reuse an approved high-variance case without duplicating product-language fixtures."""
-
-    return default_cases()[0].prompt
 
 
 def _create_command(*, transaction_file: str, transaction_hash: str) -> list[str]:
@@ -663,10 +791,3 @@ def _command_detail(result: Any) -> str:
     stderr = str(getattr(result, "stderr", "") or "").strip()
     output = "\n".join(part for part in (stdout, stderr) if part)
     return f"returncode={result.returncode}; output={output[-1000:]!r}"
-
-
-__all__ = [
-    "GreenfieldInstalledCommitRecoveryProof",
-    "PROOF_SCOPE",
-    "run_installed_commit_recovery_proof",
-]

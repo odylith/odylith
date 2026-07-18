@@ -20,6 +20,7 @@ from greenfield_matrix_release_audit_evidence import RELEASE_AUDIT_CLAIM_CLASS
 from greenfield_matrix_release_audit_evidence import RELEASE_AUDIT_EVIDENCE_VERSION
 from greenfield_matrix_release_audit_evidence import audit_request_for_case
 from greenfield_matrix_release_audit_evidence import audit_request_sha256
+from greenfield_matrix_release_audit_evidence import case_confirmed_intent_sha256
 from greenfield_matrix_release_audit_evidence import request_hash_matches
 from greenfield_release_audit_verification import AUDIT_REQUEST_PLAN_VERSION
 from greenfield_release_audit_verification import AUDIT_SOURCE_VERIFICATION_VERSION
@@ -35,7 +36,7 @@ from greenfield_release_source_capture import sync_file
 
 AUDIT_REVIEW_RESULTS_VERSION = "odylith.greenfield.matrix.audit-review-results.v3"
 AUDIT_REVIEW_RESULTS_CLAIM_CLASS = "operator-supplied-hash-bound-review-results"
-AUDIT_BUNDLE_FILENAME = "greenfield-release-audit.v8.json"
+AUDIT_BUNDLE_FILENAME = "greenfield-release-audit.v9.json"
 
 
 def write_release_audit_bundle(
@@ -98,6 +99,7 @@ def write_release_audit_bundle(
             audit = {
                 "case_id": case_id,
                 "prompt_sha256": provenance.derived_prompt_sha256,
+                "confirmed_intent_sha256": case_confirmed_intent_sha256(case),
                 "source_artifact_sha256": provenance.source_artifact_sha256,
                 "source_excerpt_sha256": provenance.source_excerpt_sha256,
                 "audit_request_sha256": request["audit_request_sha256"],
@@ -212,6 +214,7 @@ def _validate_binding(
     provenance = case.provenance
     provenance_values = {
         "prompt_sha256": provenance.derived_prompt_sha256,
+        "confirmed_intent_sha256": case_confirmed_intent_sha256(case),
         "source_artifact_sha256": provenance.source_artifact_sha256,
         "source_excerpt_sha256": provenance.source_excerpt_sha256,
         "source_id": provenance.source_id,
@@ -249,6 +252,7 @@ def _review_evidence(
         "version": RELEASE_AUDIT_EVIDENCE_VERSION,
         "case_id": case.case_id,
         "prompt_sha256": provenance.derived_prompt_sha256,
+        "confirmed_intent_sha256": case_confirmed_intent_sha256(case),
         "source_artifact_sha256": provenance.source_artifact_sha256,
         "source_excerpt_sha256": provenance.source_excerpt_sha256,
         "audit_request_sha256": result["audit_request_sha256"],

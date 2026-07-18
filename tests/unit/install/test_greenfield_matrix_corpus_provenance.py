@@ -128,6 +128,7 @@ def _release_corpus(tmp_path: Path, *, reviewer_count: int = 8):
                     "version": audit_evidence.RELEASE_AUDIT_EVIDENCE_VERSION,
                     "case_id": case_id,
                     "prompt_sha256": _sha256(prompt),
+                    "confirmed_intent_sha256": "",
                     "source_artifact_sha256": source_hash,
                     "source_excerpt_sha256": _sha256(source_excerpt),
                     "audit_request_sha256": request["audit_request_sha256"],
@@ -209,8 +210,74 @@ def test_release_corpus_accepts_audited_source_provenanced_diverse_evidence(tmp_
     assert evaluation.summary["source_id_count"] == 180
     assert evaluation.summary["source_uri_count"] == 180
     assert evaluation.summary["audit_count"] == 40
+    approved_binding = evaluation.summary["approved_audit_bindings"][audits[0].case_id]
+    assert approved_binding["audit_request_sha256"] == audits[0].audit_request_sha256
+    assert approved_binding["confirmed_intent_sha256"] == audits[0].confirmed_intent_sha256
+    assert approved_binding["source_verification_method"] == audits[0].source_verification_method
+    assert approved_binding["source_verification_uri"] == audits[0].source_verification_uri
     assert evaluation.summary["audit_reviewer_kind_counts"] == {"automated_adversarial": 40}
     assert evaluation.summary["audit_review_context_label_count"] == 8
+
+
+def test_release_summary_retains_only_the_evaluator_approved_audit_when_case_ids_duplicate(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    approved = audits[0]
+    duplicate = replace(
+        approved,
+        audit_request_sha256="f" * 64,
+        confirmed_intent_sha256="e" * 64,
+    )
+
+    evaluation = provenance.evaluate_release_corpus(
+        cases,
+        (*audits, duplicate),
+        repo_root=tmp_path,
+    )
+
+    assert not evaluation.passed
+    assert f"release audit duplicates case_id `{approved.case_id}`" in evaluation.issues
+    binding = evaluation.summary["approved_audit_bindings"][approved.case_id]
+    assert binding["audit_request_sha256"] == approved.audit_request_sha256
+    assert binding["confirmed_intent_sha256"] == approved.confirmed_intent_sha256
+
+
+def test_release_summary_never_approves_a_case_when_an_invalid_duplicate_comes_first(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    approved = audits[0]
+    invalid_first = replace(
+        approved,
+        audit_request_sha256="f" * 64,
+        confirmed_intent_sha256="e" * 64,
+    )
+
+    evaluation = provenance.evaluate_release_corpus(
+        cases,
+        (invalid_first, *audits),
+        repo_root=tmp_path,
+    )
+
+    assert not evaluation.passed
+    assert f"release audit `{approved.case_id}` does not match confirmed_intent_sha256" in evaluation.issues
+    assert f"release audit duplicates case_id `{approved.case_id}`" in evaluation.issues
+    assert approved.case_id not in evaluation.summary["approved_audit_bindings"]
+    assert evaluation.summary["audit_count"] == 39
+
+
+def test_release_audit_rejects_an_edited_intent_changed_after_review(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    changed_case = replace(
+        cases[0],
+        confirmed_intent_markdown="# Edited Intent\n\n## First Complete Path\nAn operator records one decision.",
+    )
+
+    evaluation = provenance.evaluate_release_corpus(
+        (changed_case, *cases[1:]),
+        audits,
+        repo_root=tmp_path,
+    )
+
+    assert not evaluation.passed
+    assert f"release audit `{changed_case.case_id}` does not match confirmed_intent_sha256" in evaluation.issues
 
 
 def test_release_corpus_rejects_implicit_input_style_and_incomplete_metamorphic_pair(tmp_path: Path) -> None:
@@ -512,6 +579,15 @@ def test_release_audit_loader_rejects_nonversioned_payload(tmp_path: Path) -> No
         provenance.load_release_audit_file(audit_file)
 
 
+def test_release_audit_loader_rejects_the_superseded_v8_contract() -> None:
+    provenance, _ = _modules()
+
+    with pytest.raises(RuntimeError, match="must declare version"):
+        provenance.load_release_audit_file(
+            REPO_ROOT / "tests/fixtures/greenfield-release-corpus/audit-evidence-v4/greenfield-release-audit.v8.json"
+        )
+
+
 def test_release_audit_loader_requires_audit_request_hash(tmp_path: Path) -> None:
     provenance, _ = _modules()
     audit_file = tmp_path / "audit.json"
@@ -520,7 +596,7 @@ def test_release_audit_loader_requires_audit_request_hash(tmp_path: Path) -> Non
                 {
                     "version": provenance.RELEASE_AUDIT_VERSION,
                     "claim_class": "operator-supplied-hash-bound-review-evidence",
-                    "audits": [{"case_id": "release-000"}],
+                    "audits": [{"case_id": "release-000", "confirmed_intent_sha256": ""}],
                 }
         ),
         encoding="utf-8",

@@ -10,7 +10,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 
-RELEASE_AUDIT_EVIDENCE_VERSION = "odylith.greenfield.matrix.release-audit-evidence.v8"
+RELEASE_AUDIT_EVIDENCE_VERSION = "odylith.greenfield.matrix.release-audit-evidence.v9"
 RELEASE_AUDIT_CLAIM_CLASS = "operator-supplied-hash-bound-review-evidence"
 AUTOMATED_ADVERSARIAL_REVIEWER_KIND = "automated_adversarial"
 
@@ -21,6 +21,7 @@ def audit_request_sha256(request: Any) -> str:
     payload = {
         "case_id": _text(_value(request, "case_id")),
         "prompt_sha256": _text(_value(request, "prompt_sha256")).casefold(),
+        "confirmed_intent_sha256": _text(_value(request, "confirmed_intent_sha256")).casefold(),
         "source_artifact_sha256": _text(_value(request, "source_artifact_sha256")).casefold(),
         "source_excerpt_sha256": _text(_value(request, "source_excerpt_sha256")).casefold(),
         "source_id": _text(_value(request, "source_id")),
@@ -54,6 +55,7 @@ def audit_request_for_case(
     return {
         "case_id": _text(getattr(case, "case_id", "")),
         "prompt_sha256": _text(getattr(provenance, "derived_prompt_sha256", "")),
+        "confirmed_intent_sha256": case_confirmed_intent_sha256(case),
         "source_artifact_sha256": _text(getattr(provenance, "source_artifact_sha256", "")),
         "source_excerpt_sha256": _text(getattr(provenance, "source_excerpt_sha256", "")),
         "source_id": _text(getattr(provenance, "source_id", "")),
@@ -68,6 +70,15 @@ def audit_request_for_case(
             "derivation_assessment": "approved",
         },
     }
+
+
+def case_confirmed_intent_sha256(case: Any) -> str:
+    """Return the exact optional edit-evidence digest that an audit must bind."""
+
+    confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+    if not confirmed_intent:
+        return ""
+    return hashlib.sha256(confirmed_intent.encode("utf-8")).hexdigest()
 
 
 def request_hash_matches(request: Any) -> bool:
@@ -95,6 +106,7 @@ def audit_evidence_issues(
         "version": RELEASE_AUDIT_EVIDENCE_VERSION,
         "case_id": _text(getattr(audit, "case_id", "")),
         "prompt_sha256": _text(getattr(audit, "prompt_sha256", "")),
+        "confirmed_intent_sha256": _text(getattr(audit, "confirmed_intent_sha256", "")),
         "source_artifact_sha256": _text(getattr(audit, "source_artifact_sha256", "")),
         "source_excerpt_sha256": _text(getattr(audit, "source_excerpt_sha256", "")),
         "audit_request_sha256": _text(getattr(audit, "audit_request_sha256", "")),
@@ -220,6 +232,7 @@ __all__ = [
     "AUTOMATED_ADVERSARIAL_REVIEWER_KIND",
     "RELEASE_AUDIT_CLAIM_CLASS",
     "RELEASE_AUDIT_EVIDENCE_VERSION",
+    "case_confirmed_intent_sha256",
     "audit_request_for_case",
     "audit_request_sha256",
     "audit_evidence_issues",

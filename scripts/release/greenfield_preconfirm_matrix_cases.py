@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from dataclasses import field
+import hashlib
+
+from greenfield_matrix_corpus_provenance import case_provenance_summary
 
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 from greenfield_matrix_input_axes import DEFAULT_INPUT_STYLE
@@ -44,6 +47,28 @@ class GreenfieldMatrixCase:
 
 def case_expectation(case: GreenfieldMatrixCase) -> str:
     return str(getattr(case, "expectation", "") or DEFAULT_CASE_EXPECTATION).strip().casefold()
+
+
+def case_evidence(case: GreenfieldMatrixCase) -> dict[str, object]:
+    """Return non-sensitive case identity evidence for matrix proof records."""
+
+    evidence: dict[str, object] = {
+        "id": str(getattr(case, "case_id", "") or case.slug),
+        "name": case.name,
+        "slug": case.slug,
+        "source_file": str(getattr(case, "source_file", "") or ""),
+        "expectation": case_expectation(case),
+        "tags": list(getattr(case, "tags", ()) or ()),
+        "stressors": list(getattr(case, "stressors", ()) or ()),
+        "prompt_sha256": hashlib.sha256(str(case.prompt or "").encode("utf-8")).hexdigest(),
+        "required_terms": list(case.required_terms),
+        "leakage_terms": list(getattr(case, "leakage_terms", ()) or ()),
+        "provenance": case_provenance_summary(getattr(case, "provenance", None)),
+    }
+    confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+    if confirmed_intent:
+        evidence["confirmed_intent_sha256"] = hashlib.sha256(confirmed_intent.encode("utf-8")).hexdigest()
+    return evidence
 
 
 def raise_for_release_case_expectations(cases: tuple[GreenfieldMatrixCase, ...], *, proof_tier: str) -> None:

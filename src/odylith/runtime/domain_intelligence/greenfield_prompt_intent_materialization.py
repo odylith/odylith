@@ -146,7 +146,7 @@ def materialize_prompt_intent_hypothesis(
     if raw_edit:
         edit_evidence_path = root / ".odylith" / "runtime" / "greenfield" / "edit-evidence.md"
         atomic_write_text(edit_evidence_path, raw_edit + "\n", encoding="utf-8")
-    evidence_source = _combined_evidence_source(prompt=prompt, edit_evidence=raw_edit)
+    evidence_source = combined_prompt_evidence_source(prompt=prompt, edit_evidence=raw_edit)
     atomic_write_text(evidence_path, evidence_source, encoding="utf-8")
     from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 
@@ -738,7 +738,9 @@ def _without_edit_command(value: str) -> str:
     return text
 
 
-def _combined_evidence_source(*, prompt: str, edit_evidence: str) -> str:
+def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
+    """Render the exact staged evidence that pre-confirm authority seals."""
+
     rows = [PRECONFIRM_STAGING_MARKER, "", "# Operator prompt evidence", "", prompt.strip()]
     if edit_evidence:
         rows.extend(("", "# Operator edit evidence", "", edit_evidence.strip()))
@@ -746,6 +748,7 @@ def _combined_evidence_source(*, prompt: str, edit_evidence: str) -> str:
 
 
 __all__ = [
+    "combined_prompt_evidence_source",
     "materialize_prompt_confirmed_intent",
     "materialize_prompt_intent_hypothesis",
     "prompt_only_material_decision_error",

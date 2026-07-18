@@ -30,7 +30,7 @@ from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
 
 
 CASE_PROVENANCE_VERSION = "odylith.greenfield.matrix.case-provenance.v2"
-RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v8"
+RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v9"
 RELEASE_CORPUS_POLICY_VERSION = "odylith.greenfield.matrix.release-corpus-policy.v2"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 _TRAIL_CLAIM_CLASSES = {
@@ -206,6 +206,8 @@ def load_release_audit_file(
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, Mapping):
             raise RuntimeError(f"greenfield release audit entry {index} must be a JSON object")
+        if "confirmed_intent_sha256" not in row:
+            raise RuntimeError(f"greenfield release audit entry {index} must define confirmed_intent_sha256")
         audit = GreenfieldReleaseAudit(
             case_id=_text(row.get("case_id")),
             prompt_sha256=_hash_text(row.get("prompt_sha256")),
@@ -226,11 +228,14 @@ def load_release_audit_file(
             review_status=_text(row.get("review_status")).casefold(),
             review_evidence_path=_text(row.get("review_evidence_path")),
             review_evidence_sha256=_hash_text(row.get("review_evidence_sha256")),
+            confirmed_intent_sha256=_hash_text(row.get("confirmed_intent_sha256")),
         )
         if not audit.case_id:
             raise RuntimeError(f"greenfield release audit entry {index} must define case_id")
         if not is_sha256(audit.audit_request_sha256):
             raise RuntimeError(f"greenfield release audit entry {index} must define audit_request_sha256")
+        if str(row.get("confirmed_intent_sha256") or "").strip() and not audit.confirmed_intent_sha256:
+            raise RuntimeError(f"greenfield release audit entry {index} has invalid confirmed_intent_sha256")
         audits.append(audit)
     root = Path(repo_root or REPO_ROOT).expanduser().resolve()
     trail = {
@@ -484,7 +489,7 @@ def evaluate_release_corpus(
             f"{len(complete_groups)}"
         )
 
-    audit_issues, audited_case_ids = evaluate_release_audits(
+    audit_issues, approved_audits = evaluate_release_audits(
         cases_by_id=cases_by_id,
         audits=audits,
         policy=policy,
@@ -492,7 +497,7 @@ def evaluate_release_corpus(
     )
     issues.extend(audit_issues)
     audited_reviewer_kinds = Counter(
-        audit.reviewer_kind for audit in audits if audit.case_id in audited_case_ids
+        audit.reviewer_kind for audit in approved_audits.values()
     )
     summary = {
         "case_count": len(records),
@@ -506,10 +511,19 @@ def evaluate_release_corpus(
         "undeclared_input_style_count": len(undeclared_input_style_labels),
         "complete_metamorphic_group_count": len(complete_groups),
         "complete_metamorphic_groups": complete_groups,
-        "audit_count": len(audited_case_ids),
+        "audit_count": len(approved_audits),
+        "approved_audit_bindings": {
+            case_id: {
+                "audit_request_sha256": audit.audit_request_sha256,
+                "confirmed_intent_sha256": audit.confirmed_intent_sha256,
+                "source_verification_method": audit.source_verification_method,
+                "source_verification_uri": audit.source_verification_uri,
+            }
+            for case_id, audit in approved_audits.items()
+        },
         "audit_reviewer_kind_counts": dict(sorted(audited_reviewer_kinds.items())),
         "audit_review_context_label_count": len(
-            {audit.review_context_label for audit in audits if audit.case_id in audited_case_ids}
+            {audit.review_context_label for audit in approved_audits.values()}
         ),
         "minimum_audit_count": policy.minimum_audit_count(len(records)),
         "policy": asdict(policy),
