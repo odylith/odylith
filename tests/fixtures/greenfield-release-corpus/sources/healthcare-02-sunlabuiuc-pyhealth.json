@@ -1,0 +1,55 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "health",
+    "medical",
+    "clinical",
+    "patient",
+    "hospital",
+    "disease"
+  ],
+  "matched_description_evidence_terms": [
+    "health"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "A Deep Learning Python Toolkit for Healthcare Applications.",
+    "full_name": "sunlabuiuc/PyHealth",
+    "id": 284780206,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "PyHealth",
+    "node_id": "MDEwOlJlcG9zaXRvcnkyODQ3ODAyMDY=",
+    "pushed_at": "2026-07-15T18:07:33Z",
+    "topics": [
+      "clinical-data",
+      "clinical-research",
+      "data-mining",
+      "deep-learning",
+      "electronic-health-record",
+      "electronic-medical-record",
+      "healthcare",
+      "medical-code",
+      "preprocessing"
+    ]
+  },
+  "response_item_index": 2,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Ahealthcare&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:54 GMT",
+    "x-github-request-id": "D121:271456:14FD971:155F8BF:6A5B6067"
+  },
+  "search_response_path": "responses/healthcare.json",
+  "search_response_sha256": "dd9a346780606538891bd660e3dd48ae99e49bfda96e908fd0b34d8ef03f34a0",
+  "selection_index": 2,
+  "source_family": "healthcare",
+  "source_id": "github-repository:284780206",
+  "source_uri": "https://github.com/sunlabuiuc/PyHealth",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

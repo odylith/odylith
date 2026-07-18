@@ -8,6 +8,7 @@ from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
+from urllib.error import HTTPError
 
 import pytest
 
@@ -140,11 +141,11 @@ def test_capture_binds_a_case_to_the_raw_github_repository_id(tmp_path: Path) ->
     artifact_path.write_text(artifact_text, encoding="utf-8")
     source["source_id"] = "github-repository:999"
     source["artifact_sha256"] = _sha256_bytes(artifact_text.encode("utf-8"))
-    _write_manifest(output_root / "source-manifest.v1.json", manifest)
+    _write_manifest(output_root / "source-manifest.v2.json", manifest)
 
     with pytest.raises(RuntimeError, match="source capture fields diverge from retained response"):
         module.build_release_case_file(
-            source_manifest=output_root / "source-manifest.v1.json",
+            source_manifest=output_root / "source-manifest.v2.json",
             output_json=tmp_path / "cases.json",
             repo_root=tmp_path,
             paired_artifacts_per_family=0,
@@ -157,7 +158,7 @@ def test_builds_source_provenanced_discovery_cases_from_multiple_families(tmp_pa
     case_file = tmp_path / "cases.json"
 
     payload = module.build_release_case_file(
-        source_manifest=output_root / "source-manifest.v1.json",
+        source_manifest=output_root / "source-manifest.v2.json",
         output_json=case_file,
         repo_root=tmp_path,
         paired_artifacts_per_family=1,
@@ -171,7 +172,7 @@ def test_builds_source_provenanced_discovery_cases_from_multiple_families(tmp_pa
     assert payload["release_readiness_boundary"] == (
         "Independent automated audit evidence and installed release proof are still required."
     )
-    assert payload["source_manifest"] == "captured/source-manifest.v1.json"
+    assert payload["source_manifest"] == "captured/source-manifest.v2.json"
     assert payload["source_case_count"] == 4
     assert {case["provenance"]["source_family"] for case in payload["cases"]} == {"climate", "health"}
     assert {case["provenance"]["source_id"] for case in payload["cases"]} == {
@@ -212,7 +213,7 @@ def test_build_keeps_singletons_unpaired_and_hashes_loaded_prompt_text(tmp_path:
     )
     case_file = tmp_path / "cases.json"
     payload = module.build_release_case_file(
-        source_manifest=output_root / "source-manifest.v1.json",
+        source_manifest=output_root / "source-manifest.v2.json",
         output_json=case_file,
         repo_root=tmp_path,
         paired_artifacts_per_family=1,
@@ -229,6 +230,55 @@ def test_build_keeps_singletons_unpaired_and_hashes_loaded_prompt_text(tmp_path:
         case.provenance.derived_prompt_sha256 == _sha256_bytes(case.prompt.encode("utf-8"))
         for case in loaded_cases
     )
+
+
+def test_build_preserves_quoted_source_excerpt_traceability(tmp_path: Path) -> None:
+    module = _module()
+    output_root = tmp_path / "captured"
+    repository = _repository(repository_id=712, family_topic="climate")
+    repository["description"] = 'Climate evidence for the "verified outcome" review workflow.'
+    payload = {"items": [repository]}
+    module.capture_release_sources(
+        output_root=output_root,
+        query_specs=(module.SourceFamily("climate", "climate", ("climate",)),),
+        artifacts_per_family=1,
+        retrieved_on=CAPTURED_AT[:10],
+        captured_at=CAPTURED_AT,
+        fetch_json=lambda _url: (payload, _json_bytes(payload)),
+    )
+    case_file = tmp_path / "cases.json"
+    module.build_release_case_file(
+        source_manifest=output_root / "source-manifest.v2.json",
+        output_json=case_file,
+        repo_root=tmp_path,
+        paired_artifacts_per_family=0,
+    )
+    loader = sys.modules["greenfield_matrix_case_file"].load_case_file
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+    evaluation = provenance.evaluate_release_corpus(loader(case_file), repo_root=tmp_path)
+
+    assert not any("source_excerpt is not present" in issue for issue in evaluation.issues)
+
+
+def test_prompt_styles_use_correct_indefinite_articles() -> None:
+    module = _module()
+    prompt = module.prompt_for_style(
+        input_style="direct_request",
+        family="accessibility",
+        full_name="source/accessibility",
+        description="Accessible workflow evidence.",
+        source_excerpt="Accessible workflow evidence.",
+    )
+    brief = module.prompt_for_style(
+        input_style="pasted_brief",
+        family="open-data",
+        full_name="source/open-data",
+        description="Open data workflow evidence.",
+        source_excerpt="Open data workflow evidence.",
+    )
+
+    assert prompt.startswith("Create an accessibility product")
+    assert brief.startswith("Project brief for an open-data team")
 
 
 def test_default_source_shape_meets_every_non_audit_release_policy(tmp_path: Path) -> None:
@@ -265,7 +315,7 @@ def test_default_source_shape_meets_every_non_audit_release_policy(tmp_path: Pat
     )
     case_file = tmp_path / "cases.json"
     module.build_release_case_file(
-        source_manifest=output_root / "source-manifest.v1.json",
+        source_manifest=output_root / "source-manifest.v2.json",
         output_json=case_file,
         repo_root=tmp_path,
     )
@@ -298,12 +348,12 @@ def test_build_rejects_rehashed_response_tampering(tmp_path: Path) -> None:
     source = manifest["sources"][0]
     source["search_response_sha256"] = response_sha256
     source["artifact_sha256"] = _sha256_bytes(artifact_text.encode("utf-8"))
-    _write_manifest(output_root / "source-manifest.v1.json", manifest)
+    _write_manifest(output_root / "source-manifest.v2.json", manifest)
     case_file = tmp_path / "cases.json"
 
     with pytest.raises(RuntimeError, match="source capture fields diverge from retained response"):
         module.build_release_case_file(
-            source_manifest=output_root / "source-manifest.v1.json",
+            source_manifest=output_root / "source-manifest.v2.json",
             output_json=case_file,
             repo_root=tmp_path,
             paired_artifacts_per_family=0,
@@ -316,12 +366,12 @@ def test_build_rejects_an_artifact_path_that_escapes_the_capture_root(tmp_path: 
     module = _module()
     output_root, manifest = _capture_fixture(module, tmp_path)
     manifest["sources"][0]["artifact_path"] = "../escaped.json"
-    _write_manifest(output_root / "source-manifest.v1.json", manifest)
+    _write_manifest(output_root / "source-manifest.v2.json", manifest)
     case_file = tmp_path / "cases.json"
 
     with pytest.raises(RuntimeError, match="source artifact escapes manifest root: ../escaped.json"):
         module.build_release_case_file(
-            source_manifest=output_root / "source-manifest.v1.json",
+            source_manifest=output_root / "source-manifest.v2.json",
             output_json=case_file,
             repo_root=tmp_path,
             paired_artifacts_per_family=0,
@@ -346,3 +396,67 @@ def test_capture_rejects_a_source_family_shortfall_and_cleans_staging(tmp_path: 
         )
 
     _assert_no_staging_or_lock(output_root)
+
+
+def test_capture_requires_description_level_family_evidence(tmp_path: Path) -> None:
+    module = _module()
+    output_root = tmp_path / "unrelated-topic"
+    repository = _repository(repository_id=704, family_topic="climate")
+    repository["description"] = "Public operations tooling for traceable decisions without domain evidence."
+    payload = {"items": [repository]}
+
+    with pytest.raises(RuntimeError, match="source family `climate` yielded 0 eligible repositories; need 1"):
+        module.capture_release_sources(
+            output_root=output_root,
+            query_specs=(module.SourceFamily("climate", "climate", ("climate", "weather")),),
+            artifacts_per_family=1,
+            retrieved_on=CAPTURED_AT[:10],
+            captured_at=CAPTURED_AT,
+            fetch_json=lambda _url: (payload, _json_bytes(payload)),
+        )
+
+    _assert_no_staging_or_lock(output_root)
+
+
+def test_capture_binds_declared_and_matched_description_evidence_terms(tmp_path: Path) -> None:
+    module = _module()
+    output_root = tmp_path / "matched-evidence"
+    repository = _repository(repository_id=705, family_topic="climate")
+    repository["description"] = "Climate weather evidence for traceable operator decisions."
+    family = module.SourceFamily("climate", "climate", ("climate", "weather", "energy"))
+
+    manifest = module.capture_release_sources(
+        output_root=output_root,
+        query_specs=(family,),
+        artifacts_per_family=1,
+        retrieved_on=CAPTURED_AT[:10],
+        captured_at=CAPTURED_AT,
+        fetch_json=lambda _url: ({"items": [repository]}, _json_bytes({"items": [repository]})),
+    )
+
+    artifact_path = output_root / manifest["sources"][0]["artifact_path"]
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    assert artifact["family_description_evidence_terms"] == ["climate", "weather", "energy"]
+    assert artifact["matched_description_evidence_terms"] == ["climate", "weather"]
+
+
+def test_fetch_reports_rate_limits_and_uses_an_available_github_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    _module()
+    source_capture = sys.modules["greenfield_release_source_capture"]
+    monkeypatch.setenv("GITHUB_TOKEN", "capture-token")
+
+    def rate_limited(request: Any, *, timeout: int) -> Any:
+        assert timeout == 30
+        assert request.get_header("Authorization") == "Bearer capture-token"
+        raise HTTPError(
+            request.full_url,
+            403,
+            "rate limit exceeded",
+            {"x-ratelimit-remaining": "0", "x-ratelimit-reset": "1784410000"},
+            None,
+        )
+
+    monkeypatch.setattr(source_capture, "urlopen", rate_limited)
+
+    with pytest.raises(RuntimeError, match="rate limit is exhausted; retry after Unix time 1784410000"):
+        source_capture._fetch_json("https://api.github.com/search/repositories?q=topic%3Aclimate")

@@ -1,0 +1,54 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "accessibility",
+    "accessible",
+    "a11y",
+    "screen reader",
+    "assistive",
+    "disability"
+  ],
+  "matched_description_evidence_terms": [
+    "accessible"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "noUiSlider is a lightweight, ARIA-accessible JavaScript range slider with multi-touch and keyboard support. It is fully GPU animated: no reflows, so it is fast; even on older devices. It also fits wonderfully in responsive designs and has no dependencies.",
+    "full_name": "leongersen/noUiSlider",
+    "id": 2808651,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "noUiSlider",
+    "node_id": "MDEwOlJlcG9zaXRvcnkyODA4NjUx",
+    "pushed_at": "2024-11-26T10:42:29Z",
+    "topics": [
+      "accessibility",
+      "component",
+      "form",
+      "input",
+      "keyboard-support",
+      "multi-touch",
+      "range-slider",
+      "typescript"
+    ]
+  },
+  "response_item_index": 11,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aaccessibility&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:13 GMT",
+    "x-github-request-id": "D13A:1199E1:1528827:1589B2E:6A5B607A"
+  },
+  "search_response_path": "responses/accessibility.json",
+  "search_response_sha256": "e229318d547f71784ae6cb069e0355fe5c681ddd0358edad746dd473a0040580",
+  "selection_index": 6,
+  "source_family": "accessibility",
+  "source_id": "github-repository:2808651",
+  "source_uri": "https://github.com/leongersen/noUiSlider",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

@@ -1,0 +1,51 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "climate",
+    "weather",
+    "energy",
+    "emission",
+    "carbon",
+    "environment"
+  ],
+  "matched_description_evidence_terms": [
+    "weather"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "Concise style weather forecasting.",
+    "full_name": "guowilling/SRClimate",
+    "id": 68771626,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "SRClimate",
+    "node_id": "MDEwOlJlcG9zaXRvcnk2ODc3MTYyNg==",
+    "pushed_at": "2019-09-19T16:50:39Z",
+    "topics": [
+      "climate",
+      "elegant",
+      "forcasting",
+      "locate",
+      "weather"
+    ]
+  },
+  "response_item_index": 38,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aclimate&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:51 GMT",
+    "x-github-request-id": "D11F:1970B5:13E88A8:144CDCD:6A5B6064"
+  },
+  "search_response_path": "responses/climate.json",
+  "search_response_sha256": "a54b64b33b56141f273c98e7740de87a1cea68dd3d7568861ad24d90624787b7",
+  "selection_index": 16,
+  "source_family": "climate",
+  "source_id": "github-repository:68771626",
+  "source_uri": "https://github.com/guowilling/SRClimate",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

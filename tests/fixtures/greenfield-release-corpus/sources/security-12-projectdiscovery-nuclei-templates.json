@@ -1,0 +1,56 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "security",
+    "secure",
+    "vulnerability",
+    "threat",
+    "privacy",
+    "crypt"
+  ],
+  "matched_description_evidence_terms": [
+    "security"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "Community curated list of templates for the nuclei engine to find security vulnerabilities.",
+    "full_name": "projectdiscovery/nuclei-templates",
+    "id": 253044228,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "nuclei-templates",
+    "node_id": "MDEwOlJlcG9zaXRvcnkyNTMwNDQyMjg=",
+    "pushed_at": "2026-07-18T08:13:37Z",
+    "topics": [
+      "bugbounty",
+      "exploit-development",
+      "exploits",
+      "fingerprint",
+      "hacktoberfest",
+      "nuclei",
+      "nuclei-checks",
+      "nuclei-templates",
+      "security",
+      "vulnerability-detection"
+    ]
+  },
+  "response_item_index": 22,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Asecurity&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:16 GMT",
+    "x-github-request-id": "D13D:12CDE4:14D7437:153AA0B:6A5B607D"
+  },
+  "search_response_path": "responses/security.json",
+  "search_response_sha256": "9157d4541298aedcadf8903b95896a05ce7dd8da07f2289fe3698caa705b223c",
+  "selection_index": 12,
+  "source_family": "security",
+  "source_id": "github-repository:253044228",
+  "source_uri": "https://github.com/projectdiscovery/nuclei-templates",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

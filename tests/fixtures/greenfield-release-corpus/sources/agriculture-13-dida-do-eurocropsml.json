@@ -1,0 +1,54 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "agriculture",
+    "farm",
+    "crop",
+    "soil",
+    "food",
+    "irrigation"
+  ],
+  "matched_description_evidence_terms": [
+    "crop"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "EuroCropsML is a ready-to-use benchmark dataset for few-shot crop type classification using Sentinel-2 imagery.",
+    "full_name": "dida-do/eurocropsml",
+    "id": 791285861,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "eurocropsml",
+    "node_id": "R_kgDOLyoQZQ",
+    "pushed_at": "2026-01-16T09:34:50Z",
+    "topics": [
+      "agriculture",
+      "crop-classification",
+      "dataset",
+      "deep-learning",
+      "earth-observation",
+      "machine-learning",
+      "sentinel-2",
+      "torch"
+    ]
+  },
+  "response_item_index": 26,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aagriculture&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:06 GMT",
+    "x-github-request-id": "D132:1199E1:1526D0C:1587FA2:6A5B6074"
+  },
+  "search_response_path": "responses/agriculture.json",
+  "search_response_sha256": "15dcc000ab6906d482b87429532f1d4d69c7243f78524e266095a976cf6f331a",
+  "selection_index": 13,
+  "source_family": "agriculture",
+  "source_id": "github-repository:791285861",
+  "source_uri": "https://github.com/dida-do/eurocropsml",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

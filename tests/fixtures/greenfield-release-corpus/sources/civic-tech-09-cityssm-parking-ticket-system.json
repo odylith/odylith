@@ -1,0 +1,55 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "civic",
+    "government",
+    "public",
+    "municipal",
+    "election",
+    "democracy"
+  ],
+  "matched_description_evidence_terms": [
+    "municipal"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "A system for managing parking tickets tracked by municipalities.",
+    "full_name": "cityssm/parking-ticket-system",
+    "id": 241711893,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "parking-ticket-system",
+    "node_id": "MDEwOlJlcG9zaXRvcnkyNDE3MTE4OTM=",
+    "pushed_at": "2024-07-01T06:34:57Z",
+    "topics": [
+      "civic-tech",
+      "government",
+      "government-software",
+      "local-government",
+      "municipal-software",
+      "ontario",
+      "ontario-municipalities",
+      "parking-management",
+      "parking-ticket"
+    ]
+  },
+  "response_item_index": 41,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Acivic-tech&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:00 GMT",
+    "x-github-request-id": "D12B:6E34A:14D2390:1535BBB:6A5B606D"
+  },
+  "search_response_path": "responses/civic-tech.json",
+  "search_response_sha256": "4cd163f4ae63ceae48f75353ad5950efec51551b14c5cd8a2c853d5ba2c4e1df",
+  "selection_index": 9,
+  "source_family": "civic-tech",
+  "source_id": "github-repository:241711893",
+  "source_uri": "https://github.com/cityssm/parking-ticket-system",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

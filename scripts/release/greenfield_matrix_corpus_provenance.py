@@ -5,8 +5,6 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
-from datetime import date
-import hashlib
 import json
 from math import ceil
 from pathlib import Path
@@ -16,9 +14,13 @@ from urllib.parse import urlparse
 
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
 from greenfield_matrix_input_axes import normalize_input_style
-from greenfield_matrix_release_audit_evidence import AUTOMATED_ADVERSARIAL_REVIEWER_KIND
-from greenfield_matrix_release_audit_evidence import audit_evidence_issues
-from greenfield_matrix_release_audit_evidence import audit_source_verification_issues
+from greenfield_matrix_release_artifacts import is_iso_date
+from greenfield_matrix_release_artifacts import is_sha256
+from greenfield_matrix_release_artifacts import repo_artifact_path
+from greenfield_matrix_release_artifacts import sha256_file
+from greenfield_matrix_release_artifacts import sha256_text
+from greenfield_matrix_release_audit import GreenfieldReleaseAudit
+from greenfield_matrix_release_audit import evaluate_release_audits
 from greenfield_matrix_source_identity import complete_metamorphic_groups
 from greenfield_matrix_source_identity import is_explicit_metamorphic_pair
 from greenfield_matrix_source_identity import source_identity_label
@@ -27,7 +29,7 @@ from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
 
 
 CASE_PROVENANCE_VERSION = "odylith.greenfield.matrix.case-provenance.v2"
-RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v3"
+RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v4"
 RELEASE_CORPUS_POLICY_VERSION = "odylith.greenfield.matrix.release-corpus-policy.v2"
 
 
@@ -51,27 +53,6 @@ class GreenfieldCaseProvenance:
     derivation_method: str = ""
     derived_prompt_sha256: str = ""
     derivation_author: str = ""
-
-
-@dataclass(frozen=True)
-class GreenfieldReleaseAudit:
-    case_id: str
-    prompt_sha256: str
-    source_artifact_sha256: str
-    source_excerpt_sha256: str
-    source_id: str
-    source_uri: str
-    source_verification_method: str
-    source_verification_uri: str
-    source_verified_on: str
-    reviewer_id: str
-    reviewer_kind: str
-    review_method: str
-    reviewed_on: str
-    review_status: str
-    independent: bool
-    review_evidence_path: str
-    review_evidence_sha256: str
 
 
 @dataclass(frozen=True)
@@ -203,6 +184,8 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
             source_verification_method=_text(row.get("source_verification_method")),
             source_verification_uri=_text(row.get("source_verification_uri")),
             source_verified_on=_text(row.get("source_verified_on")),
+            source_verification_path=_text(row.get("source_verification_path")),
+            source_verification_sha256=_hash_text(row.get("source_verification_sha256")),
             reviewer_id=_text(row.get("reviewer_id")),
             reviewer_kind=_text(row.get("reviewer_kind")).casefold(),
             review_method=_text(row.get("review_method")),
@@ -256,7 +239,6 @@ def evaluate_release_corpus(
     metamorphic_cases: dict[str, list[Any]] = {}
     provenance_failures: list[str] = []
     artifact_hash_cache: dict[Path, str] = {}
-    review_evidence_hash_cache: dict[Path, str] = {}
     normalized_prompts: list[tuple[str, str]] = []
 
     for index, case in enumerate(records, start=1):
@@ -270,7 +252,7 @@ def evaluate_release_corpus(
             cases_by_id[case_id] = case
 
         prompt = str(getattr(case, "prompt", "") or "")
-        prompt_hash = _sha256_text(prompt)
+        prompt_hash = sha256_text(prompt)
         prompt_hashes.setdefault(prompt_hash, []).append(label)
         normalized_prompts.append((label, prompt))
         provenance = getattr(case, "provenance", GreenfieldCaseProvenance())
@@ -420,12 +402,11 @@ def evaluate_release_corpus(
             f"{len(complete_groups)}"
         )
 
-    audit_issues, audited_case_ids = _audit_issues(
+    audit_issues, audited_case_ids = evaluate_release_audits(
         cases_by_id=cases_by_id,
         audits=audits,
         policy=policy,
         root=root,
-        review_evidence_hash_cache=review_evidence_hash_cache,
     )
     issues.extend(audit_issues)
     audited_reviewer_kinds = Counter(
@@ -507,29 +488,29 @@ def _case_provenance_issues(
     parsed = urlparse(provenance.source_uri)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         issues.append(f"{label}: source_uri must be an absolute HTTP(S) URL")
-    if not _is_sha256(provenance.source_artifact_sha256):
+    if not is_sha256(provenance.source_artifact_sha256):
         issues.append(f"{label}: source_artifact_sha256 must be a SHA-256 digest")
-    if not _is_sha256(provenance.source_span_sha256):
+    if not is_sha256(provenance.source_span_sha256):
         issues.append(f"{label}: source_span_sha256 must be a SHA-256 digest")
-    if not _is_sha256(provenance.source_excerpt_sha256):
+    if not is_sha256(provenance.source_excerpt_sha256):
         issues.append(f"{label}: source_excerpt_sha256 must be a SHA-256 digest")
-    if not _is_sha256(provenance.derived_prompt_sha256):
+    if not is_sha256(provenance.derived_prompt_sha256):
         issues.append(f"{label}: derived_prompt_sha256 must be a SHA-256 digest")
-    if _sha256_text(str(getattr(case, "prompt", "") or "")) != provenance.derived_prompt_sha256:
+    if sha256_text(str(getattr(case, "prompt", "") or "")) != provenance.derived_prompt_sha256:
         issues.append(f"{label}: derived_prompt_sha256 does not match the case prompt")
-    if _sha256_text(provenance.source_span) != provenance.source_span_sha256:
+    if sha256_text(provenance.source_span) != provenance.source_span_sha256:
         issues.append(f"{label}: source_span_sha256 does not match source_span")
-    if _sha256_text(provenance.source_excerpt) != provenance.source_excerpt_sha256:
+    if sha256_text(provenance.source_excerpt) != provenance.source_excerpt_sha256:
         issues.append(f"{label}: source_excerpt_sha256 does not match source_excerpt")
-    if not _is_iso_date(provenance.retrieved_on):
+    if not is_iso_date(provenance.retrieved_on):
         issues.append(f"{label}: retrieved_on must be an ISO date")
-    artifact_path = _repo_artifact_path(root, provenance.source_artifact_path)
+    artifact_path = repo_artifact_path(root, provenance.source_artifact_path)
     if artifact_path is None:
         issues.append(f"{label}: source_artifact_path must be a repository-relative file")
     elif not artifact_path.is_file():
         issues.append(f"{label}: source_artifact_path does not exist: {provenance.source_artifact_path}")
     else:
-        artifact_hash = artifact_hash_cache.setdefault(artifact_path, _sha256_file(artifact_path))
+        artifact_hash = artifact_hash_cache.setdefault(artifact_path, sha256_file(artifact_path))
         if artifact_hash != provenance.source_artifact_sha256:
             issues.append(f"{label}: source_artifact_sha256 does not match source_artifact_path")
         try:
@@ -540,131 +521,9 @@ def _case_provenance_issues(
             source_span_text = _resolved_source_span(artifact_text, provenance.source_span)
             if source_span_text is None:
                 issues.append(f"{label}: source_span does not resolve against source_artifact_path")
-            elif provenance.source_excerpt not in source_span_text:
+            elif not _source_excerpt_in_span(provenance.source_excerpt, source_span_text):
                 issues.append(f"{label}: source_excerpt is not present in declared source_span")
     return issues
-
-
-def _audit_issues(
-    *,
-    cases_by_id: Mapping[str, Any],
-    audits: Sequence[GreenfieldReleaseAudit],
-    policy: ReleaseCorpusPolicy,
-    root: Path,
-    review_evidence_hash_cache: dict[Path, str],
-) -> tuple[list[str], set[str]]:
-    issues: list[str] = []
-    approved: set[str] = set()
-    seen: set[str] = set()
-    for audit in audits:
-        if audit.case_id in seen:
-            issues.append(f"release audit duplicates case_id `{audit.case_id}`")
-            continue
-        seen.add(audit.case_id)
-        case = cases_by_id.get(audit.case_id)
-        if case is None:
-            issues.append(f"release audit references unknown case_id `{audit.case_id}`")
-            continue
-        provenance = getattr(case, "provenance", GreenfieldCaseProvenance())
-        expected_prompt_hash = _sha256_text(str(getattr(case, "prompt", "") or ""))
-        if audit.prompt_sha256 != expected_prompt_hash:
-            issues.append(f"release audit `{audit.case_id}` does not match prompt_sha256")
-            continue
-        if audit.source_artifact_sha256 != provenance.source_artifact_sha256:
-            issues.append(f"release audit `{audit.case_id}` does not match source_artifact_sha256")
-            continue
-        if audit.source_excerpt_sha256 != provenance.source_excerpt_sha256:
-            issues.append(f"release audit `{audit.case_id}` does not match source_excerpt_sha256")
-            continue
-        source_verification_issues = audit_source_verification_issues(audit, provenance)
-        if source_verification_issues:
-            for issue in source_verification_issues:
-                issues.append(f"release audit `{audit.case_id}` {issue}")
-            continue
-        if audit.review_status != "approved":
-            issues.append(f"release audit `{audit.case_id}` is not approved")
-            continue
-        if audit.reviewer_kind != AUTOMATED_ADVERSARIAL_REVIEWER_KIND:
-            issues.append(
-                f"release audit `{audit.case_id}` must declare reviewer_kind "
-                f"`{AUTOMATED_ADVERSARIAL_REVIEWER_KIND}`"
-            )
-            continue
-        if not audit.review_method:
-            issues.append(f"release audit `{audit.case_id}` must name an automated review_method")
-            continue
-        if audit.review_method == provenance.derivation_method:
-            issues.append(
-                f"release audit `{audit.case_id}` must use a review_method distinct from derivation_method"
-            )
-            continue
-        if type(audit.independent) is not bool:
-            issues.append(f"release audit `{audit.case_id}` must define independent as a boolean")
-            continue
-        if not audit.independent:
-            issues.append(f"release audit `{audit.case_id}` is not independent")
-            continue
-        if not audit.reviewer_id or audit.reviewer_id == provenance.derivation_author:
-            issues.append(f"release audit `{audit.case_id}` must name an independent reviewer")
-            continue
-        if not _is_iso_date(audit.reviewed_on):
-            issues.append(f"release audit `{audit.case_id}` must use an ISO reviewed_on date")
-            continue
-        if not _is_sha256(audit.review_evidence_sha256):
-            issues.append(f"release audit `{audit.case_id}` must include review_evidence_sha256")
-            continue
-        review_evidence_path = _repo_artifact_path(root, audit.review_evidence_path)
-        if review_evidence_path is None:
-            issues.append(f"release audit `{audit.case_id}` must use a repository-relative review_evidence_path")
-            continue
-        if not review_evidence_path.is_file():
-            issues.append(
-                f"release audit `{audit.case_id}` review_evidence_path does not exist: "
-                f"{audit.review_evidence_path}"
-            )
-            continue
-        evidence_hash = review_evidence_hash_cache.setdefault(
-            review_evidence_path, _sha256_file(review_evidence_path)
-        )
-        if evidence_hash != audit.review_evidence_sha256:
-            issues.append(
-                f"release audit `{audit.case_id}` review_evidence_sha256 does not match review_evidence_path"
-            )
-            continue
-        try:
-            evidence_text = review_evidence_path.read_text(encoding="utf-8")
-        except OSError as exc:
-            issues.append(f"release audit `{audit.case_id}` review evidence cannot be read: {exc}")
-            continue
-        evidence_issues = audit_evidence_issues(audit, evidence_text)
-        for issue in evidence_issues:
-            issues.append(f"release audit `{audit.case_id}` {issue}")
-        if evidence_issues:
-            continue
-        approved.add(audit.case_id)
-    required_audits = policy.minimum_audit_count(len(cases_by_id))
-    if len(approved) < required_audits:
-        issues.append(
-            "release proof requires at least "
-            f"{required_audits} approved independent automated audits; received {len(approved)}"
-        )
-    audited_cases = [cases_by_id[case_id] for case_id in approved if case_id in cases_by_id]
-    audited_families = {
-        str(getattr(getattr(case, "provenance", None), "source_family", "") or "")
-        for case in audited_cases
-    }
-    all_families = {
-        str(getattr(getattr(case, "provenance", None), "source_family", "") or "")
-        for case in cases_by_id.values()
-    }
-    missing_families = sorted(family for family in all_families if family and family not in audited_families)
-    if missing_families:
-        issues.append("release audit is not stratified across source families: " + ", ".join(missing_families))
-    audited_stressors = {stressor for case in audited_cases for stressor in _case_stressors(case)}
-    missing_stressors = [stressor for stressor in DEFAULT_HIGH_VARIANCE_STRESSORS if stressor not in audited_stressors]
-    if missing_stressors:
-        issues.append("release audit is not stratified across stressors: " + ", ".join(missing_stressors))
-    return issues, approved
 
 
 def _near_duplicate_issues(rows: Sequence[tuple[str, str]], threshold: float) -> list[str]:
@@ -687,18 +546,6 @@ def _near_duplicate_issues(rows: Sequence[tuple[str, str]], threshold: float) ->
     return issues
 
 
-def _repo_artifact_path(root: Path, value: str) -> Path | None:
-    candidate = Path(value)
-    if not value or candidate.is_absolute():
-        return None
-    resolved = (root / candidate).resolve()
-    try:
-        resolved.relative_to(root)
-    except ValueError:
-        return None
-    return resolved
-
-
 def _resolved_source_span(artifact_text: str, source_span: str) -> str | None:
     bounds = _source_span_bounds(source_span)
     if bounds is None:
@@ -708,6 +555,15 @@ def _resolved_source_span(artifact_text: str, source_span: str) -> str | None:
     if end > len(lines):
         return None
     return "".join(lines[start - 1 : end])
+
+
+def _source_excerpt_in_span(source_excerpt: str, source_span_text: str) -> bool:
+    if source_excerpt in source_span_text:
+        return True
+    # Retained source artifacts are JSON. A logical string containing quotes is
+    # represented with JSON escapes in its raw line, but remains the same source value.
+    encoded_excerpt = json.dumps(source_excerpt, ensure_ascii=True)
+    return encoded_excerpt[1:-1] in source_span_text
 
 
 def source_span_is_valid(source_span: str) -> bool:
@@ -760,30 +616,6 @@ def _text(value: Any) -> str:
 
 def _hash_text(value: Any) -> str:
     return _text(value).casefold()
-
-
-def _sha256_text(value: str) -> str:
-    return hashlib.sha256(str(value).encode("utf-8")).hexdigest()
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _is_sha256(value: str) -> bool:
-    return bool(re.fullmatch(r"[0-9a-f]{64}", str(value or "")))
-
-
-def _is_iso_date(value: str) -> bool:
-    try:
-        date.fromisoformat(str(value))
-    except ValueError:
-        return False
-    return True
 
 
 __all__ = [

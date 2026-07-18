@@ -1,0 +1,64 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "open data",
+    "dataset",
+    "catalog",
+    "geospatial",
+    "statistics",
+    "records"
+  ],
+  "matched_description_evidence_terms": [
+    "open data"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "MCP server for querying CKAN open data portals (package search, DataStore SQL, organizations, groups, tags)",
+    "full_name": "ondata/ckan-mcp-server",
+    "id": 1129756504,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "ckan-mcp-server",
+    "node_id": "R_kgDOQ1a3WA",
+    "pushed_at": "2026-07-18T10:26:13Z",
+    "topics": [
+      "ai-tools",
+      "api-client",
+      "civic-tech",
+      "ckan",
+      "ckan-api",
+      "claude",
+      "cloudflare-workers",
+      "data-discovery",
+      "data-portal",
+      "datastore",
+      "government-data",
+      "mcp",
+      "model-context-protocol",
+      "nodejs",
+      "open-data",
+      "public-data",
+      "solr",
+      "typescript"
+    ]
+  },
+  "response_item_index": 69,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aopen-data&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:10 GMT",
+    "x-github-request-id": "D137:6E34A:14D4C8B:1538597:6A5B6077"
+  },
+  "search_response_path": "responses/open-data.json",
+  "search_response_sha256": "4d77cfe0a39c519611a54291a6548bf716de952ff9c5e684ec4890f55ecf01c1",
+  "selection_index": 15,
+  "source_family": "open-data",
+  "source_id": "github-repository:1129756504",
+  "source_uri": "https://github.com/ondata/ckan-mcp-server",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

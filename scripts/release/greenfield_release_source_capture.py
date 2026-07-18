@@ -13,12 +13,14 @@ import re
 import shutil
 import tempfile
 from typing import Any
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
-SOURCE_CAPTURE_VERSION = "odylith.greenfield.release-source-capture.v1"
-SOURCE_MANIFEST_VERSION = "odylith.greenfield.release-source-manifest.v1"
+SOURCE_CAPTURE_VERSION = "odylith.greenfield.release-source-capture.v2"
+SOURCE_MANIFEST_VERSION = "odylith.greenfield.release-source-manifest.v2"
+SOURCE_MANIFEST_FILENAME = "source-manifest.v2.json"
 DEFAULT_ARTIFACTS_PER_FAMILY = 18
 GITHUB_SEARCH_API = "https://api.github.com/search/repositories"
 GITHUB_USER_AGENT = "odylith-greenfield-release-corpus"
@@ -28,19 +30,40 @@ GITHUB_USER_AGENT = "odylith-greenfield-release-corpus"
 class SourceFamily:
     key: str
     topic: str
+    description_evidence_terms: tuple[str, ...] = ()
 
 
 SOURCE_FAMILIES = (
-    SourceFamily("climate", "climate"),
-    SourceFamily("healthcare", "healthcare"),
-    SourceFamily("education", "education"),
-    SourceFamily("civic-tech", "civic-tech"),
-    SourceFamily("mobility", "transportation"),
-    SourceFamily("agriculture", "agriculture"),
-    SourceFamily("open-data", "open-data"),
-    SourceFamily("accessibility", "accessibility"),
-    SourceFamily("security", "security"),
-    SourceFamily("research", "research"),
+    SourceFamily(
+        "climate", "climate", ("climate", "weather", "energy", "emission", "carbon", "environment")
+    ),
+    SourceFamily(
+        "healthcare", "healthcare", ("health", "medical", "clinical", "patient", "hospital", "disease")
+    ),
+    SourceFamily(
+        "education", "education", ("education", "learning", "student", "teaching", "school", "course")
+    ),
+    SourceFamily(
+        "civic-tech", "civic-tech", ("civic", "government", "public", "municipal", "election", "democracy")
+    ),
+    SourceFamily(
+        "mobility", "transportation", ("transport", "transit", "traffic", "mobility", "vehicle", "route")
+    ),
+    SourceFamily(
+        "agriculture", "agriculture", ("agriculture", "farm", "crop", "soil", "food", "irrigation")
+    ),
+    SourceFamily(
+        "open-data", "open-data", ("open data", "dataset", "catalog", "geospatial", "statistics", "records")
+    ),
+    SourceFamily(
+        "accessibility", "accessibility", ("accessibility", "accessible", "a11y", "screen reader", "assistive", "disability")
+    ),
+    SourceFamily(
+        "security", "security", ("security", "secure", "vulnerability", "threat", "privacy", "crypt")
+    ),
+    SourceFamily(
+        "research", "research", ("research", "paper", "study", "science", "academic", "experiment")
+    ),
 )
 
 
@@ -149,7 +172,7 @@ def capture_release_sources(
             "families": [asdict(family) for family in query_specs],
             "sources": selected,
         }
-        manifest_path = staging / "source-manifest.v1.json"
+        manifest_path = staging / SOURCE_MANIFEST_FILENAME
         manifest_path.write_text(json_text(manifest), encoding="utf-8")
         sync_file(manifest_path)
         sync_directory(staging)
@@ -321,6 +344,11 @@ def validate_source_families(families: Sequence[SourceFamily]) -> None:
             raise ValueError("source family keys and topics must be lowercase ASCII tokens")
         if key in seen_keys or topic in seen_topics:
             raise ValueError("source family keys and topics must be unique")
+        if any(
+            not term or not term.isascii() or len(term) < 3
+            for term in (single_line(term) for term in family.description_evidence_terms)
+        ):
+            raise ValueError("source family description evidence terms must be non-empty ASCII text")
         seen_keys.add(key)
         seen_topics.add(topic)
 
@@ -360,25 +388,39 @@ def sync_directory(path: Path) -> None:
 
 
 def _fetch_json(url: str) -> FetchedJson:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": GITHUB_USER_AGENT,
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if token := os.environ.get("GITHUB_TOKEN", "").strip():
+        headers["Authorization"] = f"Bearer {token}"
     request = Request(
         url,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": GITHUB_USER_AGENT,
-            "X-GitHub-Api-Version": "2022-11-28",
-        },
+        headers=headers,
     )
-    with urlopen(request, timeout=30) as response:  # noqa: S310 - public GitHub API endpoint
-        raw = response.read()
-        headers = {
-            key.casefold(): value
-            for key in ("date", "etag", "x-github-request-id")
-            if (value := response.headers.get(key))
-        }
+    try:
+        with urlopen(request, timeout=30) as response:  # noqa: S310 - public GitHub API endpoint
+            raw = response.read()
+            response_headers = {
+                key.casefold(): value
+                for key in ("date", "etag", "x-github-request-id")
+                if (value := response.headers.get(key))
+            }
+    except HTTPError as exc:
+        if exc.code == 403 and exc.headers.get("x-ratelimit-remaining") == "0":
+            reset = exc.headers.get("x-ratelimit-reset")
+            retry = f" after Unix time {reset}" if reset else " later"
+            raise RuntimeError(
+                f"GitHub source capture rate limit is exhausted; retry{retry} or set GITHUB_TOKEN."
+            ) from exc
+        raise RuntimeError(f"GitHub source capture request failed with HTTP {exc.code}: {exc.reason}") from exc
+    except URLError as exc:
+        raise RuntimeError(f"GitHub source capture request failed: {exc.reason}") from exc
     payload = json.loads(raw.decode("utf-8"))
     if not isinstance(payload, Mapping):
         raise RuntimeError(f"GitHub search response is not a JSON object: {url}")
-    return FetchedJson(payload=payload, body=raw, headers=headers)
+    return FetchedJson(payload=payload, body=raw, headers=response_headers)
 
 
 def select_repositories(
@@ -442,7 +484,22 @@ def eligible_for_family(repository: Mapping[str, Any], family: SourceFamily) -> 
         return False
     topics = repository.get("topics")
     assert isinstance(topics, Sequence)
-    return family.topic in {single_line(topic).casefold() for topic in topics}
+    if family.topic not in {single_line(topic).casefold() for topic in topics}:
+        return False
+    return not family.description_evidence_terms or bool(
+        matched_description_evidence_terms(repository, family)
+    )
+
+
+def matched_description_evidence_terms(
+    repository: Mapping[str, Any], family: SourceFamily
+) -> tuple[str, ...]:
+    description = single_line(repository.get("description")).casefold().replace("-", " ")
+    return tuple(
+        term
+        for term in family.description_evidence_terms
+        if term.casefold().replace("-", " ") in description
+    )
 
 
 def capture_artifact(
@@ -470,6 +527,10 @@ def capture_artifact(
         "source_id": f"github-repository:{repository_id}",
         "source_uri": single_line(repository.get("html_url")),
         "source_family": family.key,
+        "family_description_evidence_terms": list(family.description_evidence_terms),
+        "matched_description_evidence_terms": list(
+            matched_description_evidence_terms(repository, family)
+        ),
         "search_request_url": request_url,
         "search_response_path": response_path,
         "search_response_sha256": response_sha256,
@@ -506,7 +567,16 @@ def manifest_families(manifest: Mapping[str, Any]) -> dict[str, SourceFamily]:
     for value in values:
         if not isinstance(value, Mapping):
             raise RuntimeError("source manifest contains an invalid source family")
-        families.append(SourceFamily(single_line(value.get("key")), single_line(value.get("topic"))))
+        terms = value.get("description_evidence_terms", ())
+        if not isinstance(terms, Sequence) or isinstance(terms, (str, bytes, bytearray)):
+            raise RuntimeError("source manifest contains invalid description evidence terms")
+        families.append(
+            SourceFamily(
+                single_line(value.get("key")),
+                single_line(value.get("topic")),
+                tuple(single_line(term) for term in terms),
+            )
+        )
     validate_source_families(families)
     if int(manifest.get("source_family_count") or -1) != len(families):
         raise RuntimeError("source manifest source_family_count does not match families")

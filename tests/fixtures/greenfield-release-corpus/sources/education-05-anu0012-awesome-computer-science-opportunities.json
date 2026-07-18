@@ -1,0 +1,59 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "education",
+    "learning",
+    "student",
+    "teaching",
+    "school",
+    "course"
+  ],
+  "matched_description_evidence_terms": [
+    "student"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "An awesome list of events and fellowship opportunities for Computer Science students",
+    "full_name": "anu0012/awesome-computer-science-opportunities",
+    "id": 118009182,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "awesome-computer-science-opportunities",
+    "node_id": "MDEwOlJlcG9zaXRvcnkxMTgwMDkxODI=",
+    "pushed_at": "2024-06-10T12:05:19Z",
+    "topics": [
+      "android",
+      "awesome",
+      "awesome-list",
+      "computer-science-students",
+      "data-science",
+      "devops",
+      "education",
+      "fellowship",
+      "learning",
+      "mooc",
+      "scholarship",
+      "students",
+      "web"
+    ]
+  },
+  "response_item_index": 10,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aeducation&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:57 GMT",
+    "x-github-request-id": "D127:37400:14E2036:154650B:6A5B606A"
+  },
+  "search_response_path": "responses/education.json",
+  "search_response_sha256": "d51afeba9684308dd78e53e1ecc6ffcf33d5093aa6f1d2e4bc3690c31b6b2504",
+  "selection_index": 5,
+  "source_family": "education",
+  "source_id": "github-repository:118009182",
+  "source_uri": "https://github.com/anu0012/awesome-computer-science-opportunities",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

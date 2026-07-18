@@ -1,0 +1,52 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "agriculture",
+    "farm",
+    "crop",
+    "soil",
+    "food",
+    "irrigation"
+  ],
+  "matched_description_evidence_terms": [
+    "agriculture",
+    "farm",
+    "crop",
+    "soil"
+  ],
+  "repository": {
+    "default_branch": "master",
+    "description": "This is a plant/farming simulator based on Finite Element Method, which targets crops in fields and soil foundations. This software provides multi-physical simulations of agriculture for canopies, plants, and organs for farmers, breeders, agronomists, and civil engineers. Please try and give us feedback.",
+    "full_name": "kazulagi/plantFEM",
+    "id": 210179111,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "plantFEM",
+    "node_id": "MDEwOlJlcG9zaXRvcnkyMTAxNzkxMTE=",
+    "pushed_at": "2026-04-13T17:52:12Z",
+    "topics": [
+      "agriculture",
+      "fem",
+      "finite-element-methods"
+    ]
+  },
+  "response_item_index": 15,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aagriculture&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:06 GMT",
+    "x-github-request-id": "D132:1199E1:1526D0C:1587FA2:6A5B6074"
+  },
+  "search_response_path": "responses/agriculture.json",
+  "search_response_sha256": "15dcc000ab6906d482b87429532f1d4d69c7243f78524e266095a976cf6f331a",
+  "selection_index": 8,
+  "source_family": "agriculture",
+  "source_id": "github-repository:210179111",
+  "source_uri": "https://github.com/kazulagi/plantFEM",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

@@ -1,0 +1,63 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "climate",
+    "weather",
+    "energy",
+    "emission",
+    "carbon",
+    "environment"
+  ],
+  "matched_description_evidence_terms": [
+    "environment"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "Deterministic environmental stabilisation engine for Home Assistant. Stabilises humidity, dew point, air quality, and seasonal comfort with explainable runtime decisions.",
+    "full_name": "senyo888/humidity-intelligence",
+    "id": 1127166185,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "humidity-intelligence",
+    "node_id": "R_kgDOQy8w6Q",
+    "pushed_at": "2026-07-12T16:02:40Z",
+    "topics": [
+      "air-quality",
+      "apexcharts",
+      "aqi-monitor",
+      "aqi-prediction",
+      "button-card",
+      "card-mod",
+      "climate",
+      "hacs-custom",
+      "home-assistant",
+      "homeassistant-config",
+      "homeassistant-custom-component",
+      "humidity",
+      "lavelace",
+      "monitoring",
+      "mould-detection",
+      "smarthome",
+      "temperature"
+    ]
+  },
+  "response_item_index": 10,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aclimate&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:15:51 GMT",
+    "x-github-request-id": "D11F:1970B5:13E88A8:144CDCD:6A5B6064"
+  },
+  "search_response_path": "responses/climate.json",
+  "search_response_sha256": "a54b64b33b56141f273c98e7740de87a1cea68dd3d7568861ad24d90624787b7",
+  "selection_index": 5,
+  "source_family": "climate",
+  "source_id": "github-repository:1127166185",
+  "source_uri": "https://github.com/senyo888/humidity-intelligence",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

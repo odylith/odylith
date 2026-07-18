@@ -1,0 +1,51 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "agriculture",
+    "farm",
+    "crop",
+    "soil",
+    "food",
+    "irrigation"
+  ],
+  "matched_description_evidence_terms": [
+    "farm"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "Python library for Smart Farming data and modelling. Enables reading of ISOBUS task files, EO data from SentinelHub and interfacing APSIM simulation models.",
+    "full_name": "TwinYields/farmingpy",
+    "id": 545607098,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "farmingpy",
+    "node_id": "R_kgDOIIVNug",
+    "pushed_at": "2026-06-13T10:44:14Z",
+    "topics": [
+      "agriculture",
+      "apsim",
+      "crop-model",
+      "farming",
+      "iso11783"
+    ]
+  },
+  "response_item_index": 22,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aagriculture&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:06 GMT",
+    "x-github-request-id": "D132:1199E1:1526D0C:1587FA2:6A5B6074"
+  },
+  "search_response_path": "responses/agriculture.json",
+  "search_response_sha256": "15dcc000ab6906d482b87429532f1d4d69c7243f78524e266095a976cf6f331a",
+  "selection_index": 12,
+  "source_family": "agriculture",
+  "source_id": "github-repository:545607098",
+  "source_uri": "https://github.com/TwinYields/farmingpy",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

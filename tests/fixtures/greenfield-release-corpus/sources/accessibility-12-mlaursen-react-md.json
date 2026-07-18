@@ -1,0 +1,56 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "accessibility",
+    "accessible",
+    "a11y",
+    "screen reader",
+    "assistive",
+    "disability"
+  ],
+  "matched_description_evidence_terms": [
+    "accessible"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "React material design - An accessible React component library built from the Material Design guidelines in Sass",
+    "full_name": "mlaursen/react-md",
+    "id": 46743486,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "react-md",
+    "node_id": "MDEwOlJlcG9zaXRvcnk0Njc0MzQ4Ng==",
+    "pushed_at": "2026-07-01T20:32:22Z",
+    "topics": [
+      "accessibility",
+      "component-library",
+      "components",
+      "material",
+      "material-components",
+      "material-design",
+      "react",
+      "react-md",
+      "scss",
+      "typescript"
+    ]
+  },
+  "response_item_index": 22,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aaccessibility&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:13 GMT",
+    "x-github-request-id": "D13A:1199E1:1528827:1589B2E:6A5B607A"
+  },
+  "search_response_path": "responses/accessibility.json",
+  "search_response_sha256": "e229318d547f71784ae6cb069e0355fe5c681ddd0358edad746dd473a0040580",
+  "selection_index": 12,
+  "source_family": "accessibility",
+  "source_id": "github-repository:46743486",
+  "source_uri": "https://github.com/mlaursen/react-md",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}

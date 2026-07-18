@@ -6,6 +6,7 @@ import json
 import sys
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -91,11 +92,21 @@ def _release_corpus(tmp_path: Path):
         )
         cases.append(case)
         if index < 40:
+            verification_path = tmp_path / "evidence" / "sources" / f"source-{source_index:03d}.json"
+            verification_path.parent.mkdir(parents=True, exist_ok=True)
+            verification_text = json.dumps(
+                {
+                    "source_id": f"public-source-{source_index:03d}",
+                    "source_uri": f"https://example.org/source/{source_index}",
+                },
+                sort_keys=True,
+            )
+            verification_path.write_text(verification_text, encoding="utf-8")
             review_evidence = tmp_path / "evidence" / "reviews" / f"review-{index:03d}.txt"
             review_evidence.parent.mkdir(parents=True, exist_ok=True)
             review_text = json.dumps(
                 {
-                    "version": "odylith.greenfield.matrix.release-audit-evidence.v2",
+                    "version": "odylith.greenfield.matrix.release-audit-evidence.v4",
                     "case_id": case_id,
                     "prompt_sha256": _sha256(prompt),
                     "source_artifact_sha256": source_hash,
@@ -105,6 +116,9 @@ def _release_corpus(tmp_path: Path):
                     "source_verification_method": "independent-source-record-check-v1",
                     "source_verification_uri": f"https://example.org/verification/source/{source_index}",
                     "source_verified_on": "2026-07-14",
+                    "source_verification_path": verification_path.relative_to(tmp_path).as_posix(),
+                    "source_verification_sha256": _sha256(verification_text),
+                    "source_family": f"family-{index % 10}",
                     "reviewer_id": "independent-automated-reviewer",
                     "reviewer_kind": "automated_adversarial",
                     "review_method": "adversarial-source-to-prompt-v1",
@@ -112,6 +126,7 @@ def _release_corpus(tmp_path: Path):
                     "review_status": "approved",
                     "independent": True,
                     "source_binding": "verified",
+                    "source_family_assessment": "approved",
                     "derivation_assessment": "approved",
                     "rationale": "The prompt remains bounded by the retained source excerpt.",
                 },
@@ -129,6 +144,8 @@ def _release_corpus(tmp_path: Path):
                     source_verification_method="independent-source-record-check-v1",
                     source_verification_uri=f"https://example.org/verification/source/{source_index}",
                     source_verified_on="2026-07-14",
+                    source_verification_path=verification_path.relative_to(tmp_path).as_posix(),
+                    source_verification_sha256=_sha256(verification_text),
                     reviewer_id="independent-automated-reviewer",
                     reviewer_kind="automated_adversarial",
                     review_method="adversarial-source-to-prompt-v1",
@@ -274,6 +291,59 @@ def test_release_corpus_requires_stored_hash_matched_review_evidence(tmp_path: P
     )
 
 
+def test_release_corpus_rejects_unbound_source_verification_response(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    verification_path = tmp_path / audits[0].source_verification_path
+    verification_text = json.dumps(
+        {
+            "source_id": "public-source-other",
+            "source_uri": "https://example.org/source/other",
+        },
+        sort_keys=True,
+    )
+    verification_path.write_text(verification_text, encoding="utf-8")
+    altered_audit = replace(audits[0], source_verification_sha256=_sha256(verification_text))
+
+    evaluation = provenance.evaluate_release_corpus(
+        cases, (altered_audit, *audits[1:]), repo_root=tmp_path
+    )
+
+    assert not evaluation.passed
+    assert "source verification response does not match source_id" in "\n".join(evaluation.issues)
+
+
+def test_github_source_verification_requires_canonical_endpoint_and_bound_payload() -> None:
+    _modules()
+    evidence = sys.modules["greenfield_matrix_release_audit_evidence"]
+    audit = SimpleNamespace(
+        source_id="github-repository:701",
+        source_uri="https://github.com/source701/climate-evidence",
+        source_verification_method="independent-github-repository-api-check-v1",
+        source_verification_uri="https://api.github.com/repositories/701",
+        source_verified_on="2026-07-18",
+    )
+    provenance = SimpleNamespace(
+        source_id=audit.source_id,
+        source_uri=audit.source_uri,
+    )
+
+    assert evidence.audit_source_verification_issues(audit, provenance) == ()
+    assert evidence.source_verification_payload_issues(
+        audit,
+        json.dumps({"id": 701, "html_url": audit.source_uri}),
+    ) == ()
+    invalid_endpoint = SimpleNamespace(**vars(audit))
+    invalid_endpoint.source_verification_uri = "https://api.github.com/search/repositories"
+
+    assert evidence.audit_source_verification_issues(invalid_endpoint, provenance) == (
+        "must use the canonical GitHub repository verification endpoint",
+    )
+    assert evidence.source_verification_payload_issues(
+        audit,
+        json.dumps({"id": 702, "html_url": audit.source_uri}),
+    ) == ("source verification response does not match the GitHub repository ID",)
+
+
 def test_release_corpus_rejects_review_evidence_outside_the_repository_root(tmp_path: Path) -> None:
     provenance, cases, audits = _release_corpus(tmp_path)
     escaped_evidence = replace(audits[0], review_evidence_path="../review.txt")
@@ -344,6 +414,14 @@ def test_release_corpus_rejects_opaque_or_mislabeled_audit_evidence(tmp_path: Pa
     coupled_audit = replace(audits[2], review_method=cases[2].provenance.derivation_method)
     source_identity_audit = replace(audits[3], source_id="different-source")
     source_endpoint_audit = replace(audits[4], source_verification_uri="not-an-endpoint")
+    family_evidence_path = tmp_path / audits[5].review_evidence_path
+    family_evidence = json.loads(family_evidence_path.read_text(encoding="utf-8"))
+    family_evidence["source_family_assessment"] = "rejected"
+    family_evidence_text = json.dumps(family_evidence, sort_keys=True)
+    family_evidence_path.write_text(family_evidence_text, encoding="utf-8")
+    family_assessment_audit = replace(
+        audits[5], review_evidence_sha256=_sha256(family_evidence_text)
+    )
 
     evaluation = provenance.evaluate_release_corpus(
         cases,
@@ -353,7 +431,8 @@ def test_release_corpus_rejects_opaque_or_mislabeled_audit_evidence(tmp_path: Pa
             coupled_audit,
             source_identity_audit,
             source_endpoint_audit,
-            *audits[5:],
+            family_assessment_audit,
+            *audits[6:],
         ),
         repo_root=tmp_path,
     )
@@ -365,6 +444,7 @@ def test_release_corpus_rejects_opaque_or_mislabeled_audit_evidence(tmp_path: Pa
     assert "must use a review_method distinct from derivation_method" in issues
     assert "does not match source_id" in issues
     assert "must use an absolute source_verification_uri" in issues
+    assert "review evidence source_family_assessment does not match the audit record" in issues
 
 
 def test_release_audit_loader_rejects_nonversioned_payload(tmp_path: Path) -> None:

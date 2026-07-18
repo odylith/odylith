@@ -191,14 +191,19 @@ def prompt_for_style(
     context = f"Source repository: {full_name}. Source evidence: {source_excerpt}"
     if source_excerpt != description:
         context += f". Repository description: {description}"
+    article = indefinite_article(family)
     templates = {
-        "direct_request": f"Create a {family} product from this evidence. {context}",
+        "direct_request": f"Create {article} {family} product from this evidence. {context}",
         "edited_confirmation": f"Create a reviewed {family} product. {context}",
-        "pasted_brief": f"Project brief for a {family} team:\n{context}",
-        "research_evidence": f"Research evidence for a {family} product: {source_excerpt}. {context}",
+        "pasted_brief": f"Project brief for {article} {family} team:\n{context}",
+        "research_evidence": f"Research evidence for {article} {family} product: {source_excerpt}. {context}",
         "thin_request": f"Build around this {family} evidence: {context}",
     }
     return templates[input_style]
+
+
+def indefinite_article(value: str) -> str:
+    return "an" if single_line(value).casefold().startswith(("a", "e", "i", "o", "u")) else "a"
 
 
 def confirmed_intent(family: str, full_name: str, description: str, source_excerpt: str) -> str:

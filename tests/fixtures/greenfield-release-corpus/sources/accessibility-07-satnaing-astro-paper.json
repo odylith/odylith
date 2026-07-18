@@ -1,0 +1,61 @@
+{
+  "capture_method": "github-search-repository-metadata-v1",
+  "captured_at": "2026-07-18T11:15:48Z",
+  "captured_on": "2026-07-18",
+  "family_description_evidence_terms": [
+    "accessibility",
+    "accessible",
+    "a11y",
+    "screen reader",
+    "assistive",
+    "disability"
+  ],
+  "matched_description_evidence_terms": [
+    "accessible"
+  ],
+  "repository": {
+    "default_branch": "main",
+    "description": "A minimal, accessible and SEO-friendly Astro blog theme.",
+    "full_name": "satnaing/astro-paper",
+    "id": 534208492,
+    "license": {
+      "key": "mit",
+      "name": "MIT License",
+      "spdx_id": "MIT"
+    },
+    "name": "astro-paper",
+    "node_id": "R_kgDOH9df7A",
+    "pushed_at": "2026-07-07T15:51:48Z",
+    "topics": [
+      "a11y",
+      "accessibility",
+      "astro",
+      "astro-theme",
+      "astro-themes",
+      "blog",
+      "jamstack",
+      "markdown",
+      "ssg",
+      "static-site",
+      "static-site-generator",
+      "tailwindcss",
+      "template",
+      "theme",
+      "typescript"
+    ]
+  },
+  "response_item_index": 14,
+  "rights_notice": "GitHub metadata reports repository SPDX MIT. This is not consent or copyright clearance for repository metadata reused as evidence.",
+  "search_request_url": "https://api.github.com/search/repositories?q=license%3Amit+fork%3Afalse+archived%3Afalse+topic%3Aaccessibility&sort=stars&order=desc&per_page=100",
+  "search_response_headers": {
+    "date": "Sat, 18 Jul 2026 11:16:13 GMT",
+    "x-github-request-id": "D13A:1199E1:1528827:1589B2E:6A5B607A"
+  },
+  "search_response_path": "responses/accessibility.json",
+  "search_response_sha256": "e229318d547f71784ae6cb069e0355fe5c681ddd0358edad746dd473a0040580",
+  "selection_index": 7,
+  "source_family": "accessibility",
+  "source_id": "github-repository:534208492",
+  "source_uri": "https://github.com/satnaing/astro-paper",
+  "version": "odylith.greenfield.release-source-capture.v2"
+}
