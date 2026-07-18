@@ -16,6 +16,7 @@ from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 
 
 def _quality_manifest() -> dict[str, Any]:
@@ -72,6 +73,7 @@ def test_commit_product_create_transaction_rolls_back_when_compiled_write_raises
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transaction = _transaction(tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     def fail_after_precompiled_writes(**_kwargs: Any) -> dict[str, Any]:
         raise OSError("simulated compiled write failure")
@@ -85,7 +87,8 @@ def test_commit_product_create_transaction_rolls_back_when_compiled_write_raises
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc:
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash=transaction.transaction_hash,
             confirm=True,
             started_at=0.0,
         )

@@ -32,6 +32,8 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
@@ -44,23 +46,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
 
-_PRECONFIRM_ALLOWED_OPERATIONS = (
-    "verify_transaction_hash",
-    "verify_compiler_receipt",
-    "verify_compiler_provenance",
-    "verify_repo_preconditions",
-    "write_sealed_repository_bytes",
-    "validate_readback",
-    "report_success",
-)
-_PRECONFIRM_FORBIDDEN_OPERATIONS = (
-    "product_interpretation",
-    "artifact_generation",
-    "semantic_repair",
-    "markdown_parsing",
-    "host_model_work",
-    "quality_repair",
-)
 _VOLATILE_HASH_KEYS = {
     "elapsed_seconds",
     "whole_project_elapsed_seconds",
@@ -230,8 +215,8 @@ def build_product_create_transaction_provenance(
         "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
         "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
         "compiler_identity": product_create_transaction_compiler_identity(),
-        "post_confirm_allowed_operations": list(_PRECONFIRM_ALLOWED_OPERATIONS),
-        "post_confirm_forbidden_operations": list(_PRECONFIRM_FORBIDDEN_OPERATIONS),
+        "post_confirm_allowed_operations": list(POST_CONFIRM_ALLOWED_OPERATIONS),
+        "post_confirm_forbidden_operations": list(POST_CONFIRM_FORBIDDEN_OPERATIONS),
     }
 
 
@@ -275,13 +260,13 @@ def require_product_create_transaction_compiler_provenance(
                 "no Product Intent or compiled artifact failed, and no governed records were written. "
                 "Rebuild the pre-confirm transaction before committing."
             )
-    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != _PRECONFIRM_ALLOWED_OPERATIONS:
+    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != POST_CONFIRM_ALLOWED_OPERATIONS:
         raise ValueError(
             "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
             "no Product Intent was rejected and no governed records were written. "
             "Rebuild the pre-confirm transaction before committing."
         )
-    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != _PRECONFIRM_FORBIDDEN_OPERATIONS:
+    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != POST_CONFIRM_FORBIDDEN_OPERATIONS:
         raise ValueError(
             "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
             "no Product Intent was rejected and no governed records were written. "

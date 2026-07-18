@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 from odylith.runtime.surfaces import brand_assets
 
@@ -123,10 +124,12 @@ def test_commit_product_create_transaction_uses_write_set_when_legacy_brand_fiel
         quality_manifest=base.quality_manifest,
         repo_root=tmp_path,
     )
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )
@@ -140,6 +143,7 @@ def test_commit_product_create_transaction_does_not_seed_brand_assets_after_conf
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transaction = _compiled_transaction(tmp_path, monkeypatch)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("commit must not call dynamic brand asset seeding")
@@ -155,7 +159,8 @@ def test_commit_product_create_transaction_does_not_seed_brand_assets_after_conf
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )

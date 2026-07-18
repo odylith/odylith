@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
+from odylith.runtime.domain_intelligence import greenfield_create_cli
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
@@ -881,7 +882,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "tooling_shell")
     assert dashboard_calls[-1]["operation_label"] == "Greenfield pre-confirm staged surface refresh"
     assert "atlas_sync" not in dashboard_calls[-1]
-    assert "greenfield create wrote confirmed proposal" in out
+    assert "Odylith committed the validated Greenfield package." in out
     assert "- validation gate: passed" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
@@ -1083,11 +1084,9 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
 
     def fake_commit(**kwargs):
         calls.append(("commit", dict(kwargs)))
-        assert kwargs["transaction"].transaction_hash == transaction.transaction_hash
-        assert (
-            kwargs["transaction"].prewrite_package.surface_refresh_preview
-            == transaction.prewrite_package.surface_refresh_preview
-        )
+        assert kwargs["transaction_file"] == transaction_path
+        assert kwargs["transaction_hash"] == transaction.transaction_hash
+        assert kwargs["confirm"] is True
         return {
             "mode": "applied",
             "validation_gate": transaction.validation_gate,
@@ -1152,9 +1151,10 @@ def test_greenfield_create_cli_rejects_transaction_without_compiler_receipt(
     )
 
     def forbidden(*_args, **_kwargs):
-        raise AssertionError("a transaction without a compiler receipt must fail before commit")
+        raise AssertionError("a transaction without a compiler receipt must fail before governed writes")
 
-    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit.greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
     rc = greenfield_proposals.main(
         [
@@ -1194,9 +1194,10 @@ def test_greenfield_create_cli_rejects_rehashed_manifest_drift_before_commit(
     )
 
     def forbidden(*_args, **_kwargs):
-        raise AssertionError("a receipt-drifted transaction must fail before the commit boundary")
+        raise AssertionError("a receipt-drifted transaction must fail before governed writes")
 
-    monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_create_commit.greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
     rc = greenfield_proposals.main(
         [
@@ -1287,7 +1288,7 @@ def test_greenfield_create_cli_rejects_intent_file_even_with_compiled_transactio
     def forbidden(*_args, **_kwargs):
         raise AssertionError("intent-file create must fail before loading, compiling, or committing")
 
-    monkeypatch.setattr(greenfield_proposals, "load_product_create_transaction_args", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "load_sealed_product_create_commit", forbidden)
     monkeypatch.setattr(greenfield_proposals, "build_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_proposals, "compile_greenfield_create_transaction", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_proposal", forbidden)
@@ -1453,7 +1454,7 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
     )
 
     assert rc == 0, output
-    assert "greenfield create wrote confirmed proposal" in output
+    assert "Odylith committed the validated Greenfield package." in output
     assert "- validation gate: passed" in output
     assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
@@ -1552,7 +1553,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     )
 
     assert rc == 0, output
-    assert "greenfield create wrote confirmed proposal" in output
+    assert "Odylith committed the validated Greenfield package." in output
     assert "- validation gate: passed" in output
     assert "generic actor label `Operator`" not in output
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
@@ -1575,8 +1576,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     assert "A finished safe state" not in first_path
     assert not re.search(r"\bOperator\b", first_path)
     assert "generic actor label" not in rendered
-    assert "Preserve this accepted first path:" in output
-    assert "safe finished state" in output
+    assert "- readback: passed" in output
 
 
 def test_greenfield_create_cli_bootstraps_missing_indexes_and_repairs_scaffold_language(
@@ -1639,7 +1639,7 @@ Release 0.0.1 succeeds when one site record can be opened, linked to source evid
     )
 
     assert rc == 0, output
-    assert "greenfield create wrote confirmed proposal" in output
+    assert "Odylith committed the validated Greenfield package." in output
     assert (tmp_path / "odylith/technical-plans/INDEX.md").is_file()
     assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
     accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -1716,7 +1716,7 @@ def test_greenfield_create_cli_requires_compiled_transaction_before_writes(tmp_p
     out = capsys.readouterr().out
     assert rc == 2
     assert "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm" in out
-    assert "unexpected options: --release" in out
+    assert "unexpected options: --prompt, --release" in out
     assert "Use EDIT to add evidence and rebuild the ProductCreateTransaction" in out
     assert "create only verifies the hash and commits the compiled package" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []

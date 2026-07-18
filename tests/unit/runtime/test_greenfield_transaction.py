@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_transaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 
 
 def test_greenfield_apply_transaction_rolls_back_tooling_shell_outputs(tmp_path) -> None:
@@ -35,6 +36,7 @@ def test_greenfield_apply_transaction_rolls_back_tooling_shell_outputs(tmp_path)
 
 def test_commit_transaction_reports_rollback_when_write_boundary_fails(tmp_path, monkeypatch) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     def fail_write_boundary(**_kwargs: object) -> dict[str, object]:
         raise RuntimeError("synthetic commit-boundary failure")
@@ -48,7 +50,8 @@ def test_commit_transaction_reports_rollback_when_write_boundary_fails(tmp_path,
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc_info:
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash=transaction.transaction_hash,
             confirm=True,
             started_at=0.0,
         )
@@ -61,6 +64,7 @@ def test_commit_transaction_reports_rollback_when_write_boundary_fails(tmp_path,
 
 def test_commit_transaction_maps_keyboard_interrupt_after_rollback(tmp_path, monkeypatch) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     def interrupt_write_boundary(**_kwargs: object) -> dict[str, object]:
         raise KeyboardInterrupt()
@@ -74,7 +78,8 @@ def test_commit_transaction_maps_keyboard_interrupt_after_rollback(tmp_path, mon
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc_info:
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash=transaction.transaction_hash,
             confirm=True,
             started_at=0.0,
         )

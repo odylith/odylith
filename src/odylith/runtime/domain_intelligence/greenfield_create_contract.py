@@ -8,6 +8,23 @@ PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1
 PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v3"
 PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "compiler_receipt_hash_verified_commit_only"
 PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION = "odylith.greenfield.compiler_receipt.v1"
+POST_CONFIRM_ALLOWED_OPERATIONS = (
+    "verify_transaction_hash",
+    "verify_compiler_receipt",
+    "verify_compiler_provenance",
+    "verify_repo_preconditions",
+    "write_sealed_repository_bytes",
+    "validate_readback",
+    "report_success",
+)
+POST_CONFIRM_FORBIDDEN_OPERATIONS = (
+    "product_interpretation",
+    "artifact_generation",
+    "semantic_repair",
+    "markdown_parsing",
+    "host_model_work",
+    "quality_repair",
+)
 
 
 __all__ = [
@@ -16,4 +33,6 @@ __all__ = [
     "PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION",
     "PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION",
     "PRODUCT_CREATE_TRANSACTION_VERSION",
+    "POST_CONFIRM_ALLOWED_OPERATIONS",
+    "POST_CONFIRM_FORBIDDEN_OPERATIONS",
 ]

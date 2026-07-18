@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
@@ -98,10 +99,12 @@ def test_commit_product_create_transaction_uses_write_set_when_legacy_baseline_f
         quality_manifest=base.quality_manifest,
         repo_root=tmp_path,
     )
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )

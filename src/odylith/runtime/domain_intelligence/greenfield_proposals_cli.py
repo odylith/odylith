@@ -3,22 +3,15 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Callable, Sequence
-import contextlib
-import io
+from collections.abc import Sequence
 import json
-import os
 from pathlib import Path
-import sys
-import tempfile
 from typing import Any, Mapping
 
-from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import GreenfieldClarificationRequired
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
-from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmEngineError
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_REPAIR_TIERS
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
@@ -82,34 +75,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         ),
     )
     apply.add_argument("--json", action="store_true", dest="as_json")
-    create = subparsers.add_parser("create", help="Commit a compiled ProductCreateTransaction.")
-    create.add_argument("--repo-root", default=".")
-    create.add_argument("--prompt", default="", help=argparse.SUPPRESS)
-    create.add_argument(
-        "--intent-file",
-        "--confirmed-intent-file",
-        default="",
-        dest="intent_file",
-        help=argparse.SUPPRESS,
-    )
-    create.add_argument(
-        "--transaction-file",
-        default="",
-        help="JSON ProductCreateTransaction compiled before confirmation.",
-    )
-    create.add_argument(
-        "--transaction-hash",
-        default="",
-        help="Expected ProductCreateTransaction hash; required by confirmation UIs and checked before writes.",
-    )
-    create.add_argument("--confirm", action="store_true")
-    create.add_argument("--release", default="", help=argparse.SUPPRESS)
-    create.add_argument(
-        "--repair-tier",
-        default="",
-        help=argparse.SUPPRESS,
-    )
-    create.add_argument("--json", action="store_true", dest="as_json")
     compile_transaction = subparsers.add_parser(
         "compile-transaction",
         help="Compile a no-write ProductCreateTransaction for controlled tooling; normal product flow uses propose.",
@@ -142,49 +107,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     compile_transaction.add_argument("--format", choices=("text", "json"), default="text", dest="output_format")
     return parser.parse_args(argv)
-
-
-def _run_with_optional_stdout_capture(
-    *,
-    enabled: bool,
-    action: Callable[[], dict[str, Any]],
-) -> tuple[dict[str, Any], list[str]]:
-    if not enabled:
-        return action(), []
-    stdout_fd = 1
-    try:
-        probe_fd = os.dup(stdout_fd)
-    except OSError:
-        captured_output = io.StringIO()
-        with contextlib.redirect_stdout(captured_output):
-            result = action()
-        return result, _captured_lines(captured_output.getvalue())
-    else:
-        os.close(probe_fd)
-    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured_output:
-        sys.stdout.flush()
-        saved_fd = os.dup(stdout_fd)
-        try:
-            os.dup2(captured_output.fileno(), stdout_fd)
-            with contextlib.redirect_stdout(captured_output):
-                result = action()
-                captured_output.flush()
-        finally:
-            os.dup2(saved_fd, stdout_fd)
-            os.close(saved_fd)
-        captured_output.seek(0)
-        return result, _captured_lines(captured_output.read())
-
-
-def _captured_lines(text: str) -> list[str]:
-    return [line.rstrip() for line in str(text or "").splitlines() if line.strip()]
-
-
-def _with_operator_output(result: Mapping[str, Any], captured: Sequence[str]) -> dict[str, Any]:
-    payload = dict(result)
-    if captured:
-        payload["operator_output"] = list(captured)
-    return payload
 
 
 def _legacy_apply_disabled_error() -> str:
@@ -248,8 +170,6 @@ def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
         payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
         if isinstance(exc, GreenfieldPreconfirmEngineError):
             payload["commit_manifest"] = exc.manifest
-        if isinstance(exc, greenfield_create_commit.GreenfieldCreateCommitError):
-            payload["commit_failure"] = exc.to_dict()
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))
@@ -297,18 +217,6 @@ def _finish_clarification(
         return 2
     _print_greenfield_clarification(exc, as_json=as_json)
     return 0
-
-
-def _create_input_overrides(args: argparse.Namespace) -> list[str]:
-    overrides: list[str] = []
-    has_transaction_ref = bool(str(getattr(args, "transaction_file", "") or "").strip())
-    if has_transaction_ref and str(getattr(args, "prompt", "") or "").strip():
-        overrides.append("--prompt")
-    if str(getattr(args, "release", "") or "").strip():
-        overrides.append("--release")
-    if str(getattr(args, "repair_tier", "") or "").strip():
-        overrides.append("--repair-tier")
-    return overrides
 
 
 def _edit_evidence_from_args(args: argparse.Namespace, *, repo_root: Path) -> str:
@@ -377,7 +285,12 @@ def _retired_intent_file_message() -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    args = _parse_args(argv)
+    tokens = [str(token) for token in (argv or ())]
+    if tokens[:1] == ["create"]:
+        from odylith.runtime.domain_intelligence.greenfield_create_cli import main as create_main
+
+        return create_main(tokens)
+    args = _parse_args(tokens)
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     if args.command == "propose":
         if bool(args.confirm_intent) or str(args.intent_file or "").strip():
@@ -493,63 +406,5 @@ def main(argv: Sequence[str] | None = None) -> int:
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
-        return 0
-    if args.command == "create":
-        if not bool(args.confirm):
-            message = (
-                "greenfield create requires --confirm after the compiled ProductCreateTransaction is accepted. "
-                "Run `odylith greenfield propose --repo-root . --prompt "
-                + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
-                + "` first, then rerun create with --transaction-file, --transaction-hash, and --confirm "
-                "when the validated package is correct."
-            )
-            if args.as_json:
-                print(json.dumps({"mode": "error", "error": message}, indent=2, sort_keys=True))
-            else:
-                print(message)
-            return 2
-        try:
-            if str(getattr(args, "intent_file", "") or "").strip():
-                raise ValueError(
-                    "greenfield create no longer accepts --intent-file. "
-                    "Run `odylith greenfield propose --repo-root . --prompt "
-                    + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
-                    + "` first, "
-                    "then run create with --transaction-file, --transaction-hash, and --confirm."
-                )
-            create_input_overrides = _create_input_overrides(args)
-            if create_input_overrides:
-                raise ValueError(
-                    "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm; "
-                    "unexpected options: "
-                    + ", ".join(create_input_overrides)
-                    + ". Use EDIT to add evidence and rebuild the ProductCreateTransaction; "
-                    "create only verifies the hash and commits the compiled package."
-                )
-            transaction = greenfield_proposals.load_product_create_transaction_args(args, repo_root=repo_root)
-            if transaction is None:
-                raise ValueError(
-                    "greenfield create requires --transaction-file with --transaction-hash. "
-                    "Run `odylith greenfield propose --repo-root . --prompt "
-                    + json.dumps(greenfield_proposals.prompt_text(str(args.prompt)))
-                    + "` first; "
-                    "commit-only create only commits an already compiled ProductCreateTransaction."
-                )
-            result, captured = _run_with_optional_stdout_capture(
-                enabled=bool(args.as_json),
-                action=lambda: greenfield_create_commit.commit_greenfield_create_transaction(
-                    repo_root=repo_root,
-                    transaction=transaction,
-                    confirm=True,
-                )
-            )
-        except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as exc:
-            _print_greenfield_error(exc, as_json=bool(args.as_json))
-            return 2
-        if args.as_json:
-            result = _with_operator_output(result, captured)
-            print(json.dumps(result, indent=2, sort_keys=True))
-        else:
-            print_apply_result(result, verb="create")
         return 0
     return 2

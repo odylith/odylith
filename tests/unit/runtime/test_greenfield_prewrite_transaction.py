@@ -32,6 +32,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEX
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import commit_precompiled_greenfield_proposal
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
@@ -1852,6 +1853,7 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
         proposal=proposal,
         release_selector="0.0.1",
     )
+    sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     original_allocated_diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids
     target_allocation_calls = 0
 
@@ -1876,7 +1878,8 @@ def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tm
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=sealed.transaction_file,
+        transaction_hash=sealed.transaction_hash,
         confirm=True,
     )
 
@@ -1897,6 +1900,7 @@ def test_greenfield_commit_does_not_rematerialize_component_specs_after_confirma
         proposal=proposal,
         release_selector="0.0.1",
     )
+    sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     materialize_calls = 0
 
     def fail_materialization(**_kwargs):
@@ -1912,7 +1916,8 @@ def test_greenfield_commit_does_not_rematerialize_component_specs_after_confirma
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=sealed.transaction_file,
+        transaction_hash=sealed.transaction_hash,
         confirm=True,
     )
 
@@ -1934,6 +1939,7 @@ def test_greenfield_commit_does_not_regenerate_project_brief_after_confirmation(
         proposal=proposal,
         release_selector="0.0.1",
     )
+    sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     writer_calls = 0
 
     def fail_project_brief_writer(**_kwargs):
@@ -1949,7 +1955,8 @@ def test_greenfield_commit_does_not_regenerate_project_brief_after_confirmation(
 
     greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=sealed.transaction_file,
+        transaction_hash=sealed.transaction_hash,
         confirm=True,
     )
 
@@ -2012,6 +2019,7 @@ def test_greenfield_commit_does_not_rebuild_release_target_after_confirmation(tm
         proposal=proposal,
         release_selector="0.0.1",
     )
+    sealed = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     def fail_release_rebuild(**_kwargs):
         raise AssertionError("post-confirm commit must consume the sealed release target")
@@ -2023,7 +2031,8 @@ def test_greenfield_commit_does_not_rebuild_release_target_after_confirmation(tm
     )
     greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=sealed.transaction_file,
+        transaction_hash=sealed.transaction_hash,
         confirm=True,
     )
 

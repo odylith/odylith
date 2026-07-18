@@ -10,6 +10,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_provenance
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
@@ -57,17 +58,27 @@ class GreenfieldCreateCommitError(RuntimeError):
 def commit_greenfield_create_transaction(
     *,
     repo_root: Path,
-    transaction: Any,
+    transaction_file: Path,
+    transaction_hash: str,
     confirm: bool,
     started_at: float | None = None,
 ) -> dict[str, Any]:
-    """Verify and commit an already compiled ProductCreateTransaction."""
+    """Reload, verify, and commit the user-confirmed precompiled package."""
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
-    if type(transaction).__module__ == "odylith.runtime.domain_intelligence.greenfield_create_transaction":
-        require_product_create_transaction_verified(transaction)
+    path = Path(transaction_file).expanduser()
+    if not path.is_absolute():
+        path = root / path
+    transaction = load_sealed_product_create_commit(path)
+    expected_hash = str(transaction_hash or "").strip()
+    if not expected_hash:
+        raise ValueError(
+            "greenfield create requires the confirmed ProductCreateTransaction hash before it can enter the write boundary"
+        )
+    if transaction.transaction_hash != expected_hash:
+        raise ValueError("ProductCreateTransaction hash does not match the confirmed transaction hash")
     require_sealed_commit_transaction(transaction)
     require_sealed_commit_provenance(transaction, repo_root=root)
     started = time.perf_counter() if started_at is None else float(started_at)
@@ -181,16 +192,6 @@ def commit_greenfield_create_transaction(
             ),
         ) from exc
     return result
-
-
-def require_product_create_transaction_verified(transaction: Any) -> None:
-    """Validate the legacy in-memory adapter without loading it on the canonical path."""
-
-    from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
-        require_product_create_transaction_verified as require_legacy_transaction_verified,
-    )
-
-    require_legacy_transaction_verified(transaction)
 
 
 @contextmanager

@@ -24,7 +24,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import is_h
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
-from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_prewrite_projection_rerender
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
@@ -32,7 +31,6 @@ from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifa
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
@@ -442,26 +440,6 @@ def _confirmed_intent_markdown_source_path(envelope: Mapping[str, Any], *, fallb
         return fallback
     candidate = Path(source_path).expanduser()
     return candidate if candidate.is_absolute() else fallback.parent / candidate
-
-
-def load_product_create_transaction_args(
-    args: argparse.Namespace,
-    *,
-    repo_root: Path,
-) -> ProductCreateTransaction | None:
-    transaction_file = str(getattr(args, "transaction_file", "") or "").strip()
-    if not transaction_file:
-        return None
-    path = Path(transaction_file).expanduser()
-    if not path.is_absolute():
-        path = repo_root / path
-    transaction = load_compiled_product_create_transaction_file(path)
-    expected_hash = str(getattr(args, "transaction_hash", "") or "").strip()
-    if not expected_hash:
-        raise ValueError("greenfield create with a ProductCreateTransaction requires --transaction-hash")
-    if expected_hash != transaction.transaction_hash:
-        raise ValueError("ProductCreateTransaction hash does not match --transaction-hash")
-    return transaction
 
 
 def write_product_create_transaction_file(path: Path, transaction: ProductCreateTransaction) -> Path:

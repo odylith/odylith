@@ -8,21 +8,51 @@ from pathlib import Path
 from typing import Sequence
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
-from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="odylith greenfield create")
     parser.add_argument("--repo-root", default=".")
-    parser.add_argument("--transaction-file", required=True)
-    parser.add_argument("--transaction-hash", required=True)
+    parser.add_argument("--transaction-file", default="")
+    parser.add_argument("--transaction-hash", default="")
     parser.add_argument("--confirm", action="store_true")
     parser.add_argument("--json", action="store_true", dest="as_json")
-    args = parser.parse_args(_create_arguments(argv))
+    parser.add_argument("--prompt", default="", help=argparse.SUPPRESS)
+    parser.add_argument("--intent-file", "--confirmed-intent-file", default="", dest="intent_file", help=argparse.SUPPRESS)
+    parser.add_argument("--release", default="", help=argparse.SUPPRESS)
+    parser.add_argument("--repair-tier", default="", help=argparse.SUPPRESS)
+    args, unknown = parser.parse_known_args(_create_arguments(argv))
     if not args.confirm:
         return _error(
             "greenfield create requires --confirm after the compiled ProductCreateTransaction is accepted. "
             "CONFIRM commits the exact validated package; EDIT rebuilds it from new evidence; REJECT writes nothing.",
+            as_json=args.as_json,
+        )
+    if str(args.intent_file or "").strip():
+        return _error(
+            "greenfield create no longer accepts --intent-file. Run `odylith greenfield propose --repo-root . --prompt <request>` first, "
+            "then run create with --transaction-file, --transaction-hash, and --confirm.",
+            as_json=args.as_json,
+        )
+    overrides = _create_input_overrides(args, unknown)
+    if overrides:
+        return _error(
+            "greenfield create accepts only --transaction-file, --transaction-hash, and --confirm; unexpected options: "
+            + ", ".join(overrides)
+            + ". Use EDIT to add evidence and rebuild the ProductCreateTransaction; create only verifies the hash and commits the compiled package.",
+            as_json=args.as_json,
+        )
+    if not str(args.transaction_file or "").strip():
+        return _error(
+            "greenfield create requires --transaction-file. "
+            "Run `odylith greenfield propose --repo-root . --prompt <request>` first; "
+            "commit-only create only commits an already compiled ProductCreateTransaction.",
+            as_json=args.as_json,
+        )
+    if not str(args.transaction_hash or "").strip():
+        return _error(
+            "greenfield create requires --transaction-hash for the compiled ProductCreateTransaction. "
+            "Use the hash shown by the CONFIRM rail; EDIT rebuilds the package with a new hash.",
             as_json=args.as_json,
         )
     root = Path(args.repo_root).expanduser().resolve()
@@ -30,12 +60,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not path.is_absolute():
         path = root / path
     try:
-        transaction = load_sealed_product_create_commit(path)
-        if args.transaction_hash != transaction.transaction_hash:
-            raise ValueError("ProductCreateTransaction hash does not match --transaction-hash")
         result = greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=root,
-            transaction=transaction,
+            transaction_file=path,
+            transaction_hash=args.transaction_hash,
             confirm=True,
         )
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as error:
@@ -43,9 +71,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.as_json:
         print(json.dumps(result, indent=2, sort_keys=True))
     else:
+        summary = dict(result.get("product_create_transaction") or {})
         print("Odylith committed the validated Greenfield package.")
-        print(f"- transaction hash: {transaction.transaction_hash}")
-        print(f"- sealed writes: {transaction.summary()['repository_write_count']}")
+        print(f"- transaction hash: {args.transaction_hash}")
+        print(f"- quality gate: {summary['quality_status']}")
+        print(f"- validation gate: {summary['validation_status']}")
+        print(f"- sealed writes: {summary['repository_write_count']}")
         print("- readback: passed")
     return 0
 
@@ -53,6 +84,20 @@ def main(argv: Sequence[str] | None = None) -> int:
 def _create_arguments(argv: Sequence[str] | None) -> list[str]:
     tokens = [str(token) for token in (argv or ())]
     return tokens[1:] if tokens[:1] == ["create"] else tokens
+
+
+def _create_input_overrides(args: argparse.Namespace, unknown: Sequence[str]) -> list[str]:
+    overrides: list[str] = []
+    if str(args.prompt or "").strip():
+        overrides.append("--prompt")
+    if str(args.release or "").strip():
+        overrides.append("--release")
+    if str(args.repair_tier or "").strip():
+        overrides.append("--repair-tier")
+    overrides.extend(token for token in unknown if token.startswith("-"))
+    if unknown and not overrides:
+        overrides.append("unsupported arguments")
+    return overrides
 
 
 def _error(message: str, *, as_json: bool, error: Exception | None = None) -> int:

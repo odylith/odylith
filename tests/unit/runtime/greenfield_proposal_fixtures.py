@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
@@ -155,11 +156,21 @@ def commit_precompiled_greenfield_proposal(
         proposal_ready=proposal_ready,
         repair_tier=repair_tier,
     )
+    sealed = seal_compiled_greenfield_transaction(repo_root=root, transaction=transaction)
     return greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=root,
-        transaction=transaction,
+        transaction_file=sealed.transaction_file,
+        transaction_hash=sealed.transaction_hash,
         confirm=True,
     )
+
+
+def seal_compiled_greenfield_transaction(*, repo_root: Path, transaction: Any) -> Any:
+    """Persist and reload the exact receipt-bound package used by canonical create."""
+
+    path = Path(repo_root) / ".odylith" / "runtime" / "greenfield" / "test-product-create-transaction.v1.json"
+    greenfield_proposals.write_product_create_transaction_file(path, transaction)
+    return load_sealed_product_create_commit(path)
 def _with_test_product_intent_authority(proposal: dict[str, object], *, repo_root: Path) -> dict[str, object]:
     if isinstance(proposal.get(PRODUCT_INTENT_AUTHORITY_KEY), dict):
         return proposal

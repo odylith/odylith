@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_commit_journal import Greenf
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
 from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 
 
 def _write(path: Path, text: str) -> None:
@@ -551,9 +552,11 @@ def test_same_hash_retry_returns_the_durable_result_without_reapplying(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     first_result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )
@@ -568,7 +571,8 @@ def test_same_hash_retry_returns_the_durable_result_without_reapplying(
     )
     retry_result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )
@@ -611,9 +615,11 @@ def test_commit_stages_atomic_writes_outside_governed_roots(
 
 def test_same_hash_retry_refuses_to_hide_post_commit_repository_drift(tmp_path: Path) -> None:
     transaction = _transaction(repo_root=tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )
@@ -624,7 +630,8 @@ def test_same_hash_retry_refuses_to_hide_post_commit_repository_drift(tmp_path: 
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc_info:
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash=transaction.transaction_hash,
             confirm=True,
             started_at=0.0,
         )

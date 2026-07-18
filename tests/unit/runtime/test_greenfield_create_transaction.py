@@ -30,7 +30,6 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import bu
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import load_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_hash
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_from_dict
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_repo_fingerprint
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
@@ -47,6 +46,7 @@ from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_package_fixture
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 COMPILED_ACCEPTED_AT = "2026-07-07T00:00:00-07:00"
@@ -392,6 +392,13 @@ def _transaction(repo_root: Path | None = None) -> Any:
     )
 
 
+def _sealed_transaction(repo_root: Path, transaction: Any | None = None) -> Any:
+    return seal_compiled_greenfield_transaction(
+        repo_root=repo_root,
+        transaction=transaction or _transaction(repo_root=repo_root),
+    )
+
+
 def test_compiled_memory_readback_rejects_accepted_project_drift(tmp_path: Path) -> None:
     package = _package(_proposal())
     source_root = tmp_path / "odylith/runtime/source"
@@ -661,7 +668,7 @@ def test_commit_product_create_transaction_is_commit_only(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = _transaction(repo_root=tmp_path)
+    transaction = _sealed_transaction(tmp_path)
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("commit must not run product interpretation, generation, repair, or surface refresh")
@@ -680,7 +687,8 @@ def test_commit_product_create_transaction_is_commit_only(
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
         started_at=0.0,
     )
@@ -700,7 +708,7 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = replace(_transaction(repo_root=tmp_path), transaction_hash="not-the-compiled-hash")
+    transaction = _sealed_transaction(tmp_path)
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("bad transaction hash must fail before baseline setup, rollback guard, or write path")
@@ -709,31 +717,33 @@ def test_commit_product_create_transaction_rejects_bad_hash_before_write(
     monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
-    with pytest.raises(ValueError, match="ProductCreateTransaction hash mismatch"):
+    with pytest.raises(ValueError, match="does not match the confirmed transaction hash"):
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash="not-the-compiled-hash",
             confirm=True,
             started_at=0.0,
         )
 
 
-def test_commit_product_create_transaction_rejects_direct_uncompiled_object(
+def test_commit_product_create_transaction_requires_a_receipt_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = replace(_transaction(repo_root=tmp_path), _compiler_attestation=None)
+    transaction_file = tmp_path / ".odylith/runtime/greenfield/missing-product-create-transaction.v1.json"
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("uncompiled transaction object must fail before the write boundary")
+        raise AssertionError("a missing receipt must fail before the write boundary")
 
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
-    with pytest.raises(ValueError, match="not accepted by the pre-confirm compiler"):
+    with pytest.raises(ValueError, match="missing its pre-confirm compiler receipt"):
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction_file,
+            transaction_hash="untrusted-in-memory-object",
             confirm=True,
             started_at=0.0,
         )
@@ -743,7 +753,7 @@ def test_commit_product_create_transaction_rejects_repo_drift_before_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = _transaction(repo_root=tmp_path)
+    transaction = _sealed_transaction(tmp_path)
     index_path = tmp_path / "odylith/radar/source/INDEX.md"
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text("operator edit after compile\n", encoding="utf-8")
@@ -757,7 +767,8 @@ def test_commit_product_create_transaction_rejects_repo_drift_before_write(
     with pytest.raises(ValueError, match="repo preconditions changed"):
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash=transaction.transaction_hash,
             confirm=True,
             started_at=0.0,
         )
@@ -769,7 +780,7 @@ def test_commit_product_create_transaction_rejects_busy_repository_before_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = _transaction(repo_root=tmp_path)
+    transaction = _sealed_transaction(tmp_path)
 
     def busy(*_args: Any, **_kwargs: Any) -> None:
         raise BlockingIOError("simulated competing create transaction")
@@ -780,7 +791,8 @@ def test_commit_product_create_transaction_rejects_busy_repository_before_write(
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc:
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction.transaction_file,
+            transaction_hash=transaction.transaction_hash,
             confirm=True,
             started_at=0.0,
         )
@@ -793,62 +805,21 @@ def test_commit_product_create_transaction_rejects_missing_confirm_before_hash_o
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    transaction = replace(_transaction(), transaction_hash="not-the-compiled-hash")
+    transaction_file = tmp_path / ".odylith/runtime/greenfield/ignored-product-create-transaction.v1.json"
 
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
         raise AssertionError("missing confirm must fail before hash verification, rollback guard, or write path")
 
-    monkeypatch.setattr(greenfield_create_commit, "require_product_create_transaction_verified", forbidden)
+    monkeypatch.setattr(greenfield_create_commit, "load_sealed_product_create_commit", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
 
     with pytest.raises(ValueError, match="--confirm is required"):
         greenfield_create_commit.commit_greenfield_create_transaction(
             repo_root=tmp_path,
-            transaction=transaction,
+            transaction_file=transaction_file,
+            transaction_hash="not-the-compiled-hash",
             confirm=False,
-            started_at=0.0,
-        )
-
-
-@pytest.mark.parametrize(
-    ("mutation", "message"),
-    (
-        (lambda transaction, _tmp_path: replace(transaction, compiler_provenance={}), "compiler provenance"),
-        (
-            lambda transaction, tmp_path: replace(
-                transaction,
-                compiler_provenance={
-                    **dict(transaction.compiler_provenance),
-                    "repo_root_fingerprint": product_create_transaction_repo_fingerprint(tmp_path / "other-repo"),
-                },
-            ),
-            "compiler provenance",
-        ),
-    ),
-)
-def test_commit_product_create_transaction_rejects_unapproved_provenance_before_write(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    mutation,
-    message: str,
-) -> None:
-    base = _transaction(repo_root=tmp_path)
-    candidate = mutation(base, tmp_path)
-    transaction = replace(candidate, transaction_hash=product_create_transaction_hash(candidate))
-
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("unapproved ProductCreateTransaction provenance must fail before write")
-
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
-
-    with pytest.raises(ValueError, match=message):
-        greenfield_create_commit.commit_greenfield_create_transaction(
-            repo_root=tmp_path,
-            transaction=transaction,
-            confirm=True,
             started_at=0.0,
         )
 

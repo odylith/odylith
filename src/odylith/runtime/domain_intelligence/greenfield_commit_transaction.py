@@ -22,18 +22,25 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 
 
 _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "__init__.py",
+    "cli.py",
     "install/fs.py",
     "runtime/common/derivation_provenance.py",
     "runtime/domain_intelligence/greenfield_commit_journal.py",
     "runtime/domain_intelligence/greenfield_commit_transaction.py",
+    "runtime/domain_intelligence/greenfield_create_cli.py",
     "runtime/domain_intelligence/greenfield_compiled_write.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",
     "runtime/domain_intelligence/greenfield_create_contract.py",
     "runtime/domain_intelligence/greenfield_create_manifest.py",
+    "runtime/domain_intelligence/greenfield_proposals_cli.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
 )
@@ -45,9 +52,21 @@ _SEALED_COMMIT_ATTESTATION = object()
 class SealedGreenfieldCommitPackage:
     """The only compiled package fields post-confirm code may consume."""
 
-    repository_write_set: Mapping[str, Any]
-    commit_result_preview: Mapping[str, Any]
-    surface_refresh_preview: Mapping[str, Any]
+    _repository_write_set_json: str
+    _commit_result_preview_json: str
+    _surface_refresh_preview_json: str
+
+    @property
+    def repository_write_set(self) -> Mapping[str, Any]:
+        return _sealed_mapping_copy(self._repository_write_set_json)
+
+    @property
+    def commit_result_preview(self) -> Mapping[str, Any]:
+        return _sealed_mapping_copy(self._commit_result_preview_json)
+
+    @property
+    def surface_refresh_preview(self) -> Mapping[str, Any]:
+        return _sealed_mapping_copy(self._surface_refresh_preview_json)
 
 
 @dataclass(frozen=True)
@@ -56,16 +75,29 @@ class SealedProductCreateCommit:
 
     version: str
     release_selector: str
-    intent_authority: Mapping[str, Any]
-    quality_manifest: Mapping[str, Any]
-    compiler_provenance: Mapping[str, Any]
+    _intent_authority_json: str
+    _quality_manifest_json: str
+    _compiler_provenance_json: str
     transaction_hash: str
+    transaction_file: Path
     prewrite_package: SealedGreenfieldCommitPackage
     _attestation: object | None = None
 
     @property
     def verified(self) -> bool:
         return self._attestation is _SEALED_COMMIT_ATTESTATION
+
+    @property
+    def intent_authority(self) -> Mapping[str, Any]:
+        return _sealed_mapping_copy(self._intent_authority_json)
+
+    @property
+    def quality_manifest(self) -> Mapping[str, Any]:
+        return _sealed_mapping_copy(self._quality_manifest_json)
+
+    @property
+    def compiler_provenance(self) -> Mapping[str, Any]:
+        return _sealed_mapping_copy(self._compiler_provenance_json)
 
     def summary(self) -> dict[str, Any]:
         write_set = self.prewrite_package.repository_write_set
@@ -133,20 +165,24 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
     surface_preview = package.get("surface_refresh_preview")
     if not isinstance(write_set, Mapping) or not isinstance(commit_preview, Mapping):
         raise ValueError("ProductCreateTransaction is missing its sealed commit package")
-    return SealedProductCreateCommit(
+    sealed = SealedProductCreateCommit(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=str(payload.get("release_selector", "")).strip(),
-        intent_authority=_mapping(payload.get("intent_authority")),
-        quality_manifest=_mapping(payload.get("quality_manifest")),
-        compiler_provenance=_mapping(payload.get("compiler_provenance")),
+        _intent_authority_json=_sealed_mapping_json(payload.get("intent_authority")),
+        _quality_manifest_json=_sealed_mapping_json(payload.get("quality_manifest")),
+        _compiler_provenance_json=_sealed_mapping_json(payload.get("compiler_provenance")),
         transaction_hash=transaction_hash,
+        transaction_file=target.resolve(),
         prewrite_package=SealedGreenfieldCommitPackage(
-            repository_write_set=_mapping(write_set),
-            commit_result_preview=_mapping(commit_preview),
-            surface_refresh_preview=_mapping(surface_preview),
+            _repository_write_set_json=_sealed_mapping_json(write_set),
+            _commit_result_preview_json=_sealed_mapping_json(commit_preview),
+            _surface_refresh_preview_json=_sealed_mapping_json(surface_preview),
         ),
         _attestation=_SEALED_COMMIT_ATTESTATION,
     )
+    require_sealed_commit_transaction(sealed)
+    require_sealed_commit_operation_contract(sealed)
+    return sealed
 
 
 def require_sealed_commit_transaction(transaction: Any) -> None:
@@ -157,6 +193,7 @@ def require_sealed_commit_transaction(transaction: Any) -> None:
     authority = getattr(transaction, "intent_authority", None)
     if not isinstance(authority, Mapping) or not str(authority.get("authority_snapshot_sha256", "")).strip():
         raise ValueError("ProductCreateTransaction is missing sealed Product Intent authority")
+    _require_sealed_quality_manifest(getattr(transaction, "quality_manifest", None))
 
 
 def build_product_create_transaction_compiler_identity() -> dict[str, Any]:
@@ -187,9 +224,49 @@ def require_sealed_commit_provenance(transaction: Any, *, repo_root: Path) -> No
     for key, value in expected.items():
         if str(provenance.get(key, "")).strip() != value:
             raise ValueError(_stale_runtime_message())
+    require_sealed_commit_operation_contract(transaction)
     identity = provenance.get("compiler_identity")
     if not isinstance(identity, Mapping) or dict(identity) != build_product_create_transaction_compiler_identity():
         raise ValueError(_stale_runtime_message())
+
+
+def require_sealed_commit_operation_contract(transaction: Any) -> None:
+    provenance = getattr(transaction, "compiler_provenance", None)
+    if not isinstance(provenance, Mapping):
+        raise ValueError(_stale_runtime_message())
+    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != POST_CONFIRM_ALLOWED_OPERATIONS:
+        raise ValueError(_stale_runtime_message())
+    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != POST_CONFIRM_FORBIDDEN_OPERATIONS:
+        raise ValueError(_stale_runtime_message())
+
+
+def _require_sealed_quality_manifest(value: Any) -> None:
+    """Verify the compiler-approved tribunal result without re-running it."""
+
+    manifest = dict(value) if isinstance(value, Mapping) else {}
+    write_transaction = manifest.get("write_transaction")
+    write_transaction = dict(write_transaction) if isinstance(write_transaction, Mapping) else {}
+    try:
+        issue_count = int(manifest.get("issue_count", 0) or 0)
+    except (TypeError, ValueError):
+        issue_count = -1
+    approved = (
+        str(manifest.get("version", "")).strip() == PRECONFIRM_QUALITY_MANIFEST_VERSION
+        and str(manifest.get("engine", "")).strip() == PRECONFIRM_ENGINE_VERSION
+        and str(manifest.get("status", "")).strip() == "passed"
+        and str(manifest.get("validation_status", "")).strip() in {"", "passed"}
+        and not manifest.get("hard_blocker")
+        and issue_count == 0
+        and str(write_transaction.get("status", "")).strip() == "not_started"
+        and str(write_transaction.get("rollback_guard", "")).strip() == "enabled"
+        and write_transaction.get("prewrite_clean_before_commit") is True
+        and "commit_only" not in write_transaction
+    )
+    if not approved:
+        raise ValueError(
+            "pre-confirm ProductCreateTransaction quality manifest is not approved; "
+            "rebuild the transaction before committing governed records"
+        )
 
 
 def _payload_hash(payload: Mapping[str, Any]) -> str:
@@ -225,8 +302,17 @@ def _json_ready(value: Any) -> Any:
     return value
 
 
-def _mapping(value: Any) -> Mapping[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+def _sealed_mapping_json(value: Any) -> str:
+    if not isinstance(value, Mapping):
+        raise ValueError("ProductCreateTransaction sealed package contains an invalid mapping")
+    return json.dumps(value, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+
+
+def _sealed_mapping_copy(payload: str) -> Mapping[str, Any]:
+    value = json.loads(payload)
+    if not isinstance(value, Mapping):
+        raise RuntimeError("ProductCreateTransaction sealed package integrity was invalidated in memory")
+    return dict(value)
 
 
 def _stale_runtime_message() -> str:
@@ -242,5 +328,6 @@ __all__ = [
     "build_product_create_transaction_compiler_identity",
     "load_sealed_product_create_commit",
     "require_sealed_commit_provenance",
+    "require_sealed_commit_operation_contract",
     "require_sealed_commit_transaction",
 ]

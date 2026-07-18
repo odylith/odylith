@@ -22,6 +22,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEX
 from tests.unit.runtime.greenfield_proposal_fixtures import _governed_greenfield_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
 
 
@@ -165,6 +166,7 @@ def test_compiled_commit_skips_final_next_steps_quality_after_confirm(
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
     transaction = _compile_transaction(tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
     def final_copy_issues(scope: str, _value: object) -> tuple[str, ...]:
         if scope == "operator next-steps final memory":
@@ -175,7 +177,8 @@ def test_compiled_commit_skips_final_next_steps_quality_after_confirm(
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
     )
 
@@ -197,6 +200,7 @@ def test_compiled_commit_skips_final_package_quality_after_confirm(
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
     transaction = _compile_transaction(tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     message = (
         "greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 3 occurrence(s): "
         "`It should carry state from one step to the next with visible progress`"
@@ -228,7 +232,8 @@ def test_compiled_commit_skips_final_package_quality_after_confirm(
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
     )
 
@@ -247,6 +252,7 @@ def test_compiled_commit_does_not_roll_back_on_late_source_truth_package_repetit
     _stub_apply_refreshes(monkeypatch)
     proposal = _proposal(tmp_path)
     transaction = _compile_transaction(tmp_path, proposal=proposal)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     repeated = str(proposal["project_brief"]["project_outcome"])
     message = (
         "greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 3 occurrence(s): "
@@ -279,7 +285,8 @@ def test_compiled_commit_does_not_roll_back_on_late_source_truth_package_repetit
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
     )
 
@@ -295,6 +302,7 @@ def test_compiled_commit_does_not_roll_back_on_late_substantive_quality_finding(
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
     transaction = _compile_transaction(tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     monkeypatch.setattr(
         greenfield_apply_write,
         "greenfield_rendered_package_quality_findings",
@@ -316,7 +324,8 @@ def test_compiled_commit_does_not_roll_back_on_late_substantive_quality_finding(
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
     )
 
@@ -332,6 +341,7 @@ def test_compiled_commit_does_not_roll_back_on_late_generated_prose_finding(
     _seed_empty_governance_repo(tmp_path)
     _stub_apply_refreshes(monkeypatch)
     transaction = _compile_transaction(tmp_path)
+    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
     monkeypatch.setattr(
         greenfield_apply_write,
         "greenfield_rendered_package_quality_findings",
@@ -353,7 +363,8 @@ def test_compiled_commit_does_not_roll_back_on_late_generated_prose_finding(
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
         repo_root=tmp_path,
-        transaction=transaction,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
         confirm=True,
     )
 
