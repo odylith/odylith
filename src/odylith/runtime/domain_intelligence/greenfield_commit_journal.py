@@ -265,6 +265,19 @@ class GreenfieldCommitJournal:
         self._discard_snapshot()
         self._discard_staging()
 
+    def discard_recovered_rollback(self) -> None:
+        """Remove a settled same-hash rollback before retrying its sealed commit."""
+
+        if not self.root.exists() and not self.root.is_symlink():
+            return
+        if str(self._read_record().get("state") or "") != "rolled_back":
+            raise GreenfieldCommitJournalError(
+                "greenfield commit journal cannot discard a recovery that did not roll back",
+                failure_kind="post_confirm_commit_invariant_failure",
+                recovery_path=self.recovery_path,
+            )
+        self._discard_journal()
+
     def discard_committed_snapshot(self) -> None:
         """Remove retained rollback bytes after a committed receipt is durable."""
 

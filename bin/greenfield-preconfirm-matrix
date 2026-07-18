@@ -23,11 +23,22 @@ require_current_component_forensics
 "$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root "$odylith_repo_root" --dist-dir "$dist_dir"
 
 proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-preconfirm-matrix.v1.json}"
+mkdir -p "$temp_parent"
+wrapper_temp_root="$(mktemp -d "$temp_parent/odylith-greenfield-wrapper-run.XXXXXX")"
+preserve_wrapper_temp_root=0
+
+cleanup_wrapper_temp_root() {
+  if [[ "$preserve_wrapper_temp_root" == "0" && -d "${wrapper_temp_root:-}" ]]; then
+    rm -rf "$wrapper_temp_root"
+  fi
+}
+trap cleanup_wrapper_temp_root EXIT INT TERM
 
 extra_args=()
 rescue_smoke_enabled=1
 natural_rescue_enabled=1
 browser_proof_enabled=1
+commit_recovery_proof_enabled=1
 if [[ "${RESCUE_SMOKE:-1}" == "0" ]]; then
   rescue_smoke_enabled=0
 fi
@@ -36,6 +47,9 @@ if [[ "${NATURAL_RESCUE_PROOF:-1}" == "0" ]]; then
 fi
 if [[ "${BROWSER_PROOF:-1}" == "0" ]]; then
   browser_proof_enabled=0
+fi
+if [[ "${COMMIT_RECOVERY_PROOF:-1}" == "0" ]]; then
+  commit_recovery_proof_enabled=0
 fi
 release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"
 release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"
@@ -51,10 +65,11 @@ if [[ "$release_intent" == "1" ]]; then
   [[ "$rescue_smoke_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1"
   [[ "$natural_rescue_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1"
   [[ "$browser_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1"
+  [[ "$commit_recovery_proof_enabled" == "1" ]] || die "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1"
 elif [[ -n "$release_audit_file" && -z "$release_case_file" ]]; then
   die "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE"
 fi
-if [[ "$release_intent" == "1" || ( "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" && -n "$release_case_file" && -n "$release_audit_file" ) ]]; then
+if [[ "$release_intent" == "1" || ( "$rescue_smoke_enabled" == "1" && "$natural_rescue_enabled" == "1" && "$browser_proof_enabled" == "1" && "$commit_recovery_proof_enabled" == "1" && -n "$release_case_file" && -n "$release_audit_file" ) ]]; then
   extra_args+=(--proof-tier release)
 else
   extra_args+=(--proof-tier discovery)
@@ -74,6 +89,11 @@ if [[ "$browser_proof_enabled" == "1" ]]; then
   ensure_playwright_chromium
 else
   extra_args+=(--allow-skipped-browser-proof)
+fi
+if [[ "$commit_recovery_proof_enabled" == "1" ]]; then
+  extra_args+=(--include-commit-recovery-proof)
+else
+  extra_args+=(--skip-commit-recovery-proof)
 fi
 if [[ -n "$release_case_file" ]]; then
   extra_args+=(--case-file "$release_case_file")
@@ -108,9 +128,17 @@ if [[ -n "${GREENFIELD_MATRIX_REQUIRED_STRESSORS:-}" ]]; then
   done
 fi
 
+set +e
 "$odylith_python" scripts/release/greenfield_preconfirm_matrix.py \
   --dist-dir "$dist_dir" \
   --version "$requested_version" \
-  --temp-parent "$temp_parent" \
+  --temp-parent "$wrapper_temp_root" \
   --output-json "$proof_json" \
   "${extra_args[@]}"
+controller_status=$?
+set -e
+if [[ "$controller_status" -ne 0 ]]; then
+  preserve_wrapper_temp_root=1
+  printf 'greenfield proof controller failed; retained temporary evidence at: %s\n' "$wrapper_temp_root" >&2
+  exit "$controller_status"
+fi

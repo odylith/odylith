@@ -59,6 +59,11 @@ from greenfield_matrix_package_evidence import package_evidence_findings  # noqa
 from greenfield_matrix_proof_scope import natural_rescue_quality_proven  # noqa: E402
 from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
 from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
+from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
+from greenfield_matrix_run_lease import write_matrix_payload  # noqa: E402
+from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402
+from greenfield_commit_recovery_proof import PROOF_SCOPE as COMMIT_RECOVERY_PROOF_SCOPE  # noqa: E402
+from greenfield_commit_recovery_proof import run_installed_commit_recovery_proof  # noqa: E402
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION  # noqa: E402
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: E402
@@ -153,6 +158,8 @@ def run_matrix(
         include_browser_proof=include_browser_proof,
         include_rescue_smoke=True,
         include_natural_rescue_proof=True,
+        # run_matrix is the per-case inner loop; main owns the one-per-run installed recovery proof.
+        include_commit_recovery_proof=True,
         allow_skipped_browser_proof=False,
         allow_partial_stressor_coverage=allow_partial_stressor_coverage,
         release_corpus_issues=(
@@ -535,6 +542,7 @@ def _raise_for_invalid_campaign_policy(
     include_browser_proof: bool,
     include_rescue_smoke: bool,
     include_natural_rescue_proof: bool,
+    include_commit_recovery_proof: bool = False,
     allow_skipped_browser_proof: bool,
     allow_partial_stressor_coverage: bool = False,
     release_corpus_issues: Sequence[str] = (),
@@ -550,6 +558,8 @@ def _raise_for_invalid_campaign_policy(
         violations.append("release proof must include installed rescue smoke")
     if not include_natural_rescue_proof:
         violations.append("release proof must include natural rescue proof")
+    if not include_commit_recovery_proof:
+        violations.append("release proof must include installed commit recovery proof")
     if allow_skipped_browser_proof:
         violations.append("release proof cannot allow skipped browser proof")
     if allow_partial_stressor_coverage:
@@ -1761,6 +1771,17 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Skip host-planned rescue proof for local debugging only; this is not release proof.",
     )
     parser.add_argument(
+        "--include-commit-recovery-proof",
+        action="store_true",
+        help="Prove installed SIGKILL recovery, exact same-hash retry, and fsync rollback.",
+    )
+    parser.add_argument(
+        "--skip-commit-recovery-proof",
+        action="store_false",
+        dest="include_commit_recovery_proof",
+        help="Skip installed commit recovery proof for local debugging only; this is not release proof.",
+    )
+    parser.add_argument(
         "--include-browser-proof",
         action="store_true",
         help="Run headless generated browser state proof against every generated matrix repo.",
@@ -1871,21 +1892,55 @@ def main(argv: Sequence[str] | None = None) -> int:
         include_browser_proof=bool(args.include_browser_proof),
         include_rescue_smoke=bool(args.include_rescue_smoke),
         include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
+        include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
         allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
         release_corpus_issues=(
             corpus_provenance.issues if campaign_config.proof_tier == "release" else ()
         ),
     )
-    incremental_output_json = (
+    output_path = (
         Path(str(args.output_json)).expanduser().resolve()
         if str(args.output_json or "").strip()
         else None
     )
+    lease = acquire_matrix_run_lease(
+        temp_parent=Path(args.temp_parent),
+        output_path=output_path,
+    )
+    try:
+        return _execute_matrix_campaign(
+            args=args,
+            selected_cases=selected_cases,
+            planned_cases=planned_cases,
+            release_audits=release_audits,
+            campaign_config=campaign_config,
+            corpus_provenance=corpus_provenance,
+            output_path=output_path,
+            lease=lease,
+        )
+    finally:
+        lease.release()
+
+
+def _execute_matrix_campaign(
+    *,
+    args: argparse.Namespace,
+    selected_cases: tuple[GreenfieldMatrixCase, ...],
+    planned_cases: tuple[GreenfieldMatrixCase, ...],
+    release_audits: Sequence[Mapping[str, Any]],
+    campaign_config: MatrixCampaignConfig,
+    corpus_provenance: Any,
+    output_path: Path | None,
+    lease: Any,
+) -> int:
+    """Run one fully isolated proof campaign under its output lease."""
+
+    temp_parent = lease.temp_namespace
     results = run_matrix(
         dist_dir=Path(args.dist_dir),
         version=str(args.version),
-        temp_parent=Path(args.temp_parent),
+        temp_parent=temp_parent,
         cases=selected_cases,
         include_browser_proof=bool(args.include_browser_proof),
         install_mode=str(args.install_mode),
@@ -1895,7 +1950,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         stop_after_failures=campaign_config.stop_after_failures,
         stop_after_cluster_failures=campaign_config.stop_after_cluster_failures,
         required_stressors=campaign_config.required_stressors,
-        incremental_output_json=incremental_output_json,
+        incremental_output_json=output_path,
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
         release_audits=release_audits,
     )
@@ -1903,7 +1958,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_rescue_smoke(
             dist_dir=Path(args.dist_dir),
             version=str(args.version),
-            temp_parent=Path(args.temp_parent),
+            temp_parent=temp_parent,
         )
         if bool(args.include_rescue_smoke)
         else None
@@ -1912,14 +1967,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         run_natural_rescue_proof(
             dist_dir=Path(args.dist_dir),
             version=str(args.version),
-            temp_parent=Path(args.temp_parent),
+            temp_parent=temp_parent,
         )
         if bool(args.include_natural_rescue_proof)
         else None
     )
+    commit_recovery = (
+        run_installed_commit_recovery_proof(
+            dist_dir=Path(args.dist_dir),
+            version=str(args.version),
+            temp_parent=temp_parent,
+        )
+        if bool(args.include_commit_recovery_proof)
+        else None
+    )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
-    cleanup_proof = temp_cleanup_proof(Path(args.temp_parent))
+    cleanup_proof = temp_cleanup_proof(temp_parent)
     natural_rescue_proven = natural_rescue_quality_proven(results) or bool(
         natural_rescue and natural_rescue.natural_rescue_quality_proven
     )
@@ -1934,6 +1998,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
         and (natural_rescue is None or natural_rescue.passed)
+        and (commit_recovery is None or commit_recovery.passed)
         and browser_passed
         and platform_leakage_passed
         and cleanup_passed
@@ -1956,6 +2021,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 else "not_proven"
             ),
             "natural_rescue_quality_proven": natural_rescue_proven,
+            "commit_recovery_path": (
+                COMMIT_RECOVERY_PROOF_SCOPE if commit_recovery is not None else "not_requested"
+            ),
             "browser_surface_proof": (
                 BROWSER_SURFACE_PROOF_SCOPE if bool(args.include_browser_proof) else "not_requested"
             ),
@@ -1975,15 +2043,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         "browser_surface_proof": browser_proof,
         "platform_domain_leakage_proof": platform_leakage_proof,
         "temp_cleanup_proof": cleanup_proof,
+        "proof_run": lease.to_dict(),
     }
     if rescue is not None:
         payload["rescue_smoke"] = rescue.to_dict()
     if natural_rescue is not None:
         payload["natural_rescue_proof"] = natural_rescue.to_dict()
-    if str(args.output_json or "").strip():
-        output_path = Path(str(args.output_json)).expanduser().resolve()
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if commit_recovery is not None:
+        payload["commit_recovery_proof"] = commit_recovery.to_dict()
+    write_matrix_payload(output_path=output_path, payload=payload)
     if args.json_output:
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:

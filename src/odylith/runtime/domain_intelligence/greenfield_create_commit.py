@@ -66,6 +66,8 @@ def commit_greenfield_create_transaction(
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
+    if type(transaction).__module__ == "odylith.runtime.domain_intelligence.greenfield_create_transaction":
+        require_product_create_transaction_verified(transaction)
     require_sealed_commit_transaction(transaction)
     require_sealed_commit_provenance(transaction, repo_root=root)
     started = time.perf_counter() if started_at is None else float(started_at)
@@ -86,6 +88,7 @@ def commit_greenfield_create_transaction(
             committed_result = journal.recover_or_return_committed()
             if committed_result is not None:
                 return committed_result
+            journal.discard_recovered_rollback()
             write_set = greenfield_repository_write_set.require_greenfield_repository_preconditions(
                 repo_root=root,
                 write_set=sealed_write_set,
@@ -178,6 +181,16 @@ def commit_greenfield_create_transaction(
             ),
         ) from exc
     return result
+
+
+def require_product_create_transaction_verified(transaction: Any) -> None:
+    """Validate the legacy in-memory adapter without loading it on the canonical path."""
+
+    from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+        require_product_create_transaction_verified as require_legacy_transaction_verified,
+    )
+
+    require_legacy_transaction_verified(transaction)
 
 
 @contextmanager

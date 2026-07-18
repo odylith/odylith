@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import shutil
 import subprocess
 
 import pytest
@@ -14,13 +15,14 @@ def _run_greenfield_preconfirm_matrix(
     tmp_path: Path,
     *,
     overrides: dict[str, str],
+    fake_python_body: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     dist_dir = tmp_path / "dist"
     dist_dir.mkdir()
     (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     fake_python = tmp_path / "fake-python"
     fake_python.write_text(
-        "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n",
+        fake_python_body or "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$FAKE_PYTHON_LOG\"\n",
         encoding="utf-8",
     )
     fake_python.chmod(0o755)
@@ -28,6 +30,7 @@ def _run_greenfield_preconfirm_matrix(
     environment = os.environ.copy()
     for name in (
         "BROWSER_PROOF",
+        "COMMIT_RECOVERY_PROOF",
         "GREENFIELD_MATRIX_CASE_FILE",
         "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE",
         "GREENFIELD_MATRIX_RELEASE_INTENT",
@@ -99,6 +102,9 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert 'BROWSER_PROOF:-1' in text
     assert '--include-browser-proof' in text
     assert 'browser_proof_enabled=0' in text
+    assert 'COMMIT_RECOVERY_PROOF:-1' in text
+    assert '--include-commit-recovery-proof' in text
+    assert '--skip-commit-recovery-proof' in text
     assert 'release_case_file="${GREENFIELD_MATRIX_CASE_FILE:-}"' in text
     assert 'release_audit_file="${GREENFIELD_MATRIX_RELEASE_AUDIT_FILE:-}"' in text
     assert 'release_intent="${GREENFIELD_MATRIX_RELEASE_INTENT:-0}"' in text
@@ -107,6 +113,7 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires RESCUE_SMOKE=1' in text
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires NATURAL_RESCUE_PROOF=1' in text
     assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1' in text
+    assert 'GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1' in text
     assert 'GREENFIELD_MATRIX_RELEASE_AUDIT_FILE requires GREENFIELD_MATRIX_CASE_FILE' in text
     assert 'if [[ "$release_intent" == "1" || (' in text
     assert '--proof-tier release' in text
@@ -125,7 +132,9 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert '--repo-root "$odylith_repo_root" --dist-dir "$dist_dir"' in text
     assert '--dist-dir "$dist_dir"' in text
     assert '--version "$requested_version"' in text
-    assert '--temp-parent "$temp_parent"' in text
+    assert 'wrapper_temp_root="$(mktemp -d "$temp_parent/odylith-greenfield-wrapper-run.XXXXXX")"' in text
+    assert 'trap cleanup_wrapper_temp_root EXIT INT TERM' in text
+    assert '--temp-parent "$wrapper_temp_root"' in text
     assert '--output-json "$proof_json"' in text
     assert "make greenfield-preconfirm-matrix" in help_text
     assert "write greenfield-preconfirm-matrix.v1.json" in help_text
@@ -184,6 +193,14 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
             },
             "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires BROWSER_PROOF=1",
         ),
+        (
+            {
+                "GREENFIELD_MATRIX_CASE_FILE": "{case_file}",
+                "GREENFIELD_MATRIX_RELEASE_AUDIT_FILE": "{audit_file}",
+                "COMMIT_RECOVERY_PROOF": "0",
+            },
+            "GREENFIELD_MATRIX_RELEASE_INTENT=1 requires COMMIT_RECOVERY_PROOF=1",
+        ),
     ),
 )
 def test_greenfield_preconfirm_matrix_release_intent_rejects_missing_prerequisites(
@@ -224,6 +241,7 @@ def test_greenfield_preconfirm_matrix_without_release_intent_runs_discovery_proo
     assert result.returncode == 0, result.stderr
     invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
     assert "--proof-tier discovery" in invocations
+    assert not list(tmp_path.glob("odylith-greenfield-wrapper-run.*"))
 
 
 def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof(tmp_path: Path) -> None:
@@ -244,6 +262,30 @@ def test_greenfield_preconfirm_matrix_release_intent_runs_release_proof(tmp_path
     assert result.returncode == 0, result.stderr
     invocations = (tmp_path / "fake-python.log").read_text(encoding="utf-8")
     assert "--proof-tier release" in invocations
+    assert "--include-commit-recovery-proof" in invocations
+
+
+def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_nonzero_controller_exit(
+    tmp_path: Path,
+) -> None:
+    temp_parent = tmp_path / "outer-temp"
+
+    result = _run_greenfield_preconfirm_matrix(
+        tmp_path,
+        overrides={"TEMP_PARENT": str(temp_parent)},
+        fake_python_body=(
+            '#!/usr/bin/env bash\n'
+            'if [[ "$*" == *"greenfield_preconfirm_matrix.py"* ]]; then\n'
+            '  kill -KILL "$$"\n'
+            'fi\n'
+            'printf \'%s\\n\' "$*" >> "$FAKE_PYTHON_LOG"\n'
+        ),
+    )
+
+    assert result.returncode != 0
+    preserved_roots = list(temp_parent.glob("odylith-greenfield-wrapper-run.*"))
+    assert len(preserved_roots) == 1, result.stderr
+    shutil.rmtree(preserved_roots[0])
 
 
 def test_greenfield_matrix_campaign_target_runs_tiered_harness() -> None:

@@ -395,3 +395,29 @@ def test_main_rejects_release_policy_without_natural_rescue_proof(tmp_path: Path
         assert "release proof must include natural rescue proof" in str(exc)
     else:
         raise AssertionError("release proof without natural rescue proof should be rejected")
+
+
+def test_main_rejects_release_policy_without_installed_commit_recovery_proof(tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    try:
+        module.main(
+            [
+                "--dist-dir",
+                str(dist_dir),
+                "--version",
+                "0.1.15",
+                "--temp-parent",
+                str(tmp_path),
+                "--proof-tier",
+                "release",
+                "--include-browser-proof",
+                "--include-natural-rescue-proof",
+            ]
+        )
+    except RuntimeError as exc:
+        assert "release proof must include installed commit recovery proof" in str(exc)
+    else:
+        raise AssertionError("release proof without installed commit recovery proof should be rejected")

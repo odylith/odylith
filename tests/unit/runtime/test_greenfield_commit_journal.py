@@ -480,6 +480,26 @@ def test_sigkill_after_first_sealed_write_recovers_the_preconfirm_tree(
     assert (root / "odylith/radar/source/second.md").read_text(encoding="utf-8") == "second before\n"
 
 
+def test_same_hash_recovery_releases_the_rolled_back_journal_for_reprepare(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    write_set = _write_set(root)
+    journal = GreenfieldCommitJournal(
+        repo_root=root,
+        transaction_hash="a" * 64,
+        write_set=write_set,
+    )
+    child = _kill_commit_child(root=root, write_set=write_set, mode="first_write")
+
+    assert child.returncode == -signal.SIGKILL, child.stderr
+    assert journal.recover_or_return_committed() is None
+    assert json.loads(journal.state_path.read_text(encoding="utf-8"))["state"] == "rolled_back"
+
+    journal.discard_recovered_rollback()
+    assert not journal.root.exists()
+    journal.prepare()
+    assert json.loads(journal.state_path.read_text(encoding="utf-8"))["state"] == "preparing"
+
+
 def test_sigkill_after_sealed_delete_recovers_the_preconfirm_tree(
     tmp_path: Path,
 ) -> None:

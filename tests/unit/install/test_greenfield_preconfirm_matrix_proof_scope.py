@@ -242,12 +242,48 @@ def test_case_file_rejects_missing_leakage_terms_before_simulation(tmp_path: Pat
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
-def test_main_fails_when_temp_cleanup_proof_finds_leftover_repo(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_ignores_a_concurrent_sibling_run_when_checking_owned_cleanup(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
-    (tmp_path / "odylith-greenfield-matrix-leftover").mkdir()
+    sibling = tmp_path / "odylith-greenfield-matrix-active-sibling"
+    sibling.mkdir()
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--proof-tier",
+            "discovery",
+            "--include-browser-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "discovery-passed"
+    assert payload["temp_cleanup_proof"]["status"] == "passed"
+    assert sibling.is_dir()
+    assert not Path(payload["proof_run"]["temporary_namespace"]).exists()
+
+
+def test_main_fails_when_owned_temp_cleanup_finds_a_leftover_repo(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    def fake_run_matrix(**kwargs):  # noqa: ANN001
+        (kwargs["temp_parent"] / "odylith-greenfield-matrix-leftover").mkdir()
+        return (_passing_matrix_result(module),)
+
+    monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
     monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     exit_code = module.main(
@@ -269,7 +305,43 @@ def test_main_fails_when_temp_cleanup_proof_finds_leftover_repo(monkeypatch, tmp
     assert exit_code == 1
     assert payload["status"] == "failed"
     assert payload["temp_cleanup_proof"]["status"] == "failed"
-    assert str(tmp_path / "odylith-greenfield-matrix-leftover") in payload["temp_cleanup_proof"]["remaining_paths"]
+    assert payload["temp_cleanup_proof"]["remaining_paths"]
+    assert not Path(payload["proof_run"]["temporary_namespace"]).exists()
+
+
+def test_main_fails_when_installed_commit_recovery_proof_fails(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+    monkeypatch.setattr(
+        module,
+        "run_installed_commit_recovery_proof",
+        lambda **_kwargs: module.GreenfieldInstalledCommitRecoveryProof(
+            status="failed",
+            issues=("installed recovery failed",),
+        ),
+    )
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--include-commit-recovery-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert payload["status"] == "failed"
+    assert payload["proof_scope"]["commit_recovery_path"] == module.COMMIT_RECOVERY_PROOF_SCOPE
+    assert payload["commit_recovery_proof"]["issues"] == ["installed recovery failed"]
 
 
 def test_temp_cleanup_proof_finds_leftover_files_and_symlinks(tmp_path: Path) -> None:
@@ -286,6 +358,17 @@ def test_temp_cleanup_proof_finds_leftover_files_and_symlinks(tmp_path: Path) ->
     assert proof["status"] == "failed"
     assert str(leftover_file) in proof["remaining_paths"]
     assert str(leftover_link) in proof["remaining_paths"]
+
+
+def test_temp_cleanup_proof_finds_installed_recovery_leftovers(tmp_path: Path) -> None:
+    module = _module()
+    leftover = tmp_path / "odylith-greenfield-commit-recovery-leftover"
+    leftover.mkdir()
+
+    proof = module.temp_cleanup_proof(tmp_path)
+
+    assert proof["status"] == "failed"
+    assert str(leftover) in proof["remaining_paths"]
 
 
 def test_natural_rescue_quality_requires_structured_non_probe_case() -> None:
