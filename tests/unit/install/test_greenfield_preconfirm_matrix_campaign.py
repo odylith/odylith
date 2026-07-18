@@ -299,12 +299,22 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
     matrix_kwargs: dict[str, object] = {}
+    execution_order: list[str] = []
 
     def fake_run_matrix(**kwargs):
+        execution_order.append("matrix")
         matrix_kwargs.update(kwargs)
         return (_result(module, name="matrix case"),)
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
+    monkeypatch.setattr(
+        module,
+        "run_installed_commit_recovery_proof",
+        lambda **_kwargs: (
+            execution_order.append("commit_recovery")
+            or module.GreenfieldInstalledCommitRecoveryProof(status="passed", issues=())
+        ),
+    )
     monkeypatch.setattr(
         module,
         "run_rescue_smoke",
@@ -331,9 +341,10 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
             "60-case-regression",
             "--telemetry-jsonl",
             str(tmp_path / "progress.jsonl"),
-            "--stop-after-failures",
-            "2",
-            "--allow-skipped-browser-proof",
+                "--stop-after-failures",
+                "2",
+                "--include-commit-recovery-proof",
+                "--allow-skipped-browser-proof",
             "--json",
         ]
     )
@@ -343,6 +354,9 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
     assert matrix_kwargs["proof_tier"] == "discovery"
     assert matrix_kwargs["campaign_phase"] == "60-case-regression"
     assert matrix_kwargs["stop_after_failures"] == 2
+    assert execution_order[:2] == ["commit_recovery", "matrix"]
+    assert payload["proof_scope"]["commit_recovery_path"] == module.COMMIT_RECOVERY_PROOF_SCOPE
+    assert payload["commit_recovery_proof"]["status"] == "passed"
     assert payload["campaign"]["phase"] == "60-case-regression"
     assert payload["campaign"]["proof_tier"] == "discovery"
     assert payload["campaign"]["release_readiness_boundary"].startswith("discovery proof may skip browser")

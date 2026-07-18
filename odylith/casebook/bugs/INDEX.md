@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-17
+Last updated (UTC): 2026-07-18
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-275 | 2026-07-18 | Full greenfield matrix stalls in final installed recovery lane | P1 | domain-intelligence | Open | [2026-07-18-full-greenfield-matrix-stalls-in-final-installed-recovery-lane.md](2026-07-18-full-greenfield-matrix-stalls-in-final-installed-recovery-lane.md) |
 | CB-265 | 2026-07-17 | Typed edit evidence can leak first path editorial framing into product facts | P1 | odylith | Open | [2026-07-17-typed-edit-evidence-can-leak-first-path-editorial-framing-into-product-facts.md](2026-07-17-typed-edit-evidence-can-leak-first-path-editorial-framing-into-product-facts.md) |
 | CB-274 | 2026-07-17 | Two complete greenfield prompts fail before compiling a confirmable transaction | P1 | domain-intelligence | Open | [2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md](2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md) |
 | CB-266 | 2026-07-17 | Staged candidate intent co locates raw evidence with typed product facts | P1 | odylith | Open | [2026-07-17-staged-candidate-intent-co-locates-raw-evidence-with-typed-product-facts.md](2026-07-17-staged-candidate-intent-co-locates-raw-evidence-with-typed-product-facts.md) |
