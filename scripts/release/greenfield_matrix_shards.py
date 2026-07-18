@@ -25,6 +25,7 @@ from greenfield_matrix_stressors import stressor_coverage
 from greenfield_matrix_stressors import variance_evaluation
 from greenfield_matrix_case_file import load_case_file
 from greenfield_matrix_corpus_provenance import case_provenance_to_dict
+from greenfield_matrix_corpus_provenance import source_span_is_valid
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
@@ -382,6 +383,10 @@ def _write_tier_shards(
 
 
 def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
+    if case.provenance.corpus_tier == "source_provenanced" and not source_span_is_valid(
+        case.provenance.source_span
+    ):
+        raise RuntimeError(f"{case.case_id or case.name}: source_provenanced case has an unsupported source_span")
     row = {
         "name": case.name,
         "prompt": case.prompt,

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 import hashlib
+import importlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -141,13 +144,13 @@ def test_case_generator_preserves_source_provenance_for_release_corpus_inputs(tm
     source_artifact.write_text(source_text, encoding="utf-8")
     provenance = {
         "corpus_tier": "source_provenanced",
-        "schema_version": "odylith.greenfield.matrix.case-provenance.v1",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
         "source_id": "public-source-001",
         "source_uri": "https://example.org/source/001",
         "source_artifact_path": source_artifact.relative_to(tmp_path).as_posix(),
         "source_artifact_sha256": _sha256(source_text),
-        "source_span": source_text,
-        "source_span_sha256": _sha256(source_text),
+        "source_span": "line 1",
+        "source_span_sha256": _sha256("line 1"),
         "source_excerpt": source_text,
         "source_excerpt_sha256": _sha256(source_text),
         "retrieved_on": "2026-07-18",
@@ -189,6 +192,24 @@ def test_case_generator_preserves_source_provenance_for_release_corpus_inputs(tm
     assert generated["cases"][0]["provenance"] == provenance
     assert loaded[0].provenance.source_id == "public-source-001"
     assert loaded[0].provenance.corpus_tier == "source_provenanced"
+
+
+def test_case_generator_rejects_a_source_provenance_span_the_release_gate_cannot_resolve() -> None:
+    module = _module()
+    provenance = importlib.import_module("greenfield_matrix_corpus_provenance")
+    case = module.GreenfieldMatrixCase(
+        name="invalid provenance span",
+        prompt="Create an invalid provenance span review.",
+        required_terms=("invalid", "provenance"),
+        leakage_terms=("invalid provenance",),
+        provenance=provenance.GreenfieldCaseProvenance(
+            corpus_tier="source_provenanced",
+            source_span="retained evidence text",
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="unsupported source_span"):
+        module._case_to_dict(case)  # noqa: SLF001
 
 
 def test_case_generator_omits_explicit_synthetic_provenance(tmp_path: Path) -> None:

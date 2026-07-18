@@ -73,8 +73,8 @@ def _release_corpus(tmp_path: Path):
             provenance=provenance.GreenfieldCaseProvenance(
                 corpus_tier="source_provenanced",
                 schema_version=provenance.CASE_PROVENANCE_VERSION,
-                source_id=f"public-source-{index:03d}",
-                source_uri=f"https://example.org/source/{index}",
+                source_id=f"public-source-{source_index:03d}",
+                source_uri=f"https://example.org/source/{source_index}",
                 source_artifact_path=source_path,
                 source_artifact_sha256=source_hash,
                 source_span=span,
@@ -93,7 +93,25 @@ def _release_corpus(tmp_path: Path):
         if index < 40:
             review_evidence = tmp_path / "evidence" / "reviews" / f"review-{index:03d}.txt"
             review_evidence.parent.mkdir(parents=True, exist_ok=True)
-            review_text = f"review {index}"
+            review_text = json.dumps(
+                {
+                    "version": "odylith.greenfield.matrix.release-audit-evidence.v1",
+                    "case_id": case_id,
+                    "prompt_sha256": _sha256(prompt),
+                    "source_artifact_sha256": source_hash,
+                    "source_excerpt_sha256": _sha256(source_excerpt),
+                    "reviewer_id": "independent-automated-reviewer",
+                    "reviewer_kind": "automated_adversarial",
+                    "review_method": "adversarial-source-to-prompt-v1",
+                    "reviewed_on": "2026-07-14",
+                    "review_status": "approved",
+                    "independent": True,
+                    "source_binding": "verified",
+                    "derivation_assessment": "approved",
+                    "rationale": "The prompt remains bounded by the retained source excerpt.",
+                },
+                sort_keys=True,
+            )
             review_evidence.write_text(review_text, encoding="utf-8")
             audits.append(
                 provenance.GreenfieldReleaseAudit(
@@ -101,7 +119,9 @@ def _release_corpus(tmp_path: Path):
                     prompt_sha256=_sha256(prompt),
                     source_artifact_sha256=source_hash,
                     source_excerpt_sha256=_sha256(source_excerpt),
-                    reviewer_id="independent-reviewer",
+                    reviewer_id="independent-automated-reviewer",
+                    reviewer_kind="automated_adversarial",
+                    review_method="adversarial-source-to-prompt-v1",
                     reviewed_on="2026-07-14",
                     review_status="approved",
                     independent=True,
@@ -139,9 +159,11 @@ def test_release_corpus_accepts_audited_source_provenanced_diverse_evidence(tmp_
     assert evaluation.passed, evaluation.issues
     assert evaluation.summary["case_count"] == 200
     assert evaluation.summary["source_family_count"] == 10
-    assert evaluation.summary["source_id_count"] == 200
-    assert evaluation.summary["source_uri_count"] == 200
+    assert evaluation.summary["source_artifact_count"] == 180
+    assert evaluation.summary["source_id_count"] == 180
+    assert evaluation.summary["source_uri_count"] == 180
     assert evaluation.summary["audit_count"] == 40
+    assert evaluation.summary["audit_reviewer_kind_counts"] == {"automated_adversarial": 40}
 
 
 def test_release_corpus_rejects_implicit_input_style_and_incomplete_metamorphic_pair(tmp_path: Path) -> None:
@@ -179,7 +201,7 @@ def test_release_corpus_rejects_duplicate_prompt_and_unreviewed_audit_coverage(t
     message = "\n".join(evaluation.issues)
     assert "duplicate prompts" in message
     assert "derived_prompt_sha256 does not match the case prompt" in message
-    assert "approved independent audits" in message
+    assert "approved independent automated audits" in message
 
 
 def test_release_corpus_rejects_an_excerpt_outside_its_declared_source_span(tmp_path: Path) -> None:
@@ -266,23 +288,62 @@ def test_release_corpus_rejects_non_boolean_audit_independence(tmp_path: Path) -
     assert "must define independent as a boolean" in "\n".join(evaluation.issues)
 
 
-def test_release_corpus_rejects_reused_source_id_and_uri(tmp_path: Path) -> None:
+def test_release_corpus_rejects_relabeling_a_retained_source_artifact(tmp_path: Path) -> None:
     provenance, cases, audits = _release_corpus(tmp_path)
-    duplicated_source = replace(
+    relabeled_source = replace(
         cases[1].provenance,
-        source_id=cases[0].provenance.source_id,
-        source_uri=cases[0].provenance.source_uri,
+        source_id="different-source-id",
+        source_uri="https://example.org/source/different",
     )
-    duplicated_case = replace(cases[1], provenance=duplicated_source)
+    relabeled_case = replace(cases[1], provenance=relabeled_source)
 
     evaluation = provenance.evaluate_release_corpus(
-        (cases[0], duplicated_case, *cases[2:]), audits, repo_root=tmp_path
+        (cases[0], relabeled_case, *cases[2:]), audits, repo_root=tmp_path
     )
 
     issues = "\n".join(evaluation.issues)
     assert not evaluation.passed
-    assert "source_id `public-source-000` has 2 cases" in issues
-    assert "source_uri `https://example.org/source/0` has 2 cases" in issues
+    assert "source artifact" in issues
+    assert "is bound to multiple source identities" in issues
+
+
+def test_release_corpus_rejects_source_reuse_outside_one_metamorphic_pair(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    reused_source = replace(
+        cases[0].provenance,
+        derived_prompt_sha256=_sha256(cases[2].prompt),
+    )
+    reused_case = replace(cases[2], provenance=reused_source)
+
+    evaluation = provenance.evaluate_release_corpus(
+        (cases[0], cases[1], reused_case, *cases[3:]), audits, repo_root=tmp_path
+    )
+
+    assert not evaluation.passed
+    assert "source identity is reused outside one explicit metamorphic pair" in "\n".join(
+        evaluation.issues
+    )
+
+
+def test_release_corpus_rejects_opaque_or_mislabeled_audit_evidence(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path)
+    evidence_path = tmp_path / audits[0].review_evidence_path
+    evidence_path.write_text("not structured evidence", encoding="utf-8")
+    opaque_audit = replace(audits[0], review_evidence_sha256=_sha256("not structured evidence"))
+    mislabeled_audit = replace(audits[1], reviewer_kind="human_attested")
+    coupled_audit = replace(audits[2], review_method=cases[2].provenance.derivation_method)
+
+    evaluation = provenance.evaluate_release_corpus(
+        cases,
+        (opaque_audit, mislabeled_audit, coupled_audit, *audits[3:]),
+        repo_root=tmp_path,
+    )
+
+    issues = "\n".join(evaluation.issues)
+    assert not evaluation.passed
+    assert "review evidence must be valid JSON" in issues
+    assert "must declare reviewer_kind `automated_adversarial`" in issues
+    assert "must use a review_method distinct from derivation_method" in issues
 
 
 def test_release_audit_loader_rejects_nonversioned_payload(tmp_path: Path) -> None:

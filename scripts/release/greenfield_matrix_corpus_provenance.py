@@ -16,12 +16,18 @@ from urllib.parse import urlparse
 
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
 from greenfield_matrix_input_axes import normalize_input_style
+from greenfield_matrix_release_audit_evidence import AUTOMATED_ADVERSARIAL_REVIEWER_KIND
+from greenfield_matrix_release_audit_evidence import audit_evidence_issues
+from greenfield_matrix_source_identity import complete_metamorphic_groups
+from greenfield_matrix_source_identity import is_explicit_metamorphic_pair
+from greenfield_matrix_source_identity import source_identity_label
+from greenfield_matrix_source_identity import source_uri_identity
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
 
 
-CASE_PROVENANCE_VERSION = "odylith.greenfield.matrix.case-provenance.v1"
-RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v1"
-RELEASE_CORPUS_POLICY_VERSION = "odylith.greenfield.matrix.release-corpus-policy.v1"
+CASE_PROVENANCE_VERSION = "odylith.greenfield.matrix.case-provenance.v2"
+RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v2"
+RELEASE_CORPUS_POLICY_VERSION = "odylith.greenfield.matrix.release-corpus-policy.v2"
 
 
 @dataclass(frozen=True)
@@ -53,6 +59,8 @@ class GreenfieldReleaseAudit:
     source_artifact_sha256: str
     source_excerpt_sha256: str
     reviewer_id: str
+    reviewer_kind: str
+    review_method: str
     reviewed_on: str
     review_status: str
     independent: bool
@@ -66,9 +74,10 @@ class ReleaseCorpusPolicy:
     minimum_source_families: int = 10
     minimum_cases_per_family: int = 6
     maximum_family_share: float = 0.20
-    maximum_cases_per_source_artifact: int = 3
-    maximum_cases_per_source_id: int = 1
-    maximum_cases_per_source_uri: int = 1
+    minimum_source_artifact_count: int = 180
+    maximum_cases_per_source_artifact: int = 2
+    maximum_cases_per_source_id: int = 2
+    maximum_cases_per_source_uri: int = 2
     minimum_cases_per_stressor: int = 8
     required_input_styles: tuple[str, ...] = RELEASE_INPUT_STYLES
     minimum_cases_per_input_style: int = 8
@@ -153,7 +162,7 @@ def case_provenance_summary(provenance: GreenfieldCaseProvenance | None) -> dict
 
 
 def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
-    """Load independent review records; raw source evidence is never loaded here."""
+    """Load independent automated review records; raw source evidence is never loaded here."""
 
     audit_path = Path(path).expanduser().resolve()
     try:
@@ -184,6 +193,8 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
             source_artifact_sha256=_hash_text(row.get("source_artifact_sha256")),
             source_excerpt_sha256=_hash_text(row.get("source_excerpt_sha256")),
             reviewer_id=_text(row.get("reviewer_id")),
+            reviewer_kind=_text(row.get("reviewer_kind")).casefold(),
+            review_method=_text(row.get("review_method")),
             reviewed_on=_text(row.get("reviewed_on")),
             review_status=_text(row.get("review_status")).casefold(),
             independent=independent,
@@ -221,7 +232,13 @@ def evaluate_release_corpus(
     source_ids: Counter[str] = Counter()
     source_uris: Counter[str] = Counter()
     source_id_uris: dict[str, set[str]] = {}
+    source_id_artifacts: dict[str, set[str]] = {}
     source_uri_ids: dict[str, set[str]] = {}
+    source_uri_artifacts: dict[str, set[str]] = {}
+    artifact_source_ids: dict[str, set[str]] = {}
+    artifact_source_uris: dict[str, set[str]] = {}
+    artifact_paths: dict[str, set[str]] = {}
+    source_identity_cases: dict[tuple[str, str, str], list[Any]] = {}
     stressors: Counter[str] = Counter()
     input_styles: Counter[str] = Counter()
     undeclared_input_style_labels: list[str] = []
@@ -254,15 +271,35 @@ def evaluate_release_corpus(
             families[provenance.source_family] += 1
         if provenance.source_artifact_sha256:
             artifacts[provenance.source_artifact_sha256] += 1
+            artifact_paths.setdefault(provenance.source_artifact_sha256, set()).add(
+                provenance.source_artifact_path
+            )
         if provenance.source_id:
             source_ids[provenance.source_id] += 1
             source_id_uris.setdefault(provenance.source_id, set()).add(
-                _source_uri_identity(provenance.source_uri)
+                source_uri_identity(provenance.source_uri)
+            )
+            source_id_artifacts.setdefault(provenance.source_id, set()).add(
+                provenance.source_artifact_sha256
             )
         if provenance.source_uri:
-            uri_identity = _source_uri_identity(provenance.source_uri)
+            uri_identity = source_uri_identity(provenance.source_uri)
             source_uris[uri_identity] += 1
             source_uri_ids.setdefault(uri_identity, set()).add(provenance.source_id)
+            source_uri_artifacts.setdefault(uri_identity, set()).add(provenance.source_artifact_sha256)
+        if provenance.source_artifact_sha256:
+            artifact_source_ids.setdefault(provenance.source_artifact_sha256, set()).add(provenance.source_id)
+            artifact_source_uris.setdefault(provenance.source_artifact_sha256, set()).add(
+                source_uri_identity(provenance.source_uri)
+            )
+            source_identity_cases.setdefault(
+                (
+                    provenance.source_id,
+                    source_uri_identity(provenance.source_uri),
+                    provenance.source_artifact_sha256,
+                ),
+                [],
+            ).append(case)
         for stressor in _case_stressors(case):
             stressors[stressor] += 1
         if not bool(getattr(case, "input_style_declared", False)):
@@ -289,6 +326,11 @@ def evaluate_release_corpus(
         issues.append(
             f"release proof requires at least {policy.minimum_source_families} source families; received {len(families)}"
         )
+    if len(artifacts) < policy.minimum_source_artifact_count:
+        issues.append(
+            "release proof requires at least "
+            f"{policy.minimum_source_artifact_count} distinct source artifacts; received {len(artifacts)}"
+        )
     for family, count in sorted(families.items()):
         if count < policy.minimum_cases_per_family:
             issues.append(
@@ -307,6 +349,10 @@ def evaluate_release_corpus(
                 f"source artifact `{artifact}` produced {count} cases; release proof permits at most "
                 f"{policy.maximum_cases_per_source_artifact}"
             )
+        if len(artifact_paths[artifact]) > 1:
+            issues.append(f"source artifact `{artifact}` is bound to multiple artifact paths")
+        if len(artifact_source_ids[artifact]) > 1 or len(artifact_source_uris[artifact]) > 1:
+            issues.append(f"source artifact `{artifact}` is bound to multiple source identities")
     for source_id, count in sorted(source_ids.items()):
         if count > policy.maximum_cases_per_source_id:
             issues.append(
@@ -315,6 +361,8 @@ def evaluate_release_corpus(
             )
         if len(source_id_uris[source_id]) > 1:
             issues.append(f"source_id `{source_id}` is bound to multiple source URIs")
+        if len(source_id_artifacts[source_id]) > 1:
+            issues.append(f"source_id `{source_id}` is bound to multiple source artifacts")
     for source_uri, count in sorted(source_uris.items()):
         if count > policy.maximum_cases_per_source_uri:
             issues.append(
@@ -323,6 +371,14 @@ def evaluate_release_corpus(
             )
         if len(source_uri_ids[source_uri]) > 1:
             issues.append(f"source_uri `{source_uri}` is bound to multiple source IDs")
+        if len(source_uri_artifacts[source_uri]) > 1:
+            issues.append(f"source_uri `{source_uri}` is bound to multiple source artifacts")
+    for identity, identity_cases in sorted(source_identity_cases.items()):
+        if len(identity_cases) > 1 and not is_explicit_metamorphic_pair(identity_cases):
+            issues.append(
+                "source identity is reused outside one explicit metamorphic pair: "
+                + source_identity_label(identity)
+            )
     for stressor in DEFAULT_HIGH_VARIANCE_STRESSORS:
         if stressors[stressor] < policy.minimum_cases_per_stressor:
             issues.append(
@@ -340,17 +396,17 @@ def evaluate_release_corpus(
                 f"input_style `{style}` has {input_styles[style]} cases; release proof requires at least "
                 f"{policy.minimum_cases_per_input_style}"
             )
-    complete_metamorphic_groups = _complete_metamorphic_groups(metamorphic_cases)
-    incomplete_metamorphic_groups = sorted(set(metamorphic_cases) - set(complete_metamorphic_groups))
+    complete_groups = complete_metamorphic_groups(metamorphic_cases)
+    incomplete_metamorphic_groups = sorted(set(metamorphic_cases) - set(complete_groups))
     if incomplete_metamorphic_groups:
         issues.append(
             "release corpus has incomplete metamorphic groups: " + ", ".join(incomplete_metamorphic_groups[:6])
         )
-    if len(complete_metamorphic_groups) < policy.minimum_complete_metamorphic_groups:
+    if len(complete_groups) < policy.minimum_complete_metamorphic_groups:
         issues.append(
             "release proof requires at least "
             f"{policy.minimum_complete_metamorphic_groups} complete metamorphic groups; received "
-            f"{len(complete_metamorphic_groups)}"
+            f"{len(complete_groups)}"
         )
 
     audit_issues, audited_case_ids = _audit_issues(
@@ -361,6 +417,9 @@ def evaluate_release_corpus(
         review_evidence_hash_cache=review_evidence_hash_cache,
     )
     issues.extend(audit_issues)
+    audited_reviewer_kinds = Counter(
+        audit.reviewer_kind for audit in audits if audit.case_id in audited_case_ids
+    )
     summary = {
         "case_count": len(records),
         "source_family_count": len(families),
@@ -371,9 +430,10 @@ def evaluate_release_corpus(
         "stressor_counts": {key: int(stressors[key]) for key in DEFAULT_HIGH_VARIANCE_STRESSORS},
         "input_style_counts": dict(sorted(input_styles.items())),
         "undeclared_input_style_count": len(undeclared_input_style_labels),
-        "complete_metamorphic_group_count": len(complete_metamorphic_groups),
-        "complete_metamorphic_groups": complete_metamorphic_groups,
+        "complete_metamorphic_group_count": len(complete_groups),
+        "complete_metamorphic_groups": complete_groups,
         "audit_count": len(audited_case_ids),
+        "audit_reviewer_kind_counts": dict(sorted(audited_reviewer_kinds.items())),
         "minimum_audit_count": policy.minimum_audit_count(len(records)),
         "policy": asdict(policy),
     }
@@ -399,32 +459,6 @@ def discovery_corpus_summary(cases: Sequence[Any]) -> dict[str, Any]:
 
 def stressor_count(counts: Counter[str], stressor: str) -> int:
     return int(counts.get(stressor) or 0)
-
-
-def _complete_metamorphic_groups(groups: Mapping[str, Sequence[Any]]) -> dict[str, list[str]]:
-    complete: dict[str, list[str]] = {}
-    for group, cases in sorted(groups.items()):
-        transforms = sorted(
-            {
-                str(getattr(case, "metamorphic_transform", "") or "").strip()
-                for case in cases
-                if str(getattr(case, "metamorphic_transform", "") or "").strip()
-            }
-        )
-        provenances = [getattr(case, "provenance", GreenfieldCaseProvenance()) for case in cases]
-        artifact_hashes = {
-            str(getattr(provenance, "source_artifact_sha256", "") or "").strip()
-            for provenance in provenances
-            if str(getattr(provenance, "source_artifact_sha256", "") or "").strip()
-        }
-        spans = {
-            str(getattr(provenance, "source_span", "") or "").strip()
-            for provenance in provenances
-            if str(getattr(provenance, "source_span", "") or "").strip()
-        }
-        if len(transforms) >= 2 and len(artifact_hashes) == 1 and len(spans) >= 2:
-            complete[group] = transforms
-    return complete
 
 
 def _case_provenance_issues(
@@ -534,6 +568,20 @@ def _audit_issues(
         if audit.review_status != "approved":
             issues.append(f"release audit `{audit.case_id}` is not approved")
             continue
+        if audit.reviewer_kind != AUTOMATED_ADVERSARIAL_REVIEWER_KIND:
+            issues.append(
+                f"release audit `{audit.case_id}` must declare reviewer_kind "
+                f"`{AUTOMATED_ADVERSARIAL_REVIEWER_KIND}`"
+            )
+            continue
+        if not audit.review_method:
+            issues.append(f"release audit `{audit.case_id}` must name an automated review_method")
+            continue
+        if audit.review_method == provenance.derivation_method:
+            issues.append(
+                f"release audit `{audit.case_id}` must use a review_method distinct from derivation_method"
+            )
+            continue
         if type(audit.independent) is not bool:
             issues.append(f"release audit `{audit.case_id}` must define independent as a boolean")
             continue
@@ -567,10 +615,23 @@ def _audit_issues(
                 f"release audit `{audit.case_id}` review_evidence_sha256 does not match review_evidence_path"
             )
             continue
+        try:
+            evidence_text = review_evidence_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            issues.append(f"release audit `{audit.case_id}` review evidence cannot be read: {exc}")
+            continue
+        evidence_issues = audit_evidence_issues(audit, evidence_text)
+        for issue in evidence_issues:
+            issues.append(f"release audit `{audit.case_id}` {issue}")
+        if evidence_issues:
+            continue
         approved.add(audit.case_id)
     required_audits = policy.minimum_audit_count(len(cases_by_id))
     if len(approved) < required_audits:
-        issues.append(f"release proof requires at least {required_audits} approved independent audits; received {len(approved)}")
+        issues.append(
+            "release proof requires at least "
+            f"{required_audits} approved independent automated audits; received {len(approved)}"
+        )
     audited_cases = [cases_by_id[case_id] for case_id in approved if case_id in cases_by_id]
     audited_families = {
         str(getattr(getattr(case, "provenance", None), "source_family", "") or "")
@@ -623,6 +684,23 @@ def _repo_artifact_path(root: Path, value: str) -> Path | None:
 
 
 def _resolved_source_span(artifact_text: str, source_span: str) -> str | None:
+    bounds = _source_span_bounds(source_span)
+    if bounds is None:
+        return None
+    start, end = bounds
+    lines = artifact_text.splitlines(keepends=True)
+    if end > len(lines):
+        return None
+    return "".join(lines[start - 1 : end])
+
+
+def source_span_is_valid(source_span: str) -> bool:
+    """Return whether a source span uses the portable release-corpus grammar."""
+
+    return _source_span_bounds(source_span) is not None
+
+
+def _source_span_bounds(source_span: str) -> tuple[int, int] | None:
     match = re.fullmatch(
         r"lines? (?P<start>[1-9]\d*)(?:\s*-\s*(?P<end>[1-9]\d*))?",
         source_span.casefold(),
@@ -631,19 +709,9 @@ def _resolved_source_span(artifact_text: str, source_span: str) -> str | None:
         return None
     start = int(match.group("start"))
     end = int(match.group("end") or start)
-    lines = artifact_text.splitlines(keepends=True)
-    if end < start or end > len(lines):
+    if end < start:
         return None
-    return "".join(lines[start - 1 : end])
-
-
-def _source_uri_identity(value: str) -> str:
-    parsed = urlparse(value)
-    return parsed._replace(
-        scheme=parsed.scheme.casefold(),
-        netloc=parsed.netloc.casefold(),
-        fragment="",
-    ).geturl()
+    return start, end
 
 
 def _case_id(case: Any) -> str:
@@ -716,4 +784,5 @@ __all__ = [
     "discovery_corpus_summary",
     "evaluate_release_corpus",
     "load_release_audit_file",
+    "source_span_is_valid",
 ]

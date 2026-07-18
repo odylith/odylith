@@ -18,6 +18,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_corpus_provenance import case_provenance_to_dict  # noqa: E402
+from greenfield_matrix_corpus_provenance import source_span_is_valid  # noqa: E402
 from greenfield_matrix_input_axes import normalize_input_style  # noqa: E402
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS  # noqa: E402
 from greenfield_matrix_stressors import case_stratification  # noqa: E402
@@ -431,6 +432,10 @@ def _dedupe_cases(cases: Sequence[GreenfieldMatrixCase]) -> tuple[GreenfieldMatr
 
 
 def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
+    if case.provenance.corpus_tier == "source_provenanced" and not source_span_is_valid(
+        case.provenance.source_span
+    ):
+        raise RuntimeError(f"{case.case_id or case.name}: source_provenanced case has an unsupported source_span")
     row: dict[str, Any] = {
         "name": case.name,
         "prompt": case.prompt,

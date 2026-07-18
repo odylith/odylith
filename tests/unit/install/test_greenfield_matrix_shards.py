@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
 import hashlib
+import importlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
+
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -142,6 +145,24 @@ def test_shard_builder_preserves_explicit_input_style_and_metamorphic_pair(tmp_p
     assert generated[0].input_style_declared is True
     assert generated[0].metamorphic_group == "axis_review"
     assert generated[0].metamorphic_transform == "source_excerpt"
+
+
+def test_shard_builder_rejects_a_source_provenance_span_the_release_gate_cannot_resolve() -> None:
+    module = _module()
+    provenance = importlib.import_module("greenfield_matrix_corpus_provenance")
+    case = module.GreenfieldMatrixCase(
+        name="invalid provenance span",
+        prompt="Create an invalid provenance span review.",
+        required_terms=("invalid", "provenance"),
+        leakage_terms=("invalid provenance",),
+        provenance=provenance.GreenfieldCaseProvenance(
+            corpus_tier="source_provenanced",
+            source_span="retained evidence text",
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="unsupported source_span"):
+        module._case_to_dict(case)  # noqa: SLF001
 
 
 def test_shard_builder_extracts_failed_subset_from_matrix_and_campaign_payloads(tmp_path: Path) -> None:
