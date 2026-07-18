@@ -18,6 +18,7 @@ from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
 from greenfield_matrix_input_axes import normalize_input_style
 from greenfield_matrix_release_audit_evidence import AUTOMATED_ADVERSARIAL_REVIEWER_KIND
 from greenfield_matrix_release_audit_evidence import audit_evidence_issues
+from greenfield_matrix_release_audit_evidence import audit_source_verification_issues
 from greenfield_matrix_source_identity import complete_metamorphic_groups
 from greenfield_matrix_source_identity import is_explicit_metamorphic_pair
 from greenfield_matrix_source_identity import source_identity_label
@@ -26,7 +27,7 @@ from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
 
 
 CASE_PROVENANCE_VERSION = "odylith.greenfield.matrix.case-provenance.v2"
-RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v2"
+RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v3"
 RELEASE_CORPUS_POLICY_VERSION = "odylith.greenfield.matrix.release-corpus-policy.v2"
 
 
@@ -58,6 +59,11 @@ class GreenfieldReleaseAudit:
     prompt_sha256: str
     source_artifact_sha256: str
     source_excerpt_sha256: str
+    source_id: str
+    source_uri: str
+    source_verification_method: str
+    source_verification_uri: str
+    source_verified_on: str
     reviewer_id: str
     reviewer_kind: str
     review_method: str
@@ -192,6 +198,11 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
             prompt_sha256=_hash_text(row.get("prompt_sha256")),
             source_artifact_sha256=_hash_text(row.get("source_artifact_sha256")),
             source_excerpt_sha256=_hash_text(row.get("source_excerpt_sha256")),
+            source_id=_text(row.get("source_id")),
+            source_uri=_text(row.get("source_uri")),
+            source_verification_method=_text(row.get("source_verification_method")),
+            source_verification_uri=_text(row.get("source_verification_uri")),
+            source_verified_on=_text(row.get("source_verified_on")),
             reviewer_id=_text(row.get("reviewer_id")),
             reviewer_kind=_text(row.get("reviewer_kind")).casefold(),
             review_method=_text(row.get("review_method")),
@@ -564,6 +575,11 @@ def _audit_issues(
             continue
         if audit.source_excerpt_sha256 != provenance.source_excerpt_sha256:
             issues.append(f"release audit `{audit.case_id}` does not match source_excerpt_sha256")
+            continue
+        source_verification_issues = audit_source_verification_issues(audit, provenance)
+        if source_verification_issues:
+            for issue in source_verification_issues:
+                issues.append(f"release audit `{audit.case_id}` {issue}")
             continue
         if audit.review_status != "approved":
             issues.append(f"release audit `{audit.case_id}` is not approved")

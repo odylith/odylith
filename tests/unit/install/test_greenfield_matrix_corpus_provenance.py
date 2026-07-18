@@ -95,11 +95,16 @@ def _release_corpus(tmp_path: Path):
             review_evidence.parent.mkdir(parents=True, exist_ok=True)
             review_text = json.dumps(
                 {
-                    "version": "odylith.greenfield.matrix.release-audit-evidence.v1",
+                    "version": "odylith.greenfield.matrix.release-audit-evidence.v2",
                     "case_id": case_id,
                     "prompt_sha256": _sha256(prompt),
                     "source_artifact_sha256": source_hash,
                     "source_excerpt_sha256": _sha256(source_excerpt),
+                    "source_id": f"public-source-{source_index:03d}",
+                    "source_uri": f"https://example.org/source/{source_index}",
+                    "source_verification_method": "independent-source-record-check-v1",
+                    "source_verification_uri": f"https://example.org/verification/source/{source_index}",
+                    "source_verified_on": "2026-07-14",
                     "reviewer_id": "independent-automated-reviewer",
                     "reviewer_kind": "automated_adversarial",
                     "review_method": "adversarial-source-to-prompt-v1",
@@ -119,6 +124,11 @@ def _release_corpus(tmp_path: Path):
                     prompt_sha256=_sha256(prompt),
                     source_artifact_sha256=source_hash,
                     source_excerpt_sha256=_sha256(source_excerpt),
+                    source_id=f"public-source-{source_index:03d}",
+                    source_uri=f"https://example.org/source/{source_index}",
+                    source_verification_method="independent-source-record-check-v1",
+                    source_verification_uri=f"https://example.org/verification/source/{source_index}",
+                    source_verified_on="2026-07-14",
                     reviewer_id="independent-automated-reviewer",
                     reviewer_kind="automated_adversarial",
                     review_method="adversarial-source-to-prompt-v1",
@@ -332,10 +342,19 @@ def test_release_corpus_rejects_opaque_or_mislabeled_audit_evidence(tmp_path: Pa
     opaque_audit = replace(audits[0], review_evidence_sha256=_sha256("not structured evidence"))
     mislabeled_audit = replace(audits[1], reviewer_kind="human_attested")
     coupled_audit = replace(audits[2], review_method=cases[2].provenance.derivation_method)
+    source_identity_audit = replace(audits[3], source_id="different-source")
+    source_endpoint_audit = replace(audits[4], source_verification_uri="not-an-endpoint")
 
     evaluation = provenance.evaluate_release_corpus(
         cases,
-        (opaque_audit, mislabeled_audit, coupled_audit, *audits[3:]),
+        (
+            opaque_audit,
+            mislabeled_audit,
+            coupled_audit,
+            source_identity_audit,
+            source_endpoint_audit,
+            *audits[5:],
+        ),
         repo_root=tmp_path,
     )
 
@@ -344,6 +363,8 @@ def test_release_corpus_rejects_opaque_or_mislabeled_audit_evidence(tmp_path: Pa
     assert "review evidence must be valid JSON" in issues
     assert "must declare reviewer_kind `automated_adversarial`" in issues
     assert "must use a review_method distinct from derivation_method" in issues
+    assert "does not match source_id" in issues
+    assert "must use an absolute source_verification_uri" in issues
 
 
 def test_release_audit_loader_rejects_nonversioned_payload(tmp_path: Path) -> None:

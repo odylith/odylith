@@ -175,6 +175,12 @@ def _canonical_text(value: Any) -> str:
     return dedupe_adjacent_words(_optional_text(value)).strip()
 
 
+def canonical_case_text(value: Any) -> str:
+    """Return the exact prompt normalization applied when a case file is loaded."""
+
+    return _canonical_text(value)
+
+
 def _canonical_block_text(value: Any) -> str:
     text = _optional_block_text(value)
     if not text:
@@ -183,6 +189,7 @@ def _canonical_block_text(value: Any) -> str:
 
 
 __all__ = [
+    "canonical_case_text",
     "load_case_file",
     "normalize_input_style",
     "ungrounded_leakage_terms",
