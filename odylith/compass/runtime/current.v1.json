@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "generated_utc": "2026-07-18T04:06:04Z",
-  "now_local_iso": "2026-07-17T21:06:04-07:00",
+  "generated_utc": "2026-07-18T04:55:00Z",
+  "now_local_iso": "2026-07-17T21:55:00-07:00",
   "time_context": {
     "timezone": "America/Los_Angeles",
     "label": "San Francisco"
@@ -22,8 +22,8 @@
   },
   "kpis": {
     "24h": {
-      "commits": 22,
-      "local_changes": 9,
+      "commits": 23,
+      "local_changes": 14,
       "touched_workstreams": 3,
       "active_workstreams": 26,
       "critical_risks": 16,
@@ -31,8 +31,8 @@
       "active_touched_workstreams": 2
     },
     "48h": {
-      "commits": 34,
-      "local_changes": 9,
+      "commits": 35,
+      "local_changes": 14,
       "touched_workstreams": 4,
       "active_workstreams": 26,
       "critical_risks": 20,
@@ -1233,7 +1233,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1246,7 +1246,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1259,7 +1259,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1272,7 +1272,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1285,7 +1285,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1298,7 +1298,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1311,7 +1311,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1324,7 +1324,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1337,7 +1337,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1350,7 +1350,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1363,7 +1363,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1381,7 +1381,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -1399,7 +1399,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1412,7 +1412,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1425,7 +1425,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1438,7 +1438,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1451,7 +1451,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1464,7 +1464,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1477,7 +1477,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1490,7 +1490,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1503,7 +1503,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1516,7 +1516,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1529,7 +1529,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1542,7 +1542,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1555,7 +1555,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1573,7 +1573,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -1591,7 +1591,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1604,7 +1604,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1617,7 +1617,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1630,7 +1630,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1643,7 +1643,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1656,7 +1656,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1669,7 +1669,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1682,7 +1682,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1695,7 +1695,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1708,7 +1708,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1721,7 +1721,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1734,7 +1734,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1747,7 +1747,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1760,7 +1760,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1773,7 +1773,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1786,7 +1786,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1799,7 +1799,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1812,7 +1812,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1825,7 +1825,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1838,7 +1838,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1851,7 +1851,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1864,7 +1864,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1877,7 +1877,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1890,7 +1890,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1903,7 +1903,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1916,7 +1916,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1929,7 +1929,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1942,7 +1942,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1955,7 +1955,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1968,7 +1968,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1981,7 +1981,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -1994,7 +1994,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2007,7 +2007,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2020,7 +2020,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2033,7 +2033,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2046,7 +2046,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2059,7 +2059,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2072,7 +2072,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2085,7 +2085,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2098,7 +2098,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2111,7 +2111,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2124,7 +2124,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2137,7 +2137,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2150,7 +2150,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2163,7 +2163,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2176,7 +2176,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2189,7 +2189,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2202,7 +2202,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2215,7 +2215,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2228,7 +2228,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2241,7 +2241,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2254,7 +2254,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2267,7 +2267,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2280,7 +2280,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2293,7 +2293,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2306,7 +2306,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2319,7 +2319,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2332,7 +2332,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2345,8 +2345,8 @@
         "schema_version": "v25",
         "status": "ready",
         "source": "cache",
-        "fingerprint": "salient:4fa31f541555a87325d0dc841d7dd3c41861ff38ed6763c4632c37ac6aad17ed",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "fingerprint": "2701783bf5f3d8ff9116b50b96210bccf7d3384412cd0a9815e600467703a4c5",
+        "generated_utc": "2026-07-17T23:26:50Z",
         "sections": [
           {
             "key": "completed",
@@ -2471,17 +2471,17 @@
             ]
           }
         },
-        "substrate_fingerprint": "salient:4fa31f541555a87325d0dc841d7dd3c41861ff38ed6763c4632c37ac6aad17ed",
-        "bundle_fingerprint": "",
+        "substrate_fingerprint": "2701783bf5f3d8ff9116b50b96210bccf7d3384412cd0a9815e600467703a4c5",
+        "bundle_fingerprint": "1b032d5aa48b259b5da3e019a7bfaa4d695f709f5c2835e11fbccdd61e9f87c8",
         "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "salient:4fa31f541555a87325d0dc841d7dd3c41861ff38ed6763c4632c37ac6aad17ed",
-        "cache_mode": "fallback"
+        "last_successful_narration_fingerprint": "2701783bf5f3d8ff9116b50b96210bccf7d3384412cd0a9815e600467703a4c5",
+        "cache_mode": "exact"
       },
       "B-070": {
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2494,7 +2494,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2507,7 +2507,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2520,7 +2520,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2533,7 +2533,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2546,7 +2546,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2559,7 +2559,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2572,7 +2572,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2585,7 +2585,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2598,7 +2598,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2611,7 +2611,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2624,7 +2624,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2637,7 +2637,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2650,7 +2650,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2663,7 +2663,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2676,7 +2676,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2689,7 +2689,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2702,7 +2702,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2715,7 +2715,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2728,7 +2728,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2741,7 +2741,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2754,7 +2754,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2767,7 +2767,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2780,7 +2780,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2793,7 +2793,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2806,7 +2806,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2819,7 +2819,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2832,7 +2832,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2845,7 +2845,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2858,7 +2858,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2871,7 +2871,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2884,7 +2884,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2897,7 +2897,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2910,7 +2910,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2923,7 +2923,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2936,7 +2936,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2949,7 +2949,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2962,7 +2962,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2975,7 +2975,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -2988,7 +2988,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3001,7 +3001,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3014,7 +3014,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3027,7 +3027,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3040,7 +3040,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3053,7 +3053,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3066,7 +3066,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3079,7 +3079,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3092,7 +3092,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3105,7 +3105,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3118,7 +3118,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3131,7 +3131,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3144,7 +3144,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3157,7 +3157,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3170,7 +3170,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3183,7 +3183,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3196,7 +3196,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3209,7 +3209,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3222,7 +3222,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3235,7 +3235,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3250,7 +3250,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3263,7 +3263,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3276,7 +3276,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3289,7 +3289,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3302,7 +3302,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3315,7 +3315,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3328,7 +3328,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3341,7 +3341,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3354,7 +3354,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3367,7 +3367,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3380,7 +3380,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3398,7 +3398,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -3416,7 +3416,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3429,7 +3429,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3442,7 +3442,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3455,7 +3455,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3468,7 +3468,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3481,7 +3481,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3494,7 +3494,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3507,7 +3507,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3520,7 +3520,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3533,7 +3533,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3546,7 +3546,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3559,7 +3559,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3572,7 +3572,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3590,7 +3590,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -3608,7 +3608,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3621,7 +3621,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3634,7 +3634,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3647,7 +3647,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3660,7 +3660,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3673,7 +3673,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3686,7 +3686,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3699,7 +3699,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3712,7 +3712,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3725,7 +3725,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3738,7 +3738,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3751,7 +3751,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3764,7 +3764,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3777,7 +3777,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3790,7 +3790,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3803,7 +3803,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3816,7 +3816,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3829,7 +3829,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3842,7 +3842,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3855,7 +3855,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3868,7 +3868,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3881,7 +3881,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3894,7 +3894,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3907,7 +3907,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3920,7 +3920,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3933,7 +3933,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3946,7 +3946,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3959,7 +3959,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3972,7 +3972,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3985,7 +3985,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -3998,7 +3998,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4011,7 +4011,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4024,7 +4024,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4037,7 +4037,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4050,7 +4050,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4063,7 +4063,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4076,7 +4076,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4089,7 +4089,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4102,7 +4102,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4115,7 +4115,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4128,7 +4128,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4141,7 +4141,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4154,7 +4154,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4167,7 +4167,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4180,7 +4180,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4193,7 +4193,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4206,7 +4206,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4219,7 +4219,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4232,7 +4232,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4245,7 +4245,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4258,7 +4258,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4271,7 +4271,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4284,7 +4284,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4297,7 +4297,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4310,7 +4310,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4323,7 +4323,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4336,7 +4336,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4349,7 +4349,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4362,8 +4362,8 @@
         "schema_version": "v25",
         "status": "ready",
         "source": "cache",
-        "fingerprint": "salient:76dfa9dd611512739d1a38db11882e3263a2a8a65d81adf3c1a817f07910e479",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "fingerprint": "4c4859e4be9913957bfbad9472e20f1783d1a8a5c73a280246840d5fe25df4e1",
+        "generated_utc": "2026-07-17T13:45:03Z",
         "sections": [
           {
             "key": "completed",
@@ -4488,17 +4488,17 @@
             ]
           }
         },
-        "substrate_fingerprint": "salient:76dfa9dd611512739d1a38db11882e3263a2a8a65d81adf3c1a817f07910e479",
-        "bundle_fingerprint": "",
+        "substrate_fingerprint": "4c4859e4be9913957bfbad9472e20f1783d1a8a5c73a280246840d5fe25df4e1",
+        "bundle_fingerprint": "f9a13ea917bf6e2228442efd56c3757ae53926fbb65dd7affc3ff590f43d2f54",
         "provider_decision": "cache_reuse",
-        "last_successful_narration_fingerprint": "salient:76dfa9dd611512739d1a38db11882e3263a2a8a65d81adf3c1a817f07910e479",
-        "cache_mode": "fallback"
+        "last_successful_narration_fingerprint": "4c4859e4be9913957bfbad9472e20f1783d1a8a5c73a280246840d5fe25df4e1",
+        "cache_mode": "exact"
       },
       "B-070": {
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4511,7 +4511,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4524,7 +4524,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4537,7 +4537,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4550,7 +4550,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4563,7 +4563,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4576,7 +4576,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4589,7 +4589,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4602,7 +4602,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4615,7 +4615,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4628,7 +4628,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4641,7 +4641,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4654,7 +4654,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4667,7 +4667,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4680,7 +4680,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4693,7 +4693,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4706,7 +4706,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4719,7 +4719,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4732,7 +4732,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4745,7 +4745,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4758,7 +4758,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4771,7 +4771,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4784,7 +4784,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4797,7 +4797,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4810,7 +4810,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4823,7 +4823,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4836,7 +4836,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4849,7 +4849,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4862,7 +4862,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4875,7 +4875,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4888,7 +4888,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4901,7 +4901,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4914,7 +4914,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4927,7 +4927,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4940,7 +4940,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4953,7 +4953,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4966,7 +4966,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4979,7 +4979,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -4992,7 +4992,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5005,7 +5005,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5018,7 +5018,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5031,7 +5031,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5044,7 +5044,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5057,7 +5057,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5070,7 +5070,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5083,7 +5083,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5096,7 +5096,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5109,7 +5109,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5122,7 +5122,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5135,7 +5135,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5148,7 +5148,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5161,7 +5161,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5174,7 +5174,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5187,7 +5187,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5200,7 +5200,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5213,7 +5213,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5226,7 +5226,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5239,7 +5239,7 @@
         "status": "unavailable",
         "source": "unavailable",
         "fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "diagnostics": {
           "reason": "scoped_window_inactive",
           "title": "Nothing moved in this window",
@@ -5257,7 +5257,7 @@
         "bundle_fingerprint": "",
         "provider_decision": "skipped_not_worth_calling",
         "last_successful_narration_fingerprint": "",
-        "generated_utc": "2026-07-18T04:06:04Z",
+        "generated_utc": "2026-07-18T04:55:00Z",
         "sections": [],
         "diagnostics": {
           "reason": "skipped_not_worth_calling",
@@ -5275,11 +5275,11 @@
   },
   "standup_runtime": {
     "24h": {
-      "global_reuse_fingerprint": "8b680a99e7c992e0d7c65943b60449a585a3cb67a16af2247054ab0853d521d8",
+      "global_reuse_fingerprint": "e989748726822586604d800048c37b528a7f1c3b88415df80ca00c6dcc63e02d",
       "scoped_reuse_fingerprints": {
-        "B-083": "4071a02d8290740aea34b3342c0b2a7302bb9c06c20a838aaa52ebe0f7e86b71",
-        "B-142": "4a39bf00c60d90ee5071719fc0b3bb4dfe7ae660034a5b7ac7d45f5b8ba7bb6c",
-        "B-069": "4fa31f541555a87325d0dc841d7dd3c41861ff38ed6763c4632c37ac6aad17ed"
+        "B-083": "211b3550f0af43ddc1432b5e68dff0ad6272dc86381ed88f5a988cb51513af8e",
+        "B-142": "0cfe38df1d0f578c2623c14771c83fd90c0a265c3b84c4e4778c56f3e3bc478c",
+        "B-069": "1a36d641a53b8ace9b795b214bc688e535492490c4ab1e137991abce2783442e"
       },
       "verified_scope_ids": [
         "B-069",
@@ -8203,11 +8203,11 @@
       }
     },
     "48h": {
-      "global_reuse_fingerprint": "0cce77a8619f1e7797206c88bff4fb3adecba10fb41cd0dceac926d08b818e30",
+      "global_reuse_fingerprint": "2dabbffb8397154549670f9fb34da373eaf1a0902ed7e30116957809c9fcd50d",
       "scoped_reuse_fingerprints": {
-        "B-083": "3955e5f8fc48046eff2bdc4eee5a5237a8ef686c8829123d64fcb9a7df09e1da",
-        "B-142": "0f2002a9d3c7adf269c78e22e89b19838df96aaaebcf86ee13305e6f934988e7",
-        "B-069": "76dfa9dd611512739d1a38db11882e3263a2a8a65d81adf3c1a817f07910e479",
+        "B-083": "a6064a87452861c41735577ef35ad5b156db88335020fcc406a33d5ad2d5c78d",
+        "B-142": "6a566fc5aaf8e808d06f221b16d8e114a7aafb9de1ba7a0dec0af11c395cc126",
+        "B-069": "cda87f19e4d5b5571e60eff56d2809823c41dc5a034f2e3d217fabb133564df1",
         "B-144": "2deb67c1256744e88cc7065bc85883e4b23fb92c92348b4bf00a75e99dff819e"
       },
       "verified_scope_ids": [
@@ -21014,19 +21014,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 3,
+          "commit_count": 9,
+          "local_change_count": 6,
           "file_touch_count": 59
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 3,
+          "commit_count": 11,
+          "local_change_count": 6,
           "file_touch_count": 113
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 98,
         "eta_days": null,
         "eta_confidence": "low"
@@ -23740,19 +23740,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 17,
-          "local_change_count": 1,
+          "commit_count": 18,
+          "local_change_count": 4,
           "file_touch_count": 229
         },
         "48h": {
-          "commit_count": 25,
-          "local_change_count": 1,
+          "commit_count": 26,
+          "local_change_count": 4,
           "file_touch_count": 564
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 21,
         "eta_days": 4,
         "eta_confidence": "high"
@@ -24672,19 +24672,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
+          "commit_count": 9,
+          "local_change_count": 4,
           "file_touch_count": 57
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 1,
+          "commit_count": 11,
+          "local_change_count": 4,
           "file_touch_count": 107
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 111,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -32905,19 +32905,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 10,
-          "local_change_count": 1,
+          "commit_count": 11,
+          "local_change_count": 4,
           "file_touch_count": 69
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 1,
+          "commit_count": 13,
+          "local_change_count": 4,
           "file_touch_count": 111
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 100,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -33713,19 +33713,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 3,
+          "commit_count": 9,
+          "local_change_count": 6,
           "file_touch_count": 59
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 3,
+          "commit_count": 11,
+          "local_change_count": 6,
           "file_touch_count": 113
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 99,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -48703,19 +48703,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 17,
-            "local_change_count": 1,
+            "commit_count": 18,
+            "local_change_count": 4,
             "file_touch_count": 229
           },
           "48h": {
-            "commit_count": 25,
-            "local_change_count": 1,
+            "commit_count": 26,
+            "local_change_count": 4,
             "file_touch_count": 564
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 21,
           "eta_days": 4,
           "eta_confidence": "high"
@@ -49124,19 +49124,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 10,
-            "local_change_count": 1,
+            "commit_count": 11,
+            "local_change_count": 4,
             "file_touch_count": 69
           },
           "48h": {
-            "commit_count": 12,
-            "local_change_count": 1,
+            "commit_count": 13,
+            "local_change_count": 4,
             "file_touch_count": 111
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 100,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -49326,19 +49326,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 3,
+            "commit_count": 9,
+            "local_change_count": 6,
             "file_touch_count": 59
           },
           "48h": {
-            "commit_count": 10,
-            "local_change_count": 3,
+            "commit_count": 11,
+            "local_change_count": 6,
             "file_touch_count": 113
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 98,
           "eta_days": null,
           "eta_confidence": "low"
@@ -49497,19 +49497,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 3,
+            "commit_count": 9,
+            "local_change_count": 6,
             "file_touch_count": 59
           },
           "48h": {
-            "commit_count": 10,
-            "local_change_count": 3,
+            "commit_count": 11,
+            "local_change_count": 6,
             "file_touch_count": 113
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 99,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -49671,19 +49671,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
+            "commit_count": 9,
+            "local_change_count": 4,
             "file_touch_count": 57
           },
           "48h": {
-            "commit_count": 10,
-            "local_change_count": 1,
+            "commit_count": 11,
+            "local_change_count": 4,
             "file_touch_count": 107
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 111,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -78353,19 +78353,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 17,
-            "local_change_count": 1,
+            "commit_count": 18,
+            "local_change_count": 4,
             "file_touch_count": 229
           },
           "48h": {
-            "commit_count": 25,
-            "local_change_count": 1,
+            "commit_count": 26,
+            "local_change_count": 4,
             "file_touch_count": 564
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 21,
           "eta_days": 4,
           "eta_confidence": "high"
@@ -78774,19 +78774,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 10,
-            "local_change_count": 1,
+            "commit_count": 11,
+            "local_change_count": 4,
             "file_touch_count": 69
           },
           "48h": {
-            "commit_count": 12,
-            "local_change_count": 1,
+            "commit_count": 13,
+            "local_change_count": 4,
             "file_touch_count": 111
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 100,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -78976,19 +78976,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 3,
+            "commit_count": 9,
+            "local_change_count": 6,
             "file_touch_count": 59
           },
           "48h": {
-            "commit_count": 10,
-            "local_change_count": 3,
+            "commit_count": 11,
+            "local_change_count": 6,
             "file_touch_count": 113
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 98,
           "eta_days": null,
           "eta_confidence": "low"
@@ -79147,19 +79147,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 3,
+            "commit_count": 9,
+            "local_change_count": 6,
             "file_touch_count": 59
           },
           "48h": {
-            "commit_count": 10,
-            "local_change_count": 3,
+            "commit_count": 11,
+            "local_change_count": 6,
             "file_touch_count": 113
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 99,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -79321,19 +79321,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
+            "commit_count": 9,
+            "local_change_count": 4,
             "file_touch_count": 57
           },
           "48h": {
-            "commit_count": 10,
-            "local_change_count": 1,
+            "commit_count": 11,
+            "local_change_count": 4,
             "file_touch_count": 107
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-07-17T20:48:41-07:00",
+          "last_activity_iso": "2026-07-17T21:54:26-07:00",
           "age_days": 111,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -108004,19 +108004,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 17,
-          "local_change_count": 1,
+          "commit_count": 18,
+          "local_change_count": 4,
           "file_touch_count": 229
         },
         "48h": {
-          "commit_count": 25,
-          "local_change_count": 1,
+          "commit_count": 26,
+          "local_change_count": 4,
           "file_touch_count": 564
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 21,
         "eta_days": 4,
         "eta_confidence": "high"
@@ -108425,19 +108425,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 10,
-          "local_change_count": 1,
+          "commit_count": 11,
+          "local_change_count": 4,
           "file_touch_count": 69
         },
         "48h": {
-          "commit_count": 12,
-          "local_change_count": 1,
+          "commit_count": 13,
+          "local_change_count": 4,
           "file_touch_count": 111
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 100,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -108627,19 +108627,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 3,
+          "commit_count": 9,
+          "local_change_count": 6,
           "file_touch_count": 59
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 3,
+          "commit_count": 11,
+          "local_change_count": 6,
           "file_touch_count": 113
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 98,
         "eta_days": null,
         "eta_confidence": "low"
@@ -108798,19 +108798,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 3,
+          "commit_count": 9,
+          "local_change_count": 6,
           "file_touch_count": 59
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 3,
+          "commit_count": 11,
+          "local_change_count": 6,
           "file_touch_count": 113
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 99,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -108972,19 +108972,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
+          "commit_count": 9,
+          "local_change_count": 4,
           "file_touch_count": 57
         },
         "48h": {
-          "commit_count": 10,
-          "local_change_count": 1,
+          "commit_count": 11,
+          "local_change_count": 4,
           "file_touch_count": 107
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-07-17T20:48:41-07:00",
+        "last_activity_iso": "2026-07-17T21:54:26-07:00",
         "age_days": 111,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -146354,15 +146354,15 @@
   ],
   "timeline_events": [
     {
-      "id": "local:M:odylith/compass/runtime/current.v1.js",
+      "id": "local:M:odylith/registry/source/components/release/FORENSICS.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:06:00-07:00",
-      "summary": "Modified odylith/compass/runtime/current.v1.js",
+      "ts_iso": "2026-07-17T21:54:31-07:00",
+      "summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "odylith/compass/runtime/current.v1.js"
+        "odylith/registry/source/components/release/FORENSICS.v1.json"
       ],
       "source": "local",
       "session_id": "",
@@ -146380,15 +146380,143 @@
       "deployment_truth": {}
     },
     {
-      "id": "local:M:odylith/compass/runtime/current.v1.json",
+      "id": "local:M:odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:06:00-07:00",
-      "summary": "Modified odylith/compass/runtime/current.v1.json",
+      "ts_iso": "2026-07-17T21:54:31-07:00",
+      "summary": "Modified odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
       "author": "local",
       "sha": "",
       "workstreams": [],
       "files": [
-        "odylith/compass/runtime/current.v1.json"
+        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:54:26-07:00",
+      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:54:26-07:00",
+      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:54:26-07:00",
+      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:??:odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:54:26-07:00",
+      "summary": "Added odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "author": "local",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "source": "local",
       "session_id": "",
@@ -146408,7 +146536,7 @@
     {
       "id": "local:M:src/odylith/bundle/assets/odylith/compass/compass.html",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:54-07:00",
+      "ts_iso": "2026-07-17T21:54:04-07:00",
       "summary": "Modified src/odylith/bundle/assets/odylith/compass/compass.html",
       "author": "local",
       "sha": "",
@@ -146434,7 +146562,7 @@
     {
       "id": "local:M:odylith/compass/compass-payload.v1.js",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:54-07:00",
+      "ts_iso": "2026-07-17T21:54:04-07:00",
       "summary": "Modified odylith/compass/compass-payload.v1.js",
       "author": "local",
       "sha": "",
@@ -146460,7 +146588,7 @@
     {
       "id": "local:M:odylith/compass/compass.html",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:54-07:00",
+      "ts_iso": "2026-07-17T21:54:04-07:00",
       "summary": "Modified odylith/compass/compass.html",
       "author": "local",
       "sha": "",
@@ -146486,7 +146614,7 @@
     {
       "id": "local:M:odylith/compass/compass-source-truth.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:54-07:00",
+      "ts_iso": "2026-07-17T21:54:04-07:00",
       "summary": "Modified odylith/compass/compass-source-truth.v1.json",
       "author": "local",
       "sha": "",
@@ -146512,7 +146640,7 @@
     {
       "id": "local:M:odylith/compass/runtime/history/embedded.v1.js",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:54-07:00",
+      "ts_iso": "2026-07-17T21:54:03-07:00",
       "summary": "Modified odylith/compass/runtime/history/embedded.v1.js",
       "author": "local",
       "sha": "",
@@ -146538,7 +146666,7 @@
     {
       "id": "local:M:odylith/compass/runtime/history/2026-07-17.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:53-07:00",
+      "ts_iso": "2026-07-17T21:54:02-07:00",
       "summary": "Modified odylith/compass/runtime/history/2026-07-17.v1.json",
       "author": "local",
       "sha": "",
@@ -146562,9 +146690,61 @@
       "deployment_truth": {}
     },
     {
+      "id": "local:M:odylith/compass/runtime/current.v1.js",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:54:02-07:00",
+      "summary": "Modified odylith/compass/runtime/current.v1.js",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/compass/runtime/current.v1.js"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:odylith/compass/runtime/current.v1.json",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:54:02-07:00",
+      "summary": "Modified odylith/compass/runtime/current.v1.json",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "odylith/compass/runtime/current.v1.json"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
       "id": "local:M:odylith/compass/runtime/history/index.v1.json",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:53-07:00",
+      "ts_iso": "2026-07-17T21:54:02-07:00",
       "summary": "Modified odylith/compass/runtime/history/index.v1.json",
       "author": "local",
       "sha": "",
@@ -146590,7 +146770,7 @@
     {
       "id": "local:M:odylith/compass/runtime/agent-stream.v1.jsonl",
       "kind": "local_change",
-      "ts_iso": "2026-07-17T21:05:50-07:00",
+      "ts_iso": "2026-07-17T21:53:09-07:00",
       "summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
       "author": "local",
       "sha": "",
@@ -146599,6 +146779,210 @@
         "odylith/compass/runtime/agent-stream.v1.jsonl"
       ],
       "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "agent:implementation:1091:2026-07-17T21:53:09-07:00",
+      "kind": "implementation",
+      "ts_iso": "2026-07-17T21:53:09-07:00",
+      "summary": "CB-275 process proof hardening: bounded group cleanup, interrupt cleanup, finite timeout validation, threaded release server, and durable exact-preamble telemetry landed. Artifact 97e2360f completed git init in 0.012s and install in 27.302s; this one seeded preamble did not reproduce the stall and does not reopen aggregate matrix or release readiness. Detached-session descendants remain an explicitly unverified platform boundary, surfaced when output pipes stay open after SIGKILL.",
+      "author": "assistant",
+      "sha": "",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "source": "assistant",
+      "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:tests/unit/install/test_greenfield_process.py",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:50:43-07:00",
+      "summary": "Modified tests/unit/install/test_greenfield_process.py",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "tests/unit/install/test_greenfield_process.py"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:M:tests/unit/install/test_local_release_smoke.py",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:49:40-07:00",
+      "summary": "Modified tests/unit/install/test_local_release_smoke.py",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "tests/unit/install/test_local_release_smoke.py"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "local:??:tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py",
+      "kind": "local_change",
+      "ts_iso": "2026-07-17T21:48:54-07:00",
+      "summary": "Added tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py",
+      "author": "local",
+      "sha": "",
+      "workstreams": [],
+      "files": [
+        "tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py"
+      ],
+      "source": "local",
+      "session_id": "",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "agent:statement:1090:2026-07-17T21:25:05-07:00",
+      "kind": "statement",
+      "ts_iso": "2026-07-17T21:25:05-07:00",
+      "summary": "Correction to the prior CB-275 probe entry: two simplified passing probes establish only not_reproduced_in_probe. They do not prove intermittency, rule out packaging or process-helper causes, isolate controller state, or reopen aggregate matrix release readiness. The next valid diagnostic is one exact first-case matrix preamble: shared server, git init, then helper-wrapped install with sanitized telemetry.",
+      "author": "assistant",
+      "sha": "",
+      "workstreams": [],
+      "files": [],
+      "source": "assistant",
+      "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "agent:decision:1089:2026-07-17T21:20:57-07:00",
+      "kind": "decision",
+      "ts_iso": "2026-07-17T21:20:57-07:00",
+      "summary": "CB-275 bounded diagnosis: two isolated three-arm probes against release artifact sha256 d4cf875421967667b256ce00a99dd6dc6794977a9fa8d08badcf36feea03632d passed fresh direct install, fresh group-timeout-helper install, installed recovery proof, and same-controller post-recovery helper install. The only supported classification is intermittent_or_not_reproduced; aggregate matrix release readiness remains closed.",
+      "author": "assistant",
+      "sha": "",
+      "workstreams": [],
+      "files": [],
+      "source": "assistant",
+      "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+      "transaction_id": "",
+      "transaction_seq": null,
+      "transaction_boundary": "",
+      "context": "",
+      "headline_hint": "",
+      "proof_lane": "",
+      "proof_fingerprint": "",
+      "proof_phase": "",
+      "evidence_tier": "",
+      "proof_status": "",
+      "work_category": "",
+      "deployment_truth": {}
+    },
+    {
+      "id": "commit:0c1ac82c98a3baa89ccc6bdf7acc08703cb01b96",
+      "kind": "commit",
+      "ts_iso": "2026-07-17T21:06:57-07:00",
+      "summary": "Harden greenfield interruption evidence",
+      "author": "freedom-research",
+      "sha": "0c1ac82c98a3baa89ccc6bdf7acc08703cb01b96",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "bin/greenfield-preconfirm-matrix",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-07-17.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
+        "tests/unit/install/test_release_greenfield_matrix_bootstrap.py"
+      ],
+      "source": "git",
       "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
@@ -146624,84 +147008,6 @@
       "files": [],
       "source": "assistant",
       "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
-      "kind": "local_change",
-      "ts_iso": "2026-07-17T21:04:41-07:00",
-      "summary": "Modified tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
-      "kind": "local_change",
-      "ts_iso": "2026-07-17T21:03:24-07:00",
-      "summary": "Modified tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "tests/unit/install/test_release_greenfield_matrix_bootstrap.py"
-      ],
-      "source": "local",
-      "session_id": "",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:bin/greenfield-preconfirm-matrix",
-      "kind": "local_change",
-      "ts_iso": "2026-07-17T20:56:43-07:00",
-      "summary": "Modified bin/greenfield-preconfirm-matrix",
-      "author": "local",
-      "sha": "",
-      "workstreams": [],
-      "files": [
-        "bin/greenfield-preconfirm-matrix"
-      ],
-      "source": "local",
-      "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
       "transaction_boundary": "",
@@ -146848,38 +147154,6 @@
       "files": [],
       "source": "assistant",
       "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
-      "transaction_id": "",
-      "transaction_seq": null,
-      "transaction_boundary": "",
-      "context": "",
-      "headline_hint": "",
-      "proof_lane": "",
-      "proof_fingerprint": "",
-      "proof_phase": "",
-      "evidence_tier": "",
-      "proof_status": "",
-      "work_category": "",
-      "deployment_truth": {}
-    },
-    {
-      "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "kind": "local_change",
-      "ts_iso": "2026-07-17T16:45:25-07:00",
-      "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "author": "local",
-      "sha": "",
-      "workstreams": [
-        "B-005",
-        "B-063",
-        "B-069",
-        "B-083",
-        "B-142"
-      ],
-      "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "source": "local",
-      "session_id": "",
       "transaction_id": "",
       "transaction_seq": null,
       "transaction_boundary": "",
@@ -150159,16 +150433,22 @@
   ],
   "timeline_transactions": [
     {
-      "id": "txn:global:auto-global-0087:0087",
-      "transaction_id": "txn:global:auto-global-0087:0087",
+      "id": "txn:global:auto-global-0091:0091",
+      "transaction_id": "txn:global:auto-global-0091:0091",
       "session_id": "",
-      "start_ts_iso": "2026-07-17T21:03:24-07:00",
-      "end_ts_iso": "2026-07-17T21:06:00-07:00",
-      "headline": "Updated Compass dashboard and 2 other areas",
+      "start_ts_iso": "2026-07-17T21:53:09-07:00",
+      "end_ts_iso": "2026-07-17T21:54:31-07:00",
+      "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
       "context": "",
-      "event_count": 12,
-      "files_count": 12,
-      "workstreams": [],
+      "event_count": 16,
+      "files_count": 13,
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
       "files": [
         "odylith/compass/compass-payload.v1.js",
         "odylith/compass/compass-source-truth.v1.json",
@@ -150179,23 +150459,24 @@
         "odylith/compass/runtime/history/2026-07-17.v1.json",
         "odylith/compass/runtime/history/embedded.v1.js",
         "odylith/compass/runtime/history/index.v1.json",
-        "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
-        "tests/unit/install/test_release_greenfield_matrix_bootstrap.py"
+        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
+        "src/odylith/bundle/assets/odylith/compass/compass.html"
       ],
       "explicit_open": false,
       "explicit_closed": false,
       "events": [
         {
-          "id": "local:M:odylith/compass/runtime/current.v1.js",
+          "id": "local:M:odylith/registry/source/components/release/FORENSICS.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:06:00-07:00",
-          "summary": "Modified odylith/compass/runtime/current.v1.js",
+          "ts_iso": "2026-07-17T21:54:31-07:00",
+          "summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/compass/runtime/current.v1.js"
+            "odylith/registry/source/components/release/FORENSICS.v1.json"
           ],
           "source": "local",
           "session_id": "",
@@ -150213,15 +150494,143 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:odylith/compass/runtime/current.v1.json",
+          "id": "local:M:odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:06:00-07:00",
-          "summary": "Modified odylith/compass/runtime/current.v1.json",
+          "ts_iso": "2026-07-17T21:54:31-07:00",
+          "summary": "Modified odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "odylith/compass/runtime/current.v1.json"
+            "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:54:26-07:00",
+          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142"
+          ],
+          "files": [
+            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:54:26-07:00",
+          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142"
+          ],
+          "files": [
+            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:54:26-07:00",
+          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142"
+          ],
+          "files": [
+            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:??:odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:54:26-07:00",
+          "summary": "Added odylith/registry/source/components/release/CURRENT_SPEC.md",
+          "author": "local",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142"
+          ],
+          "files": [
+            "odylith/registry/source/components/release/CURRENT_SPEC.md"
           ],
           "source": "local",
           "session_id": "",
@@ -150241,7 +150650,7 @@
         {
           "id": "local:M:src/odylith/bundle/assets/odylith/compass/compass.html",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:54-07:00",
+          "ts_iso": "2026-07-17T21:54:04-07:00",
           "summary": "Modified src/odylith/bundle/assets/odylith/compass/compass.html",
           "author": "local",
           "sha": "",
@@ -150267,7 +150676,7 @@
         {
           "id": "local:M:odylith/compass/compass-payload.v1.js",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:54-07:00",
+          "ts_iso": "2026-07-17T21:54:04-07:00",
           "summary": "Modified odylith/compass/compass-payload.v1.js",
           "author": "local",
           "sha": "",
@@ -150293,7 +150702,7 @@
         {
           "id": "local:M:odylith/compass/compass.html",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:54-07:00",
+          "ts_iso": "2026-07-17T21:54:04-07:00",
           "summary": "Modified odylith/compass/compass.html",
           "author": "local",
           "sha": "",
@@ -150319,7 +150728,7 @@
         {
           "id": "local:M:odylith/compass/compass-source-truth.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:54-07:00",
+          "ts_iso": "2026-07-17T21:54:04-07:00",
           "summary": "Modified odylith/compass/compass-source-truth.v1.json",
           "author": "local",
           "sha": "",
@@ -150345,7 +150754,7 @@
         {
           "id": "local:M:odylith/compass/runtime/history/embedded.v1.js",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:54-07:00",
+          "ts_iso": "2026-07-17T21:54:03-07:00",
           "summary": "Modified odylith/compass/runtime/history/embedded.v1.js",
           "author": "local",
           "sha": "",
@@ -150371,7 +150780,7 @@
         {
           "id": "local:M:odylith/compass/runtime/history/2026-07-17.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:53-07:00",
+          "ts_iso": "2026-07-17T21:54:02-07:00",
           "summary": "Modified odylith/compass/runtime/history/2026-07-17.v1.json",
           "author": "local",
           "sha": "",
@@ -150395,9 +150804,61 @@
           "deployment_truth": {}
         },
         {
+          "id": "local:M:odylith/compass/runtime/current.v1.js",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:54:02-07:00",
+          "summary": "Modified odylith/compass/runtime/current.v1.js",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/compass/runtime/current.v1.js"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:M:odylith/compass/runtime/current.v1.json",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:54:02-07:00",
+          "summary": "Modified odylith/compass/runtime/current.v1.json",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "odylith/compass/runtime/current.v1.json"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
           "id": "local:M:odylith/compass/runtime/history/index.v1.json",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:53-07:00",
+          "ts_iso": "2026-07-17T21:54:02-07:00",
           "summary": "Modified odylith/compass/runtime/history/index.v1.json",
           "author": "local",
           "sha": "",
@@ -150423,7 +150884,7 @@
         {
           "id": "local:M:odylith/compass/runtime/agent-stream.v1.jsonl",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:05:50-07:00",
+          "ts_iso": "2026-07-17T21:53:09-07:00",
           "summary": "Modified odylith/compass/runtime/agent-stream.v1.jsonl",
           "author": "local",
           "sha": "",
@@ -150445,17 +150906,95 @@
           "proof_status": "",
           "work_category": "",
           "deployment_truth": {}
-        },
+        }
+      ]
+    },
+    {
+      "id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0090:0090",
+      "transaction_id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0090:0090",
+      "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+      "start_ts_iso": "2026-07-17T21:53:09-07:00",
+      "end_ts_iso": "2026-07-17T21:53:09-07:00",
+      "headline": "Workstream lineage reopen update across 5 workstreams",
+      "context": "",
+      "event_count": 1,
+      "files_count": 1,
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
         {
-          "id": "local:M:tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
+          "id": "agent:implementation:1091:2026-07-17T21:53:09-07:00",
+          "kind": "implementation",
+          "ts_iso": "2026-07-17T21:53:09-07:00",
+          "summary": "CB-275 process proof hardening: bounded group cleanup, interrupt cleanup, finite timeout validation, threaded release server, and durable exact-preamble telemetry landed. Artifact 97e2360f completed git init in 0.012s and install in 27.302s; this one seeded preamble did not reproduce the stall and does not reopen aggregate matrix or release readiness. Detached-session descendants remain an explicitly unverified platform boundary, surfaced when output pipes stay open after SIGKILL.",
+          "author": "assistant",
+          "sha": "",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142"
+          ],
+          "files": [
+            "odylith/registry/source/components/release/CURRENT_SPEC.md"
+          ],
+          "source": "assistant",
+          "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0089:0089",
+      "transaction_id": "txn:global:auto-global-0089:0089",
+      "session_id": "",
+      "start_ts_iso": "2026-07-17T21:48:54-07:00",
+      "end_ts_iso": "2026-07-17T21:50:43-07:00",
+      "headline": "Updated unit tests",
+      "context": "",
+      "event_count": 3,
+      "files_count": 3,
+      "workstreams": [],
+      "files": [
+        "tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py",
+        "tests/unit/install/test_greenfield_process.py",
+        "tests/unit/install/test_local_release_smoke.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "local:M:tests/unit/install/test_greenfield_process.py",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:04:41-07:00",
-          "summary": "Modified tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
+          "ts_iso": "2026-07-17T21:50:43-07:00",
+          "summary": "Modified tests/unit/install/test_greenfield_process.py",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py"
+            "tests/unit/install/test_greenfield_process.py"
           ],
           "source": "local",
           "session_id": "",
@@ -150473,15 +151012,41 @@
           "deployment_truth": {}
         },
         {
-          "id": "local:M:tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
+          "id": "local:M:tests/unit/install/test_local_release_smoke.py",
           "kind": "local_change",
-          "ts_iso": "2026-07-17T21:03:24-07:00",
-          "summary": "Modified tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
+          "ts_iso": "2026-07-17T21:49:40-07:00",
+          "summary": "Modified tests/unit/install/test_local_release_smoke.py",
           "author": "local",
           "sha": "",
           "workstreams": [],
           "files": [
-            "tests/unit/install/test_release_greenfield_matrix_bootstrap.py"
+            "tests/unit/install/test_local_release_smoke.py"
+          ],
+          "source": "local",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        },
+        {
+          "id": "local:??:tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py",
+          "kind": "local_change",
+          "ts_iso": "2026-07-17T21:48:54-07:00",
+          "summary": "Added tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py",
+          "author": "local",
+          "sha": "",
+          "workstreams": [],
+          "files": [
+            "tests/unit/install/test_greenfield_matrix_exact_preamble_probe.py"
           ],
           "source": "local",
           "session_id": "",
@@ -150503,6 +151068,173 @@
     {
       "id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0088:0088",
       "transaction_id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0088:0088",
+      "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+      "start_ts_iso": "2026-07-17T21:25:05-07:00",
+      "end_ts_iso": "2026-07-17T21:25:05-07:00",
+      "headline": "Workstream lineage reopen update",
+      "context": "",
+      "event_count": 1,
+      "files_count": 0,
+      "workstreams": [],
+      "files": [],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "agent:statement:1090:2026-07-17T21:25:05-07:00",
+          "kind": "statement",
+          "ts_iso": "2026-07-17T21:25:05-07:00",
+          "summary": "Correction to the prior CB-275 probe entry: two simplified passing probes establish only not_reproduced_in_probe. They do not prove intermittency, rule out packaging or process-helper causes, isolate controller state, or reopen aggregate matrix release readiness. The next valid diagnostic is one exact first-case matrix preamble: shared server, git init, then helper-wrapped install with sanitized telemetry.",
+          "author": "assistant",
+          "sha": "",
+          "workstreams": [],
+          "files": [],
+          "source": "assistant",
+          "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0087:0087",
+      "transaction_id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0087:0087",
+      "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+      "start_ts_iso": "2026-07-17T21:20:57-07:00",
+      "end_ts_iso": "2026-07-17T21:20:57-07:00",
+      "headline": "Decision: CB-275 bounded diagnosis: two isolated three-arm probes against release artifact sha256 d4cf875421967667b256ce00a99dd6dc6794977a9fa8d08badcf36feea03632d passed fresh",
+      "context": "",
+      "event_count": 1,
+      "files_count": 0,
+      "workstreams": [],
+      "files": [],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "agent:decision:1089:2026-07-17T21:20:57-07:00",
+          "kind": "decision",
+          "ts_iso": "2026-07-17T21:20:57-07:00",
+          "summary": "CB-275 bounded diagnosis: two isolated three-arm probes against release artifact sha256 d4cf875421967667b256ce00a99dd6dc6794977a9fa8d08badcf36feea03632d passed fresh direct install, fresh group-timeout-helper install, installed recovery proof, and same-controller post-recovery helper install. The only supported classification is intermittent_or_not_reproduced; aggregate matrix release readiness remains closed.",
+          "author": "assistant",
+          "sha": "",
+          "workstreams": [],
+          "files": [],
+          "source": "assistant",
+          "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:global:auto-global-0086:0086",
+      "transaction_id": "txn:global:auto-global-0086:0086",
+      "session_id": "",
+      "start_ts_iso": "2026-07-17T21:06:57-07:00",
+      "end_ts_iso": "2026-07-17T21:06:57-07:00",
+      "headline": "Harden greenfield interruption evidence",
+      "context": "",
+      "event_count": 1,
+      "files_count": 15,
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "files": [
+        "bin/greenfield-preconfirm-matrix",
+        "odylith/compass/compass-payload.v1.js",
+        "odylith/compass/compass-source-truth.v1.json",
+        "odylith/compass/compass.html",
+        "odylith/compass/runtime/agent-stream.v1.jsonl",
+        "odylith/compass/runtime/current.v1.js",
+        "odylith/compass/runtime/current.v1.json",
+        "odylith/compass/runtime/history/2026-07-17.v1.json",
+        "odylith/compass/runtime/history/embedded.v1.js",
+        "odylith/compass/runtime/history/index.v1.json",
+        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/bundle/assets/odylith/compass/compass.html",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
+        "tests/unit/install/test_release_greenfield_matrix_bootstrap.py"
+      ],
+      "explicit_open": false,
+      "explicit_closed": false,
+      "events": [
+        {
+          "id": "commit:0c1ac82c98a3baa89ccc6bdf7acc08703cb01b96",
+          "kind": "commit",
+          "ts_iso": "2026-07-17T21:06:57-07:00",
+          "summary": "Harden greenfield interruption evidence",
+          "author": "freedom-research",
+          "sha": "0c1ac82c98a3baa89ccc6bdf7acc08703cb01b96",
+          "workstreams": [
+            "B-005",
+            "B-063",
+            "B-069",
+            "B-083",
+            "B-142"
+          ],
+          "files": [
+            "bin/greenfield-preconfirm-matrix",
+            "odylith/compass/compass-payload.v1.js",
+            "odylith/compass/compass-source-truth.v1.json",
+            "odylith/compass/compass.html",
+            "odylith/compass/runtime/agent-stream.v1.jsonl",
+            "odylith/compass/runtime/current.v1.js",
+            "odylith/compass/runtime/current.v1.json",
+            "odylith/compass/runtime/history/2026-07-17.v1.json",
+            "odylith/compass/runtime/history/embedded.v1.js",
+            "odylith/compass/runtime/history/index.v1.json",
+            "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
+            "odylith/registry/source/components/release/CURRENT_SPEC.md",
+            "src/odylith/bundle/assets/odylith/compass/compass.html",
+            "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
+            "tests/unit/install/test_release_greenfield_matrix_bootstrap.py"
+          ],
+          "source": "git",
+          "session_id": "",
+          "transaction_id": "",
+          "transaction_seq": null,
+          "transaction_boundary": "",
+          "context": "",
+          "headline_hint": "",
+          "proof_lane": "",
+          "proof_fingerprint": "",
+          "proof_phase": "",
+          "evidence_tier": "",
+          "proof_status": "",
+          "work_category": "",
+          "deployment_truth": {}
+        }
+      ]
+    },
+    {
+      "id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0085:0085",
+      "transaction_id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0085:0085",
       "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
       "start_ts_iso": "2026-07-17T21:05:50-07:00",
       "end_ts_iso": "2026-07-17T21:05:50-07:00",
@@ -150542,53 +151274,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0086:0086",
-      "transaction_id": "txn:global:auto-global-0086:0086",
-      "session_id": "",
-      "start_ts_iso": "2026-07-17T20:56:43-07:00",
-      "end_ts_iso": "2026-07-17T20:56:43-07:00",
-      "headline": "Updated bin artifacts",
-      "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [],
-      "files": [
-        "bin/greenfield-preconfirm-matrix"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "local:M:bin/greenfield-preconfirm-matrix",
-          "kind": "local_change",
-          "ts_iso": "2026-07-17T20:56:43-07:00",
-          "summary": "Modified bin/greenfield-preconfirm-matrix",
-          "author": "local",
-          "sha": "",
-          "workstreams": [],
-          "files": [
-            "bin/greenfield-preconfirm-matrix"
-          ],
-          "source": "local",
-          "session_id": "",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0085:0085",
-      "transaction_id": "txn:global:auto-global-0085:0085",
+      "id": "txn:global:auto-global-0084:0084",
+      "transaction_id": "txn:global:auto-global-0084:0084",
       "session_id": "",
       "start_ts_iso": "2026-07-17T20:48:41-07:00",
       "end_ts_iso": "2026-07-17T20:48:41-07:00",
@@ -150660,8 +151347,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0084:0084",
-      "transaction_id": "txn:global:auto-global-0084:0084",
+      "id": "txn:global:auto-global-0083:0083",
+      "transaction_id": "txn:global:auto-global-0083:0083",
       "session_id": "",
       "start_ts_iso": "2026-07-17T20:41:38-07:00",
       "end_ts_iso": "2026-07-17T20:41:38-07:00",
@@ -150705,8 +151392,8 @@
       ]
     },
     {
-      "id": "txn:global:auto-global-0083:0083",
-      "transaction_id": "txn:global:auto-global-0083:0083",
+      "id": "txn:global:auto-global-0082:0082",
+      "transaction_id": "txn:global:auto-global-0082:0082",
       "session_id": "",
       "start_ts_iso": "2026-07-17T20:10:30-07:00",
       "end_ts_iso": "2026-07-17T20:10:30-07:00",
@@ -150810,8 +151497,8 @@
       ]
     },
     {
-      "id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0082:0082",
-      "transaction_id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0082:0082",
+      "id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0081:0081",
+      "transaction_id": "txn:019f3e24-6d28-7591-935b-26b9514ee359:auto-019f3e24-6d28-7591-935b-26b9514ee359-0081:0081",
       "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
       "start_ts_iso": "2026-07-17T20:07:28-07:00",
       "end_ts_iso": "2026-07-17T20:07:28-07:00",
@@ -150835,63 +151522,6 @@
           "files": [],
           "source": "assistant",
           "session_id": "019f3e24-6d28-7591-935b-26b9514ee359",
-          "transaction_id": "",
-          "transaction_seq": null,
-          "transaction_boundary": "",
-          "context": "",
-          "headline_hint": "",
-          "proof_lane": "",
-          "proof_fingerprint": "",
-          "proof_phase": "",
-          "evidence_tier": "",
-          "proof_status": "",
-          "work_category": "",
-          "deployment_truth": {}
-        }
-      ]
-    },
-    {
-      "id": "txn:global:auto-global-0081:0081",
-      "transaction_id": "txn:global:auto-global-0081:0081",
-      "session_id": "",
-      "start_ts_iso": "2026-07-17T16:45:25-07:00",
-      "end_ts_iso": "2026-07-17T16:45:25-07:00",
-      "headline": "Updated odylith artifacts across 5 workstreams",
-      "context": "",
-      "event_count": 1,
-      "files_count": 1,
-      "workstreams": [
-        "B-005",
-        "B-063",
-        "B-069",
-        "B-083",
-        "B-142"
-      ],
-      "files": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "explicit_open": false,
-      "explicit_closed": false,
-      "events": [
-        {
-          "id": "local:M:odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "kind": "local_change",
-          "ts_iso": "2026-07-17T16:45:25-07:00",
-          "summary": "Modified odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "author": "local",
-          "sha": "",
-          "workstreams": [
-            "B-005",
-            "B-063",
-            "B-069",
-            "B-083",
-            "B-142"
-          ],
-          "files": [
-            "odylith/registry/source/components/release/CURRENT_SPEC.md"
-          ],
-          "source": "local",
-          "session_id": "",
           "transaction_id": "",
           "transaction_seq": null,
           "transaction_boundary": "",
@@ -156749,54 +157379,60 @@
     "recent_window_minutes": 90,
     "global": {
       "is_active": true,
-      "transaction_id": "txn:global:auto-global-0087:0087",
+      "transaction_id": "txn:global:auto-global-0091:0091",
       "session_id": "",
       "context": "",
-      "headline": "Updated Compass dashboard and 2 other areas",
-      "last_event_iso": "2026-07-17T21:06:00-07:00",
-      "start_ts_iso": "2026-07-17T21:03:24-07:00",
-      "workstreams": [],
-      "event_count": 12,
-      "files_count": 12,
+      "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
+      "last_event_iso": "2026-07-17T21:54:31-07:00",
+      "start_ts_iso": "2026-07-17T21:53:09-07:00",
+      "workstreams": [
+        "B-005",
+        "B-063",
+        "B-069",
+        "B-083",
+        "B-142"
+      ],
+      "event_count": 16,
+      "files_count": 13,
       "kind_counts": {
-        "local_change": 12
+        "local_change": 16
       },
       "source_counts": {
-        "local": 12
+        "local": 16
       },
-      "activity_signal_count": 12,
+      "activity_signal_count": 16,
       "risk_signal_count": 0,
       "top_files": [
         "odylith/compass/compass-payload.v1.js",
         "odylith/compass/compass-source-truth.v1.json",
+        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/FORENSICS.v1.json",
         "src/odylith/bundle/assets/odylith/compass/compass.html",
-        "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py",
-        "tests/unit/install/test_release_greenfield_matrix_bootstrap.py",
         "odylith/compass/compass.html",
-        "odylith/compass/runtime/agent-stream.v1.jsonl",
-        "odylith/compass/runtime/current.v1.js"
+        "odylith/compass/runtime/agent-stream.v1.jsonl"
       ],
-      "source_files_count": 5,
+      "source_files_count": 6,
       "generated_files_count": 7,
       "generated_only_batch": false,
       "latest_event_kind": "local_change",
-      "latest_event_summary": "Modified odylith/compass/runtime/current.v1.js",
+      "latest_event_summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
       "has_implementation_signal": true,
       "focus_reason": "recent_activity_signal",
       "selection_mode": "active_implementation",
       "has_live_implementation": true,
       "has_recent_implementation": true,
-      "latest_implementation_iso": "2026-07-17T21:06:00-07:00"
+      "latest_implementation_iso": "2026-07-17T21:54:31-07:00"
     },
     "by_workstream": {
       "B-005": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0083:0083",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0091:0091",
         "session_id": "",
         "context": "",
-        "headline": "Harden greenfield proof isolation",
-        "last_event_iso": "2026-07-17T20:10:30-07:00",
-        "start_ts_iso": "2026-07-17T20:10:30-07:00",
+        "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
+        "last_event_iso": "2026-07-17T21:54:31-07:00",
+        "start_ts_iso": "2026-07-17T21:53:09-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -156804,46 +157440,46 @@
           "B-083",
           "B-142"
         ],
-        "event_count": 1,
-        "files_count": 25,
+        "event_count": 16,
+        "files_count": 13,
         "kind_counts": {
-          "commit": 1
+          "local_change": 16
         },
         "source_counts": {
-          "git": 1
+          "local": 16
         },
-        "activity_signal_count": 1,
+        "activity_signal_count": 16,
         "risk_signal_count": 0,
         "top_files": [
-          "bin/greenfield-preconfirm-matrix",
-          "bin/help",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/FORENSICS.v1.json"
+          "odylith/registry/source/components/release/FORENSICS.v1.json",
+          "src/odylith/bundle/assets/odylith/compass/compass.html",
+          "odylith/compass/compass.html",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
-        "source_files_count": 18,
+        "source_files_count": 6,
         "generated_files_count": 7,
         "generated_only_batch": false,
-        "latest_event_kind": "commit",
-        "latest_event_summary": "Harden greenfield proof isolation",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-07-17T20:48:41-07:00"
+        "latest_implementation_iso": "2026-07-17T21:54:31-07:00"
       },
       "B-063": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0083:0083",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0091:0091",
         "session_id": "",
         "context": "",
-        "headline": "Harden greenfield proof isolation",
-        "last_event_iso": "2026-07-17T20:10:30-07:00",
-        "start_ts_iso": "2026-07-17T20:10:30-07:00",
+        "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
+        "last_event_iso": "2026-07-17T21:54:31-07:00",
+        "start_ts_iso": "2026-07-17T21:53:09-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -156851,46 +157487,46 @@
           "B-083",
           "B-142"
         ],
-        "event_count": 1,
-        "files_count": 25,
+        "event_count": 16,
+        "files_count": 13,
         "kind_counts": {
-          "commit": 1
+          "local_change": 16
         },
         "source_counts": {
-          "git": 1
+          "local": 16
         },
-        "activity_signal_count": 1,
+        "activity_signal_count": 16,
         "risk_signal_count": 0,
         "top_files": [
-          "bin/greenfield-preconfirm-matrix",
-          "bin/help",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/FORENSICS.v1.json"
+          "odylith/registry/source/components/release/FORENSICS.v1.json",
+          "src/odylith/bundle/assets/odylith/compass/compass.html",
+          "odylith/compass/compass.html",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
-        "source_files_count": 18,
+        "source_files_count": 6,
         "generated_files_count": 7,
         "generated_only_batch": false,
-        "latest_event_kind": "commit",
-        "latest_event_summary": "Harden greenfield proof isolation",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-07-17T20:48:41-07:00"
+        "latest_implementation_iso": "2026-07-17T21:54:31-07:00"
       },
       "B-069": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0083:0083",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0091:0091",
         "session_id": "",
         "context": "",
-        "headline": "Harden greenfield proof isolation",
-        "last_event_iso": "2026-07-17T20:10:30-07:00",
-        "start_ts_iso": "2026-07-17T20:10:30-07:00",
+        "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
+        "last_event_iso": "2026-07-17T21:54:31-07:00",
+        "start_ts_iso": "2026-07-17T21:53:09-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -156898,46 +157534,46 @@
           "B-083",
           "B-142"
         ],
-        "event_count": 1,
-        "files_count": 25,
+        "event_count": 16,
+        "files_count": 13,
         "kind_counts": {
-          "commit": 1
+          "local_change": 16
         },
         "source_counts": {
-          "git": 1
+          "local": 16
         },
-        "activity_signal_count": 1,
+        "activity_signal_count": 16,
         "risk_signal_count": 0,
         "top_files": [
-          "bin/greenfield-preconfirm-matrix",
-          "bin/help",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/FORENSICS.v1.json"
+          "odylith/registry/source/components/release/FORENSICS.v1.json",
+          "src/odylith/bundle/assets/odylith/compass/compass.html",
+          "odylith/compass/compass.html",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
-        "source_files_count": 18,
+        "source_files_count": 6,
         "generated_files_count": 7,
         "generated_only_batch": false,
-        "latest_event_kind": "commit",
-        "latest_event_summary": "Harden greenfield proof isolation",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-07-17T20:48:41-07:00"
+        "latest_implementation_iso": "2026-07-17T21:54:31-07:00"
       },
       "B-083": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0083:0083",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0091:0091",
         "session_id": "",
         "context": "",
-        "headline": "Harden greenfield proof isolation",
-        "last_event_iso": "2026-07-17T20:10:30-07:00",
-        "start_ts_iso": "2026-07-17T20:10:30-07:00",
+        "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
+        "last_event_iso": "2026-07-17T21:54:31-07:00",
+        "start_ts_iso": "2026-07-17T21:53:09-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -156945,46 +157581,46 @@
           "B-083",
           "B-142"
         ],
-        "event_count": 1,
-        "files_count": 25,
+        "event_count": 16,
+        "files_count": 13,
         "kind_counts": {
-          "commit": 1
+          "local_change": 16
         },
         "source_counts": {
-          "git": 1
+          "local": 16
         },
-        "activity_signal_count": 1,
+        "activity_signal_count": 16,
         "risk_signal_count": 0,
         "top_files": [
-          "bin/greenfield-preconfirm-matrix",
-          "bin/help",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/FORENSICS.v1.json"
+          "odylith/registry/source/components/release/FORENSICS.v1.json",
+          "src/odylith/bundle/assets/odylith/compass/compass.html",
+          "odylith/compass/compass.html",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
-        "source_files_count": 18,
+        "source_files_count": 6,
         "generated_files_count": 7,
         "generated_only_batch": false,
-        "latest_event_kind": "commit",
-        "latest_event_summary": "Harden greenfield proof isolation",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-07-17T20:48:41-07:00"
+        "latest_implementation_iso": "2026-07-17T21:54:31-07:00"
       },
       "B-142": {
-        "is_active": false,
-        "transaction_id": "txn:global:auto-global-0083:0083",
+        "is_active": true,
+        "transaction_id": "txn:global:auto-global-0091:0091",
         "session_id": "",
         "context": "",
-        "headline": "Harden greenfield proof isolation",
-        "last_event_iso": "2026-07-17T20:10:30-07:00",
-        "start_ts_iso": "2026-07-17T20:10:30-07:00",
+        "headline": "Updated Compass dashboard and 2 other areas across 5 workstreams",
+        "last_event_iso": "2026-07-17T21:54:31-07:00",
+        "start_ts_iso": "2026-07-17T21:53:09-07:00",
         "workstreams": [
           "B-005",
           "B-063",
@@ -156992,37 +157628,37 @@
           "B-083",
           "B-142"
         ],
-        "event_count": 1,
-        "files_count": 25,
+        "event_count": 16,
+        "files_count": 13,
         "kind_counts": {
-          "commit": 1
+          "local_change": 16
         },
         "source_counts": {
-          "git": 1
+          "local": 16
         },
-        "activity_signal_count": 1,
+        "activity_signal_count": 16,
         "risk_signal_count": 0,
         "top_files": [
-          "bin/greenfield-preconfirm-matrix",
-          "bin/help",
           "odylith/compass/compass-payload.v1.js",
           "odylith/compass/compass-source-truth.v1.json",
-          "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
           "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json",
           "odylith/registry/source/components/release/CURRENT_SPEC.md",
-          "odylith/registry/source/components/release/FORENSICS.v1.json"
+          "odylith/registry/source/components/release/FORENSICS.v1.json",
+          "src/odylith/bundle/assets/odylith/compass/compass.html",
+          "odylith/compass/compass.html",
+          "odylith/compass/runtime/agent-stream.v1.jsonl"
         ],
-        "source_files_count": 18,
+        "source_files_count": 6,
         "generated_files_count": 7,
         "generated_only_batch": false,
-        "latest_event_kind": "commit",
-        "latest_event_summary": "Harden greenfield proof isolation",
+        "latest_event_kind": "local_change",
+        "latest_event_summary": "Modified odylith/registry/source/components/release/FORENSICS.v1.json",
         "has_implementation_signal": true,
-        "focus_reason": "recent_implementation_fallback",
-        "selection_mode": "recent_implementation_fallback",
-        "has_live_implementation": false,
+        "focus_reason": "recent_activity_signal",
+        "selection_mode": "active_implementation",
+        "has_live_implementation": true,
         "has_recent_implementation": true,
-        "latest_implementation_iso": "2026-07-17T20:48:41-07:00"
+        "latest_implementation_iso": "2026-07-17T21:54:31-07:00"
       },
       "B-144": {
         "is_active": false,
@@ -158859,7 +159495,7 @@
   "runtime_contract": {
     "version": "v1",
     "standup_brief_schema_version": "v25",
-    "input_fingerprint": "bdb0c9a0de13e8ee450c2b4138ab6ed2d5d4b172294c0a1c40aa852bc30fc34c",
+    "input_fingerprint": "5135740662dd69aa5180b072b740b0ce970dcadfee95b6ffcc9b0975e1359094",
     "retention_days": 15,
     "active_window_minutes": 15,
     "max_review_age_days": 21,
@@ -158867,7 +159503,7 @@
     "refresh_profile": "shell-safe",
     "surface_contract_version": "v1",
     "surface": "compass",
-    "projection_fingerprint": "ad3b8c77bdd1427a79be4ac3247d0cdb7c6a894c9aa26e83b1b79cf2f1a5379f",
+    "projection_fingerprint": "12c93d876f5216f3cf84d6e49efa8e7fd210510473e9bbb4633511e62bcb491c",
     "projection_scope": "reasoning",
     "generation": 0,
     "cache_hit": false,
@@ -158894,7 +159530,7 @@
           "workstreams"
         ]
       },
-      "projection_fingerprint": "ad3b8c77bdd1427a79be4ac3247d0cdb7c6a894c9aa26e83b1b79cf2f1a5379f",
+      "projection_fingerprint": "12c93d876f5216f3cf84d6e49efa8e7fd210510473e9bbb4633511e62bcb491c",
       "projection_scope": "reasoning",
       "repo_root": "/Volumes/FREEDOM_RESEARCH/research-code/odylith",
       "sync_generation": 0,
@@ -158906,7 +159542,7 @@
         "backend_dependencies_available": false,
         "storage": "compiler_projection_snapshot"
       },
-      "projection_fingerprint": "ad3b8c77bdd1427a79be4ac3247d0cdb7c6a894c9aa26e83b1b79cf2f1a5379f",
+      "projection_fingerprint": "12c93d876f5216f3cf84d6e49efa8e7fd210510473e9bbb4633511e62bcb491c",
       "projection_scope": "reasoning",
       "repo_root": "/Volumes/FREEDOM_RESEARCH/research-code/odylith",
       "sync_generation": 0,
@@ -158919,7 +159555,7 @@
       "applied_profile": "shell-safe",
       "runtime_mode": "standalone",
       "reason": "",
-      "attempted_utc": "2026-07-18T04:06:04Z",
+      "attempted_utc": "2026-07-18T04:55:00Z",
       "fallback_used": false
     }
   }

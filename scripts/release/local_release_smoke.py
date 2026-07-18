@@ -110,9 +110,14 @@ class _QuietHandler(http.server.SimpleHTTPRequestHandler):
         del format, args
 
 
-def _serve_directory(directory: Path) -> tuple[socketserver.TCPServer, str]:
+class _ReleaseAssetServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+
+def _serve_directory(directory: Path) -> tuple[_ReleaseAssetServer, str]:
     handler = lambda *args, **kwargs: _QuietHandler(*args, directory=str(directory), **kwargs)  # noqa: E731
-    server = socketserver.TCPServer(("127.0.0.1", 0), handler)
+    server = _ReleaseAssetServer(("127.0.0.1", 0), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     host, port = server.server_address

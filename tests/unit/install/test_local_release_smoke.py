@@ -3,8 +3,10 @@ from __future__ import annotations
 import errno
 import importlib.util
 import shutil
+import socket
 import subprocess
 import sys
+import time
 from pathlib import Path
 from urllib.error import HTTPError
 
@@ -62,6 +64,24 @@ def test_force_deterministic_reasoning_env_overrides_exported_provider() -> None
     assert env["ODYLITH_REASONING_CLAUDE_BIN"] == "/usr/bin/false"
     assert env["ODYLITH_COMPASS_STANDUP_BACKGROUND_DISABLE"] == "1"
     assert env["ODYLITH_NO_BROWSER"] == "1"
+
+
+def test_release_asset_server_shutdown_does_not_wait_for_a_stalled_client(tmp_path: Path) -> None:
+    module = _module()
+    (tmp_path / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    server, _base_url = module._serve_directory(tmp_path)
+    host, port = server.server_address
+    client = socket.create_connection((host, port), timeout=1)
+    client.sendall(b"GET /install.sh HTTP/1.1\\r\\n")
+    time.sleep(0.05)
+
+    try:
+        started = time.monotonic()
+        server.shutdown()
+        assert time.monotonic() - started < 1
+    finally:
+        server.server_close()
+        client.close()
 
 
 def test_cleanup_smoke_temp_root_retries_enotempty(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
