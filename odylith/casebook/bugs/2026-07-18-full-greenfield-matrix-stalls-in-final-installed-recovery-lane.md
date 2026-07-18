@@ -41,5 +41,7 @@
 - Workaround: Run the installed recovery proof in isolation, which passed, while retaining the aggregate run for diagnosis.
 
 - Verification: Reorder or isolate the recovery lane, then rerun the full matrix and require final aggregate recovery and cleanup records.
+  - 2026-07-17 diagnostic: fresh installed wheel `08a5c7e013679fb58c3cd008e09603c7a1eaae55d9ab9a9c2fa19bb51921ff64` completed all 14 full-install discovery cases at 10/10, then passed the installed commit-recovery proof. Redacted telemetry recorded 67 command start/completion pairs with no timeout or interruption event. This did not reproduce the historical stall.
+  - Boundary: the diagnostic skipped browser, rescue-smoke, natural-rescue, independent release corpus, and release-tier proof. It does not close CB-275 or establish release readiness.
 
-- Prevention: Keep recovery-lane execution independently observable and regression-test matrix ordering under retained case evidence.
+- Prevention: Keep recovery-lane execution independently observable and regression-test matrix ordering under retained case evidence. Terminal lifecycle records must distinguish completed, timed-out, and interrupted commands without retaining command arguments.
