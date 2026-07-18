@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-17
@@ -674,18 +674,18 @@ or component definitions.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-03-04 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-03-04 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-03-03 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-03-03 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-03-01 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
-  - Evidence: 2 tracked artifact references retained
+- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/compass/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
+- **2026-03-04 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`, `src/odylith/runtime/surfaces/render_registry_dashboard.py`
+- **2026-03-04 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`, `src/odylith/runtime/surfaces/render_registry_dashboard.py`
+- **2026-03-03 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
+- **2026-03-03 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/technical-plans/INDEX.md`, `src/odylith/runtime/surfaces/render_backlog_ui.py`, `src/odylith/runtime/surfaces/render_compass_dashboard.py`
+- **2026-03-01 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/skills/compass-timeline-stream/SKILL.md`, `src/odylith/runtime/common/log_compass_timeline_event.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

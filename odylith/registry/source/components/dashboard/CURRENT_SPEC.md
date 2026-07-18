@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-06-30
@@ -373,17 +373,17 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 5 tracked artifact references retained
-- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 5 tracked artifact references retained.
-  - Evidence: 5 tracked artifact references retained
-- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-03-05 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-03-05 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
+  - Evidence: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, plus 1 more
+- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 5 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md`, `odylith/registry/source/components/odylith/CURRENT_SPEC.md`, plus 1 more
+- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
+- **2026-03-05 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/compass/compass.html`, `odylith/index.html`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_tooling_dashboard.py`
+- **2026-03-05 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/compass/compass.html`, `odylith/index.html`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_tooling_dashboard.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

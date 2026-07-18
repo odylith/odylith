@@ -25,6 +25,23 @@ def _module():
     return module
 
 
+def _receipt_payload(*, transaction_hash: str, product_facts_hash: str, write_set_hash: str) -> dict[str, object]:
+    return {
+        "product_create_transaction": {
+            "transaction_hash": transaction_hash,
+            "product_facts_sha256": product_facts_hash,
+        },
+        "commit_manifest": {
+            "product_create_transaction": {"product_facts_sha256": product_facts_hash},
+            "write_transaction": {
+                "product_create_transaction_hash": transaction_hash,
+                "product_facts_sha256": product_facts_hash,
+                "repository_write_set_hash": write_set_hash,
+            },
+        },
+    }
+
+
 def test_faulted_create_uses_the_installed_runtime_without_source_path(tmp_path: Path, monkeypatch) -> None:
     module = _module()
     runtime_python = tmp_path / ".odylith/runtime/current/bin/python"
@@ -127,27 +144,19 @@ def test_runtime_identity_rejects_a_maintainer_source_import(tmp_path: Path, mon
 
 def test_receipt_identity_rejects_a_stale_or_unbound_success_payload() -> None:
     module = _module()
-    payload = {
-        "product_create_transaction": {
-            "transaction_hash": "a" * 64,
-            "product_facts_sha256": "c" * 64,
-        },
-        "commit_manifest": {
-            "product_create_transaction": {"product_facts_sha256": "c" * 64},
-            "write_transaction": {
-                "product_create_transaction_hash": "a" * 64,
-                "product_facts_sha256": "c" * 64,
-                "repository_write_set_hash": "b" * 64,
-            }
-        },
-    }
+    payload = _receipt_payload(
+        transaction_hash="a" * 64,
+        product_facts_hash="c" * 64,
+        write_set_hash="b" * 64,
+    )
 
-    module._require_receipt_identity(  # noqa: SLF001
+    observed = module._require_receipt_identity(  # noqa: SLF001
         payload,
         transaction_hash="a" * 64,
         product_facts_hash="c" * 64,
         write_set_hash="b" * 64,
     )
+    assert observed == "c" * 64
     payload["product_create_transaction"]["product_facts_sha256"] = "d" * 64
     try:
         module._require_receipt_identity(  # noqa: SLF001
@@ -186,6 +195,40 @@ def test_receipt_identity_rejects_a_stale_or_unbound_success_payload() -> None:
         assert "sealed Product Intent facts hash" in str(exc)
     else:
         raise AssertionError("write transaction Product Intent facts mismatch should fail the installed proof")
+
+
+def test_journal_receipt_identity_requires_a_bound_durable_receipt() -> None:
+    module = _module()
+    journal = {
+        "transaction_hash": "a" * 64,
+        "repository_write_set_hash": "b" * 64,
+        "commit_result": _receipt_payload(
+            transaction_hash="a" * 64,
+            product_facts_hash="c" * 64,
+            write_set_hash="b" * 64,
+        ),
+    }
+
+    observed = module._require_journal_receipt_identity(  # noqa: SLF001
+        journal,
+        transaction_hash="a" * 64,
+        product_facts_hash="c" * 64,
+        write_set_hash="b" * 64,
+    )
+
+    assert observed == "c" * 64
+    journal.pop("commit_result")
+    try:
+        module._require_journal_receipt_identity(  # noqa: SLF001
+            journal,
+            transaction_hash="a" * 64,
+            product_facts_hash="c" * 64,
+            write_set_hash="b" * 64,
+        )
+    except RuntimeError as exc:
+        assert "did not retain its sealed commit receipt" in str(exc)
+    else:
+        raise AssertionError("journal receipt identity should fail without the durable commit receipt")
 
 
 def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp_path: Path, monkeypatch) -> None:
@@ -335,6 +378,16 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         installed_runtime_module_path="/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         installed_runtime_version="0.1.15",
         product_facts_sha256="c" * 64,
+        product_facts_hashes_by_phase={
+            "sigkill": "c" * 64,
+            "operator_conflict": "c" * 64,
+            "fsync": "c" * 64,
+        },
+        product_facts_hash_sources_by_phase={
+            "sigkill": "success_receipt",
+            "operator_conflict": "applying_journal_commit_receipt",
+            "fsync": "retry_success_receipt",
+        },
         recovery_case=recovery_case,
     )
 
@@ -366,6 +419,16 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         "installed_runtime_module_path": "/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         "installed_runtime_version": "0.1.15",
         "product_facts_sha256": "c" * 64,
+        "product_facts_hashes_by_phase": {
+            "sigkill": "c" * 64,
+            "operator_conflict": "c" * 64,
+            "fsync": "c" * 64,
+        },
+        "product_facts_hash_sources_by_phase": {
+            "sigkill": "success_receipt",
+            "operator_conflict": "applying_journal_commit_receipt",
+            "fsync": "retry_success_receipt",
+        },
         "recovery_case": recovery_case,
     }
 
@@ -441,6 +504,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
                 "installed_runtime_module_path": "/tmp/managed/odylith/__init__.py",
                 "installed_runtime_version": "0.1.15",
                 "product_facts_sha256": "c" * 64,
+                "product_facts_hash_source": "success_receipt",
         }
 
     def conflict_phase(**kwargs):  # noqa: ANN001
@@ -453,6 +517,8 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
             "operator_mutation_preserved": True,
             "operator_conflict_snapshot_retained": True,
             "operator_conflict_recovery_path_bound": True,
+            "product_facts_sha256": "c" * 64,
+            "product_facts_hash_source": "applying_journal_commit_receipt",
         }
 
     def fsync_phase(**kwargs):  # noqa: ANN001
@@ -465,6 +531,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
                 "fsync_journal_state_after_retry": "committed",
                 "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
                 "product_facts_sha256": "c" * 64,
+                "product_facts_hash_source": "retry_success_receipt",
             }
 
     monkeypatch.setattr(module, "_run_sigkill_recovery_phase", sigkill_phase)
@@ -480,6 +547,16 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
 
     assert proof.passed
     assert proof.product_facts_sha256 == "c" * 64
+    assert proof.product_facts_hashes_by_phase == {
+        "sigkill": "c" * 64,
+        "operator_conflict": "c" * 64,
+        "fsync": "c" * 64,
+    }
+    assert proof.product_facts_hash_sources_by_phase == {
+        "sigkill": "success_receipt",
+        "operator_conflict": "applying_journal_commit_receipt",
+        "fsync": "retry_success_receipt",
+    }
     assert captured_cases == [case, case, case]
 
     def mismatched_fsync_phase(**kwargs):  # noqa: ANN001
@@ -488,6 +565,24 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
         return facts
 
     monkeypatch.setattr(module, "_run_fsync_rollback_phase", mismatched_fsync_phase)
+
+    mismatch = module.run_installed_commit_recovery_proof(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        recovery_case=case,
+    )
+
+    assert not mismatch.passed
+    assert "installed recovery phases did not retain the same sealed Product Intent facts hash" in mismatch.issues
+
+    def mismatched_conflict_phase(**kwargs):  # noqa: ANN001
+        facts = conflict_phase(**kwargs)
+        facts["product_facts_sha256"] = "d" * 64
+        return facts
+
+    monkeypatch.setattr(module, "_run_fsync_rollback_phase", fsync_phase)
+    monkeypatch.setattr(module, "_run_operator_conflict_recovery_phase", mismatched_conflict_phase)
 
     mismatch = module.run_installed_commit_recovery_proof(
         dist_dir=dist_dir,
@@ -544,7 +639,20 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
             stderr="",
         ),
     )
-    monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: {"state": "applying"})
+    monkeypatch.setattr(
+        module,
+        "_journal_state",
+        lambda **_kwargs: {
+            "state": "applying",
+        },
+    )
+    captured_receipt: dict[str, object] = {}
+
+    def observed_journal_receipt(_journal, **kwargs):  # noqa: ANN001
+        captured_receipt.update(kwargs)
+        return "d" * 64
+
+    monkeypatch.setattr(module, "_require_journal_receipt_identity", observed_journal_receipt)
 
     facts = module._run_operator_conflict_recovery_phase(  # noqa: SLF001
         run_root=tmp_path,
@@ -565,8 +673,120 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
         "operator_mutation_preserved": True,
         "operator_conflict_snapshot_retained": True,
         "operator_conflict_recovery_path_bound": True,
+        "product_facts_sha256": "d" * 64,
+        "product_facts_hash_source": "applying_journal_commit_receipt",
     }
+    assert captured_receipt["product_facts_hash"] == "c" * 64
     assert partial_write.read_bytes() == b"operator mutation retained by installed recovery proof\n"
+
+
+def test_sigkill_phase_reports_the_observed_success_receipt_hash(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    repo_root = tmp_path / "sigkill"
+    compiled = module._CompiledRecoveryTransaction(  # noqa: SLF001
+        transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
+        transaction_hash="a" * 64,
+        product_facts_hash="c" * 64,
+        write_set_hash="b" * 64,
+        intent_authority={},
+    )
+    monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
+    monkeypatch.setattr(module, "_installed_runtime_identity", lambda **_kwargs: {})
+    monkeypatch.setattr(module, "_compile_transaction", lambda **_kwargs: compiled)
+    fingerprints = iter(({"before": "1"}, {"partial": "1"}, {"after": "1"}, {"after": "1"}))
+    monkeypatch.setattr(module, "_governed_fingerprint", lambda _root: next(fingerprints))
+    monkeypatch.setattr(
+        module,
+        "_run_faulted_create",
+        lambda **_kwargs: SimpleNamespace(returncode=-9, stdout="", stderr=""),
+    )
+    journal_states = iter(({"state": "applying"}, {"state": "committed"}))
+    monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: next(journal_states))
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **_kwargs: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+    )
+    observed_receipts: list[dict[str, object]] = []
+
+    def observed_receipt(_payload, **kwargs):  # noqa: ANN001
+        observed_receipts.append(kwargs)
+        return "d" * 64
+
+    monkeypatch.setattr(module, "_require_receipt_identity", observed_receipt)
+
+    facts = module._run_sigkill_recovery_phase(  # noqa: SLF001
+        run_root=tmp_path,
+        install_script=tmp_path / "install.sh",
+        env={"PATH": "/usr/bin"},
+        version="0.1.15",
+        case=module.GreenfieldMatrixCase(
+            name="bound recovery case",
+            prompt="Create the exact recovery-bound product.",
+            required_terms=("recovery",),
+        ),
+    )
+
+    assert facts["product_facts_sha256"] == "d" * 64
+    assert facts["product_facts_hash_source"] == "success_receipt"
+    assert [call["product_facts_hash"] for call in observed_receipts] == ["c" * 64, "c" * 64]
+
+
+def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    repo_root = tmp_path / "fsync-rollback"
+    compiled = module._CompiledRecoveryTransaction(  # noqa: SLF001
+        transaction_file=".odylith/runtime/greenfield/product-create-transaction.v1.json",
+        transaction_hash="a" * 64,
+        product_facts_hash="c" * 64,
+        write_set_hash="b" * 64,
+        intent_authority={},
+    )
+    monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
+    monkeypatch.setattr(module, "_compile_transaction", lambda **_kwargs: compiled)
+    fingerprints = iter(({"before": "1"}, {"before": "1"}, {"after": "1"}, {"after": "1"}))
+    monkeypatch.setattr(module, "_governed_fingerprint", lambda _root: next(fingerprints))
+    monkeypatch.setattr(
+        module,
+        "_run_faulted_create",
+        lambda **_kwargs: SimpleNamespace(
+            returncode=2,
+            stdout=(
+                '{"mode":"error","commit_failure":{"failure_kind":"post_confirm_commit_environment_or_io_failure",'
+                '"rollback_status":"rolled_back"}}'
+            ),
+            stderr="",
+        ),
+    )
+    journal_states = iter(({"state": "rolled_back"}, {"state": "committed"}))
+    monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: next(journal_states))
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **_kwargs: SimpleNamespace(returncode=0, stdout="{}", stderr=""),
+    )
+    observed_receipts: list[dict[str, object]] = []
+
+    def observed_receipt(_payload, **kwargs):  # noqa: ANN001
+        observed_receipts.append(kwargs)
+        return "d" * 64
+
+    monkeypatch.setattr(module, "_require_receipt_identity", observed_receipt)
+
+    facts = module._run_fsync_rollback_phase(  # noqa: SLF001
+        run_root=tmp_path,
+        install_script=tmp_path / "install.sh",
+        env={"PATH": "/usr/bin"},
+        case=module.GreenfieldMatrixCase(
+            name="bound recovery case",
+            prompt="Create the exact recovery-bound product.",
+            required_terms=("recovery",),
+        ),
+    )
+
+    assert facts["product_facts_sha256"] == "d" * 64
+    assert facts["product_facts_hash_source"] == "retry_success_receipt"
+    assert [call["product_facts_hash"] for call in observed_receipts] == ["c" * 64, "c" * 64]
 
 
 def test_interrupted_write_selector_ignores_unchanged_governed_files(tmp_path: Path) -> None:

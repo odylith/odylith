@@ -26,7 +26,7 @@
   host model calls", must admit allowed authored governance work without
   CLI-writer evidence, and must still defer/block the corresponding unsafe
   moves when they are actually requested.
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 Last updated (UTC): 2026-04-18
 
@@ -778,12 +778,12 @@ relevant Context Engine packet tests and host-runtime contract tests.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-099
-  - Evidence: 2 tracked artifact references retained
-- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: `src/odylith/runtime/context_engine/execution_engine_handshake.py`, `src/odylith/runtime/execution_engine/runtime_lane_policy.py`
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-099, B-100
-  - Evidence: 4 tracked artifact references retained
+  - Evidence: `odylith/radar/source/programs/B-099.execution-waves.v1.json`, `odylith/registry/source/components/execution-engine/CURRENT_SPEC.md`, `odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md`
 <!-- registry-requirements:end -->
 
 ## Feature History

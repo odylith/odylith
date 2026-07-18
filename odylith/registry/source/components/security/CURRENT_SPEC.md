@@ -1,5 +1,5 @@
 # Security
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-01
@@ -112,17 +112,17 @@ and process-lifetime discipline across consumer, pinned-dogfood, and detached
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 5 tracked artifact references retained
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `src/odylith/cli.py`, `src/odylith/install/manager.py`, `src/odylith/install/runtime.py`, plus 1 more
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 4 tracked artifact references retained
-- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-030
-  - Evidence: 4 tracked artifact references retained
-- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
+  - Evidence: `src/odylith/install/lock_hygiene.py`, `src/odylith/install/manager.py`, `src/odylith/install/release_assets.py`, `src/odylith/install/upgrade_reporting.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `src/odylith/cli.py`, `src/odylith/install/manager.py`, `src/odylith/install/release_assets.py`, `src/odylith/runtime/governance/workstream_inference.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

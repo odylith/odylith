@@ -6,7 +6,7 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-07-12
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-17
@@ -296,21 +296,21 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 tracked artifact references retained.
-  - Evidence: 7 tracked artifact references retained
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 5 tracked artifact references retained.
-  - Evidence: 5 tracked artifact references retained
-- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/AGENTS.md`, `odylith/README.md`, `src/odylith/bundle/assets/odylith/README.md`, plus 3 more
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 5 verifiable artifact references.
+  - Evidence: `odylith/skills/odylith-greenfield-governance/SKILL.md`, `src/odylith/install/agents.py`, `src/odylith/runtime/domain_intelligence/greenfield_compiled_readback.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`, plus 1 more
+- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 2 tracked artifact references retained
-- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md`, `src/odylith/install/agents.py`
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 7 tracked artifact references retained
-- **2026-06-25 · Decision:** Decision evidence linked this component to governed work with 1 tracked artifact reference retained.
-  - Evidence: 1 tracked artifact reference retained
-- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+  - Evidence: `bin/greenfield-post-confirm-matrix`, `odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md`, `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, plus 3 more
+- **2026-06-25 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/maintainer/AGENTS.md`
+- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 5 tracked artifact references retained
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `src/odylith/cli.py`, `src/odylith/install/manager.py`, `src/odylith/install/runtime.py`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

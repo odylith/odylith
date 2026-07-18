@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 304,
+    "explicit_event_count": 305,
     "mapped_workstream_evidence_count": 207,
     "recent_path_match_count": 0,
     "spec_history_event_count": 62,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 304
+    "timeline_event_count": 305
   },
   "name": "Release",
   "path_prefixes": [
@@ -48,8 +48,30 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py"
+      ],
+      "confidence": "high",
+      "event_index": 1111,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-07-18T08:42:07-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py"
       ],
       "confidence": "high",
       "event_index": 1110,
@@ -63,15 +85,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T08:01:36-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-18-full-greenfield-matrix-stalls-in-final-installed-recovery-lane.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1109,
@@ -85,15 +107,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T07:43:18-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_matrix_corpus_provenance.py"
       ],
       "confidence": "high",
       "event_index": 1108,
@@ -105,15 +127,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T07:01:47-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py"
       ],
       "confidence": "high",
       "event_index": 1107,
@@ -127,15 +149,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T06:53:20-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-18-greenfield-release-corpus-conflates-artifact-identity-with-case-identity.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1106,
@@ -149,7 +171,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Decision evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T06:02:21-07:00",
       "workstreams": []
     },
@@ -175,9 +197,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "tests/fixtures/greenfield-release-corpus/audit-evidence/greenfield-release-audit.v4.json",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications/source-verifications.v1.json",
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-review-results.v1.json"
       ],
       "confidence": "high",
       "event_index": 1104,
@@ -191,16 +213,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-18T04:39:02-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/fixtures/greenfield-release-corpus/audit-source-verifications/source-verifications.v1.json",
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-audit-requests.v1.json"
       ],
       "confidence": "high",
       "event_index": 1103,
@@ -214,15 +236,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-18T04:32:39-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/fixtures/greenfield-release-corpus/source-manifest.v2.json"
       ],
       "confidence": "high",
       "event_index": 1102,
@@ -236,15 +258,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T04:20:51-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_matrix_corpus_provenance.py"
       ],
       "confidence": "high",
       "event_index": 1101,
@@ -256,15 +278,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Decision evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T03:41:53-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_release_corpus.py"
       ],
       "confidence": "high",
       "event_index": 1100,
@@ -276,14 +298,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T03:35:13-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1099,
@@ -297,15 +319,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-18T03:07:36-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-18-greenfield-case-generator-discarded-release-provenance.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1098,
@@ -317,15 +339,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T02:36:54-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-18-natural-rescue-proof-roots-escaped-aggregate-cleanup-detection.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1097,
@@ -339,14 +361,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-18T02:31:54-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1095,
@@ -360,14 +382,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-17T22:59:13-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1094,
@@ -381,15 +403,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-17T22:27:36-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_campaign.py"
       ],
       "confidence": "high",
       "event_index": 1093,
@@ -403,14 +425,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-17T22:21:48-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1092,
@@ -424,14 +446,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-17T22:15:51-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1091,
@@ -445,7 +467,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-17T21:53:09-07:00",
       "workstreams": []
     },
@@ -509,7 +531,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1086,
@@ -523,14 +545,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Decision evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-17T16:26:48-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1079,
@@ -544,15 +566,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-17T09:23:27-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_matrix_failure_response.py"
       ],
       "confidence": "high",
       "event_index": 1077,
@@ -564,15 +586,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-17T08:47:55-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1076,
@@ -586,17 +608,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-17T08:31:41-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-17-greenfield-compiler-identity-omits-product-intent-authority-verifier.md",
+        "odylith/casebook/bugs/2026-07-17-two-complete-greenfield-prompts-fail-before-compiling-a-confirmable-transaction.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py"
       ],
       "confidence": "high",
       "event_index": 1075,
@@ -622,7 +644,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-17T06:45:02-07:00",
       "workstreams": [
         "B-142"
@@ -631,8 +653,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_control_steps.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py"
       ],
       "confidence": "high",
       "event_index": 1070,
@@ -646,7 +668,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-16T14:13:37-07:00",
       "workstreams": []
     },
@@ -687,9 +709,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-07-15-greenfield-materiality-clarification-is-surfaced-as-a-fatal-proposal-failure.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
       ],
       "confidence": "high",
       "event_index": 1058,
@@ -705,15 +727,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-15T14:26:08-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-15-release-proof-accepted-synthetic-greenfield-corpus-evidence.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 1054,
@@ -739,7 +761,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-14T23:55:52-07:00",
       "workstreams": [
         "B-142"
@@ -748,8 +770,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-10-greenfield-staged-atlas-refresh-resolves-links-against-consumer-target-root.md",
+        "odylith/casebook/bugs/2026-07-10-installed-matrix-does-not-prove-commit-only-transaction-custody.md"
       ],
       "confidence": "high",
       "event_index": 980,
@@ -775,7 +797,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-10T09:02:58-07:00",
       "workstreams": [
         "B-142"
@@ -784,8 +806,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-10-greenfield-performance-matrix-exposes-source-custody-and-generated-label-regress.md",
+        "odylith/casebook/bugs/2026-07-10-greenfield-rerun-loses-accepted-project-memory-reuse-signal.md"
       ],
       "confidence": "high",
       "event_index": 979,
@@ -811,7 +833,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-10T08:16:59-07:00",
       "workstreams": [
         "B-142"
@@ -820,7 +842,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "tests/unit/runtime/test_greenfield_prompt_requirement_boundary.py"
       ],
       "confidence": "high",
       "event_index": 977,
@@ -834,16 +856,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Decision evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-09T22:44:21-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_create_baseline.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
+        "tests/unit/runtime/test_greenfield_precompiled_baseline.py"
       ],
       "confidence": "high",
       "event_index": 962,
@@ -859,19 +881,19 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-08T14:42:46-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/runtime/test_greenfield_cli_paths.py",
+        "tests/unit/runtime/test_greenfield_create_transaction.py"
       ],
       "confidence": "high",
       "event_index": 957,
@@ -897,7 +919,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
       "ts_iso": "2026-07-08T04:12:48-07:00",
       "workstreams": [
         "B-142"
@@ -1005,9 +1027,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-07-06-confirmed-greenfield-setup-prose-contaminated-post-confirm-projections.md",
+        "tests/unit/runtime/test_greenfield_cli_paths.py",
+        "tests/unit/runtime/test_greenfield_live_simulation_regressions.py"
       ],
       "confidence": "high",
       "event_index": 929,
@@ -1033,7 +1055,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-06T16:14:17-07:00",
       "workstreams": [
         "B-142"
@@ -1042,10 +1064,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 927,
@@ -1071,7 +1093,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-05T13:41:23-07:00",
       "workstreams": [
         "B-142"
@@ -1080,9 +1102,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:e9dcc0473b24f3b0540a65c16f23a8a1f0dae6cd37454e7749bfb6454c8d4f3f",
+        "sha256:fddb729e12af19d9e2b3e3d9851351cc281e1e74d826f8f56c50dbf9014988be",
+        "sha256:38208313ae240611ced9047bfe57a273015e0d8d202c0ebd0c0b0575f69da39f"
       ],
       "confidence": "high",
       "event_index": 926,
@@ -1108,7 +1130,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-05T12:58:54-07:00",
       "workstreams": [
         "B-142"
@@ -1117,8 +1139,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:55e9336cad35edfcac277d14992d301ce9c1cb3db4aa04777f24507b269195b7",
+        "sha256:84cefbf1743e83580d793ba8997524fc39d77cbe8538f181aa20b40e0769dd88"
       ],
       "confidence": "high",
       "event_index": 925,
@@ -1144,7 +1166,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T12:00:01-07:00",
       "workstreams": [
         "B-142"
@@ -1153,8 +1175,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:e9dcc0473b24f3b0540a65c16f23a8a1f0dae6cd37454e7749bfb6454c8d4f3f",
+        "sha256:55e9336cad35edfcac277d14992d301ce9c1cb3db4aa04777f24507b269195b7"
       ],
       "confidence": "high",
       "event_index": 924,
@@ -1180,7 +1202,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T11:46:33-07:00",
       "workstreams": [
         "B-142"
@@ -1189,8 +1211,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:adad5bb43f457871db6954a12010bdb030a51dcea23aaceab70514cb074edd97",
+        "sha256:19a48497ec64a6c90ccf7e58aa2d56008082bb0ab4146f35ed496766190fd843"
       ],
       "confidence": "high",
       "event_index": 922,
@@ -1216,7 +1238,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T10:37:05-07:00",
       "workstreams": [
         "B-142"
@@ -1225,8 +1247,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:3f0c303d394f23fffeb9cc822b7f35b86e8d9b4da644a74f0e6f3bde4811eabe",
+        "sha256:b29b34e355b5aafcf0139830d1514b7724fe6fc959fd5a59b1bbc27e893bc8ff"
       ],
       "confidence": "high",
       "event_index": 921,
@@ -1252,7 +1274,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T10:11:05-07:00",
       "workstreams": [
         "B-142"
@@ -1261,8 +1283,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_projection.py"
       ],
       "confidence": "high",
       "event_index": 920,
@@ -1288,7 +1310,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T09:57:25-07:00",
       "workstreams": [
         "B-142"
@@ -1348,8 +1370,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:e3ce2e313834e9dc50b5b6d0fec75cd5d04b167718f5f4d878bd3d2aa183d12a",
+        "odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md"
       ],
       "confidence": "high",
       "event_index": 913,
@@ -1375,7 +1397,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T05:09:20-07:00",
       "workstreams": [
         "B-142"
@@ -1384,8 +1406,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-05-07-release-smoke-omitted-greenfield-create-journey.md",
+        "src/odylith/install/agents.py"
       ],
       "confidence": "high",
       "event_index": 912,
@@ -1413,7 +1435,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T04:41:58-07:00",
       "workstreams": [
         "B-142"
@@ -1422,9 +1444,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:12904fe8e0ab49ba6435246907c84ba955f3eacafc4aede300996f28f830f6d3",
+        "sha256:7c07c78a65cd2d17aecf789f4b4aaddeaa66ae455f5f832a894d203faeb23997",
+        "sha256:f773dffbb679c96288b14401b0f4b6e6a4e455bb7f2fe4f40b8d93f002df69a9"
       ],
       "confidence": "high",
       "event_index": 911,
@@ -1450,7 +1472,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-05T04:22:53-07:00",
       "workstreams": [
         "B-142"
@@ -1459,8 +1481,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:5c0d53b65d335d02ccaaabd6c06acf525d3a5a6390fb1f8f342aef450c181ac3",
+        "sha256:2e0c14170ede4cf4d43f41bd75a6f9778c73a24b6948531411b8dca7010017db"
       ],
       "confidence": "high",
       "event_index": 910,
@@ -1486,7 +1508,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-05T03:55:11-07:00",
       "workstreams": [
         "B-142"
@@ -1561,10 +1583,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "sha256:6b4fb58cf0cd0b0d7a6b8eee25a97aadbc4866efaa47717b372954615d6ecd95",
+        "sha256:fe41fab1894d82cfa1c98776821002b3c2cf1485e67fe7de76ecdf1977910bf2",
+        "sha256:338934c04970e4123d5fee6b472c9a4ddc43fc8048be4f569027c994430c1b43"
       ],
       "confidence": "high",
       "event_index": 904,
@@ -1590,7 +1612,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-05T00:12:40-07:00",
       "workstreams": [
         "B-142"
@@ -1599,9 +1621,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:68d6012e139d5ced2ab6b5b61792c637ed2799a294e9cca843a2ac82b2cced0f",
+        "sha256:d28da371fe0d344b58862c2216b88dfedcd2cd082b966fde87cd8c4f633bac8a",
+        "sha256:442e21c0feda36d61bb6b722c9189876c9d7dc7da5c2b6895c9918286869e801"
       ],
       "confidence": "high",
       "event_index": 903,
@@ -1627,7 +1649,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-04T23:53:06-07:00",
       "workstreams": [
         "B-142"
@@ -1636,12 +1658,12 @@
     {
       "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_roles.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix_proof_scope.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py",
+        "tests/unit/runtime/test_greenfield_prompt_requirement_boundary.py"
       ],
       "confidence": "high",
       "event_index": 901,
@@ -1667,7 +1689,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
       "ts_iso": "2026-07-04T22:49:29-07:00",
       "workstreams": [
         "B-142"
@@ -1676,7 +1698,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:600fce82c8ccccb488c5a859a655b0301afa06123164d757b1173a4362c6975c"
       ],
       "confidence": "high",
       "event_index": 899,
@@ -1690,7 +1712,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-04T21:49:04-07:00",
       "workstreams": []
     },
@@ -1739,8 +1761,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "sha256:179e323e1523caf92592af637aaab0023f7b0eeabaeb9b574e65e1a466c17a6c"
       ],
       "confidence": "high",
       "event_index": 888,
@@ -1754,15 +1776,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-04T19:16:36-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "tests/unit/runtime/test_greenfield_prompt_requirement_boundary.py"
       ],
       "confidence": "high",
       "event_index": 887,
@@ -1780,7 +1802,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-04T19:07:37-07:00",
       "workstreams": []
     },
@@ -1872,10 +1894,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "sha256:b1cf9c70a7edee5b0a028f39a30afdc735f81e549ce806fbc5fead8e32ad976a",
+        "sha256:2469e0d8bc8e2453eb1e8f6eb37b1c2a3edfcd50be9a125c8f3bce33816dfd88"
       ],
       "confidence": "high",
       "event_index": 883,
@@ -1889,16 +1911,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
       "ts_iso": "2026-07-04T14:30:19-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "sha256:da895bb16cff2caf0bced23007c1796c41a49710c0fcaa770a34a0d241690ed8"
       ],
       "confidence": "high",
       "event_index": 882,
@@ -1912,7 +1934,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-04T14:14:51-07:00",
       "workstreams": []
     },
@@ -2021,9 +2043,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 870,
@@ -2049,7 +2071,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-04T05:25:40-07:00",
       "workstreams": [
         "B-142"
@@ -2058,8 +2080,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 869,
@@ -2085,7 +2107,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-04T04:30:52-07:00",
       "workstreams": [
         "B-142"
@@ -2094,8 +2116,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 868,
@@ -2121,7 +2143,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-04T03:18:18-07:00",
       "workstreams": [
         "B-142"
@@ -2130,8 +2152,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 867,
@@ -2159,7 +2181,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-04T02:42:55-07:00",
       "workstreams": [
         "B-142"
@@ -2168,9 +2190,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 866,
@@ -2196,7 +2218,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-04T02:01:35-07:00",
       "workstreams": [
         "B-142"
@@ -2205,8 +2227,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:874d3db77cd35ab639697e95638389aa5054538c2967f2e9206f06d4cec25d72",
+        "sha256:f6947f67990e556518609b0f1c0b102fa747d493f0d85493583b6113867c8ac6"
       ],
       "confidence": "high",
       "event_index": 865,
@@ -2232,7 +2254,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T23:14:07-07:00",
       "workstreams": [
         "B-142"
@@ -2241,9 +2263,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_noun_compounds.py"
       ],
       "confidence": "high",
       "event_index": 864,
@@ -2269,7 +2291,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T22:49:27-07:00",
       "workstreams": [
         "B-142"
@@ -2278,10 +2300,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "bin/greenfield-post-confirm-matrix",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 863,
@@ -2309,7 +2331,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-03T22:12:29-07:00",
       "workstreams": [
         "B-142"
@@ -2318,9 +2340,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 862,
@@ -2348,7 +2370,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T22:02:37-07:00",
       "workstreams": [
         "B-142"
@@ -2544,8 +2566,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "bin/greenfield-matrix-campaign",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 850,
@@ -2571,7 +2593,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T15:05:50-07:00",
       "workstreams": [
         "B-142"
@@ -2580,7 +2602,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 849,
@@ -2606,7 +2628,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-07-03T14:23:17-07:00",
       "workstreams": [
         "B-142"
@@ -2681,10 +2703,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
+        "tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py"
       ],
       "confidence": "high",
       "event_index": 840,
@@ -2710,7 +2732,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-03T05:03:19-07:00",
       "workstreams": [
         "B-142"
@@ -2719,8 +2741,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 839,
@@ -2734,14 +2756,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T04:52:41-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/domain-intelligence/FORENSICS.v1.json"
       ],
       "confidence": "high",
       "event_index": 838,
@@ -2755,16 +2777,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-07-03T03:32:52-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 837,
@@ -2780,15 +2802,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T03:31:22-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 836,
@@ -2802,16 +2824,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T03:26:55-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:544e3b112b35cb1884e1097b30ffa9238150c0dd4afa9094472381eefd1503d9",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 835,
@@ -2837,7 +2859,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T02:47:33-07:00",
       "workstreams": [
         "B-142"
@@ -2846,9 +2868,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 834,
@@ -2874,7 +2896,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T02:28:43-07:00",
       "workstreams": [
         "B-142"
@@ -2883,9 +2905,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:16d403f4fe44a499075bbcb5d93a3919ba9ffc506e565643afc7334863917cdf",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 833,
@@ -2911,7 +2933,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T02:23:07-07:00",
       "workstreams": [
         "B-142"
@@ -2920,8 +2942,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:701c05f6bf5840698cd86095f330454a3e7cc1030ea21ca0a6bc6fd415f8e433",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md"
       ],
       "confidence": "high",
       "event_index": 830,
@@ -2947,7 +2969,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T01:14:58-07:00",
       "workstreams": [
         "B-142"
@@ -2956,8 +2978,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:cf6986c9860f7f71396c26e7f3170a878e8a6934792c545bd6fb028d8cc3b788",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md"
       ],
       "confidence": "high",
       "event_index": 828,
@@ -2983,7 +3005,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T00:27:04-07:00",
       "workstreams": [
         "B-142"
@@ -2992,9 +3014,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "confidence": "high",
       "event_index": 827,
@@ -3020,7 +3042,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-03T00:08:11-07:00",
       "workstreams": [
         "B-142"
@@ -3029,8 +3051,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:ed2a584987b5501330e24f644f5dbabc8ee371ebc39e0f2135da4f64f354143f",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md"
       ],
       "confidence": "high",
       "event_index": 826,
@@ -3056,7 +3078,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-03T00:00:39-07:00",
       "workstreams": [
         "B-142"
@@ -3065,10 +3087,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "bin/greenfield-post-confirm-matrix",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "confidence": "high",
       "event_index": 825,
@@ -3094,7 +3116,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-02T23:41:23-07:00",
       "workstreams": [
         "B-142"
@@ -3103,10 +3125,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "confidence": "high",
       "event_index": 824,
@@ -3132,7 +3154,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-02T22:55:27-07:00",
       "workstreams": [
         "B-142"
@@ -3141,9 +3163,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py"
       ],
       "confidence": "high",
       "event_index": 821,
@@ -3169,7 +3191,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-02T18:49:53-07:00",
       "workstreams": [
         "B-142"
@@ -3244,9 +3266,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "bin/greenfield-post-confirm-matrix",
+        "bin/local-release-assets",
+        "src/odylith/runtime/governance/sync_component_spec_requirements.py"
       ],
       "confidence": "high",
       "event_index": 818,
@@ -3260,16 +3282,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-02T15:14:35-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:870c764e8de2a132ed1f01a5906e435b9413528bdfedcb930b6f615423268ffc",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/bootstrap_assets.py"
       ],
       "confidence": "high",
       "event_index": 817,
@@ -3285,7 +3307,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-07-02T14:59:30-07:00",
       "workstreams": []
     },
@@ -3309,10 +3331,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py"
       ],
       "confidence": "high",
       "event_index": 805,
@@ -3340,7 +3362,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-01T20:45:36-07:00",
       "workstreams": [
         "B-142"
@@ -3448,8 +3470,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_release_bootstrap.py"
       ],
       "confidence": "high",
       "event_index": 798,
@@ -3475,7 +3497,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-01T18:21:57-07:00",
       "workstreams": [
         "B-142"
@@ -3484,8 +3506,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/registry/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 797,
@@ -3511,7 +3533,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-01T18:17:41-07:00",
       "workstreams": [
         "B-142"
@@ -3520,10 +3542,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 796,
@@ -3549,7 +3571,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-01T18:12:43-07:00",
       "workstreams": [
         "B-142"
@@ -3591,8 +3613,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:6afb5a6edb9ee2b449f6ac943a04cfc670faab63edc2f0a5755462e213701558",
+        "odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md"
       ],
       "confidence": "high",
       "event_index": 781,
@@ -3618,7 +3640,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-01T11:14:33-07:00",
       "workstreams": [
         "B-142"
@@ -3660,9 +3682,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py"
       ],
       "confidence": "high",
       "event_index": 778,
@@ -3690,7 +3712,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-07-01T02:44:54-07:00",
       "workstreams": [
         "B-142"
@@ -3699,10 +3721,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_patchset.py"
       ],
       "confidence": "high",
       "event_index": 777,
@@ -3730,7 +3752,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-07-01T02:41:24-07:00",
       "workstreams": [
         "B-142"
@@ -3739,8 +3761,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 775,
@@ -3766,7 +3788,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-01T01:40:39-07:00",
       "workstreams": [
         "B-142"
@@ -3775,7 +3797,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:b5219432d213d89f8d3d3069aa0e2b70e333d64ba8bf35aa9a02f96f8d8d58f2"
       ],
       "confidence": "high",
       "event_index": 774,
@@ -3801,7 +3823,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-07-01T01:29:36-07:00",
       "workstreams": [
         "B-142"
@@ -3810,8 +3832,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:9e1ca107d3288fce675c260b99d321002f3b5f232bc120bb64f96ed7fad03d2b",
+        "sha256:b4d312676d1e68a43eb733fc2356ab43fa4029014dac1cc7d1060c17bbf22bb0"
       ],
       "confidence": "high",
       "event_index": 772,
@@ -3837,7 +3859,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-07-01T00:01:33-07:00",
       "workstreams": [
         "B-142"
@@ -3879,7 +3901,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:f0ac363807b3938b03be48f169adcb1fcb0b281046a52e19cd76b67c72edf319"
       ],
       "confidence": "high",
       "event_index": 761,
@@ -3907,7 +3929,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-30T18:57:21-07:00",
       "workstreams": [
         "B-142"
@@ -3916,7 +3938,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:f0ac363807b3938b03be48f169adcb1fcb0b281046a52e19cd76b67c72edf319"
       ],
       "confidence": "high",
       "event_index": 760,
@@ -3932,17 +3954,17 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-06-30T18:56:06-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/runtime/common/safe_ledger_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "confidence": "high",
       "event_index": 759,
@@ -3972,7 +3994,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-30T18:26:39-07:00",
       "workstreams": [
         "B-142"
@@ -4086,9 +4108,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:f42f26c7427aa94a507c65b10bf83ba74fdbfad6585d9e84d432047b25e641dd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 755,
@@ -4104,7 +4126,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-06-30T15:08:08-07:00",
       "workstreams": []
     },
@@ -4130,12 +4152,12 @@
     {
       "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py"
       ],
       "confidence": "high",
       "event_index": 751,
@@ -4165,7 +4187,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
       "ts_iso": "2026-06-30T12:42:28-07:00",
       "workstreams": [
         "B-142"
@@ -4174,8 +4196,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:847fa9fa6e256a3824806e1a0535b44da9317b808ff08400017cf4c02f831a9c",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 750,
@@ -4201,7 +4223,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-30T11:42:59-07:00",
       "workstreams": [
         "B-142"
@@ -4210,8 +4232,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:b5ced99baa60af5dfdf2a777d499660ff632dce1d637627d4012bf5b3e8ec226",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rescue_planner.py"
       ],
       "confidence": "high",
       "event_index": 748,
@@ -4237,7 +4259,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-30T11:09:58-07:00",
       "workstreams": [
         "B-142"
@@ -4246,8 +4268,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_engine.py"
       ],
       "confidence": "high",
       "event_index": 747,
@@ -4273,7 +4295,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-30T10:31:06-07:00",
       "workstreams": [
         "B-142"
@@ -4282,9 +4304,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:5c4d2e0004834f2e99be1bf3b3691091572a722ab872697d9300bb3f7e8fc101",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 746,
@@ -4310,7 +4332,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-30T09:54:30-07:00",
       "workstreams": [
         "B-142"
@@ -4319,9 +4341,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 745,
@@ -4347,7 +4369,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-30T09:18:19-07:00",
       "workstreams": [
         "B-142"
@@ -4356,9 +4378,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 744,
@@ -4384,7 +4406,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-30T08:51:12-07:00",
       "workstreams": [
         "B-142"
@@ -4393,10 +4415,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/sync_component_spec_requirements.py"
       ],
       "confidence": "high",
       "event_index": 743,
@@ -4422,7 +4444,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-30T08:24:42-07:00",
       "workstreams": [
         "B-142"
@@ -4431,8 +4453,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 742,
@@ -4458,7 +4480,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-30T07:39:27-07:00",
       "workstreams": [
         "B-142"
@@ -4467,11 +4489,11 @@
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/atlas_box_explanations.py"
       ],
       "confidence": "high",
       "event_index": 740,
@@ -4499,7 +4521,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-06-30T07:01:42-07:00",
       "workstreams": [
         "B-142"
@@ -4508,7 +4530,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 739,
@@ -4522,7 +4544,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-06-30T05:01:05-07:00",
       "workstreams": []
     },
@@ -4562,7 +4584,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:49788425b80b510a05444815657efdbd17a9e39c004f463dc704c55524b83bfb"
       ],
       "confidence": "high",
       "event_index": 736,
@@ -4588,7 +4610,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-30T02:35:50-07:00",
       "workstreams": [
         "B-142"
@@ -4597,7 +4619,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:49788425b80b510a05444815657efdbd17a9e39c004f463dc704c55524b83bfb"
       ],
       "confidence": "high",
       "event_index": 735,
@@ -4609,7 +4631,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. 1 verifiable artifact reference.",
       "ts_iso": "2026-06-30T02:35:09-07:00",
       "workstreams": []
     },
@@ -4666,7 +4688,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:ade051fea4ee60ba9b68a40c41076dea4f56df7d5a2d6ffdae964ba41323eb19"
       ],
       "confidence": "high",
       "event_index": 731,
@@ -4692,7 +4714,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-29T21:45:14-07:00",
       "workstreams": [
         "B-142"
@@ -4701,7 +4723,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 730,
@@ -4727,7 +4749,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-29T20:56:41-07:00",
       "workstreams": [
         "B-142"
@@ -4736,10 +4758,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 729,
@@ -4765,7 +4787,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-29T20:25:32-07:00",
       "workstreams": [
         "B-142"
@@ -4774,10 +4796,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 728,
@@ -4803,7 +4825,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-29T20:17:44-07:00",
       "workstreams": [
         "B-142"
@@ -4812,12 +4834,12 @@
     {
       "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
       ],
       "confidence": "high",
       "event_index": 727,
@@ -4843,7 +4865,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
       "ts_iso": "2026-06-29T19:47:59-07:00",
       "workstreams": [
         "B-142"
@@ -4852,7 +4874,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:0a41e5ec6ca9c2ad5910f45eadc25f7935a1d441c5bc453fefa5c573684798c8"
       ],
       "confidence": "high",
       "event_index": 726,
@@ -4878,7 +4900,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-29T19:06:39-07:00",
       "workstreams": [
         "B-142"
@@ -4887,8 +4909,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:c0c1787483d7ae2a71a8ca3d270677238e205b14a5ac790a8820de8f6de2ffad",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 721,
@@ -4916,7 +4938,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-29T16:53:57-07:00",
       "workstreams": [
         "B-142"
@@ -4991,7 +5013,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 717,
@@ -5017,7 +5039,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-29T15:20:35-07:00",
       "workstreams": [
         "B-142"
@@ -5026,8 +5048,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 716,
@@ -5053,7 +5075,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-29T15:12:43-07:00",
       "workstreams": [
         "B-142"
@@ -5062,8 +5084,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "confidence": "high",
       "event_index": 713,
@@ -5089,7 +5111,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-29T14:03:06-07:00",
       "workstreams": [
         "B-142"
@@ -5098,8 +5120,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:b5a2abfbb57c3ac7cd9633a448ce26a9baae8693241559a67aa7a61b79e1cdc7",
+        "sha256:bb3338c45cf632c829734b3b9ebfbbd11ffc412cdc5fd8bc9029aff4a796faec"
       ],
       "confidence": "high",
       "event_index": 712,
@@ -5125,7 +5147,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-29T14:00:33-07:00",
       "workstreams": [
         "B-142"
@@ -5134,10 +5156,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "bin/_odylith.sh",
+        "bin/greenfield-post-confirm-matrix",
+        "bin/local-release-assets",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 711,
@@ -5163,7 +5185,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-29T13:22:52-07:00",
       "workstreams": [
         "B-142"
@@ -5172,8 +5194,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "confidence": "high",
       "event_index": 710,
@@ -5199,7 +5221,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-29T13:05:14-07:00",
       "workstreams": [
         "B-142"
@@ -5241,10 +5263,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent.py"
       ],
       "confidence": "high",
       "event_index": 698,
@@ -5270,7 +5292,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-29T06:50:53-07:00",
       "workstreams": [
         "B-142"
@@ -5279,12 +5301,12 @@
     {
       "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py"
       ],
       "confidence": "high",
       "event_index": 697,
@@ -5310,7 +5332,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
       "ts_iso": "2026-06-29T06:31:25-07:00",
       "workstreams": [
         "B-142"
@@ -5422,8 +5444,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:42f0a711804e5c0a964991a2c042dfc1ec80d7df2d7b2e59dbc93384d9db689b",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 689,
@@ -5449,7 +5471,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-29T01:29:32-07:00",
       "workstreams": [
         "B-142"
@@ -5458,9 +5480,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py"
       ],
       "confidence": "high",
       "event_index": 688,
@@ -5488,7 +5510,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-29T01:09:40-07:00",
       "workstreams": [
         "B-142"
@@ -5497,9 +5519,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/artifact_quality/generated_copy_quality_units.py"
       ],
       "confidence": "high",
       "event_index": 687,
@@ -5525,7 +5547,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-29T00:39:39-07:00",
       "workstreams": [
         "B-142"
@@ -5534,9 +5556,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:f2e3cb49105b0e9e2164d3610f1cfbffdce738b00603df5443e4c3d1c6429cb6",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 686,
@@ -5562,7 +5584,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-28T23:40:46-07:00",
       "workstreams": [
         "B-142"
@@ -5571,10 +5593,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py"
       ],
       "confidence": "high",
       "event_index": 685,
@@ -5600,7 +5622,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-28T23:03:43-07:00",
       "workstreams": [
         "B-142"
@@ -5675,9 +5697,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:86b9c6146e827909e2985dd1f4631a76f88cdc07c65638c556d4cd894c2a29eb",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 682,
@@ -5703,7 +5725,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-28T20:03:03-07:00",
       "workstreams": [
         "B-142"
@@ -5747,11 +5769,11 @@
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 679,
@@ -5779,7 +5801,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-06-28T18:33:14-07:00",
       "workstreams": [
         "B-142"
@@ -5947,8 +5969,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "sha256:3799fca93219ca495ceb1d0fafceacc9cb651dd01947ce98376d908d009af773",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 668,
@@ -5962,20 +5984,20 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-06-28T01:03:17-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 7,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6",
-        "tracked_artifact_7"
+        "bin/greenfield-post-confirm-matrix",
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/bootstrap_assets.py",
+        "src/odylith/install/migration_runtime.py"
       ],
       "confidence": "high",
       "event_index": 667,
@@ -6005,7 +6027,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 verifiable artifact references.",
       "ts_iso": "2026-06-28T00:44:33-07:00",
       "workstreams": [
         "B-142"
@@ -6014,9 +6036,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "bin/_odylith.sh",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 666,
@@ -6042,7 +6064,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-28T00:20:47-07:00",
       "workstreams": [
         "B-142"
@@ -6051,9 +6073,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 664,
@@ -6079,7 +6101,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-27T23:05:24-07:00",
       "workstreams": [
         "B-142"
@@ -6319,9 +6341,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 649,
@@ -6347,7 +6369,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-27T13:37:35-07:00",
       "workstreams": [
         "B-142"
@@ -6356,11 +6378,11 @@
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/common/prose_grammar.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "confidence": "high",
       "event_index": 647,
@@ -6386,7 +6408,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-06-27T12:54:39-07:00",
       "workstreams": [
         "B-142"
@@ -6428,9 +6450,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 642,
@@ -6456,7 +6478,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-27T02:01:41-07:00",
       "workstreams": [
         "B-142"
@@ -6503,10 +6525,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "sha256:5edba352e52fb43059d3461d3c385a78ccb0da0306bd0bc47079621c86352909",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 634,
@@ -6532,7 +6554,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-06-26T21:52:35-07:00",
       "workstreams": [
         "B-142"
@@ -6541,7 +6563,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:fa07752a00ad2c2f108514cf507f658b4c0a9961d05d7cdf299e2fda6c8f1b63"
       ],
       "confidence": "high",
       "event_index": 629,
@@ -6567,7 +6589,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-26T20:14:53-07:00",
       "workstreams": [
         "B-142"
@@ -6576,7 +6598,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 626,
@@ -6602,7 +6624,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-06-26T17:21:44-07:00",
       "workstreams": [
         "B-142"
@@ -6611,9 +6633,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 625,
@@ -6639,7 +6661,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-26T16:54:08-07:00",
       "workstreams": [
         "B-142"
@@ -6648,9 +6670,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "confidence": "high",
       "event_index": 622,
@@ -6676,7 +6698,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-26T15:01:18-07:00",
       "workstreams": [
         "B-142"
@@ -6718,9 +6740,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 619,
@@ -6746,7 +6768,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-26T13:32:37-07:00",
       "workstreams": [
         "B-142"
@@ -6755,9 +6777,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 618,
@@ -6783,7 +6805,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-26T13:15:06-07:00",
       "workstreams": [
         "B-142"
@@ -6858,10 +6880,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md",
+        "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
       ],
       "confidence": "high",
       "event_index": 597,
@@ -6877,16 +6899,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
       "ts_iso": "2026-06-09T00:44:59-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
+        "tests/unit/runtime/test_greenfield_program_terms.py"
       ],
       "confidence": "high",
       "event_index": 567,
@@ -6912,7 +6934,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-04T04:06:02-07:00",
       "workstreams": [
         "B-142"
@@ -6921,8 +6943,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
       ],
       "confidence": "high",
       "event_index": 552,
@@ -6948,7 +6970,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-06-04T00:14:54-07:00",
       "workstreams": [
         "B-142"
@@ -6957,9 +6979,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
       ],
       "confidence": "high",
       "event_index": 538,
@@ -6985,7 +7007,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-06-03T20:11:23-07:00",
       "workstreams": [
         "B-142"
@@ -6994,8 +7016,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 492,
@@ -7015,16 +7037,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-05-30T08:16:00-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 467,
@@ -7046,15 +7068,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-05-19T16:16:54-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 457,
@@ -7074,16 +7096,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-05-04T14:30:03-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
       ],
       "confidence": "high",
       "event_index": 452,
@@ -7109,7 +7131,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T20:01:58-07:00",
       "workstreams": [
         "B-142"
@@ -7118,8 +7140,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 433,
@@ -7139,7 +7161,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-05-02T16:15:11-07:00",
       "workstreams": []
     },
@@ -7222,10 +7244,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
+        "src/odylith/install/casebook_metadata_migration.py",
+        "src/odylith/install/migration_runtime.py",
+        "tests/integration/install/test_lifecycle_simulator.py"
       ],
       "confidence": "high",
       "event_index": 413,
@@ -7254,7 +7276,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T11:56:48-07:00",
       "workstreams": [
         "B-141"
@@ -7263,9 +7285,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js"
       ],
       "confidence": "high",
       "event_index": 411,
@@ -7294,7 +7316,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T10:44:13-07:00",
       "workstreams": [
         "B-140",
@@ -7304,9 +7326,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js"
       ],
       "confidence": "high",
       "event_index": 410,
@@ -7336,7 +7358,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T10:38:45-07:00",
       "workstreams": [
         "B-141"
@@ -7345,8 +7367,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 409,
@@ -7366,16 +7388,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-05-02T10:04:13-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+        "tests/integration/install/test_lifecycle_simulator.py"
       ],
       "confidence": "high",
       "event_index": 408,
@@ -7402,7 +7424,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-05-02T09:54:04-07:00",
       "workstreams": [
         "B-141"
@@ -7445,10 +7467,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/radar/source/releases/releases.v1.json",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
       ],
       "confidence": "high",
       "event_index": 404,
@@ -7476,7 +7498,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T08:12:09-07:00",
       "workstreams": [
         "B-141"
@@ -7485,8 +7507,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 394,
@@ -7506,18 +7528,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-29T16:14:29-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/casebook/bugs/2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md",
+        "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
+        "src/odylith/install/runtime_tree_policy.py",
+        "tests/integration/install/test_manager.py",
+        "tests/unit/install/test_runtime.py"
       ],
       "confidence": "high",
       "event_index": 386,
@@ -7531,7 +7553,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-04-27T21:33:02-07:00",
       "workstreams": [
         "B-050"
@@ -7540,8 +7562,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md",
+        "src/odylith/install/upgrade_reporting.py"
       ],
       "confidence": "high",
       "event_index": 385,
@@ -7563,7 +7585,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-27T20:20:06-07:00",
       "workstreams": [
         "B-005"
@@ -7572,8 +7594,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+        "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
       ],
       "confidence": "high",
       "event_index": 384,
@@ -7592,7 +7614,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-27T18:15:04-07:00",
       "workstreams": [
         "B-127"
@@ -7601,9 +7623,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
       ],
       "confidence": "high",
       "event_index": 383,
@@ -7624,7 +7646,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-27T17:57:36-07:00",
       "workstreams": [
         "B-127"
@@ -7652,9 +7674,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
       ],
       "confidence": "high",
       "event_index": 380,
@@ -7673,7 +7695,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-27T16:23:09-07:00",
       "workstreams": [
         "B-127"
@@ -7682,10 +7704,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/install/lock_hygiene.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/upgrade_reporting.py"
       ],
       "confidence": "high",
       "event_index": 379,
@@ -7707,7 +7729,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-04-27T15:19:58-07:00",
       "workstreams": [
         "B-030"
@@ -7716,10 +7738,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/runtime/governance/workstream_inference.py"
       ],
       "confidence": "high",
       "event_index": 378,
@@ -7737,7 +7759,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
       "ts_iso": "2026-04-27T14:24:28-07:00",
       "workstreams": []
     },
@@ -8987,7 +9009,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/example.py"
       ],
       "confidence": "high",
       "event_index": 320,
@@ -9027,7 +9049,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
         "B-001",
@@ -9441,8 +9463,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 326,
@@ -9462,15 +9484,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-20T13:41:27-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 325,
@@ -9490,15 +9512,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-20T13:38:02-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 290,
@@ -9518,16 +9540,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-20T11:22:31-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 287,
@@ -9549,7 +9571,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-20T08:43:11-07:00",
       "workstreams": []
     },
@@ -9669,7 +9691,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -9713,7 +9735,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -10291,11 +10313,11 @@
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/benchmark.py",
+        "src/odylith/runtime/discipline/signals.py",
+        "src/odylith/runtime/discipline/support.py"
       ],
       "confidence": "high",
       "event_index": 262,
@@ -10343,7 +10365,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-04-17T20:20:18-07:00",
       "workstreams": [
         "B-110"
@@ -10352,11 +10374,11 @@
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "src/odylith/runtime/governance/backlog_authoring.py",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "tests/unit/runtime/test_backlog_authoring.py",
+        "tests/unit/test_cli.py"
       ],
       "confidence": "high",
       "event_index": 255,
@@ -10374,7 +10396,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-04-17T17:46:59-07:00",
       "workstreams": [
         "B-126"
@@ -10383,8 +10405,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
       ],
       "confidence": "high",
       "event_index": 254,
@@ -10402,7 +10424,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-17T17:28:12-07:00",
       "workstreams": [
         "B-126"
@@ -10411,8 +10433,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 253,
@@ -10460,7 +10482,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-17T16:27:58-07:00",
       "workstreams": [
         "B-110",
@@ -10690,8 +10712,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
       "event_index": 242,
@@ -10723,7 +10745,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
       "ts_iso": "2026-04-16T15:19:46-07:00",
       "workstreams": [
         "B-099"
@@ -10732,7 +10754,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5"
       ],
       "confidence": "high",
       "event_index": 185,
@@ -10754,7 +10776,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-16T01:31:39Z",
       "workstreams": [
         "B-005",
@@ -10806,9 +10828,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
       ],
       "confidence": "high",
       "event_index": 80,
@@ -10824,7 +10846,7 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-11T18:56:51-07:00",
       "workstreams": [
         "B-090"
@@ -10833,9 +10855,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
       ],
       "confidence": "high",
       "event_index": 79,
@@ -10855,7 +10877,7 @@
         "subagent-orchestrator"
       ],
       "meaningful": false,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-11T18:56:48-07:00",
       "workstreams": [
         "B-090"
@@ -10885,9 +10907,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
       ],
       "confidence": "high",
       "event_index": 75,
@@ -10903,7 +10925,7 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
       "ts_iso": "2026-04-11T16:42:33-07:00",
       "workstreams": [
         "B-089"
@@ -10942,8 +10964,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 64,
@@ -10963,7 +10985,7 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-10T09:29:16-07:00",
       "workstreams": []
     },
@@ -11024,8 +11046,8 @@
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 50,
@@ -11045,16 +11067,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-06T11:04:54-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 49,
@@ -11076,15 +11098,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-05T22:24:37-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 48,
@@ -11104,15 +11126,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-05T22:21:07-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 47,
@@ -11132,15 +11154,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-05T22:19:16-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 45,
@@ -11160,16 +11182,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-05T20:36:11-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 44,
@@ -11191,15 +11213,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-05T20:35:50-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 43,
@@ -11219,18 +11241,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-05T20:33:45-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "sha256:b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5",
+        "sha256:e25064ece33fba6568bfc992d2a9adbe1bbde7cb987e0e230116b03ecd63b68a",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
       ],
       "confidence": "high",
       "event_index": 42,
@@ -11265,7 +11287,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-04-05T19:43:45-07:00",
       "workstreams": [
         "B-021",
@@ -11275,9 +11297,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 41,
@@ -11299,16 +11321,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-03T22:07:58-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 40,
@@ -11330,15 +11352,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-03T21:55:34-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 37,
@@ -11358,15 +11380,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-04-01T08:31:03-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 35,
@@ -11386,16 +11408,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 2 verifiable artifact references.",
       "ts_iso": "2026-03-31T20:36:09-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 31,
@@ -11415,16 +11437,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-27T16:19:09-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 30,
@@ -11444,16 +11466,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-27T16:12:16-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 29,
@@ -11473,7 +11495,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-27T16:07:04-07:00",
       "workstreams": []
     }

@@ -44,9 +44,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 467,
@@ -68,18 +68,18 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-05-19T16:16:54-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
       ],
       "confidence": "high",
       "event_index": 456,
@@ -116,7 +116,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
       "ts_iso": "2026-05-03T10:46:04-07:00",
       "workstreams": [
         "B-141"
@@ -125,10 +125,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "src/odylith/install/runtime.py",
+        "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
       ],
       "confidence": "high",
       "event_index": 434,
@@ -164,7 +164,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-05-02T16:21:02-07:00",
       "workstreams": [
         "B-141"
@@ -173,10 +173,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/install/lock_hygiene.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/upgrade_reporting.py"
       ],
       "confidence": "high",
       "event_index": 379,
@@ -198,7 +198,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
       "ts_iso": "2026-04-27T15:19:58-07:00",
       "workstreams": [
         "B-030"
@@ -207,10 +207,10 @@
     {
       "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/runtime/governance/workstream_inference.py"
       ],
       "confidence": "high",
       "event_index": 378,
@@ -228,16 +228,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
       "ts_iso": "2026-04-27T14:24:28-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 287,
@@ -259,14 +259,14 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-20T08:43:11-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -310,7 +310,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -436,9 +436,9 @@
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 49,
@@ -460,16 +460,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-05T22:24:37-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 44,
@@ -491,16 +491,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-05T20:35:50-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 41,
@@ -522,16 +522,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-03T22:07:58-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 40,
@@ -553,16 +553,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-04-03T21:55:34-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 31,
@@ -582,16 +582,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-27T16:19:09-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 30,
@@ -611,16 +611,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-27T16:12:16-07:00",
       "workstreams": []
     },
     {
       "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "sha256:4389eb468a9630b0a4a8750d4b640b2532a9e9ff902e9440f82c16be6548d8c7",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 29,
@@ -640,7 +640,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Timeline evidence linked this component to governed work. 3 verifiable artifact references.",
       "ts_iso": "2026-03-27T16:07:04-07:00",
       "workstreams": []
     }

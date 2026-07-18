@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-07-09
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-07-07
@@ -308,21 +308,21 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `src/odylith/runtime/surfaces/assets/mermaid_render_config.json`
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `src/odylith/runtime/surfaces/assets/mermaid_cli_worker.mjs`, `tests/unit/runtime/test_auto_update_mermaid_diagrams.py`
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 5 tracked artifact references retained
-- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/atlas_box_explanations.py`, `src/odylith/runtime/surfaces/atlas_box_terms.py`, plus 1 more
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 5 tracked artifact references retained
-- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+  - Evidence: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, plus 1 more
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 5 tracked artifact references retained
-- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `src/odylith/runtime/surfaces/render_mermaid_catalog.py`, plus 1 more
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

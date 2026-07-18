@@ -15,7 +15,7 @@
   the B-110 workstream anchor when measuring the v0.1.11 Odylith Discipline program,
   so Context/Execution adoption metrics can distinguish real ambiguity from a
   missing program tag.
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-18
@@ -588,23 +588,23 @@ evidence is missing or drifting.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-06 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+- **2026-05-06 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md`, `src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py`, `src/odylith/runtime/domain_intelligence/proposal_contract.py`
+- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 5 tracked artifact references retained
-- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `src/odylith/cli.py`, `src/odylith/install/manager.py`, `src/odylith/install/runtime.py`, plus 1 more
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-110
-  - Evidence: 5 tracked artifact references retained
-- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+  - Evidence: `odylith/runtime/source/discipline-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`, `src/odylith/runtime/discipline/benchmark.py`, `src/odylith/runtime/discipline/signals.py`, plus 1 more
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-110
-  - Evidence: 2 tracked artifact references retained
-- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: `odylith/runtime/source/optimization-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-110, B-111, B-112, B-113
-  - Evidence: 4 tracked artifact references retained
-- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+  - Evidence: `odylith/runtime/source/discipline-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`, `src/odylith/runtime/discipline/contract.py`, `src/odylith/runtime/governance/validate_discipline.py`
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-099
-  - Evidence: 5 tracked artifact references retained
+  - Evidence: `src/odylith/runtime/context_engine/execution_engine_handshake.py`, `src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py`, `src/odylith/runtime/orchestration/subagent_router_execution_engine_runtime.py`, `src/odylith/runtime/reasoning/remediator.py`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

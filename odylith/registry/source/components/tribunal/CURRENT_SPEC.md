@@ -7,7 +7,7 @@
 - Tribunal may promote a pattern into doctrine, tool affordance, skill
   guidance, benchmark case, or Casebook bug. It is not the hot path and must
   not run provider reasoning for ordinary Odylith Discipline decisions.
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-06-26
@@ -314,9 +314,9 @@ checkpoint, Stop, or visibility-status hot paths.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+- **2026-06-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 5 tracked artifact references retained
+  - Evidence: `odylith/atlas/source/domain-intelligence-greenfield-governance.mmd`, `odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/tribunal/CURRENT_SPEC.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

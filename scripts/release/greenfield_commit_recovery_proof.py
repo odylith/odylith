@@ -94,6 +94,8 @@ class GreenfieldInstalledCommitRecoveryProof:
     installed_runtime_module_path: str = ""
     installed_runtime_version: str = ""
     product_facts_sha256: str = ""
+    product_facts_hashes_by_phase: Mapping[str, str] = field(default_factory=dict)
+    product_facts_hash_sources_by_phase: Mapping[str, str] = field(default_factory=dict)
     recovery_case: Mapping[str, Any] = field(default_factory=dict)
 
     @property
@@ -128,6 +130,8 @@ class GreenfieldInstalledCommitRecoveryProof:
             "installed_runtime_module_path": self.installed_runtime_module_path,
             "installed_runtime_version": self.installed_runtime_version,
             "product_facts_sha256": self.product_facts_sha256,
+            "product_facts_hashes_by_phase": dict(self.product_facts_hashes_by_phase),
+            "product_facts_hash_sources_by_phase": dict(self.product_facts_hash_sources_by_phase),
             "recovery_case": dict(self.recovery_case),
         }
 
@@ -180,14 +184,13 @@ def run_installed_commit_recovery_proof(
             case=recovery_case,
         )
         facts.update(sigkill_facts)
-        facts.update(
-            _run_operator_conflict_recovery_phase(
-                run_root=run_root,
-                install_script=install_script,
-                env=env,
-                case=recovery_case,
-            )
+        operator_conflict_facts = _run_operator_conflict_recovery_phase(
+            run_root=run_root,
+            install_script=install_script,
+            env=env,
+            case=recovery_case,
         )
+        facts.update(operator_conflict_facts)
         fsync_facts = _run_fsync_rollback_phase(
             run_root=run_root,
             install_script=install_script,
@@ -195,10 +198,24 @@ def run_installed_commit_recovery_proof(
             case=recovery_case,
         )
         facts.update(fsync_facts)
-        product_facts_sha256 = str(sigkill_facts.get("product_facts_sha256") or "")
-        if product_facts_sha256 != str(fsync_facts.get("product_facts_sha256") or ""):
+        product_facts_hashes_by_phase = {
+            "sigkill": str(sigkill_facts.get("product_facts_sha256") or ""),
+            "operator_conflict": str(operator_conflict_facts.get("product_facts_sha256") or ""),
+            "fsync": str(fsync_facts.get("product_facts_sha256") or ""),
+        }
+        product_facts_hash_sources_by_phase = {
+            "sigkill": str(sigkill_facts.get("product_facts_hash_source") or ""),
+            "operator_conflict": str(operator_conflict_facts.get("product_facts_hash_source") or ""),
+            "fsync": str(fsync_facts.get("product_facts_hash_source") or ""),
+        }
+        product_facts_sha256 = product_facts_hashes_by_phase["sigkill"]
+        if not is_sha256(product_facts_sha256) or any(
+            phase_hash != product_facts_sha256 for phase_hash in product_facts_hashes_by_phase.values()
+        ):
             raise RuntimeError("installed recovery phases did not retain the same sealed Product Intent facts hash")
         facts["product_facts_sha256"] = product_facts_sha256
+        facts["product_facts_hashes_by_phase"] = product_facts_hashes_by_phase
+        facts["product_facts_hash_sources_by_phase"] = product_facts_hash_sources_by_phase
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         issues.append(str(exc))
     finally:
@@ -238,6 +255,8 @@ def run_installed_commit_recovery_proof(
         installed_runtime_module_path=str(facts.get("installed_runtime_module_path") or ""),
         installed_runtime_version=str(facts.get("installed_runtime_version") or ""),
         product_facts_sha256=str(facts.get("product_facts_sha256") or ""),
+        product_facts_hashes_by_phase=_mapping(facts.get("product_facts_hashes_by_phase")),
+        product_facts_hash_sources_by_phase=_mapping(facts.get("product_facts_hash_sources_by_phase")),
         recovery_case=_mapping(facts.get("recovery_case")),
     )
 
@@ -283,6 +302,18 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
             missing.append(f"installed recovery proof did not record required {key}")
     if not is_sha256(facts.get("product_facts_sha256")):
         missing.append("installed recovery proof did not record a valid Product Intent facts hash")
+    phase_hashes = _mapping(facts.get("product_facts_hashes_by_phase"))
+    phase_sources = _mapping(facts.get("product_facts_hash_sources_by_phase"))
+    required_phase_sources = {
+        "sigkill": "success_receipt",
+        "operator_conflict": "applying_journal_commit_receipt",
+        "fsync": "retry_success_receipt",
+    }
+    for phase, required_source in required_phase_sources.items():
+        if phase_hashes.get(phase) != facts.get("product_facts_sha256"):
+            missing.append(f"installed recovery proof did not retain the sealed Product Intent facts hash for {phase}")
+        if phase_sources.get(phase) != required_source:
+            missing.append(f"installed recovery proof did not record the observed Product Intent facts source for {phase}")
     recovery_case = _mapping(facts.get("recovery_case"))
     for key in ("id", "prompt_sha256"):
         if not str(recovery_case.get(key) or "").strip():
@@ -351,7 +382,7 @@ def _run_sigkill_recovery_phase(
         raise RuntimeError("SIGKILL proof did not leave the installed commit journal in applying state")
     recovered = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     recovery_payload = _require_success_payload(recovered, label="installed SIGKILL recovery create")
-    _require_receipt_identity(
+    recovered_product_facts_hash = _require_receipt_identity(
         recovery_payload,
         transaction_hash=compiled.transaction_hash,
         product_facts_hash=compiled.product_facts_hash,
@@ -368,12 +399,14 @@ def _run_sigkill_recovery_phase(
         raise RuntimeError("installed SIGKILL recovery retained rollback artifacts after durable commit")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     retry_payload = _require_success_payload(retried, label="installed same-hash retry")
-    _require_receipt_identity(
+    retry_product_facts_hash = _require_receipt_identity(
         retry_payload,
         transaction_hash=compiled.transaction_hash,
         product_facts_hash=compiled.product_facts_hash,
         write_set_hash=compiled.write_set_hash,
     )
+    if retry_product_facts_hash != recovered_product_facts_hash:
+        raise RuntimeError("installed same-hash retry did not retain the recovery receipt Product Intent facts hash")
     if retry_payload != recovery_payload:
         raise RuntimeError("installed same-hash retry did not return the durable commit receipt")
     if _governed_fingerprint(repo_root) != after_recovery:
@@ -385,7 +418,8 @@ def _run_sigkill_recovery_phase(
         "journal_state_after_crash": str(journal.get("state") or ""),
         "journal_state_after_recovery": str(completed_journal.get("state") or ""),
         "governed_write_observed_after_crash": True,
-        "product_facts_sha256": compiled.product_facts_hash,
+        "product_facts_sha256": recovered_product_facts_hash,
+        "product_facts_hash_source": "success_receipt",
         **runtime_identity,
     }
 
@@ -442,6 +476,12 @@ def _run_operator_conflict_recovery_phase(
     journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
     if journal.get("state") != "applying":
         raise RuntimeError("installed conflict recovery changed the interrupted journal state")
+    conflict_product_facts_hash = _require_journal_receipt_identity(
+        journal,
+        transaction_hash=compiled.transaction_hash,
+        product_facts_hash=compiled.product_facts_hash,
+        write_set_hash=compiled.write_set_hash,
+    )
     journal_root = _journal_root(repo_root, compiled.transaction_hash)
     recovery_path = Path(str(commit_failure.get("recovery_path") or "")).expanduser()
     if not recovery_path.is_absolute():
@@ -460,6 +500,8 @@ def _run_operator_conflict_recovery_phase(
         "operator_mutation_preserved": True,
         "operator_conflict_snapshot_retained": True,
         "operator_conflict_recovery_path_bound": True,
+        "product_facts_sha256": conflict_product_facts_hash,
+        "product_facts_hash_source": "applying_journal_commit_receipt",
     }
 
 
@@ -500,7 +542,7 @@ def _run_fsync_rollback_phase(
         raise RuntimeError("installed fsync failure retained rollback artifacts after cleanup")
     retried = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     retry_payload = _require_success_payload(retried, label="installed fsync rollback retry")
-    _require_receipt_identity(
+    retry_product_facts_hash = _require_receipt_identity(
         retry_payload,
         transaction_hash=compiled.transaction_hash,
         product_facts_hash=compiled.product_facts_hash,
@@ -516,12 +558,14 @@ def _run_fsync_rollback_phase(
         raise RuntimeError("installed fsync rollback retry retained rollback artifacts after durable commit")
     same_hash_retry = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     same_hash_payload = _require_success_payload(same_hash_retry, label="installed fsync same-hash retry")
-    _require_receipt_identity(
+    same_hash_product_facts_hash = _require_receipt_identity(
         same_hash_payload,
         transaction_hash=compiled.transaction_hash,
         product_facts_hash=compiled.product_facts_hash,
         write_set_hash=compiled.write_set_hash,
     )
+    if same_hash_product_facts_hash != retry_product_facts_hash:
+        raise RuntimeError("installed fsync same-hash retry did not retain the retry receipt Product Intent facts hash")
     if same_hash_payload != retry_payload:
         raise RuntimeError("installed fsync same-hash retry did not return the durable commit receipt")
     if _governed_fingerprint(repo_root) != after_retry:
@@ -533,7 +577,8 @@ def _run_fsync_rollback_phase(
         "fsync_journal_state_after_failure": str(failed_journal.get("state") or ""),
         "fsync_journal_state_after_retry": str(completed_journal.get("state") or ""),
         "fsync_failure_kind": failure_kind,
-        "product_facts_sha256": compiled.product_facts_hash,
+        "product_facts_sha256": retry_product_facts_hash,
+        "product_facts_hash_source": "retry_success_receipt",
     }
 
 
@@ -780,23 +825,63 @@ def _require_receipt_identity(
     transaction_hash: str,
     product_facts_hash: str,
     write_set_hash: str,
-) -> None:
+) -> str:
+    observed_product_facts_hash = _receipt_product_facts_hash(
+        payload,
+        transaction_hash=transaction_hash,
+        write_set_hash=write_set_hash,
+    )
+    if observed_product_facts_hash != product_facts_hash:
+        raise RuntimeError("installed create receipt does not identify the sealed Product Intent facts hash")
+    return observed_product_facts_hash
+
+
+def _require_journal_receipt_identity(
+    journal: Mapping[str, Any],
+    *,
+    transaction_hash: str,
+    product_facts_hash: str,
+    write_set_hash: str,
+) -> str:
+    if str(journal.get("transaction_hash") or "") != transaction_hash:
+        raise RuntimeError("installed conflict recovery journal does not identify the requested transaction hash")
+    if str(journal.get("repository_write_set_hash") or "") != write_set_hash:
+        raise RuntimeError("installed conflict recovery journal does not identify the sealed repository write set")
+    commit_result = _mapping(journal.get("commit_result"))
+    if not commit_result:
+        raise RuntimeError("installed conflict recovery journal did not retain its sealed commit receipt")
+    return _require_receipt_identity(
+        commit_result,
+        transaction_hash=transaction_hash,
+        product_facts_hash=product_facts_hash,
+        write_set_hash=write_set_hash,
+    )
+
+
+def _receipt_product_facts_hash(
+    payload: Mapping[str, Any],
+    *,
+    transaction_hash: str,
+    write_set_hash: str,
+) -> str:
     transaction = _mapping(payload.get("product_create_transaction"))
     manifest = _mapping(payload.get("commit_manifest"))
     manifest_transaction = _mapping(manifest.get("product_create_transaction"))
     write_transaction = _mapping(manifest.get("write_transaction"))
+    observed_product_facts_hash = str(transaction.get("product_facts_sha256") or "")
     if str(transaction.get("transaction_hash") or "") != transaction_hash:
         raise RuntimeError("installed create receipt does not identify the requested transaction hash")
-    if str(transaction.get("product_facts_sha256") or "") != product_facts_hash:
-        raise RuntimeError("installed create receipt does not identify the sealed Product Intent facts hash")
-    if str(manifest_transaction.get("product_facts_sha256") or "") != product_facts_hash:
+    if not is_sha256(observed_product_facts_hash):
+        raise RuntimeError("installed create receipt does not identify a valid sealed Product Intent facts hash")
+    if str(manifest_transaction.get("product_facts_sha256") or "") != observed_product_facts_hash:
         raise RuntimeError("installed create manifest does not identify the sealed Product Intent facts hash")
     if str(write_transaction.get("product_create_transaction_hash") or "") != transaction_hash:
         raise RuntimeError("installed create manifest does not identify the requested transaction hash")
-    if str(write_transaction.get("product_facts_sha256") or "") != product_facts_hash:
+    if str(write_transaction.get("product_facts_sha256") or "") != observed_product_facts_hash:
         raise RuntimeError("installed create manifest does not identify the sealed Product Intent facts hash")
     if str(write_transaction.get("repository_write_set_hash") or "") != write_set_hash:
         raise RuntimeError("installed create manifest does not identify the sealed repository write set")
+    return observed_product_facts_hash
 
 
 def _json_mapping(value: str, *, label: str) -> Mapping[str, Any]:

@@ -15,7 +15,7 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-07-11
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-28
@@ -796,24 +796,24 @@ parallel payload schemas.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+- **2026-07-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-096
-  - Evidence: 3 tracked artifact references retained
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: `src/odylith/runtime/intervention_engine/host_surface_runtime.py`, `src/odylith/runtime/intervention_engine/visibility_broker.py`, `src/odylith/runtime/surfaces/host_intervention_support.py`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 4 tracked artifact references retained
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md`, `src/odylith/install/runtime.py`, `src/odylith/runtime/intervention_engine/prompt_signal_runtime.py`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-140, B-141
-  - Evidence: 3 tracked artifact references retained
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Evidence: `odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md`, `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 3 tracked artifact references retained
-- **2026-05-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md`, `src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py`, `src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js`
+- **2026-05-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 7 tracked artifact references retained
-- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Evidence: `sha256:735e1037e13fed924b4417feebc9b632d2da582760a7bbcd48ea9be411aa74a8`, `src/odylith/runtime/surfaces/claude_host_prompt_bundle.py`, `src/odylith/runtime/surfaces/claude_host_prompt_context.py`, `src/odylith/runtime/surfaces/claude_host_session_brief.py`, plus 3 more
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-096
-  - Evidence: 3 tracked artifact references retained
+  - Evidence: `src/odylith/runtime/intervention_engine/visibility_broker.py`, `tests/integration/runtime/test_intervention_visibility_browser.py`, `tests/unit/runtime/test_intervention_visibility_broker.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

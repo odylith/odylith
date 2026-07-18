@@ -21,7 +21,7 @@
     {
       "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -65,7 +65,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",

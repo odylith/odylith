@@ -678,7 +678,11 @@ def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass(
                 "product_facts_sha256": "c" * 64,
                 "repository_write_set_hash": "b" * 64,
             },
-            "product_create_transaction": {"product_facts_sha256": "c" * 64},
+            "product_create_transaction": {
+                "transaction_hash": "a" * 64,
+                "product_facts_sha256": "c" * 64,
+                "repository_write_set_hash": "b" * 64,
+            },
             "patchset_request": {
                 "status": "no_repairable_operations",
                 "operation_count": 0,
@@ -730,7 +734,11 @@ def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass(
         "product_facts_sha256": "c" * 64,
         "repository_write_set_hash": "b" * 64,
     }
-    assert summary["product_create_transaction"] == {"product_facts_sha256": "c" * 64}
+    assert summary["product_create_transaction"] == {
+        "transaction_hash": "a" * 64,
+        "product_facts_sha256": "c" * 64,
+        "repository_write_set_hash": "b" * 64,
+    }
 
 
 def test_commit_manifest_summary_does_not_invent_missing_elapsed_time() -> None:

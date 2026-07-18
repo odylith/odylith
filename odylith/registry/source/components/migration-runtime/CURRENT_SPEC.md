@@ -1,5 +1,5 @@
 # Migration Runtime
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 ## Overview
@@ -131,21 +131,21 @@ contract.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 tracked artifact references retained.
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 verifiable artifact references.
   - Scope: B-142
-  - Evidence: 7 tracked artifact references retained
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Evidence: `bin/greenfield-post-confirm-matrix`, `odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md`, `odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md`, `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, plus 3 more
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 4 tracked artifact references retained
-- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md`, `src/odylith/install/casebook_metadata_migration.py`, `src/odylith/install/migration_runtime.py`, `tests/integration/install/test_lifecycle_simulator.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-127
-  - Evidence: 3 tracked artifact references retained
-- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Evidence: `odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md`, `src/odylith/install/migration_runtime.py`, `tests/unit/install/test_migration_runtime.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-127
-  - Evidence: 3 tracked artifact references retained
-- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+  - Evidence: `odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md`, `src/odylith/install/migration_runtime.py`, `tests/unit/install/test_migration_runtime.py`
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-127
-  - Evidence: 3 tracked artifact references retained
+  - Evidence: `odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md`, `src/odylith/install/migration_runtime.py`, `tests/unit/install/test_migration_runtime.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -1,5 +1,5 @@
 # Remediator
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-09
@@ -188,9 +188,9 @@ packet body.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-099
-  - Evidence: 5 tracked artifact references retained
+  - Evidence: `src/odylith/runtime/context_engine/execution_engine_handshake.py`, `src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py`, `src/odylith/runtime/orchestration/subagent_router_execution_engine_runtime.py`, `src/odylith/runtime/reasoning/remediator.py`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

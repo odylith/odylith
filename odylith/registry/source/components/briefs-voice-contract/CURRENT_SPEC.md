@@ -1,5 +1,5 @@
 # Briefs Voice Contract
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-12
@@ -228,8 +228,8 @@ maintainer-friendly narration.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-25 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
+- **2026-06-25 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md`, `odylith/casebook/bugs/2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md`, `tests/unit/runtime/test_source_bundle_mirror.py`
 <!-- registry-requirements:end -->
 ## Feature History
 - 2026-04-12: Tightened the governed brief voice again around founder feedback: deterministic rules now explicitly stop at evidence eligibility and drift rejection, while the prose itself stays free-flowing, one-lane, immediate, and human. `Current execution` now prefers one active lane plus one concrete action, `Next planned` now stays on the immediate next move, `Risks to watch` now names explicit seams instead of abstract coherence language, and thin packets are required to produce shorter briefs instead of broader summary prose. (Plan: [B-025](../../../odylith/radar/radar.html?view=plan&workstream=B-025))

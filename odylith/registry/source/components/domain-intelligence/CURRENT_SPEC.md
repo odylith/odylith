@@ -26,19 +26,19 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
-  - Evidence: 2 tracked artifact references retained
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
+- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
+- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-022
-  - Evidence: 2 tracked artifact references retained
-- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 1 tracked artifact reference retained.
-  - Evidence: 1 tracked artifact reference retained
-- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
-  - Evidence: 2 tracked artifact references retained
-- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
-  - Evidence: 2 tracked artifact references retained
+  - Evidence: `odylith/casebook/bugs/2026-07-18-receipt-boundary-accepted-mutable-in-memory-greenfield-create-state.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
+- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`
+- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `src/odylith/cli.py`, `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`
+- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_cli.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

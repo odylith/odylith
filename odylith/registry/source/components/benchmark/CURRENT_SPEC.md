@@ -30,7 +30,7 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-07-09
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-28
@@ -825,17 +825,17 @@ Release-safe benchmark status is distinct from these eval-integrity gates:
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-07 · Implementation:** Implementation evidence linked this component to governed work with 7 tracked artifact references retained.
-  - Evidence: 7 tracked artifact references retained
-- **2026-04-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
+- **2026-07-07 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_extraction.py`, `src/odylith/runtime/evaluation/odylith_benchmark_graphs.py`, `src/odylith/runtime/evaluation/odylith_benchmark_marketing_graphs.py`, `src/odylith/runtime/project_intelligence/intent_confirmation.py`, plus 3 more
+- **2026-04-25 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-093
-  - Evidence: 3 tracked artifact references retained
-- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+  - Evidence: `sha256:3c2a6fcfb5326de23a7b7178445a1566528ca9801f9ee0f2acd0eac8c060689d`, `sha256:d2a3613a82c69c1dc55e36aa7d0dbefed902f0294897f248cb592980b24c5960`, `sha256:37ae69326ca6815a1168f2b79665afa17b99530711d53a56f1d78d63f3df42f6`
+- **2026-04-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-110
-  - Evidence: 2 tracked artifact references retained
-- **2026-04-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
+  - Evidence: `odylith/runtime/source/optimization-evaluation-corpus.v1.json`, `odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md`
+- **2026-04-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-021, B-022
-  - Evidence: 5 tracked artifact references retained
+  - Evidence: `sha256:b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5`, `sha256:e25064ece33fba6568bfc992d2a9adbe1bbde7cb987e0e230116b03ecd63b68a`, `odylith/registry/source/components/benchmark/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -170,7 +171,8 @@ def test_requirements_trace_projection_does_not_copy_scenario_terms() -> None:
     rendered = "\n".join(rows).lower()
 
     assert "implementation evidence linked this component to governed work" in rendered
-    assert "2 tracked artifact references retained" in rendered
+    assert "2 verifiable artifact references" in rendered
+    assert "sha256:" in rendered
     assert "municipal" not in rendered
     assert "stormwater" not in rendered
     assert "tribal" not in rendered
@@ -214,11 +216,78 @@ def test_forensics_payload_keeps_timeline_rows_scenario_neutral() -> None:
     row = payload["timeline"][0]
     assert row["summary"] == (
         "Timeline evidence linked this component to governed work. "
-        "workstream scope preserved; 1 tracked artifact reference retained."
+        "workstream scope preserved; 1 verifiable artifact reference."
     )
-    assert row["artifacts"] == ["tracked_artifact_1"]
+    assert row["artifacts"] == [
+        "sha256:" + hashlib.sha256(b"/tmp/quantum-tunneling/proof.json").hexdigest()
+    ]
     assert "quantum" not in json.dumps(payload).lower()
     assert "shelter" not in json.dumps(payload).lower()
+
+
+def test_forensics_payload_preserves_safe_repo_artifact_paths() -> None:
+    event = component_registry.MappedEvent(
+        event_index=8,
+        ts_iso="2026-07-18T08:42:07-07:00",
+        kind="implementation",
+        summary="Installed proof completed.",
+        workstreams=[],
+        artifacts=[
+            "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
+            "scripts/release/greenfield_commit_recovery_proof.py",
+        ],
+        explicit_components=["domain-intelligence", "release"],
+        mapped_components=["domain-intelligence", "release"],
+        confidence="high",
+        meaningful=True,
+    )
+
+    rows = sync._build_generated_requirement_lines(
+        events=[event],
+        fallback_date="2026-07-18",
+        max_events=6,
+    )
+    payload = sync._forensics_payload(
+        entry=_component_entry(
+            component_id="domain-intelligence",
+            spec_ref="odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        ),
+        coverage=component_registry.ComponentForensicCoverage(
+            status="forensic_coverage_present",
+            timeline_event_count=1,
+            explicit_event_count=1,
+            recent_path_match_count=0,
+            mapped_workstream_evidence_count=1,
+            spec_history_event_count=0,
+            empty_reasons=[],
+        ),
+        timeline=[event],
+        traceability={"runbooks": [], "developer_docs": [], "code_references": []},
+    )
+
+    rendered = "\n".join(rows)
+    assert "`src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`" in rendered
+    assert "`scripts/release/greenfield_commit_recovery_proof.py`" in rendered
+    assert "plus -" not in rendered
+    assert payload["timeline"][0]["artifacts"] == event.artifacts
+
+
+def test_artifact_evidence_reference_canonicalizes_and_hashes_unsafe_paths() -> None:
+    safe_path = "src/odylith/runtime/governance/sync_component_spec_requirements.py"
+    unsafe_hash = "sha256:" + hashlib.sha256(b"tmp/proof.json").hexdigest()
+    traversed_hash = "sha256:" + hashlib.sha256(b"../tmp/tribal-consultation/proof.json").hexdigest()
+
+    assert sync._artifact_evidence_reference(safe_path) == safe_path  # noqa: SLF001
+    assert (
+        sync._artifact_evidence_reference("src/../src/odylith/runtime/governance/sync_component_spec_requirements.py")
+        == safe_path
+    )  # noqa: SLF001
+    assert sync._artifact_evidence_reference("./tmp/proof.json") == unsafe_hash  # noqa: SLF001
+    assert sync._artifact_evidence_reference("tmp/proof.json") == unsafe_hash  # noqa: SLF001
+    assert sync._artifact_evidence_reference(r"C:\tmp\proof.json") == sync._artifact_evidence_reference("C:/tmp/proof.json")  # noqa: SLF001
+    assert sync._artifact_evidence_reference("src/../../tmp/tribal-consultation/proof.json") == traversed_hash  # noqa: SLF001
+    assert sync._artifact_evidence_reference("scripts/../tmp/municipal-stormwater/proof.json").startswith("sha256:")  # noqa: SLF001
+    assert sync._artifact_evidence_references(["", "   "]) == []  # noqa: SLF001
 
 
 def test_sync_component_spec_requirements_consumer_specs_use_per_component_sidecars_and_prune_legacy_file(

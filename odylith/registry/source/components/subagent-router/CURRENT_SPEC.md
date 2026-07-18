@@ -6,7 +6,7 @@
   route-ready contract exists.
 - Discipline checks may recommend routing affordances but must not spawn
   subagents or call host models to classify pressure.
-Last updated: 2026-07-04
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-09
@@ -311,16 +311,16 @@ prompt templates.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
-  - Evidence: 4 tracked artifact references retained
-- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 1 tracked artifact reference retained.
-  - Evidence: 1 tracked artifact reference retained
-- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 1 tracked artifact reference retained.
-  - Evidence: 1 tracked artifact reference retained
-- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
-- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
-  - Evidence: 3 tracked artifact references retained
+- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `src/odylith/runtime/orchestration/subagent_router.py`
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `src/odylith/runtime/orchestration/subagent_router.py`
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
+  - Evidence: `odylith/atlas/source/catalog/diagrams.v1.json`, `odylith/registry/source/components/subagent-router/CURRENT_SPEC.md`, `src/odylith/runtime/orchestration/subagent_router.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

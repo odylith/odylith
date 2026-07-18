@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -39,6 +40,8 @@ _PUBLIC_REQUIREMENT_SUMMARY_REWRITES = (
     (re.compile(rf"\b{_LEGACY_CONSUMER_ORG_TOKEN}-[A-Za-z0-9_-]+\b", re.IGNORECASE), "a real consumer repo"),
     (re.compile(rf"\b[A-Za-z0-9_-]*{_LEGACY_CONSUMER_PROJECT_TOKEN}[A-Za-z0-9_-]*\b", re.IGNORECASE), "a real consumer repo"),
 )
+_PUBLIC_ARTIFACT_PATH_PREFIXES = ("bin/", "odylith/", "scripts/", "src/", "tests/")
+_PUBLIC_ARTIFACT_PATHS = {"Makefile", "pyproject.toml"}
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -203,12 +206,14 @@ def _ensure_requirements_section(lines: list[str]) -> tuple[list[str], tuple[int
 def _format_evidence_suffix(*, event: component_registry.MappedEvent) -> list[str]:
     parts: list[str] = []
     workstreams = _unique_values(event.workstreams)
-    artifacts = _unique_values(event.artifacts)
+    artifacts = _artifact_evidence_references(event.artifacts)
     if workstreams:
         parts.append(f"Scope: {', '.join(workstreams[:4])}")
     if artifacts:
-        plural = "s" if len(artifacts) != 1 else ""
-        parts.append(f"Evidence: {len(artifacts)} tracked artifact reference{plural} retained")
+        joined = ", ".join(f"`{artifact}`" for artifact in artifacts[:4])
+        remaining = max(0, len(artifacts) - 4)
+        suffix = f", plus {remaining} more" if remaining else ""
+        parts.append(f"Evidence: {joined}{suffix}")
     return parts
 
 
@@ -225,7 +230,7 @@ def _clean_requirement_summary(*, summary: str, kind: str) -> str:
 
 
 def _requirements_trace_summary(*, event: component_registry.MappedEvent) -> str:
-    artifacts = _unique_values(event.artifacts)
+    artifacts = _artifact_evidence_references(event.artifacts)
     workstreams = _unique_values(event.workstreams)
     kind = _normalize_space(event.kind).lower() or "timeline"
     if kind == "decision":
@@ -239,7 +244,7 @@ def _requirements_trace_summary(*, event: component_registry.MappedEvent) -> str
         qualifiers.append("workstream scope preserved")
     if artifacts:
         plural = "s" if len(artifacts) != 1 else ""
-        qualifiers.append(f"{len(artifacts)} tracked artifact reference{plural} retained")
+        qualifiers.append(f"{len(artifacts)} verifiable artifact reference{plural}")
     if not qualifiers:
         return base
     return f"{base.rstrip('.')} with {'; '.join(qualifiers)}."
@@ -459,7 +464,7 @@ def _forensics_payload(
 
 
 def _forensics_timeline_row(event: component_registry.MappedEvent) -> dict[str, object]:
-    artifacts = _unique_values(event.artifacts)
+    artifacts = _artifact_evidence_references(event.artifacts)
     workstreams = _unique_values(event.workstreams)
     return {
         "event_index": event.event_index,
@@ -468,7 +473,7 @@ def _forensics_timeline_row(event: component_registry.MappedEvent) -> dict[str, 
         "summary": _forensics_summary(event=event, artifact_count=len(artifacts), workstream_count=len(workstreams)),
         "workstreams": workstreams,
         "artifact_count": len(artifacts),
-        "artifacts": [f"tracked_artifact_{index}" for index in range(1, len(artifacts) + 1)],
+        "artifacts": artifacts,
         "explicit_components": _unique_values(event.explicit_components),
         "mapped_components": _unique_values(event.mapped_components),
         "confidence": event.confidence,
@@ -498,7 +503,7 @@ def _forensics_summary(
         qualifiers.append("workstream scope preserved")
     if artifact_count:
         plural = "s" if artifact_count != 1 else ""
-        qualifiers.append(f"{artifact_count} tracked artifact reference{plural} retained")
+        qualifiers.append(f"{artifact_count} verifiable artifact reference{plural}")
     if not qualifiers:
         return base
     return f"{base} {'; '.join(qualifiers)}."
@@ -514,6 +519,48 @@ def _unique_values(values: Sequence[str]) -> list[str]:
         seen.add(value)
         rows.append(value)
     return rows
+
+
+def _artifact_evidence_references(values: Sequence[str]) -> list[str]:
+    """Keep artifact custody inspectable without exposing unsafe host path terms."""
+
+    return _unique_values(
+        [_artifact_evidence_reference(value) for value in values if _normalize_space(value)]
+    )
+
+
+def _artifact_evidence_reference(value: str) -> str:
+    normalized = _canonical_artifact_path(value)
+    if not normalized:
+        return ""
+    if _is_public_artifact_path(normalized):
+        return normalized
+    digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"
+
+
+def _canonical_artifact_path(value: str) -> str:
+    raw = _normalize_space(value).replace("\\", "/")
+    absolute = raw.startswith("/")
+    parts: list[str] = []
+    for part in raw.split("/"):
+        if not part or part == ".":
+            continue
+        if part == "..":
+            if parts and parts[-1] != "..":
+                parts.pop()
+            else:
+                parts.append(part)
+            continue
+        parts.append(part)
+    normalized = "/".join(parts)
+    return f"/{normalized}" if absolute else normalized
+
+
+def _is_public_artifact_path(value: str) -> bool:
+    if not value or value.startswith(("/", "../")):
+        return False
+    return value in _PUBLIC_ARTIFACT_PATHS or value.startswith(_PUBLIC_ARTIFACT_PATH_PREFIXES)
 
 
 def _write_json_if_changed(*, path: Path, payload: dict[str, object]) -> bool:

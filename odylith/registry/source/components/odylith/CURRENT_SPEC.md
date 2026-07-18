@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-07-09
+Last updated: 2026-07-18
 
 
 Last updated (UTC): 2026-04-14
@@ -647,13 +647,13 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 tracked artifact references retained.
-  - Evidence: 7 tracked artifact references retained
+- **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/AGENTS.md`, `odylith/README.md`, `src/odylith/bundle/assets/odylith/README.md`, plus 3 more
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-141
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
-  - Evidence: 4 tracked artifact references retained
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `sha256:2578ef93b5dac059562561a3d24005fb9dd0a8771590dff49d56bb173d616627`, `sha256:61a82c8db99693b7a2b3de56c6e2ff31e6679544c761fa414231280d0b8dfb8e`, `src/odylith/install/casebook_metadata_migration.py`
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-141
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.

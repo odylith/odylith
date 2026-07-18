@@ -67,7 +67,11 @@ def commit_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]:
             "repository_write_set_hash": str(write_transaction.get("repository_write_set_hash", "")).strip(),
         },
         "product_create_transaction": {
+            "transaction_hash": str(product_create_transaction.get("transaction_hash", "")).strip(),
             "product_facts_sha256": str(product_create_transaction.get("product_facts_sha256", "")).strip(),
+            "repository_write_set_hash": str(
+                product_create_transaction.get("repository_write_set_hash", "")
+            ).strip(),
         },
         "patchset_summary_source": _patchset_summary_source(manifest),
         "issue_codes": _manifest_issue_values(manifest, "code"),
