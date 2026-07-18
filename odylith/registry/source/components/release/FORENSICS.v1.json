@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 290,
+    "explicit_event_count": 292,
     "mapped_workstream_evidence_count": 207,
     "recent_path_match_count": 0,
     "spec_history_event_count": 62,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 290
+    "timeline_event_count": 292
   },
   "name": "Release",
   "path_prefixes": [
@@ -45,6 +45,48 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 1098,
+      "explicit_components": [
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-07-18T02:36:54-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 1097,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-07-18T02:31:54-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 1,
       "artifacts": [

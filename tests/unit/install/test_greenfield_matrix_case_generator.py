@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -31,6 +32,10 @@ def _case_file_module():
         SCRIPTS_ROOT / "greenfield_matrix_case_file.py",
         "greenfield_matrix_case_file_generator_test",
     )
+
+
+def _sha256(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _write_pool(path: Path) -> None:
@@ -117,10 +122,108 @@ def test_case_generator_writes_source_grounded_stratified_case_file(tmp_path: Pa
     assert {"modal-expert-lens", "path-grant", "atlas-label-pressure"} <= covered
     assert all(case.required_terms for case in loaded)
     assert all(case.leakage_terms for case in loaded)
+    assert all("provenance" not in case for case in generated["cases"])
     assert payload["status"] in {"passed", "warning"}
     warnings = " ".join(payload["evaluation"]["warnings"])
     assert "120-case discovery proof needs at least 120" in warnings
     assert "240-case discovery proof needs at least 240" in warnings
+
+
+def test_case_generator_preserves_source_provenance_for_release_corpus_inputs(tmp_path: Path) -> None:
+    module = _module()
+    case_file = _case_file_module()
+    source = tmp_path / "source-provenanced-cases.json"
+    output = tmp_path / "generated-cases.json"
+    prompt = "Create a source evidence review workspace that publishes an accountable decision record."
+    source_artifact = tmp_path / "evidence/sources/public-source-001.txt"
+    source_text = "Source evidence review workspace."
+    source_artifact.parent.mkdir(parents=True)
+    source_artifact.write_text(source_text, encoding="utf-8")
+    provenance = {
+        "corpus_tier": "source_provenanced",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v1",
+        "source_id": "public-source-001",
+        "source_uri": "https://example.org/source/001",
+        "source_artifact_path": source_artifact.relative_to(tmp_path).as_posix(),
+        "source_artifact_sha256": _sha256(source_text),
+        "source_span": source_text,
+        "source_span_sha256": _sha256(source_text),
+        "source_excerpt": source_text,
+        "source_excerpt_sha256": _sha256(source_text),
+        "retrieved_on": "2026-07-18",
+        "license_or_consent": "CC0-1.0",
+        "source_family": "public-policy",
+        "derivation_method": "manual product-intent derivation",
+        "derived_prompt_sha256": _sha256(prompt),
+        "derivation_author": "freedom-research",
+    }
+    source.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "release-001",
+                        "name": "source evidence review",
+                        "prompt": prompt,
+                        "required_terms": ("source", "evidence"),
+                        "leakage_terms": ("source evidence review",),
+                        "provenance": provenance,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    module.generate_case_file(
+        source_case_files=(source,),
+        output_json=output,
+        target_count=1,
+        min_variance_score=0,
+        min_stressor_density=0.0,
+    )
+
+    generated = json.loads(output.read_text(encoding="utf-8"))
+    loaded = case_file.load_case_file(output)
+
+    assert generated["cases"][0]["provenance"] == provenance
+    assert loaded[0].provenance.source_id == "public-source-001"
+    assert loaded[0].provenance.corpus_tier == "source_provenanced"
+
+
+def test_case_generator_omits_explicit_synthetic_provenance(tmp_path: Path) -> None:
+    module = _module()
+    source = tmp_path / "synthetic-cases.json"
+    output = tmp_path / "generated-cases.json"
+    source.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "synthetic-001",
+                        "name": "synthetic evidence review",
+                        "prompt": "Create a synthetic evidence review workspace with a governed decision record.",
+                        "required_terms": ("synthetic", "evidence"),
+                        "leakage_terms": ("synthetic evidence review",),
+                        "provenance": {"corpus_tier": "synthetic_regression"},
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    module.generate_case_file(
+        source_case_files=(source,),
+        output_json=output,
+        target_count=1,
+        min_variance_score=0,
+        min_stressor_density=0.0,
+    )
+
+    generated = json.loads(output.read_text(encoding="utf-8"))
+
+    assert "provenance" not in generated["cases"][0]
 
 
 def test_case_generator_fails_when_required_stressor_is_absent(tmp_path: Path) -> None:

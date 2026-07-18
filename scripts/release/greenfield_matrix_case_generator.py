@@ -17,6 +17,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_corpus_provenance import case_provenance_to_dict  # noqa: E402
 from greenfield_matrix_input_axes import normalize_input_style  # noqa: E402
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS  # noqa: E402
 from greenfield_matrix_stressors import case_stratification  # noqa: E402
@@ -447,6 +448,9 @@ def _case_to_dict(case: GreenfieldMatrixCase) -> dict[str, Any]:
     if case.metamorphic_group:
         row["metamorphic_group"] = case.metamorphic_group
         row["metamorphic_transform"] = case.metamorphic_transform
+    provenance = case_provenance_to_dict(case.provenance)
+    if provenance and provenance.get("corpus_tier") != "synthetic_regression":
+        row["provenance"] = provenance
     return row
 
 
