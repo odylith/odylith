@@ -354,7 +354,7 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
     assert matrix_kwargs["proof_tier"] == "discovery"
     assert matrix_kwargs["campaign_phase"] == "60-case-regression"
     assert matrix_kwargs["stop_after_failures"] == 2
-    assert execution_order[:2] == ["commit_recovery", "matrix"]
+    assert execution_order[:2] == ["matrix", "commit_recovery"]
     assert payload["proof_scope"]["commit_recovery_path"] == module.COMMIT_RECOVERY_PROOF_SCOPE
     assert payload["commit_recovery_proof"]["status"] == "passed"
     assert payload["campaign"]["phase"] == "60-case-regression"

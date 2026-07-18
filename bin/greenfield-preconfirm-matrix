@@ -32,7 +32,12 @@ cleanup_wrapper_temp_root() {
     rm -rf "$wrapper_temp_root"
   fi
 }
-trap cleanup_wrapper_temp_root EXIT INT TERM
+
+preserve_wrapper_temp_root_on_signal() {
+  preserve_wrapper_temp_root=1
+}
+trap cleanup_wrapper_temp_root EXIT
+trap preserve_wrapper_temp_root_on_signal INT TERM
 
 extra_args=()
 rescue_smoke_enabled=1

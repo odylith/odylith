@@ -1937,16 +1937,6 @@ def _execute_matrix_campaign(
     """Run one fully isolated proof campaign under its output lease."""
 
     temp_parent = lease.temp_namespace
-    # Keep the self-contained one-per-run proof ahead of retained matrix evidence.
-    commit_recovery = (
-        run_installed_commit_recovery_proof(
-            dist_dir=Path(args.dist_dir),
-            version=str(args.version),
-            temp_parent=temp_parent,
-        )
-        if bool(args.include_commit_recovery_proof)
-        else None
-    )
     results = run_matrix(
         dist_dir=Path(args.dist_dir),
         version=str(args.version),
@@ -1963,6 +1953,15 @@ def _execute_matrix_campaign(
         incremental_output_json=output_path,
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
         release_audits=release_audits,
+    )
+    commit_recovery = (
+        run_installed_commit_recovery_proof(
+            dist_dir=Path(args.dist_dir),
+            version=str(args.version),
+            temp_parent=temp_parent,
+        )
+        if bool(args.include_commit_recovery_proof)
+        else None
     )
     rescue = (
         run_rescue_smoke(

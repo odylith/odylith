@@ -3,7 +3,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
+import time
 
 import pytest
 
@@ -133,7 +135,8 @@ def test_greenfield_preconfirm_matrix_target_runs_installed_release_gate() -> No
     assert '--dist-dir "$dist_dir"' in text
     assert '--version "$requested_version"' in text
     assert 'wrapper_temp_root="$(mktemp -d "$temp_parent/odylith-greenfield-wrapper-run.XXXXXX")"' in text
-    assert 'trap cleanup_wrapper_temp_root EXIT INT TERM' in text
+    assert 'trap cleanup_wrapper_temp_root EXIT' in text
+    assert 'trap preserve_wrapper_temp_root_on_signal INT TERM' in text
     assert '--temp-parent "$wrapper_temp_root"' in text
     assert '--output-json "$proof_json"' in text
     assert "make greenfield-preconfirm-matrix" in help_text
@@ -285,6 +288,67 @@ def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_nonzer
     assert result.returncode != 0
     preserved_roots = list(temp_parent.glob("odylith-greenfield-wrapper-run.*"))
     assert len(preserved_roots) == 1, result.stderr
+    shutil.rmtree(preserved_roots[0])
+
+
+def test_greenfield_preconfirm_matrix_preserves_its_outer_temp_root_after_interrupt(
+    tmp_path: Path,
+) -> None:
+    temp_parent = tmp_path / "outer-temp"
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "install.sh").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    ready_file = tmp_path / "controller-ready"
+    fake_python = tmp_path / "fake-python"
+    fake_python.write_text(
+        "#!/usr/bin/env python3\n"
+        "from pathlib import Path\n"
+        "import os\n"
+        "import signal\n"
+        "import sys\n"
+        "\n"
+        "if any(arg.endswith('greenfield_preconfirm_matrix.py') for arg in sys.argv[1:]):\n"
+        "    Path(os.environ['FAKE_CONTROLLER_READY_FILE']).write_text('ready', encoding='utf-8')\n"
+        "    signal.signal(signal.SIGINT, lambda _signal, _frame: sys.exit(130))\n"
+        "    signal.pause()\n",
+        encoding="utf-8",
+    )
+    fake_python.chmod(0o755)
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "ODYLITH_PYTHON": str(fake_python),
+            "ODYLITH_REPO_ROOT_OVERRIDE": str(REPO_ROOT),
+            "TEMP_PARENT": str(temp_parent),
+            "FAKE_CONTROLLER_READY_FILE": str(ready_file),
+        }
+    )
+    process = subprocess.Popen(
+        [str(REPO_ROOT / "bin" / "greenfield-preconfirm-matrix"), "0.1.15", str(dist_dir)],
+        cwd=REPO_ROOT,
+        env=environment,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    )
+    try:
+        for _ in range(100):
+            if ready_file.is_file() and list(temp_parent.glob("odylith-greenfield-wrapper-run.*")):
+                break
+            time.sleep(0.01)
+        assert ready_file.is_file()
+        os.killpg(process.pid, signal.SIGINT)
+        _stdout, stderr = process.communicate(timeout=10)
+    finally:
+        if process.poll() is None:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.communicate(timeout=10)
+
+    assert process.returncode == 130
+    assert "retained temporary evidence at:" in stderr
+    preserved_roots = list(temp_parent.glob("odylith-greenfield-wrapper-run.*"))
+    assert len(preserved_roots) == 1
     shutil.rmtree(preserved_roots[0])
 
 
