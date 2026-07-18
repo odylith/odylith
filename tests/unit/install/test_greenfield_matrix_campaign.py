@@ -70,6 +70,16 @@ def test_telemetry_writer_flushes_jsonl_events_incrementally(tmp_path: Path) -> 
     assert rows[1]["case"]["name"] == "case one"
 
 
+def test_telemetry_writer_fsyncs_each_event(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    calls: list[int] = []
+    monkeypatch.setattr(module.os, "fsync", lambda descriptor: calls.append(descriptor))
+
+    module.MatrixTelemetryWriter(tmp_path / "campaign" / "progress.jsonl").emit("run_started", {"case_count": 1})
+
+    assert len(calls) == 1
+
+
 def test_campaign_progress_console_line_reports_per_case_status() -> None:
     if str(SCRIPTS_ROOT) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_ROOT))

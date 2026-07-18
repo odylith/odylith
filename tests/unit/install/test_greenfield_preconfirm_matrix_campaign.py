@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -128,6 +129,137 @@ def test_run_matrix_writes_incremental_telemetry_and_stops_on_failure_threshold(
     assert rows[0]["phase"] == "failed-subset"
     assert rows[2]["failure_cluster"] == "commit.only.create.did.not.write.records"
     assert rows[3]["reason"] == "failure-threshold:1"
+
+
+def test_run_matrix_emits_redacted_process_lifecycle_events(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    secret_prompt = "--customer-private launch narrative"
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fake_run_case(**kwargs):
+        kwargs["repo_root"].mkdir(parents=True, exist_ok=True)
+        completed = module._run(
+            cwd=kwargs["repo_root"],
+            env={},
+            command=[sys.executable, "-c", "print('ok')", "--prompt", secret_prompt],
+            timeout=5,
+        )
+        assert completed.returncode == 0
+        return _result(module, name=kwargs["case"].name)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        proof_tier="discovery",
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    command_rows = [row for row in rows if row["event"].startswith("command_")]
+    serialized = json.dumps(command_rows, sort_keys=True)
+    assert results[0].status == "passed"
+    assert [row["event"] for row in command_rows] == ["command_started", "command_completed"]
+    assert command_rows[0]["option_count"] == 2
+    assert command_rows[1]["returncode"] == 0
+    assert secret_prompt not in serialized
+    assert "print('ok')" not in serialized
+
+
+def test_seeded_matrix_emits_lifecycle_events_for_prepare_and_clone_subprocesses(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fake_prepare_seed_repo(*, seed_repo, **_kwargs):
+        seed_repo.mkdir(parents=True)
+        module._run(cwd=seed_repo, env={}, command=[sys.executable, "-c", ""], timeout=5)
+        return subprocess.CompletedProcess(["bash", "install.sh"], 0, stdout="", stderr="")
+
+    def fake_clone_seed_repo(*, repo_root, **_kwargs):
+        repo_root.mkdir(parents=True)
+        module._run(cwd=repo_root, env={}, command=[sys.executable, "-c", ""], timeout=5)
+
+    monkeypatch.setattr(module, "_prepare_seed_repo", fake_prepare_seed_repo)
+    monkeypatch.setattr(module, "_clone_seed_repo", fake_clone_seed_repo)
+    monkeypatch.setattr(module, "_run_case", lambda **kwargs: _result(module, name=kwargs["case"].name))
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        install_mode="seeded",
+        telemetry_jsonl=telemetry_path,
+        proof_tier="discovery",
+    )
+
+    rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    command_rows = [row for row in rows if row["event"].startswith("command_")]
+    assert results[0].status == "passed"
+    assert [row["event"] for row in command_rows] == [
+        "command_started",
+        "command_completed",
+        "command_started",
+        "command_completed",
+    ]
+
+
+def test_run_matrix_reports_terminal_telemetry_failure_without_mislabeling_the_command(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    original_emit = module.MatrixTelemetryWriter.emit
+
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (_Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_platform_leakage_issues", lambda **kwargs: tuple(kwargs["results"]))
+
+    def fail_after_terminal_event(self, event, payload):  # noqa: ANN001
+        original_emit(self, event, payload)
+        if event == "command_completed":
+            raise OSError("fsync unavailable")
+
+    def fake_run_case(**kwargs):
+        kwargs["repo_root"].mkdir(parents=True, exist_ok=True)
+        module._run(cwd=kwargs["repo_root"], env={}, command=[sys.executable, "-c", "pass"], timeout=5)
+        return _result(module, name=kwargs["case"].name)
+
+    monkeypatch.setattr(module.MatrixTelemetryWriter, "emit", fail_after_terminal_event)
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
+    telemetry_path = tmp_path / "telemetry" / "progress.jsonl"
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(_case(module, "alpha review"),),
+        install_mode="full",
+        telemetry_jsonl=telemetry_path,
+        proof_tier="discovery",
+    )
+
+    assert results[0].status == "command-lifecycle-telemetry-failed"
+    assert "terminal_state=completed" in results[0].quality.issues[0]
+    assert "returncode=0" not in results[0].quality.issues[0]
 
 
 def test_run_matrix_emits_failed_case_completion_when_run_case_raises(
@@ -300,6 +432,7 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
     matrix_kwargs: dict[str, object] = {}
     execution_order: list[str] = []
+    telemetry_path = tmp_path / "progress.jsonl"
 
     def fake_run_matrix(**kwargs):
         execution_order.append("matrix")
@@ -307,14 +440,17 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
         return (_result(module, name="matrix case"),)
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
-    monkeypatch.setattr(
-        module,
-        "run_installed_commit_recovery_proof",
-        lambda **_kwargs: (
-            execution_order.append("commit_recovery")
-            or module.GreenfieldInstalledCommitRecoveryProof(status="passed", issues=())
-        ),
-    )
+    def fake_commit_recovery(**kwargs):
+        execution_order.append("commit_recovery")
+        module._run(
+            cwd=kwargs["temp_parent"],
+            env={},
+            command=[sys.executable, "-c", "pass"],
+            timeout=5,
+        )
+        return module.GreenfieldInstalledCommitRecoveryProof(status="passed", issues=())
+
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
     monkeypatch.setattr(
         module,
         "run_rescue_smoke",
@@ -340,7 +476,7 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
             "--campaign-phase",
             "60-case-regression",
             "--telemetry-jsonl",
-            str(tmp_path / "progress.jsonl"),
+            str(telemetry_path),
                 "--stop-after-failures",
                 "2",
                 "--include-commit-recovery-proof",
@@ -360,6 +496,11 @@ def test_main_persists_campaign_summary_for_discovery_runs(tmp_path: Path, monke
     assert payload["campaign"]["phase"] == "60-case-regression"
     assert payload["campaign"]["proof_tier"] == "discovery"
     assert payload["campaign"]["release_readiness_boundary"].startswith("discovery proof may skip browser")
+    telemetry_rows = [json.loads(line) for line in telemetry_path.read_text(encoding="utf-8").splitlines()]
+    assert [row["event"] for row in telemetry_rows if row["event"].startswith("command_")] == [
+        "command_started",
+        "command_completed",
+    ]
 
 
 def test_main_rejects_release_policy_without_browser_proof(tmp_path: Path) -> None:

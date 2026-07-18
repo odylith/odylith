@@ -6,6 +6,7 @@ from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 import time
 from typing import Any
@@ -46,6 +47,10 @@ class MatrixTelemetryWriter:
         if self._path is not None:
             self._path.parent.mkdir(parents=True, exist_ok=True)
 
+    @property
+    def enabled(self) -> bool:
+        return self._path is not None
+
     def emit(self, event: str, payload: Mapping[str, Any]) -> None:
         if self._path is None:
             return
@@ -57,6 +62,8 @@ class MatrixTelemetryWriter:
         }
         with self._path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
 
 
 def proof_tier_from_value(value: str) -> str:

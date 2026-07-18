@@ -70,6 +70,8 @@ from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: 
 from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
 from greenfield_preconfirm_matrix_cases import default_cases, rescue_smoke_case  # noqa: E402
 from greenfield_preconfirm_matrix_cases import raise_for_release_case_expectations  # noqa: E402
+from greenfield_process import CommandLifecycleObserverError  # noqa: E402
+from greenfield_process import command_lifecycle_observer  # noqa: E402
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
@@ -255,12 +257,13 @@ def run_matrix(
         seed_repo = None
         if install_mode == "seeded":
             seed_repo = run_root / f"odylith-seed-install-{uuid.uuid4().hex[:8]}"
-            seed_install = _prepare_seed_repo(
-                seed_repo=seed_repo,
-                install_script=install_script,
-                base_url=base_url,
-                version=version,
-            )
+            with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+                seed_install = _prepare_seed_repo(
+                    seed_repo=seed_repo,
+                    install_script=install_script,
+                    base_url=base_url,
+                    version=version,
+                )
             if seed_install.returncode != 0:
                 results = [
                     _failed_case(
@@ -301,20 +304,31 @@ def run_matrix(
             repo_root = run_root / f"odylith-sim-{case.slug}-{uuid.uuid4().hex[:8]}"
             try:
                 if seed_repo is not None:
-                    _clone_seed_repo(seed_repo=seed_repo, repo_root=repo_root, version=version)
-                result = _run_case(
-                    case=case,
-                    repo_root=repo_root,
-                    install_script=install_script,
-                    base_url=base_url,
-                    version=version,
-                    include_browser_proof=include_browser_proof,
-                    platform_baseline_terms=platform_baseline_terms,
-                    skip_install=seed_repo is not None,
-                    install_mode=install_mode,
-                )
+                    with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+                        _clone_seed_repo(seed_repo=seed_repo, repo_root=repo_root, version=version)
+                with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+                    result = _run_case(
+                        case=case,
+                        repo_root=repo_root,
+                        install_script=install_script,
+                        base_url=base_url,
+                        version=version,
+                        include_browser_proof=include_browser_proof,
+                        platform_baseline_terms=platform_baseline_terms,
+                        skip_install=seed_repo is not None,
+                        install_mode=install_mode,
+                    )
                 result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
                 reason = stop_reason((*results, result), campaign_config)
+            except CommandLifecycleObserverError as exc:
+                result = _failed_case(
+                    case,
+                    repo_root,
+                    "command-lifecycle-telemetry-failed",
+                    exc.returncode,
+                    f"{exc}; command_kind={exc.command_kind}; terminal_state={exc.state}",
+                )
+                reason = "command-lifecycle-telemetry-failed"
             except Exception as exc:
                 result = _failed_case(
                     case,
@@ -377,6 +391,17 @@ def run_matrix(
         server.server_close()
         _cleanup_run_root(run_root)
     return tuple(results)
+
+
+def _matrix_command_observer(telemetry: MatrixTelemetryWriter):
+    if not telemetry.enabled:
+        return None
+
+    def observe(event: Mapping[str, object]) -> None:
+        state = str(event.get("state") or "unknown")
+        telemetry.emit(f"command_{state}", event)
+
+    return observe
 
 
 def _matrix_preflight_results(
@@ -1937,50 +1962,52 @@ def _execute_matrix_campaign(
     """Run one fully isolated proof campaign under its output lease."""
 
     temp_parent = lease.temp_namespace
-    results = run_matrix(
-        dist_dir=Path(args.dist_dir),
-        version=str(args.version),
-        temp_parent=temp_parent,
-        cases=selected_cases,
-        include_browser_proof=bool(args.include_browser_proof),
-        install_mode=str(args.install_mode),
-        telemetry_jsonl=campaign_config.telemetry_jsonl,
-        campaign_phase=campaign_config.phase,
-        proof_tier=campaign_config.proof_tier,
-        stop_after_failures=campaign_config.stop_after_failures,
-        stop_after_cluster_failures=campaign_config.stop_after_cluster_failures,
-        required_stressors=campaign_config.required_stressors,
-        incremental_output_json=output_path,
-        allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
-        release_audits=release_audits,
-    )
-    commit_recovery = (
-        run_installed_commit_recovery_proof(
+    telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
+    with command_lifecycle_observer(_matrix_command_observer(telemetry)):
+        results = run_matrix(
             dist_dir=Path(args.dist_dir),
             version=str(args.version),
             temp_parent=temp_parent,
+            cases=selected_cases,
+            include_browser_proof=bool(args.include_browser_proof),
+            install_mode=str(args.install_mode),
+            telemetry_jsonl=campaign_config.telemetry_jsonl,
+            campaign_phase=campaign_config.phase,
+            proof_tier=campaign_config.proof_tier,
+            stop_after_failures=campaign_config.stop_after_failures,
+            stop_after_cluster_failures=campaign_config.stop_after_cluster_failures,
+            required_stressors=campaign_config.required_stressors,
+            incremental_output_json=output_path,
+            allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+            release_audits=release_audits,
         )
-        if bool(args.include_commit_recovery_proof)
-        else None
-    )
-    rescue = (
-        run_rescue_smoke(
-            dist_dir=Path(args.dist_dir),
-            version=str(args.version),
-            temp_parent=temp_parent,
+        commit_recovery = (
+            run_installed_commit_recovery_proof(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+            )
+            if bool(args.include_commit_recovery_proof)
+            else None
         )
-        if bool(args.include_rescue_smoke)
-        else None
-    )
-    natural_rescue = (
-        run_natural_rescue_proof(
-            dist_dir=Path(args.dist_dir),
-            version=str(args.version),
-            temp_parent=temp_parent,
+        rescue = (
+            run_rescue_smoke(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+            )
+            if bool(args.include_rescue_smoke)
+            else None
         )
-        if bool(args.include_natural_rescue_proof)
-        else None
-    )
+        natural_rescue = (
+            run_natural_rescue_proof(
+                dist_dir=Path(args.dist_dir),
+                version=str(args.version),
+                temp_parent=temp_parent,
+            )
+            if bool(args.include_natural_rescue_proof)
+            else None
+        )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
     cleanup_proof = temp_cleanup_proof(temp_parent)

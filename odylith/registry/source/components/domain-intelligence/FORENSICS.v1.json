@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 498,
+    "explicit_event_count": 502,
     "mapped_workstream_evidence_count": 421,
     "recent_path_match_count": 0,
     "spec_history_event_count": 261,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 498
+    "timeline_event_count": 502
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,91 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 1095,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-17T22:59:13-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 1094,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-17T22:27:36-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 1093,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-07-17T22:21:48-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 1092,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-17T22:15:51-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 1,
       "artifacts": [

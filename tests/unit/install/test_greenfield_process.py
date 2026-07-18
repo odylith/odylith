@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import importlib.util
+import json
 import os
 import signal
 import subprocess
@@ -61,13 +62,15 @@ def test_run_command_with_group_timeout_terminates_process_group(monkeypatch, tm
     monkeypatch.setattr(module.subprocess, "Popen", fake_popen)
     monkeypatch.setattr(module.os, "killpg", lambda pid, sig: killed.append((pid, sig)))
 
-    result = module.run_command_with_group_timeout(
-        cwd=tmp_path,
-        env={},
-        command=["bash", "install.sh"],
-        timeout=0.01,
-        on_started=lambda _pid, _pgid: None,
-    )
+    events: list[dict[str, object]] = []
+    with module.command_lifecycle_observer(events.append):
+        result = module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=["bash", "install.sh"],
+            timeout=0.01,
+            on_started=lambda _pid, _pgid: None,
+        )
 
     assert result.returncode == 124
     assert popen_kwargs["start_new_session"] is True
@@ -75,6 +78,61 @@ def test_run_command_with_group_timeout_terminates_process_group(monkeypatch, tm
     assert "partial stdout" in result.stdout
     assert "partial stderr" in result.stderr
     assert "process group was terminated" in result.stderr
+    assert [event["state"] for event in events] == ["started", "timed_out"]
+    assert events[1]["termination_observation"] == "output_pipes_closed_after_sigterm"
+
+
+def test_command_lifecycle_observer_records_redacted_start_and_completion(tmp_path: Path) -> None:
+    module = _module()
+    events: list[dict[str, object]] = []
+    secret_prompt = "--customer-private launch narrative"
+
+    with module.command_lifecycle_observer(events.append):
+        result = module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=[sys.executable, "-c", "print('ok')", "--prompt", secret_prompt],
+            timeout=5,
+        )
+
+    serialized = json.dumps(events, sort_keys=True)
+    assert result.returncode == 0
+    assert [event["state"] for event in events] == ["started", "completed"]
+    assert events[0]["command_kind"] == "python"
+    assert events[0]["option_count"] == 2
+    assert events[1]["stdout_bytes"] == len("ok\n")
+    assert secret_prompt not in serialized
+    assert "print('ok')" not in serialized
+
+
+def test_command_lifecycle_redacts_an_untrusted_executable_name() -> None:
+    module = _module()
+    secret_executable = "/tmp/customer-private-launch-narrative"
+
+    shape = module._redacted_command_shape([secret_executable, "--prompt", "private value"])
+
+    assert shape == {"command_kind": "other", "argument_count": 3, "option_count": 1}
+    assert secret_executable not in json.dumps(shape, sort_keys=True)
+
+
+def test_terminal_command_telemetry_failure_preserves_the_command_outcome(tmp_path: Path) -> None:
+    module = _module()
+
+    def failing_observer(event) -> None:  # noqa: ANN001
+        if event["state"] == "completed":
+            raise OSError("fsync unavailable")
+
+    with module.command_lifecycle_observer(failing_observer), pytest.raises(module.CommandLifecycleObserverError) as exc_info:
+        module.run_command_with_group_timeout(
+            cwd=tmp_path,
+            env={},
+            command=[sys.executable, "-c", "pass"],
+            timeout=5,
+        )
+
+    assert exc_info.value.command_kind == "python"
+    assert exc_info.value.returncode == 0
+    assert exc_info.value.state == "completed"
 
 
 def test_run_command_with_group_timeout_reaps_child_when_start_callback_fails(monkeypatch, tmp_path: Path) -> None:
@@ -131,6 +189,7 @@ def test_run_command_with_group_timeout_reaps_child_when_start_callback_is_inter
 def test_run_command_with_group_timeout_reaps_child_when_communicate_is_interrupted(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     killed: list[tuple[int, int]] = []
+    events: list[dict[str, object]] = []
 
     class FakeProcess:
         pid = 4242
@@ -143,10 +202,36 @@ def test_run_command_with_group_timeout_reaps_child_when_communicate_is_interrup
     monkeypatch.setattr(module.subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
     monkeypatch.setattr(module.os, "killpg", lambda pid, sig: killed.append((pid, sig)))
 
-    with pytest.raises(KeyboardInterrupt):
+    with module.command_lifecycle_observer(events.append), pytest.raises(KeyboardInterrupt):
         module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["bash", "install.sh"], timeout=1)
 
     assert killed == [(4242, module.signal.SIGTERM)]
+    assert [event["state"] for event in events] == ["started", "interrupted"]
+    assert events[1]["termination_observation"] == "output_pipes_closed_after_sigterm"
+
+
+def test_interrupted_command_preserves_telemetry_write_failure_as_an_exception_note(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+
+    class FakeProcess:
+        pid = 4242
+
+        def communicate(self, timeout=None):  # noqa: ANN001
+            if timeout == 5:
+                return "", ""
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(module.subprocess, "Popen", lambda *_args, **_kwargs: FakeProcess())
+    monkeypatch.setattr(module.os, "killpg", lambda *_args: None)
+
+    def failing_observer(event) -> None:  # noqa: ANN001
+        if event["state"] == "interrupted":
+            raise OSError("fsync unavailable")
+
+    with module.command_lifecycle_observer(failing_observer), pytest.raises(KeyboardInterrupt) as exc_info:
+        module.run_command_with_group_timeout(cwd=tmp_path, env={}, command=["bash", "install.sh"], timeout=1)
+
+    assert any("telemetry failed after process cleanup" in note for note in exc_info.value.__notes__)
 
 
 def test_run_command_with_group_timeout_reaps_real_child_when_runner_receives_sigint(tmp_path: Path) -> None:
