@@ -12,6 +12,7 @@ from greenfield_matrix_types import GreenfieldMatrixResult
 TEMP_CLEANUP_PATTERNS: tuple[str, ...] = (
     "odylith-greenfield-matrix-*",
     "odylith-greenfield-rescue-*",
+    "odylith-greenfield-natural-rescue-*",
     "odylith-greenfield-commit-recovery-*",
     "odylith-source-*",
     "odylith-debug-*",

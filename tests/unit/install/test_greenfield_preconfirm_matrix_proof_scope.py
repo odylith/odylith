@@ -371,6 +371,17 @@ def test_temp_cleanup_proof_finds_installed_recovery_leftovers(tmp_path: Path) -
     assert str(leftover) in proof["remaining_paths"]
 
 
+def test_temp_cleanup_proof_finds_natural_rescue_leftovers(tmp_path: Path) -> None:
+    module = _module()
+    leftover = tmp_path / "odylith-greenfield-natural-rescue-leftover"
+    leftover.mkdir()
+
+    proof = module.temp_cleanup_proof(tmp_path)
+
+    assert proof["status"] == "failed"
+    assert str(leftover) in proof["remaining_paths"]
+
+
 def test_natural_rescue_quality_requires_structured_non_probe_case() -> None:
     module = _module()
     synthetic = _passing_matrix_result(

@@ -165,12 +165,19 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         fsync_failure_returncode=2,
         fsync_retry_returncode=0,
         fsync_same_hash_retry_returncode=0,
+        operator_conflict_returncode=2,
         journal_state_after_crash="applying",
         journal_state_after_recovery="committed",
         fsync_journal_state_after_failure="rolled_back",
         fsync_journal_state_after_retry="committed",
         fsync_failure_kind="post_confirm_commit_environment_or_io_failure",
+        operator_conflict_failure_kind="post_confirm_commit_recovery_conflict",
+        operator_conflict_rollback_status="not_started",
+        operator_conflict_journal_state="applying",
         governed_write_observed_after_crash=True,
+        operator_mutation_preserved=True,
+        operator_conflict_snapshot_retained=True,
+        operator_conflict_recovery_path_bound=True,
         installed_runtime_module_path="/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         installed_runtime_version="0.1.15",
     )
@@ -178,7 +185,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
     assert proof.passed
     assert proof.to_dict() == {
         "status": "passed",
-        "scope": "real_installed_additive_write_sigkill_same_hash_retry_and_fsync_rollback",
+        "scope": "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback",
         "issues": [],
         "sigkill_returncode": -9,
         "recovery_returncode": 0,
@@ -186,12 +193,19 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         "fsync_failure_returncode": 2,
         "fsync_retry_returncode": 0,
         "fsync_same_hash_retry_returncode": 0,
+        "operator_conflict_returncode": 2,
         "journal_state_after_crash": "applying",
         "journal_state_after_recovery": "committed",
         "fsync_journal_state_after_failure": "rolled_back",
         "fsync_journal_state_after_retry": "committed",
         "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
+        "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
+        "operator_conflict_rollback_status": "not_started",
+        "operator_conflict_journal_state": "applying",
         "governed_write_observed_after_crash": True,
+        "operator_mutation_preserved": True,
+        "operator_conflict_snapshot_retained": True,
+        "operator_conflict_recovery_path_bound": True,
         "installed_runtime_module_path": "/tmp/repo/.odylith/runtime/versions/0.1.15/lib/odylith/__init__.py",
         "installed_runtime_version": "0.1.15",
     }
@@ -216,4 +230,86 @@ def test_recovery_proof_rejects_a_success_record_missing_required_observations()
 
     assert "installed recovery proof did not observe a partial governed write before recovery" in issues
     assert "installed recovery proof did not record required fsync_same_hash_retry_returncode" in issues
+    assert "installed recovery proof did not record required operator_conflict_returncode" in issues
+    assert "installed recovery proof did not preserve the concurrent operator mutation" in issues
+    assert "installed recovery proof did not retain the conflict recovery snapshot" in issues
+    assert "installed recovery proof did not report the retained conflict recovery path" in issues
     assert "installed recovery proof did not record required installed_runtime_module_path" in issues
+
+
+def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    repo_root = tmp_path / "operator-conflict"
+    partial_write = repo_root / "odylith/radar/source/partial.md"
+    transaction_hash = "a" * 64
+    journal_root = module._journal_root(repo_root, transaction_hash)  # noqa: SLF001
+    (journal_root / "snapshot").mkdir(parents=True)
+
+    monkeypatch.setattr(module, "_install_repo", lambda **_kwargs: repo_root.mkdir(exist_ok=True))
+    monkeypatch.setattr(
+        module,
+        "_compile_transaction",
+        lambda **_kwargs: (".odylith/runtime/greenfield/product-create-transaction.v1.json", transaction_hash, "b" * 64),
+    )
+
+    def fake_faulted_create(**_kwargs):  # noqa: ANN001
+        partial_write.parent.mkdir(parents=True, exist_ok=True)
+        partial_write.write_text("sealed write before interruption\\n", encoding="utf-8")
+        return SimpleNamespace(returncode=-9, stdout="", stderr="")
+
+    monkeypatch.setattr(module, "_run_faulted_create", fake_faulted_create)
+    monkeypatch.setattr(
+        module,
+        "_run",
+        lambda **_kwargs: SimpleNamespace(
+            returncode=2,
+            stdout=(
+                '{"mode":"error","commit_failure":{"failure_kind":"post_confirm_commit_recovery_conflict",'
+                '"rollback_status":"not_started","recovery_path":"'
+                + str(journal_root)
+                + '"}}'
+            ),
+            stderr="",
+        ),
+    )
+    monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: {"state": "applying"})
+
+    facts = module._run_operator_conflict_recovery_phase(  # noqa: SLF001
+        run_root=tmp_path,
+        install_script=tmp_path / "install.sh",
+        env={"PATH": "/usr/bin"},
+    )
+
+    assert facts == {
+        "operator_conflict_returncode": 2,
+        "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
+        "operator_conflict_rollback_status": "not_started",
+        "operator_conflict_journal_state": "applying",
+        "operator_mutation_preserved": True,
+        "operator_conflict_snapshot_retained": True,
+        "operator_conflict_recovery_path_bound": True,
+    }
+    assert partial_write.read_bytes() == b"operator mutation retained by installed recovery proof\n"
+
+
+def test_interrupted_write_selector_ignores_unchanged_governed_files(tmp_path: Path) -> None:
+    module = _module()
+    unchanged = tmp_path / "odylith/radar/source/unchanged.md"
+    changed = tmp_path / "odylith/radar/source/changed.md"
+    unchanged.parent.mkdir(parents=True)
+    unchanged.write_text("operator-owned before and after\n", encoding="utf-8")
+    changed.write_text("sealed write after interruption\n", encoding="utf-8")
+
+    selected = module._interrupted_governed_write_path(  # noqa: SLF001
+        repo_root=tmp_path,
+        before={
+            "odylith/radar/source/unchanged.md": "same",
+            "odylith/radar/source/changed.md": "before",
+        },
+        after={
+            "odylith/radar/source/unchanged.md": "same",
+            "odylith/radar/source/changed.md": "after",
+        },
+    )
+
+    assert selected == changed

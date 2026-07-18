@@ -20,7 +20,7 @@ from local_release_smoke import _serve_directory
 
 
 COMMAND_TIMEOUT_SECONDS = 300
-PROOF_SCOPE = "real_installed_additive_write_sigkill_same_hash_retry_and_fsync_rollback"
+PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
 _SIGKILL_FAULT = """
 import os
@@ -70,12 +70,19 @@ class GreenfieldInstalledCommitRecoveryProof:
     fsync_failure_returncode: int | None = None
     fsync_retry_returncode: int | None = None
     fsync_same_hash_retry_returncode: int | None = None
+    operator_conflict_returncode: int | None = None
     journal_state_after_crash: str = ""
     journal_state_after_recovery: str = ""
     fsync_journal_state_after_failure: str = ""
     fsync_journal_state_after_retry: str = ""
     fsync_failure_kind: str = ""
+    operator_conflict_failure_kind: str = ""
+    operator_conflict_rollback_status: str = ""
+    operator_conflict_journal_state: str = ""
     governed_write_observed_after_crash: bool = False
+    operator_mutation_preserved: bool = False
+    operator_conflict_snapshot_retained: bool = False
+    operator_conflict_recovery_path_bound: bool = False
     installed_runtime_module_path: str = ""
     installed_runtime_version: str = ""
 
@@ -94,12 +101,19 @@ class GreenfieldInstalledCommitRecoveryProof:
             "fsync_failure_returncode": self.fsync_failure_returncode,
             "fsync_retry_returncode": self.fsync_retry_returncode,
             "fsync_same_hash_retry_returncode": self.fsync_same_hash_retry_returncode,
+            "operator_conflict_returncode": self.operator_conflict_returncode,
             "journal_state_after_crash": self.journal_state_after_crash,
             "journal_state_after_recovery": self.journal_state_after_recovery,
             "fsync_journal_state_after_failure": self.fsync_journal_state_after_failure,
             "fsync_journal_state_after_retry": self.fsync_journal_state_after_retry,
             "fsync_failure_kind": self.fsync_failure_kind,
+            "operator_conflict_failure_kind": self.operator_conflict_failure_kind,
+            "operator_conflict_rollback_status": self.operator_conflict_rollback_status,
+            "operator_conflict_journal_state": self.operator_conflict_journal_state,
             "governed_write_observed_after_crash": self.governed_write_observed_after_crash,
+            "operator_mutation_preserved": self.operator_mutation_preserved,
+            "operator_conflict_snapshot_retained": self.operator_conflict_snapshot_retained,
+            "operator_conflict_recovery_path_bound": self.operator_conflict_recovery_path_bound,
             "installed_runtime_module_path": self.installed_runtime_module_path,
             "installed_runtime_version": self.installed_runtime_version,
         }
@@ -133,6 +147,13 @@ def run_installed_commit_recovery_proof(
                 version=version,
             )
         )
+        facts.update(
+            _run_operator_conflict_recovery_phase(
+                run_root=run_root,
+                install_script=install_script,
+                env=env,
+            )
+        )
         facts.update(_run_fsync_rollback_phase(run_root=run_root, install_script=install_script, env=env))
     except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
         issues.append(str(exc))
@@ -157,12 +178,19 @@ def run_installed_commit_recovery_proof(
         fsync_failure_returncode=facts.get("fsync_failure_returncode"),
         fsync_retry_returncode=facts.get("fsync_retry_returncode"),
         fsync_same_hash_retry_returncode=facts.get("fsync_same_hash_retry_returncode"),
+        operator_conflict_returncode=facts.get("operator_conflict_returncode"),
         journal_state_after_crash=str(facts.get("journal_state_after_crash") or ""),
         journal_state_after_recovery=str(facts.get("journal_state_after_recovery") or ""),
         fsync_journal_state_after_failure=str(facts.get("fsync_journal_state_after_failure") or ""),
         fsync_journal_state_after_retry=str(facts.get("fsync_journal_state_after_retry") or ""),
         fsync_failure_kind=str(facts.get("fsync_failure_kind") or ""),
+        operator_conflict_failure_kind=str(facts.get("operator_conflict_failure_kind") or ""),
+        operator_conflict_rollback_status=str(facts.get("operator_conflict_rollback_status") or ""),
+        operator_conflict_journal_state=str(facts.get("operator_conflict_journal_state") or ""),
         governed_write_observed_after_crash=bool(facts.get("governed_write_observed_after_crash")),
+        operator_mutation_preserved=bool(facts.get("operator_mutation_preserved")),
+        operator_conflict_snapshot_retained=bool(facts.get("operator_conflict_snapshot_retained")),
+        operator_conflict_recovery_path_bound=bool(facts.get("operator_conflict_recovery_path_bound")),
         installed_runtime_module_path=str(facts.get("installed_runtime_module_path") or ""),
         installed_runtime_version=str(facts.get("installed_runtime_version") or ""),
     )
@@ -178,6 +206,9 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
         "fsync_journal_state_after_failure": "rolled_back",
         "fsync_journal_state_after_retry": "committed",
         "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
+        "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
+        "operator_conflict_rollback_status": "not_started",
+        "operator_conflict_journal_state": "applying",
     }
     for key, expected in required_values.items():
         if str(facts.get(key) or "") != expected:
@@ -189,11 +220,18 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
         "fsync_failure_returncode",
         "fsync_retry_returncode",
         "fsync_same_hash_retry_returncode",
+        "operator_conflict_returncode",
     ):
         if not isinstance(facts.get(key), int):
             missing.append(f"installed recovery proof did not record required {key}")
     if facts.get("governed_write_observed_after_crash") is not True:
         missing.append("installed recovery proof did not observe a partial governed write before recovery")
+    if facts.get("operator_mutation_preserved") is not True:
+        missing.append("installed recovery proof did not preserve the concurrent operator mutation")
+    if facts.get("operator_conflict_snapshot_retained") is not True:
+        missing.append("installed recovery proof did not retain the conflict recovery snapshot")
+    if facts.get("operator_conflict_recovery_path_bound") is not True:
+        missing.append("installed recovery proof did not report the retained conflict recovery path")
     for key in ("installed_runtime_module_path", "installed_runtime_version"):
         if not str(facts.get(key) or "").strip():
             missing.append(f"installed recovery proof did not record required {key}")
@@ -260,6 +298,71 @@ def _run_sigkill_recovery_phase(
         "journal_state_after_recovery": str(completed_journal.get("state") or ""),
         "governed_write_observed_after_crash": True,
         **runtime_identity,
+    }
+
+
+def _run_operator_conflict_recovery_phase(
+    *,
+    run_root: Path,
+    install_script: Path,
+    env: Mapping[str, str],
+) -> dict[str, Any]:
+    """Prove recovery preserves a later operator mutation instead of restoring over it."""
+
+    repo_root = run_root / "operator-conflict"
+    _install_repo(repo_root=repo_root, install_script=install_script, env=env)
+    transaction_file, transaction_hash, _write_set_hash = _compile_transaction(repo_root=repo_root, env=env)
+    before = _governed_fingerprint(repo_root)
+    command = _create_command(transaction_file=transaction_file, transaction_hash=transaction_hash)
+    crashed = _run_faulted_create(repo_root=repo_root, env=env, command=command, fault_script=_SIGKILL_FAULT)
+    if crashed.returncode != -signal.SIGKILL:
+        raise RuntimeError(
+            "installed conflict proof did not terminate with SIGKILL after its first sealed write: "
+            + _command_detail(crashed)
+        )
+    partial_write = _interrupted_governed_write_path(
+        repo_root=repo_root,
+        before=before,
+        after=_governed_fingerprint(repo_root),
+    )
+    operator_bytes = b"operator mutation retained by installed recovery proof\n"
+    partial_write.write_bytes(operator_bytes)
+    conflicted = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
+    conflict_payload = _require_error_payload(conflicted, label="installed operator-conflict recovery create")
+    commit_failure = _mapping(conflict_payload.get("commit_failure"))
+    failure_kind = str(commit_failure.get("failure_kind") or "")
+    if failure_kind != "post_confirm_commit_recovery_conflict":
+        raise RuntimeError(
+            "installed conflict recovery reported unexpected failure kind: "
+            f"{failure_kind or 'missing'}"
+        )
+    rollback_status = str(commit_failure.get("rollback_status") or "")
+    if rollback_status != "not_started":
+        raise RuntimeError(
+            "installed conflict recovery reported unexpected rollback status: "
+            f"{rollback_status or 'missing'}"
+        )
+    journal = _journal_state(repo_root=repo_root, transaction_hash=transaction_hash)
+    if journal.get("state") != "applying":
+        raise RuntimeError("installed conflict recovery changed the interrupted journal state")
+    journal_root = _journal_root(repo_root, transaction_hash)
+    recovery_path = Path(str(commit_failure.get("recovery_path") or "")).expanduser()
+    if not recovery_path.is_absolute():
+        recovery_path = repo_root / recovery_path
+    if recovery_path.resolve(strict=False) != journal_root.resolve():
+        raise RuntimeError("installed conflict recovery did not report its retained journal path")
+    if not (journal_root / "snapshot").is_dir():
+        raise RuntimeError("installed conflict recovery discarded the retained rollback snapshot")
+    if partial_write.read_bytes() != operator_bytes:
+        raise RuntimeError("installed conflict recovery overwrote the later operator mutation")
+    return {
+        "operator_conflict_returncode": conflicted.returncode,
+        "operator_conflict_failure_kind": failure_kind,
+        "operator_conflict_rollback_status": rollback_status,
+        "operator_conflict_journal_state": str(journal.get("state") or ""),
+        "operator_mutation_preserved": True,
+        "operator_conflict_snapshot_retained": True,
+        "operator_conflict_recovery_path_bound": True,
     }
 
 
@@ -479,6 +582,24 @@ def _governed_fingerprint(repo_root: Path) -> dict[str, str]:
             relative_path = file_path.relative_to(root).as_posix()
             result[relative_path] = _file_fingerprint(file_path)
     return result
+
+
+def _interrupted_governed_write_path(
+    *,
+    repo_root: Path,
+    before: Mapping[str, str],
+    after: Mapping[str, str],
+) -> Path:
+    """Return a governed file proven to have changed in the interrupted write."""
+
+    root = Path(repo_root).expanduser().resolve()
+    changed_paths = sorted(path for path, fingerprint in after.items() if before.get(path) != fingerprint)
+    if not changed_paths:
+        raise RuntimeError("installed conflict proof did not observe a governed write after interruption")
+    path = root / changed_paths[0]
+    if path.is_symlink() or not path.is_file():
+        raise RuntimeError(f"installed conflict proof selected an unsafe governed file: {path}")
+    return path
 
 
 def _file_fingerprint(path: Path) -> str:
