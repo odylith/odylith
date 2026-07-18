@@ -18,8 +18,16 @@ for import_root in (SCRIPT_DIR, SRC_ROOT):
         sys.path.insert(0, str(import_root))
 
 from greenfield_matrix_case_file import canonical_case_text  # noqa: E402
+from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_corpus_provenance import CASE_PROVENANCE_VERSION  # noqa: E402
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES  # noqa: E402
+from greenfield_matrix_release_audit import select_release_audit_cases  # noqa: E402
+from greenfield_matrix_release_audit_evidence import audit_request_for_case  # noqa: E402
+from greenfield_matrix_release_audit_evidence import audit_request_sha256  # noqa: E402
+from greenfield_matrix_release_audit_evidence import github_repository_verification_uri  # noqa: E402
+from greenfield_release_audit_verification import AUDIT_REQUEST_PLAN_VERSION  # noqa: E402
+from greenfield_release_audit_verification import capture_audit_source_verifications  # noqa: E402
+from greenfield_release_audit_writer import write_release_audit_bundle  # noqa: E402
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS  # noqa: E402
 from greenfield_release_source_capture import DEFAULT_ARTIFACTS_PER_FAMILY  # noqa: E402
 from greenfield_release_source_capture import SOURCE_FAMILIES  # noqa: E402
@@ -82,12 +90,48 @@ def build_release_case_file(
     payload = {
         "version": SOURCE_CASE_FILE_VERSION,
         "claim_class": "source-provenanced-discovery",
-        "release_readiness_boundary": "Independent automated audit evidence and installed release proof are still required.",
+        "release_readiness_boundary": "Hash-bound automated review evidence and installed release proof are still required.",
         "source_manifest": manifest_relative,
         "source_case_count": len(cases),
         "cases": cases,
     }
     write_new_json_atomically(Path(output_json), payload, "release case output")
+    return payload
+
+
+def build_release_audit_request_plan(
+    *,
+    source_case_file: Path,
+    output_json: Path,
+    repo_root: Path = REPO_ROOT,
+    audit_count: int = 40,
+) -> dict[str, Any]:
+    """Produce review requests without creating approval evidence or release status."""
+
+    root = Path(repo_root).expanduser().resolve()
+    case_path = Path(source_case_file).expanduser().resolve()
+    selected = select_release_audit_cases(load_case_file(case_path), int(audit_count))
+    requests: list[dict[str, Any]] = []
+    for case in selected:
+        provenance = case.provenance
+        verification_uri = github_repository_verification_uri(provenance.source_id)
+        if verification_uri is None:
+            raise RuntimeError(f"audit request has unsupported source ID: {provenance.source_id}")
+        request = audit_request_for_case(
+            case,
+            source_verification_method="github-repository-api-check-v1",
+            source_verification_uri=verification_uri,
+        )
+        request["audit_request_sha256"] = audit_request_sha256(request)
+        requests.append(request)
+    payload = {
+        "version": AUDIT_REQUEST_PLAN_VERSION,
+        "claim_class": "audit-requests-only",
+        "source_case_file": repo_relative(case_path, root),
+        "requested_audit_count": len(requests),
+        "requests": requests,
+    }
+    write_new_json_atomically(Path(output_json), payload, "release audit request plan")
     return payload
 
 
@@ -275,6 +319,27 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     build.add_argument("--output-json", required=True)
     build.add_argument("--repo-root", default=str(REPO_ROOT))
     build.add_argument("--paired-artifacts-per-family", type=int, default=DEFAULT_PAIRED_ARTIFACTS_PER_FAMILY)
+    audit_plan = commands.add_parser("audit-plan", help="Build hash-bound review requests without approvals.")
+    audit_plan.add_argument("--source-case-file", required=True)
+    audit_plan.add_argument("--output-json", required=True)
+    audit_plan.add_argument("--repo-root", default=str(REPO_ROOT))
+    audit_plan.add_argument("--audit-count", type=int, default=40)
+    verify_sources = commands.add_parser(
+        "audit-verify-sources", help="Capture source verification records without review approvals."
+    )
+    verify_sources.add_argument("--audit-request-plan", required=True)
+    verify_sources.add_argument("--output-root", required=True)
+    verify_sources.add_argument("--repo-root", default=str(REPO_ROOT))
+    verify_sources.add_argument("--captured-at", default="")
+    write_audit = commands.add_parser(
+        "audit-write-results", help="Bind explicit review results into an audit evidence bundle."
+    )
+    write_audit.add_argument("--source-case-file", required=True)
+    write_audit.add_argument("--audit-request-plan", required=True)
+    write_audit.add_argument("--source-verification-root", required=True)
+    write_audit.add_argument("--review-results-file", required=True)
+    write_audit.add_argument("--output-root", required=True)
+    write_audit.add_argument("--repo-root", default=str(REPO_ROOT))
     return parser.parse_args(argv)
 
 
@@ -287,12 +352,35 @@ def main(argv: Sequence[str] | None = None) -> int:
             retrieved_on=str(args.retrieved_on or "") or None,
             captured_at=str(args.captured_at or "") or None,
         )
-    else:
+    elif args.command == "build":
         payload = build_release_case_file(
             source_manifest=Path(args.source_manifest),
             output_json=Path(args.output_json),
             repo_root=Path(args.repo_root),
             paired_artifacts_per_family=int(args.paired_artifacts_per_family),
+        )
+    elif args.command == "audit-plan":
+        payload = build_release_audit_request_plan(
+            source_case_file=Path(args.source_case_file),
+            output_json=Path(args.output_json),
+            repo_root=Path(args.repo_root),
+            audit_count=int(args.audit_count),
+        )
+    elif args.command == "audit-verify-sources":
+        payload = capture_audit_source_verifications(
+            audit_request_plan=Path(args.audit_request_plan),
+            output_root=Path(args.output_root),
+            repo_root=Path(args.repo_root),
+            captured_at=str(args.captured_at or "") or None,
+        )
+    else:
+        payload = write_release_audit_bundle(
+            source_case_file=Path(args.source_case_file),
+            audit_request_plan=Path(args.audit_request_plan),
+            source_verification_root=Path(args.source_verification_root),
+            review_results_file=Path(args.review_results_file),
+            output_root=Path(args.output_root),
+            repo_root=Path(args.repo_root),
         )
     print(json.dumps(payload, indent=2, sort_keys=True))
     return 0

@@ -8122,7 +8122,7 @@
     }
   ],
   "claim_class": "source-provenanced-discovery",
-  "release_readiness_boundary": "Independent automated audit evidence and installed release proof are still required.",
+  "release_readiness_boundary": "Hash-bound automated review evidence and installed release proof are still required.",
   "source_case_count": 200,
   "source_manifest": "tests/fixtures/greenfield-release-corpus/source-manifest.v2.json",
   "version": "odylith.greenfield.matrix.case-file.v1"

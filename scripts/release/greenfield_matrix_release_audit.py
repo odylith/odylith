@@ -13,6 +13,8 @@ from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_release_artifacts import sha256_text
 from greenfield_matrix_release_audit_evidence import AUTOMATED_ADVERSARIAL_REVIEWER_KIND
 from greenfield_matrix_release_audit_evidence import audit_evidence_issues
+from greenfield_matrix_release_audit_evidence import audit_request_for_case
+from greenfield_matrix_release_audit_evidence import audit_request_sha256
 from greenfield_matrix_release_audit_evidence import audit_source_verification_issues
 from greenfield_matrix_release_audit_evidence import source_verification_payload_issues
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
@@ -24,6 +26,7 @@ class GreenfieldReleaseAudit:
     prompt_sha256: str
     source_artifact_sha256: str
     source_excerpt_sha256: str
+    audit_request_sha256: str
     source_id: str
     source_uri: str
     source_verification_method: str
@@ -31,12 +34,11 @@ class GreenfieldReleaseAudit:
     source_verified_on: str
     source_verification_path: str
     source_verification_sha256: str
-    reviewer_id: str
+    review_context_label: str
     reviewer_kind: str
     review_method: str
     reviewed_on: str
     review_status: str
-    independent: bool
     review_evidence_path: str
     review_evidence_sha256: str
 
@@ -48,10 +50,11 @@ def evaluate_release_audits(
     policy: Any,
     root: Path,
 ) -> tuple[list[str], set[str]]:
-    """Return audit failures and the case IDs that satisfy the independent-review contract."""
+    """Return audit failures and the case IDs that satisfy the hash-bound review contract."""
 
     issues: list[str] = []
     approved: set[str] = set()
+    approved_audits: list[GreenfieldReleaseAudit] = []
     seen: set[str] = set()
     verification_hashes: dict[Path, str] = {}
     review_hashes: dict[Path, str] = {}
@@ -78,9 +81,20 @@ def evaluate_release_audits(
         if audit.source_excerpt_sha256 != getattr(provenance, "source_excerpt_sha256", ""):
             issues.append(f"release audit `{audit.case_id}` does not match source_excerpt_sha256")
             continue
+        if not is_sha256(audit.audit_request_sha256):
+            issues.append(f"release audit `{audit.case_id}` must include audit_request_sha256")
+            continue
         verification_issues = audit_source_verification_issues(audit, provenance)
         if verification_issues:
             issues.extend(f"release audit `{audit.case_id}` {issue}" for issue in verification_issues)
+            continue
+        expected_request = audit_request_for_case(
+            case,
+            source_verification_method=audit.source_verification_method,
+            source_verification_uri=audit.source_verification_uri,
+        )
+        if audit.audit_request_sha256 != audit_request_sha256(expected_request):
+            issues.append(f"release audit `{audit.case_id}` does not bind current case semantics")
             continue
         verification_text = _verified_file_text(
             audit=audit,
@@ -112,14 +126,10 @@ def evaluate_release_audits(
                 f"release audit `{audit.case_id}` must use a review_method distinct from derivation_method"
             )
             continue
-        if type(audit.independent) is not bool:
-            issues.append(f"release audit `{audit.case_id}` must define independent as a boolean")
-            continue
-        if not audit.independent:
-            issues.append(f"release audit `{audit.case_id}` is not independent")
-            continue
-        if not audit.reviewer_id or audit.reviewer_id == getattr(provenance, "derivation_author", ""):
-            issues.append(f"release audit `{audit.case_id}` must name an independent reviewer")
+        if not audit.review_context_label or audit.review_context_label == getattr(provenance, "derivation_author", ""):
+            issues.append(
+                f"release audit `{audit.case_id}` must name a review context distinct from the derivation author"
+            )
             continue
         if not is_iso_date(audit.reviewed_on):
             issues.append(f"release audit `{audit.case_id}` must use an ISO reviewed_on date")
@@ -142,8 +152,71 @@ def evaluate_release_audits(
             issues.extend(f"release audit `{audit.case_id}` {issue}" for issue in evidence_issues)
             continue
         approved.add(audit.case_id)
-    _coverage_issues(cases_by_id, approved, policy, issues)
+        approved_audits.append(audit)
+    _coverage_issues(cases_by_id, approved, approved_audits, policy, issues)
     return issues, approved
+
+
+def select_release_audit_cases(cases: Sequence[Any], audit_count: int) -> tuple[Any, ...]:
+    """Select a deterministic, source-distinct review set with complete coverage."""
+
+    if audit_count <= 0:
+        raise ValueError("audit_count must be positive")
+    candidates: list[Any] = []
+    for case in cases:
+        provenance = getattr(case, "provenance", None)
+        case_id = str(getattr(case, "case_id", "") or "").strip()
+        source_artifact = str(getattr(provenance, "source_artifact_sha256", "") or "").strip()
+        source_family = str(getattr(provenance, "source_family", "") or "").strip()
+        if not case_id or not source_artifact or not source_family:
+            raise ValueError("audit selection requires case ID, source artifact, and source family")
+        candidates.append(case)
+    if len({case.provenance.source_artifact_sha256 for case in candidates}) < audit_count:
+        raise ValueError("audit selection requires at least audit_count distinct source artifacts")
+
+    selected: list[Any] = []
+    selected_artifacts: set[str] = set()
+    covered_families: set[str] = set()
+    covered_stressors: set[str] = set()
+    family_counts: dict[str, int] = {}
+    stressor_counts: dict[str, int] = {}
+    while len(selected) < audit_count:
+        remaining = [
+            case
+            for case in candidates
+            if case.provenance.source_artifact_sha256 not in selected_artifacts
+        ]
+        if not remaining:
+            raise ValueError("audit selection exhausted distinct source artifacts")
+
+        def key(case: Any) -> tuple[int, int, int, int, str]:
+            provenance = case.provenance
+            family = provenance.source_family
+            stressors = _case_stressors(case)
+            return (
+                0 if family not in covered_families else 1,
+                -len(set(stressors) - covered_stressors),
+                family_counts.get(family, 0),
+                sum(stressor_counts.get(stressor, 0) for stressor in stressors),
+                case.case_id,
+            )
+
+        chosen = min(remaining, key=key)
+        selected.append(chosen)
+        provenance = chosen.provenance
+        selected_artifacts.add(provenance.source_artifact_sha256)
+        covered_families.add(provenance.source_family)
+        family_counts[provenance.source_family] = family_counts.get(provenance.source_family, 0) + 1
+        for stressor in _case_stressors(chosen):
+            covered_stressors.add(stressor)
+            stressor_counts[stressor] = stressor_counts.get(stressor, 0) + 1
+
+    missing_families = {case.provenance.source_family for case in candidates} - covered_families
+    missing_stressors = set(DEFAULT_HIGH_VARIANCE_STRESSORS) - covered_stressors
+    if missing_families or missing_stressors:
+        missing = sorted(missing_families | missing_stressors)
+        raise ValueError("audit selection does not cover: " + ", ".join(missing))
+    return tuple(selected)
 
 
 def _verified_file_text(
@@ -180,14 +253,36 @@ def _verified_file_text(
 def _coverage_issues(
     cases_by_id: Mapping[str, Any],
     approved: set[str],
+    approved_audits: Sequence[GreenfieldReleaseAudit],
     policy: Any,
     issues: list[str],
 ) -> None:
     required_audits = policy.minimum_audit_count(len(cases_by_id))
     if len(approved) < required_audits:
         issues.append(
-            "release proof requires at least "
-            f"{required_audits} approved independent automated audits; received {len(approved)}"
+            "release audit requires at least "
+            f"{required_audits} approved hash-bound automated reviews; received {len(approved)}"
+        )
+    review_context_counts: dict[str, int] = {}
+    for audit in approved_audits:
+        label = audit.review_context_label
+        review_context_counts[label] = review_context_counts.get(label, 0) + 1
+    minimum_reviewer_count = int(getattr(policy, "minimum_distinct_review_context_labels", 1))
+    if len(review_context_counts) < minimum_reviewer_count:
+        issues.append(
+            "release audit requires at least "
+            f"{minimum_reviewer_count} distinct declared review context labels; received {len(review_context_counts)}"
+        )
+    maximum_reviews_per_reviewer = int(
+        getattr(policy, "maximum_audits_per_review_context_label", required_audits)
+    )
+    overloaded_review_contexts = sorted(
+        label for label, count in review_context_counts.items() if count > maximum_reviews_per_reviewer
+    )
+    if overloaded_review_contexts:
+        issues.append(
+            "release audit caps approved reviews per declared review context label at "
+            f"{maximum_reviews_per_reviewer}: " + ", ".join(overloaded_review_contexts)
         )
     audited_cases = [cases_by_id[case_id] for case_id in approved if case_id in cases_by_id]
     audited_families = {

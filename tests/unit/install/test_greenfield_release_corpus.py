@@ -107,6 +107,104 @@ def _assert_no_staging_or_lock(output: Path) -> None:
     assert not list(output.parent.glob(f".{output.name}.staging-*"))
 
 
+def _audit_request(
+    *,
+    case_id: str,
+    source_id: str,
+    source_uri: str,
+    prompt_sha256: str = "0" * 64,
+    source_artifact_sha256: str = "1" * 64,
+    source_excerpt_sha256: str = "2" * 64,
+    source_family: str = "climate",
+    stressors: Sequence[str] = ("evidence-bound",),
+) -> dict[str, Any]:
+    evidence = sys.modules["greenfield_matrix_release_audit_evidence"]
+    request = {
+        "case_id": case_id,
+        "prompt_sha256": prompt_sha256,
+        "source_artifact_sha256": source_artifact_sha256,
+        "source_excerpt_sha256": source_excerpt_sha256,
+        "source_id": source_id,
+        "source_uri": source_uri,
+        "source_family": source_family,
+        "stressors": list(stressors),
+        "source_verification_method": "github-repository-api-check-v1",
+        "source_verification_uri": f"https://api.github.com/repositories/{source_id.rsplit(':', 1)[1]}",
+        "required_assessments": {
+            "source_binding": "verified",
+            "source_family_assessment": "approved",
+            "derivation_assessment": "approved",
+        },
+    }
+    request["audit_request_sha256"] = evidence.audit_request_sha256(request)
+    return request
+
+
+def _approved_review(case_id: str, audit_request_sha256: str) -> dict[str, Any]:
+    return {
+        "case_id": case_id,
+        "audit_request_sha256": audit_request_sha256,
+        "review_context_label": "adversarial-context",
+        "reviewer_kind": "automated_adversarial",
+        "review_method": "adversarial-source-to-prompt-v1",
+        "reviewed_on": CAPTURED_AT[:10],
+        "review_status": "approved",
+        "source_binding": "verified",
+        "source_family_assessment": "approved",
+        "derivation_assessment": "approved",
+        "rationale": "The reviewer explicitly approved the bound source and prompt.",
+    }
+
+
+def _prepared_single_audit(module: Any, tmp_path: Path) -> tuple[Path, Any, Mapping[str, Any], Path, Path, Any]:
+    source_root, _manifest = _capture_fixture(module, tmp_path)
+    case_file = tmp_path / "cases.json"
+    module.build_release_case_file(
+        source_manifest=source_root / "source-manifest.v2.json",
+        output_json=case_file,
+        repo_root=tmp_path,
+        paired_artifacts_per_family=0,
+    )
+    loader = sys.modules["greenfield_matrix_case_file"].load_case_file
+    case = loader(case_file)[0]
+    verifier = sys.modules["greenfield_release_audit_verification"]
+    request = _audit_request(
+        case_id=case.case_id,
+        source_id=case.provenance.source_id,
+        source_uri=case.provenance.source_uri,
+        prompt_sha256=case.provenance.derived_prompt_sha256,
+        source_artifact_sha256=case.provenance.source_artifact_sha256,
+        source_excerpt_sha256=case.provenance.source_excerpt_sha256,
+        source_family=case.provenance.source_family,
+        stressors=case.stressors,
+    )
+    plan_path = tmp_path / "audit-plan.json"
+    plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [request],
+            }
+        ),
+        encoding="utf-8",
+    )
+    verification_root = tmp_path / "source-verifications"
+    remote = {
+        "id": int(case.provenance.source_id.rsplit(":", 1)[1]),
+        "html_url": case.provenance.source_uri,
+    }
+    verifier.capture_audit_source_verifications(
+        audit_request_plan=plan_path,
+        output_root=verification_root,
+        repo_root=tmp_path,
+        captured_at=CAPTURED_AT,
+        fetch_json=lambda _url: (remote, _json_bytes(remote)),
+    )
+    writer = sys.modules["greenfield_release_audit_writer"]
+    return case_file, case, request, plan_path, verification_root, writer
+
+
 def test_capture_binds_a_case_to_the_raw_github_repository_id(tmp_path: Path) -> None:
     module = _module()
     output_root = tmp_path / "captured"
@@ -170,7 +268,7 @@ def test_builds_source_provenanced_discovery_cases_from_multiple_families(tmp_pa
     assert payload["claim_class"] == "source-provenanced-discovery"
     assert payload["claim_class"] != "source-provenanced-release"
     assert payload["release_readiness_boundary"] == (
-        "Independent automated audit evidence and installed release proof are still required."
+        "Hash-bound automated review evidence and installed release proof are still required."
     )
     assert payload["source_manifest"] == "captured/source-manifest.v2.json"
     assert payload["source_case_count"] == 4
@@ -322,12 +420,25 @@ def test_default_source_shape_meets_every_non_audit_release_policy(tmp_path: Pat
     loader = sys.modules["greenfield_matrix_case_file"].load_case_file
     provenance = sys.modules["greenfield_matrix_corpus_provenance"]
     evaluation = provenance.evaluate_release_corpus(loader(case_file), repo_root=tmp_path)
+    audit_plan_file = tmp_path / "audit-plan.json"
+    audit_plan = module.build_release_audit_request_plan(
+        source_case_file=case_file,
+        output_json=audit_plan_file,
+        repo_root=tmp_path,
+    )
 
     assert evaluation.summary["case_count"] == 200
     assert evaluation.summary["source_artifact_count"] == 180
     assert evaluation.summary["complete_metamorphic_group_count"] == 20
     assert evaluation.issues
     assert all("audit" in issue for issue in evaluation.issues)
+    assert audit_plan["claim_class"] == "audit-requests-only"
+    assert audit_plan["requested_audit_count"] == 40
+    assert len({request["source_artifact_sha256"] for request in audit_plan["requests"]}) == 40
+    assert all(
+        request["source_verification_uri"].startswith("https://api.github.com/repositories/")
+        for request in audit_plan["requests"]
+    )
 
 
 def test_build_rejects_rehashed_response_tampering(tmp_path: Path) -> None:
@@ -459,4 +570,373 @@ def test_fetch_reports_rate_limits_and_uses_an_available_github_token(monkeypatc
     monkeypatch.setattr(source_capture, "urlopen", rate_limited)
 
     with pytest.raises(RuntimeError, match="rate limit is exhausted; retry after Unix time 1784410000"):
-        source_capture._fetch_json("https://api.github.com/search/repositories?q=topic%3Aclimate")
+        source_capture.fetch_github_json("https://api.github.com/search/repositories?q=topic%3Aclimate")
+
+
+def test_capture_audit_source_verifications_retains_only_bound_remote_records(tmp_path: Path) -> None:
+    _module()
+    verifier = sys.modules["greenfield_release_audit_verification"]
+    plan_path = tmp_path / "audit-plan.json"
+    plan = {
+        "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+        "claim_class": "audit-requests-only",
+        "requests": [
+            _audit_request(
+                case_id="release-climate-001-description",
+                source_id="github-repository:701",
+                source_uri="https://github.com/source701/climate-evidence",
+            )
+        ],
+    }
+    plan_path.write_text(_json_text(plan), encoding="utf-8")
+    response = {"id": 701, "html_url": "https://github.com/source701/climate-evidence"}
+    output_root = tmp_path / "source-verifications"
+
+    manifest = verifier.capture_audit_source_verifications(
+        audit_request_plan=plan_path,
+        output_root=output_root,
+        repo_root=tmp_path,
+        captured_at=CAPTURED_AT,
+        fetch_json=lambda _url: (response, _json_bytes(response)),
+    )
+
+    record = manifest["records"][0]
+    assert manifest["claim_class"] == "source-verification-only"
+    assert manifest["record_count"] == 1
+    assert record["source_verification_sha256"] == _sha256_bytes(_json_bytes(response))
+    assert (output_root / record["source_verification_path"]).read_bytes() == _json_bytes(response)
+    assert "review_evidence_path" not in record
+    assert "review_status" not in record
+
+
+def test_capture_audit_source_verifications_rejects_remote_identity_mismatch(tmp_path: Path) -> None:
+    _module()
+    verifier = sys.modules["greenfield_release_audit_verification"]
+    plan_path = tmp_path / "audit-plan.json"
+    plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [
+                    _audit_request(
+                        case_id="release-climate-001-description",
+                        source_id="github-repository:701",
+                        source_uri="https://github.com/source701/climate-evidence",
+                    )
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "source-verifications"
+    response = {"id": 702, "html_url": "https://github.com/source702/climate-evidence"}
+
+    with pytest.raises(RuntimeError, match="does not match source ID"):
+        verifier.capture_audit_source_verifications(
+            audit_request_plan=plan_path,
+            output_root=output_root,
+            repo_root=tmp_path,
+            captured_at=CAPTURED_AT,
+            fetch_json=lambda _url: (response, _json_bytes(response)),
+        )
+
+    _assert_no_staging_or_lock(output_root)
+
+
+def test_audit_writer_binds_explicit_review_results_to_verified_source_records(tmp_path: Path) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+    audits = provenance.load_release_audit_file(
+        audit_root / writer.AUDIT_BUNDLE_FILENAME,
+        repo_root=tmp_path,
+    )
+    evaluation = provenance.evaluate_release_corpus((case,), audits, repo_root=tmp_path)
+
+    assert bundle["claim_class"] == "operator-supplied-hash-bound-review-evidence"
+    assert len(audits) == 1
+    assert not any(f"release audit `{case.case_id}`" in issue for issue in evaluation.issues)
+
+
+@pytest.mark.parametrize(
+    "trail_field",
+    ("source_case_file", "audit_request_plan", "source_verifications", "review_results"),
+)
+def test_audit_loader_rejects_a_tampered_trail_reference(tmp_path: Path, trail_field: str) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle[f"{trail_field}_sha256"] = "a" * 64
+    bundle_path.write_text(_json_text(bundle), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match=f"{trail_field}_sha256 does not match {trail_field}"):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("trail_field", "misleading_claim_class"),
+    (
+        ("source_case_file", "source-provenanced-release"),
+        ("audit_request_plan", "third-party-attested-review-requests"),
+        ("source_verifications", "independent-third-party-attestation"),
+        ("review_results", "independent-human-review-results"),
+    ),
+)
+def test_audit_loader_rejects_a_misleading_trail_claim_class(
+    tmp_path: Path,
+    trail_field: str,
+    misleading_claim_class: str,
+) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    trail_path = tmp_path / bundle[trail_field]
+    trail = json.loads(trail_path.read_text(encoding="utf-8"))
+    trail["claim_class"] = misleading_claim_class
+    trail_path.write_text(_json_text(trail), encoding="utf-8")
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    persisted_bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    persisted_bundle[f"{trail_field}_sha256"] = _sha256_bytes(trail_path.read_bytes())
+    bundle_path.write_text(_json_text(persisted_bundle), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match=f"{trail_field} must declare claim_class"):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("trail_field", "misleading_claim_class", "expected_message"),
+    (
+        ("audit_request_plan", "third-party-attested-review-requests", "requests-only claim class"),
+        ("source_verifications", "independent-third-party-attestation", "verification-only claim class"),
+    ),
+)
+def test_audit_writer_rejects_a_misleading_input_trail_claim_class(
+    tmp_path: Path,
+    trail_field: str,
+    misleading_claim_class: str,
+    expected_message: str,
+) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    trail_path = plan_path if trail_field == "audit_request_plan" else verification_root / "source-verifications.v2.json"
+    trail = json.loads(trail_path.read_text(encoding="utf-8"))
+    trail["claim_class"] = misleading_claim_class
+    trail_path.write_text(_json_text(trail), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match=expected_message):
+        writer.write_release_audit_bundle(
+            source_case_file=case_file,
+            audit_request_plan=plan_path,
+            source_verification_root=verification_root,
+            review_results_file=results_path,
+            output_root=tmp_path / "audit-bundle",
+            repo_root=tmp_path,
+        )
+
+
+def test_capture_audit_source_verifications_rejects_an_unsafe_case_id(tmp_path: Path) -> None:
+    _module()
+    verifier = sys.modules["greenfield_release_audit_verification"]
+    evidence = sys.modules["greenfield_matrix_release_audit_evidence"]
+    request = _audit_request(
+        case_id="../../escaped",
+        source_id="github-repository:701",
+        source_uri="https://github.com/source701/climate-evidence",
+    )
+    request["audit_request_sha256"] = evidence.audit_request_sha256(request)
+    plan_path = tmp_path / "audit-plan.json"
+    plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [request],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "source-verifications"
+
+    with pytest.raises(RuntimeError, match="must use safe case IDs"):
+        verifier.capture_audit_source_verifications(
+            audit_request_plan=plan_path,
+            output_root=output_root,
+            repo_root=tmp_path,
+            captured_at=CAPTURED_AT,
+            fetch_json=lambda _url: ({"id": 701, "html_url": "https://github.com/source701/climate-evidence"}, b"{}"),
+        )
+
+    _assert_no_staging_or_lock(output_root)
+    assert not (tmp_path / "escaped.json").exists()
+
+
+def test_audit_writer_rejects_a_review_result_not_bound_to_its_request(tmp_path: Path) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    review = _approved_review(case.case_id, "0" * 64)
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [review],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "audit-bundle"
+
+    with pytest.raises(RuntimeError, match="does not bind the audit request"):
+        writer.write_release_audit_bundle(
+            source_case_file=case_file,
+            audit_request_plan=plan_path,
+            source_verification_root=verification_root,
+            review_results_file=results_path,
+            output_root=output_root,
+            repo_root=tmp_path,
+        )
+
+    _assert_no_staging_or_lock(output_root)
+    assert request["audit_request_sha256"] != review["audit_request_sha256"]
+
+
+def test_audit_writer_rejects_a_review_replayed_after_the_case_prompt_changes(tmp_path: Path) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    case_payload = json.loads(case_file.read_text(encoding="utf-8"))
+    case_payload["cases"][0]["prompt"] = (
+        f"Create a materially different product for {case.required_terms[0]} after review approval."
+    )
+    case_payload["cases"][0]["provenance"]["derived_prompt_sha256"] = _sha256_bytes(
+        case_payload["cases"][0]["prompt"].encode("utf-8")
+    )
+    case_file.write_text(_json_text(case_payload), encoding="utf-8")
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "audit-bundle"
+
+    with pytest.raises(RuntimeError, match="case provenance diverge on prompt_sha256"):
+        writer.write_release_audit_bundle(
+            source_case_file=case_file,
+            audit_request_plan=plan_path,
+            source_verification_root=verification_root,
+            review_results_file=results_path,
+            output_root=output_root,
+            repo_root=tmp_path,
+        )
+
+    _assert_no_staging_or_lock(output_root)
+
+
+@pytest.mark.parametrize("field", ("review_context_label", "review_method", "reviewed_on", "rationale"))
+def test_audit_writer_requires_each_review_result_field(tmp_path: Path, field: str) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    review = _approved_review(case.case_id, request["audit_request_sha256"])
+    review.pop(field)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [review],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match=f"review result lacks {field}"):
+        writer.write_release_audit_bundle(
+            source_case_file=case_file,
+            audit_request_plan=plan_path,
+            source_verification_root=verification_root,
+            review_results_file=results_path,
+            output_root=tmp_path / "audit-bundle",
+            repo_root=tmp_path,
+        )

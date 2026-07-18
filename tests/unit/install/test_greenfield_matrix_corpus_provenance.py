@@ -28,10 +28,11 @@ def _sha256(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def _release_corpus(tmp_path: Path):
+def _release_corpus(tmp_path: Path, *, reviewer_count: int = 8):
     provenance, cases_module = _modules()
     cases = []
     audits = []
+    audit_evidence = importlib.import_module("greenfield_matrix_release_audit_evidence")
     stressors = tuple(importlib.import_module("greenfield_matrix_stressors").DEFAULT_HIGH_VARIANCE_STRESSORS)
     input_styles = (
         "direct_request",
@@ -92,6 +93,24 @@ def _release_corpus(tmp_path: Path):
         )
         cases.append(case)
         if index < 40:
+            request = {
+                "case_id": case_id,
+                "prompt_sha256": _sha256(prompt),
+                "source_artifact_sha256": source_hash,
+                "source_excerpt_sha256": _sha256(source_excerpt),
+                "source_id": f"public-source-{source_index:03d}",
+                "source_uri": f"https://example.org/source/{source_index}",
+                "source_family": f"family-{index % 10}",
+                "stressors": list(case.stressors),
+                "source_verification_method": "source-record-check-v1",
+                "source_verification_uri": f"https://example.org/verification/source/{source_index}",
+                "required_assessments": {
+                    "source_binding": "verified",
+                    "source_family_assessment": "approved",
+                    "derivation_assessment": "approved",
+                },
+            }
+            request["audit_request_sha256"] = audit_evidence.audit_request_sha256(request)
             verification_path = tmp_path / "evidence" / "sources" / f"source-{source_index:03d}.json"
             verification_path.parent.mkdir(parents=True, exist_ok=True)
             verification_text = json.dumps(
@@ -106,25 +125,25 @@ def _release_corpus(tmp_path: Path):
             review_evidence.parent.mkdir(parents=True, exist_ok=True)
             review_text = json.dumps(
                 {
-                    "version": "odylith.greenfield.matrix.release-audit-evidence.v4",
+                    "version": audit_evidence.RELEASE_AUDIT_EVIDENCE_VERSION,
                     "case_id": case_id,
                     "prompt_sha256": _sha256(prompt),
                     "source_artifact_sha256": source_hash,
                     "source_excerpt_sha256": _sha256(source_excerpt),
+                    "audit_request_sha256": request["audit_request_sha256"],
                     "source_id": f"public-source-{source_index:03d}",
                     "source_uri": f"https://example.org/source/{source_index}",
-                    "source_verification_method": "independent-source-record-check-v1",
+                    "source_verification_method": "source-record-check-v1",
                     "source_verification_uri": f"https://example.org/verification/source/{source_index}",
                     "source_verified_on": "2026-07-14",
                     "source_verification_path": verification_path.relative_to(tmp_path).as_posix(),
                     "source_verification_sha256": _sha256(verification_text),
                     "source_family": f"family-{index % 10}",
-                    "reviewer_id": "independent-automated-reviewer",
+                    "review_context_label": f"adversarial-context-{index % reviewer_count}",
                     "reviewer_kind": "automated_adversarial",
                     "review_method": "adversarial-source-to-prompt-v1",
                     "reviewed_on": "2026-07-14",
                     "review_status": "approved",
-                    "independent": True,
                     "source_binding": "verified",
                     "source_family_assessment": "approved",
                     "derivation_assessment": "approved",
@@ -139,19 +158,19 @@ def _release_corpus(tmp_path: Path):
                     prompt_sha256=_sha256(prompt),
                     source_artifact_sha256=source_hash,
                     source_excerpt_sha256=_sha256(source_excerpt),
+                    audit_request_sha256=request["audit_request_sha256"],
                     source_id=f"public-source-{source_index:03d}",
                     source_uri=f"https://example.org/source/{source_index}",
-                    source_verification_method="independent-source-record-check-v1",
+                    source_verification_method="source-record-check-v1",
                     source_verification_uri=f"https://example.org/verification/source/{source_index}",
                     source_verified_on="2026-07-14",
                     source_verification_path=verification_path.relative_to(tmp_path).as_posix(),
                     source_verification_sha256=_sha256(verification_text),
-                    reviewer_id="independent-automated-reviewer",
+                    review_context_label=f"adversarial-context-{index % reviewer_count}",
                     reviewer_kind="automated_adversarial",
                     review_method="adversarial-source-to-prompt-v1",
                     reviewed_on="2026-07-14",
                     review_status="approved",
-                    independent=True,
                     review_evidence_path=review_evidence.relative_to(tmp_path).as_posix(),
                     review_evidence_sha256=_sha256(review_text),
                 )
@@ -191,6 +210,7 @@ def test_release_corpus_accepts_audited_source_provenanced_diverse_evidence(tmp_
     assert evaluation.summary["source_uri_count"] == 180
     assert evaluation.summary["audit_count"] == 40
     assert evaluation.summary["audit_reviewer_kind_counts"] == {"automated_adversarial": 40}
+    assert evaluation.summary["audit_review_context_label_count"] == 8
 
 
 def test_release_corpus_rejects_implicit_input_style_and_incomplete_metamorphic_pair(tmp_path: Path) -> None:
@@ -228,7 +248,7 @@ def test_release_corpus_rejects_duplicate_prompt_and_unreviewed_audit_coverage(t
     message = "\n".join(evaluation.issues)
     assert "duplicate prompts" in message
     assert "derived_prompt_sha256 does not match the case prompt" in message
-    assert "approved independent automated audits" in message
+    assert "approved hash-bound automated reviews" in message
 
 
 def test_release_corpus_rejects_an_excerpt_outside_its_declared_source_span(tmp_path: Path) -> None:
@@ -318,7 +338,7 @@ def test_github_source_verification_requires_canonical_endpoint_and_bound_payloa
     audit = SimpleNamespace(
         source_id="github-repository:701",
         source_uri="https://github.com/source701/climate-evidence",
-        source_verification_method="independent-github-repository-api-check-v1",
+        source_verification_method="github-repository-api-check-v1",
         source_verification_uri="https://api.github.com/repositories/701",
         source_verified_on="2026-07-18",
     )
@@ -344,6 +364,22 @@ def test_github_source_verification_requires_canonical_endpoint_and_bound_payloa
     ) == ("source verification response does not match the GitHub repository ID",)
 
 
+def test_audit_selection_is_source_distinct_and_covers_the_release_axes(tmp_path: Path) -> None:
+    _provenance, cases, _audits = _release_corpus(tmp_path)
+    audit = importlib.import_module("greenfield_matrix_release_audit")
+
+    selected = audit.select_release_audit_cases(cases, 40)
+
+    assert len(selected) == 40
+    assert len({case.provenance.source_artifact_sha256 for case in selected}) == 40
+    assert {case.provenance.source_family for case in selected} == {
+        case.provenance.source_family for case in cases
+    }
+    assert {
+        stressor for case in selected for stressor in case.stressors
+    } >= set(audit.DEFAULT_HIGH_VARIANCE_STRESSORS)
+
+
 def test_release_corpus_rejects_review_evidence_outside_the_repository_root(tmp_path: Path) -> None:
     provenance, cases, audits = _release_corpus(tmp_path)
     escaped_evidence = replace(audits[0], review_evidence_path="../review.txt")
@@ -356,16 +392,36 @@ def test_release_corpus_rejects_review_evidence_outside_the_repository_root(tmp_
     assert "must use a repository-relative review_evidence_path" in "\n".join(evaluation.issues)
 
 
-def test_release_corpus_rejects_non_boolean_audit_independence(tmp_path: Path) -> None:
+def test_release_corpus_requires_declared_review_context_coverage(tmp_path: Path) -> None:
+    provenance, cases, audits = _release_corpus(tmp_path, reviewer_count=1)
+
+    evaluation = provenance.evaluate_release_corpus(cases, audits, repo_root=tmp_path)
+
+    assert not evaluation.passed
+    assert "requires at least 4 distinct declared review context labels; received 1" in "\n".join(
+        evaluation.issues
+    )
+
+
+def test_release_corpus_rejects_a_rebound_audit_request_hash(tmp_path: Path) -> None:
     provenance, cases, audits = _release_corpus(tmp_path)
-    untyped_audit = replace(audits[0], independent="false")
+    evidence_path = tmp_path / audits[0].review_evidence_path
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    evidence["audit_request_sha256"] = "a" * 64
+    evidence_text = json.dumps(evidence, sort_keys=True)
+    evidence_path.write_text(evidence_text, encoding="utf-8")
+    altered_audit = replace(
+        audits[0],
+        audit_request_sha256="a" * 64,
+        review_evidence_sha256=_sha256(evidence_text),
+    )
 
     evaluation = provenance.evaluate_release_corpus(
-        cases, (untyped_audit, *audits[1:]), repo_root=tmp_path
+        cases, (altered_audit, *audits[1:]), repo_root=tmp_path
     )
 
     assert not evaluation.passed
-    assert "must define independent as a boolean" in "\n".join(evaluation.issues)
+    assert "does not bind current case semantics" in "\n".join(evaluation.issues)
 
 
 def test_release_corpus_rejects_relabeling_a_retained_source_artifact(tmp_path: Path) -> None:
@@ -456,18 +512,37 @@ def test_release_audit_loader_rejects_nonversioned_payload(tmp_path: Path) -> No
         provenance.load_release_audit_file(audit_file)
 
 
-def test_release_audit_loader_requires_json_boolean_independence(tmp_path: Path) -> None:
+def test_release_audit_loader_requires_audit_request_hash(tmp_path: Path) -> None:
+    provenance, _ = _modules()
+    audit_file = tmp_path / "audit.json"
+    audit_file.write_text(
+        json.dumps(
+                {
+                    "version": provenance.RELEASE_AUDIT_VERSION,
+                    "claim_class": "operator-supplied-hash-bound-review-evidence",
+                    "audits": [{"case_id": "release-000"}],
+                }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="must define audit_request_sha256"):
+        provenance.load_release_audit_file(audit_file)
+
+
+def test_release_audit_loader_rejects_misleading_claim_class(tmp_path: Path) -> None:
     provenance, _ = _modules()
     audit_file = tmp_path / "audit.json"
     audit_file.write_text(
         json.dumps(
             {
                 "version": provenance.RELEASE_AUDIT_VERSION,
-                "audits": [{"case_id": "release-000", "independent": "false"}],
+                "claim_class": "independent-human-review-evidence",
+                "audits": [],
             }
         ),
         encoding="utf-8",
     )
 
-    with pytest.raises(RuntimeError, match="independent as a JSON boolean"):
+    with pytest.raises(RuntimeError, match="operator-supplied hash-bound claim class"):
         provenance.load_release_audit_file(audit_file)

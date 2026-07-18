@@ -21,6 +21,7 @@ from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_release_artifacts import sha256_text
 from greenfield_matrix_release_audit import GreenfieldReleaseAudit
 from greenfield_matrix_release_audit import evaluate_release_audits
+from greenfield_matrix_release_audit_evidence import RELEASE_AUDIT_CLAIM_CLASS
 from greenfield_matrix_source_identity import complete_metamorphic_groups
 from greenfield_matrix_source_identity import is_explicit_metamorphic_pair
 from greenfield_matrix_source_identity import source_identity_label
@@ -29,8 +30,15 @@ from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS
 
 
 CASE_PROVENANCE_VERSION = "odylith.greenfield.matrix.case-provenance.v2"
-RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v4"
+RELEASE_AUDIT_VERSION = "odylith.greenfield.matrix.release-audit.v8"
 RELEASE_CORPUS_POLICY_VERSION = "odylith.greenfield.matrix.release-corpus-policy.v2"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+_TRAIL_CLAIM_CLASSES = {
+    "source_case_file": "source-provenanced-discovery",
+    "audit_request_plan": "audit-requests-only",
+    "source_verifications": "source-verification-only",
+    "review_results": "operator-supplied-hash-bound-review-results",
+}
 
 
 @dataclass(frozen=True)
@@ -56,6 +64,27 @@ class GreenfieldCaseProvenance:
 
 
 @dataclass(frozen=True)
+class GreenfieldReleaseAuditBundle(Sequence[GreenfieldReleaseAudit]):
+    """Hash-bound release-audit records plus their retained local trail."""
+
+    audits: tuple[GreenfieldReleaseAudit, ...]
+    source_case_file: str
+    source_case_file_sha256: str
+    audit_request_plan: str
+    audit_request_plan_sha256: str
+    source_verifications: str
+    source_verifications_sha256: str
+    review_results: str
+    review_results_sha256: str
+
+    def __len__(self) -> int:
+        return len(self.audits)
+
+    def __getitem__(self, index: int | slice) -> GreenfieldReleaseAudit | tuple[GreenfieldReleaseAudit, ...]:
+        return self.audits[index]
+
+
+@dataclass(frozen=True)
 class ReleaseCorpusPolicy:
     minimum_case_count: int = 200
     minimum_source_families: int = 10
@@ -71,6 +100,8 @@ class ReleaseCorpusPolicy:
     minimum_complete_metamorphic_groups: int = 20
     audit_fraction: float = 0.20
     minimum_audited_cases: int = 24
+    minimum_distinct_review_context_labels: int = 4
+    maximum_audits_per_review_context_label: int = 8
     near_duplicate_jaccard_threshold: float = 0.85
 
     def minimum_audit_count(self, case_count: int) -> int:
@@ -90,7 +121,7 @@ class ReleaseCorpusEvaluation:
         return {
             "version": RELEASE_CORPUS_POLICY_VERSION,
             "status": "passed" if self.passed else "failed",
-            "claim_class": "source-provenanced-release" if self.passed else "not-release-proven",
+            "claim_class": "source-provenanced-corpus-validated" if self.passed else "not-release-proven",
             "issues": list(self.issues),
             "summary": dict(self.summary),
         }
@@ -148,8 +179,12 @@ def case_provenance_summary(provenance: GreenfieldCaseProvenance | None) -> dict
     }
 
 
-def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
-    """Load independent automated review records; raw source evidence is never loaded here."""
+def load_release_audit_file(
+    path: Path,
+    *,
+    repo_root: Path | None = None,
+) -> GreenfieldReleaseAuditBundle:
+    """Load hash-bound review records; raw source evidence is never loaded here."""
 
     audit_path = Path(path).expanduser().resolve()
     try:
@@ -162,6 +197,8 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
         raise RuntimeError("greenfield release audit file must be a JSON object")
     if _text(payload.get("version")) != RELEASE_AUDIT_VERSION:
         raise RuntimeError(f"greenfield release audit file must declare version {RELEASE_AUDIT_VERSION}")
+    if _text(payload.get("claim_class")) != RELEASE_AUDIT_CLAIM_CLASS:
+        raise RuntimeError("greenfield release audit file must declare the operator-supplied hash-bound claim class")
     rows = payload.get("audits")
     if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
         raise RuntimeError("greenfield release audit file must define an audits array")
@@ -169,16 +206,12 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, Mapping):
             raise RuntimeError(f"greenfield release audit entry {index} must be a JSON object")
-        independent = row.get("independent")
-        if type(independent) is not bool:
-            raise RuntimeError(
-                f"greenfield release audit entry {index} must define independent as a JSON boolean"
-            )
         audit = GreenfieldReleaseAudit(
             case_id=_text(row.get("case_id")),
             prompt_sha256=_hash_text(row.get("prompt_sha256")),
             source_artifact_sha256=_hash_text(row.get("source_artifact_sha256")),
             source_excerpt_sha256=_hash_text(row.get("source_excerpt_sha256")),
+            audit_request_sha256=_hash_text(row.get("audit_request_sha256")),
             source_id=_text(row.get("source_id")),
             source_uri=_text(row.get("source_uri")),
             source_verification_method=_text(row.get("source_verification_method")),
@@ -186,19 +219,68 @@ def load_release_audit_file(path: Path) -> tuple[GreenfieldReleaseAudit, ...]:
             source_verified_on=_text(row.get("source_verified_on")),
             source_verification_path=_text(row.get("source_verification_path")),
             source_verification_sha256=_hash_text(row.get("source_verification_sha256")),
-            reviewer_id=_text(row.get("reviewer_id")),
+            review_context_label=_text(row.get("review_context_label")),
             reviewer_kind=_text(row.get("reviewer_kind")).casefold(),
             review_method=_text(row.get("review_method")),
             reviewed_on=_text(row.get("reviewed_on")),
             review_status=_text(row.get("review_status")).casefold(),
-            independent=independent,
             review_evidence_path=_text(row.get("review_evidence_path")),
             review_evidence_sha256=_hash_text(row.get("review_evidence_sha256")),
         )
         if not audit.case_id:
             raise RuntimeError(f"greenfield release audit entry {index} must define case_id")
+        if not is_sha256(audit.audit_request_sha256):
+            raise RuntimeError(f"greenfield release audit entry {index} must define audit_request_sha256")
         audits.append(audit)
-    return tuple(audits)
+    root = Path(repo_root or REPO_ROOT).expanduser().resolve()
+    trail = {
+        field: _verified_bundle_reference(payload, field, root)
+        for field in (
+            "source_case_file",
+            "audit_request_plan",
+            "source_verifications",
+            "review_results",
+        )
+    }
+    return GreenfieldReleaseAuditBundle(
+        audits=tuple(audits),
+        source_case_file=trail["source_case_file"][0],
+        source_case_file_sha256=trail["source_case_file"][1],
+        audit_request_plan=trail["audit_request_plan"][0],
+        audit_request_plan_sha256=trail["audit_request_plan"][1],
+        source_verifications=trail["source_verifications"][0],
+        source_verifications_sha256=trail["source_verifications"][1],
+        review_results=trail["review_results"][0],
+        review_results_sha256=trail["review_results"][1],
+    )
+
+
+def _verified_bundle_reference(
+    payload: Mapping[str, Any],
+    field: str,
+    root: Path,
+) -> tuple[str, str]:
+    path_value = _text(payload.get(field))
+    expected_hash = _hash_text(payload.get(f"{field}_sha256"))
+    if not path_value or not is_sha256(expected_hash):
+        raise RuntimeError(f"greenfield release audit file must bind {field} with a SHA-256 hash")
+    artifact_path = repo_artifact_path(root, path_value)
+    if artifact_path is None:
+        raise RuntimeError(f"greenfield release audit file must use a repository-relative {field}")
+    if not artifact_path.is_file():
+        raise RuntimeError(f"greenfield release audit {field} does not exist: {path_value}")
+    if sha256_file(artifact_path) != expected_hash:
+        raise RuntimeError(f"greenfield release audit {field}_sha256 does not match {field}")
+    try:
+        artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"greenfield release audit {field} must be valid JSON") from exc
+    expected_claim_class = _TRAIL_CLAIM_CLASSES[field]
+    if not isinstance(artifact, Mapping) or _text(artifact.get("claim_class")) != expected_claim_class:
+        raise RuntimeError(
+            f"greenfield release audit {field} must declare claim_class `{expected_claim_class}`"
+        )
+    return path_value, expected_hash
 
 
 def evaluate_release_corpus(
@@ -426,6 +508,9 @@ def evaluate_release_corpus(
         "complete_metamorphic_groups": complete_groups,
         "audit_count": len(audited_case_ids),
         "audit_reviewer_kind_counts": dict(sorted(audited_reviewer_kinds.items())),
+        "audit_review_context_label_count": len(
+            {audit.review_context_label for audit in audits if audit.case_id in audited_case_ids}
+        ),
         "minimum_audit_count": policy.minimum_audit_count(len(records)),
         "policy": asdict(policy),
     }
@@ -622,6 +707,7 @@ __all__ = [
     "CASE_PROVENANCE_VERSION",
     "GreenfieldCaseProvenance",
     "GreenfieldReleaseAudit",
+    "GreenfieldReleaseAuditBundle",
     "RELEASE_AUDIT_VERSION",
     "RELEASE_CORPUS_POLICY_VERSION",
     "ReleaseCorpusEvaluation",

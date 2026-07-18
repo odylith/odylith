@@ -96,7 +96,7 @@ def capture_release_sources(
     if not query_specs:
         raise ValueError("at least one source family is required")
     validate_source_families(query_specs)
-    fetch = fetch_json or _fetch_json
+    fetch = fetch_json or fetch_github_json
     captured_at_token = validated_timestamp(captured_at or now_timestamp())
     date_token = validated_date(retrieved_on or captured_at_token[:10])
     if date_token != captured_at_token[:10]:
@@ -387,7 +387,7 @@ def sync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
-def _fetch_json(url: str) -> FetchedJson:
+def fetch_github_json(url: str) -> FetchedJson:
     headers = {
         "Accept": "application/vnd.github+json",
         "User-Agent": GITHUB_USER_AGENT,

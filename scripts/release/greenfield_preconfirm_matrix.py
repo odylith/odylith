@@ -1836,7 +1836,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--release-audit-file",
         default="",
-        help="Independent audit JSON required with --proof-tier release; ignored for discovery.",
+        help="Hash-bound audit JSON required with --proof-tier release; ignored for discovery.",
     )
     parser.add_argument(
         "--stop-after-failures",

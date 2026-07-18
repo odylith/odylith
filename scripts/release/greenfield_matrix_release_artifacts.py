@@ -5,6 +5,10 @@ from __future__ import annotations
 from datetime import date
 import hashlib
 from pathlib import Path
+import re
+
+
+_SAFE_ARTIFACT_IDENTIFIER = re.compile(r"[a-z0-9][a-z0-9-]{0,127}\Z")
 
 
 def is_iso_date(value: str) -> bool:
@@ -17,6 +21,13 @@ def is_iso_date(value: str) -> bool:
 
 def is_sha256(value: str) -> bool:
     return bool(value) and len(value) == 64 and all(char in "0123456789abcdef" for char in value)
+
+
+def safe_artifact_identifier(value: str) -> str | None:
+    """Return a portable identifier that is safe to use in an artifact filename."""
+
+    candidate = str(value or "").strip()
+    return candidate if _SAFE_ARTIFACT_IDENTIFIER.fullmatch(candidate) else None
 
 
 def repo_artifact_path(root: Path, value: str) -> Path | None:
