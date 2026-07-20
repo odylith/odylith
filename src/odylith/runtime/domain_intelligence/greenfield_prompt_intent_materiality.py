@@ -46,6 +46,17 @@ _MATERIAL_AMBIGUITY_RE = re.compile(
     r"\b(?:either|multiple|several|possible|unsure|unclear)\b[^.!?]{0,80}\b(?:path|product|workflow|option|direction)s?\b",
     re.IGNORECASE,
 )
+_OPERATING_MODE_ALTERNATIVE_RE = re.compile(
+    r"\b(?:"
+    r"manual\s*(?:/|or|versus|vs\.?)\s*automated"
+    r"|automated\s*(?:/|or|versus|vs\.?)\s*manual"
+    r"|live\s*(?:/|or|versus|vs\.?)\s*fixtures?"
+    r"|fixtures?\s*(?:/|or|versus|vs\.?)\s*live"
+    r"|self[- ]service\s*(?:/|or|versus|vs\.?)\s*staff[- ]review"
+    r"|staff[- ]review\s*(?:/|or|versus|vs\.?)\s*self[- ]service"
+    r")\b",
+    re.IGNORECASE,
+)
 _PURPOSE_ONLY_REQUEST_RE = re.compile(r"\bto\s+use\s+for\b", re.IGNORECASE)
 
 
@@ -53,7 +64,11 @@ def title_supports_conservative_first_path(*, title: str, evidence: str) -> bool
     """Return whether a domain-anchored product title can seed visible assumptions."""
 
     evidence_text = str(evidence or "")
-    if _MATERIAL_AMBIGUITY_RE.search(evidence_text) or _PURPOSE_ONLY_REQUEST_RE.search(evidence_text):
+    if (
+        _MATERIAL_AMBIGUITY_RE.search(evidence_text)
+        or _OPERATING_MODE_ALTERNATIVE_RE.search(evidence_text)
+        or _PURPOSE_ONLY_REQUEST_RE.search(evidence_text)
+    ):
         return False
     terms = [term.casefold() for term in label_terms(title)]
     if len(terms) < 4 or not set(terms) & PRODUCT_CONTAINER_TERMS:

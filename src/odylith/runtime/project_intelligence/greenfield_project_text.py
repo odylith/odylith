@@ -583,26 +583,10 @@ def _host_handoff_prompts(*, title: str, accepted: bool = False) -> list[dict[st
         ]
     return [
         {
-            "label": "Accept it",
-            "when": "Use this when the story, first path, actors, open questions, and proof boundary look right.",
-            "prompt": "Odylith, apply this greenfield proposal as-is and write the accepted project plan.",
-            "result": "Writes the accepted product story, component boundaries, architecture views, release boundary, and proof gates.",
-        },
-        {
-            "label": "Revise it",
-            "when": "Use this when the project is close, but the first path, actor, system boundary, proof bar, or exclusions need correction.",
-            "prompt": (
-                "Odylith, revise this greenfield proposal before applying it: change <what is wrong> to <what should be true>. "
-                "Keep the product story, first path, components, risks, and proof gates aligned with the correction. "
-                "Do not write project records until I confirm."
-            ),
-            "result": "Produces a revised proposal for review without mutating accepted project records.",
-        },
-        {
-            "label": "Reject it",
-            "when": "Use this when the interpretation is the wrong product or the user intent is not clear enough.",
-            "prompt": "Odylith, reject this greenfield proposal. Do not write project records.",
-            "result": "Leaves the repo in proposal or blank state so a new intent can be supplied.",
+            "label": "Open the canonical proposal rail",
+            "when": "Use the precompiled proposal in the host chat to make the transaction decision.",
+            "prompt": "Show the canonical precompiled greenfield proposal and its hash-bound CONFIRM, EDIT, and REJECT rail.",
+            "result": "The canonical proposal rail is the only route to confirm, edit, or reject this transaction.",
         },
     ]
 

@@ -5,14 +5,16 @@ from __future__ import annotations
 
 PRODUCT_CREATE_TRANSACTION_VERSION = "odylith.greenfield.product_create_transaction.v1"
 PRODUCT_CREATE_TRANSACTION_COMPILER = "odylith.greenfield.compile_transaction.v1"
-PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v3"
+PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION = "odylith.greenfield.compiler_identity.v4"
 PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY = "compiler_receipt_hash_verified_commit_only"
 PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION = "odylith.greenfield.compiler_receipt.v1"
 POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
     "verify_compiler_receipt",
     "verify_compiler_provenance",
+    "verify_sealed_product_intent_authority_bytes",
     "verify_repo_preconditions",
+    "apply_preconfirm_refreshed_sealed_bytes",
     "write_sealed_repository_bytes",
     "validate_readback",
     "report_success",
@@ -24,6 +26,7 @@ POST_CONFIRM_FORBIDDEN_OPERATIONS = (
     "markdown_parsing",
     "host_model_work",
     "quality_repair",
+    "live_post_confirm_refresh",
 )
 
 

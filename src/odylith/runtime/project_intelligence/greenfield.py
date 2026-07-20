@@ -223,8 +223,8 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             sentence(source_launch.get("note"))
             if accepted_project
             else (
-                "Use one of these prompts in the same host chat. The confirmed product story, first path, component ownership, "
-                "and proof boundary should move together; the product decision owner should not inspect or edit proposal JSON by hand."
+                "Open the canonical proposal rail in the same host chat. It keeps the product story, first path, component "
+                "ownership, and proof boundary together; do not inspect or edit proposal JSON by hand."
             )
         ),
         "host_handoff_steps": (
@@ -232,9 +232,9 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             if accepted_project
             else [
                 "Review the Product Story, first path, open questions, and risks on this page.",
-                "Choose Accept, Revise, or Reject below.",
-                "Paste the chosen prompt into the same host chat that runs Odylith.",
-                "Refresh the dashboard after the command finishes to see the accepted or revised project state.",
+                "Open the canonical precompiled Greenfield proposal in the same host chat.",
+                "Use its hash-bound CONFIRM, EDIT, and REJECT rail.",
+                "After CONFIRM, refresh the dashboard to see the committed project state.",
             ]
         ),
         "host_handoff_prompts": (

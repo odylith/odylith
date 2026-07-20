@@ -19,6 +19,30 @@ def test_domain_anchored_titles_can_seed_a_conservative_first_path(title: str, e
     assert title_supports_conservative_first_path(title=title, evidence=evidence)
 
 
+def test_ordinary_title_assumptions_do_not_block_a_conservative_first_path() -> None:
+    assert title_supports_conservative_first_path(
+        title="collaborative request coordination system",
+        evidence="Create collaborative request coordination system with a default starting view.",
+    )
+
+
+@pytest.mark.parametrize(
+    "operating_mode_alternative",
+    (
+        "manual or automated",
+        "live or fixture",
+        "self-service or staff-review",
+    ),
+)
+def test_title_only_operating_mode_alternatives_require_clarification(
+    operating_mode_alternative: str,
+) -> None:
+    assert not title_supports_conservative_first_path(
+        title="collaborative request coordination system",
+        evidence=f"Create collaborative request coordination system: {operating_mode_alternative}.",
+    )
+
+
 @pytest.mark.parametrize(
     ("title", "evidence"),
     (

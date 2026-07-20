@@ -26,6 +26,12 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    require_sealed_product_intent_authority_bytes,
+)
 
 
 _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
@@ -42,6 +48,7 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_create_manifest.py",
     "runtime/domain_intelligence/greenfield_proposals_cli.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
+    "runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
 )
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds"})
@@ -76,6 +83,7 @@ class SealedProductCreateCommit:
     version: str
     release_selector: str
     _intent_authority_json: str
+    _preconfirm_intent_authority_json: str
     _quality_manifest_json: str
     _compiler_provenance_json: str
     transaction_hash: str
@@ -158,8 +166,14 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
     if str(payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_VERSION:
         raise ValueError("ProductCreateTransaction has an unsupported version")
     package = payload.get("prewrite_package")
+    proposal = payload.get("proposal")
     if not isinstance(package, Mapping):
         raise ValueError("ProductCreateTransaction is missing its sealed prewrite package")
+    if not isinstance(proposal, Mapping):
+        raise ValueError("ProductCreateTransaction is missing pre-confirm Product Intent provenance")
+    preconfirm_authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    if not isinstance(preconfirm_authority, Mapping):
+        raise ValueError("ProductCreateTransaction is missing pre-confirm Product Intent provenance")
     write_set = package.get("repository_write_set")
     commit_preview = package.get("commit_result_preview")
     surface_preview = package.get("surface_refresh_preview")
@@ -169,6 +183,7 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=str(payload.get("release_selector", "")).strip(),
         _intent_authority_json=_sealed_mapping_json(payload.get("intent_authority")),
+        _preconfirm_intent_authority_json=_sealed_mapping_json(preconfirm_authority),
         _quality_manifest_json=_sealed_mapping_json(payload.get("quality_manifest")),
         _compiler_provenance_json=_sealed_mapping_json(payload.get("compiler_provenance")),
         transaction_hash=transaction_hash,
@@ -191,8 +206,17 @@ def require_sealed_commit_transaction(transaction: Any) -> None:
             "ProductCreateTransaction was not accepted by the pre-confirm compiler; compile the transaction before committing governed records"
         )
     authority = getattr(transaction, "intent_authority", None)
-    if not isinstance(authority, Mapping) or not str(authority.get("authority_snapshot_sha256", "")).strip():
+    authority_bytes = getattr(transaction, "_intent_authority_json", "")
+    preconfirm_provenance_bytes = getattr(transaction, "_preconfirm_intent_authority_json", "")
+    if not isinstance(authority, Mapping):
         raise ValueError("ProductCreateTransaction is missing sealed Product Intent authority")
+    if not isinstance(authority_bytes, str) or not isinstance(preconfirm_provenance_bytes, str):
+        raise ValueError("ProductCreateTransaction is missing sealed Product Intent authority provenance")
+    require_sealed_product_intent_authority_bytes(
+        authority,
+        authority_bytes=authority_bytes.encode("ascii"),
+        preconfirm_provenance_bytes=preconfirm_provenance_bytes.encode("ascii"),
+    )
     _require_sealed_quality_manifest(getattr(transaction, "quality_manifest", None))
 
 

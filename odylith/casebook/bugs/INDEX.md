@@ -1,11 +1,14 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-18
+Last updated (UTC): 2026-07-19
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-288 | 2026-07-19 | Thin greenfield titles could hide material operating mode alternatives | P1 | domain-intelligence | Open | [2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md](2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md) |
+| CB-287 | 2026-07-19 | Greenfield dashboard exposed a retired confirmation route | P1 | dashboard | Open | [2026-07-19-greenfield-dashboard-exposed-a-retired-confirmation-route.md](2026-07-19-greenfield-dashboard-exposed-a-retired-confirmation-route.md) |
+| CB-286 | 2026-07-19 | Greenfield create skipped sealed product intent authority byte verification | P1 | domain-intelligence | Open | [2026-07-19-greenfield-create-skipped-sealed-product-intent-authority-byte-verification.md](2026-07-19-greenfield-create-skipped-sealed-product-intent-authority-byte-verification.md) |
 | CB-285 | 2026-07-18 | Recovery proof reports compiled product intent facts instead of phase evidence | P1 | domain-intelligence | Open | [2026-07-18-recovery-proof-reports-compiled-product-intent-facts-instead-of-phase-evidence.md](2026-07-18-recovery-proof-reports-compiled-product-intent-facts-instead-of-phase-evidence.md) |
 | CB-276 | 2026-07-18 | Receipt boundary accepted mutable in memory greenfield create state | P0 | odylith | Open | [2026-07-18-receipt-boundary-accepted-mutable-in-memory-greenfield-create-state.md](2026-07-18-receipt-boundary-accepted-mutable-in-memory-greenfield-create-state.md) |
 | CB-277 | 2026-07-18 | Natural rescue proof roots escaped aggregate cleanup detection | P1 | release | Open | [2026-07-18-natural-rescue-proof-roots-escaped-aggregate-cleanup-detection.md](2026-07-18-natural-rescue-proof-roots-escaped-aggregate-cleanup-detection.md) |

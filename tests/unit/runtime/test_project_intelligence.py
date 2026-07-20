@@ -1792,10 +1792,22 @@ def test_project_intelligence_renders_greenfield_origin_from_proposal(tmp_path: 
     assert "the team can prove" not in html
     assert "project-story-contract" not in html
     assert payload["host_handoff_title"] == "How to continue in the host chat"
-    assert "Odylith, apply this greenfield proposal" in html
-    assert "Revise it" in html
-    assert "Reject it" in html
-    assert "Paste the chosen prompt into the same host chat" in html
+    handoff = json.dumps(payload["host_handoff_prompts"], sort_keys=True)
+    assert [row["label"] for row in payload["host_handoff_prompts"]] == ["Open the canonical proposal rail"]
+    assert "canonical precompiled greenfield proposal" in handoff
+    assert "hash-bound CONFIRM, EDIT, and REJECT rail" in handoff
+    for obsolete in (
+        "Accept it",
+        "Revise it",
+        "Reject it",
+        "apply this greenfield proposal",
+        "write the accepted project plan",
+        "Do not write project records",
+    ):
+        assert obsolete not in html
+        assert obsolete not in handoff
+    assert "Open the canonical precompiled Greenfield proposal in the same host chat" in html
+    assert "Use its hash-bound CONFIRM, EDIT, and REJECT rail" in html
     assert "proposal JSON" in html
     assert "Radar" not in html
     assert "Registry" not in html
