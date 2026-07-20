@@ -53,6 +53,8 @@ from greenfield_matrix_campaign import positive_int  # noqa: E402
 from greenfield_matrix_campaign import proof_tier_from_value  # noqa: E402
 from greenfield_matrix_campaign import required_stressors_from_values  # noqa: E402
 from greenfield_matrix_campaign import stop_reason  # noqa: E402
+from greenfield_matrix_attempt_ledger import MatrixAttemptLedger  # noqa: E402
+from greenfield_matrix_metamorphic import evaluate_metamorphic_outputs  # noqa: E402
 from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
 from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
 from greenfield_matrix_proof_scope import natural_rescue_quality_proven  # noqa: E402
@@ -78,6 +80,9 @@ from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
 from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
+from greenfield_matrix_transaction_evidence import CompiledCreateExecution  # noqa: E402
+from greenfield_matrix_transaction_evidence import commit_precompiled_transaction  # noqa: E402
+from greenfield_matrix_transaction_evidence import dry_run_commit_issues  # noqa: E402
 from greenfield_matrix_governed_readback import collect_governed_readback  # noqa: E402
 from greenfield_matrix_governed_readback import compass_record_count  # noqa: E402
 from greenfield_matrix_governed_readback import program_record_count  # noqa: E402
@@ -138,6 +143,7 @@ def run_matrix(
     stop_after_cluster_failures: int = 0,
     required_stressors: Sequence[str] = (),
     incremental_output_json: Path | None = None,
+    attempt_ledger_jsonl: Path | None = None,
     allow_partial_stressor_coverage: bool = False,
     release_audits: Sequence[GreenfieldReleaseAudit] = (),
 ) -> tuple[GreenfieldMatrixResult, ...]:
@@ -172,6 +178,8 @@ def run_matrix(
         ),
     )
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
+    attempt_ledger = MatrixAttemptLedger(attempt_ledger_jsonl)
+    attempt_ledger.ensure_planned(selected_cases)
     release_dir = Path(dist_dir).expanduser().resolve()
     install_script = release_dir / "install.sh"
     if not install_script.is_file():
@@ -276,6 +284,8 @@ def run_matrix(
                     )
                     for case in selected_cases
                 ]
+                for result in results:
+                    attempt_ledger.record_completed(result)
                 telemetry.emit(
                     "run_stopped",
                     {"reason": "seed-install-failed", "completed_case_count": len(results)},
@@ -302,6 +312,7 @@ def run_matrix(
                 return tuple(results)
         for index, case in enumerate(selected_cases, start=1):
             telemetry.emit("case_started", case_started_event(case=case, index=index, total=len(selected_cases)))
+            attempt_ledger.record_started(case=case, index=index, total=len(selected_cases))
             repo_root = run_root / f"odylith-sim-{case.slug}-{uuid.uuid4().hex[:8]}"
             try:
                 if seed_repo is not None:
@@ -361,7 +372,8 @@ def run_matrix(
                     config=campaign_config,
                     status="failed",
                     stopped_reason=reason,
-            )
+                )
+            attempt_ledger.record_completed(result)
             telemetry.emit("case_completed", case_completed_event(result=result, index=index, total=len(selected_cases)))
             if reason:
                 stopped_reason = reason
@@ -558,7 +570,8 @@ def _incremental_matrix_status(
         return "failed"
     if len(results) < len(cases):
         return "running"
-    return "passed" if all(result.quality.passed for result in results) else "failed"
+    metamorphic_output = evaluate_metamorphic_outputs(cases=cases, results=results)
+    return "passed" if all(result.quality.passed for result in results) and metamorphic_output["passed"] else "failed"
 
 
 def _raise_for_invalid_campaign_policy(
@@ -749,13 +762,15 @@ def _run_case(
             version=version,
             install_mode=install_mode,
         )
-    create, create_seconds = _run_compiled_greenfield_create(
+    execution = _run_compiled_greenfield_create_with_receipt(
         repo_root=repo_root,
         env=env,
         prompt=case.prompt,
         edit_evidence=str(case.confirmed_intent_markdown or ""),
         timeout=120,
     )
+    create = execution.create
+    create_seconds = execution.create_seconds
     payload = _parse_json_object(create.stdout)
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
@@ -770,6 +785,10 @@ def _run_case(
     browser_surface_issues = (
         browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
     )
+    receipt_issues = dry_run_commit_issues(
+        receipt=execution.dry_run_receipt,
+        create_payload=payload,
+    )
     quality = build_quality_verdict(
         create_payload=payload,
         package=package,
@@ -781,7 +800,24 @@ def _run_case(
         create_returncode=create.returncode,
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
+        external_issues=receipt_issues,
     )
+    evidence = dict(
+        _case_evidence_manifest(
+            case=case,
+            repo_root=repo_root,
+            package=package,
+            create_payload=payload,
+            quality=quality,
+            install_script=install_script,
+            version=version,
+            install_mode=install_mode,
+            browser_surface_proof_attempted=browser_surface_proof_attempted,
+            browser_surface_proof_required=include_browser_proof,
+            browser_surface_issues=browser_surface_issues,
+        )
+    )
+    evidence["preconfirm_dry_run"] = dict(execution.dry_run_receipt)
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
@@ -796,19 +832,7 @@ def _run_case(
         create_stderr_excerpt=command_excerpt(create.stderr) if create.returncode else "",
         platform_leakage_terms=leakage_terms,
         commit_manifest_summary=commit_manifest_summary(manifest),
-        evidence=_case_evidence_manifest(
-            case=case,
-            repo_root=repo_root,
-            package=package,
-            create_payload=payload,
-            quality=quality,
-            install_script=install_script,
-            version=version,
-            install_mode=install_mode,
-            browser_surface_proof_attempted=browser_surface_proof_attempted,
-            browser_surface_proof_required=include_browser_proof,
-            browser_surface_issues=browser_surface_issues,
-        ),
+        evidence=evidence,
     )
 
 
@@ -889,6 +913,24 @@ def _run_compiled_greenfield_create(
     timeout: int,
     edit_evidence: str = "",
 ) -> tuple[Any, float]:
+    execution = _run_compiled_greenfield_create_with_receipt(
+        repo_root=repo_root,
+        env=env,
+        prompt=prompt,
+        timeout=timeout,
+        edit_evidence=edit_evidence,
+    )
+    return execution.create, execution.create_seconds
+
+
+def _run_compiled_greenfield_create_with_receipt(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    prompt: str,
+    timeout: int,
+    edit_evidence: str = "",
+) -> CompiledCreateExecution:
     proposed = _run_greenfield_propose(
         repo_root=repo_root,
         env=env,
@@ -896,57 +938,16 @@ def _run_compiled_greenfield_create(
         edit_evidence=edit_evidence,
         timeout=timeout,
     )
-    if proposed.returncode != 0:
-        return proposed, 0.0
-    proposed_payload = _parse_json_object(proposed.stdout)
-    transaction_summary = _as_mapping(proposed_payload.get("product_create_transaction"))
-    transaction_hash = str(transaction_summary.get("transaction_hash") or "").strip()
-    transaction_file = str(proposed_payload.get("transaction_file") or "").strip()
-    proposal_mode = str(proposed_payload.get("mode") or "").strip()
-    if proposal_mode == "clarification_required":
-        return (
-            SimpleNamespace(
-                returncode=2,
-                stdout=proposed.stdout,
-                stderr="greenfield proposal requires a material clarification before compiling a transaction",
-            ),
-            0.0,
-        )
-    if proposal_mode != "product_create_transaction" or not transaction_hash or not transaction_file:
-        return (
-            SimpleNamespace(
-                returncode=2,
-                stdout=json.dumps(
-                    {
-                        "mode": "error",
-                        "error": "greenfield propose did not return a ProductCreateTransaction hash and transaction file",
-                    },
-                    sort_keys=True,
-                ),
-                stderr="",
-            ),
-            0.0,
-        )
-    started = time.perf_counter()
-    create = _run(
-        cwd=repo_root,
-        env=env,
-        command=[
-            "./.odylith/bin/odylith",
-            "greenfield",
-            "create",
-            "--repo-root",
-            ".",
-            "--transaction-file",
-            transaction_file,
-            "--transaction-hash",
-            transaction_hash,
-            "--confirm",
-            "--json",
-        ],
-        timeout=timeout,
+    return commit_precompiled_transaction(
+        repo_root=repo_root,
+        proposed=proposed,
+        invoke_create=lambda command: _run(
+            cwd=repo_root,
+            env=env,
+            command=list(command),
+            timeout=timeout,
+        ),
     )
-    return create, round(time.perf_counter() - started, 3)
 
 
 def _run_greenfield_propose(
@@ -1806,6 +1807,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Append per-run and per-case campaign telemetry to this JSONL file.",
     )
     parser.add_argument(
+        "--attempt-ledger-jsonl",
+        default="",
+        help="Persist redacted per-case attempt identities for exact interrupted-case replay.",
+    )
+    parser.add_argument(
         "--campaign-phase",
         default="single-matrix",
         help="Operator-facing campaign phase label such as failed-subset, 60-case-regression, volume-discovery, or 240-case-discovery.",
@@ -1976,6 +1982,11 @@ def _execute_matrix_campaign(
             stop_after_cluster_failures=campaign_config.stop_after_cluster_failures,
             required_stressors=campaign_config.required_stressors,
             incremental_output_json=output_path,
+            attempt_ledger_jsonl=(
+                Path(str(args.attempt_ledger_jsonl)).expanduser().resolve()
+                if str(args.attempt_ledger_jsonl or "").strip()
+                else None
+            ),
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
             release_audits=release_audits,
         )
@@ -2027,6 +2038,7 @@ def _execute_matrix_campaign(
     )
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
     cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
+    metamorphic_output = evaluate_metamorphic_outputs(cases=selected_cases, results=results)
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
@@ -2035,6 +2047,7 @@ def _execute_matrix_campaign(
         and browser_passed
         and platform_leakage_passed
         and cleanup_passed
+        and bool(metamorphic_output.get("passed"))
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
@@ -2073,6 +2086,7 @@ def _execute_matrix_campaign(
             config=campaign_config,
             stopped_reason=stop_reason(results, campaign_config),
         ),
+        "metamorphic_output": metamorphic_output,
         "browser_surface_proof": browser_proof,
         "platform_domain_leakage_proof": platform_leakage_proof,
         "temp_cleanup_proof": cleanup_proof,

@@ -392,7 +392,7 @@ def test_pre_result_shard_failure_writes_replayable_failed_subset_payload(
     assert replay["tiers"]["failed-subset"]["case_count"] == 1
 
 
-def test_multi_case_pre_result_failure_requires_shard_replay_not_fake_exact_subset(
+def test_multi_case_pre_result_failure_does_not_replay_unstarted_planned_cases(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -446,12 +446,17 @@ def test_multi_case_pre_result_failure_requires_shard_replay_not_fake_exact_subs
     )
 
     failed_response = payload["failure_response"]
-    shard_payload = json.loads(Path(payload["tiers"][0]["shards"][0]["output_json"]).read_text(encoding="utf-8"))
+    shard = payload["tiers"][0]["shards"][0]
+    shard_payload = json.loads(Path(shard["output_json"]).read_text(encoding="utf-8"))
+    attempt_ledger = Path(shard["attempt_ledger_jsonl"])
 
     assert shard_payload["synthetic"] is True
     assert shard_payload["replay_scope"] == "source-shard"
     assert shard_payload["exact_failed_subset_available"] is False
     assert shard_payload["results"] == []
+    assert shard_payload["attempt_ledger_jsonl"] == str(attempt_ledger)
+    assert attempt_ledger.is_file()
+    assert "Create a greenfield proposal" not in attempt_ledger.read_text(encoding="utf-8")
     assert failed_response["exact_failed_subset_available"] is False
     assert failed_response["failed_result_jsons"] == []
     assert failed_response["shard_replay_case_files"] == [str(case_file)]

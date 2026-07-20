@@ -33,6 +33,7 @@ from greenfield_matrix_campaign import missing_required_stressors  # noqa: E402
 from greenfield_matrix_campaign_progress import CampaignProgressWriter  # noqa: E402
 from greenfield_matrix_campaign_progress import first_cluster_at_threshold  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_attempt_ledger import initialize_attempt_ledger  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_matrix_failure_response import write_synthetic_shard_payload  # noqa: E402
@@ -76,6 +77,7 @@ class ShardRunResult:
     stdout_excerpt: str
     stderr_excerpt: str
     stop_reason: str = ""
+    attempt_ledger_jsonl: str = ""
 
     @property
     def passed(self) -> bool:
@@ -103,6 +105,7 @@ class ShardRunResult:
             "stdout_excerpt": self.stdout_excerpt,
             "stderr_excerpt": self.stderr_excerpt,
             "stop_reason": self.stop_reason,
+            "attempt_ledger_jsonl": self.attempt_ledger_jsonl,
         }
 
 
@@ -302,7 +305,14 @@ def _run_shard(
 ) -> ShardRunResult:
     output_json = output_dir / f"{shard.name}.result.v1.json"
     telemetry_jsonl = telemetry_dir / f"{shard.name}.telemetry.v1.jsonl"
-    _reset_shard_run_files(output_json=output_json, telemetry_jsonl=telemetry_jsonl)
+    attempt_ledger_jsonl = telemetry_dir / f"{shard.name}.attempts.v1.jsonl"
+    _reset_shard_run_files(
+        output_json=output_json,
+        telemetry_jsonl=telemetry_jsonl,
+        attempt_ledger_jsonl=attempt_ledger_jsonl,
+    )
+    if shard.case_file.is_file():
+        initialize_attempt_ledger(attempt_ledger_jsonl, load_case_file(shard.case_file))
     shard_temp_parent = _prepare_shard_temp_parent(
         base_temp_parent=temp_parent,
         shard=shard,
@@ -316,6 +326,7 @@ def _run_shard(
         temp_parent=shard_temp_parent,
         output_json=output_json,
         telemetry_jsonl=telemetry_jsonl,
+        attempt_ledger_jsonl=attempt_ledger_jsonl,
     )
     progress.emit(
         "shard_started",
@@ -325,6 +336,7 @@ def _run_shard(
             "case_file": str(shard.case_file),
             "output_json": str(output_json),
             "telemetry_jsonl": str(telemetry_jsonl),
+            "attempt_ledger_jsonl": str(attempt_ledger_jsonl),
             "temp_parent": str(shard_temp_parent),
         },
     )
@@ -347,6 +359,7 @@ def _run_shard(
                 completed=completed,
                 stop_reason=stop_reason,
                 live_failure_snapshot=progress.shard_failure_snapshot(shard=shard.name),
+                attempt_ledger_jsonl=attempt_ledger_jsonl,
             )
         campaign = payload.get("campaign") if isinstance(payload.get("campaign"), dict) else {}
         clusters = tuple(
@@ -394,6 +407,7 @@ def _run_shard(
             stdout_excerpt=_excerpt(completed.stdout),
             stderr_excerpt=_excerpt(completed.stderr),
             stop_reason=stop_reason,
+            attempt_ledger_jsonl=str(attempt_ledger_jsonl),
         )
     except OSError as exc:
         result = ShardRunResult(
@@ -420,6 +434,7 @@ def _run_shard(
             stdout_excerpt="",
             stderr_excerpt=_excerpt(str(exc)),
             stop_reason="shard-launch-failed",
+            attempt_ledger_jsonl=str(attempt_ledger_jsonl),
         )
         result = _result_with_replayable_synthetic_payload(
             result=result,
@@ -430,6 +445,7 @@ def _run_shard(
             forced_cluster="campaign.shard-launch-failed",
             detail=str(exc),
             failure_status="shard-launch-failed",
+            attempt_ledger_jsonl=attempt_ledger_jsonl,
         )
     finally:
         try:
@@ -452,6 +468,7 @@ def _run_shard(
             forced_cluster="campaign.shard-temp-cleanup-failed",
             detail=cleanup_error,
             failure_status="shard-temp-cleanup-failed",
+            attempt_ledger_jsonl=attempt_ledger_jsonl,
         )
     progress.emit(
         "shard_completed",
@@ -484,15 +501,23 @@ def _successful_matrix_payload(
     return int(campaign.get("failed_case_count") or 0) == 0 and not campaign.get("failure_clusters")
 
 
-def _reset_shard_run_files(*, output_json: Path, telemetry_jsonl: Path) -> None:
+def _reset_shard_run_files(
+    *,
+    output_json: Path,
+    telemetry_jsonl: Path,
+    attempt_ledger_jsonl: Path | None = None,
+) -> None:
     """Remove prior shard result and telemetry before launching a new attempt."""
 
-    for path in (
+    paths = (
         output_json,
         telemetry_jsonl,
         telemetry_jsonl.with_suffix(telemetry_jsonl.suffix + ".stdout"),
         telemetry_jsonl.with_suffix(telemetry_jsonl.suffix + ".stderr"),
-    ):
+    )
+    if attempt_ledger_jsonl is not None:
+        paths = (*paths, attempt_ledger_jsonl)
+    for path in paths:
         try:
             if path.exists() or path.is_symlink():
                 path.unlink()
@@ -537,6 +562,7 @@ def _result_with_replayable_synthetic_payload(
     forced_cluster: str,
     detail: str,
     failure_status: str,
+    attempt_ledger_jsonl: Path | None = None,
 ) -> ShardRunResult:
     payload = write_synthetic_shard_payload(
         output_json=output_json,
@@ -548,6 +574,7 @@ def _result_with_replayable_synthetic_payload(
         forced_cluster=forced_cluster,
         forced_detail=detail,
         failure_status=failure_status,
+        attempt_ledger_jsonl=attempt_ledger_jsonl,
     )
     campaign = _mapping(payload.get("campaign"))
     clusters = tuple(_mapping_rows(campaign.get("failure_clusters"))) or result.failure_clusters
@@ -792,6 +819,7 @@ def _matrix_command(
     temp_parent: Path,
     output_json: Path,
     telemetry_jsonl: Path,
+    attempt_ledger_jsonl: Path | None = None,
 ) -> list[str]:
     command = [
         sys.executable,
@@ -815,6 +843,8 @@ def _matrix_command(
         "--install-mode",
         shard.install_mode,
     ]
+    if attempt_ledger_jsonl is not None:
+        command.extend(["--attempt-ledger-jsonl", str(attempt_ledger_jsonl)])
     if shard.include_browser_proof:
         command.append("--include-browser-proof")
     else:

@@ -50,6 +50,7 @@ def build_quality_verdict(
     create_returncode: int,
     create_seconds: float,
     create_detail: str = "",
+    external_issues: Sequence[str] = (),
 ) -> GreenfieldQualityVerdict:
     manifest = mapping_copy(create_payload.get("commit_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
@@ -79,6 +80,7 @@ def build_quality_verdict(
             product_create_transaction=mapping_copy(create_payload.get("product_create_transaction")),
         ),
         *completion_issues(counts=counts, create_returncode=create_returncode, create_seconds=create_seconds),
+        *(str(issue).strip() for issue in external_issues if str(issue).strip()),
     ]
     lenses = _quality_lenses(
         manifest_lenses=manifest_lenses,
@@ -111,6 +113,7 @@ def build_quality_verdict(
         create_returncode=create_returncode,
         rendered_issues=rendered_issues,
         prompt_issues=prompt_issues,
+        external_issues=external_issues,
     )
     return GreenfieldQualityVerdict(
         passed=not unique_issues and all(lenses.values()) and final_score == 10,
@@ -127,6 +130,7 @@ def build_quality_verdict(
             manifest=manifest,
             create_returncode=create_returncode,
             lenses=lenses,
+            external_issues=external_issues,
         ),
         score_basis=_score_basis(scores),
     )
@@ -504,8 +508,9 @@ def _final_quality_score(
     create_returncode: int,
     rendered_issues: Sequence[str],
     prompt_issues: Sequence[str],
+    external_issues: Sequence[str] = (),
 ) -> int:
-    if create_returncode != 0 or not write_committed(manifest):
+    if create_returncode != 0 or not write_committed(manifest) or any(str(issue).strip() for issue in external_issues):
         return 0
     scored_dimensions = [
         int(scores.get(dimension, 0))
@@ -538,9 +543,12 @@ def _score_explanation(
     manifest: Mapping[str, Any],
     create_returncode: int,
     lenses: Mapping[str, bool],
+    external_issues: Sequence[str] = (),
 ) -> tuple[str, ...]:
     if create_returncode != 0 or not write_committed(manifest):
         return ("score forced to 0 because commit-only create did not commit governed records",)
+    if any(str(issue).strip() for issue in external_issues):
+        return ("score forced to 0 because commit readback differs from the sealed pre-confirm transaction",)
     explanations: list[str] = []
     if rendered_issues:
         explanations.append(f"copy/semantic artifact findings cap release score at 6; findings={len(tuple(rendered_issues))}")

@@ -82,6 +82,71 @@ def test_synthetic_live_duplicate_name_failure_requires_source_shard_replay(tmp_
     assert payload["campaign"]["failure_clusters"][0]["shard_replay_case_file"] == str(case_file)
 
 
+def test_synthetic_failure_replays_only_the_started_case_from_the_attempt_ledger(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "volume-01.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "started-001",
+                        "name": "started case",
+                        "prompt": "Create a greenfield proposal for the started case.",
+                        "required_terms": ("started",),
+                        "leakage_terms": ("started case",),
+                    },
+                    {
+                        "case_id": "planned-002",
+                        "name": "planned case",
+                        "prompt": "Create a greenfield proposal for the planned case.",
+                        "required_terms": ("planned",),
+                        "leakage_terms": ("planned case",),
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    ledger = tmp_path / "attempts.v1.jsonl"
+    ledger.write_text(
+        "\n".join(
+            json.dumps(row)
+            for row in (
+                {
+                    "version": "odylith.greenfield.matrix.attempt-ledger.v1",
+                    "event": "case_planned",
+                    "case": {"id": "started-001", "prompt_sha256": "a" * 64},
+                },
+                {
+                    "version": "odylith.greenfield.matrix.attempt-ledger.v1",
+                    "event": "case_planned",
+                    "case": {"id": "planned-002", "prompt_sha256": "b" * 64},
+                },
+                {
+                    "version": "odylith.greenfield.matrix.attempt-ledger.v1",
+                    "event": "case_started",
+                    "case": {"id": "started-001", "prompt_sha256": "a" * 64},
+                },
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    payload = module.write_synthetic_shard_payload(
+        output_json=tmp_path / "out" / "failed.json",
+        shard=SimpleNamespace(case_file=case_file, tier="volume-discovery", proof_tier="discovery"),
+        completed=subprocess.CompletedProcess(["greenfield-matrix"], 1, "", "process died"),
+        stop_reason="shard-process-failed-before-result-payload",
+        force_failed=True,
+        attempt_ledger_jsonl=ledger,
+    )
+
+    assert payload["replay_scope"] == "exact-interrupted-cases"
+    assert [result["evidence"]["case"]["id"] for result in payload["results"]] == ["started-001"]
+
+
 def test_failure_response_uses_source_shard_replay_when_result_json_is_unreadable(tmp_path: Path) -> None:
     module = _module()
     case_file = tmp_path / "volume-01.json"

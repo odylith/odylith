@@ -15,6 +15,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from greenfield_matrix_case_file import load_case_file
+from greenfield_matrix_attempt_ledger import replay_case_identities
 
 
 def campaign_failure_clusters(tier_results: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -138,6 +139,7 @@ def write_synthetic_shard_payload(
     forced_cluster: str = "",
     forced_detail: str = "",
     failure_status: str = "shard-process-failed",
+    attempt_ledger_jsonl: Path | None = None,
 ) -> dict[str, Any]:
     """Write a replayable matrix payload when a child shard dies too early."""
 
@@ -161,8 +163,17 @@ def write_synthetic_shard_payload(
             if int(snapshot.get("failed_case_count") or 0) > 0
             else f"shard exited with return code {completed.returncode} before matrix result payload was written"
         )
-    failed_cases = _cases_matching_live_failure_snapshot(cases, snapshot) if failed else ()
-    replay_scope = _replay_scope(failed_cases=failed_cases, all_cases=cases, snapshot=snapshot)
+    snapshot_cases = _cases_matching_live_failure_snapshot(cases, snapshot) if failed else ()
+    ledger_cases, ledger_present = _cases_matching_attempt_ledger(cases, attempt_ledger_jsonl)
+    if snapshot_cases:
+        failed_cases = snapshot_cases
+        replay_scope = "exact-failed-cases"
+    elif failed and ledger_present and ledger_cases:
+        failed_cases = ledger_cases
+        replay_scope = "exact-interrupted-cases"
+    else:
+        failed_cases = ()
+        replay_scope = _replay_scope(failed_cases=(), all_cases=cases, snapshot=snapshot)
     results = [
         _synthetic_failed_result(
             case,
@@ -171,7 +182,7 @@ def write_synthetic_shard_payload(
             failure_status=failure_status,
         )
         for case in failed_cases
-    ] if failed and replay_scope == "exact-failed-cases" else []
+    ] if failed and replay_scope in {"exact-failed-cases", "exact-interrupted-cases"} else []
     clusters = _synthetic_failure_clusters(
         cases=failed_cases,
         failed=failed,
@@ -195,6 +206,7 @@ def write_synthetic_shard_payload(
         ),
         "tier": str(getattr(shard, "tier", "")),
         "case_file": str(getattr(shard, "case_file", "")),
+        "attempt_ledger_jsonl": str(attempt_ledger_jsonl or ""),
         "results": results,
         "campaign": {
             "phase": str(getattr(shard, "tier", "")),
@@ -211,6 +223,7 @@ def write_synthetic_shard_payload(
             "shard_replay_case_file": (
                 str(getattr(shard, "case_file", "")) if replay_scope == "source-shard" else ""
             ),
+            "attempt_ledger_jsonl": str(attempt_ledger_jsonl or ""),
             "release_readiness_boundary": (
                 "synthetic shard payload preserves replay identity; it is not release-readiness proof"
             ),
@@ -241,7 +254,7 @@ def _synthetic_failure_clusters(
         "",
     )
     failed_case_rows = _mapping_rows(live_failure_snapshot.get("failed_cases"))
-    exact_scope = replay_scope == "exact-failed-cases"
+    exact_scope = replay_scope in {"exact-failed-cases", "exact-interrupted-cases"}
     case_ids = _live_case_values(failed_case_rows, "id") or ([
         str(getattr(case, "case_id", "") or getattr(case, "slug", "")) for case in cases
     ] if exact_scope else [])
@@ -310,6 +323,24 @@ def _cases_matching_live_failure_snapshot(
         if any(_weak_case_identity_unique(token, cases) and _case_matches_weak_identity(case, token) for token in weak_tokens)
     ]
     return tuple(matched)
+
+
+def _cases_matching_attempt_ledger(
+    cases: Sequence[Any],
+    attempt_ledger_jsonl: Path | None,
+) -> tuple[tuple[Any, ...], bool]:
+    identities = replay_case_identities(attempt_ledger_jsonl)
+    if not identities:
+        return (), False
+    matches: list[Any] = []
+    matched_indexes: set[int] = set()
+    for identity in identities:
+        case_index = _single_source_case_match((identity,), cases)
+        if case_index is None or case_index in matched_indexes:
+            return (), True
+        matches.append(cases[case_index])
+        matched_indexes.add(case_index)
+    return tuple(matches), True
 
 
 def _replay_scope(*, failed_cases: Sequence[Any], all_cases: Sequence[Any], snapshot: Mapping[str, Any]) -> str:

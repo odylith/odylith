@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import importlib
+import hashlib
 import json
 import subprocess
 import sys
@@ -815,9 +816,29 @@ def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, obje
 def _proposed_transaction_payload() -> dict[str, object]:
     return {
         "mode": "product_create_transaction",
-        "product_create_transaction": {"transaction_hash": "compiled-hash"},
+        "product_create_transaction": {"transaction_hash": "a" * 64},
         "transaction_file": ".odylith/runtime/greenfield/product-create-transaction.v1.json",
     }
+
+
+def _write_compiled_transaction(repo_root: Path, proposal: dict[str, object]) -> None:
+    transaction_file = repo_root / str(proposal["transaction_file"])
+    transaction_hash = str(dict(proposal["product_create_transaction"])["transaction_hash"])
+    transaction = {
+        "transaction_hash": transaction_hash,
+        "quality_manifest": {"status": "passed", "validation_status": "passed"},
+    }
+    encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
+    transaction_file.parent.mkdir(parents=True, exist_ok=True)
+    transaction_file.write_bytes(encoded)
+    compiler_receipt = {
+        "transaction_hash": transaction_hash,
+        "transaction_file_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+    transaction_file.with_name(transaction_file.name + ".compiler-receipt.v1.json").write_text(
+        json.dumps(compiler_receipt, sort_keys=True),
+        encoding="utf-8",
+    )
 
 
 def _clarification_payload() -> dict[str, object]:
@@ -918,7 +939,9 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "propose" in command:
-            return subprocess.CompletedProcess(command, 0, json.dumps(_proposed_transaction_payload()), "")
+            proposal = _proposed_transaction_payload()
+            _write_compiled_transaction(cwd, proposal)
+            return subprocess.CompletedProcess(command, 0, json.dumps(proposal), "")
         if "create" in command:
             create_envs.append(dict(env))
             payload = _passing_create_payload()
@@ -959,7 +982,9 @@ def test_standard_matrix_propose_compiles_before_hash_bound_create_without_rescu
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         commands.append(list(command))
         if "propose" in command:
-            return subprocess.CompletedProcess(command, 0, json.dumps(_proposed_transaction_payload()), "")
+            proposal = _proposed_transaction_payload()
+            _write_compiled_transaction(cwd, proposal)
+            return subprocess.CompletedProcess(command, 0, json.dumps(proposal), "")
         if "create" in command:
             create_envs.append(dict(env))
             payload = _passing_create_payload()
@@ -994,6 +1019,8 @@ def test_standard_matrix_propose_compiles_before_hash_bound_create_without_rescu
     assert "--prompt" not in create_command
     assert len(create_envs) == 1
     assert RESCUE_PROBE_ENV not in create_envs[0]
+    assert result.evidence["preconfirm_dry_run"]["status"] == "compiled"
+    assert result.evidence["preconfirm_dry_run"]["transaction_hash"] == "a" * 64
 
 
 def test_explicit_clarification_expectation_passes_without_create_or_records(
@@ -1205,7 +1232,9 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "propose" in command:
-            return subprocess.CompletedProcess(command, 0, json.dumps(_proposed_transaction_payload()), "")
+            proposal = _proposed_transaction_payload()
+            _write_compiled_transaction(cwd, proposal)
+            return subprocess.CompletedProcess(command, 0, json.dumps(proposal), "")
         if "create" in command:
             create_envs.append(dict(env))
             manifest = _passing_manifest()
@@ -2102,9 +2131,11 @@ def test_invalid_greenfield_matrix_install_mode_is_rejected() -> None:
 def test_greenfield_create_times_only_hash_bound_commit_phase(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     clock = {"seconds": 0.0}
+    transaction_payload = _proposed_transaction_payload()
+    _write_compiled_transaction(tmp_path, transaction_payload)
     proposed = SimpleNamespace(
         returncode=0,
-        stdout=json.dumps(_proposed_transaction_payload()),
+        stdout=json.dumps(transaction_payload),
         stderr="",
     )
     created = SimpleNamespace(returncode=0, stdout="{}", stderr="")
@@ -2118,6 +2149,8 @@ def test_greenfield_create_times_only_hash_bound_commit_phase(monkeypatch, tmp_p
 
     monkeypatch.setattr(module, "_run", fake_run)
     monkeypatch.setattr(module.time, "perf_counter", lambda: clock["seconds"])
+    transaction_evidence = importlib.import_module("greenfield_matrix_transaction_evidence")
+    monkeypatch.setattr(transaction_evidence.time, "perf_counter", lambda: clock["seconds"])
 
     response, create_seconds = module._run_compiled_greenfield_create(  # noqa: SLF001
         repo_root=tmp_path,

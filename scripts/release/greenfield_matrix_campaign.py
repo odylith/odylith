@@ -18,6 +18,7 @@ from greenfield_matrix_stressors import normalize_stressors
 from greenfield_matrix_stressors import required_stressors_from_values
 from greenfield_matrix_stressors import stressor_coverage
 from greenfield_matrix_stressors import variance_evaluation
+from greenfield_matrix_metamorphic import evaluate_metamorphic_outputs
 from greenfield_matrix_types import GreenfieldMatrixResult
 
 
@@ -178,6 +179,7 @@ def campaign_summary(
         "stressor_coverage": stressor_coverage(cases, config.required_stressors),
         "stressor_variance": variance_evaluation(cases, config.required_stressors),
         "stressor_outcomes": stressor_outcomes(cases=cases, results=results),
+        "metamorphic_output": evaluate_metamorphic_outputs(cases=cases, results=results),
         "release_readiness_boundary": _release_readiness_boundary(config),
     }
 
