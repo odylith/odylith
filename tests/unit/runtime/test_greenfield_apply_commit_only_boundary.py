@@ -202,4 +202,5 @@ def test_commit_executor_has_no_preconfirm_compiler_or_rescue_imports() -> None:
     assert not {
         "odylith.runtime.domain_intelligence.greenfield_preconfirm_engine",
         "odylith.runtime.domain_intelligence.greenfield_preconfirm_rescue_planner",
+        "odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority",
     }.intersection(imported_modules)

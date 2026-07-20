@@ -11,8 +11,8 @@ PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION = "odylith.greenfield.compiler_receip
 POST_CONFIRM_ALLOWED_OPERATIONS = (
     "verify_transaction_hash",
     "verify_compiler_receipt",
-    "verify_compiler_provenance",
-    "verify_sealed_product_intent_authority_bytes",
+    "verify_post_confirm_runtime_identity",
+    "verify_sealed_write_set",
     "verify_repo_preconditions",
     "apply_preconfirm_refreshed_sealed_bytes",
     "write_sealed_repository_bytes",

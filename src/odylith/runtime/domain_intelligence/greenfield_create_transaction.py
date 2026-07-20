@@ -19,6 +19,9 @@ from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    canonical_product_create_transaction_receipt_bytes,
+)
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     build_product_create_transaction_compiler_identity,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
@@ -76,28 +79,36 @@ class ProductCreateTransaction:
         )
 
     def summary(self) -> dict[str, Any]:
-        write_set = (
-            self.prewrite_package.repository_write_set
-            if isinstance(self.prewrite_package.repository_write_set, Mapping)
-            else {}
-        )
         return {
             "version": self.version,
             "transaction_hash": self.transaction_hash,
             "verified": self.verified,
-            "release_selector": self.release_selector,
-            "quality_status": str(self.quality_manifest.get("status", "")).strip(),
-            "validation_status": str(self.quality_manifest.get("validation_status", "")).strip(),
-            "compiler": str(self.compiler_provenance.get("compiler", "")).strip(),
-            "compiler_phase": str(self.compiler_provenance.get("phase", "")).strip(),
-            "product_facts_sha256": str(self.intent_authority.get("product_facts_sha256", "")).strip(),
-            "intent_authority_version": str(self.intent_authority.get("version", "")).strip(),
-            "surface_refresh_preview": _json_ready(self.prewrite_package.surface_refresh_preview or {}),
-            "repository_write_set_hash": str(write_set.get("write_set_hash", "")).strip(),
-            "repository_write_count": int(write_set.get("write_count", 0) or 0),
-            "repository_delete_count": int(write_set.get("delete_count", 0) or 0),
-            "repository_directory_delete_count": int(write_set.get("directory_delete_count", 0) or 0),
+            **_product_create_transaction_commit_summary(self),
         }
+
+
+def _product_create_transaction_commit_summary(transaction: ProductCreateTransaction) -> dict[str, Any]:
+    """Return pre-confirm reporting bytes without the transaction hash."""
+
+    write_set = (
+        transaction.prewrite_package.repository_write_set
+        if isinstance(transaction.prewrite_package.repository_write_set, Mapping)
+            else {}
+        )
+    return {
+        "release_selector": transaction.release_selector,
+        "quality_status": str(transaction.quality_manifest.get("status", "")).strip(),
+        "validation_status": str(transaction.quality_manifest.get("validation_status", "")).strip(),
+        "compiler": str(transaction.compiler_provenance.get("compiler", "")).strip(),
+        "compiler_phase": str(transaction.compiler_provenance.get("phase", "")).strip(),
+        "product_facts_sha256": str(transaction.intent_authority.get("product_facts_sha256", "")).strip(),
+        "intent_authority_version": str(transaction.intent_authority.get("version", "")).strip(),
+        "surface_refresh_preview": _json_ready(transaction.prewrite_package.surface_refresh_preview or {}),
+        "repository_write_set_hash": str(write_set.get("write_set_hash", "")).strip(),
+        "repository_write_count": int(write_set.get("write_count", 0) or 0),
+        "repository_delete_count": int(write_set.get("delete_count", 0) or 0),
+        "repository_directory_delete_count": int(write_set.get("directory_delete_count", 0) or 0),
+    }
 
 
 def build_product_create_transaction(
@@ -343,10 +354,11 @@ def write_compiled_product_create_transaction_file(
         "version": PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
         "transaction_hash": transaction.transaction_hash,
         "transaction_file_sha256": hashlib.sha256(payload_text.encode("utf-8")).hexdigest(),
+        "post_confirm_runtime_identity": product_create_transaction_compiler_identity(),
     }
     atomic_write_text(
         product_create_transaction_receipt_path(target),
-        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        canonical_product_create_transaction_receipt_bytes(receipt).decode("utf-8"),
         encoding="utf-8",
     )
     return target
@@ -413,6 +425,7 @@ def _transaction_hash_payload(transaction: ProductCreateTransaction) -> dict[str
         "intent_authority": _json_ready(transaction.intent_authority),
         "quality_manifest": _json_ready(transaction.quality_manifest),
         "compiler_provenance": _json_ready(transaction.compiler_provenance),
+        "commit_summary": _product_create_transaction_commit_summary(transaction),
     }
 
 

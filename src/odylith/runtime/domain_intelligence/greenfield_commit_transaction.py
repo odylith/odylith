@@ -12,26 +12,13 @@ from typing import Any
 from odylith import __version__
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
-    PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
-)
-from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_COMPILER
-from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
-from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
-from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
-from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    PRODUCT_INTENT_AUTHORITY_KEY,
-)
-from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    require_sealed_product_intent_authority_bytes,
-)
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
 
 _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
@@ -48,7 +35,6 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_create_manifest.py",
     "runtime/domain_intelligence/greenfield_proposals_cli.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
-    "runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
 )
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds"})
@@ -82,10 +68,8 @@ class SealedProductCreateCommit:
 
     version: str
     release_selector: str
-    _intent_authority_json: str
-    _preconfirm_intent_authority_json: str
-    _quality_manifest_json: str
-    _compiler_provenance_json: str
+    _commit_manifest_preview_json: str
+    _transaction_summary_json: str
     transaction_hash: str
     transaction_file: Path
     prewrite_package: SealedGreenfieldCommitPackage
@@ -96,30 +80,25 @@ class SealedProductCreateCommit:
         return self._attestation is _SEALED_COMMIT_ATTESTATION
 
     @property
-    def intent_authority(self) -> Mapping[str, Any]:
-        return _sealed_mapping_copy(self._intent_authority_json)
+    def commit_manifest_preview(self) -> Mapping[str, Any]:
+        """Return opaque pre-confirm evidence for the final commit report."""
 
-    @property
-    def quality_manifest(self) -> Mapping[str, Any]:
-        return _sealed_mapping_copy(self._quality_manifest_json)
-
-    @property
-    def compiler_provenance(self) -> Mapping[str, Any]:
-        return _sealed_mapping_copy(self._compiler_provenance_json)
+        return _sealed_mapping_copy(self._commit_manifest_preview_json)
 
     def summary(self) -> dict[str, Any]:
+        report = _sealed_mapping_copy(self._transaction_summary_json)
         write_set = self.prewrite_package.repository_write_set
         return {
             "version": self.version,
             "transaction_hash": self.transaction_hash,
             "verified": self.verified,
             "release_selector": self.release_selector,
-            "quality_status": str(self.quality_manifest.get("status", "")).strip(),
-            "validation_status": str(self.quality_manifest.get("validation_status", "")).strip(),
-            "compiler": str(self.compiler_provenance.get("compiler", "")).strip(),
-            "compiler_phase": str(self.compiler_provenance.get("phase", "")).strip(),
-            "product_facts_sha256": str(self.intent_authority.get("product_facts_sha256", "")).strip(),
-            "intent_authority_version": str(self.intent_authority.get("version", "")).strip(),
+            "quality_status": str(report.get("quality_status", "")).strip(),
+            "validation_status": str(report.get("validation_status", "")).strip(),
+            "compiler": str(report.get("compiler", "")).strip(),
+            "compiler_phase": str(report.get("compiler_phase", "")).strip(),
+            "product_facts_sha256": str(report.get("product_facts_sha256", "")).strip(),
+            "intent_authority_version": str(report.get("intent_authority_version", "")).strip(),
             "surface_refresh_preview": dict(self.prewrite_package.surface_refresh_preview),
             "repository_write_set_hash": str(write_set.get("write_set_hash", "")).strip(),
             "repository_write_count": int(write_set.get("write_count", 0) or 0),
@@ -137,7 +116,8 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
         raise ValueError("ProductCreateTransaction file and compiler receipt must not be symlinks")
     try:
         payload_bytes = target.read_bytes()
-        receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+        receipt_bytes = receipt_path.read_bytes()
+        receipt_payload = json.loads(receipt_bytes.decode("utf-8"))
         payload = json.loads(payload_bytes.decode("utf-8"))
     except FileNotFoundError as error:
         raise ValueError(
@@ -154,10 +134,26 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
         ) from error
     if not isinstance(payload, Mapping) or not isinstance(receipt_payload, Mapping):
         raise ValueError("ProductCreateTransaction and compiler receipt must be JSON objects")
+    expected_receipt_fields = {
+        "version",
+        "transaction_hash",
+        "transaction_file_sha256",
+        "post_confirm_runtime_identity",
+    }
+    if set(receipt_payload) != expected_receipt_fields or receipt_bytes != canonical_product_create_transaction_receipt_bytes(
+        receipt_payload
+    ):
+        raise ValueError("ProductCreateTransaction compiler receipt bytes are not canonical")
     if str(receipt_payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION:
         raise ValueError("ProductCreateTransaction compiler receipt has an unsupported version")
     if hashlib.sha256(payload_bytes).hexdigest() != str(receipt_payload.get("transaction_file_sha256", "")).strip():
         raise ValueError("ProductCreateTransaction file does not match its pre-confirm compiler receipt")
+    runtime_identity = receipt_payload.get("post_confirm_runtime_identity")
+    if not isinstance(runtime_identity, Mapping) or dict(runtime_identity) != build_product_create_transaction_compiler_identity():
+        raise ValueError(
+            "ProductCreateTransaction post-confirm runtime changed after pre-confirm compilation; "
+            "rebuild the transaction before committing governed records"
+        )
     transaction_hash = str(payload.get("transaction_hash", "")).strip()
     if not transaction_hash or transaction_hash != _payload_hash(payload):
         raise ValueError("ProductCreateTransaction hash mismatch; rebuild the transaction before committing governed records")
@@ -166,26 +162,25 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
     if str(payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_VERSION:
         raise ValueError("ProductCreateTransaction has an unsupported version")
     package = payload.get("prewrite_package")
-    proposal = payload.get("proposal")
     if not isinstance(package, Mapping):
         raise ValueError("ProductCreateTransaction is missing its sealed prewrite package")
-    if not isinstance(proposal, Mapping):
-        raise ValueError("ProductCreateTransaction is missing pre-confirm Product Intent provenance")
-    preconfirm_authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
-    if not isinstance(preconfirm_authority, Mapping):
-        raise ValueError("ProductCreateTransaction is missing pre-confirm Product Intent provenance")
     write_set = package.get("repository_write_set")
     commit_preview = package.get("commit_result_preview")
     surface_preview = package.get("surface_refresh_preview")
-    if not isinstance(write_set, Mapping) or not isinstance(commit_preview, Mapping):
+    commit_manifest_preview = payload.get("quality_manifest")
+    transaction_summary = payload.get("commit_summary")
+    if (
+        not isinstance(write_set, Mapping)
+        or not isinstance(commit_preview, Mapping)
+        or not isinstance(commit_manifest_preview, Mapping)
+        or not isinstance(transaction_summary, Mapping)
+    ):
         raise ValueError("ProductCreateTransaction is missing its sealed commit package")
     sealed = SealedProductCreateCommit(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=str(payload.get("release_selector", "")).strip(),
-        _intent_authority_json=_sealed_mapping_json(payload.get("intent_authority")),
-        _preconfirm_intent_authority_json=_sealed_mapping_json(preconfirm_authority),
-        _quality_manifest_json=_sealed_mapping_json(payload.get("quality_manifest")),
-        _compiler_provenance_json=_sealed_mapping_json(payload.get("compiler_provenance")),
+        _commit_manifest_preview_json=_sealed_mapping_json(commit_manifest_preview),
+        _transaction_summary_json=_sealed_mapping_json(transaction_summary),
         transaction_hash=transaction_hash,
         transaction_file=target.resolve(),
         prewrite_package=SealedGreenfieldCommitPackage(
@@ -196,28 +191,24 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
         _attestation=_SEALED_COMMIT_ATTESTATION,
     )
     require_sealed_commit_transaction(sealed)
-    require_sealed_commit_operation_contract(sealed)
     return sealed
 
 
 def require_sealed_commit_transaction(transaction: Any) -> None:
+    """Require only the execution envelope needed after confirmation.
+
+    Product interpretation, custody, and quality were settled before the user
+    saw CONFIRM. The commit path keeps their reporting bytes opaque and checks
+    only the executable write protocol.
+    """
+
     if not bool(getattr(transaction, "verified", False)):
         raise ValueError(
             "ProductCreateTransaction was not accepted by the pre-confirm compiler; compile the transaction before committing governed records"
         )
-    authority = getattr(transaction, "intent_authority", None)
-    authority_bytes = getattr(transaction, "_intent_authority_json", "")
-    preconfirm_provenance_bytes = getattr(transaction, "_preconfirm_intent_authority_json", "")
-    if not isinstance(authority, Mapping):
-        raise ValueError("ProductCreateTransaction is missing sealed Product Intent authority")
-    if not isinstance(authority_bytes, str) or not isinstance(preconfirm_provenance_bytes, str):
-        raise ValueError("ProductCreateTransaction is missing sealed Product Intent authority provenance")
-    require_sealed_product_intent_authority_bytes(
-        authority,
-        authority_bytes=authority_bytes.encode("ascii"),
-        preconfirm_provenance_bytes=preconfirm_provenance_bytes.encode("ascii"),
-    )
-    _require_sealed_quality_manifest(getattr(transaction, "quality_manifest", None))
+    package = getattr(transaction, "prewrite_package", None)
+    write_set = getattr(package, "repository_write_set", None)
+    greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
 
 
 def build_product_create_transaction_compiler_identity() -> dict[str, Any]:
@@ -231,68 +222,6 @@ def build_product_create_transaction_compiler_identity() -> dict[str, Any]:
     }
 
 
-def require_sealed_commit_provenance(transaction: Any, *, repo_root: Path) -> None:
-    provenance = getattr(transaction, "compiler_provenance", None)
-    manifest = getattr(transaction, "quality_manifest", None)
-    if not isinstance(provenance, Mapping) or not isinstance(manifest, Mapping):
-        raise ValueError("ProductCreateTransaction compiler provenance is invalid")
-    expected = {
-        "compiler": PRODUCT_CREATE_TRANSACTION_COMPILER,
-        "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
-        "phase": "pre_confirm_compile",
-        "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
-        "repo_root_fingerprint": hashlib.sha256(str(Path(repo_root).expanduser().resolve()).encode("utf-8")).hexdigest(),
-        "quality_manifest_version": str(manifest.get("version", "")).strip(),
-        "quality_manifest_engine": str(manifest.get("engine", "")).strip(),
-    }
-    for key, value in expected.items():
-        if str(provenance.get(key, "")).strip() != value:
-            raise ValueError(_stale_runtime_message())
-    require_sealed_commit_operation_contract(transaction)
-    identity = provenance.get("compiler_identity")
-    if not isinstance(identity, Mapping) or dict(identity) != build_product_create_transaction_compiler_identity():
-        raise ValueError(_stale_runtime_message())
-
-
-def require_sealed_commit_operation_contract(transaction: Any) -> None:
-    provenance = getattr(transaction, "compiler_provenance", None)
-    if not isinstance(provenance, Mapping):
-        raise ValueError(_stale_runtime_message())
-    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != POST_CONFIRM_ALLOWED_OPERATIONS:
-        raise ValueError(_stale_runtime_message())
-    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != POST_CONFIRM_FORBIDDEN_OPERATIONS:
-        raise ValueError(_stale_runtime_message())
-
-
-def _require_sealed_quality_manifest(value: Any) -> None:
-    """Verify the compiler-approved tribunal result without re-running it."""
-
-    manifest = dict(value) if isinstance(value, Mapping) else {}
-    write_transaction = manifest.get("write_transaction")
-    write_transaction = dict(write_transaction) if isinstance(write_transaction, Mapping) else {}
-    try:
-        issue_count = int(manifest.get("issue_count", 0) or 0)
-    except (TypeError, ValueError):
-        issue_count = -1
-    approved = (
-        str(manifest.get("version", "")).strip() == PRECONFIRM_QUALITY_MANIFEST_VERSION
-        and str(manifest.get("engine", "")).strip() == PRECONFIRM_ENGINE_VERSION
-        and str(manifest.get("status", "")).strip() == "passed"
-        and str(manifest.get("validation_status", "")).strip() in {"", "passed"}
-        and not manifest.get("hard_blocker")
-        and issue_count == 0
-        and str(write_transaction.get("status", "")).strip() == "not_started"
-        and str(write_transaction.get("rollback_guard", "")).strip() == "enabled"
-        and write_transaction.get("prewrite_clean_before_commit") is True
-        and "commit_only" not in write_transaction
-    )
-    if not approved:
-        raise ValueError(
-            "pre-confirm ProductCreateTransaction quality manifest is not approved; "
-            "rebuild the transaction before committing governed records"
-        )
-
-
 def _payload_hash(payload: Mapping[str, Any]) -> str:
     fields = (
         "version",
@@ -304,6 +233,7 @@ def _payload_hash(payload: Mapping[str, Any]) -> str:
         "intent_authority",
         "quality_manifest",
         "compiler_provenance",
+        "commit_summary",
     )
     canonical = json.dumps(
         {field: _json_ready(payload.get(field)) for field in fields},
@@ -312,6 +242,12 @@ def _payload_hash(payload: Mapping[str, Any]) -> str:
         sort_keys=True,
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def canonical_product_create_transaction_receipt_bytes(receipt: Mapping[str, Any]) -> bytes:
+    """Return the one accepted serialized form for a compiler receipt."""
+
+    return (json.dumps(dict(receipt), indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
 def _json_ready(value: Any) -> Any:
@@ -339,19 +275,11 @@ def _sealed_mapping_copy(payload: str) -> Mapping[str, Any]:
     return dict(value)
 
 
-def _stale_runtime_message() -> str:
-    return (
-        "ProductCreateTransaction compiler identity or compiler provenance was invalidated by a runtime or repository-context change; "
-        "no Product Intent was rejected and no governed records were written. Rebuild the pre-confirm transaction before committing."
-    )
-
-
 __all__ = [
     "SealedGreenfieldCommitPackage",
     "SealedProductCreateCommit",
     "build_product_create_transaction_compiler_identity",
+    "canonical_product_create_transaction_receipt_bytes",
     "load_sealed_product_create_commit",
-    "require_sealed_commit_provenance",
-    "require_sealed_commit_operation_contract",
     "require_sealed_commit_transaction",
 ]

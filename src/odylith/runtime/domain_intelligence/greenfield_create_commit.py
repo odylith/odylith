@@ -11,7 +11,6 @@ from typing import Any
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import load_sealed_product_create_commit
-from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_provenance
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import require_sealed_commit_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import (
     finalize_greenfield_commit_manifest,
@@ -63,7 +62,7 @@ def commit_greenfield_create_transaction(
     confirm: bool,
     started_at: float | None = None,
 ) -> dict[str, Any]:
-    """Reload, verify, and commit the user-confirmed precompiled package."""
+    """Hash-check and atomically commit the user-confirmed precompiled package."""
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
@@ -80,7 +79,6 @@ def commit_greenfield_create_transaction(
     if transaction.transaction_hash != expected_hash:
         raise ValueError("ProductCreateTransaction hash does not match the confirmed transaction hash")
     require_sealed_commit_transaction(transaction)
-    require_sealed_commit_provenance(transaction, repo_root=root)
     started = time.perf_counter() if started_at is None else float(started_at)
     write_transaction: GreenfieldApplyTransaction | None = None
     journal: GreenfieldCommitJournal | None = None
@@ -115,7 +113,7 @@ def commit_greenfield_create_transaction(
                 journal.mark_prepared()
                 result = greenfield_compiled_write.compiled_greenfield_commit_result(transaction=transaction)
                 final_manifest = finalize_greenfield_commit_manifest(
-                    transaction.quality_manifest,
+                    transaction.commit_manifest_preview,
                     whole_project_elapsed_seconds=time.perf_counter() - started,
                     write_transaction_status="committed",
                 )
@@ -123,7 +121,7 @@ def commit_greenfield_create_transaction(
                 final_manifest["product_create_transaction"] = transaction_summary
                 write_manifest = dict(final_manifest.get("write_transaction") or {})
                 write_manifest["product_create_transaction_hash"] = transaction.transaction_hash
-                write_manifest["product_facts_sha256"] = str(transaction_summary["product_facts_sha256"])
+                write_manifest["product_facts_sha256"] = str(transaction_summary.get("product_facts_sha256", "")).strip()
                 write_manifest["repository_write_set_hash"] = str(write_set["write_set_hash"])
                 write_manifest["commit_only"] = True
                 final_manifest["write_transaction"] = write_manifest

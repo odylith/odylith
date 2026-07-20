@@ -44,6 +44,18 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-19: Tightened the sealed Greenfield execution envelope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
+  An adversarial boundary review found residual post-confirm adjudication. The
+  confirmed path now hash-checks the receipt-bound transaction and its sealed
+  execution-runtime identity, validates the compiled repository write set and
+  mutable repository preconditions, then atomically writes and reads back the
+  sealed bytes. Product Intent authority, materiality, Tribunal quality, and
+  compiler-provenance fields remain pre-confirm evidence and are carried only
+  as opaque reporting bytes after CONFIRM; a changed package cannot reuse the
+  earlier confirmed hash. Focused transaction, direct create CLI, wire-format,
+  and journal-retry proof passed.
+  Bug: `CB-249`; Diagram: D-045.
+
 - 2026-07-12: Moved rich-edit dependent-projection invalidation and state-object grammar repair into the pre-confirm typed compiler. Structured EDIT evidence now replaces stale prompt-derived product projections unless it explicitly owns them; one-word state labels are rendered as grammatical object phrases before quality gates and transaction sealing. Source proof passed the 40-case materializer-authority group, 14 full create/HIIT integrations, and the 135-case matrix without relying on post-confirm prose repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Diagrams: D-043, D-045)
 
 - 2026-07-10: Fixed source-local content custody and accepted-project rerun identity, then proved commit-only custody in the packaged matrix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-227`, `CB-228`, `CB-229`, `CB-230`, `CB-231`; Diagrams: D-043, D-045)

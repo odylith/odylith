@@ -264,11 +264,15 @@ def test_durable_recovery_ignores_snapshot_cleanup_error(
         raise OSError("snapshot cleanup failed")
 
     monkeypatch.setattr(greenfield_commit_journal.shutil, "rmtree", fail_cleanup)
-    recovered = GreenfieldCommitJournal(
-        repo_root=root,
-        transaction_hash="a" * 64,
-        write_set=write_set,
-    ).recover_or_return_committed()
+    try:
+        recovered = GreenfieldCommitJournal(
+            repo_root=root,
+            transaction_hash="a" * 64,
+            write_set=write_set,
+        ).recover_or_return_committed()
+    finally:
+        # ``shutil`` is a process-global module also used by pytest's tmp_path fixture.
+        monkeypatch.undo()
 
     _release_signal_guard(transaction)
     assert recovered == expected_result

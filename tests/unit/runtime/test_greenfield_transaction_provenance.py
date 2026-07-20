@@ -13,7 +13,6 @@ from typing import Any
 import pytest
 
 from odylith import cli
-from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_compiled_write
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
@@ -116,6 +115,9 @@ def _rewrite_sealed_transaction(path: Path, payload: Mapping[str, Any]) -> str:
                 "version": "odylith.greenfield.compiler_receipt.v1",
                 "transaction_hash": rewritten["transaction_hash"],
                 "transaction_file_sha256": hashlib.sha256(encoded.encode("utf-8")).hexdigest(),
+                "post_confirm_runtime_identity": (
+                    greenfield_commit_transaction.build_product_create_transaction_compiler_identity()
+                ),
             },
             indent=2,
             sort_keys=True,
@@ -141,7 +143,6 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
 
     assert "runtime/domain_intelligence/greenfield_commit_transaction.py" in paths
     assert "runtime/domain_intelligence/greenfield_create_commit.py" in paths
-    assert "runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py" in paths
     assert "runtime/domain_intelligence/greenfield_compiled_write.py" in paths
     assert "runtime/domain_intelligence/greenfield_repository_write_set.py" in paths
     assert "runtime/domain_intelligence/greenfield_commit_journal.py" in paths
@@ -150,6 +151,7 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
     assert "runtime/domain_intelligence/greenfield_transaction.py" in paths
     assert "runtime/domain_intelligence/greenfield_create_transaction.py" not in paths
     assert "runtime/domain_intelligence/greenfield_product_intent_envelope.py" not in paths
+    assert "runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py" not in paths
     assert "runtime/domain_intelligence/greenfield_preconfirm_engine.py" not in paths
     assert "runtime/domain_intelligence/greenfield_source_casing.py" not in paths
     assert "runtime/domain_intelligence/greenfield_structural_copy.py" not in paths
@@ -250,8 +252,8 @@ def test_postconfirm_allowed_operations_are_explicit() -> None:
     assert POST_CONFIRM_ALLOWED_OPERATIONS == (
         "verify_transaction_hash",
         "verify_compiler_receipt",
-        "verify_compiler_provenance",
-        "verify_sealed_product_intent_authority_bytes",
+        "verify_post_confirm_runtime_identity",
+        "verify_sealed_write_set",
         "verify_repo_preconditions",
         "apply_preconfirm_refreshed_sealed_bytes",
         "write_sealed_repository_bytes",
@@ -271,7 +273,54 @@ def test_sealed_commit_loader_rejects_tampered_transaction_bytes(tmp_path: Path)
         load_sealed_product_create_commit(transaction_path)
 
 
-def test_sealed_commit_loader_rejects_receipted_unapproved_quality_manifest(tmp_path: Path) -> None:
+@pytest.mark.parametrize("mutation", ("extra_field", "reformatted"))
+def test_sealed_commit_loader_rejects_receipt_byte_drift(tmp_path: Path, mutation: str) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
+    receipt_path = transaction_path.with_name(transaction_path.name + ".compiler-receipt.v1.json")
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if mutation == "extra_field":
+        receipt["unreviewed_field"] = "not-sealed"
+        receipt_text = json.dumps(receipt, indent=2, sort_keys=True) + "\n"
+    else:
+        receipt_text = json.dumps(receipt, separators=(",", ":"), sort_keys=True)
+    receipt_path.write_text(receipt_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="compiler receipt bytes are not canonical"):
+        load_sealed_product_create_commit(transaction_path)
+
+
+def test_commit_rejects_runtime_drift_before_the_write_boundary(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
+    runtime_identity = greenfield_commit_transaction.build_product_create_transaction_compiler_identity()
+    monkeypatch.setattr(
+        greenfield_commit_transaction,
+        "build_product_create_transaction_compiler_identity",
+        lambda: {**runtime_identity, "source_files_sha256": "runtime-drift"},
+    )
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("runtime drift must not enter the write boundary")
+
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="post-confirm runtime changed"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction_file=transaction_path,
+            transaction_hash=transaction.transaction_hash,
+            confirm=True,
+        )
+
+
+def test_sealed_commit_loader_treats_quality_as_opaque_preconfirm_evidence(tmp_path: Path) -> None:
     transaction = _transaction(tmp_path)
     transaction_path = tmp_path / "product-create-transaction.v1.json"
     greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
@@ -279,89 +328,96 @@ def test_sealed_commit_loader_rejects_receipted_unapproved_quality_manifest(tmp_
     payload["quality_manifest"]["status"] = "failed"
     _rewrite_sealed_transaction(transaction_path, payload)
 
-    with pytest.raises(ValueError, match="quality manifest is not approved"):
-        load_sealed_product_create_commit(transaction_path)
+    loaded = load_sealed_product_create_commit(transaction_path)
+
+    assert loaded.commit_manifest_preview["status"] == "failed"
 
 
-@pytest.mark.parametrize("case", ("malformed", "resealed"))
-def test_commit_rejects_malformed_or_resealed_authority_before_write(
+def test_sealed_commit_projection_exposes_no_product_adjudication_fields(tmp_path: Path) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
+
+    loaded = load_sealed_product_create_commit(transaction_path)
+
+    assert not hasattr(loaded, "intent_authority")
+    assert not hasattr(loaded, "quality_manifest")
+    assert not hasattr(loaded, "compiler_provenance")
+
+
+def test_confirmed_hash_rejects_changed_opaque_evidence_without_any_write(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    case: str,
 ) -> None:
     transaction = _transaction(tmp_path)
     transaction_path = tmp_path / "product-create-transaction.v1.json"
     greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
     payload = json.loads(transaction_path.read_text(encoding="utf-8"))
-    if case == "malformed":
-        for authority in (
-            payload["intent_authority"],
-            payload["proposal"][PRODUCT_INTENT_AUTHORITY_KEY],
-        ):
-            authority["authority_snapshot_sha256"] = "not-a-sha256"
-    else:
-        payload["intent_authority"]["resealed_by_test"] = "untrusted"
-    rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
-
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("sealed Product Intent authority must fail before governed writes")
-
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
-
-    with pytest.raises(ValueError, match="sealed Product Intent authority"):
-        greenfield_create_commit.commit_greenfield_create_transaction(
-            repo_root=tmp_path,
-            transaction_file=transaction_path,
-            transaction_hash=rewritten_hash,
-            confirm=True,
-        )
-
-
-def test_sealed_commit_loader_rejects_receipted_provenance_contract_drift(tmp_path: Path) -> None:
-    transaction = _transaction(tmp_path)
-    transaction_path = tmp_path / "product-create-transaction.v1.json"
-    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
-    payload = json.loads(transaction_path.read_text(encoding="utf-8"))
-    payload["compiler_provenance"]["post_confirm_allowed_operations"] = []
+    payload["quality_manifest"]["status"] = "failed"
     _rewrite_sealed_transaction(transaction_path, payload)
-    with pytest.raises(ValueError, match="compiler identity or compiler provenance"):
-        load_sealed_product_create_commit(transaction_path)
+
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("a changed transaction must not enter the write boundary")
+
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="does not match the confirmed transaction hash"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction_file=transaction_path,
+            transaction_hash=transaction.transaction_hash,
+            confirm=True,
+        )
 
 
-@pytest.mark.parametrize(
-    ("field", "replacement"),
-    (
-        ("post_confirm_allowed_operations", []),
-        ("post_confirm_forbidden_operations", []),
-    ),
-)
-def test_commit_reloads_and_rejects_receipted_operation_contract_drift_before_write(
+def test_commit_treats_product_quality_and_authority_as_opaque_after_hash_confirmation(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    field: str,
-    replacement: list[str],
 ) -> None:
     transaction = _transaction(tmp_path)
     transaction_path = tmp_path / "product-create-transaction.v1.json"
     greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
     payload = json.loads(transaction_path.read_text(encoding="utf-8"))
-    payload["compiler_provenance"][field] = replacement
+    payload["quality_manifest"]["status"] = "failed"
+    payload["intent_authority"]["authority_snapshot_sha256"] = "not-a-sha256"
+    payload["proposal"][PRODUCT_INTENT_AUTHORITY_KEY]["authority_snapshot_sha256"] = "not-a-sha256"
+    payload["compiler_provenance"]["post_confirm_allowed_operations"] = []
     rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("operation-contract drift must fail before governed writes")
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction_file=transaction_path,
+        transaction_hash=rewritten_hash,
+        confirm=True,
+    )
 
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+    assert result["repository_write_set"]["status"] == "passed"
 
-    with pytest.raises(ValueError, match="compiler identity or compiler provenance"):
-        greenfield_create_commit.commit_greenfield_create_transaction(
-            repo_root=tmp_path,
-            transaction_file=transaction_path,
-            transaction_hash=rewritten_hash,
-            confirm=True,
-        )
+
+def test_commit_derives_execution_reporting_from_the_sealed_write_set(tmp_path: Path) -> None:
+    transaction = _transaction(tmp_path)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
+    payload = json.loads(transaction_path.read_text(encoding="utf-8"))
+    summary = payload["commit_summary"]
+    summary["repository_write_set_hash"] = "forged-write-set-hash"
+    summary["repository_write_count"] = 999
+    summary.pop("product_facts_sha256")
+    rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
+
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction_file=transaction_path,
+        transaction_hash=rewritten_hash,
+        confirm=True,
+    )
+
+    transaction_summary = result["product_create_transaction"]
+    write_manifest = result["commit_manifest"]["write_transaction"]
+    assert transaction_summary["repository_write_set_hash"] == result["repository_write_set"]["write_set_hash"]
+    assert transaction_summary["repository_write_count"] == result["repository_write_set"]["write_count"]
+    assert write_manifest["repository_write_set_hash"] == result["repository_write_set"]["write_set_hash"]
+    assert write_manifest["product_facts_sha256"] == ""
 
 
 def test_commit_reloads_receipted_bytes_instead_of_using_a_mutable_loaded_projection(
@@ -527,25 +583,18 @@ def test_canonical_create_cli_avoids_preconfirm_transaction_runtime(tmp_path: Pa
         {**product_create_transaction_compiler_identity(), "source_files_sha256": "stale"},
     ),
 )
-def test_commit_rejects_stale_compiler_identity_before_write(
+def test_commit_treats_compiler_identity_as_opaque_preconfirm_evidence(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     identity: Mapping[str, Any],
 ) -> None:
     transaction = _replace_compiler_identity(_transaction(tmp_path), identity)
     transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
 
-    def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("stale compiler identity must fail before governed writes")
+    result = greenfield_create_commit.commit_greenfield_create_transaction(
+        repo_root=tmp_path,
+        transaction_file=transaction.transaction_file,
+        transaction_hash=transaction.transaction_hash,
+        confirm=True,
+    )
 
-    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
-    monkeypatch.setattr(greenfield_apply_write, "write_greenfield_proposal", forbidden)
-    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
-
-    with pytest.raises(ValueError, match="compiler identity"):
-        greenfield_create_commit.commit_greenfield_create_transaction(
-            repo_root=tmp_path,
-            transaction_file=transaction.transaction_file,
-            transaction_hash=transaction.transaction_hash,
-            confirm=True,
-        )
+    assert result["repository_write_set"]["status"] == "passed"
