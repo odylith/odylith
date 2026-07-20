@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 
 Last updated (UTC): 2026-04-09
@@ -606,6 +606,8 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-07-18 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `sha256:5170794f8775a7e6631939353da7b116aeaa52917b2706af0973c2fefb83b3d3`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
@@ -618,8 +620,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-07-18-full-greenfield-matrix-stalls-in-final-installed-recovery-lane.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_corpus_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

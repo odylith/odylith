@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 
 ## Overview
@@ -26,6 +26,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-07-19-greenfield-create-skipped-sealed-product-intent-authority-byte-verification.md`, `odylith/casebook/bugs/2026-07-19-greenfield-dashboard-exposed-a-retired-confirmation-route.md`, `odylith/casebook/bugs/2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md`, `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, plus 1 more
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
@@ -37,8 +40,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`
 - **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `src/odylith/cli.py`, `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`
-- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_cli.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

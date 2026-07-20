@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 571,
-    "mapped_workstream_evidence_count": 524,
+    "explicit_event_count": 572,
+    "mapped_workstream_evidence_count": 525,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 571
+    "timeline_event_count": 572
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,45 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-07-19-greenfield-create-skipped-sealed-product-intent-authority-byte-verification.md",
+        "odylith/casebook/bugs/2026-07-19-greenfield-dashboard-exposed-a-retired-confirmation-route.md",
+        "odylith/casebook/bugs/2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py"
+      ],
+      "confidence": "high",
+      "event_index": 1114,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
+      "ts_iso": "2026-07-19T17:31:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [
