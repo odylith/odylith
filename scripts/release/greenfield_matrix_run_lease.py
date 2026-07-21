@@ -12,7 +12,7 @@ import uuid
 from local_release_smoke import _cleanup_smoke_temp_root
 
 
-@dataclass(frozen=True)
+@dataclass
 class MatrixRunLease:
     """Exclusive proof output lease with a private temporary namespace."""
 
@@ -21,6 +21,7 @@ class MatrixRunLease:
     output_path: Path | None
     lock_path: Path | None
     lock_descriptor: int | None
+    released: bool = False
 
     def to_dict(self) -> dict[str, str]:
         return {
@@ -32,6 +33,8 @@ class MatrixRunLease:
     def release(self) -> None:
         """Remove only this run's temporary data and its exclusive output lock."""
 
+        if self.released:
+            return
         cleanup_error: OSError | None = None
         try:
             _cleanup_smoke_temp_root(self.temp_namespace)
@@ -47,6 +50,7 @@ class MatrixRunLease:
                 detail=detail,
             )
             _unlock_and_close(self.lock_descriptor)
+            self.released = True
             raise RuntimeError(detail)
         if cleanup_error is not None:
             detail = f"matrix proof run namespace cleanup failed: {cleanup_error}"
@@ -56,8 +60,10 @@ class MatrixRunLease:
                 detail=detail,
             )
             _unlock_and_close(self.lock_descriptor)
+            self.released = True
             raise RuntimeError(detail)
         _release_output_lock(lock_path=self.lock_path, descriptor=self.lock_descriptor)
+        self.released = True
 
 
 def acquire_matrix_run_lease(*, temp_parent: Path, output_path: Path | None) -> MatrixRunLease:

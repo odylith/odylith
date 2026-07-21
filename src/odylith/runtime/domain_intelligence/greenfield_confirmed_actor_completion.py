@@ -82,7 +82,7 @@ _GENERIC_CONFIRMED_ACTOR_LABELS = frozenset(
 
 def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
-    labels = [_actor_label(row, title=title) for row in rows]
+    labels = [_explicit_first_path_actor_label(row, intent) or _actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
     should_derive = _should_derive_missing_actor_labels(rows)
     if should_derive and len(rows) == 1 and _single_actor_covers_first_path(rows[0], intent):
@@ -137,7 +137,20 @@ def _single_actor_covers_first_path(row: str, intent: Mapping[str, Any]) -> bool
         return False
     first_path = _clean(intent.get("first_path"))
     subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
-    return bool(subject and subject.casefold() == label.casefold())
+    return bool(subject and _actor_reference(subject) == _actor_reference(label))
+
+
+def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any]) -> str:
+    label = _clean(str(row).split("—", 1)[0].split(":", 1)[0])
+    first_path = _clean(intent.get("first_path"))
+    subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
+    if label and subject and _actor_reference(subject) == _actor_reference(label):
+        return label
+    return ""
+
+
+def _actor_reference(value: str) -> str:
+    return re.sub(r"^(?:a|an|the)\s+", "", _clean(value), flags=re.IGNORECASE).casefold().strip()
 
 
 def _modal_subject_prefix(value: str) -> str:

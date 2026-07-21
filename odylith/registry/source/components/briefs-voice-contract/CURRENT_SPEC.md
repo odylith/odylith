@@ -1,8 +1,6 @@
 # Briefs Voice Contract
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-12
 
 ## Purpose
 Briefs Voice Contract is the governed narration contract for Compass standup

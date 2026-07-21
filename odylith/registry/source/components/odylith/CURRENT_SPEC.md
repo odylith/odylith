@@ -17,10 +17,8 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-14
 
 ## Purpose
 Odylith is the installable local governance and execution agent and platform
@@ -654,12 +652,13 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-141
   - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `sha256:2578ef93b5dac059562561a3d24005fb9dd0a8771590dff49d56bb173d616627`, `sha256:61a82c8db99693b7a2b3de56c6e2ff31e6679544c761fa414231280d0b8dfb8e`, `src/odylith/install/casebook_metadata_migration.py`
-- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
-  - Scope: B-141
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-090
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-089
+- **2026-04-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-021, B-022
+  - Evidence: `sha256:b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5`, `sha256:e25064ece33fba6568bfc992d2a9adbe1bbde7cb987e0e230116b03ecd63b68a`, `odylith/registry/source/components/benchmark/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

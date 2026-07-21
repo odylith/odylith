@@ -6,10 +6,8 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-07-07
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the

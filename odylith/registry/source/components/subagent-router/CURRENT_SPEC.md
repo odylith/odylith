@@ -6,10 +6,8 @@
   route-ready contract exists.
 - Discipline checks may recommend routing affordances but must not spawn
   subagents or call host models to classify pressure.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Subagent Router is Odylith's bounded leaf-routing engine. It takes one already

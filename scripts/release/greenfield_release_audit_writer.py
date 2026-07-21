@@ -22,6 +22,7 @@ from greenfield_matrix_release_audit_evidence import audit_request_for_case
 from greenfield_matrix_release_audit_evidence import audit_request_sha256
 from greenfield_matrix_release_audit_evidence import case_confirmed_intent_sha256
 from greenfield_matrix_release_audit_evidence import request_hash_matches
+from greenfield_matrix_release_audit_evidence import source_custody_fingerprint
 from greenfield_release_audit_verification import AUDIT_REQUEST_PLAN_VERSION
 from greenfield_release_audit_verification import AUDIT_SOURCE_VERIFICATION_VERSION
 from greenfield_release_source_capture import json_text
@@ -232,6 +233,8 @@ def _validate_binding(
             raise RuntimeError(f"audit request and verification diverge on {field}: {case_id}")
     if single_line(verification.get("audit_request_sha256")) != single_line(request.get("audit_request_sha256")):
         raise RuntimeError(f"audit request and verification diverge on audit_request_sha256: {case_id}")
+    if single_line(verification.get("source_custody_sha256")) != source_custody_fingerprint(request):
+        raise RuntimeError(f"audit request and verification diverge on source_custody_sha256: {case_id}")
     expected_request = audit_request_for_case(
         case,
         source_verification_method=verification.get("source_verification_method"),

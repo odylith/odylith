@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
@@ -28,13 +29,15 @@ def normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> 
     """Localize accepted actor rows and the first path to the confirmed project."""
 
     actor_rows = confirmed_text_values(intent.get("human_actors"))
+    first_path = _clean(intent.get("first_path"))
     if actor_rows:
         intent["human_actors"] = [
-            normalized
+            row
+            if _row_is_explicit_first_path_actor(row, first_path)
+            else normalized
             for row in actor_rows
             if (normalized := project_specific_actor_row(row, project_focus=title))
         ]
-    first_path = _clean(intent.get("first_path"))
     if first_path:
         intent["first_path"] = _sentence(
             localize_leading_actor_reference(
@@ -44,3 +47,11 @@ def normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> 
                 fallback=f"{_focus_label(title)} user",
             )
         )
+
+
+def _row_is_explicit_first_path_actor(row: str, first_path: str) -> bool:
+    label = _clean(str(row).split(":", 1)[0])
+    path = _clean(first_path)
+    if not label or not path:
+        return False
+    return bool(re.match(rf"^(?:(?:a|an|the)\s+)?{re.escape(label)}\b", path, flags=re.IGNORECASE))

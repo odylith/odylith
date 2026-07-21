@@ -15,6 +15,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections im
     confirmed_intent_inline_heading_value,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
+    is_confirmed_intent_source_evidence_section,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     is_confirmed_intent_supporting_section,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import FIELD_MIN_WORDS
@@ -114,10 +117,14 @@ def product_context_paragraphs(
         return _preamble_paragraphs(text, title)
     paragraphs: list[str] = []
     if sections.get("preamble"):
-        paragraphs.extend(_preamble_paragraphs(_raw_preamble_text(text), title))
+        paragraphs.extend(_paragraphs_from_lines(sections["preamble"], title, keep_list_items=False))
     rows: list[str] = []
     for key, lines in sections.items():
-        if key == "preamble" or not is_confirmed_intent_supporting_section(key):
+        if (
+            key == "preamble"
+            or not is_confirmed_intent_supporting_section(key)
+            or is_confirmed_intent_source_evidence_section(key)
+        ):
             continue
         rows.extend(lines)
         rows.append("")
@@ -306,10 +313,6 @@ def _title_from_export_line(value: str) -> str:
         return ""
     candidate = _clean(match.group("title")).strip(" .")
     return candidate if _looks_like_bare_title(candidate) else ""
-
-
-def _raw_preamble_text(text: str) -> str:
-    return re.split(r"(?m)^#{2,6}\s+", str(text or ""), maxsplit=1)[0]
 
 
 def has_explicit_section_boundaries(sections: Mapping[str, list[str]]) -> bool:

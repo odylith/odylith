@@ -1,8 +1,6 @@
 # Security
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-01
 
 ## Purpose
 Security is Odylith's cross-cutting trust-boundary component for managed

@@ -15,9 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
 
-APPLY_SEMANTIC_INPUT_VERSION = "odylith.greenfield.apply_semantic_input.v2"
-_VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.9
-_FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.8
+APPLY_SEMANTIC_INPUT_VERSION = "odylith.greenfield.apply_semantic_input.v3"
 
 
 @dataclass(frozen=True)
@@ -200,14 +198,6 @@ def _first_path_text(
         ("intent.summary", intent.get("summary")),
         fallback=("default.first_path", f"{title} creates, preserves, and reviews the accepted first-path result"),
     )
-    if not _first_path_has_visible_result(
-        first_path,
-        proof_boundary=proof_boundary,
-        product_view=intent.get("product_view"),
-        state_object=state_object,
-    ):
-        first_path = f"{first_path.rstrip(' .,;:!?')}. The product shows the accepted result for review."
-        source = f"{source}+semantic_visible_result_fallback"
     return first_path, source
 
 
@@ -263,33 +253,6 @@ def _candidate_source_text(value: Any) -> str:
     return clean_text(value)
 
 
-def _first_path_has_visible_result(value: str, *, proof_boundary: str, product_view: Any = "", state_object: Any = "") -> bool:
-    candidate = select_visible_result_candidate(
-        value,
-        proof_boundary=proof_boundary,
-        product_view=product_view,
-        state_object=state_object,
-    )
-    if candidate.source_path == "intent.product_view.visible_result" and word_count(candidate.text) >= 2:
-        return True
-    if not candidate.source_path.startswith("first_path."):
-        return False
-    if candidate.source_path == "first_path.visible_result" and candidate.confidence >= 0.8 and word_count(candidate.text) >= 2:
-        return True
-    if candidate.source_path.startswith("first_path.events.") and candidate.confidence >= 0.55 and word_count(candidate.text) >= 2:
-        return True
-    if candidate.source_kind == "first_path_event" and candidate.confidence < _VISIBLE_RESULT_CONFIDENCE_FLOOR:
-        return _has_compound_first_path_result_shape(candidate.text) and (
-            candidate.confidence >= _FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR
-        )
-    confidence_floor = (
-        _FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR
-        if candidate.source_kind == "first_path_event"
-        else _VISIBLE_RESULT_CONFIDENCE_FLOOR
-    )
-    return candidate.confidence >= confidence_floor
-
-
 def _is_apply_visible_result_candidate(candidate: Any) -> bool:
     if clean_text(getattr(candidate, "source_kind", "")) not in {
         "first_path_event",
@@ -298,13 +261,6 @@ def _is_apply_visible_result_candidate(candidate: Any) -> bool:
     }:
         return False
     return word_count(getattr(candidate, "text", "")) >= 2
-
-
-def _has_compound_first_path_result_shape(value: str) -> bool:
-    text = clean_text(value).strip(" .")
-    return word_count(text) >= 10 and "," in text
-
-
 def _has_current_apply_semantic_input(proposal: Mapping[str, Any]) -> bool:
     compiler_input = proposal.get("apply_semantic_input")
     return (

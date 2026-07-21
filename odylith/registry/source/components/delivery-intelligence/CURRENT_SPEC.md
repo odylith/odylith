@@ -1,8 +1,6 @@
 # Delivery Intelligence
-Last updated: 2026-04-09
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Delivery Intelligence is Odylith's scope-synthesis engine. It fuses governed

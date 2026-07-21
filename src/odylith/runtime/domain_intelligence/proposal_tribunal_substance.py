@@ -330,14 +330,17 @@ def _check_atlas_source_preserves_first_path_tail(
 ) -> None:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
     first_path = " ".join(text_values(intent.get("first_path")))
-    if not first_path:
+    semantic_tail = _semantic_first_path_tail(proposal)
+    if not first_path and not semantic_tail:
         return
     semantic_steps = [
         step
         for step in semantic_first_path_steps(first_path)
         if len(_term_set(step)) >= 2 and not _looks_like_first_path_meta_summary(step)
     ]
-    if semantic_steps:
+    if semantic_tail:
+        tail = semantic_tail
+    elif semantic_steps:
         tail = semantic_steps[-1]
     else:
         final_clause = re.split(r",\s+and\s+|;\s+and\s+|[.!?]\s+", first_path.strip(" ."))[-1]
@@ -349,6 +352,25 @@ def _check_atlas_source_preserves_first_path_tail(
     required_tail_hits = min(2, len(tail_terms))
     if len(tail_terms & source_terms) < required_tail_hits:
         issues.append(f"confirmed Atlas {kind} `{title}` omits the tail of the accepted first path")
+
+
+def _semantic_first_path_tail(proposal: Mapping[str, Any]) -> str:
+    semantic_model = proposal.get("semantic_model")
+    if not isinstance(semantic_model, Mapping):
+        return ""
+    contract = semantic_model.get("first_path_contract")
+    if not isinstance(contract, Mapping):
+        return ""
+    events = contract.get("events")
+    if isinstance(events, Sequence) and not isinstance(events, (str, bytes)):
+        for event in reversed(events):
+            if not isinstance(event, Mapping):
+                continue
+            text = str(event.get("text") or event.get("mutation") or "").strip(" .")
+            if len(_term_set(text)) >= 2 and not _looks_like_first_path_meta_summary(text):
+                return text
+    visible_result = str(contract.get("visible_result") or "").strip(" .")
+    return visible_result if len(_term_set(visible_result)) >= 2 else ""
 
 
 def _atlas_tail_comparison_text(value: str) -> str:

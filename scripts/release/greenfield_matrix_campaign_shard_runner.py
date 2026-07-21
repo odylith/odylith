@@ -53,6 +53,8 @@ class CampaignShard:
     require_high_variance_stressors: bool
     required_stressors: tuple[str, ...]
     release_audit_file: Path | None = None
+    release_audit_repo_root: Path | None = None
+    release_input_snapshot_root: Path | None = None
 
     @property
     def name(self) -> str:
@@ -855,6 +857,11 @@ def _matrix_command(
         if shard.include_natural_rescue_proof
         else "--skip-natural-rescue-proof"
     )
+    command.append(
+        "--include-commit-recovery-proof"
+        if shard.proof_tier == "release"
+        else "--skip-commit-recovery-proof"
+    )
     if shard.stop_after_failures:
         command.extend(["--stop-after-failures", str(shard.stop_after_failures)])
     if shard.stop_after_cluster_failures:
@@ -865,6 +872,10 @@ def _matrix_command(
             command.extend(["--required-stressor", token])
     if shard.release_audit_file is not None:
         command.extend(["--release-audit-file", str(shard.release_audit_file)])
+    if shard.release_audit_repo_root is not None:
+        command.extend(["--release-audit-repo-root", str(shard.release_audit_repo_root)])
+    if shard.release_input_snapshot_root is not None:
+        command.extend(["--sealed-release-input-root", str(shard.release_input_snapshot_root)])
     if shard.proof_tier == "discovery" and shard.required_stressors:
         command.append("--allow-partial-stressor-coverage")
     return command
@@ -922,13 +933,22 @@ def _tier_case_file_preflight_failure(
                 detail="release proof requires --release-audit-file",
             )
         try:
-            audits = load_release_audit_file(audit_file)
+            audit_repo_root = release_shards[0].release_audit_repo_root
+            audits = (
+                load_release_audit_file(audit_file, repo_root=audit_repo_root)
+                if audit_repo_root is not None
+                else load_release_audit_file(audit_file)
+            )
             individual_failure: tuple[CampaignShard, Any] | None = None
             for shard in release_shards:
                 shard_cases = load_case_file(shard.case_file)
                 shard_case_ids = {case.case_id for case in shard_cases}
                 shard_audits = tuple(audit for audit in audits if audit.case_id in shard_case_ids)
-                evaluation = evaluate_release_corpus(shard_cases, shard_audits)
+                evaluation = (
+                    evaluate_release_corpus(shard_cases, shard_audits, repo_root=audit_repo_root)
+                    if audit_repo_root is not None
+                    else evaluate_release_corpus(shard_cases, shard_audits)
+                )
                 if not evaluation.passed and individual_failure is None:
                     individual_failure = (shard, evaluation)
             if individual_failure is not None:
@@ -941,7 +961,11 @@ def _tier_case_file_preflight_failure(
                     detail="invalid greenfield release case file: " + "; ".join(evaluation.issues),
                 )
             cases = tuple(case for shard in release_shards for case in load_case_file(shard.case_file))
-            evaluation = evaluate_release_corpus(cases, audits)
+            evaluation = (
+                evaluate_release_corpus(cases, audits, repo_root=audit_repo_root)
+                if audit_repo_root is not None
+                else evaluate_release_corpus(cases, audits)
+            )
         except RuntimeError as exc:
             return _release_corpus_preflight_failure(
                 shard=release_shards[0],

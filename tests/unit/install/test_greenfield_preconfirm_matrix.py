@@ -1169,24 +1169,70 @@ def test_explicit_clarification_expectation_rejects_reply_instruction_inside_que
     assert "clarification payload must contain exactly one plain-language question" in result.quality.issues
 
 
-def test_release_proof_rejects_clarification_only_cases(tmp_path: Path) -> None:
+def test_release_proof_accepts_expected_clarification_cases(monkeypatch, tmp_path: Path) -> None:
     module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\n")
+    case = module.GreenfieldMatrixCase(
+        name="ambiguous cell therapy",
+        prompt="Create a cell therapy proposal with several possible operating paths.",
+        required_terms=("cell", "therapy"),
+        leakage_terms=("cell therapy",),
+        expectation="clarification_required",
+    )
 
-    with pytest.raises(RuntimeError, match="release proof requires transaction_committed cases"):
-        module.run_matrix(
-            dist_dir=tmp_path / "dist",
-            version="0.1.15",
-            temp_parent=tmp_path,
-            cases=(
-                module.GreenfieldMatrixCase(
-                    name="ambiguous cell therapy",
-                    prompt="Create a cell therapy proposal with several possible operating paths.",
-                    required_terms=("cell", "therapy"),
-                    expectation="clarification_required",
-                ),
-            ),
-            proof_tier="release",
-        )
+    class Server:
+        def shutdown(self) -> None:
+            return None
+
+        def server_close(self) -> None:
+            return None
+
+    policy_calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        module,
+        "_raise_for_invalid_campaign_policy",
+        lambda **kwargs: policy_calls.append(kwargs),
+    )
+    monkeypatch.setattr(module, "matrix_preflight_failures", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_platform_baseline_required_terms", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (Server(), "http://127.0.0.1:8123"))
+    monkeypatch.setattr(module, "_with_case_platform_leakage_issues", lambda **kwargs: kwargs["result"])
+    monkeypatch.setattr(module, "_cleanup_repo_before_next", lambda _repo_root: None)
+    monkeypatch.setattr(module, "_run_case", lambda **_kwargs: _passing_matrix_result(module))
+
+    results = module.run_matrix(
+        dist_dir=dist_dir,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(case,),
+        include_browser_proof=True,
+        proof_tier="release",
+    )
+
+    assert len(results) == 1
+    assert results[0].status == "passed"
+    assert policy_calls and policy_calls[0]["config"].proof_tier == "release"
+
+
+def test_source_evidence_custody_rejects_raw_multiword_excerpt() -> None:
+    module = _module()
+    case = module.GreenfieldMatrixCase(
+        name="source evidence custody",
+        prompt="Create a product with an explicit user path.",
+        required_terms=("product",),
+        provenance=SimpleNamespace(
+            corpus_tier="source_provenanced",
+            source_excerpt="A private benchmark phrase must remain evidence only.",
+        ),
+    )
+
+    issues = module._source_evidence_content_custody_issues(  # noqa: SLF001
+        case=case,
+        generated_text="The product repeats a private benchmark phrase must remain evidence only.",
+    )
+
+    assert issues == ("source evidence text leaked into product artifacts",)
 
 
 def test_unannotated_clarification_stays_a_failed_transaction_expectation(monkeypatch, tmp_path: Path) -> None:
@@ -1463,6 +1509,128 @@ def test_collect_artifact_counts_excludes_runtime_custody_from_domain_terms(tmp_
     )
 
     assert counts.domain_term_hits == 0
+
+
+def test_source_evidence_custody_rejects_raw_identifier_in_product_artifacts() -> None:
+    module = _module()
+    source_case = SimpleNamespace(
+        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
+        leakage_terms=("owner/evidence-repo",),
+    )
+    synthetic_case = SimpleNamespace(
+        provenance=SimpleNamespace(corpus_tier="synthetic_regression"),
+        leakage_terms=("owner/evidence-repo",),
+    )
+
+    assert module._source_evidence_custody_issues(  # noqa: SLF001
+        case=source_case,
+        generated_text="Owner evidence repo appears in the project brief.",
+    ) == ("source evidence identifier leaked into product artifacts: `owner/evidence-repo`",)
+    assert module._source_evidence_custody_issues(  # noqa: SLF001
+        case=synthetic_case,
+        generated_text="Owner evidence repo appears in the project brief.",
+    ) == ()
+
+
+def test_source_provenanced_candidates_detect_source_prose_after_identifier_redaction() -> None:
+    module = _module()
+    case = module.GreenfieldMatrixCase(
+        name="accessibility source case",
+        prompt=(
+            "Create an accessibility product. An accessibility operator reviews one evidence item, "
+            "records a decision, and verifies the visible outcome. Source repository: leongersen/noUiSlider. "
+            "Source evidence: noUiSlider is a lightweight, ARIA-accessible JavaScript range slider. "
+            "It also fits wonderfully in responsive designs and has no dependencies."
+        ),
+        required_terms=("accessibility",),
+        leakage_terms=("leongersen/noUiSlider",),
+        provenance=type(module.default_cases()[0].provenance)(corpus_tier="source_provenanced"),
+    )
+
+    terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text="The product description promises responsive designs for every review.",
+    )
+
+    assert "responsive designs" in terms
+    assert "visible outcome" not in terms
+
+
+def test_release_source_fixture_does_not_treat_first_path_copy_as_platform_leakage() -> None:
+    module = _module()
+    source_cases = module.load_case_file(
+        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
+    )
+    case = next(case for case in source_cases if case.case_id == "release-accessibility-001-description")
+
+    typed_product_terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text="The product shows the visible outcome to reviewers.",
+    )
+    source_prose_terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text="Completely unstyled UI components remain in the product brief.",
+    )
+
+    assert typed_product_terms == ()
+    assert "completely unstyled" in source_prose_terms
+
+
+def test_run_case_fails_when_source_evidence_identifier_reaches_product_artifacts(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _substantive_package())
+    monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
+    monkeypatch.setattr(module, "_generated_text", lambda **_kwargs: "owner/evidence-repo")
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "propose" in command:
+            proposal = _proposed_transaction_payload()
+            _write_compiled_transaction(cwd, proposal)
+            return subprocess.CompletedProcess(command, 0, json.dumps(proposal), "")
+        if "create" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_passing_create_payload()), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="source custody",
+            prompt="Create an accessibility project from untrusted source evidence.",
+            required_terms=("accessibility",),
+            leakage_terms=("owner/evidence-repo",),
+            provenance=type(module.default_cases()[0].provenance)(corpus_tier="source_provenanced"),
+        ),
+        repo_root=tmp_path / "source-custody-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "failed"
+    assert "source evidence identifier leaked into product artifacts: `owner/evidence-repo`" in result.quality.issues
+
+
+def test_release_policy_rejects_missing_commit_recovery_proof() -> None:
+    module = _module()
+    config = SimpleNamespace(proof_tier="release", stop_after_failures=0, stop_after_cluster_failures=0)
+
+    with pytest.raises(RuntimeError, match="must include installed commit recovery proof"):
+        module._raise_for_invalid_campaign_policy(  # noqa: SLF001
+            config=config,
+            install_mode="full",
+            include_browser_proof=True,
+            include_rescue_smoke=True,
+            include_natural_rescue_proof=True,
+            include_commit_recovery_proof=False,
+            allow_skipped_browser_proof=False,
+        )
 
 
 def test_collect_artifact_counts_uses_token_aware_domain_terms(tmp_path: Path) -> None:
@@ -3116,6 +3284,39 @@ def test_main_defaults_to_labeled_discovery_when_browser_proof_is_not_requested(
     assert payload["status"] == "discovery-passed"
     assert payload["corpus_provenance"]["claim_class"] == "synthetic-discovery"
     assert (tmp_path / "matrix-proof.json").is_file()
+
+
+def test_main_rejects_an_unsealed_release_root_before_loading_case_files(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "release-cases.json"
+    audit_file = tmp_path / "release-audit.json"
+
+    def fail_if_loaded(*_args, **_kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("release evidence was loaded before snapshot validation")
+
+    monkeypatch.setattr(module, "_load_cli_case_files", fail_if_loaded)
+
+    with pytest.raises(RuntimeError, match="sealed input manifest is missing"):
+        module.main(
+            [
+                "--dist-dir",
+                str(tmp_path / "dist"),
+                "--version",
+                "0.1.15",
+                "--temp-parent",
+                str(tmp_path),
+                "--proof-tier",
+                "release",
+                "--case-file",
+                str(case_file),
+                "--release-audit-file",
+                str(audit_file),
+                "--release-audit-repo-root",
+                str(tmp_path),
+                "--sealed-release-input-root",
+                str(tmp_path),
+            ]
+        )
 
 
 def test_main_allows_skipped_browser_surface_proof_for_volume_discovery(monkeypatch, tmp_path: Path, capsys) -> None:

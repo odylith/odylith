@@ -1,11 +1,13 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-19
+Last updated (UTC): 2026-07-20
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-290 | 2026-07-20 | Installed recovery emits duplicate atlas review prose | P2 | odylith | Open | [2026-07-20-installed-recovery-emits-duplicate-atlas-review-prose.md](2026-07-20-installed-recovery-emits-duplicate-atlas-review-prose.md) |
+| CB-289 | 2026-07-20 | Inline source evidence could eclipse an explicit greenfield first path | P1 | domain-intelligence | Open | [2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md](2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md) |
 | CB-288 | 2026-07-19 | Thin greenfield titles could hide material operating mode alternatives | P1 | domain-intelligence | Open | [2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md](2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md) |
 | CB-287 | 2026-07-19 | Greenfield dashboard exposed a retired confirmation route | P1 | dashboard | Open | [2026-07-19-greenfield-dashboard-exposed-a-retired-confirmation-route.md](2026-07-19-greenfield-dashboard-exposed-a-retired-confirmation-route.md) |
 | CB-286 | 2026-07-19 | Greenfield create skipped sealed product intent authority byte verification | P1 | domain-intelligence | Open | [2026-07-19-greenfield-create-skipped-sealed-product-intent-authority-byte-verification.md](2026-07-19-greenfield-create-skipped-sealed-product-intent-authority-byte-verification.md) |

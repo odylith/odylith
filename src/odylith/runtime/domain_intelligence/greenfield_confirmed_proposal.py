@@ -257,17 +257,12 @@ def build_confirmed_greenfield_proposal(
         ),
         "open_questions": [
             {
-                "id": "OQ-001",
-                "question": ambiguities[0] if ambiguities else f"Which person must complete the first {label_lower} path without assistance?",
+                "id": f"OQ-{index:03d}",
+                "question": ambiguity,
                 "impact": "Changes the visible flow, permission model, and validation target.",
-                "default_if_unanswered": "Use the first confirmed operator named in the accepted product direction.",
-            },
-            {
-                "id": "OQ-002",
-                "question": ambiguities[1] if len(ambiguities) > 1 else f"What source or external system must the first {label_lower} proof trust?",
-                "impact": "Changes security, privacy, fixture, and integration expectations for the first release.",
-                "default_if_unanswered": "Use deterministic local fixtures until a source-backed adapter is planned.",
-            },
+                "default_if_unanswered": "Resolve this before it changes the accepted first path.",
+            }
+            for index, ambiguity in enumerate(ambiguities[:2], start=1)
         ],
         "risks": build_product_risks(
             title=product_title,

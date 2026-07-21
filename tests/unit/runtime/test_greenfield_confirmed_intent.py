@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import norm
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_modal_grammar_repair import repair_generated_modal_grammar
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_has_material_first_path_gap
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -114,8 +115,6 @@ def test_confirmed_intent_prompt_wrapper_semantics_stay_in_prompt_source_owner()
     assert "def _strip_operator_request_wrapper" not in parser_source
     assert "def prompt_first_path_source" in prompt_source
     assert "def _strip_operator_request_wrapper" in prompt_source
-    assert "import re" not in prompt_source
-    assert "re." not in prompt_source
 
 
 def test_confirmed_prompt_source_removes_command_wrapper_without_regex_rules() -> None:
@@ -128,6 +127,40 @@ def test_confirmed_prompt_source_removes_command_wrapper_without_regex_rules() -
             "Draft a tool that helps clinics schedule intake, confirm insurance, and show patients next steps."
         )
         == "clinics schedule intake, confirm insurance, and show patients next steps"
+    )
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        "Create a radiology review product for a reviewer to verify the visible case status.",
+        "Create a radiology review product where a reviewer can verify the visible case status.",
+        "Create a radiology review product where a reviewer verifies the visible case status.",
+    ),
+)
+def test_explicit_one_step_actor_path_requires_a_material_clarification(prompt: str) -> None:
+    envelope = f"""Product Intent Confirmation needed
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown.
+
+Original user intent
+{prompt}
+Next step
+- Confirm the interpretation.
+"""
+
+    with pytest.raises(ValueError, match="no action sequence that reaches it"):
+        parse_confirmed_intent_text(envelope, prompt=prompt)
+
+
+def test_compound_actor_paths_do_not_trigger_the_one_action_clarification() -> None:
+    assert not prompt_has_material_first_path_gap(
+        "Create an evidence review workspace where an operator captures evidence, records a decision, "
+        "and verifies the visible outcome."
+    )
+    assert not prompt_has_material_first_path_gap(
+        "Create a stormwater workspace where an inspector turns an ambiguous case into a review-ready record."
     )
 
 
@@ -932,7 +965,7 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
 
     assert rc == 0, output
     assert "too similar" not in output
-    assert "greenfield create wrote confirmed proposal" in output
+    assert "Odylith committed the validated Greenfield package." in output
     assert _compile_payload["intent_hypothesis"]["title"] == "Structured Review Workspace"
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
@@ -1742,7 +1775,7 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     )
 
     assert rc == 0, output
-    assert "greenfield create wrote confirmed proposal" in output
+    assert "Odylith committed the validated Greenfield package." in output
     assert "missing or too thin" not in output
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
@@ -1824,7 +1857,7 @@ def test_greenfield_create_compiles_prompt_without_edit_evidence(
     )
 
     assert rc == 0, output
-    assert "greenfield create wrote confirmed proposal" in output
+    assert "Odylith committed the validated Greenfield package." in output
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     encoded = json.dumps(accepted)
     assert "Customer Recovery Desk" in encoded

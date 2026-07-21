@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
@@ -11,15 +12,19 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import before_can_outcome_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_evidence_requirement
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_led_action_parts
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
+from odylith.runtime.domain_intelligence.greenfield_gerund_actions import GERUND_ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
@@ -90,6 +95,7 @@ _NON_HUMAN_SUBJECT_TERMS = frozenset(
         "approval",
         "case",
         "claim",
+        "data",
         "decision",
         "evidence",
         "finding",
@@ -106,11 +112,36 @@ _NON_HUMAN_SUBJECT_TERMS = frozenset(
         "status",
         "summary",
         "view",
+        "waiver",
         "workflow",
+    }
+)
+_NON_HUMAN_SUBJECT_TERMINALS = frozenset(
+    {
+        "app",
+        "application",
+        "board",
+        "builder",
+        "console",
+        "controller",
+        "dashboard",
+        "engine",
+        "executor",
+        "hub",
+        "notebook",
+        "platform",
+        "portal",
+        "service",
+        "system",
+        "tool",
+        "tracker",
+        "workbench",
+        "workspace",
     }
 )
 _REQUEST_LEAD_CONNECTORS = ("where", "that", "who", "so", "for", "to")
 _MULTI_ROLE_MODAL_TOKENS = frozenset({"can", "could", "must", "should", "will"})
+_OBSERVATION_ONLY_ACTIONS = frozenset({"check", "inspect", "replay", "review", "see", "verify", "view"})
 _PATH_GRANT_PATH_MODIFIERS = frozenset(
     {
         "a",
@@ -153,6 +184,31 @@ _RELEASE_PROOF_ACTION_WORDS = frozenset(
         "succeeded",
     }
 )
+_SOURCE_METADATA_LABEL_RE = re.compile(
+    r"\b(?:source\s+evidence|source\s+repository|repository\s+description)\s*(?::|-)\s*",
+    flags=re.IGNORECASE,
+)
+_SOURCE_METADATA_CLAUSE_RE = re.compile(
+    r"^(?:source\s+evidence|source\s+repository|repository\s+description)\s*(?::|-)\s*",
+    flags=re.IGNORECASE,
+)
+_EXPLICIT_INTENT_LABEL_RE = re.compile(
+    r"\b(?:user|product)\s+intent\s*(?::|-)\s*",
+    flags=re.IGNORECASE,
+)
+_INLINE_EXPLICIT_INTENT_LABEL_RE = re.compile(
+    r"(?:--\s*)?\b(?:user|product)\s+intent\s*(?::|-)\s*",
+    flags=re.IGNORECASE,
+)
+_SOURCE_METADATA_BOUNDARY_PUNCTUATION = (".", "!", "?", "-", ";", ":", ",")
+_SOURCE_EVIDENCE_SECTION_HEADINGS = frozenset(
+    {
+        "source evidence",
+        "source repository",
+        "repository description",
+    }
+)
+_MARKDOWN_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}(?:\s+|$)")
 @dataclass(frozen=True)
 class PromptIntentSource:
     """Operator prompt interpretation before confirmed-intent recovery."""
@@ -161,6 +217,7 @@ class PromptIntentSource:
     first_path: str
     command_led: bool
     actor: str = ""
+    operator_context: str = ""
 
 
 def prompt_first_path_source(value: str) -> str:
@@ -178,27 +235,39 @@ def prompt_project_title_source(value: str) -> str:
 def prompt_intent_source(value: str) -> PromptIntentSource:
     """Return shared title and first-path sources for thin prompt recovery."""
 
-    text = _strip_trailing_operator_instruction_sentences(
-        clean_markdown_text(_operator_original_intent_block(value) or value).strip(" .")
+    original_intent = product_intent_source_text(value)
+    explicit_first_path = _markdown_section_text(
+        original_intent,
+        headings=frozenset({"first complete path", "first path"}),
     )
-    words = _request_words(text)
+    text = _strip_trailing_operator_instruction_sentences(
+        clean_markdown_text(original_intent).strip(" .")
+    )
+    text = _without_leading_explicit_intent_label(text)
+    product_text = _without_source_metadata_clauses(text)
+    operator_context = _operator_context_from_product_text(product_text)
+    words = _request_words(product_text)
     start, command_led = _request_content_start(words)
-    need_actor, need_action = need_product_actor_action(text)
+    need_actor, need_action = need_product_actor_action(product_text)
     need_first_path = f"{need_actor} can {need_action}" if need_actor and need_action else ""
-    grant_actor, grant_first_path = _path_grant_actor_action(text)
-    workflow_actor, workflow_first_path = _workflow_where_actor_action(text)
-    multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(text)
-    actor, actor_led_first_path = _actor_led_relative_clause(text)
-    direct_actor, direct_first_path = _direct_actor_action_sentence(text)
-    context_actor = _for_role_actor_context(text)
+    grant_actor, grant_first_path = _path_grant_actor_action(product_text)
+    workflow_actor, workflow_first_path = _workflow_where_actor_action(product_text)
+    multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
+    actor, actor_led_first_path = _actor_led_relative_clause(product_text)
+    direct_actor, direct_first_path = _direct_actor_action_sentence(product_text)
+    context_actor, context_first_path = _for_role_actor_gerund_path(product_text)
+    non_human_relative_first_path = _non_human_subject_relative_action(product_text)
     first_path_source = (
-        grant_first_path
+        explicit_first_path
+        or grant_first_path
         or workflow_first_path
         or multi_role_first_path
         or need_first_path
         or actor_led_first_path
         or direct_first_path
-        or _first_path_source_from_text(text)
+        or context_first_path
+        or non_human_relative_first_path
+        or ("" if _is_source_metadata_clause(product_text) else _first_path_source_from_text(product_text))
     )
     first_path = _strip_leading_contextual_gerund_sentence(_strip_release_proof_tail(first_path_source))
     resolved_actor = next(
@@ -209,21 +278,83 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         ),
         "",
     )
+    if not resolved_actor:
+        first_path_actor, _ = modal_actor_action_parts(first_path)
+        if not first_path_actor:
+            first_path_actor, _ = actor_led_action_parts(first_path)
+        recovered_actor = _strip_leading_actor_article(first_path_actor)
+        if _is_bounded_prompt_actor(recovered_actor):
+            resolved_actor = recovered_actor
     return PromptIntentSource(
-        title=product_focus_after_command_sentence(text)
-        or product_focus_after_need_sentence(text)
-        or contextual_product_title(text)
+        title=product_focus_after_command_sentence(product_text)
+        or product_focus_after_need_sentence(product_text)
+        or contextual_product_title(product_text)
         or _project_title_source_from_words(words, start=start, command_led=command_led)
         or _direct_path_title_source(direct_first_path, actor=direct_actor),
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
+        operator_context=operator_context,
     )
+
+
+def product_intent_source_text(value: str) -> str:
+    """Return product-intent text without dedicated source-evidence sections."""
+
+    original_intent = _operator_original_intent_block_text(value) or str(value or "")
+    return _without_inline_source_metadata_clauses(_without_source_evidence_sections(original_intent))
+
+
+def prompt_has_material_first_path_gap(value: str) -> bool:
+    """Return whether an explicit actor path names only one material action."""
+
+    source = prompt_intent_source(value)
+    model = first_path_model(source.first_path)
+    actor, action = modal_actor_action_parts(source.first_path)
+    if not actor or not action:
+        actor, action = actor_led_action_parts(source.first_path)
+    return bool(
+        len(model.steps) < 2
+        and (model.material_action or model.visible_outcome)
+        and action
+        and _starts_with_explicit_human_actor(actor)
+        and not _contains_compound_action_path(source.first_path)
+        and _is_observation_only_action(action)
+    )
+
+
+def _operator_context_from_product_text(value: str) -> str:
+    """Recover an explicit target context without treating source metadata as product truth."""
+
+    operator_text = _EXPLICIT_INTENT_LABEL_RE.split(str(value or ""), maxsplit=1)[0]
+    for sentence in re.split(r"(?<=[.!?])\s+", operator_text):
+        match = re.search(
+            r"^\s*project\s+brief\s+for\s+"
+            r"(?P<context>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)(?:[.!?]|$)",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        if match:
+            context = clean_markdown_text(match.group("context")).strip(" .")
+            if context:
+                return context
+    return ""
 
 
 def _first_path_source_from_text(value: str) -> str:
     raw_text = _strip_trailing_operator_instruction_sentences(clean_markdown_text(value).strip(" ."))
+    if _is_source_metadata_clause(raw_text):
+        return ""
     text = _strip_operator_request_wrapper(raw_text)
+    for sentence in re.split(r"(?<=[.!?])\s+", text):
+        candidate = sentence.strip(" .")
+        if (
+            candidate
+            and not _is_source_metadata_clause(candidate)
+            and word_count(candidate) >= 8
+            and _looks_like_recoverable_first_path(candidate)
+        ):
+            return _strip_release_proof_tail(candidate)
     grant_actor, grant_first_path = _path_grant_actor_action(raw_text)
     if grant_actor and word_count(grant_first_path) >= 8 and _looks_like_recoverable_first_path(grant_first_path):
         return _strip_release_proof_tail(grant_first_path)
@@ -396,6 +527,10 @@ def _lead_before_sentence_boundary(words: list[str]) -> list[str]:
 
 
 def _operator_original_intent_block(value: str) -> str:
+    return clean_markdown_text(_operator_original_intent_block_text(value)).strip(" .")
+
+
+def _operator_original_intent_block_text(value: str) -> str:
     rows = str(value or "").splitlines()
     collected: list[str] = []
     collecting = False
@@ -412,7 +547,50 @@ def _operator_original_intent_block(value: str) -> str:
                 tail = row.split(":", 1)[1].strip()
                 if tail:
                     collected.append(tail)
-    return clean_markdown_text("\n".join(collected)).strip(" .")
+    return "\n".join(collected).strip()
+
+
+def _without_source_evidence_sections(value: str) -> str:
+    """Keep Markdown product sections while excluding untrusted source-evidence bodies."""
+
+    kept: list[str] = []
+    skipping_source_evidence = False
+    for row in str(value or "").splitlines():
+        heading = _markdown_heading_key(row)
+        if heading:
+            if heading in _SOURCE_EVIDENCE_SECTION_HEADINGS:
+                skipping_source_evidence = True
+                continue
+            if skipping_source_evidence:
+                skipping_source_evidence = False
+        if not skipping_source_evidence:
+            kept.append(row)
+    return "\n".join(kept)
+
+
+def _markdown_heading_key(value: str) -> str:
+    row = str(value or "")
+    if not _MARKDOWN_HEADING_RE.match(row):
+        return ""
+    return _heading_key(row)
+
+
+def _markdown_section_text(value: str, *, headings: frozenset[str]) -> str:
+    """Return one explicit Markdown section without adjoining headings."""
+
+    rows: list[str] = []
+    collecting = False
+    for row in str(value or "").splitlines():
+        heading = _markdown_heading_key(row)
+        if heading:
+            if collecting:
+                break
+            if heading in headings:
+                collecting = True
+            continue
+        if collecting:
+            rows.append(row)
+    return clean_markdown_text("\n".join(rows)).strip(" .")
 
 
 def _heading_key(value: str) -> str:
@@ -505,15 +683,38 @@ def _workflow_where_actor_action(value: str) -> tuple[str, str]:
             if not action_words or not _looks_like_actor_split_left(actor_words, allow_bounded_workflow_phrase=True):
                 continue
             action_source = _smooth_request_first_path_clause(" ".join(action_words))
-            if not _looks_like_direct_transformation_workflow_action(action_source):
-                continue
-            if not looks_like_action_clause(action_source):
+            if not (
+                looks_like_action_clause(action_source)
+                or _looks_like_direct_transformation_workflow_action(action_source)
+            ):
                 continue
             action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
             if action and _looks_like_recoverable_first_path(action):
                 actor = _strip_leading_actor_article(" ".join(actor_words))
                 return actor, f"{actor} {action}".strip(" .")
     return "", ""
+
+
+def _non_human_subject_relative_action(value: str) -> str:
+    """Keep a supplied action when a product-relative `for <system> that` clause has no human actor."""
+
+    words = _request_words(value)
+    for for_index, word in enumerate(words[:-3]):
+        if _word_key(word) != "for":
+            continue
+        tail = words[for_index + 1 :]
+        for relative_index, relative_word in enumerate(tail[:-1]):
+            if _word_key(relative_word) != "that":
+                continue
+            subject_words = tail[:relative_index]
+            action_words = tail[relative_index + 1 :]
+            if not subject_words or not action_words or not _looks_like_non_human_subject(subject_words):
+                continue
+            action_source = _smooth_request_first_path_clause(" ".join(action_words))
+            action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
+            if _looks_like_recoverable_first_path(action):
+                return action
+    return ""
 
 
 def _path_grant_actor_action(value: str) -> tuple[str, str]:
@@ -664,6 +865,10 @@ def _looks_like_non_human_subject(words: list[str]) -> bool:
     content = [_word_key(word) for word in words if _word_key(word)]
     if not content:
         return False
+    if content[-1] in _NON_HUMAN_SUBJECT_TERMINALS:
+        return True
+    if len(content) == 1 and content[0] in _NON_HUMAN_SUBJECT_TERMS:
+        return True
     if _looks_like_actor_purpose_left(words):
         return False
     return bool(set(content) & _NON_HUMAN_SUBJECT_TERMS)
@@ -693,12 +898,19 @@ def _looks_like_direct_transformation_workflow_action(value: str) -> bool:
     action = _word_key(words[0])
     if action in {"capture", "captures", "record", "records", "register", "registers"}:
         return len(first_path_model(value).steps) == 1
+    if action in {"replay", "replays"}:
+        return _is_replay_workflow_action(value)
     if action in {"convert", "converts", "transform", "transforms", "translate", "translates", "turn", "turns"}:
         return " into " in f" {clean_markdown_text(value).casefold()} "
     model = first_path_model(value)
     return looks_like_action_clause(value) and len(model.steps) == 1 and bool(
         model.material_action or model.visible_outcome
     )
+
+
+def _is_replay_workflow_action(value: str) -> bool:
+    words = _request_words(value)
+    return len(words) >= 3 and _word_key(words[0]) in {"replay", "replays"}
 
 
 def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:
@@ -772,11 +984,16 @@ def _strip_leading_contextual_gerund_sentence(value: str) -> str:
 
 def _is_bounded_prompt_actor(value: str) -> bool:
     words = _request_words(value)
-    return bool(words) and len(words) <= 6 and not any(word.endswith((".", "!", "?")) for word in words)
+    return bool(
+        words
+        and len(words) <= 6
+        and not any(word.endswith((".", "!", "?")) for word in words)
+        and not _looks_like_non_human_subject(words)
+    )
 
 
-def _for_role_actor_context(value: str) -> str:
-    """Recover a short role phrase from command-led `for <role> <gerund>` context."""
+def _for_role_actor_gerund_path(value: str) -> tuple[str, str]:
+    """Recover a bounded `for <role> <gerund>` product path."""
 
     words = _request_words(value)
     for index, word in enumerate(words[:-2]):
@@ -788,8 +1005,11 @@ def _for_role_actor_context(value: str) -> str:
             action_head = _word_key(tail[boundary])
             if not action_head.endswith("ing") or not _looks_like_actor_purpose_left(actor_words):
                 continue
-            return _strip_leading_actor_article(" ".join(actor_words))
-    return ""
+            actor = _strip_leading_actor_article(" ".join(actor_words))
+            action = _smooth_request_first_path_clause(" ".join(tail[boundary:]))
+            if actor and action and _looks_like_recoverable_first_path(action):
+                return actor, f"{actor} {action}"
+    return "", ""
 
 
 def _strip_trailing_operator_instruction_sentences(value: str) -> str:
@@ -1180,4 +1400,77 @@ def _looks_like_recoverable_first_path(value: str) -> bool:
     return len(model.steps) >= 2 or bool(model.material_action or model.visible_outcome)
 
 
-__all__ = ["PromptIntentSource", "prompt_first_path_source", "prompt_intent_source", "prompt_project_title_source"]
+def _is_source_metadata_clause(value: str) -> bool:
+    return bool(_SOURCE_METADATA_CLAUSE_RE.match(clean_markdown_text(value).strip()))
+
+
+def _without_source_metadata_clauses(value: str) -> str:
+    """Retain only operator text before the first standalone source metadata field."""
+
+    return _without_inline_source_metadata_clauses(clean_markdown_text(value).strip())
+
+
+def _without_inline_source_metadata_clauses(value: str) -> str:
+    """Remove inline source metadata without flattening structured product sections."""
+
+    text = str(value or "").strip()
+    labels = _source_metadata_labels(text)
+    if not labels:
+        return _INLINE_EXPLICIT_INTENT_LABEL_RE.sub("", text).strip()
+    operator_text = text[: labels[0].start()].rstrip(" \t-;:,")
+    return _INLINE_EXPLICIT_INTENT_LABEL_RE.sub("", operator_text).strip()
+
+
+def _without_leading_explicit_intent_label(value: str) -> str:
+    text = clean_markdown_text(value).strip()
+    label = _EXPLICIT_INTENT_LABEL_RE.match(text)
+    return text[label.end() :].strip() if label else text
+
+
+def _source_metadata_labels(value: str) -> list[re.Match[str]]:
+    labels: list[re.Match[str]] = []
+    for label in _SOURCE_METADATA_LABEL_RE.finditer(value):
+        prefix = value[: label.start()]
+        if not prefix or prefix.rstrip().endswith(_SOURCE_METADATA_BOUNDARY_PUNCTUATION):
+            labels.append(label)
+    return labels
+
+
+def _starts_with_explicit_human_actor(value: str) -> bool:
+    words = [word.casefold().strip(".,:;") for word in _request_words(clean_markdown_text(value))[:5]]
+    if words and words[0] in {"a", "an", "the"}:
+        words = words[1:]
+    actor_positions = [index for index, word in enumerate(words) if word_has_actor_role_signal(word)]
+    non_human_positions = [index for index, word in enumerate(words) if word in _NON_HUMAN_SUBJECT_TERMINALS]
+    if not actor_positions:
+        return False
+    if non_human_positions and max(non_human_positions) > max(actor_positions):
+        return False
+    return True
+
+
+def _contains_compound_action_path(value: str) -> bool:
+    """Keep an explicitly rich first path out of the one-action clarification lane."""
+
+    text = clean_markdown_text(value)
+    material_actions = tuple(MATERIAL_ACTION_RE.finditer(text))
+    if len(material_actions) >= 2:
+        return True
+    gerund_forms = set(GERUND_ACTION_VERBS.values())
+    gerund_actions = [word for word in _request_words(text) if _word_key(word) in gerund_forms]
+    return len(gerund_actions) >= 2
+
+
+def _is_observation_only_action(value: str) -> bool:
+    words = _request_words(value)
+    return bool(words and _word_key(words[0]) in _OBSERVATION_ONLY_ACTIONS)
+
+
+__all__ = [
+    "PromptIntentSource",
+    "product_intent_source_text",
+    "prompt_first_path_source",
+    "prompt_has_material_first_path_gap",
+    "prompt_intent_source",
+    "prompt_project_title_source",
+]

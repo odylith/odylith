@@ -626,12 +626,6 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             "External integrations can start as deterministic fixtures unless the accepted path cannot be proven without a live source.",
             f"Security, privacy, accessibility, safety, audit, and retention obligations scale with the {focus.lower()} data and decisions involved.",
         ]
-    if not confirmed_text_values(intent.get("ambiguities")):
-        intent["ambiguities"] = [
-            f"Which {focus.lower()} actor has final release authority when evidence is incomplete or disputed?",
-            f"Which source, device, document, dataset, or external service is authoritative for the first {title.lower()} proof?",
-            "Which privacy, safety, compliance, or access rule would change the first path if it is stricter than assumed?",
-        ]
     current_non_goals = confirmed_text_values(intent.get("non_goals"))
     if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
         extracted_non_goals = _non_goal_rows(intent, title=title)

@@ -1,8 +1,6 @@
 # Remediator
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Remediator is Odylith's bounded correction-packet compiler. It converts an

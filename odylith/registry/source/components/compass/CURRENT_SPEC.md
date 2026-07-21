@@ -6,10 +6,8 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-17
 
 ## Purpose
 Compass is Odylith's execution, decision, and runtime-posture surface. It turns

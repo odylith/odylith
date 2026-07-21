@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 from tests.greenfield_matrix_campaign_test_support import REPO_ROOT
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
@@ -875,6 +878,161 @@ def test_campaign_can_require_release_readiness_for_release_claims(tmp_path: Pat
     assert payload["stopped_reason"] == "release-readiness-required:not-proven"
     assert payload["release_readiness_required"] is True
     assert payload["release_readiness_status"] == "not-proven"
+
+
+def test_release_proof_input_manifest_rejects_post_preflight_mutation(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "release.json"
+    audit_file = tmp_path / "audit.json"
+    case_file.write_text('{"cases": []}\n', encoding="utf-8")
+    audit_file.write_text('{"audits": []}\n', encoding="utf-8")
+
+    references = module._release_proof_input_manifest(  # noqa: SLF001
+        case_files=(case_file,),
+        release_audit_file=audit_file,
+    )
+
+    assert module._release_proof_input_drift_issues(references) == ()  # noqa: SLF001
+    audit_file.write_text('{"audits": ["changed"]}\n', encoding="utf-8")
+
+    assert module._release_proof_input_drift_issues(references) == (  # noqa: SLF001
+        "release-audit-file changed after release-proof preflight",
+    )
+
+
+def test_campaign_refuses_release_execution_when_inputs_cannot_be_sealed(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "release.json"
+    audit_file = tmp_path / "audit.json"
+    case_file.write_text('{"cases": []}\n', encoding="utf-8")
+    audit_file.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="release proof inputs could not be sealed"):
+        module.run_campaign(
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path / "tmp",
+            output_dir=tmp_path / "out",
+            telemetry_dir=tmp_path / "telemetry",
+            release_case_files=(case_file,),
+            release_audit_file=audit_file,
+        )
+
+
+def test_release_proof_input_manifest_binds_transitive_audit_trail(tmp_path: Path) -> None:
+    module = _module()
+    fixture_root = REPO_ROOT / "tests/fixtures/greenfield-release-corpus"
+    copied_root = tmp_path / "repo/tests/fixtures/greenfield-release-corpus"
+    copied_root.mkdir(parents=True)
+    for name in (
+        "greenfield-release-source-provenanced.v3.json",
+        "greenfield-release-audit-requests.v7.json",
+        "greenfield-release-review-results.v9-2026-07-20.json",
+        "audit-source-verifications-v8-2026-07-20",
+        "audit-evidence-v15",
+        "sources",
+    ):
+        source = fixture_root / name
+        destination = copied_root / name
+        if source.is_dir():
+            shutil.copytree(source, destination)
+        else:
+            shutil.copy2(source, destination)
+    case_file = copied_root / "greenfield-release-source-provenanced.v3.json"
+    audit_file = copied_root / "audit-evidence-v15/greenfield-release-audit.v9.json"
+
+    references = module._release_proof_input_manifest(  # noqa: SLF001
+        case_files=(case_file,),
+        release_audit_file=audit_file,
+        repo_root=tmp_path / "repo",
+    )
+
+    assert {reference["kind"] for reference in references} >= {
+        "release-case-file",
+        "release-audit-file",
+        "release-audit-request-plan",
+        "release-audit-source-verifications",
+        "release-audit-review-results",
+    }
+    assert any(reference["kind"].startswith("release-source-artifact:") for reference in references)
+    snapshot = module._seal_release_proof_inputs(  # noqa: SLF001
+        case_files=(case_file,),
+        release_audit_file=audit_file,
+        repo_root=tmp_path / "repo",
+        temp_parent=tmp_path / "snapshots",
+    )
+    assert snapshot is not None
+    snapshot_manifest = json.loads(snapshot.manifest_path.read_text(encoding="utf-8"))
+    assert snapshot_manifest["snapshot_root"] == str(snapshot.root)
+    assert snapshot_manifest["case_files"] == [
+        "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
+    ]
+    assert snapshot_manifest["audit_file"] == (
+        "tests/fixtures/greenfield-release-corpus/audit-evidence-v15/greenfield-release-audit.v9.json"
+    )
+    assert snapshot_manifest["input_references"]
+    source_case = json.loads(case_file.read_text(encoding="utf-8"))["cases"][0]
+    source_artifact = (tmp_path / "repo") / source_case["provenance"]["source_artifact_path"]
+    snapshot_artifact = snapshot.root / source_case["provenance"]["source_artifact_path"]
+    snapshot_review = snapshot.root / "tests/fixtures/greenfield-release-corpus/greenfield-release-review-results.v9-2026-07-20.json"
+    review_snapshot_bytes = snapshot_review.read_bytes()
+    artifact_snapshot_bytes = snapshot_artifact.read_bytes()
+    review_result = copied_root / "greenfield-release-review-results.v9-2026-07-20.json"
+    review_result.write_text(review_result.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    source_artifact.write_text(source_artifact.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+    assert set(module._release_proof_input_drift_issues(references)) == {  # noqa: SLF001
+        "release-audit-review-results changed after release-proof preflight",
+        "release-source-artifact:release-accessibility-001-description changed after release-proof preflight",
+    }
+    assert module._release_proof_input_drift_issues(snapshot.input_references) == ()  # noqa: SLF001
+    assert snapshot_review.read_bytes() == review_snapshot_bytes
+    assert snapshot_artifact.read_bytes() == artifact_snapshot_bytes
+    shutil.rmtree(snapshot.root)
+
+
+def test_campaign_builds_failed_subset_replays_from_sealed_release_cases(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    case_file = REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
+    audit_file = (
+        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/audit-evidence-v15/greenfield-release-audit.v9.json"
+    )
+    captured: dict[str, object] = {}
+
+    def fake_run_tier(**kwargs):  # noqa: ANN001
+        shard = kwargs["shards"][0]
+        return {
+            "tier": shard.tier,
+            "status": "failed",
+            "completed_shard_count": 1,
+            "selected_shard_count": 1,
+            "stop_reason": "forced-release-failure",
+            "cluster_counts": {},
+            "shards": [],
+        }
+
+    def fake_replay(**kwargs):  # noqa: ANN001
+        captured.update(kwargs)
+        return {"status": "not-required"}
+
+    monkeypatch.setattr(module, "_run_tier", fake_run_tier)
+    monkeypatch.setattr(module, "_failed_subset_replay_artifacts", fake_replay)
+
+    module.run_campaign(
+        dist_dir=tmp_path / "dist",
+        version="0.1.15",
+        temp_parent=tmp_path / "tmp",
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        release_case_files=(case_file,),
+        release_audit_file=audit_file,
+    )
+
+    replay_sources = tuple(captured["source_case_files"])
+    assert replay_sources
+    assert replay_sources[0] != case_file
+    assert replay_sources[0].is_relative_to(tmp_path / "tmp")
+    assert not list((tmp_path / "tmp").glob("odylith-release-inputs-*"))
 
 
 def test_campaign_writes_merged_case_progress_files(tmp_path: Path, monkeypatch) -> None:

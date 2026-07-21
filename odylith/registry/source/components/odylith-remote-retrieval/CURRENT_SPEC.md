@@ -1,8 +1,6 @@
 # Odylith Remote Retrieval
-Last updated: 2026-04-07
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-07
 
 ## Purpose
 Odylith Remote Retrieval is the optional Vespa-backed retrieval and sync

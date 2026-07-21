@@ -6,10 +6,8 @@
   and release-proof claims before allowing stronger completion language.
 - False proof clearance, false visible-UX claims, and public product claims
   without benchmark proof are release-blocking failures for v0.1.11.
-Last updated: 2026-04-09
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Proof State is Odylith's live-proof control-plane contract. It keeps one

@@ -294,10 +294,10 @@ def _product_manager_checks(
             "quality lens product_manager missing accepted first-release requirements in the implementation handoff",
         ),
         _check(
-            len(assumptions) >= 2 and len(ambiguities) >= 1,
+            len(assumptions) >= 2,
             "decision_boundary",
-            f"{len(assumptions)} assumption(s), {len(ambiguities)} ambiguity row(s)",
-            "quality lens product_manager missing assumptions or ambiguity boundary",
+            f"{len(assumptions)} assumption(s), {len(ambiguities)} unresolved material ambiguity row(s)",
+            "quality lens product_manager missing accepted assumption boundary",
         ),
     ]
 

@@ -7,10 +7,8 @@
   closeout state before delegation proceeds.
 - Route-ready outputs must remain host-general across Codex and Claude while
   preserving host capability differences in adapter fields only.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Subagent Orchestrator is Odylith's prompt-level decomposition engine. It takes

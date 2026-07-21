@@ -234,8 +234,6 @@ def _scope_boundary_tail_issues(proposal: Mapping[str, Any], text: str) -> list[
             continue
         issues.append("greenfield scope boundary truncates the accepted first-path tail")
     return issues
-
-
 def _accepted_assumption_coverage_issues(proposal: Mapping[str, Any], rendered_text: str) -> list[str]:
     """Require high-risk accepted assumptions to survive into generated artifacts."""
 

@@ -37,6 +37,7 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
         stop_after_cluster_failures=0,
         require_high_variance_stressors=True,
         required_stressors=(),
+        release_input_snapshot_root=tmp_path / "sealed-release-inputs",
     )
 
     discovery_command = module._matrix_command(  # noqa: SLF001
@@ -60,6 +61,7 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert "--allow-skipped-browser-proof" in discovery_command
     assert "--skip-rescue-smoke" in discovery_command
     assert "--skip-natural-rescue-proof" in discovery_command
+    assert "--skip-commit-recovery-proof" in discovery_command
     assert "--require-high-variance-stressors" not in discovery_command
     assert command_arg(discovery_command, "--required-stressor") == "modal-expert-lens"
     assert "--allow-partial-stressor-coverage" in discovery_command
@@ -68,9 +70,39 @@ def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -
     assert "--include-browser-proof" in release_command
     assert "--include-rescue-smoke" in release_command
     assert "--include-natural-rescue-proof" in release_command
+    assert "--include-commit-recovery-proof" in release_command
     assert command_arg(release_command, "--install-mode") == "full"
     assert "--stop-after-failures" not in release_command
     assert "--allow-partial-stressor-coverage" not in release_command
+    assert command_arg(release_command, "--sealed-release-input-root") == str(
+        (tmp_path / "sealed-release-inputs").resolve()
+    )
+
+
+def test_each_release_shard_requires_commit_recovery_proof(tmp_path: Path) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_release_recovery_test")
+    shards = module._release_tier(  # noqa: SLF001
+        "release-proof",
+        (tmp_path / "release-01.json", tmp_path / "release-02.json"),
+        require_high_variance_stressors=True,
+        required_stressors=(),
+    )
+
+    commands = [
+        module._matrix_command(  # noqa: SLF001
+            shard=shard,
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path / "tmp",
+            output_json=tmp_path / f"{shard.name}.json",
+            telemetry_jsonl=tmp_path / f"{shard.name}.jsonl",
+        )
+        for shard in shards
+    ]
+
+    assert len(commands) == 2
+    assert all("--include-commit-recovery-proof" in command for command in commands)
+    assert all("--skip-commit-recovery-proof" not in command for command in commands)
 
 
 def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_path: Path, monkeypatch) -> None:
@@ -146,6 +178,7 @@ def test_campaign_rejects_individually_inadequate_release_case_files_before_unio
     )
     monkeypatch.setattr(shard_runner, "evaluate_release_corpus", fake_evaluate)
     monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
+    monkeypatch.setattr(module, "_seal_release_proof_inputs", lambda **_kwargs: None)
 
     payload = module.run_campaign(
         dist_dir=tmp_path / "dist",
@@ -171,8 +204,10 @@ def test_campaign_filters_union_audits_for_each_release_shard_before_union_valid
     shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
     first = tmp_path / "release-01.json"
     second = tmp_path / "release-02.json"
+    audit_file = tmp_path / "audit.json"
     write_case_file(first, name="release case one", case_id="release-one", stressors=())
     write_case_file(second, name="release case two", case_id="release-two", stressors=())
+    audit_file.write_text("{}\n", encoding="utf-8")
     evaluations: list[tuple[tuple[str, ...], tuple[str, ...]]] = []
 
     def fake_evaluate(cases, audits):  # noqa: ANN001
@@ -199,6 +234,7 @@ def test_campaign_filters_union_audits_for_each_release_shard_before_union_valid
     )
     monkeypatch.setattr(shard_runner, "evaluate_release_corpus", fake_evaluate)
     monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
+    monkeypatch.setattr(module, "_seal_release_proof_inputs", lambda **_kwargs: None)
 
     payload = module.run_campaign(
         dist_dir=tmp_path / "dist",
@@ -207,7 +243,7 @@ def test_campaign_filters_union_audits_for_each_release_shard_before_union_valid
         output_dir=tmp_path / "out",
         telemetry_dir=tmp_path / "telemetry",
         release_case_files=(first, second),
-        release_audit_file=tmp_path / "audit.json",
+        release_audit_file=audit_file,
     )
 
     assert evaluations == [

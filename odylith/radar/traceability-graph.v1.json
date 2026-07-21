@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "cc532c0a55c23d8213a5a601422f9da8c07ff206e6dfcdce1cbdb8dc6c79f86f",
-    "file_count": 315,
+    "digest": "88c4ce345a2defd2655ae486082561eef58c16074f72cfdde30ea34a8cc59c32",
+    "file_count": 316,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -157,6 +157,7 @@
       "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
       "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
       "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
+      "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
       "odylith/radar/source/programs/B-072.execution-waves.v1.json",
       "odylith/radar/source/programs/B-096.execution-waves.v1.json",
       "odylith/radar/source/programs/B-099.execution-waves.v1.json",
@@ -8441,12 +8442,13 @@
           "B-142"
         ],
         "completed_workstreams": [
-          "B-140"
+          "B-140",
+          "B-145"
         ],
         "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 2,
-        "completed_workstream_count": 1
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -8549,12 +8551,13 @@
           "B-142"
         ],
         "completed_workstreams": [
-          "B-140"
+          "B-140",
+          "B-145"
         ],
         "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
         "active_workstream_count": 2,
-        "completed_workstream_count": 1
+        "completed_workstream_count": 2
       },
       "release_history": [
         {
@@ -8671,6 +8674,67 @@
       "active_release": {},
       "release_history": [],
       "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 0,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-145",
+      "title": "Assess v0.1.15 guidance and browser surface migration",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [],
+      "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-145",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-07-20T23:02:16Z",
+          "note": "Target newly created queued backlog record(s) from `odylith backlog create --release current`.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        },
+        {
+          "action": "remove",
+          "workstream_id": "B-145",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-07-20T23:10:57Z",
+          "note": "Migration assessment completed before release promotion; no active delivery assignment remains.",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Removed from 0.1.15",
       "coverage": {
         "linked_plan_count": 0,
         "linked_diagram_count": 0,
@@ -8846,12 +8910,13 @@
         "B-142"
       ],
       "completed_workstreams": [
-        "B-140"
+        "B-140",
+        "B-145"
       ],
       "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 2,
-      "completed_workstream_count": 1
+      "completed_workstream_count": 2
     }
   ],
   "release_aliases": {
@@ -8876,12 +8941,13 @@
         "B-142"
       ],
       "completed_workstreams": [
-        "B-140"
+        "B-140",
+        "B-145"
       ],
       "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
       "active_workstream_count": 2,
-      "completed_workstream_count": 1
+      "completed_workstream_count": 2
     }
   },
   "current_release": {
@@ -8905,12 +8971,13 @@
       "B-142"
     ],
     "completed_workstreams": [
-      "B-140"
+      "B-140",
+      "B-145"
     ],
     "source_path": "/Volumes/FREEDOM_RESEARCH/research-code/odylith/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
     "active_workstream_count": 2,
-    "completed_workstream_count": 1
+    "completed_workstream_count": 2
   },
   "next_release": {},
   "release_summary": {
@@ -10761,6 +10828,14 @@
       "file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md"
     },
     {
+      "id": "B-145",
+      "type": "workstream",
+      "label": "Assess v0.1.15 guidance and browser surface migration",
+      "status": "finished",
+      "workstream_type": "standalone",
+      "file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md"
+    },
+    {
       "id": "component:atlas",
       "type": "component",
       "label": "Atlas",
@@ -11629,7 +11704,8 @@
         "B-141",
         "B-142",
         "B-143",
-        "B-144"
+        "B-144",
+        "B-145"
       ],
       "diagrams": [
         "D-001",
@@ -20689,6 +20765,11 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-145",
+      "target": "component:odylith",
+      "edge_type": "component_linkage"
+    },
+    {
       "source": "component:atlas",
       "target": "diagram:D-001",
       "edge_type": "component_diagram"
@@ -24727,6 +24808,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-145": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 0,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -24821,10 +24909,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 261,
-      "structural_edge_count": 1710,
+      "spine_node_count": 262,
+      "structural_edge_count": 1711,
       "connected_component_count": 3,
-      "largest_component_size": 259,
+      "largest_component_size": 260,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -24834,18 +24922,18 @@
     "findings": []
   },
   "summary": {
-    "workstream_count": 144,
+    "workstream_count": 145,
     "release_count": 5,
     "component_count": 30,
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 352,
-    "edge_count": 1814,
+    "node_count": 353,
+    "edge_count": 1815,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-07-17 12:02:37Z"
+  "generated_utc": "2026-07-21 07:31:36Z"
 }

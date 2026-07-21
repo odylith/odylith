@@ -5,10 +5,8 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-06-30
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,

@@ -292,6 +292,51 @@ def test_main_ignores_a_concurrent_sibling_run_when_checking_owned_cleanup(monke
     assert not Path(payload["proof_run"]["temporary_namespace"]).exists()
 
 
+def test_main_marks_the_proof_failed_when_final_namespace_cleanup_fails(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    namespace = tmp_path / "owned-proof-run"
+    namespace.mkdir()
+
+    class FailingLease:
+        temp_namespace = namespace
+        released = False
+
+        def to_dict(self) -> dict[str, str]:
+            return {"temporary_namespace": str(namespace)}
+
+        def release(self) -> None:
+            self.released = True
+            raise RuntimeError("forced final namespace cleanup failure")
+
+    monkeypatch.setattr(module, "acquire_matrix_run_lease", lambda **_kwargs: FailingLease())
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--proof-tier",
+            "discovery",
+            "--include-browser-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert payload["status"] == "failed"
+    assert payload["temp_cleanup_proof"]["status"] == "failed"
+    assert payload["temp_cleanup_proof"]["run_namespace_cleanup"] == "failed"
+    assert "forced final namespace cleanup failure" in payload["temp_cleanup_proof"]["run_namespace_cleanup_error"]
+
+
 def test_main_fails_when_owned_temp_cleanup_finds_a_leftover_repo(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
@@ -439,10 +484,10 @@ def test_recovery_case_selection_ignores_clarification_cases_and_rejects_unprove
 def test_release_recovery_selection_requires_an_edited_source_provenanced_case() -> None:
     module = _module()
     source_cases = module.load_case_file(
-        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v1.json"
+        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
     )
 
-    confirmed_case = next(case for case in source_cases if case.case_id == "release-accessibility-002-topic")
+    confirmed_case = next(case for case in source_cases if case.case_id == "release-accessibility-007-source")
     binding = _release_audit_binding(confirmed_case)
     audit_binding = {
         confirmed_case.case_id: binding
@@ -454,7 +499,7 @@ def test_release_recovery_selection_requires_an_edited_source_provenanced_case()
         approved_audit_bindings=audit_binding,
     )
 
-    assert selected.case_id == "release-accessibility-002-topic"
+    assert selected.case_id == "release-accessibility-007-source"
     assert selected.confirmed_intent_markdown
     assert selected.provenance.corpus_tier == "source_provenanced"
     assert selected.provenance.derived_prompt_sha256
@@ -491,9 +536,9 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
 ) -> None:
     module = _module()
     source_cases = module.load_case_file(
-        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v1.json"
+        REPO_ROOT / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
     )
-    recovery_case = next(case for case in source_cases if case.case_id == "release-accessibility-002-topic")
+    recovery_case = next(case for case in source_cases if case.case_id == "release-accessibility-007-source")
     binding = _release_audit_binding(recovery_case)
     captured: dict[str, object] = {}
     args = module.argparse.Namespace(
@@ -506,6 +551,7 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
         include_rescue_smoke=False,
         include_natural_rescue_proof=False,
         json_output=True,
+        attempt_ledger_jsonl=None,
     )
     config = module.MatrixCampaignConfig(
         phase=module.campaign_phase_from_value("gate"),

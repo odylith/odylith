@@ -176,8 +176,9 @@ def test_source_spans_exclude_smallest_version_editorial_loop_from_product_claim
         (tmp_path / ".odylith/runtime/greenfield/candidate-evidence.v1.json").read_text(encoding="utf-8")
     )
     assert "smallest version of the whole product" not in candidate["first_path"]
-    assert "smallest version of the whole product" not in candidate["prompt"]
-    assert "smallest version of the whole product" not in persisted_candidate["product_facts"]["prompt"]
+    assert "smallest version of the whole product" in candidate["prompt"]
+    assert "prompt" not in persisted_candidate["product_facts"]
+    assert "prompt" not in persisted_candidate
     assert "source_evidence" not in persisted_candidate
     assert any(
         "smallest version of the whole product" in span["text"]
@@ -202,6 +203,47 @@ def test_typed_candidate_cannot_be_loaded_as_confirmed_intent(tmp_path: Path) ->
             argparse.Namespace(intent_file=str(candidate_path), prompt=prompt),
             repo_root=tmp_path,
         )
+
+
+def test_prompt_hypothesis_keeps_repository_identity_in_evidence_only(tmp_path: Path) -> None:
+    prompt = (
+        "Create an accessibility product. An accessibility operator reviews one evidence item, records a decision, "
+        "and verifies the visible outcome. Source repository: tailwindlabs/headlessui. "
+        "Source evidence: Accessible UI components for Tailwind CSS."
+    )
+
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Accessibility Review Workspace",
+    )
+    runtime = tmp_path / ".odylith/runtime/greenfield"
+    persisted_candidate = json.loads((runtime / "candidate-intent.json").read_text(encoding="utf-8"))
+    rendered_candidate = (runtime / "candidate-intent.md").read_text(encoding="utf-8")
+    persisted_evidence = (runtime / "candidate-evidence.v1.json").read_text(encoding="utf-8")
+
+    assert candidate["first_path"].startswith("An accessibility operator reviews one evidence item")
+    assert "tailwindlabs/headlessui" not in candidate["first_path"]
+    assert "tailwindlabs/headlessui" not in json.dumps(persisted_candidate, sort_keys=True)
+    assert "tailwindlabs/headlessui" not in rendered_candidate
+    assert "tailwindlabs/headlessui" in persisted_evidence
+
+
+def test_prompt_hypothesis_compiles_complete_path_before_inline_source_evidence(tmp_path: Path) -> None:
+    prompt = (
+        "Create an accessibility product. An accessibility operator reviews one evidence item, records a decision, "
+        "and verifies the visible outcome. Source repository: vidstack/player. Source evidence: UI components and "
+        "hooks for building video/audio players on the web. Robust, customizable, and accessible."
+    )
+
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Accessibility Review Workspace",
+    )
+
+    assert candidate["first_path"].startswith("An accessibility operator reviews one evidence item")
+    assert "vidstack/player" not in candidate["first_path"]
 
 
 def test_preconfirm_markdown_artifacts_cannot_promote_candidate_authority(tmp_path: Path) -> None:

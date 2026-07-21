@@ -6,10 +6,8 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-17
 
 ## Purpose
 Odylith Chatter is Odylith's cross-posture narration contract. It governs how

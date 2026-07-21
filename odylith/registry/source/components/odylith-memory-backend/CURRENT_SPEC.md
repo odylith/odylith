@@ -7,10 +7,8 @@
 - Retention classes include `hot_recent`, `durable_practice`,
   `casebook_failure`, `benchmark_pressure`, `tribunal_doctrine_candidate`, and
   `noise_suppressed`, with decay and suppression preserved.
-Last updated: 2026-04-13
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-13
 
 ## Purpose
 Odylith Memory Backend is the local-first derived memory substrate that stores

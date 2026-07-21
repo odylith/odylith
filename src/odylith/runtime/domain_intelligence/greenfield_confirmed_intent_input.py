@@ -23,9 +23,18 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
     prompt_first_path_source,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
+    prompt_has_material_first_path_gap,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
+    prompt_intent_source,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality import (
+    title_supports_conservative_first_path,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -83,9 +92,10 @@ def thin_recovery_source_text(text: str, sections: Mapping[str, list[str]], titl
     if not has_explicit_section_boundaries(sections):
         return _clean(text)
     paragraphs = product_context_paragraphs(text, sections, title)
+    if not paragraphs:
+        return ""
     title_text = _clean(title)
-    source = _clean(". ".join([title_text, *paragraphs] if title_text else paragraphs))
-    return source or _clean(text)
+    return _clean(". ".join([title_text, *paragraphs] if title_text else paragraphs))
 
 
 def has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:
@@ -127,13 +137,16 @@ def _operator_request_source(value: str) -> str:
     text = _clean(value)
     if not text:
         return ""
-    first_path_source = prompt_first_path_source(text)
+    prompt_source = prompt_intent_source(text)
+    first_path_source = prompt_source.first_path
     if word_count(first_path_source) < 6:
-        return ""
+        return text if title_supports_conservative_first_path(title=prompt_source.title, evidence=text) else ""
     model = first_path_model(first_path_source)
+    if prompt_has_material_first_path_gap(text):
+        return ""
     if len(model.steps) >= 2 or model.material_action or model.visible_outcome:
         return text
-    return ""
+    return text if title_supports_conservative_first_path(title=prompt_source.title, evidence=text) else ""
 
 
 def _host_guidance_original_intent(text: str) -> str:

@@ -5,10 +5,8 @@
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-16
 
 ## Purpose
 Casebook is Odylith's bug and operational-learning surface. It preserves product

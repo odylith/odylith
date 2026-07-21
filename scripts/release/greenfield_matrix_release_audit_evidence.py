@@ -18,7 +18,19 @@ AUTOMATED_ADVERSARIAL_REVIEWER_KIND = "automated_adversarial"
 def audit_request_sha256(request: Any) -> str:
     """Hash the exact review request that a reviewer was asked to assess."""
 
-    payload = {
+    return _sha256_payload(_audit_request_payload(request))
+
+
+def source_custody_fingerprint(request: Any) -> str:
+    """Hash every request fact that must remain stable when source proof is rebound."""
+
+    payload = _audit_request_payload(request)
+    payload.pop("prompt_sha256")
+    return _sha256_payload(payload)
+
+
+def _audit_request_payload(request: Any) -> dict[str, Any]:
+    return {
         "case_id": _text(_value(request, "case_id")),
         "prompt_sha256": _text(_value(request, "prompt_sha256")).casefold(),
         "confirmed_intent_sha256": _text(_value(request, "confirmed_intent_sha256")).casefold(),
@@ -38,6 +50,9 @@ def audit_request_sha256(request: Any) -> str:
             ),
         },
     }
+
+
+def _sha256_payload(payload: Mapping[str, Any]) -> str:
     encoded = json.dumps(payload, ensure_ascii=True, separators=(",", ":"), sort_keys=True).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 

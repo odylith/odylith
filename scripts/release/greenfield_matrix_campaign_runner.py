@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 from collections.abc import Sequence
+from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
+import shutil
 import sys
+import tempfile
 import time
 from typing import Any
 from typing import Mapping
@@ -33,9 +38,26 @@ from greenfield_matrix_campaign_shard_runner import _forward_shard_telemetry  # 
 from greenfield_matrix_campaign_shard_runner import _matrix_command  # noqa: E402,F401
 from greenfield_matrix_campaign_shard_runner import _run_command_with_progress  # noqa: E402,F401
 from greenfield_matrix_campaign_progress import CampaignProgressWriter  # noqa: E402
+from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_matrix_failure_response import campaign_failure_clusters  # noqa: E402
 from greenfield_matrix_failure_response import failure_response_plan  # noqa: E402
+from greenfield_matrix_release_artifacts import repo_artifact_path  # noqa: E402
+from greenfield_matrix_release_artifacts import sha256_file  # noqa: E402
+from greenfield_matrix_release_artifacts import write_release_proof_input_snapshot_manifest  # noqa: E402
 from greenfield_matrix_stressors import required_stressors_from_values  # noqa: E402
+
+
+REPO_ROOT = SCRIPT_DIR.parents[1]
+
+
+@dataclass(frozen=True)
+class ReleaseProofInputSnapshot:
+    root: Path
+    case_files: tuple[Path, ...]
+    audit_file: Path
+    manifest_path: Path
+    input_references: tuple[dict[str, str], ...]
 
 
 def run_campaign(
@@ -77,6 +99,24 @@ def run_campaign(
         required_stressors,
         use_default=bool(require_high_variance_stressors),
     )
+    release_proof_inputs = _release_proof_input_manifest(
+        case_files=release_case_files,
+        release_audit_file=release_audit_file,
+    )
+    release_snapshot = _seal_release_proof_inputs(
+        case_files=release_case_files,
+        release_audit_file=release_audit_file,
+        repo_root=REPO_ROOT,
+        temp_parent=temp_parent,
+    )
+    sealed_release_case_files = release_snapshot.case_files if release_snapshot is not None else release_case_files
+    sealed_release_audit_file = release_snapshot.audit_file if release_snapshot is not None else release_audit_file
+    sealed_release_audit_repo_root = release_snapshot.root if release_snapshot is not None else None
+    snapshot_exit_cleanup = (
+        atexit.register(shutil.rmtree, release_snapshot.root, ignore_errors=True)
+        if release_snapshot is not None
+        else None
+    )
     progress = CampaignProgressWriter(
         jsonl_path=progress_jsonl or telemetry_dir / "campaign-progress.v1.jsonl",
         snapshot_path=progress_json or output_dir / "campaign-progress.v1.json",
@@ -117,10 +157,12 @@ def run_campaign(
         ),
         _release_tier(
             "release-proof",
-            release_case_files,
+            sealed_release_case_files,
             require_high_variance_stressors=require_high_variance_stressors,
             required_stressors=normalized_required_stressors,
-            release_audit_file=release_audit_file,
+            release_audit_file=sealed_release_audit_file,
+            release_audit_repo_root=sealed_release_audit_repo_root,
+            release_input_snapshot_root=sealed_release_audit_repo_root,
         ),
     )
     selected_shard_count = sum(len(shards) for shards in tiers)
@@ -167,7 +209,15 @@ def run_campaign(
             stopped_reason = f"{tier_name}:{result.get('stop_reason') or 'failed'}"
             break
     release_readiness = _release_readiness_posture(tier_results)
+    release_proof_input_issues = _release_proof_input_drift_issues(
+        release_snapshot.input_references if release_snapshot is not None else release_proof_inputs
+    )
+    if release_readiness["readiness"] == "proven" and release_proof_input_issues:
+        release_readiness = {"completed": True, "status": "failed", "readiness": "failed"}
+        stopped_reason = "release-proof-input-drift"
     execution_status = "passed" if tier_results and all(row["status"] == "passed" for row in tier_results) else "failed"
+    if release_proof_input_issues:
+        execution_status = "failed"
     status = _campaign_status(execution_status=execution_status, release_readiness=release_readiness)
     if not tier_results:
         execution_status = "skipped"
@@ -191,7 +241,7 @@ def run_campaign(
             regression_case_files=regression_case_files,
             volume_case_files=volume_case_files,
             deep_volume_case_files=deep_volume_case_files,
-            release_case_files=release_case_files,
+            release_case_files=sealed_release_case_files,
         ),
         failed_result_jsons=tuple(Path(path) for path in failure_response.get("failed_result_jsons", ())),
         output_dir=failed_subset_replay_dir or output_dir / "failed-subset-replay",
@@ -214,6 +264,16 @@ def run_campaign(
         "release_readiness_boundary": (
             "release readiness requires the release-proof tier; discovery tiers are failure-discovery evidence only"
         ),
+        "release_proof_inputs": release_proof_inputs,
+        "release_proof_snapshot": {
+            "status": "sealed" if release_snapshot is not None else "not-sealed",
+            "input_count": len(release_snapshot.input_references) if release_snapshot is not None else 0,
+            "input_hashes": [
+                {"kind": reference["kind"], "sha256": reference["sha256"]}
+                for reference in (release_snapshot.input_references if release_snapshot is not None else ())
+            ],
+        },
+        "release_proof_input_issues": release_proof_input_issues,
         "progress_jsonl": str(progress.jsonl_path),
         "progress_json": str(progress.snapshot_path),
         "default_discovery_workers_by_tier": dict(DEFAULT_DISCOVERY_WORKERS_BY_TIER),
@@ -229,6 +289,10 @@ def run_campaign(
             "failure_clusters": payload["failure_clusters"],
         },
     )
+    if release_snapshot is not None:
+        shutil.rmtree(release_snapshot.root)
+        if snapshot_exit_cleanup is not None:
+            atexit.unregister(snapshot_exit_cleanup)
     return payload
 
 
@@ -275,6 +339,8 @@ def _release_tier(
     require_high_variance_stressors: bool,
     required_stressors: Sequence[str],
     release_audit_file: Path | None = None,
+    release_audit_repo_root: Path | None = None,
+    release_input_snapshot_root: Path | None = None,
 ) -> tuple[CampaignShard, ...]:
     return tuple(
         CampaignShard(
@@ -290,6 +356,14 @@ def _release_tier(
             require_high_variance_stressors=bool(require_high_variance_stressors),
             required_stressors=tuple(required_stressors),
             release_audit_file=Path(release_audit_file).expanduser().resolve() if release_audit_file else None,
+            release_audit_repo_root=(
+                Path(release_audit_repo_root).expanduser().resolve() if release_audit_repo_root else None
+            ),
+            release_input_snapshot_root=(
+                Path(release_input_snapshot_root).expanduser().resolve()
+                if release_input_snapshot_root
+                else None
+            ),
         )
         for case_file in case_files
     )
@@ -329,6 +403,187 @@ def _release_readiness_posture(tier_results: Sequence[dict[str, Any]]) -> dict[s
     if all(row.get("status") == "passed" for row in release_tiers):
         return {"completed": True, "status": "passed", "readiness": "proven"}
     return {"completed": True, "status": "failed", "readiness": "failed"}
+
+
+def _release_proof_input_manifest(
+    *,
+    case_files: Sequence[Path],
+    release_audit_file: Path | None,
+    repo_root: Path = REPO_ROOT,
+) -> list[dict[str, str]]:
+    """Bind every release-proof input so a later mutation cannot retain a valid claim."""
+
+    references: list[dict[str, str]] = []
+
+    def append_reference(kind: str, path: Path) -> None:
+        reference = _proof_input_reference(kind, path)
+        if any(existing["path"] == reference["path"] for existing in references):
+            return
+        references.append(reference)
+
+    for path in case_files:
+        append_reference("release-case-file", Path(path))
+    if release_audit_file is not None:
+        audit_path = Path(release_audit_file)
+        append_reference("release-audit-file", audit_path)
+        for reference in _release_audit_transitive_input_manifest(
+            audit_path=audit_path,
+            repo_root=repo_root,
+        ):
+            if not any(existing["path"] == reference["path"] for existing in references):
+                references.append(reference)
+    return references
+
+
+def _release_audit_transitive_input_manifest(
+    *,
+    audit_path: Path,
+    repo_root: Path,
+) -> tuple[dict[str, str], ...]:
+    """Include the trail consumed by a valid audit bundle in the final drift check."""
+
+    root = Path(repo_root).expanduser().resolve()
+    try:
+        bundle = load_release_audit_file(audit_path, repo_root=root)
+    except RuntimeError:
+        # The release tier performs the authoritative structured audit preflight.
+        return ()
+    paths = (
+        ("release-audit-source-case-file", bundle.source_case_file),
+        ("release-audit-request-plan", bundle.audit_request_plan),
+        ("release-audit-source-verifications", bundle.source_verifications),
+        ("release-audit-review-results", bundle.review_results),
+        *(
+            (f"release-audit-source-verification:{audit.case_id}", audit.source_verification_path)
+            for audit in bundle
+        ),
+        *(
+            (f"release-audit-review-evidence:{audit.case_id}", audit.review_evidence_path)
+            for audit in bundle
+        ),
+    )
+    references: list[dict[str, str]] = []
+    for kind, path_value in paths:
+        artifact_path = repo_artifact_path(root, path_value)
+        if artifact_path is not None:
+            references.append(_proof_input_reference(kind, artifact_path))
+    source_case_path = repo_artifact_path(root, bundle.source_case_file)
+    if source_case_path is not None:
+        for case in load_case_file(source_case_path):
+            artifact_path = repo_artifact_path(root, case.provenance.source_artifact_path)
+            if artifact_path is not None:
+                references.append(
+                    _proof_input_reference(
+                        f"release-source-artifact:{case.case_id}",
+                        artifact_path,
+                    )
+                )
+    return tuple(references)
+
+
+def _seal_release_proof_inputs(
+    *,
+    case_files: Sequence[Path],
+    release_audit_file: Path | None,
+    repo_root: Path,
+    temp_parent: Path,
+) -> ReleaseProofInputSnapshot | None:
+    """Copy stable release inputs before execution so proof cannot observe later mutations."""
+
+    if not case_files or release_audit_file is None:
+        return None
+    root = Path(repo_root).expanduser().resolve()
+    audit_path = Path(release_audit_file).expanduser().resolve()
+    try:
+        bundle = load_release_audit_file(audit_path, repo_root=root)
+    except RuntimeError as exc:
+        raise RuntimeError(f"release proof inputs could not be sealed: {exc}") from exc
+    references = tuple(
+        _release_proof_input_manifest(
+            case_files=case_files,
+            release_audit_file=audit_path,
+            repo_root=root,
+        )
+    )
+    source_paths = tuple(Path(reference["path"]).resolve() for reference in references)
+    if not source_paths or audit_path not in source_paths:
+        raise RuntimeError("release proof snapshot could not bind the audit bundle")
+    snapshot_parent = Path(temp_parent).expanduser().resolve()
+    snapshot_parent.mkdir(parents=True, exist_ok=True)
+    snapshot_root = Path(tempfile.mkdtemp(prefix="odylith-release-inputs-", dir=snapshot_parent))
+    copied_paths: dict[Path, Path] = {}
+    try:
+        for source_path in source_paths:
+            try:
+                relative_path = source_path.relative_to(root)
+            except ValueError as exc:
+                raise RuntimeError(f"release proof input is outside the repository: {source_path}") from exc
+            destination = snapshot_root / relative_path
+            _copy_hash_bound_release_input(source_path, destination)
+            copied_paths[source_path] = destination
+        snapshot_audit = copied_paths[audit_path]
+        snapshot_bundle = load_release_audit_file(snapshot_audit, repo_root=snapshot_root)
+        snapshot_cases = tuple(copied_paths[Path(path).expanduser().resolve()] for path in case_files)
+        source_case_path = repo_artifact_path(snapshot_root, snapshot_bundle.source_case_file)
+        if source_case_path is None or source_case_path not in snapshot_cases:
+            raise RuntimeError("release proof case files do not match the sealed audit bundle")
+        snapshot_references = tuple(
+            _proof_input_reference(reference["kind"], copied_paths[Path(reference["path"]).resolve()])
+            for reference in references
+        )
+        return ReleaseProofInputSnapshot(
+            root=snapshot_root,
+            case_files=snapshot_cases,
+            audit_file=snapshot_audit,
+            manifest_path=write_release_proof_input_snapshot_manifest(
+                root=snapshot_root,
+                case_files=snapshot_cases,
+                audit_file=snapshot_audit,
+                input_references=snapshot_references,
+            ),
+            input_references=snapshot_references,
+        )
+    except BaseException:
+        shutil.rmtree(snapshot_root, ignore_errors=True)
+        raise
+
+
+def _copy_hash_bound_release_input(source: Path, destination: Path) -> None:
+    if not source.is_file():
+        raise RuntimeError(f"release proof input is missing: {source}")
+    expected_hash = sha256_file(source)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+    with destination.open("r+b") as handle:
+        handle.flush()
+        os.fsync(handle.fileno())
+    if sha256_file(source) != expected_hash or sha256_file(destination) != expected_hash:
+        raise RuntimeError(f"release proof input changed while being sealed: {source}")
+
+
+def _proof_input_reference(kind: str, path: Path) -> dict[str, str]:
+    resolved = Path(path).expanduser().resolve()
+    return {
+        "kind": kind,
+        "path": str(resolved),
+        "sha256": sha256_file(resolved) if resolved.is_file() else "",
+    }
+
+
+def _release_proof_input_drift_issues(references: Sequence[Mapping[str, Any]]) -> tuple[str, ...]:
+    issues: list[str] = []
+    for reference in references:
+        kind = str(reference.get("kind") or "release-proof-input")
+        path_value = str(reference.get("path") or "").strip()
+        expected_hash = str(reference.get("sha256") or "").strip()
+        path = Path(path_value).expanduser() if path_value else None
+        if path is None or not path.is_file():
+            issues.append(f"{kind} is missing")
+        elif not expected_hash:
+            issues.append(f"{kind} is not hash-bound")
+        elif sha256_file(path) != expected_hash:
+            issues.append(f"{kind} changed after release-proof preflight")
+    return tuple(issues)
 
 
 def _campaign_status(*, execution_status: str, release_readiness: Mapping[str, Any]) -> str:

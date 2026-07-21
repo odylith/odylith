@@ -12,6 +12,8 @@ from urllib.error import HTTPError
 
 import pytest
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -190,6 +192,7 @@ def _prepared_single_audit(
             {
                 "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
                 "claim_class": "audit-requests-only",
+                "source_case_file": "cases.json",
                 "requests": [request],
             }
         ),
@@ -291,12 +294,116 @@ def test_builds_source_provenanced_discovery_cases_from_multiple_families(tmp_pa
     assert all(case["provenance"]["schema_version"] == module.CASE_PROVENANCE_VERSION for case in payload["cases"])
     assert all(case["provenance"]["source_artifact_path"].startswith("captured/sources/") for case in payload["cases"])
     assert all(case["provenance"]["source_span"].startswith("line ") for case in payload["cases"])
+    explicit_intent_cases = [case for case in payload["cases"] if "explicit-user-intent" in case["tags"]]
+    evidence_only_cases = [case for case in payload["cases"] if "source-evidence-only" in case["tags"]]
+    assert len(explicit_intent_cases) == len(evidence_only_cases) == 2
+    for case in payload["cases"]:
+        source_id = case["provenance"]["source_id"].split(":")[-1]
+        family = case["provenance"]["source_family"]
+        assert case["leakage_terms"] == [f"source{source_id}/{family}-evidence"]
+        assert case["leakage_terms"][0] in case["prompt"]
+        if case.get("confirmed_intent_markdown"):
+            confirmation = case["confirmed_intent_markdown"]
+            first_path = confirmation.split("## First Complete Path", maxsplit=1)[1]
+            assert case["leakage_terms"][0] not in first_path
+            assert "Repository: " + case["leakage_terms"][0] in confirmation
+    for case in explicit_intent_cases:
+        assert case.get("expectation", "transaction_committed") == "transaction_committed"
+        assert "User intent: " in case["prompt"]
+        assert case["prompt"].index("User intent:") < case["prompt"].index("Source evidence:")
+        assert case["required_terms"][0] == case["provenance"]["source_family"]
+        assert len(case["required_terms"]) == 4
+        assert all(term in case["prompt"] for term in case["required_terms"][1:])
+    for case in evidence_only_cases:
+        assert case["expectation"] == "clarification_required"
+        assert "User intent: " not in case["prompt"]
+        assert case["required_terms"] == [case["provenance"]["source_family"]]
     assert all(
         case["provenance"]["derived_prompt_sha256"]
         == _sha256_bytes(case["prompt"].encode("utf-8"))
         for case in payload["cases"]
     )
     assert manifest["source_count"] == 2
+
+
+def test_confirmed_source_case_keeps_user_first_path_after_source_evidence() -> None:
+    module = _module()
+    user_intent, terms = module.user_intent_for_case(0)
+
+    confirmation = module.confirmed_intent(
+        "climate",
+        "source/climate-evidence",
+        "Climate evidence tooling.",
+        "Climate evidence tooling.",
+        user_intent,
+    )
+
+    first_path = confirmation.split("## First Complete Path\n", maxsplit=1)[1].split("\n\n## Proof Boundary", maxsplit=1)[0]
+    assert first_path == user_intent
+    assert "source/climate-evidence" not in first_path
+    assert all(term in first_path for term in terms)
+
+
+def test_source_fixture_keeps_explicit_intent_and_source_only_cases_separate() -> None:
+    payload = json.loads(
+        (
+            REPO_ROOT
+            / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
+        ).read_text(encoding="utf-8")
+    )
+    cases = payload["cases"]
+    confirmed_case = next(case for case in cases if case.get("confirmed_intent_markdown"))
+    clarification_case = next(case for case in cases if case.get("expectation") == "clarification_required")
+
+    explicit_path = confirmed_case["prompt"].split("User intent:", maxsplit=1)[1].split("Source repository:", maxsplit=1)[0].strip()
+    first_path = (
+        confirmed_case["confirmed_intent_markdown"]
+        .split("## First Complete Path\n", maxsplit=1)[1]
+        .split("\n\n## Proof Boundary", maxsplit=1)[0]
+    )
+    assert first_path == explicit_path
+    assert all(term in first_path for term in confirmed_case["required_terms"][1:])
+    assert confirmed_case["leakage_terms"][0] not in first_path
+    assert "User intent:" not in clarification_case["prompt"]
+    assert clarification_case.get("confirmed_intent_markdown") is None
+
+
+def test_source_fixture_explicit_user_intent_is_the_recovered_prompt_path() -> None:
+    payload = json.loads(
+        (
+            REPO_ROOT
+            / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    explicit_intent_cases = (case for case in payload["cases"] if "User intent:" in case["prompt"])
+    for case in explicit_intent_cases:
+        source = prompt_intent_source(case["prompt"])
+        expected = case["prompt"].split("User intent:", maxsplit=1)[1].split("Source repository:", maxsplit=1)[0].strip(" .")
+
+        assert source.first_path == expected, case["case_id"]
+        assert source.actor, case["case_id"]
+        assert "User intent:" not in source.actor
+        assert "User intent:" not in source.first_path
+
+
+def test_shipped_release_audit_fixture_is_hash_bound_and_evaluable() -> None:
+    _module()
+    corpus_root = REPO_ROOT / "tests/fixtures/greenfield-release-corpus"
+    cases = sys.modules["greenfield_matrix_case_file"].load_case_file(
+        corpus_root / "greenfield-release-source-provenanced.v3.json"
+    )
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+    audits = provenance.load_release_audit_file(
+        corpus_root / "audit-evidence-v15/greenfield-release-audit.v9.json",
+        repo_root=REPO_ROOT,
+    )
+
+    evaluation = provenance.evaluate_release_corpus(cases, audits, repo_root=REPO_ROOT)
+
+    assert evaluation.passed, evaluation.issues
+    assert any(case.confirmed_intent_markdown for case in cases)
+    assert any(case.expectation == "clarification_required" for case in cases)
 
 
 def test_build_keeps_singletons_unpaired_and_hashes_loaded_prompt_text(tmp_path: Path) -> None:
@@ -380,9 +487,19 @@ def test_prompt_styles_use_correct_indefinite_articles() -> None:
         description="Open data workflow evidence.",
         source_excerpt="Open data workflow evidence.",
     )
+    explicit_intent = module.prompt_for_style(
+        input_style="direct_request",
+        family="accessibility",
+        full_name="source/accessibility",
+        description="Accessible workflow evidence.",
+        source_excerpt="Accessible workflow evidence.",
+        user_intent="A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt.",
+    )
 
     assert prompt.startswith("Create an accessibility product")
     assert brief.startswith("Project brief for an open-data team")
+    assert ". User intent: A service coordinator opens an intake request" in explicit_intent
+    assert explicit_intent.index("User intent:") < explicit_intent.index("Source evidence:")
 
 
 def test_default_source_shape_meets_every_non_audit_release_policy(tmp_path: Path) -> None:
@@ -441,6 +558,10 @@ def test_default_source_shape_meets_every_non_audit_release_policy(tmp_path: Pat
     assert audit_plan["claim_class"] == "audit-requests-only"
     assert audit_plan["requested_audit_count"] == 40
     assert len({request["source_artifact_sha256"] for request in audit_plan["requests"]}) == 40
+    cases_by_id = {case.case_id: case for case in loader(case_file)}
+    audited_cases = [cases_by_id[request["case_id"]] for request in audit_plan["requests"]]
+    assert any(case.confirmed_intent_markdown for case in audited_cases)
+    assert any(case.expectation == "clarification_required" for case in audited_cases)
     assert all(
         request["source_verification_uri"].startswith("https://api.github.com/repositories/")
         for request in audit_plan["requests"]
@@ -615,6 +736,192 @@ def test_capture_audit_source_verifications_retains_only_bound_remote_records(tm
     assert "review_status" not in record
 
 
+def test_rebind_audit_source_verifications_reuses_only_matching_verified_bytes(tmp_path: Path) -> None:
+    _module()
+    verifier = sys.modules["greenfield_release_audit_verification"]
+    source_id = "github-repository:701"
+    source_uri = "https://github.com/source701/climate-evidence"
+    old_request = _audit_request(
+        case_id="release-climate-001-description",
+        source_id=source_id,
+        source_uri=source_uri,
+        prompt_sha256="0" * 64,
+    )
+    old_plan_path = tmp_path / "old-audit-plan.json"
+    old_plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [old_request],
+            }
+        ),
+        encoding="utf-8",
+    )
+    old_root = tmp_path / "old-source-verifications"
+    response = {"id": 701, "html_url": source_uri}
+    verifier.capture_audit_source_verifications(
+        audit_request_plan=old_plan_path,
+        output_root=old_root,
+        repo_root=tmp_path,
+        captured_at=CAPTURED_AT,
+        fetch_json=lambda _url: (response, _json_bytes(response)),
+    )
+    new_request = _audit_request(
+        case_id="release-climate-001-description",
+        source_id=source_id,
+        source_uri=source_uri,
+        prompt_sha256="3" * 64,
+    )
+    new_plan_path = tmp_path / "new-audit-plan.json"
+    new_plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [new_request],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output_root = tmp_path / "rebound-source-verifications"
+
+    manifest = verifier.rebind_audit_source_verifications(
+        audit_request_plan=new_plan_path,
+        source_verification_root=old_root,
+        expected_source_verification_sha256=_sha256_bytes(
+            (old_root / "source-verifications.v2.json").read_bytes()
+        ),
+        output_root=output_root,
+        repo_root=tmp_path,
+    )
+
+    record = manifest["records"][0]
+    assert record["audit_request_sha256"] == new_request["audit_request_sha256"]
+    assert record["source_custody_sha256"]
+    assert record["source_verification_sha256"] == _sha256_bytes(_json_bytes(response))
+    assert (output_root / record["source_verification_path"]).read_bytes() == _json_bytes(response)
+    assert manifest["audit_request_plan"] == "new-audit-plan.json"
+    assert manifest["rebound_from"] == "old-source-verifications/source-verifications.v2.json"
+
+
+def test_rebind_audit_source_verifications_rejects_tampered_or_divergent_inputs(tmp_path: Path) -> None:
+    _module()
+    verifier = sys.modules["greenfield_release_audit_verification"]
+    source_id = "github-repository:701"
+    source_uri = "https://github.com/source701/climate-evidence"
+    request = _audit_request(
+        case_id="release-climate-001-description",
+        source_id=source_id,
+        source_uri=source_uri,
+    )
+    old_plan_path = tmp_path / "old-audit-plan.json"
+    old_plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [request],
+            }
+        ),
+        encoding="utf-8",
+    )
+    old_root = tmp_path / "old-source-verifications"
+    response = {"id": 701, "html_url": source_uri}
+    verifier.capture_audit_source_verifications(
+        audit_request_plan=old_plan_path,
+        output_root=old_root,
+        repo_root=tmp_path,
+        captured_at=CAPTURED_AT,
+        fetch_json=lambda _url: (response, _json_bytes(response)),
+    )
+    divergent_request = _audit_request(
+        case_id="release-climate-001-description",
+        source_id=source_id,
+        source_uri="https://github.com/source701/other-evidence",
+    )
+    divergent_plan_path = tmp_path / "divergent-audit-plan.json"
+    divergent_plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [divergent_request],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="source custody fingerprint diverges"):
+        verifier.rebind_audit_source_verifications(
+            audit_request_plan=divergent_plan_path,
+            source_verification_root=old_root,
+            expected_source_verification_sha256=_sha256_bytes(
+                (old_root / "source-verifications.v2.json").read_bytes()
+            ),
+            output_root=tmp_path / "divergent-output",
+            repo_root=tmp_path,
+        )
+
+    custody_divergent_request = _audit_request(
+        case_id="release-climate-001-description",
+        source_id=source_id,
+        source_uri=source_uri,
+        source_artifact_sha256="4" * 64,
+    )
+    custody_divergent_plan_path = tmp_path / "custody-divergent-audit-plan.json"
+    custody_divergent_plan_path.write_text(
+        _json_text(
+            {
+                "version": verifier.AUDIT_REQUEST_PLAN_VERSION,
+                "claim_class": "audit-requests-only",
+                "requests": [custody_divergent_request],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="source custody fingerprint diverges"):
+        verifier.rebind_audit_source_verifications(
+            audit_request_plan=custody_divergent_plan_path,
+            source_verification_root=old_root,
+            expected_source_verification_sha256=_sha256_bytes(
+                (old_root / "source-verifications.v2.json").read_bytes()
+            ),
+            output_root=tmp_path / "custody-divergent-output",
+            repo_root=tmp_path,
+        )
+
+    with pytest.raises(RuntimeError, match="prior manifest SHA-256 does not match"):
+        verifier.rebind_audit_source_verifications(
+            audit_request_plan=old_plan_path,
+            source_verification_root=old_root,
+            expected_source_verification_sha256="0" * 64,
+            output_root=tmp_path / "wrong-manifest-output",
+            repo_root=tmp_path,
+        )
+
+    manifest = json.loads((old_root / "source-verifications.v2.json").read_text(encoding="utf-8"))
+    response_path = old_root / manifest["records"][0]["source_verification_path"]
+    response_path.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="response hash does not match"):
+        verifier.rebind_audit_source_verifications(
+            audit_request_plan=old_plan_path,
+            source_verification_root=old_root,
+            expected_source_verification_sha256=_sha256_bytes(
+                (old_root / "source-verifications.v2.json").read_bytes()
+            ),
+            output_root=tmp_path / "tampered-output",
+            repo_root=tmp_path,
+        )
+
+    _assert_no_staging_or_lock(tmp_path / "divergent-output")
+    _assert_no_staging_or_lock(tmp_path / "custody-divergent-output")
+    _assert_no_staging_or_lock(tmp_path / "wrong-manifest-output")
+    _assert_no_staging_or_lock(tmp_path / "tampered-output")
+
+
 def test_capture_audit_source_verifications_rejects_remote_identity_mismatch(tmp_path: Path) -> None:
     _module()
     verifier = sys.modules["greenfield_release_audit_verification"]
@@ -755,6 +1062,207 @@ def test_audit_loader_rejects_a_tampered_trail_reference(tmp_path: Path, trail_f
     provenance = sys.modules["greenfield_matrix_corpus_provenance"]
 
     with pytest.raises(RuntimeError, match=f"{trail_field}_sha256 does not match {trail_field}"):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+def test_audit_loader_rejects_a_review_semantic_claim_that_diverges_from_hash_bound_evidence(
+    tmp_path: Path,
+) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    result_payload = json.loads(results_path.read_text(encoding="utf-8"))
+    result_payload["reviews"][0]["rationale"] = "A different review claim."
+    results_path.write_text(_json_text(result_payload), encoding="utf-8")
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    bundle_payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle_payload["review_results_sha256"] = _sha256_bytes(results_path.read_bytes())
+    bundle_path.write_text(_json_text(bundle_payload), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match="review results and evidence diverge on rationale"):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+def test_audit_loader_rejects_a_request_row_that_no_longer_matches_its_own_hash(tmp_path: Path) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    request_payload = json.loads(plan_path.read_text(encoding="utf-8"))
+    request_payload["requests"][0]["stressors"] = ["mutated-request-only-stressor"]
+    plan_path.write_text(_json_text(request_payload), encoding="utf-8")
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    bundle_payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle_payload["audit_request_plan_sha256"] = _sha256_bytes(plan_path.read_bytes())
+    bundle_path.write_text(_json_text(bundle_payload), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match="request plan does not self-bind audit_request_sha256"):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("trail_field", "rows_field", "expected_message"),
+    (
+        (
+            "source_verifications",
+            "records",
+            "source verification manifest case IDs must match audit records",
+        ),
+        ("review_results", "reviews", "review results case IDs must match audit records"),
+    ),
+)
+def test_audit_loader_rejects_hash_bound_trails_that_do_not_describe_the_audited_cases(
+    tmp_path: Path,
+    trail_field: str,
+    rows_field: str,
+    expected_message: str,
+) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    trail_path = tmp_path / bundle[trail_field]
+    trail = json.loads(trail_path.read_text(encoding="utf-8"))
+    trail[rows_field][0]["case_id"] = "unbound-case"
+    trail_path.write_text(_json_text(trail), encoding="utf-8")
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    bundle_payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle_payload[f"{trail_field}_sha256"] = _sha256_bytes(trail_path.read_bytes())
+    bundle_path.write_text(_json_text(bundle_payload), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match=expected_message):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+def test_audit_loader_rejects_boolean_verification_record_count(tmp_path: Path) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    verification_manifest = tmp_path / bundle["source_verifications"]
+    verification_payload = json.loads(verification_manifest.read_text(encoding="utf-8"))
+    verification_payload["record_count"] = True
+    verification_manifest.write_text(_json_text(verification_payload), encoding="utf-8")
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    bundle_payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle_payload["source_verifications_sha256"] = _sha256_bytes(verification_manifest.read_bytes())
+    bundle_path.write_text(_json_text(bundle_payload), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match="record_count does not match records"):
+        provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
+
+
+def test_audit_loader_rejects_a_source_verification_custody_fingerprint_mismatch(tmp_path: Path) -> None:
+    module = _module()
+    case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
+    results_path = tmp_path / "review-results.json"
+    results_path.write_text(
+        _json_text(
+            {
+                "version": writer.AUDIT_REVIEW_RESULTS_VERSION,
+                "claim_class": writer.AUDIT_REVIEW_RESULTS_CLAIM_CLASS,
+                "reviews": [_approved_review(case.case_id, request["audit_request_sha256"])],
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_root = tmp_path / "audit-bundle"
+    bundle = writer.write_release_audit_bundle(
+        source_case_file=case_file,
+        audit_request_plan=plan_path,
+        source_verification_root=verification_root,
+        review_results_file=results_path,
+        output_root=audit_root,
+        repo_root=tmp_path,
+    )
+    verification_manifest = tmp_path / bundle["source_verifications"]
+    verification_payload = json.loads(verification_manifest.read_text(encoding="utf-8"))
+    verification_payload["records"][0]["source_custody_sha256"] = "0" * 64
+    verification_manifest.write_text(_json_text(verification_payload), encoding="utf-8")
+    bundle_path = audit_root / writer.AUDIT_BUNDLE_FILENAME
+    bundle_payload = json.loads(bundle_path.read_text(encoding="utf-8"))
+    bundle_payload["source_verifications_sha256"] = _sha256_bytes(verification_manifest.read_bytes())
+    bundle_path.write_text(_json_text(bundle_payload), encoding="utf-8")
+    provenance = sys.modules["greenfield_matrix_corpus_provenance"]
+
+    with pytest.raises(RuntimeError, match="diverges on source_custody_sha256"):
         provenance.load_release_audit_file(bundle_path, repo_root=tmp_path)
 
 
@@ -922,7 +1430,9 @@ def test_audit_writer_rejects_a_review_replayed_after_the_case_prompt_changes(tm
     case_file, case, request, plan_path, verification_root, writer = _prepared_single_audit(module, tmp_path)
     case_payload = json.loads(case_file.read_text(encoding="utf-8"))
     case_payload["cases"][0]["prompt"] = (
-        f"Create a materially different product for {case.required_terms[0]} after review approval."
+        "Create a materially different product for "
+        f"{case.required_terms[0]} from source {case.leakage_terms[0]} after review approval. "
+        + " ".join(case.required_terms[1:])
     )
     case_payload["cases"][0]["provenance"]["derived_prompt_sha256"] = _sha256_bytes(
         case_payload["cases"][0]["prompt"].encode("utf-8")

@@ -58,6 +58,11 @@ _OPERATING_MODE_ALTERNATIVE_RE = re.compile(
     re.IGNORECASE,
 )
 _PURPOSE_ONLY_REQUEST_RE = re.compile(r"\bto\s+use\s+for\b", re.IGNORECASE)
+_EVIDENCE_REFERENCE_SUFFIX_RE = re.compile(
+    r"\bfrom\s+(?:this|the|provided|attached)?\s*"
+    r"(?:research|source|repository)\s+evidence\b.*$",
+    re.IGNORECASE,
+)
 
 
 def title_supports_conservative_first_path(*, title: str, evidence: str) -> bool:
@@ -70,7 +75,10 @@ def title_supports_conservative_first_path(*, title: str, evidence: str) -> bool
         or _PURPOSE_ONLY_REQUEST_RE.search(evidence_text)
     ):
         return False
-    terms = [term.casefold() for term in label_terms(title)]
+    # Evidence wrappers name where the request came from, not what the product is.
+    # They cannot turn a thin product noun phrase into a sufficiently specific path.
+    product_title = _EVIDENCE_REFERENCE_SUFFIX_RE.sub("", str(title or "")).strip(" .")
+    terms = [term.casefold() for term in label_terms(product_title)]
     if len(terms) < 4 or not set(terms) & PRODUCT_CONTAINER_TERMS:
         return False
     domain_terms = set(terms) - PRODUCT_CONTAINER_TERMS - GENERIC_SCOPE_TERMS

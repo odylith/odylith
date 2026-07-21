@@ -57,6 +57,26 @@ def case_generated_leakage_terms(
     return tuple(dict.fromkeys((*declared_present, *supplemental_present)))
 
 
+def source_evidence_custody_issues(*, case: GreenfieldMatrixCase, generated_text: str) -> tuple[str, ...]:
+    """Reject raw source sentinels that cross into rendered product artifacts."""
+
+    provenance = getattr(case, "provenance", None)
+    if str(getattr(provenance, "corpus_tier", "") or "").strip() != "source_provenanced":
+        return ()
+    terms = tuple(
+        dict.fromkeys(
+            str(term).strip()
+            for term in getattr(case, "leakage_terms", ())
+            if str(term).strip()
+        )
+    )
+    return tuple(
+        f"source evidence identifier leaked into product artifacts: `{term}`"
+        for term in terms
+        if term_present(generated_text, term)
+    )
+
+
 def platform_baseline_required_terms(
     *,
     repo_root: Path,

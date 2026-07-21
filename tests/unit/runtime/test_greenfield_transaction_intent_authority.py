@@ -462,6 +462,21 @@ def test_structured_edit_supplies_a_missing_first_path_without_a_second_question
     assert "progress recap" in intent["first_path"].casefold()
 
 
+def test_structured_edit_resolves_a_one_step_prompt_before_staging(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt="Create a radiology review product where a reviewer verifies the visible case status.",
+        repo_root=tmp_path,
+        fallback_title="Radiology Review Product",
+        edit_evidence=(
+            "## First complete path\n"
+            "A reviewer opens one case, records a disposition, and sees the visible case status with its evidence."
+        ),
+    )
+
+    assert "records a disposition" in intent["first_path"].casefold()
+    assert "visible case status" in intent["first_path"].casefold()
+
+
 def test_edit_rebuilds_an_unusable_prompt_path_from_the_accepted_first_path(tmp_path: Path) -> None:
     intent = materialize_prompt_intent_hypothesis(
         prompt="Create a tool for extension publishers to use for release notes.",

@@ -1,8 +1,6 @@
 # Odylith Projection Snapshot
-Last updated: 2026-04-07
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-07
 
 ## Purpose
 Odylith Projection Snapshot is the compiler-owned JSON fallback read model that

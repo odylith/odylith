@@ -95,7 +95,7 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
     capture(lambda: _require_mapping(proposal, "intent"))
     capture(lambda: _require_mapping(proposal, "observed_source"))
     capture(lambda: _require_nonempty_sequence(proposal, "assumptions"))
-    capture(lambda: _require_nonempty_sequence(proposal, "open_questions"))
+    capture(lambda: _require_sequence(proposal, "open_questions"))
     risks = capture(lambda: _require_nonempty_sequence(proposal, "risks"))
     if isinstance(risks, list):
         issues.extend(_risk_quality_issues(risks))
@@ -249,6 +249,13 @@ def _require_nonempty_sequence(proposal: Mapping[str, Any], key: str) -> list[An
     value = proposal.get(key)
     if not isinstance(value, list) or not value:
         raise ValueError(f"proposal `{key}` must be a non-empty list")
+    return value
+
+
+def _require_sequence(proposal: Mapping[str, Any], key: str) -> list[Any]:
+    value = proposal.get(key)
+    if not isinstance(value, list):
+        raise ValueError(f"proposal `{key}` must be a list")
     return value
 
 

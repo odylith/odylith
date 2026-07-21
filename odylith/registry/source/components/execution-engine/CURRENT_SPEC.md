@@ -26,9 +26,7 @@
   host model calls", must admit allowed authored governance work without
   CLI-writer evidence, and must still defer/block the corresponding unsafe
   moves when they are actually requested.
-Last updated: 2026-07-18
-
-Last updated (UTC): 2026-04-18
+Last updated: 2026-07-20
 
 ## Registry Identity
 

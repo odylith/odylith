@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+
+import pytest
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -9,8 +12,18 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import _first_path_is_clear_enough
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import product_intent_source_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+    GreenfieldClarificationRequired,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+    materialize_prompt_intent_hypothesis,
+)
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_patch_apply import (
+    complete_greenfield_semantic_apply_payload,
+)
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -50,6 +63,501 @@ def test_prompt_source_recovers_sentence_style_title_and_release_path() -> None:
     assert source.first_path.startswith("mission analysts capture predicted close approaches")
     assert "The first release should let" not in source.first_path
     assert "greenfield proposal" not in source.first_path
+
+
+def test_prompt_source_does_not_promote_source_metadata_to_a_product_first_path() -> None:
+    source = prompt_intent_source(
+        "Source evidence: Radix Primitives is an open-source UI component library for building accessible interfaces."
+    )
+
+    assert source.first_path == ""
+
+
+def test_prompt_source_keeps_explicit_path_and_excludes_following_source_metadata() -> None:
+    source = prompt_intent_source(
+        "Create an accessibility product. An accessibility operator reviews one evidence item, records a decision, "
+        "and verifies the visible outcome. Source repository: tailwindlabs/headlessui. "
+        "Source evidence: Accessible UI components for Tailwind CSS."
+    )
+
+    assert source.first_path.startswith("An accessibility operator reviews one evidence item")
+    assert "tailwindlabs/headlessui" not in source.first_path
+
+
+def test_prompt_source_stops_at_inline_source_metadata_label() -> None:
+    source = prompt_intent_source(
+        "Project brief for an accessibility team. An accessibility operator reviews one evidence item, records a "
+        "decision, and verifies the visible outcome. Source repository: leongersen/noUiSlider. Source evidence: "
+        "noUiSlider is a lightweight, ARIA-accessible JavaScript range slider with multi-touch and keyboard support. "
+        "It also fits wonderfully in responsive designs and has no dependencies."
+    )
+
+    assert source.first_path.startswith("An accessibility operator reviews one evidence item")
+    assert "leongersen/noUiSlider" not in source.first_path
+    assert "responsive designs" not in source.first_path
+
+
+@pytest.mark.parametrize(
+    ("prompt", "title", "actor", "first_path", "forbidden_evidence"),
+    (
+        (
+            "Create an accessibility product. User intent: A service coordinator opens an intake request, assigns a "
+            "resolution owner, and verifies a decision receipt. Source repository: tailwindlabs/headlessui. "
+            "Source evidence: Completely unstyled, fully accessible UI components, designed to integrate beautifully "
+            "with Tailwind CSS.",
+            "accessibility product",
+            "service coordinator",
+            "A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt",
+            "Completely unstyled",
+        ),
+        (
+            "Project brief for an accessibility team. User intent: A program lead registers a readiness dossier, "
+            "selects a review disposition, and verifies a publication status. Source repository: radix-ui/primitives. "
+            "Source evidence: Radix Primitives is an open-source UI component library for building high-quality, "
+            "accessible design systems and web apps. Maintained by @workos.",
+            "Project brief",
+            "program lead",
+            "A program lead registers a readiness dossier, selects a review disposition, and verifies a publication status",
+            "Maintained by @workos",
+        ),
+        (
+            "Create a reviewed accessibility product. User intent: A case manager creates an eligibility record, "
+            "routes a service decision, and verifies a resolution notice. Source repository: unovue/reka-ui. "
+            "Source evidence: An open-source UI component library for building high-quality, accessible design "
+            "systems and web apps for Vue. Previously Radix Vue.",
+            "reviewed accessibility product",
+            "case manager",
+            "A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice",
+            "Previously Radix Vue",
+        ),
+    ),
+)
+def test_prompt_source_recovers_explicit_user_intent_before_source_evidence(
+    prompt: str,
+    title: str,
+    actor: str,
+    first_path: str,
+    forbidden_evidence: str,
+) -> None:
+    source = prompt_intent_source(prompt)
+
+    assert source.title == title
+    assert source.actor == actor
+    assert source.first_path == first_path
+    assert "User intent:" not in source.actor
+    assert "User intent:" not in source.first_path
+    assert forbidden_evidence not in source.first_path
+
+
+def test_preconfirm_semantic_completion_rerenders_the_first_path_tail(tmp_path: Path) -> None:
+    prompt = (
+        "Create a reviewed accessibility product. User intent: A case manager creates an eligibility record, "
+        "routes a service decision, and verifies a resolution notice. Source repository: unovue/reka-ui. "
+        "Source evidence: An open-source UI component library for building high-quality, accessible design systems "
+        "and web apps for Vue. Previously Radix Vue"
+    )
+    edited_confirmation = """# Accessibility Source Product
+
+## Product Story
+This product helps accessibility teams carry out the explicitly supplied first path.
+
+## Source Evidence
+Repository: unovue/reka-ui
+An open-source UI component library for building high-quality, accessible design systems and web apps for Vue. Previously Radix Vue
+
+## First Complete Path
+A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice.
+
+## Proof Boundary
+The source evidence, decision, and outcome remain traceable.
+"""
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=greenfield_proposals.intent_title(prompt),
+        edit_evidence=edited_confirmation,
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        confirmed_intent=intent,
+    )
+    sequence = next(row for row in proposal["diagrams"] if row["title"] == "First Path Sequence")
+    first_path = proposal["semantic_model"]["first_path_contract"]
+
+    assert first_path["raw_path"] == (
+        "A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice."
+    )
+    assert first_path["visible_result"] == "A case manager verifies a resolution notice"
+    assert first_path["events"][-1]["visible_result"] is True
+    assert "accepted result for review" not in sequence["mermaid_source"].casefold()
+    assert greenfield_quality_issues(proposal) == []
+
+    for row, title in zip(
+        proposal["backlog"],
+        ("Current Program", "Current Workflow", "Current Boundary", "Current Proof"),
+        strict=False,
+    ):
+        row["title"] = title
+    refreshed = complete_greenfield_semantic_apply_payload(
+        proposal,
+        release_selector="",
+        proposal_completed=True,
+    )
+    refreshed_sequence = next(row for row in refreshed["diagrams"] if row["title"] == "First Path Sequence")
+
+    assert refreshed_sequence["related_workstream_titles"] == ["Current Workflow", "Current Boundary"]
+
+
+def test_confirmation_recovery_keeps_sectioned_source_evidence_out_of_product_truth() -> None:
+    prompt = """# Healthcare Source Product
+
+## Product Story
+This product helps healthcare teams carry out the explicitly supplied first path.
+
+## Source Evidence
+Medical Q&A with Deep Language Models evaluates model answers against medical benchmarks and reference methods.
+
+## First Complete Path
+A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice.
+
+## Proof Boundary
+The decision and resolution notice remain traceable for review.
+"""
+
+    source = product_intent_source_text(prompt)
+    intent = confirmation_from_operator_intent(prompt, prefer_product_title=True, as_mapping=True)
+    product_truth = {key: value for key, value in intent.items() if key != "prompt"}
+    rendered = json.dumps(product_truth, sort_keys=True).casefold()
+
+    assert "medical q&a" not in source.casefold()
+    assert "method or model version" not in rendered
+    assert "medical q&a" not in rendered
+    assert "case manager creates an eligibility record" in str(intent["first_path"]).casefold()
+    assert "routes a service decision" in str(intent["first_path"]).casefold()
+    assert "verifies a resolution notice" in str(intent["first_path"]).casefold()
+
+
+def test_prompt_source_keeps_sectioned_original_user_intent_out_of_source_evidence() -> None:
+    prompt = """Host guidance
+
+## Original User Intent
+# Healthcare Source Product
+
+## Source Evidence
+Medical Q&A with Deep Language Models evaluates model answers against medical benchmarks and reference methods.
+
+## First Complete Path
+A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice.
+
+## Next step
+Render the confirmation.
+"""
+
+    source_text = product_intent_source_text(prompt)
+    source = prompt_intent_source(prompt)
+
+    assert "medical q&a" not in source_text.casefold()
+    assert source.first_path.casefold().startswith("a case manager creates an eligibility record")
+    assert "routes a service decision" in source.first_path.casefold()
+    assert "verifies a resolution notice" in source.first_path.casefold()
+
+
+def test_preconfirm_materialization_keeps_sectioned_source_evidence_out_of_product_truth(tmp_path: Path) -> None:
+    prompt = (
+        "Create a reviewed healthcare product. User intent: A case manager creates an eligibility record, "
+        "routes a service decision, and verifies a resolution notice. Source evidence: Medical Q&A with Deep "
+        "Language Models evaluates model answers against medical benchmarks and reference methods."
+    )
+    edited_confirmation = """# Healthcare Source Product
+
+## Product Story
+This product helps healthcare teams carry out the explicitly supplied first path.
+
+## Source Evidence
+Medical Q&A with Deep Language Models evaluates model answers against medical benchmarks and reference methods.
+
+## First Complete Path
+A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice.
+
+## Proof Boundary
+The decision and resolution notice remain traceable for review.
+"""
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=greenfield_proposals.intent_title(prompt),
+        edit_evidence=edited_confirmation,
+    )
+    product_truth = {key: value for key, value in intent.items() if key != "prompt"}
+    rendered = json.dumps(product_truth, sort_keys=True).casefold()
+
+    assert "medical q&a" not in rendered
+    assert "method or model version" not in rendered
+    assert "case manager creates an eligibility record" in str(intent["first_path"]).casefold()
+    assert "routes a service decision" in str(intent["first_path"]).casefold()
+    assert "verifies a resolution notice" in str(intent["first_path"]).casefold()
+
+
+def test_prompt_materialization_preserves_explicit_operator_context_before_source_evidence(tmp_path: Path) -> None:
+    prompt = (
+        "Project brief for an accessibility team. User intent: A program lead registers a readiness dossier, "
+        "selects a review disposition, and verifies a publication status. Source repository: radix-ui/primitives. "
+        "Source evidence: Radix Primitives is an open-source UI component library for building high-quality, "
+        "accessible design systems and web apps."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=greenfield_proposals.intent_title(prompt),
+    )
+
+    assert source.operator_context == "an accessibility team"
+    assert "serves an accessibility team" in intent["product_story"]
+    assert "Radix Primitives" not in intent["product_story"]
+
+
+def test_research_evidence_wrapper_does_not_erase_a_material_first_path_gap(tmp_path: Path) -> None:
+    prompt = (
+        "Create an accessibility product from this research evidence. Source repository: radix-ui/primitives. "
+        "Source evidence: accessibility. Repository description: Radix Primitives is an open-source UI component "
+        "library for building high-quality, accessible design systems and web apps."
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired):
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title=greenfield_proposals.intent_title(prompt),
+        )
+
+    assert not (tmp_path / ".odylith" / "runtime" / "greenfield").exists()
+
+
+@pytest.mark.parametrize(
+    "source_evidence",
+    (
+        "Documentation states User intent: A service coordinator opens an intake request, assigns a resolution owner, "
+        "and verifies a decision receipt.",
+        "Documentation states an example. User intent: A service coordinator opens an intake request, assigns a "
+        "resolution owner, and verifies a decision receipt.",
+        "Documentation states an example. -- Product intent: A service coordinator opens an intake request, assigns a "
+        "resolution owner, and verifies a decision receipt.",
+    ),
+)
+def test_prompt_source_does_not_promote_an_intent_label_quoted_inside_source_evidence(source_evidence: str) -> None:
+    source = prompt_intent_source(
+        f"Source evidence: {source_evidence}"
+    )
+
+    assert source.title == ""
+    assert source.actor == ""
+    assert source.first_path == ""
+
+
+def test_prompt_source_does_not_promote_a_delimiter_prefixed_intent_label_after_source_metadata() -> None:
+    source = prompt_intent_source(
+        "Create an evidence review workspace. Source evidence: a quoted example -- User intent: A service coordinator "
+        "opens an intake request, assigns a resolution owner, and verifies a decision receipt."
+    )
+
+    assert source.title == "evidence review workspace"
+    assert source.actor == ""
+    assert source.first_path == "Create an evidence review workspace"
+    assert "service coordinator" not in source.first_path
+
+
+@pytest.mark.parametrize(
+    ("label", "delimiter"),
+    (
+        ("User intent", " "),
+        ("Product intent", " "),
+    ),
+)
+def test_prompt_source_recovers_explicit_intent_before_source_metadata(label: str, delimiter: str) -> None:
+    source = prompt_intent_source(
+        f"Create an accessibility product.{delimiter}{label}: A program lead registers a readiness dossier, "
+        "selects a review disposition, and verifies a publication status. "
+        "Source evidence: Accessibility evidence only."
+    )
+
+    assert source.actor == "program lead"
+    assert source.first_path == (
+        "A program lead registers a readiness dossier, selects a review disposition, and verifies a publication status"
+    )
+
+
+def test_prompt_source_normalizes_a_standalone_explicit_intent_label() -> None:
+    source = prompt_intent_source(
+        "User intent: A waiver reviewer opens a waiver record, records a decision, and verifies a visible status."
+    )
+
+    assert source.actor == "waiver reviewer"
+    assert source.first_path == "A waiver reviewer opens a waiver record, records a decision, and verifies a visible status"
+
+
+@pytest.mark.parametrize(
+    ("prompt", "actor"),
+    (
+        ("User intent: A waiver reviewer opens a waiver record, records a decision, and verifies a visible status.", "waiver reviewer"),
+        ("User intent: A record owner opens a record, records a decision, and verifies a visible status.", "record owner"),
+    ),
+)
+def test_prompt_source_keeps_role_qualified_nonhuman_nouns_as_human_actors(prompt: str, actor: str) -> None:
+    assert prompt_intent_source(prompt).actor == actor
+
+
+def test_source_evidence_tail_never_becomes_product_truth() -> None:
+    for boundary in ("-", ";", ":", ","):
+        for label_separator in (":", "-"):
+            prompt = (
+                "Create an evidence review workspace. An operator reviews one evidence item, records a decision, "
+                f"and verifies the visible outcome {boundary} Source evidence {label_separator} accessible component "
+                "library with keyboard support and ARIA patterns."
+            )
+
+            source = prompt_intent_source(prompt)
+            intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+            assert source.first_path.startswith("An operator reviews one evidence item")
+            assert "accessible component library" not in source.first_path
+            assert "accessible component library" not in json.dumps(intent, sort_keys=True).casefold()
+
+
+def test_repository_description_workflow_stays_evidence_not_product_truth() -> None:
+    prompt = (
+        "Create an evidence review workspace. Repository description: An operator reviews one evidence item, "
+        "records a decision, and verifies the visible outcome."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert source.title == "evidence review workspace"
+    assert "one evidence item" not in source.first_path
+    rendered = json.dumps(intent, sort_keys=True)
+    assert "one evidence item" not in rendered
+    assert "Repository description" not in rendered
+
+
+@pytest.mark.parametrize(
+    "label",
+    ("Source evidence", "Source repository", "Repository description"),
+)
+def test_source_metadata_only_requires_a_first_path_question(label: str, tmp_path) -> None:
+    prompt = (
+        f"{label}: An operator reviews one evidence item, records a decision, and verifies the visible outcome."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == ""
+    assert source.first_path == ""
+    with pytest.raises(GreenfieldClarificationRequired, match="first complete task"):
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="",
+        )
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    (
+        "Create an evidence replay workspace where an operator can replay one recorded case.",
+        "Create a case review workspace where an operator can inspect one case.",
+        "Create a radiology review workspace where a reviewer verifies the visible case status.",
+    ),
+)
+def test_one_step_actor_path_requires_a_first_path_question_before_staging(prompt: str, tmp_path) -> None:
+    with pytest.raises(GreenfieldClarificationRequired, match="first complete task"):
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="",
+        )
+
+
+def test_recovered_workable_prompt_does_not_invent_open_questions() -> None:
+    prompt = (
+        "Create an accessibility product. An accessibility operator reviews one evidence item, records a decision, "
+        "and verifies the visible outcome."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_mapping_with_authority(intent),
+    )
+
+    assert intent["ambiguities"] == []
+    assert proposal["open_questions"] == []
+
+
+def test_unstructured_prompt_parsing_keeps_source_metadata_out_of_accepted_fields() -> None:
+    prompt = (
+        "Create an accessibility product. An accessibility operator reviews one evidence item, records a decision, "
+        "and verifies the visible outcome. Source repository: tailwindlabs/headlessui. "
+        "Source evidence: Accessible UI components for Tailwind CSS."
+    )
+
+    intent = parse_confirmed_intent_text(prompt, prompt=prompt)
+
+    assert all(
+        "tailwindlabs/headlessui" not in str(intent[field])
+        for field in ("product_story", "first_path", "prompt")
+    )
+
+
+def test_confirmed_first_path_keeps_evidence_review_without_raw_repository_identifier() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Accessibility Review Workspace
+
+## Product Story
+This workspace helps accessibility operators turn component evidence into reviewable release decisions.
+
+## State Object
+An accessibility review records evidence, one decision, the resulting outcome, and traceable proof.
+
+## First Complete Path
+An operator reviews evidence from unovue/reka-ui, records one accessibility decision, and verifies the resulting outcome.
+
+## Proof Boundary
+The evidence, decision, and verified outcome remain traceable for release review.
+"""
+    )
+
+    assert "unovue/reka-ui" not in intent["first_path"]
+    assert "reviews source evidence" in intent["first_path"].casefold()
+
+
+def test_confirmed_first_path_redacts_repository_after_review_verb() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Accessibility Review Workspace
+
+## Product Story
+This workspace helps accessibility operators turn component evidence into reviewable release decisions.
+
+## State Object
+An accessibility review records evidence, one decision, the resulting outcome, and traceable proof.
+
+## First Complete Path
+An operator reviews repository tailwindlabs/headlessui, records one accessibility decision, and verifies the resulting outcome.
+
+## Proof Boundary
+The evidence, decision, and verified outcome remain traceable for release review.
+"""
+    )
+
+    assert "tailwindlabs/headlessui" not in intent["first_path"]
+    assert "reviews source evidence" in intent["first_path"].casefold()
 
 
 def test_prompt_source_preserves_for_who_actor_role() -> None:
@@ -267,6 +775,7 @@ def test_host_guidance_recovery_keeps_open_source_out_of_adapter_classification(
     assert intent["title"] == "Open Source Security Embargo Room"
     assert "The product receive" not in rendered
     assert "open source security embargo room user can receive vulnerability reports" in rendered.casefold()
+    assert "an open source security embargo room can receive vulnerability reports" not in rendered.casefold()
     assert "normalized result" not in rendered.casefold()
     assert "normalized output" not in rendered.casefold()
     assert all(not str(row["label"]).endswith(" Adapter") for row in proposal["components"])
@@ -415,6 +924,7 @@ def test_scientific_recovery_preserves_loaded_measurement_source_step() -> None:
     lowered = text.casefold()
 
     assert model.steps[0] == "Researchers load orthopedic implant fatigue-test measurements"
+    assert source.first_path.casefold().startswith("researchers load orthopedic implant fatigue-test measurements")
     assert "load orthopedic implant fatigue-test measurements" in lowered
     assert "compare finite-element simulations against bench-test controls" in lowered
     for phrase in (

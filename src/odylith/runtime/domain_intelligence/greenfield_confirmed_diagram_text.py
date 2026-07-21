@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as wrapped_flow_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
@@ -331,7 +332,7 @@ def short_label(value: str) -> str:
 
 def flow_label(value: str, *, limit: int) -> str:
     text = _role_or_short_label(value) or "Item"
-    return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=30, max_lines=4, limit=limit))
+    return wrapped_flow_label(text, width=30, max_lines=4, limit=limit)
 
 
 def escape_label(value: str) -> str:
@@ -697,10 +698,6 @@ def _deferred_scope_noun_list(value: str) -> str:
         if item:
             rebuilt.extend([connector.casefold(), item])
     return " ".join(part for part in rebuilt if part).strip(" .")
-
-
-def _without_ellipsis(value: str) -> str:
-    return str(value or "").replace("…", "").replace("...", "").rstrip(" ,;:")
 
 
 def _role_or_short_label(value: str) -> str:

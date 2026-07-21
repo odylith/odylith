@@ -465,7 +465,7 @@ def test_confirmed_intent_completion_does_not_wrap_visible_outcome_as_produced_b
     assert "saved session" in rendered
 
 
-def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallback() -> None:
+def test_apply_semantic_input_keeps_raw_first_path_and_derives_typed_visible_result() -> None:
     proposal = {
         "intent": {
             "title": "Claims Desk",
@@ -480,18 +480,20 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     source_paths = dict(compiler_input.source_paths)
 
     assert compiler_input.schema_version == APPLY_SEMANTIC_INPUT_VERSION
-    assert compiler_input.first_path.endswith("The product shows the accepted result for review.")
-    assert "then shows the accepted result" not in compiler_input.first_path
-    assert source_paths["first_path"] == "intent.first_path+semantic_visible_result_fallback"
+    assert compiler_input.first_path == "An analyst enters claim details and links evidence"
+    assert compiler_input.visible_result == "the claim packet"
+    assert source_paths["first_path"] == "intent.first_path"
+    assert source_paths["visible_result"] == "intent.state_object"
     assert source_paths["proof_boundary"] == "intent.proof_boundary"
 
     ensured = ensure_apply_semantic_model(proposal)
     persisted_input = ensured["apply_semantic_input"]
 
     assert persisted_input["schema_version"] == APPLY_SEMANTIC_INPUT_VERSION
-    assert persisted_input["first_path"].endswith("The product shows the accepted result for review.")
-    assert "then shows the accepted result" not in persisted_input["first_path"]
-    assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
+    assert persisted_input["first_path"] == "An analyst enters claim details and links evidence"
+    assert persisted_input["visible_result"] == "the claim packet"
+    assert persisted_input["source_paths"]["first_path"] == "intent.first_path"
+    assert persisted_input["source_paths"]["visible_result"] == "intent.state_object"
 
 
 def test_apply_semantic_input_trusts_terminal_handoff_visible_result() -> None:

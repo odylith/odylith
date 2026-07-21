@@ -6,6 +6,7 @@ import re
 
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
@@ -14,7 +15,7 @@ _LEADING_LABEL_ARTICLES = frozenset({"a", "an", "the"})
 
 
 def flow_label(value: str, *, width: int, max_lines: int, limit: int) -> str:
-    text = normalize_final_state_modifier(trim(value, limit))
+    text = collapse_adjacent_duplicate_terms(normalize_final_state_modifier(trim(value, limit)))
     wrapped = mermaid_text.wrap_mermaid_label(text, width=width, max_lines=max_lines, limit=limit)
     if wrapped_label_has_dangling_tail(wrapped):
         expanded = mermaid_text.wrap_mermaid_label(

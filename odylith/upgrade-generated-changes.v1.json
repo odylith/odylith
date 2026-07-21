@@ -2,19 +2,19 @@
   "active_version": "0.1.15",
   "by_category": {
     "bundle_surface_mirror": {
-      "bytes": 262466,
+      "bytes": 205735,
+      "count": 1
+    },
+    "compass": {
+      "bytes": 7082077,
       "count": 2
     },
-    "radar": {
-      "bytes": 7110731,
-      "count": 11
-    },
     "tooling_shell": {
-      "bytes": 239401,
+      "bytes": 239554,
       "count": 2
     }
   },
-  "content_fingerprint": "f8843eb1d877ce896333815eefb08feafea3281dd0e4c6c6d9a0603cd0062e4d",
+  "content_fingerprint": "f4b30e6a75a881f85cf989a803a937966e4c776e372e4d37a6ba88272907c316",
   "dashboard_refresh": {
     "command": [
       "/Volumes/FREEDOM_RESEARCH/research-code/odylith/.odylith/bin/odylith",
@@ -40,132 +40,50 @@
   },
   "entries": [
     {
-      "byte_count": 205777,
+      "byte_count": 0,
+      "category": "compass",
+      "line_count": 0,
+      "path": "odylith/compass/runtime/history/2026-07-05.v1.json",
+      "sha256": "",
+      "state": "deleted"
+    },
+    {
+      "byte_count": 7082077,
+      "category": "compass",
+      "line_count": 173846,
+      "path": "odylith/compass/runtime/history/2026-07-21.v1.json",
+      "sha256": "6cdcb5aa4f05e773337bf10986363ddcaa3fa006db1ca56ccf0a1e88862fc7c7",
+      "state": "present"
+    },
+    {
+      "byte_count": 205735,
       "category": "tooling_shell",
       "line_count": 4467,
       "path": "odylith/index.html",
-      "sha256": "1286d2973f16db0be17570b2e5b70b3e175510917e515739e794e8adfd77f509",
+      "sha256": "38b7627d1b7ca56aec443939fa6003bd16d55b369089e65ace1ee5c1d090825f",
       "state": "present"
     },
     {
-      "byte_count": 499394,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-detail-shard-001.v1.js",
-      "sha256": "99b9322f84f9956d7fad5bc1bc2139c27ea3f820f61687176c13d0f2826586ec",
-      "state": "present"
-    },
-    {
-      "byte_count": 450020,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-detail-shard-002.v1.js",
-      "sha256": "d6054d16f8818e203cedf0ab26b2d3b7b6c2cdda50cb7d97de6c2f39dc9b81fe",
-      "state": "present"
-    },
-    {
-      "byte_count": 425003,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-detail-shard-003.v1.js",
-      "sha256": "8c372a59f4f7890606fd09a9c932b94d9735101932cff9a47ec3243796b2abf7",
-      "state": "present"
-    },
-    {
-      "byte_count": 979766,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-document-shard-004.v1.js",
-      "sha256": "1ca1dfec6e1b3b92dc4c49785d913c5663e551d756e3555afef5a2b315969081",
-      "state": "present"
-    },
-    {
-      "byte_count": 527437,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-document-shard-005.v1.js",
-      "sha256": "8c5a167456227bb949a03aa747812e84fa18141890a79c1af98efd6957a596e0",
-      "state": "present"
-    },
-    {
-      "byte_count": 509714,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-document-shard-006.v1.js",
-      "sha256": "00ddb4d14e114253897a4cea428cde4cbfc4c6e8ca2d60ddadd5f1cfc66eb495",
-      "state": "present"
-    },
-    {
-      "byte_count": 492000,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-document-shard-007.v1.js",
-      "sha256": "f87a8f850f02171786fab23a83946ae25fe8f5b10fd3740c69348ca1289be065",
-      "state": "present"
-    },
-    {
-      "byte_count": 347392,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-document-shard-008.v1.js",
-      "sha256": "cad30030d18203705b305caccb4d6996885168e67af22bd01a2a833e5cdde246",
-      "state": "present"
-    },
-    {
-      "byte_count": 2058315,
-      "category": "radar",
-      "line_count": 1,
-      "path": "odylith/radar/backlog-payload.v1.js",
-      "sha256": "4998046f6a6d4e194bbf39d84f3dd9c76df90f4421aef77b8eeb6a20da18fc81",
-      "state": "present"
-    },
-    {
-      "byte_count": 56689,
-      "category": "radar",
-      "line_count": 2595,
-      "path": "odylith/radar/radar.html",
-      "sha256": "9bd138906fe99569112982cf661cecca1920520e3ac196cead2a21be49f57b31",
-      "state": "present"
-    },
-    {
-      "byte_count": 765001,
-      "category": "radar",
-      "line_count": 24793,
-      "path": "odylith/radar/traceability-graph.v1.json",
-      "sha256": "f6b0862b47082a609b77645fcf2e56b39fe4ecab996ad0ea7e407a77bfd28971",
-      "state": "present"
-    },
-    {
-      "byte_count": 33624,
+      "byte_count": 33819,
       "category": "tooling_shell",
       "line_count": 1,
       "path": "odylith/tooling-payload.v1.js",
-      "sha256": "f4c4441d994bd5503dac27a700f3d074e85dfcb1c766c63eced55ed12d2f20c2",
+      "sha256": "ac024285b612ed3e38e4e00e02d8dc5abbf09b771b2598ccbcf0aa6888bfdd89",
       "state": "present"
     },
     {
-      "byte_count": 205777,
+      "byte_count": 205735,
       "category": "bundle_surface_mirror",
       "line_count": 4467,
       "path": "src/odylith/bundle/assets/odylith/index.html",
-      "sha256": "1286d2973f16db0be17570b2e5b70b3e175510917e515739e794e8adfd77f509",
-      "state": "present"
-    },
-    {
-      "byte_count": 56689,
-      "category": "bundle_surface_mirror",
-      "line_count": 2595,
-      "path": "src/odylith/bundle/assets/odylith/radar/radar.html",
-      "sha256": "9bd138906fe99569112982cf661cecca1920520e3ac196cead2a21be49f57b31",
+      "sha256": "38b7627d1b7ca56aec443939fa6003bd16d55b369089e65ace1ee5c1d090825f",
       "state": "present"
     }
   ],
-  "generated_changed_bytes": 7612598,
-  "generated_changed_count": 15,
+  "generated_changed_bytes": 7527366,
+  "generated_changed_count": 5,
   "manifest_path": "odylith/upgrade-generated-changes.v1.json",
-  "other_changed_paths": [
-    "odylith/radar/source/INDEX.md"
-  ],
+  "other_changed_paths": [],
   "pinned_version": "0.1.15",
   "previous_version": "0.1.15",
   "review_note": "Compact review manifest for generated Odylith surface churn. Reviewers can inspect these hashes and counts before opening large generated JS/JSON diffs.",

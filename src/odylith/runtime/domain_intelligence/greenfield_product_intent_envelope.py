@@ -63,7 +63,6 @@ PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
 PRODUCT_FACT_KEYS = (
     "title",
     "source_title",
-    "prompt",
     "product_story",
     "state_object",
     "first_path",

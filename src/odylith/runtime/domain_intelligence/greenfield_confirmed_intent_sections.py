@@ -872,6 +872,17 @@ def is_confirmed_intent_supporting_section(key: str) -> bool:
     return str(key or "").startswith("__supporting__:")
 
 
+def is_confirmed_intent_source_evidence_section(key: str) -> bool:
+    normalized = str(key or "")
+    return normalized.startswith(
+        (
+            "__supporting__:source_evidence",
+            "__supporting__:source_repository",
+            "__supporting__:repository_description",
+        )
+    )
+
+
 def _noncanonical_section_key(value: str) -> str:
     normalized = normalize_confirmed_intent_heading(value)
     if not normalized:
@@ -965,6 +976,7 @@ __all__ = [
     "confirmed_intent_inline_heading_value",
     "confirmed_intent_sections",
     "is_confirmed_intent_ignored_section",
+    "is_confirmed_intent_source_evidence_section",
     "is_confirmed_intent_supporting_section",
     "normalize_confirmed_intent_heading",
 ]

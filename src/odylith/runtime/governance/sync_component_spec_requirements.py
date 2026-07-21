@@ -34,6 +34,7 @@ _SECTION_INTRO = (
 _START_MARKER = "<!-- registry-requirements:start -->"
 _END_MARKER = "<!-- registry-requirements:end -->"
 _EMPTY_REQUIREMENTS_LINE = "- No synchronized requirement or contract signals yet."
+_LAST_UPDATED_PREFIXES = ("last updated:", "last updated (utc):")
 _LEGACY_CONSUMER_ORG_TOKEN = "den" + "toai"
 _LEGACY_CONSUMER_PROJECT_TOKEN = "ori" + "on"
 _PUBLIC_REQUIREMENT_SUMMARY_REWRITES = (
@@ -151,13 +152,34 @@ def _find_h2_section(lines: Sequence[str], heading: str) -> tuple[int, int] | No
 
 def _upsert_last_updated(*, lines: list[str], today: str) -> tuple[list[str], bool]:
     expected = f"Last updated: {today}"
-    for idx, line in enumerate(lines):
-        if str(line or "").strip().lower().startswith("last updated:"):
-            if str(line) == expected:
-                return lines, False
-            next_lines = list(lines)
-            next_lines[idx] = expected
-            return next_lines, True
+    stamp_indexes = [
+        idx
+        for idx, line in enumerate(lines)
+        if str(line or "").strip().lower().startswith(_LAST_UPDATED_PREFIXES)
+    ]
+    if stamp_indexes:
+        primary_index = next(
+            (
+                idx
+                for idx in stamp_indexes
+                if str(lines[idx] or "").strip().lower().startswith("last updated:")
+            ),
+            stamp_indexes[0],
+        )
+        if len(stamp_indexes) == 1 and lines[primary_index] == expected:
+            return lines, False
+
+        duplicate_indexes = set(stamp_indexes)
+        duplicate_indexes.remove(primary_index)
+        for idx in tuple(duplicate_indexes):
+            if idx + 1 < len(lines) and not str(lines[idx + 1] or "").strip():
+                duplicate_indexes.add(idx + 1)
+        next_lines = [
+            expected if idx == primary_index else line
+            for idx, line in enumerate(lines)
+            if idx not in duplicate_indexes
+        ]
+        return next_lines, True
 
     insert_at = 0
     for idx, line in enumerate(lines):
@@ -348,15 +370,23 @@ def _build_generated_requirement_lines(
         return [_EMPTY_REQUIREMENTS_LINE]
 
     rows: list[str] = []
-    for event in list(events)[:max_events]:
+    rendered_rows: set[tuple[str, ...]] = set()
+    for event in events:
         summary = _requirements_trace_summary(event=event)
         if not summary:
             continue
         kind = _normalize_space(event.kind).lower() or "event"
         date_token = _event_date(event.ts_iso, fallback_date=fallback_date)
-        rows.append(f"- **{date_token} · {kind.title()}:** {summary}")
-        for evidence_line in _format_evidence_suffix(event=event):
-            rows.append(f"  - {evidence_line}")
+        rendered_row = (
+            f"- **{date_token} · {kind.title()}:** {summary}",
+            *(f"  - {evidence_line}" for evidence_line in _format_evidence_suffix(event=event)),
+        )
+        if rendered_row in rendered_rows:
+            continue
+        rendered_rows.add(rendered_row)
+        rows.extend(rendered_row)
+        if len(rendered_rows) >= max_events:
+            break
     if rows:
         return rows
     return [_EMPTY_REQUIREMENTS_LINE]
@@ -789,7 +819,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             generated_rows=generated_rows,
         )
         content_changed = bool(created or preamble_changed or section_changed)
-        if content_changed:
+        has_duplicate_update_stamps = sum(
+            1
+            for line in working_lines
+            if str(line or "").strip().lower().startswith(_LAST_UPDATED_PREFIXES)
+        ) > 1
+        if content_changed or has_duplicate_update_stamps:
             working_lines, last_updated_changed = _upsert_last_updated(lines=working_lines, today=today_token)
             content_changed = bool(content_changed or last_updated_changed)
 

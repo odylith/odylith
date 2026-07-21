@@ -1,8 +1,6 @@
 # Release
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-09
 
 ## Purpose
 Release is Odylith's release subsystem. It owns the canonical maintainer
@@ -617,9 +615,9 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/casebook/bugs/2026-07-18-full-greenfield-matrix-stalls-in-final-installed-recovery-lane.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_corpus_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

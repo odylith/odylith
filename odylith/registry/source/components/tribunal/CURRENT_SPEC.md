@@ -7,10 +7,8 @@
 - Tribunal may promote a pattern into doctrine, tool affordance, skill
   guidance, benchmark case, or Casebook bug. It is not the hot path and must
   not run provider reasoning for ordinary Odylith Discipline decisions.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-06-26
 
 ## Purpose
 Tribunal is Odylith's diagnosis engine. It converts delivery scopes into

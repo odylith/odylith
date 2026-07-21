@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections.abc import Sequence
+import json
 from typing import Any
 
 from odylith.runtime.common import display_text
@@ -15,6 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor
 )
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_projection import (
+    refresh_confirmed_diagram_projection,
+)
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmRepairContext
@@ -99,16 +103,59 @@ def complete_greenfield_semantic_apply_payload(
 ) -> dict[str, Any]:
     """Complete proposal semantics and clear poisoned semantic projections."""
 
+    first_path_before = _first_path_contract_fingerprint(proposal)
     repaired = ensure_apply_semantic_model(proposal, refresh=True)
+    semantic_changed = first_path_before != _first_path_contract_fingerprint(repaired)
     projection_changed = repair_greenfield_semantic_projections(repaired)
+    _refresh_semantic_diagrams(repaired, semantic_changed=semantic_changed)
     if proposal_completed and not projection_changed:
         return repaired
     completed = complete_confirmed_proposal(repaired, release_selector=release_selector)
     if projection_changed or completed != repaired:
         repaired = completed
         repaired = _normalized_proposal(repaired)
+        first_path_before = _first_path_contract_fingerprint(repaired)
         repaired = ensure_apply_semantic_model(repaired, refresh=True)
+        _refresh_semantic_diagrams(
+            repaired,
+            semantic_changed=first_path_before != _first_path_contract_fingerprint(repaired),
+        )
     return repaired
+
+
+def _refresh_semantic_diagrams(proposal: dict[str, Any], *, semantic_changed: bool) -> None:
+    """Keep Atlas projections aligned after semantic or backlog facts change."""
+
+    rows = proposal.get("diagrams")
+    if isinstance(rows, list) and (semantic_changed or _diagram_links_are_stale(proposal, rows)):
+        refresh_confirmed_diagram_projection(proposal, rows)
+
+
+def _first_path_contract_fingerprint(proposal: Mapping[str, Any]) -> str:
+    semantic_model = proposal.get("semantic_model")
+    if not isinstance(semantic_model, Mapping):
+        return ""
+    contract = semantic_model.get("first_path_contract")
+    if not isinstance(contract, Mapping):
+        return ""
+    return json.dumps(contract, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+
+
+def _diagram_links_are_stale(proposal: Mapping[str, Any], rows: Sequence[Any]) -> bool:
+    current_titles = {
+        normalize_string(row.get("title"))
+        for row in proposal.get("backlog", [])
+        if isinstance(row, Mapping) and normalize_string(row.get("title"))
+    }
+    if not current_titles:
+        return False
+    return any(
+        normalize_string(title) not in current_titles
+        for row in rows
+        if isinstance(row, Mapping)
+        for title in row.get("related_workstream_titles", [])
+        if normalize_string(title)
+    )
 
 
 def _complete_confirmed_semantic_proposal(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:

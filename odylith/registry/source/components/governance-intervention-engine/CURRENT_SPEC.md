@@ -15,10 +15,8 @@
   platform seamless" may rank voice or integration inspection affordances, but
   it must still stay silent when no hard law is violated and no immediate
   user-visible value is earned.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-28
 
 ## Purpose
 Governance Intervention Engine is Odylith's shared conversation-observation

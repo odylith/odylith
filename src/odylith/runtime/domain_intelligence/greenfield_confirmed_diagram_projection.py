@@ -127,7 +127,7 @@ def _diagram_workstream_titles(*, rows: list[Any], proposal: Mapping[str, Any]) 
         if isinstance(row, Mapping) and _clean(row.get("title"))
     ]
     for key, title in zip(("program", "workflow", "boundary", "proof"), backlog_titles, strict=False):
-        result.setdefault(key, title)
+        result[key] = title
     return result
 
 

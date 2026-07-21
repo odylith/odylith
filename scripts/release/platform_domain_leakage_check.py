@@ -546,7 +546,7 @@ def _text_document(text: str, *, location: str) -> _ScanDocument:
 
 def _scan_documents(documents: tuple[_ScanDocument, ...], *, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
     findings: list[LeakageFinding] = []
-    term_token_pairs = tuple((term, _tokens(term)) for term in terms)
+    term_token_pairs = tuple((term, _term_tokens(term)) for term in terms)
     for document in documents:
         findings.extend(_scan_document(document, term_token_pairs=term_token_pairs))
     return tuple(findings)
@@ -555,7 +555,7 @@ def _scan_documents(documents: tuple[_ScanDocument, ...], *, terms: tuple[str, .
 def _scan_text(text: str, *, location: str, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
     return _scan_document(
         _text_document(text, location=location),
-        term_token_pairs=tuple((term, _tokens(term)) for term in terms),
+        term_token_pairs=tuple((term, _term_tokens(term)) for term in terms),
     )
 
 
@@ -660,15 +660,74 @@ def _case_source_text(case: object) -> str:
 
 
 def _case_domain_source_text(case: object) -> str:
+    prompt = str(getattr(case, "prompt", "") or "").strip()
+    confirmed = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+    source_evidence = _source_provenanced_evidence_segments(
+        case=case,
+        prompt=prompt,
+        confirmed=confirmed,
+    )
+    if source_evidence:
+        return "\n".join(source_evidence)
+
     values: list[str] = []
     name = str(getattr(case, "name", "") or "").strip()
     if name:
         values.append(name)
-    prompt = str(getattr(case, "prompt", "") or "").strip()
     values.extend(_domain_source_prompt_segments(case=case, prompt=prompt))
-    confirmed = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
     values.extend(_domain_source_confirmed_segments(case=case, confirmed=confirmed))
     return "\n".join(dict.fromkeys(value for value in values if value))
+
+
+def _source_provenanced_evidence_segments(
+    *,
+    case: object,
+    prompt: str,
+    confirmed: str,
+) -> tuple[str, ...]:
+    """Keep release custody sentinels on external evidence, not product-path wording."""
+
+    provenance = getattr(case, "provenance", None)
+    if str(getattr(provenance, "corpus_tier", "") or "").strip() != "source_provenanced":
+        return ()
+    segments = (
+        *_source_metadata_values(prompt),
+        *_source_evidence_section(confirmed),
+    )
+    return tuple(dict.fromkeys(segment for segment in segments if segment))
+
+
+def _source_metadata_values(prompt: str) -> tuple[str, ...]:
+    lowered = prompt.casefold()
+    source_labels = ("source repository:", "source evidence:", "repository description:")
+    labels = (*source_labels, "user intent:", "product intent:")
+    matches = sorted(
+        (lowered.find(label), label)
+        for label in labels
+        if lowered.find(label) >= 0
+    )
+    values: list[str] = []
+    for index, (start, label) in enumerate(matches):
+        end = matches[index + 1][0] if index + 1 < len(matches) else len(prompt)
+        value = prompt[start + len(label) : end].strip()
+        if value and label in source_labels:
+            values.append(value)
+    return tuple(dict.fromkeys(values))
+
+
+def _source_evidence_section(confirmed: str) -> tuple[str, ...]:
+    lines: list[str] = []
+    in_source_evidence = False
+    for raw_line in confirmed.splitlines():
+        line = _plain_markdown_line(raw_line)
+        if not line:
+            continue
+        if _looks_like_markdown_heading(raw_line):
+            in_source_evidence = line.rstrip(":").casefold() == "source evidence"
+            continue
+        if in_source_evidence:
+            lines.append(line)
+    return ("\n".join(lines),) if lines else ()
 
 
 def _domain_source_prompt_segments(*, case: object, prompt: str) -> tuple[str, ...]:
@@ -750,7 +809,7 @@ def _case_source_values(case: object) -> tuple[object, ...]:
 
 
 def _term_present(text: str, term: str) -> bool:
-    term_tokens = _tokens(term)
+    term_tokens = _term_tokens(term)
     if not term_tokens:
         return False
     return _contains_phrase(_tokens(text), term_tokens)
@@ -819,6 +878,31 @@ def _source_token_forms(token: str) -> tuple[str, ...]:
 
 def _tokens(text: str) -> tuple[str, ...]:
     return tuple(token.value for token in _scan_tokens(text))
+
+
+def _term_tokens(term: str) -> tuple[str, ...]:
+    """Tokenize raw identifiers once and retain normalized phrases verbatim."""
+
+    value = str(term or "").strip()
+    if not value:
+        return ()
+    pieces = tuple(piece.casefold() for piece in value.split() if piece)
+    if _is_normalized_term_stream(value, pieces):
+        return pieces
+    return _tokens(value)
+
+
+def _is_normalized_term_stream(value: str, pieces: tuple[str, ...]) -> bool:
+    if not pieces or value != value.casefold() or any(not piece.isalnum() for piece in pieces):
+        return False
+    for index, piece in enumerate(pieces):
+        token_parts = _tokens(piece)
+        if token_parts == (piece,):
+            continue
+        prefix = token_parts[:-1]
+        if index < len(prefix) or pieces[index - len(prefix) : index] != prefix:
+            return False
+    return True
 
 
 def _scan_tokens(text: str) -> tuple[_ScanToken, ...]:

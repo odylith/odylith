@@ -22,6 +22,8 @@ from greenfield_matrix_release_artifacts import sha256_text
 from greenfield_matrix_release_audit import GreenfieldReleaseAudit
 from greenfield_matrix_release_audit import evaluate_release_audits
 from greenfield_matrix_release_audit_evidence import RELEASE_AUDIT_CLAIM_CLASS
+from greenfield_matrix_release_audit_evidence import audit_request_sha256
+from greenfield_matrix_release_audit_evidence import source_custody_fingerprint
 from greenfield_matrix_source_identity import complete_metamorphic_groups
 from greenfield_matrix_source_identity import is_explicit_metamorphic_pair
 from greenfield_matrix_source_identity import source_identity_label
@@ -38,6 +40,12 @@ _TRAIL_CLAIM_CLASSES = {
     "audit_request_plan": "audit-requests-only",
     "source_verifications": "source-verification-only",
     "review_results": "operator-supplied-hash-bound-review-results",
+}
+_TRAIL_VERSIONS = {
+    "source_case_file": "odylith.greenfield.matrix.case-file.v1",
+    "audit_request_plan": "odylith.greenfield.matrix.audit-request-plan.v3",
+    "source_verifications": "odylith.greenfield.matrix.audit-source-verification.v2",
+    "review_results": "odylith.greenfield.matrix.audit-review-results.v3",
 }
 
 
@@ -247,6 +255,11 @@ def load_release_audit_file(
             "review_results",
         )
     }
+    _validate_audit_bundle_trail(
+        audits=tuple(audits),
+        trail=trail,
+        root=root,
+    )
     return GreenfieldReleaseAuditBundle(
         audits=tuple(audits),
         source_case_file=trail["source_case_file"][0],
@@ -264,7 +277,7 @@ def _verified_bundle_reference(
     payload: Mapping[str, Any],
     field: str,
     root: Path,
-) -> tuple[str, str]:
+) -> tuple[str, str, Mapping[str, Any]]:
     path_value = _text(payload.get(field))
     expected_hash = _hash_text(payload.get(f"{field}_sha256"))
     if not path_value or not is_sha256(expected_hash):
@@ -285,7 +298,230 @@ def _verified_bundle_reference(
         raise RuntimeError(
             f"greenfield release audit {field} must declare claim_class `{expected_claim_class}`"
         )
-    return path_value, expected_hash
+    expected_version = _TRAIL_VERSIONS[field]
+    if _text(artifact.get("version")) != expected_version:
+        raise RuntimeError(
+            f"greenfield release audit {field} must declare version `{expected_version}`"
+        )
+    return path_value, expected_hash, artifact
+
+
+def _validate_audit_bundle_trail(
+    *,
+    audits: tuple[GreenfieldReleaseAudit, ...],
+    trail: Mapping[str, tuple[str, str, Mapping[str, Any]]],
+    root: Path,
+) -> None:
+    audit_by_id = _audits_by_case_id(audits)
+    audit_ids = frozenset(audit_by_id)
+    source_cases = _trail_rows_by_case_id(
+        trail["source_case_file"][2].get("cases"),
+        label="source case file",
+    )
+    missing_cases = sorted(audit_ids - set(source_cases))
+    if missing_cases:
+        raise RuntimeError("greenfield release audit source case file omits audit case IDs: " + ", ".join(missing_cases))
+    requests = _trail_rows_by_case_id(
+        trail["audit_request_plan"][2].get("requests"),
+        label="audit request plan",
+    )
+    verifications = _trail_rows_by_case_id(
+        trail["source_verifications"][2].get("records"),
+        label="source verification manifest",
+    )
+    reviews = _trail_rows_by_case_id(
+        trail["review_results"][2].get("reviews"),
+        label="review results",
+    )
+    _require_exact_audit_case_ids("audit request plan", requests, audit_ids)
+    _require_exact_audit_case_ids("source verification manifest", verifications, audit_ids)
+    _require_exact_audit_case_ids("review results", reviews, audit_ids)
+    request_payload = trail["audit_request_plan"][2]
+    if _text(request_payload.get("source_case_file")) != trail["source_case_file"][0]:
+        raise RuntimeError("greenfield release audit request plan does not bind the source case file")
+    verification_payload = trail["source_verifications"][2]
+    if _text(verification_payload.get("audit_request_plan")) != trail["audit_request_plan"][0]:
+        raise RuntimeError("greenfield source verification manifest does not bind the audit request plan")
+    record_count = verification_payload.get("record_count")
+    if isinstance(record_count, bool) or not isinstance(record_count, int) or record_count != len(verifications):
+        raise RuntimeError("greenfield source verification manifest record_count does not match records")
+    verification_manifest_path = repo_artifact_path(root, trail["source_verifications"][0])
+    assert verification_manifest_path is not None
+    for case_id, audit in audit_by_id.items():
+        request = requests[case_id]
+        verification = verifications[case_id]
+        review = reviews[case_id]
+        if _text(request.get("audit_request_sha256")) != audit_request_sha256(request):
+            raise RuntimeError(
+                f"greenfield release audit request plan does not self-bind audit_request_sha256: {case_id}"
+            )
+        _require_row_match(
+            label="audit request plan",
+            case_id=case_id,
+            row=request,
+            audit=audit,
+            fields=(
+                "audit_request_sha256",
+                "prompt_sha256",
+                "confirmed_intent_sha256",
+                "source_artifact_sha256",
+                "source_excerpt_sha256",
+                "source_id",
+                "source_uri",
+                "source_verification_method",
+                "source_verification_uri",
+            ),
+        )
+        _require_row_match(
+            label="source verification manifest",
+            case_id=case_id,
+            row=verification,
+            audit=audit,
+            fields=(
+                "audit_request_sha256",
+                "source_id",
+                "source_uri",
+                "source_verification_method",
+                "source_verification_uri",
+                "source_verified_on",
+                "source_verification_sha256",
+            ),
+        )
+        if _text(verification.get("source_custody_sha256")) != source_custody_fingerprint(request):
+            raise RuntimeError(
+                f"greenfield release audit source verification manifest diverges on source_custody_sha256: {case_id}"
+            )
+        verification_record = _text(verification.get("source_verification_path"))
+        expected_record_path = (verification_manifest_path.parent / verification_record).resolve()
+        try:
+            expected_relative_path = expected_record_path.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise RuntimeError(
+                f"greenfield source verification manifest uses an out-of-repository record path: {case_id}"
+            ) from exc
+        if audit.source_verification_path != expected_relative_path:
+            raise RuntimeError(
+                f"greenfield release audit source verification path does not match manifest: {case_id}"
+            )
+        _require_row_match(
+            label="review results",
+            case_id=case_id,
+            row=review,
+            audit=audit,
+            fields=(
+                "audit_request_sha256",
+                "review_context_label",
+                "reviewer_kind",
+                "review_method",
+                "reviewed_on",
+                "review_status",
+            ),
+        )
+        review_evidence = _hash_bound_review_evidence(audit=audit, root=root, case_id=case_id)
+        _require_row_match(
+            label="review evidence",
+            case_id=case_id,
+            row=review_evidence,
+            audit=audit,
+            fields=(
+                "audit_request_sha256",
+                "review_context_label",
+                "reviewer_kind",
+                "review_method",
+                "reviewed_on",
+                "review_status",
+            ),
+        )
+        _require_rows_match(
+            label="review results and evidence",
+            case_id=case_id,
+            left=review,
+            right=review_evidence,
+            fields=(
+                "source_binding",
+                "source_family_assessment",
+                "derivation_assessment",
+                "rationale",
+            ),
+        )
+
+
+def _audits_by_case_id(audits: tuple[GreenfieldReleaseAudit, ...]) -> dict[str, GreenfieldReleaseAudit]:
+    records: dict[str, GreenfieldReleaseAudit] = {}
+    for audit in audits:
+        if audit.case_id in records:
+            raise RuntimeError(f"greenfield release audit duplicates case_id `{audit.case_id}`")
+        records[audit.case_id] = audit
+    return records
+
+
+def _trail_rows_by_case_id(value: Any, *, label: str) -> dict[str, Mapping[str, Any]]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)) or not value:
+        raise RuntimeError(f"greenfield release audit {label} must define non-empty rows")
+    rows: dict[str, Mapping[str, Any]] = {}
+    for row in value:
+        if not isinstance(row, Mapping):
+            raise RuntimeError(f"greenfield release audit {label} contains an invalid row")
+        case_id = _text(row.get("case_id") or row.get("id"))
+        if not case_id or case_id in rows:
+            raise RuntimeError(f"greenfield release audit {label} must use unique case IDs")
+        rows[case_id] = row
+    return rows
+
+
+def _require_exact_audit_case_ids(
+    label: str,
+    rows: Mapping[str, Mapping[str, Any]],
+    audit_ids: frozenset[str],
+) -> None:
+    if frozenset(rows) != audit_ids:
+        raise RuntimeError(f"greenfield release audit {label} case IDs must match audit records")
+
+
+def _require_row_match(
+    *,
+    label: str,
+    case_id: str,
+    row: Mapping[str, Any],
+    audit: GreenfieldReleaseAudit,
+    fields: tuple[str, ...],
+) -> None:
+    for field in fields:
+        if _text(row.get(field)) != _text(getattr(audit, field)):
+            raise RuntimeError(f"greenfield release audit {label} diverges on {field}: {case_id}")
+
+
+def _hash_bound_review_evidence(
+    *,
+    audit: GreenfieldReleaseAudit,
+    root: Path,
+    case_id: str,
+) -> Mapping[str, Any]:
+    path = repo_artifact_path(root, audit.review_evidence_path)
+    if path is None or not path.is_file():
+        raise RuntimeError(f"greenfield release audit review evidence does not exist: {case_id}")
+    if sha256_file(path) != audit.review_evidence_sha256:
+        raise RuntimeError(f"greenfield release audit review evidence hash does not match: {case_id}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"greenfield release audit review evidence must be valid JSON: {case_id}") from exc
+    if not isinstance(payload, Mapping):
+        raise RuntimeError(f"greenfield release audit review evidence must be a JSON object: {case_id}")
+    return payload
+
+
+def _require_rows_match(
+    *,
+    label: str,
+    case_id: str,
+    left: Mapping[str, Any],
+    right: Mapping[str, Any],
+    fields: tuple[str, ...],
+) -> None:
+    for field in fields:
+        if _text(left.get(field)) != _text(right.get(field)):
+            raise RuntimeError(f"greenfield release audit {label} diverge on {field}: {case_id}")
 
 
 def evaluate_release_corpus(

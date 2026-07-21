@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 745,
-    "mapped_workstream_evidence_count": 525,
+    "explicit_event_count": 748,
+    "mapped_workstream_evidence_count": 527,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 745
+    "timeline_event_count": 748
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,98 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py",
+        "tests/unit/runtime/test_greenfield_commit_journal.py",
+        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+      ],
+      "confidence": "high",
+      "event_index": 1118,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-07-19T19:53:26-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_commit.py",
+        "tests/unit/runtime/test_greenfield_transaction_provenance.py"
+      ],
+      "confidence": "high",
+      "event_index": 1117,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-07-19T19:39:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 1116,
+      "explicit_components": [
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 1 verifiable artifact reference.",
+      "ts_iso": "2026-07-19T19:12:32-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 1,
       "artifacts": [
@@ -25602,6 +25694,7 @@
     "B-141",
     "B-142",
     "B-143",
-    "B-144"
+    "B-144",
+    "B-145"
   ]
 }

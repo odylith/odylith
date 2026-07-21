@@ -850,3 +850,101 @@ def test_prompt_source_rejects_non_human_workflow_subject_as_actor() -> None:
     assert "Decision Summary:" not in "\n".join(intent["human_actors"])
     assert "decision summary turns" not in rendered
     assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_preserves_inline_source_evidence_field_content() -> None:
+    prompt = (
+        "Create an evidence review workspace where an operator records a Source Evidence: verified status, "
+        "records a decision, and verifies the visible outcome."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert source.actor == "operator"
+    assert "Source Evidence: verified status" in source.first_path
+    assert any("Source Evidence: verified status" in row for row in intent["human_actors"])
+
+
+def test_prompt_source_strips_standalone_source_evidence_tail() -> None:
+    prompt = (
+        "Project brief for an accessibility team. An accessibility operator reviews one evidence item, "
+        "records a decision, and verifies the visible outcome. Source repository: owner/example. "
+        "Source evidence: an accessible component library with keyboard support."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert source.first_path.casefold().startswith("an accessibility operator reviews one evidence item")
+    assert "Source repository" not in source.first_path
+    assert "accessible component library" not in source.first_path
+    assert any(row.startswith("Accessibility Operator:") for row in intent["human_actors"])
+
+
+def test_prompt_source_strips_delimiter_bound_source_repository_tail() -> None:
+    for delimiter in ("-", ";", ":", ","):
+        prompt = (
+            "Create an accessibility product. An accessibility operator reviews one evidence item, records a "
+            f"decision, and verifies the visible outcome {delimiter} Source repository: tailwindlabs/headlessui. "
+            "Source evidence: an accessible component library with keyboard support."
+        )
+
+        source = prompt_intent_source(prompt)
+
+        assert source.first_path.casefold().startswith("an accessibility operator reviews one evidence item")
+        assert "tailwindlabs" not in source.first_path
+        assert "accessible component library" not in source.first_path
+
+
+def test_prompt_source_strips_delimiter_bound_source_evidence_tail() -> None:
+    for delimiter in ("-", ";", ":", ","):
+        for label_separator in (":", "-"):
+            prompt = (
+                "Create an accessibility product. An accessibility operator reviews one evidence item, records a "
+                f"decision, and verifies the visible outcome {delimiter} Source evidence {label_separator} an accessible "
+                "component library with keyboard support."
+            )
+
+            source = prompt_intent_source(prompt)
+
+            assert source.first_path.casefold().startswith("an accessibility operator reviews one evidence item")
+            assert "accessible component library" not in source.first_path
+
+
+def test_prompt_source_ignores_standalone_source_evidence_field_as_an_actor() -> None:
+    prompt = (
+        "Create an evidence review workspace. User intent: An operator records a decision and verifies the visible "
+        "outcome. Source Evidence: verified status appears in the case header."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert source.first_path.startswith("An operator records a decision")
+    assert source.actor == "operator"
+    assert "verified status appears in the case header" not in source.first_path
+    assert intent["first_path"].startswith("An operator records a decision")
+    assert len(intent["human_actors"]) == 1
+    assert intent["human_actors"][0].startswith("Operator:")
+    assert "evidence operator" not in intent["human_actors"][0].casefold()
+    assert not any(row.startswith("Appears:") for row in intent["human_actors"])
+
+
+def test_prompt_source_rejects_non_human_product_surfaces_as_where_actors() -> None:
+    prompts = (
+        ("care team dashboard", "Care Team:"),
+        ("analyst dashboard", "Analyst:"),
+        ("operations console", "Operations:"),
+    )
+
+    for subject, forbidden_actor in prompts:
+        prompt = (
+            f"Create a triage workspace where the {subject} shows blocked cases, pending evidence, "
+            "and escalation status."
+        )
+        source = prompt_intent_source(prompt)
+        intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+        assert source.actor == ""
+        assert not any(row.startswith(forbidden_actor) for row in intent["human_actors"])

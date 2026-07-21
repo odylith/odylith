@@ -31,6 +31,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input impor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input import (
     thin_recovery_source_text as _thin_recovery_source_text,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
+    prompt_has_material_first_path_gap as _prompt_has_material_first_path_gap,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import (
     contains_meta_narration as _contains_meta_narration,
 )
@@ -506,6 +509,10 @@ def parse_confirmed_intent_text(
     """Parse the human Product Intent Confirmation that the host already showed."""
 
     generated_confirmation = _is_host_guidance_envelope(text)
+    if generated_confirmation and _prompt_has_material_first_path_gap(prompt):
+        raise _material_intent_blocker(
+            ValueError("first_path: the named user has a visible result but no action sequence that reaches it")
+        )
     text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
     raw_title_candidate = _title_from_sections(sections) or _title_from_text(text) or _title_from_preamble(sections) or fallback_title
@@ -589,7 +596,7 @@ def _validate_or_prompt_recover_intent(
     try:
         _validate_confirmed_intent(intent)
     except ValueError as exc:
-        if allow_prompt_recovery:
+        if allow_prompt_recovery and not _prompt_has_material_first_path_gap(prompt):
             source = _thin_operator_intent_source(prompt, prompt="")
             if source:
                 try:
@@ -689,7 +696,26 @@ def _restore_prompt_material_first_path(
 
 
 def _accepted_first_path(value: Any) -> str:
-    return strip_requirement_control_tail(normalize_first_path(_clean_first_path(value)))
+    return strip_requirement_control_tail(
+        _redact_source_evidence_reference(normalize_first_path(_clean_first_path(value)))
+    )
+
+
+def _redact_source_evidence_reference(value: str) -> str:
+    """Keep an evidence-review action while removing an untrusted repo identifier."""
+
+    text = re.sub(
+        r"\b(?:source\s+(?:repository|evidence)|evidence\s+from)\s+(?:https?://[^\s,.;]+/)?[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+",
+        "source evidence",
+        value,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(
+        r"\b(?P<verb>reviews?|reviewing)\s+(?:repository\s+)?(?:https?://[^\s,.;]+/)?[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+",
+        r"\g<verb> source evidence",
+        text,
+        flags=re.IGNORECASE,
+    )
 
 
 def _material_prompt_terms(value: Any) -> set[str]:

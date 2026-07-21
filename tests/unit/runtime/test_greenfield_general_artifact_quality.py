@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import proposal_tribunal_substance
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence.artifact_enrichment import _scoped_sentence
@@ -1844,6 +1845,35 @@ def test_greenfield_tribunal_rejects_sequence_tail_truncation(tmp_path: Path) ->
 
     assert not decision.passed
     assert "omits the tail of the accepted first path" in issues
+
+
+def test_greenfield_tribunal_compares_atlas_tail_to_semantic_contract_before_source_heavy_intent() -> None:
+    issues: list[str] = []
+    proposal_tribunal_substance._check_atlas_source_preserves_first_path_tail(  # noqa: SLF001
+        proposal={
+            "intent": {
+                "first_path": (
+                    "An operator reviews evidence from unovue/reka-ui, records one accessibility decision, "
+                    "and verifies the resulting outcome."
+                )
+            },
+            "semantic_model": {
+                "first_path_contract": {
+                    "events": [
+                        {"text": "Record one accessibility decision"},
+                        {"text": "Verify the resulting accessibility outcome"},
+                    ],
+                    "visible_result": "the verified accessibility outcome",
+                }
+            },
+        },
+        title="First Path Sequence",
+        source="flowchart TD\nA[Record one accessibility decision] --> B[Verify the resulting accessibility outcome]",
+        kind="flowchart",
+        issues=issues,
+    )
+
+    assert issues == []
 
 
 def test_greenfield_release_title_normalization_preserves_comma_bearing_titles() -> None:

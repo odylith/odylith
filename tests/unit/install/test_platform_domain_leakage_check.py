@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tarfile
 import zipfile
 from pathlib import Path
@@ -145,6 +146,152 @@ def test_source_candidate_terms_exclude_generic_quality_obligation_tail() -> Non
     assert "unsupported operational claims" not in terms
     assert "operational claims" not in terms
     assert "uncertainty or confidence" not in terms
+
+
+def test_source_provenanced_candidates_exclude_product_path_but_keep_source_evidence() -> None:
+    case = SimpleNamespace(
+        name="accessibility source case",
+        prompt=(
+            "Create an accessibility product. An accessibility operator reviews one evidence item, "
+            "records a decision, and verifies the visible outcome. Source repository: leongersen/noUiSlider. "
+            "Source evidence: noUiSlider is a lightweight, ARIA-accessible JavaScript range slider. "
+            "It also fits wonderfully in responsive designs and has no dependencies."
+        ),
+        required_terms=("accessibility",),
+        leakage_terms=("leongersen/noUiSlider",),
+        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
+    )
+
+    terms = set(leakage.case_leakage_term_candidates(case))
+
+    assert "leongersen no ui slider" in terms
+    assert "responsive designs" in terms
+    assert "visible outcome" not in terms
+
+
+@pytest.mark.parametrize("intent_label", ("User intent", "Product intent"))
+def test_source_provenanced_candidates_stop_before_explicit_user_intent(intent_label: str) -> None:
+    case = SimpleNamespace(
+        name="accessibility source case",
+        prompt=(
+            "Project brief for an accessibility team. Source repository: radix-ui/primitives. "
+            "Source evidence: Radix Primitives is an open-source UI component library for building high-quality, "
+            f"accessible design systems and web apps. Maintained by @workos.\n\n{intent_label}: A program lead registers "
+            "a readiness dossier, selects a review disposition, and verifies a publication status."
+        ),
+        required_terms=("accessibility",),
+        leakage_terms=("radix-ui/primitives",),
+        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
+    )
+
+    terms = set(leakage.case_leakage_term_candidates(case))
+
+    assert "radix primitives" in terms
+    assert "publication status" not in terms
+    assert "review disposition" not in terms
+
+
+def test_shipped_source_case_does_not_report_platform_custody_from_user_intent() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    payload = json.loads(
+        (
+            repo_root
+            / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
+        ).read_text(encoding="utf-8")
+    )
+    source_case = next(case for case in payload["cases"] if case["case_id"] == "release-accessibility-003-description")
+    case = SimpleNamespace(
+        **{
+            **source_case,
+            "provenance": SimpleNamespace(**source_case["provenance"]),
+        }
+    )
+
+    findings = leakage.scan_repo(repo_root, terms=leakage.case_leakage_term_candidates(case))
+
+    assert findings == ()
+
+
+def test_source_provenanced_mixed_identifier_survives_normalization_and_matching() -> None:
+    raw_identifier = "jsx-eslint/eslint-plugin-jsx-a11y"
+    normalized_identifier = "jsx eslint eslint plugin jsx a 11 y a11y"
+    case = SimpleNamespace(
+        name="accessibility source case",
+        prompt=(
+            "Create an accessibility product. Source repository: "
+            f"{raw_identifier}. Source evidence: Static AST checker for a11y rules on JSX elements."
+        ),
+        required_terms=("accessibility",),
+        leakage_terms=(raw_identifier,),
+        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
+    )
+
+    assert normalized_identifier in leakage.case_leakage_term_candidates(case)
+    findings = leakage._scan_text(  # noqa: SLF001
+        f"Source repository: {raw_identifier}",
+        location="fixture",
+        terms=(normalized_identifier,),
+    )
+    assert [(finding.location, finding.term) for finding in findings] == [("fixture", normalized_identifier)]
+
+
+def test_raw_multiword_identifier_terms_still_tokenize_before_scanning() -> None:
+    findings = leakage._scan_text(  # noqa: SLF001
+        "acme/widget source",
+        location="fixture",
+        terms=("acme/widget source",),
+    )
+
+    assert [(finding.location, finding.term) for finding in findings] == [("fixture", "acme/widget source")]
+
+
+def test_shipped_source_corpus_retains_every_declared_leakage_identifier() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    payload = json.loads(
+        (repo_root / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    missing = []
+    for source_case in payload["cases"]:
+        case = SimpleNamespace(
+            **{
+                **source_case,
+                "provenance": SimpleNamespace(**source_case["provenance"]),
+            }
+        )
+        candidates = set(leakage.case_leakage_term_candidates(case))
+        declared = set(leakage.domain_leakage_terms_from_terms(source_case["leakage_terms"]))
+        if not declared <= candidates:
+            missing.append(source_case["case_id"])
+
+    assert missing == []
+
+
+def test_release_source_fixture_excludes_template_path_from_custody_candidates() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    payload = json.loads(
+        (repo_root / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    source_case = next(case for case in payload["cases"] if case["case_id"] == "release-accessibility-001-description")
+    case = SimpleNamespace(
+        **{
+            **source_case,
+            "provenance": SimpleNamespace(**source_case["provenance"]),
+        }
+    )
+
+    terms = set(leakage.case_leakage_term_candidates(case))
+
+    assert "tailwindlabs headlessui" in terms
+    assert "completely unstyled" in terms
+    assert "visible outcome" not in terms
+    assert "verifies the visible outcome" not in terms
+    assert "outcome source repository" not in terms
+    assert "repository tailwindlabs" not in terms
 
 
 def test_candidate_terms_include_confirmed_intent_source_when_prompt_is_sparse() -> None:

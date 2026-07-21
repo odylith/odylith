@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 from odylith.runtime.governance import validate_component_registry_contract as validator
+from odylith.runtime.governance import sync_component_spec_requirements as spec_sync
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _write_idea(path: Path, *, idea_id: str, impacted_components: str) -> None:
@@ -129,6 +134,29 @@ def _seed_repo(tmp_path: Path) -> None:
         idea_id="B-901",
         impacted_components="`Radar`",
     )
+
+
+def test_release_component_dossier_is_source_local_converged() -> None:
+    spec_path = REPO_ROOT / "odylith/registry/source/components/release/CURRENT_SPEC.md"
+    text = spec_path.read_text(encoding="utf-8")
+    update_stamps = re.findall(r"^Last updated: .+$", text, flags=re.MULTILINE)
+    requirements = text.split("<!-- registry-requirements:start -->", maxsplit=1)[1].split(
+        "<!-- registry-requirements:end -->", maxsplit=1
+    )[0]
+    rows = [row.strip() for row in re.split(r"(?=^- \*\*)", requirements, flags=re.MULTILINE) if row.strip()]
+
+    assert len(update_stamps) == 1
+    assert "Last updated (UTC):" not in text
+    assert len(rows) == len(set(rows))
+    assert spec_sync.main(
+        [
+            "--repo-root",
+            str(REPO_ROOT),
+            "--component",
+            "release",
+            "--check-only",
+        ]
+    ) == 0
 
 
 def test_validate_component_registry_contract_passes_when_meaningful_events_are_mapped(tmp_path: Path) -> None:

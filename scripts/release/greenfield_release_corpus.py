@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 import json
 from pathlib import Path
 import sys
@@ -27,6 +27,7 @@ from greenfield_matrix_release_audit_evidence import audit_request_sha256  # noq
 from greenfield_matrix_release_audit_evidence import github_repository_verification_uri  # noqa: E402
 from greenfield_release_audit_verification import AUDIT_REQUEST_PLAN_VERSION  # noqa: E402
 from greenfield_release_audit_verification import capture_audit_source_verifications  # noqa: E402
+from greenfield_release_audit_verification import rebind_audit_source_verifications  # noqa: E402
 from greenfield_release_audit_writer import write_release_audit_bundle  # noqa: E402
 from greenfield_matrix_stressors import DEFAULT_HIGH_VARIANCE_STRESSORS  # noqa: E402
 from greenfield_release_source_capture import DEFAULT_ARTIFACTS_PER_FAMILY  # noqa: E402
@@ -47,6 +48,28 @@ from greenfield_release_source_capture import write_new_json_atomically  # noqa:
 
 SOURCE_CASE_FILE_VERSION = "odylith.greenfield.matrix.case-file.v1"
 DEFAULT_PAIRED_ARTIFACTS_PER_FAMILY = 2
+USER_INTENT_PATHS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    (
+        "A service coordinator opens an intake request, assigns a resolution owner, and verifies a decision receipt.",
+        ("intake request", "resolution owner", "decision receipt"),
+    ),
+    (
+        "A program lead registers a readiness dossier, selects a review disposition, and verifies a publication status.",
+        ("readiness dossier", "review disposition", "publication status"),
+    ),
+    (
+        "A field operator submits an exception packet, records an approval outcome, and verifies a public status.",
+        ("exception packet", "approval outcome", "public status"),
+    ),
+    (
+        "A case manager creates an eligibility record, routes a service decision, and verifies a resolution notice.",
+        ("eligibility record", "service decision", "resolution notice"),
+    ),
+    (
+        "A compliance lead opens a review file, confirms an evidence disposition, and verifies a release status.",
+        ("review file", "evidence disposition", "release status"),
+    ),
+)
 
 
 def build_release_case_file(
@@ -110,7 +133,11 @@ def build_release_audit_request_plan(
 
     root = Path(repo_root).expanduser().resolve()
     case_path = Path(source_case_file).expanduser().resolve()
-    selected = select_release_audit_cases(load_case_file(case_path), int(audit_count))
+    source_cases = load_case_file(case_path)
+    selected = ensure_confirmed_intent_audit_coverage(
+        select_release_audit_cases(source_cases, int(audit_count)),
+        available_cases=source_cases,
+    )
     requests: list[dict[str, Any]] = []
     for case in selected:
         provenance = case.provenance
@@ -133,6 +160,69 @@ def build_release_audit_request_plan(
     }
     write_new_json_atomically(Path(output_json), payload, "release audit request plan")
     return payload
+
+
+def ensure_confirmed_intent_audit_coverage(
+    cases: Sequence[Any], *, available_cases: Sequence[Any]
+) -> tuple[Any, ...]:
+    """Keep audited source cases for both commit recovery and no-write clarification."""
+
+    selected = list(cases)
+    if not any(
+        case.provenance.corpus_tier == "source_provenanced" and case.confirmed_intent_markdown
+        for case in selected
+    ):
+        _replace_audit_case_for_boundary(
+            selected,
+            available_cases=available_cases,
+            predicate=lambda case: bool(case.confirmed_intent_markdown),
+            boundary="confirmed-intent",
+        )
+    if not any(
+        case.provenance.corpus_tier == "source_provenanced"
+        and case.expectation == "clarification_required"
+        for case in selected
+    ):
+        _replace_audit_case_for_boundary(
+            selected,
+            available_cases=available_cases,
+            predicate=lambda case: case.expectation == "clarification_required",
+            boundary="clarification-required",
+        )
+    return tuple(selected)
+
+
+def _replace_audit_case_for_boundary(
+    selected: list[Any],
+    *,
+    available_cases: Sequence[Any],
+    predicate: Callable[[Any], bool],
+    boundary: str,
+) -> None:
+    """Swap within one family so fixed audit size and family coverage remain stable."""
+
+    selected_ids = {case.case_id for case in selected}
+    selected_source_ids = {case.provenance.source_id for case in selected}
+    candidates = sorted(
+        (
+            case
+            for case in available_cases
+            if case.case_id not in selected_ids
+            and case.provenance.corpus_tier == "source_provenanced"
+            and predicate(case)
+            and case.provenance.source_id not in selected_source_ids
+        ),
+        key=lambda case: case.case_id,
+    )
+    for candidate in candidates:
+        for index, selected_case in enumerate(selected):
+            if (
+                selected_case.provenance.source_family == candidate.provenance.source_family
+                and not selected_case.confirmed_intent_markdown
+            ):
+                selected[index] = candidate
+                return
+    raise RuntimeError(f"release audit selection has no source-provenanced {boundary} case")
 
 
 def source_variants(*, source: Mapping[str, Any], paired: bool) -> tuple[tuple[str, str, str, str], ...]:
@@ -173,6 +263,7 @@ def case_from_source(
     family = single_line(artifact.get("source_family"))
     full_name = single_line(repository.get("full_name"))
     description = single_line(repository.get("description"))
+    user_intent, user_path_terms = user_intent_for_case(case_index)
     prompt = canonical_case_text(
         prompt_for_style(
             input_style=input_style,
@@ -180,6 +271,7 @@ def case_from_source(
             full_name=full_name,
             description=description,
             source_excerpt=source_excerpt,
+            user_intent=user_intent,
         )
     )
     provenance = {
@@ -204,22 +296,30 @@ def case_from_source(
         "case_id": f"release-{slug(family)}-{case_index + 1:03d}-{variant_label}",
         "name": f"{family} source case {case_index + 1}",
         "prompt": prompt,
-        "required_terms": [full_name],
+        "required_terms": [family, *user_path_terms],
         "leakage_terms": [full_name],
-        "tags": ["release-corpus", family, "github-metadata"],
+        "tags": [
+            "release-corpus",
+            family,
+            "github-metadata",
+            "explicit-user-intent" if user_intent else "source-evidence-only",
+        ],
         "stressors": stressors_for_case(case_index),
         "input_style": input_style,
         "provenance": provenance,
     }
+    if not user_intent:
+        row["expectation"] = "clarification_required"
     if transform != "singleton":
         row["metamorphic_group"] = f"{slug(single_line(artifact.get('source_id')))}-pair"
         row["metamorphic_transform"] = transform
-    if input_style == "edited_confirmation":
+    if user_intent and input_style == "edited_confirmation":
         row["confirmed_intent_markdown"] = confirmed_intent(
             family,
             full_name,
             description,
             source_excerpt,
+            user_intent,
         )
     return row
 
@@ -231,17 +331,19 @@ def prompt_for_style(
     full_name: str,
     description: str,
     source_excerpt: str,
+    user_intent: str = "",
 ) -> str:
     context = f"Source repository: {full_name}. Source evidence: {source_excerpt}"
     if source_excerpt != description:
         context += f". Repository description: {description}"
     article = indefinite_article(family)
+    intent_clause = f" User intent: {user_intent}" if user_intent else ""
     templates = {
-        "direct_request": f"Create {article} {family} product from this evidence. {context}",
-        "edited_confirmation": f"Create a reviewed {family} product. {context}",
-        "pasted_brief": f"Project brief for {article} {family} team:\n{context}",
-        "research_evidence": f"Research evidence for {article} {family} product: {source_excerpt}. {context}",
-        "thin_request": f"Build around this {family} evidence: {context}",
+        "direct_request": f"Create {article} {family} product.{intent_clause} {context}",
+        "edited_confirmation": f"Create a reviewed {family} product.{intent_clause} {context}",
+        "pasted_brief": f"Project brief for {article} {family} team.{intent_clause}\n{context}",
+        "research_evidence": f"Create {article} {family} product from this research evidence.{intent_clause} {context}",
+        "thin_request": f"Build {article} {family} product.{intent_clause} {context}",
     }
     return templates[input_style]
 
@@ -250,19 +352,34 @@ def indefinite_article(value: str) -> str:
     return "an" if single_line(value).casefold().startswith(("a", "e", "i", "o", "u")) else "a"
 
 
-def confirmed_intent(family: str, full_name: str, description: str, source_excerpt: str) -> str:
+def user_intent_for_case(case_index: int) -> tuple[str, tuple[str, ...]]:
+    """Alternate intent-complete and evidence-only source cases without inventing a path from evidence."""
+
+    if case_index % 2:
+        return "", ()
+    return USER_INTENT_PATHS[(case_index // 2) % len(USER_INTENT_PATHS)]
+
+
+def confirmed_intent(
+    family: str,
+    full_name: str,
+    description: str,
+    source_excerpt: str,
+    user_intent: str,
+) -> str:
     return "\n".join(
         (
             f"# {family.title()} Source Product",
             "",
             "## Product Story",
-            description,
+            f"This product helps {family} teams carry out the explicitly supplied first path.",
             "",
             "## Source Evidence",
+            f"Repository: {full_name}",
             source_excerpt,
             "",
             "## First Complete Path",
-            f"An operator reviews evidence from {full_name}, records one decision, and verifies the resulting outcome.",
+            user_intent,
             "",
             "## Proof Boundary",
             "The source evidence, decision, and outcome remain traceable.",
@@ -331,6 +448,14 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     verify_sources.add_argument("--output-root", required=True)
     verify_sources.add_argument("--repo-root", default=str(REPO_ROOT))
     verify_sources.add_argument("--captured-at", default="")
+    rebind_sources = commands.add_parser(
+        "audit-rebind-verifications", help="Rebind retained verified source responses to an equivalent new request plan."
+    )
+    rebind_sources.add_argument("--audit-request-plan", required=True)
+    rebind_sources.add_argument("--source-verification-root", required=True)
+    rebind_sources.add_argument("--expected-source-verification-sha256", required=True)
+    rebind_sources.add_argument("--output-root", required=True)
+    rebind_sources.add_argument("--repo-root", default=str(REPO_ROOT))
     write_audit = commands.add_parser(
         "audit-write-results", help="Bind explicit review results into an audit evidence bundle."
     )
@@ -372,6 +497,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             output_root=Path(args.output_root),
             repo_root=Path(args.repo_root),
             captured_at=str(args.captured_at or "") or None,
+        )
+    elif args.command == "audit-rebind-verifications":
+        payload = rebind_audit_source_verifications(
+            audit_request_plan=Path(args.audit_request_plan),
+            source_verification_root=Path(args.source_verification_root),
+            expected_source_verification_sha256=str(args.expected_source_verification_sha256),
+            output_root=Path(args.output_root),
+            repo_root=Path(args.repo_root),
         )
     else:
         payload = write_release_audit_bundle(

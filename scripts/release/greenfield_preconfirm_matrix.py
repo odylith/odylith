@@ -34,6 +34,7 @@ from greenfield_surface_health import rendered_surface_health_issues  # noqa: E4
 from greenfield_surface_health import rendered_surface_payload_count  # noqa: E402
 from greenfield_matrix_leakage import case_generated_leakage_terms as _case_generated_leakage_terms  # noqa: E402
 from greenfield_matrix_leakage import platform_baseline_required_terms as _platform_baseline_required_terms  # noqa: E402
+from greenfield_matrix_leakage import source_evidence_custody_issues as _source_evidence_custody_issues  # noqa: E402
 from greenfield_matrix_leakage import term_present as _term_present  # noqa: E402
 from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
@@ -43,6 +44,7 @@ from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: 
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
+from greenfield_matrix_release_artifacts import release_proof_input_snapshot_issues  # noqa: E402
 from greenfield_matrix_campaign import MatrixCampaignConfig  # noqa: E402
 from greenfield_matrix_campaign import MatrixTelemetryWriter  # noqa: E402
 from greenfield_matrix_campaign import campaign_phase_from_value  # noqa: E402
@@ -72,7 +74,6 @@ from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS  # noqa: 
 from greenfield_preconfirm_matrix_cases import case_evidence  # noqa: E402
 from greenfield_preconfirm_matrix_cases import case_expectation  # noqa: E402
 from greenfield_preconfirm_matrix_cases import default_cases, rescue_smoke_case  # noqa: E402
-from greenfield_preconfirm_matrix_cases import raise_for_release_case_expectations  # noqa: E402
 from greenfield_process import CommandLifecycleObserverError  # noqa: E402
 from greenfield_process import command_lifecycle_observer  # noqa: E402
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
@@ -146,6 +147,7 @@ def run_matrix(
     attempt_ledger_jsonl: Path | None = None,
     allow_partial_stressor_coverage: bool = False,
     release_audits: Sequence[GreenfieldReleaseAudit] = (),
+    release_audit_repo_root: Path | None = None,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
 
@@ -160,7 +162,6 @@ def run_matrix(
         stop_after_cluster_failures=positive_int(stop_after_cluster_failures),
         required_stressors=tuple(required_stressors),
     )
-    raise_for_release_case_expectations(selected_cases, proof_tier=campaign_config.proof_tier)
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=install_mode,
@@ -172,7 +173,11 @@ def run_matrix(
         allow_skipped_browser_proof=False,
         allow_partial_stressor_coverage=allow_partial_stressor_coverage,
         release_corpus_issues=(
-            evaluate_release_corpus(selected_cases, release_audits).issues
+            evaluate_release_corpus(
+                selected_cases,
+                release_audits,
+                repo_root=release_audit_repo_root,
+            ).issues
             if campaign_config.proof_tier == "release"
             else ()
         ),
@@ -776,11 +781,14 @@ def _run_case(
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
+    generated_text = _generated_text(repo_root=repo_root, package=package)
     leakage_terms = _case_generated_leakage_terms(
         case=case,
-        generated_text=_generated_text(repo_root=repo_root, package=package),
+        generated_text=generated_text,
         platform_baseline_terms=platform_baseline_terms,
     )
+    source_custody_issues = _source_evidence_custody_issues(case=case, generated_text=generated_text)
+    source_custody_issues += _source_evidence_content_custody_issues(case=case, generated_text=generated_text)
     browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
     browser_surface_issues = (
         browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
@@ -800,7 +808,7 @@ def _run_case(
         create_returncode=create.returncode,
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
-        external_issues=receipt_issues,
+        external_issues=(*receipt_issues, *source_custody_issues),
     )
     evidence = dict(
         _case_evidence_manifest(
@@ -834,6 +842,22 @@ def _run_case(
         commit_manifest_summary=commit_manifest_summary(manifest),
         evidence=evidence,
     )
+
+
+def _source_evidence_content_custody_issues(
+    *,
+    case: GreenfieldMatrixCase,
+    generated_text: str,
+) -> tuple[str, ...]:
+    """Reject a retained multi-word source excerpt copied into product artifacts."""
+
+    provenance = getattr(case, "provenance", None)
+    if str(getattr(provenance, "corpus_tier", "") or "").strip() != "source_provenanced":
+        return ()
+    excerpt = " ".join(str(getattr(provenance, "source_excerpt", "") or "").split())
+    if len(excerpt.split()) < 3 or not _term_present(generated_text, excerpt):
+        return ()
+    return ("source evidence text leaked into product artifacts",)
 
 
 def _run_expected_clarification_case(
@@ -1828,6 +1852,16 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Hash-bound audit JSON required with --proof-tier release; ignored for discovery.",
     )
     parser.add_argument(
+        "--release-audit-repo-root",
+        default="",
+        help="Repository root used to resolve the sealed release audit trail.",
+    )
+    parser.add_argument(
+        "--sealed-release-input-root",
+        default="",
+        help="Campaign-created input root required for release-tier proof.",
+    )
+    parser.add_argument(
         "--stop-after-failures",
         type=int,
         default=0,
@@ -1872,14 +1906,47 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _require_sealed_release_input_root(
+    *,
+    proof_tier: str,
+    case_files: Sequence[str],
+    release_audit_file: str,
+    release_audit_repo_root: Path,
+    sealed_root: str,
+) -> None:
+    if proof_tier_from_value(proof_tier) != "release":
+        return
+    if not sealed_root.strip():
+        raise RuntimeError("release proof requires --sealed-release-input-root")
+    root = Path(sealed_root).expanduser().resolve()
+    if not root.is_dir():
+        raise RuntimeError("release proof sealed input root does not exist")
+    if release_audit_repo_root != root:
+        raise RuntimeError("release proof audit root must equal the sealed input root")
+    values = (*case_files, release_audit_file)
+    if not all(str(value or "").strip() for value in values):
+        raise RuntimeError("release proof requires sealed case and audit inputs")
+    for value in values:
+        path = Path(str(value)).expanduser().resolve()
+        try:
+            path.relative_to(root)
+        except ValueError as exc:
+            raise RuntimeError("release proof inputs must live under the sealed input root") from exc
+    issues = release_proof_input_snapshot_issues(
+        root=root,
+        case_files=tuple(Path(str(value)).expanduser().resolve() for value in case_files),
+        audit_file=Path(release_audit_file).expanduser().resolve(),
+    )
+    if issues:
+        raise RuntimeError("release proof sealed input validation failed: " + "; ".join(issues))
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
-    selected_cases = _load_cli_case_files(args.case_file or ())
-    planned_cases = selected_cases or default_cases()
-    release_audits = (
-        load_release_audit_file(Path(str(args.release_audit_file)))
-        if str(args.release_audit_file or "").strip()
-        else ()
+    release_audit_repo_root = (
+        Path(str(args.release_audit_repo_root)).expanduser().resolve()
+        if str(args.release_audit_repo_root or "").strip()
+        else REPO_ROOT
     )
     required_stressors = required_stressors_from_values(
         args.required_stressor or (),
@@ -1895,8 +1962,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         stop_after_cluster_failures=positive_int(args.stop_after_cluster_failures),
         required_stressors=required_stressors,
     )
+    _require_sealed_release_input_root(
+        proof_tier=str(args.proof_tier),
+        case_files=args.case_file or (),
+        release_audit_file=str(args.release_audit_file or ""),
+        release_audit_repo_root=release_audit_repo_root,
+        sealed_root=str(args.sealed_release_input_root or ""),
+    )
+    selected_cases = _load_cli_case_files(args.case_file or ())
+    planned_cases = selected_cases or default_cases()
+    release_audits = (
+        load_release_audit_file(
+            Path(str(args.release_audit_file)),
+            repo_root=release_audit_repo_root,
+        )
+        if str(args.release_audit_file or "").strip()
+        else ()
+    )
     corpus_provenance = (
-        evaluate_release_corpus(planned_cases, release_audits)
+        evaluate_release_corpus(
+            planned_cases,
+            release_audits,
+            repo_root=release_audit_repo_root,
+        )
         if campaign_config.proof_tier == "release"
         else discovery_corpus_summary(planned_cases)
     )
@@ -1928,13 +2016,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             selected_cases=selected_cases,
             planned_cases=planned_cases,
             release_audits=release_audits,
+            release_audit_repo_root=release_audit_repo_root,
             campaign_config=campaign_config,
             corpus_provenance=corpus_provenance,
             output_path=output_path,
             lease=lease,
+            finalize_lease=True,
         )
     finally:
-        lease.release()
+        if not lease.released:
+            lease.release()
 
 
 def _execute_matrix_campaign(
@@ -1943,10 +2034,12 @@ def _execute_matrix_campaign(
     selected_cases: tuple[GreenfieldMatrixCase, ...],
     planned_cases: tuple[GreenfieldMatrixCase, ...],
     release_audits: Sequence[Mapping[str, Any]],
+    release_audit_repo_root: Path = REPO_ROOT,
     campaign_config: MatrixCampaignConfig,
     corpus_provenance: Any,
     output_path: Path | None,
     lease: Any,
+    finalize_lease: bool = False,
 ) -> int:
     """Run one fully isolated proof campaign under its output lease."""
 
@@ -1989,6 +2082,7 @@ def _execute_matrix_campaign(
             ),
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
             release_audits=release_audits,
+            release_audit_repo_root=release_audit_repo_root,
         )
         commit_recovery = (
             run_installed_commit_recovery_proof(
@@ -2028,6 +2122,21 @@ def _execute_matrix_campaign(
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
     cleanup_proof = temp_cleanup_proof(temp_parent)
+    if finalize_lease:
+        try:
+            lease.release()
+        except RuntimeError as exc:
+            cleanup_proof = {
+                **cleanup_proof,
+                "status": "failed",
+                "run_namespace_cleanup": "failed",
+                "run_namespace_cleanup_error": str(exc),
+            }
+        else:
+            cleanup_proof = {
+                **cleanup_proof,
+                "run_namespace_cleanup": "passed",
+            }
     natural_rescue_proven = natural_rescue_quality_proven(results) or bool(
         natural_rescue and natural_rescue.natural_rescue_quality_proven
     )

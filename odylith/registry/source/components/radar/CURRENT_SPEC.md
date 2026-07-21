@@ -5,10 +5,8 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-07-01
 
 ## Purpose
 Radar is Odylith's authoritative workstream backlog and execution-evidence

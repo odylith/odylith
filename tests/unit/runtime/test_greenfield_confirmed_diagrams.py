@@ -55,6 +55,30 @@ def test_product_suffixed_project_label_does_not_trigger_atlas_copy_repair() -> 
     assert generated_public_copy_issues("mermaid", str(context["mermaid_source"])) == ()
 
 
+def test_mermaid_component_labels_collapse_adjacent_duplicate_words() -> None:
+    diagrams = confirmed_diagrams(
+        label="Disclosure Council Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {
+                "component_id": "review-workspace",
+                "label": "Disclosure Review Review Workspace",
+                "kind": "service",
+            },
+        ],
+        product_story="Council members need a traceable disclosure decision path.",
+        first_path="A council member records a disclosure and sees the review outcome.",
+        proof_boundary="The first release proves the recorded disclosure decision is reviewable.",
+        state_object="Disclosure Review Record",
+        evidence_record="Disclosure Decision Evidence",
+        human_actors=["Council member"],
+    )
+    rendered = "\n".join(str(row["mermaid_source"]) for row in diagrams)
+
+    assert not re.search(r"\breview\s+review\b", rendered, flags=re.IGNORECASE)
+    assert generated_public_copy_issues("mermaid", rendered) == ()
+
+
 def test_diagram_guides_do_not_repeat_articles_for_product_titles() -> None:
     diagrams = confirmed_diagrams(
         label="The Approved Lane Closure Workspace",

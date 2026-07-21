@@ -16,10 +16,8 @@
   ephemeral local execution paths such as `/tmp`, `/var/folders`,
   `/private/var`, and `/dev/fd`. Temporary intent files and shell descriptors
   are not durable learning anchors.
-Last updated: 2026-04-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-18
 
 ## Purpose
 Odylith Memory Contracts is the neutral packet and evidence-pack contract layer

@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_has_material_first_path_gap
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
@@ -202,10 +203,14 @@ def _requires_first_path_clarification(*, prompt: str, edit_evidence: str) -> bo
     edited_first_path = _section_first_path_text(edit_sections)
     if edited_first_path and not _anaphoric_first_path_actor(edited_first_path):
         return not _has_usable_first_path_evidence(edit_evidence)
+    if edit_evidence.strip() and _has_usable_first_path_evidence(edit_evidence):
+        return False
+    evidence_rows = tuple(value for value in (prompt, edit_evidence) if value.strip())
+    if any(prompt_has_material_first_path_gap(value) for value in evidence_rows):
+        return True
     return not any(
-        _has_usable_first_path_evidence(evidence) or _title_supports_first_path_hypothesis(evidence)
-        for evidence in (prompt, edit_evidence)
-        if evidence.strip()
+        _has_usable_first_path_evidence(value) or _title_supports_first_path_hypothesis(value)
+        for value in evidence_rows
     )
 
 
@@ -368,17 +373,12 @@ def _merge_edit_evidence(
             )
     _rebuild_operational_constraints_after_first_path_edit(merged, overrides=overrides)
     merged.update(overrides)
-    if "first_path" in overrides:
-        # The edit is the accepted product path; the original prompt remains evidence in the envelope.
-        merged["prompt"] = str(overrides["first_path"])
     normalized = normalize_confirmed_intent(
         merged,
         prompt=prompt,
         fallback_title=fallback_title,
         allow_prompt_validation_recovery=False,
     )
-    if "first_path" in overrides:
-        normalized["prompt"] = str(normalized["first_path"])
     return normalized
 
 

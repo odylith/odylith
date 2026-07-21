@@ -30,10 +30,8 @@
   same workstream anchor. A missing B-110 anchor is treated as benchmark
   corpus drift because it can create false `requires_widening` advisory noise
   even when required-path recall and validation are green.
-Last updated: 2026-07-18
+Last updated: 2026-07-20
 
-
-Last updated (UTC): 2026-04-28
 
 ## Purpose
 Benchmark is Odylith's local proof subsystem for measuring whether Odylith-on

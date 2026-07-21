@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import look
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import product_intent_source_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import LEADING_ARTICLES as _LEADING_ARTICLES
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import MODAL_MARKERS as _MODAL_MARKERS
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import PRODUCT_CONTAINER_TERMS as _PRODUCT_CONTAINER_TERMS
@@ -61,6 +62,7 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "builder",
         "controller",
         "database",
+        "data",
         "decision",
         "device",
         "engine",
@@ -137,6 +139,10 @@ _ORGANIZATION_ACTOR_TERMS = frozenset(
     }
 )
 _HUMAN_ROLE_SUFFIXES = ("ant", "ent", "er", "ian", "ist", "or", "ee", "owner")
+_ACTOR_BOUNDARY_RE = re.compile(
+    r",\s+(?=(?:the|a|an)\s+\S+(?:\s+\S+){0,3}\s+(?:is|are|can|must|will|should|[a-z]+s)\b)",
+    flags=re.IGNORECASE,
+)
 _MATERIAL_FRAGMENT_ACTION_WORDS = frozenset(
     {
         "approval",
@@ -194,13 +200,14 @@ def confirmation_from_operator_intent(
     """Return a structured confirmation when the host passed guidance instead of the visible answer."""
 
     raw_source = str(intent_text or "")
-    source = _clean(raw_source).strip(" .")
-    prompt_source = prompt_intent_source(raw_source)
-    recovered_first_path_source = prompt_source.first_path or prompt_first_path_source(raw_source)
-    title_source = _canonical_recovered_title_source(_recover_title_source(raw_source)) if prefer_product_title else ""
+    source = product_intent_source_text(raw_source)
+    product_source = _clean(source).strip(" .")
+    prompt_source = prompt_intent_source(source)
+    recovered_first_path_source = prompt_source.first_path or prompt_first_path_source(source)
+    title_source = _canonical_recovered_title_source(_recover_title_source(product_source)) if prefer_product_title else ""
     prompt_title_source = _canonical_recovered_title_source(prompt_source.title)
     evaluation = recovered_evaluation_context(
-        source=raw_source,
+        source=product_source,
         title_source=prompt_title_source or title_source,
         first_path_source=recovered_first_path_source,
     )
@@ -213,33 +220,50 @@ def confirmation_from_operator_intent(
         ),
         fallback="Recovered Product Workspace",
     ).canonical_title
-    device_owner_first_path = _device_owner_first_path(raw_source, title=title)
+    device_owner_first_path = _device_owner_first_path(product_source, title=title)
     recovered_source_has_non_human_subject = _path_starts_with_non_human_workflow_subject(recovered_first_path_source)
+    recovered_source_is_title_constraint = _path_is_title_qualified_product_constraint(
+        recovered_first_path_source,
+        title=title,
+    )
     usable_first_path_source = _usable_first_path_source(
         recovered_first_path_source,
         title=title,
-        preserve_one_line=bool(prompt_source.command_led and prompt_source.title and prompt_source.actor),
+        preserve_one_line=bool(
+            prompt_source.command_led
+            and prompt_source.title
+            and prompt_source.actor
+            and not _actor_uses_where_workflow(prompt_source.actor, source=product_source)
+        ),
         require_explicit_action=prompt_source.command_led,
     )
-    generic_context_source = (
-        (prompt_title_source or title_source or title)
-        if recovered_source_has_non_human_subject
-        else recovered_first_path_source
-    )
+    generic_context_source = title
+    if not recovered_source_is_title_constraint:
+        generic_context_source = (
+            (prompt_title_source or title_source or title)
+            if recovered_source_has_non_human_subject
+            else recovered_first_path_source
+        )
     first_path_source = (
         device_owner_first_path
         or usable_first_path_source
         or evaluation.first_path_source
         or _generic_first_path_source(title, source=generic_context_source)
     )
-    reviewer_obligations = operator_review_lens_obligations(raw_source)
+    reviewer_obligations = operator_review_lens_obligations(product_source)
     direct_actor_row = _prompt_actor_row(prompt_source.actor, first_path_source)
-    actor_rows = [direct_actor_row] if direct_actor_row else _human_actor_rows_from_first_path(first_path_source, title=title)
-    actor_rows = [
-        localized
-        for row in actor_rows
-        if (localized := project_specific_actor_row(row, project_focus=title))
-    ] or actor_rows
+    actor_rows = _unique_actor_rows(
+        [
+            *([direct_actor_row] if direct_actor_row else []),
+            *_human_actor_rows_from_first_path(first_path_source, title=title),
+        ]
+    )
+    if not direct_actor_row:
+        actor_rows = [
+            localized
+            for row in actor_rows
+            if (localized := project_specific_actor_row(row, project_focus=title))
+        ] or actor_rows
     lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
     outcome = _stable_outcome_phrase(
@@ -249,14 +273,18 @@ def confirmation_from_operator_intent(
     outcome_object = _object_result_phrase(outcome)
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
-    force_actor_modal = bool(prompt_source.actor and prompt_source.command_led)
+    force_actor_modal = bool(
+        prompt_source.actor
+        and prompt_source.command_led
+        and _actor_matches_product_focus(prompt_source.actor, title=title)
+    )
     actor_words = _words(prompt_source.actor)
     if (
         force_actor_modal
         and actor_words
         and _looks_plural(actor_words[-1])
         and first_path_source.casefold().startswith(f"{prompt_source.actor.casefold()} ")
-        and re.search(rf"\b{re.escape(prompt_source.actor)}\s+uses?\s+to\b", raw_source, flags=re.IGNORECASE)
+        and re.search(rf"\b{re.escape(prompt_source.actor)}\s+uses?\s+to\b", product_source, flags=re.IGNORECASE)
     ):
         force_actor_modal = False
     first_path_inline = _embedded_first_path_clause(
@@ -279,12 +307,13 @@ def confirmation_from_operator_intent(
     proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
     if evaluation.story:
         story = evaluation.story
+    story = _story_with_explicit_operator_context(story, context=prompt_source.operator_context)
     if evaluation.state_object:
         state = evaluation.state_object
     if evaluation.proof_boundary:
         proof = evaluation.proof_boundary
     proof = _proof_with_reviewer_obligations(proof, reviewer_obligations)
-    proof = proof_boundary_with_first_release_requirements(proof, raw_source)
+    proof = proof_boundary_with_first_release_requirements(proof, product_source)
     problem = (
         f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
         "together scattered context."
@@ -303,11 +332,9 @@ def confirmation_from_operator_intent(
         evaluation.assumptions or ("Release 0.0.1 proves the first path before broader automation or live integrations.",),
         reviewer_obligations,
     )
-    ambiguities = evaluation.ambiguities or (
-        "The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
-    )
-    evidence_requirements = evidence_anchor_phrases(raw_source)
-    operational_constraints = operational_constraint_phrases(raw_source)
+    ambiguities = evaluation.ambiguities
+    evidence_requirements = evidence_anchor_phrases(product_source)
+    operational_constraints = operational_constraint_phrases(product_source)
     hypothesis: dict[str, object] = {
         "title": title,
         "prompt": raw_source,
@@ -372,6 +399,8 @@ def _usable_first_path_source(
     text = _clean(value).strip(" .")
     if not text or _path_source_restates_title(text, title=title):
         return ""
+    if _path_is_title_qualified_product_constraint(text, title=title):
+        return ""
     if _path_starts_with_non_human_workflow_subject(text):
         return ""
     model = first_path_model(text)
@@ -397,19 +426,22 @@ def _usable_first_path_source(
 
 def _path_starts_with_non_human_workflow_subject(value: str) -> bool:
     words = _strip_leading_articles(_words(value))
-    if len(words) < 3:
-        return False
-    max_subject_words = min(5, len(words) - 1)
-    for action_index in range(1, max_subject_words + 1):
-        token = words[action_index].casefold().strip(".,:;")
-        if not (looks_like_base_action_token(token) or looks_like_finite_action_token(token)):
+    candidates = [words]
+    candidates.extend(words[index + 1 :] for index, word in enumerate(words[:-1]) if word.casefold() == "where")
+    for candidate in candidates:
+        if len(candidate) < 3:
             continue
-        subject_words = words[:action_index]
-        if _looks_like_actor_subject(subject_words):
-            return False
-        subject_terms = _semantic_terms(" ".join(subject_words))
-        if subject_terms & _NON_HUMAN_ACTOR_TERMS:
-            return True
+        max_subject_words = min(5, len(candidate) - 1)
+        for action_index in range(1, max_subject_words + 1):
+            token = candidate[action_index].casefold().strip(".,:;")
+            if not (looks_like_base_action_token(token) or looks_like_finite_action_token(token)):
+                continue
+            subject_words = candidate[:action_index]
+            if _looks_like_actor_subject(subject_words):
+                break
+            subject_terms = _semantic_terms(" ".join(subject_words))
+            if subject_terms & _NON_HUMAN_ACTOR_TERMS:
+                return True
     return False
 
 
@@ -418,11 +450,25 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
     path = _clean(first_path).strip(" .")
     if not actor_text or not path:
         return ""
-    action = re.sub(rf"^{re.escape(actor_text)}\s+", "", path, count=1, flags=re.IGNORECASE).strip(" .")
+    action = re.sub(
+        rf"^(?:(?:a|an|the)\s+)?{re.escape(actor_text)}\s+",
+        "",
+        path,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip(" .")
     action = _strip_relative_action_prefix(action)
     if not action:
         return ""
-    return _human_actor_row(actor_text, action, preserve_full_action=not _action_has_distinct_sequence(action))
+    return _human_actor_row(
+        actor_text,
+        action,
+        preserve_full_action=not (
+            _action_has_distinct_sequence(action)
+            or _ACTOR_BOUNDARY_RE.search(action)
+            or re.search(r"[.;]", action)
+        ),
+    )
 
 
 def _action_has_distinct_sequence(value: str) -> bool:
@@ -468,6 +514,23 @@ def _path_source_restates_title(value: str, *, title: str) -> bool:
     value_terms = _semantic_terms(value)
     title_terms = _semantic_terms(title)
     return bool(value_terms and title_terms and value_terms <= title_terms)
+
+
+def _path_is_title_qualified_product_constraint(value: str, *, title: str) -> bool:
+    """Reject product descriptions that express release boundaries, not user actions."""
+
+    text = _clean(value).strip(" .")
+    title_text = _clean(title).strip(" .")
+    if not text or not title_text:
+        return False
+    return bool(
+        re.match(
+            rf"^(?:a|an|the)\s+{re.escape(title_text)}\s+(?:that|which)\s+"
+            r"(?:avoids?|does\s+not|never|only\s+helps?|without)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _canonical_recovered_title_source(value: str) -> str:
@@ -682,6 +745,19 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
     return [f"{actor}: needs the product to {action} and keep the result visible and reviewable"]
 
 
+def _unique_actor_rows(rows: Sequence[str]) -> list[str]:
+    unique: list[str] = []
+    seen_labels: set[str] = set()
+    for row in rows:
+        text = _clean(row)
+        label = text.split(":", 1)[0].casefold()
+        if not text or not label or label in seen_labels:
+            continue
+        seen_labels.add(label)
+        unique.append(text)
+    return unique
+
+
 def _proof_with_reviewer_obligations(proof: str, obligations: Sequence[str]) -> str:
     base = _clean(proof).strip(" .")
     obligation_text = "; ".join(_clean(row).strip(" .") for row in obligations if _clean(row).strip(" ."))
@@ -690,6 +766,16 @@ def _proof_with_reviewer_obligations(proof: str, obligations: Sequence[str]) -> 
     if obligation_text.casefold() in base.casefold():
         return base
     return f"{base}. Reviewer obligations: {obligation_text}."
+
+
+def _story_with_explicit_operator_context(story: str, *, context: str) -> str:
+    """Keep a user-stated target context visible in product truth and projections."""
+
+    clean_story = _clean(story).strip()
+    clean_context = _clean(context).strip(" .")
+    if not clean_context or clean_context.casefold() in clean_story.casefold():
+        return clean_story
+    return f"{clean_story.rstrip(' .')}. The initial product scope serves {clean_context}."
 
 
 def _assumptions_with_reviewer_obligations(
@@ -712,6 +798,21 @@ def _fallback_actor_label(title: str) -> str:
     if candidate and _looks_like_actor_subject(_words(candidate)):
         return title_case_text(candidate)
     return f"{label} User"
+
+
+def _actor_matches_product_focus(actor: str, *, title: str) -> bool:
+    actor_words = [word.casefold().strip(".,:;") for word in _words(actor)]
+    title_words = [word.casefold().strip(".,:;") for word in _words(title)]
+    if title_words and title_words[-1] in _PRODUCT_CONTAINER_TERMS:
+        title_words.pop()
+    return bool(actor_words) and actor_words == title_words
+
+
+def _actor_uses_where_workflow(actor: str, *, source: str) -> bool:
+    value = _clean(actor).strip(" .")
+    if not value:
+        return False
+    return bool(re.search(rf"\bwhere\s+(?:the\s+)?{re.escape(value)}\b", source, flags=re.IGNORECASE))
 
 
 def _title_without_terminal_container(value: str) -> str:
@@ -1068,6 +1169,12 @@ def _first_word_index(words: Sequence[str], targets: set[str] | frozenset[str]) 
 def _human_actor_row(actor: str, action: str, *, preserve_full_action: bool = False) -> str:
     actor_words = _strip_leading_articles(_words(actor))
     actor_words, action = _repair_role_object_actor_split(actor_words, action)
+    terminal_actor_word = actor_words[-1].casefold().strip(".,:;") if actor_words else ""
+    if (
+        terminal_actor_word in _PRODUCT_CONTAINER_TERMS
+        and terminal_actor_word not in _HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS
+    ):
+        return ""
     actor_label = title_case_text(" ".join(actor_words))
     action_source = action if preserve_full_action else _primary_actor_action_segment(action)
     action_text = _base_actor_action_clause(action_source)
@@ -1149,7 +1256,8 @@ def _primary_actor_action_segment(value: str) -> str:
     text = _clean(value)
     if not text:
         return ""
-    return text.replace(";", ",").split(",", 1)[0].strip(" .")
+    text = _ACTOR_BOUNDARY_RE.split(text, maxsplit=1)[0]
+    return re.split(r"[;,.]", text, maxsplit=1)[0].strip(" .")
 
 
 def _looks_like_non_human_actor(value: str) -> bool:
