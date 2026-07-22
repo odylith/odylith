@@ -6,7 +6,9 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from greenfield_matrix_types import GreenfieldMatrixResult
+from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
+from greenfield_preconfirm_matrix_cases import case_expectation
 
 
 METAMORPHIC_OUTPUT_VERSION = "odylith.greenfield.matrix.metamorphic-output.v1"
@@ -17,7 +19,7 @@ def evaluate_metamorphic_outputs(
     cases: Sequence[GreenfieldMatrixCase],
     results: Sequence[GreenfieldMatrixResult],
 ) -> dict[str, Any]:
-    """Require equivalent-source variants to preserve sealed commit behavior, not just pair metadata."""
+    """Require equivalent-source variants to preserve their declared completion contract."""
 
     groups: dict[str, list[GreenfieldMatrixCase]] = {}
     for case in cases:
@@ -89,8 +91,34 @@ def _group_issues(
             issues.append(f"metamorphic group {group} case {case_id} lost its source identity")
         if provenance.get("source_artifact_sha256") not in expected_artifact_hashes:
             issues.append(f"metamorphic group {group} case {case_id} lost its source artifact identity")
-        issues.extend(_commit_invariant_issues(group=group, case_id=case_id, result=result, evidence=evidence))
+        issues.extend(
+            _completion_invariant_issues(
+                group=group,
+                case=case,
+                case_id=case_id,
+                result=result,
+                evidence=evidence,
+            )
+        )
     return issues
+
+
+def _completion_invariant_issues(
+    *,
+    group: str,
+    case: GreenfieldMatrixCase,
+    case_id: str,
+    result: GreenfieldMatrixResult,
+    evidence: Mapping[str, Any],
+) -> list[str]:
+    if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
+        return _clarification_invariant_issues(
+            group=group,
+            case_id=case_id,
+            result=result,
+            evidence=evidence,
+        )
+    return _commit_invariant_issues(group=group, case_id=case_id, result=result, evidence=evidence)
 
 
 def _commit_invariant_issues(
@@ -115,6 +143,44 @@ def _commit_invariant_issues(
         issues.append(f"metamorphic group {group} case {case_id} changed the sealed transaction hash at commit")
     if str(manifest_transaction.get("transaction_hash") or "").strip() != expected_hash:
         issues.append(f"metamorphic group {group} case {case_id} read back a different transaction hash")
+    return issues
+
+
+def _clarification_invariant_issues(
+    *,
+    group: str,
+    case_id: str,
+    result: GreenfieldMatrixResult,
+    evidence: Mapping[str, Any],
+) -> list[str]:
+    case = _mapping(evidence.get("case"))
+    clarification = _mapping(evidence.get("clarification"))
+    no_write = _mapping(evidence.get("no_write"))
+    receipt = _mapping(evidence.get("preconfirm_dry_run"))
+    required_fields = clarification.get("required_fields")
+    before_record_count = no_write.get("before_record_count")
+    after_record_count = no_write.get("after_record_count")
+    issues: list[str] = []
+    if str(case.get("expectation") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
+        issues.append(f"metamorphic group {group} case {case_id} lost its clarification expectation")
+    if str(clarification.get("mode") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
+        issues.append(f"metamorphic group {group} case {case_id} did not return the required clarification mode")
+    if not _plain_language_question(clarification.get("question")):
+        issues.append(f"metamorphic group {group} case {case_id} did not ask exactly one plain-language clarification question")
+    if required_fields != ["first_path"]:
+        issues.append(f"metamorphic group {group} case {case_id} did not require only first_path")
+    if clarification.get("returncode") != 0:
+        issues.append(f"metamorphic group {group} case {case_id} did not complete clarification cleanly")
+    if no_write.get("changed_records") != []:
+        issues.append(f"metamorphic group {group} case {case_id} changed governed records before clarification")
+    if not _matching_record_counts(before_record_count, after_record_count):
+        issues.append(f"metamorphic group {group} case {case_id} did not prove unchanged governed record counts")
+    if no_write.get("staged_transaction_present") is not False:
+        issues.append(f"metamorphic group {group} case {case_id} staged a transaction before clarification")
+    if receipt:
+        issues.append(f"metamorphic group {group} case {case_id} created a dry-run receipt before clarification")
+    if _mapping(result.commit_manifest_summary):
+        issues.append(f"metamorphic group {group} case {case_id} produced a commit manifest before clarification")
     return issues
 
 
@@ -155,6 +221,24 @@ def _mapping(value: Any) -> dict[str, Any]:
 
 def _is_sha256(value: str) -> bool:
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
+
+def _plain_language_question(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    question = value.strip()
+    words = tuple(token for token in question.replace("?", " ").split() if any(character.isalpha() for character in token))
+    return "\n" not in question and len(words) >= 3 and question.endswith("?") and question.count("?") == 1
+
+
+def _matching_record_counts(before: Any, after: Any) -> bool:
+    return (
+        isinstance(before, int)
+        and not isinstance(before, bool)
+        and isinstance(after, int)
+        and not isinstance(after, bool)
+        and before == after
+    )
 
 
 __all__ = ["METAMORPHIC_OUTPUT_VERSION", "evaluate_metamorphic_outputs"]

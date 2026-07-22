@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import sys
 
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
@@ -40,6 +41,86 @@ def test_metamorphic_output_rejects_changed_readback_hash() -> None:
 
     assert evaluation["status"] == "failed"
     assert "changed the sealed transaction hash" in evaluation["issues"][0]
+
+
+def test_metamorphic_output_accepts_required_clarification_without_a_transaction() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(_result(committed_case), _clarification_result(clarification_case)),
+    )
+
+    assert evaluation["status"] == "passed"
+    assert evaluation["complete_group_count"] == 1
+
+
+def test_metamorphic_output_rejects_clarification_that_stages_a_transaction() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(clarification_case, staged_transaction_present=True),
+        ),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("staged a transaction before clarification" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_rejects_noncanonical_clarification() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(clarification_case, question="Choose the first task", required_fields=("target_user",)),
+        ),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("did not ask exactly one plain-language clarification question" in issue for issue in evaluation["issues"])
+    assert any("did not require only first_path" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_rejects_clarification_with_changed_record_count() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(clarification_case, after_record_count=136),
+        ),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("did not prove unchanged governed record counts" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_rejects_clarification_with_write_artifacts() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(
+                clarification_case,
+                changed_records=("odylith/radar/source/workstreams.v1.json",),
+                preconfirm_dry_run=True,
+                commit_manifest=True,
+            ),
+        ),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("changed governed records before clarification" in issue for issue in evaluation["issues"])
+    assert any("created a dry-run receipt before clarification" in issue for issue in evaluation["issues"])
+    assert any("produced a commit manifest before clarification" in issue for issue in evaluation["issues"])
 
 
 def test_metamorphic_output_is_pending_until_all_declared_variants_finish() -> None:
@@ -99,6 +180,11 @@ def _cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
     )
 
 
+def _clarification_pair_cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
+    committed_case, topic_case = _cases()
+    return committed_case, replace(topic_case, expectation="clarification_required")
+
+
 def _result(case: GreenfieldMatrixCase, *, committed_hash: str = HASH) -> GreenfieldMatrixResult:
     summary = {
         "write_transaction": {
@@ -119,4 +205,44 @@ def _result(case: GreenfieldMatrixCase, *, committed_hash: str = HASH) -> Greenf
             "case": case_evidence(case),
             "preconfirm_dry_run": {"status": "compiled", "transaction_hash": HASH},
         },
+    )
+
+
+def _clarification_result(
+    case: GreenfieldMatrixCase,
+    *,
+    question: str = "What is the first complete task a person should finish?",
+    required_fields: tuple[str, ...] = ("first_path",),
+    staged_transaction_present: bool = False,
+    before_record_count: int = 135,
+    after_record_count: int = 135,
+    changed_records: tuple[str, ...] = (),
+    preconfirm_dry_run: bool = False,
+    commit_manifest: bool = False,
+) -> GreenfieldMatrixResult:
+    evidence = {
+        "case": case_evidence(case),
+        "clarification": {
+            "mode": "clarification_required",
+            "question": question,
+            "required_fields": list(required_fields),
+            "returncode": 0,
+        },
+        "no_write": {
+            "before_record_count": before_record_count,
+            "after_record_count": after_record_count,
+            "changed_records": list(changed_records),
+            "staged_transaction_present": staged_transaction_present,
+        },
+    }
+    if preconfirm_dry_run:
+        evidence["preconfirm_dry_run"] = {"status": "compiled", "transaction_hash": HASH}
+    return GreenfieldMatrixResult(
+        name=case.name,
+        status="passed",
+        create_seconds=1.0,
+        counts=GreenfieldArtifactCounts(),
+        quality=GreenfieldQualityVerdict(True, (), {}, {}, 10, ()),
+        commit_manifest_summary={"unexpected": "manifest"} if commit_manifest else {},
+        evidence=evidence,
     )
