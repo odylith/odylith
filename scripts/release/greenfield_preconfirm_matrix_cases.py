@@ -71,17 +71,6 @@ def case_evidence(case: GreenfieldMatrixCase) -> dict[str, object]:
     return evidence
 
 
-def raise_for_release_case_expectations(cases: tuple[GreenfieldMatrixCase, ...], *, proof_tier: str) -> None:
-    if str(proof_tier).strip().casefold() != "release":
-        return
-    clarification_cases = [case.name for case in cases if case_expectation(case) != DEFAULT_CASE_EXPECTATION]
-    if clarification_cases:
-        raise RuntimeError(
-            "release proof requires transaction_committed cases; clarification_required cases are discovery-only: "
-            + ", ".join(clarification_cases)
-        )
-
-
 def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
     """Return the high-variance release matrix used for greenfield proof."""
 
@@ -304,6 +293,5 @@ __all__ = [
     "case_expectation",
     "default_cases",
     "historical_domain_leakage_sentinels",
-    "raise_for_release_case_expectations",
     "rescue_smoke_case",
 ]

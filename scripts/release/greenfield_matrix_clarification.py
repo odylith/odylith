@@ -14,6 +14,9 @@ from greenfield_matrix_types import GreenfieldQualityVerdict
 
 
 CLARIFICATION_REQUIRED_EXPECTATION = "clarification_required"
+FOCUSED_FIRST_PATH_QUESTION = (
+    "What is the first complete task the product should help a person finish, and what result should they see?"
+)
 _NO_WRITE_ROOTS = (Path(".odylith/runtime/greenfield"), Path("odylith"))
 _STAGED_TRANSACTION_PATH = Path(".odylith/runtime/greenfield/product-create-transaction.v1.json")
 
@@ -27,6 +30,10 @@ class ClarificationExecution:
     after_record_count: int
     changed_records: tuple[str, ...]
     staged_transaction_present: bool
+    write_audit_active: bool | None = None
+    write_attempts: tuple[str, ...] = ()
+    subprocess_attempts: tuple[str, ...] = ()
+    write_audit_error: str = ""
 
 
 def run_expected_clarification(
@@ -64,6 +71,14 @@ def clarification_contract_issues(execution: ClarificationExecution) -> tuple[st
 
     issues: list[str] = []
     payload = execution.payload
+    if execution.write_audit_active is not True:
+        issues.append("clarification proposal did not activate the installed write audit")
+    if execution.write_audit_error:
+        issues.append("clarification proposal could not complete the installed write audit")
+    if execution.write_attempts:
+        issues.append("clarification proposal attempted repository writes: " + ", ".join(execution.write_attempts))
+    if execution.subprocess_attempts:
+        issues.append("clarification proposal attempted a child process: " + ", ".join(execution.subprocess_attempts))
     if execution.returncode != 0:
         issues.append(f"clarification proposal exited with code {execution.returncode}")
     if str(payload.get("mode") or "").strip() != CLARIFICATION_REQUIRED_EXPECTATION:
@@ -77,8 +92,8 @@ def clarification_contract_issues(execution: ClarificationExecution) -> tuple[st
     clarification = payload.get("clarification") if isinstance(payload.get("clarification"), Mapping) else {}
     if set(clarification) != {"question", "required_fields"}:
         issues.append("clarification payload must contain only question and required_fields")
-    if not _plain_language_question(clarification.get("question")):
-        issues.append("clarification payload must contain exactly one plain-language question")
+    if not focused_first_path_question(clarification.get("question")):
+        issues.append("clarification payload must contain the focused first-path question")
     if clarification.get("required_fields") != ["first_path"]:
         issues.append("clarification payload must require only first_path")
     if execution.staged_transaction_present:
@@ -121,12 +136,8 @@ def _snapshot_no_write_roots(repo_root: Path) -> dict[str, str]:
     return records
 
 
-def _plain_language_question(value: Any) -> bool:
-    if not isinstance(value, str):
-        return False
-    question = value.strip()
-    words = tuple(token for token in question.replace("?", " ").split() if any(char.isalpha() for char in token))
-    return "\n" not in question and len(words) >= 3 and question.endswith("?") and question.count("?") == 1
+def focused_first_path_question(value: Any) -> bool:
+    return isinstance(value, str) and value.strip() == FOCUSED_FIRST_PATH_QUESTION
 
 
 def _sha256_file(path: Path) -> str:
@@ -135,3 +146,14 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+__all__ = [
+    "CLARIFICATION_REQUIRED_EXPECTATION",
+    "FOCUSED_FIRST_PATH_QUESTION",
+    "ClarificationExecution",
+    "clarification_contract_issues",
+    "clarification_quality_verdict",
+    "focused_first_path_question",
+    "run_expected_clarification",
+]

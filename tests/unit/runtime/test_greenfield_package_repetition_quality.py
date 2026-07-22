@@ -125,6 +125,33 @@ def test_repetition_gate_allows_shared_customer_metadata() -> None:
     assert "repeats noncanonical prose" not in "\n".join(issues)
 
 
+def test_repetition_gate_allows_concrete_workstream_validation_across_projections() -> None:
+    validation = (
+        "Validate a successful recipe sequencer path, a blocked path, replay, role access, privacy handling, and evidence visibility."
+    )
+    package = SimpleNamespace(
+        proposal={
+            "backlog": [
+                {
+                    "title": "Recipe Sequencer",
+                    "validation": [validation],
+                }
+            ]
+        },
+        backlog_result={
+            "idea_files": {"B-001.md": f"# Recipe Sequencer\n\n{validation}\n"},
+        },
+        rendered_component_specs={"recipe-sequencer.md": f"# Recipe Sequencer\n\n{validation}\n"},
+        rendered_atlas_sources={"recipe-sequencer.mmd": f"flowchart LR\n  v[\"{validation}\"]\n"},
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
 def test_repetition_gate_allows_complete_semantic_event_custody() -> None:
     event = "A supervisor reviews the decision package with traceable documents, comments, checks, and final status"
     package = SimpleNamespace(

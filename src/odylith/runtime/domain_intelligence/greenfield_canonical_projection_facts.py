@@ -74,12 +74,11 @@ def canonical_projection_facts(proposal: Mapping[str, Any]) -> tuple[CanonicalPr
     """Return typed source facts that can be projected without being slop."""
 
     semantic_model = _mapping(proposal.get("semantic_model"))
-    if not _complete_semantic_source(semantic_model):
-        return ()
-    first_path = _mapping(semantic_model.get("first_path_contract"))
     facts: list[CanonicalProjectionFact] = []
-    facts.extend(_first_path_facts(first_path))
+    if _complete_semantic_source(semantic_model):
+        facts.extend(_first_path_facts(_mapping(semantic_model.get("first_path_contract"))))
     facts.extend(_component_facts(proposal.get("components")))
+    facts.extend(_backlog_validation_facts(proposal.get("backlog")))
     return _canonical_projection_variants(facts)
 
 
@@ -285,6 +284,51 @@ def _component_facts(value: Any) -> list[CanonicalProjectionFact]:
             if normalize_string(text)
         )
     return rows
+
+
+def _backlog_validation_facts(value: Any) -> list[CanonicalProjectionFact]:
+    """Expose concrete workstream validation as reusable product contract facts."""
+
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return []
+    rows: list[CanonicalProjectionFact] = []
+    for index, item in enumerate(value, start=1):
+        if not isinstance(item, Mapping):
+            continue
+        subject = normalize_string(item.get("title") or item.get("summary") or item.get("problem"))
+        for validation in text_values(item.get("validation")):
+            text = normalize_string(validation)
+            if not _concrete_workstream_validation(text, subject=subject):
+                continue
+            rows.append(
+                CanonicalProjectionFact(
+                    text=text,
+                    source_layer="backlog_contract",
+                    semantic_node_id=f"backlog[{index}].validation",
+                    source_path="proposal.backlog.validation",
+                    allowed_projection_ids=("radar", "registry", "atlas", "project_brief", "next_steps"),
+                    allowed_surface_roles=("validation", "proof", "implementation_prompt"),
+                    repair_owner="semantic_projection_custody",
+                )
+            )
+    return rows
+
+
+def _concrete_workstream_validation(value: str, *, subject: str) -> bool:
+    """Avoid treating generic boilerplate as a canonical cross-surface fact."""
+
+    text = normalize_string(value)
+    subject_terms = {
+        term.casefold()
+        for term in normalize_string(subject).split()
+        if len(term.strip(".,;:()[]{}")) >= 5
+    }
+    value_terms = {
+        term.casefold().strip(".,;:()[]{}")
+        for term in text.split()
+        if len(term.strip(".,;:()[]{}")) >= 5
+    }
+    return len(text.split()) >= 9 and bool(subject_terms & value_terms)
 
 
 def _first_path_step_values(value: Any) -> list[str]:

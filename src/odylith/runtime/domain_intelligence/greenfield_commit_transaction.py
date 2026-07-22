@@ -12,12 +12,20 @@ from typing import Any
 from odylith import __version__
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_COMPILER,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_RECEIPT_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
 
@@ -107,7 +115,11 @@ class SealedProductCreateCommit:
         }
 
 
-def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
+def load_sealed_product_create_commit(
+    path: Path,
+    *,
+    repo_root: Path | None = None,
+) -> SealedProductCreateCommit:
     """Load only the sealed fields required by the post-confirm writer."""
 
     target = Path(path).expanduser()
@@ -176,6 +188,15 @@ def load_sealed_product_create_commit(path: Path) -> SealedProductCreateCommit:
         or not isinstance(transaction_summary, Mapping)
     ):
         raise ValueError("ProductCreateTransaction is missing its sealed commit package")
+    compiler_provenance = payload.get("compiler_provenance")
+    if not isinstance(compiler_provenance, Mapping):
+        raise ValueError("ProductCreateTransaction is missing compiler provenance")
+    if repo_root is not None:
+        require_product_create_transaction_compiler_provenance_payload(
+            compiler_provenance,
+            quality_manifest=commit_manifest_preview,
+            repo_root=repo_root,
+        )
     sealed = SealedProductCreateCommit(
         version=PRODUCT_CREATE_TRANSACTION_VERSION,
         release_selector=str(payload.get("release_selector", "")).strip(),
@@ -209,6 +230,54 @@ def require_sealed_commit_transaction(transaction: Any) -> None:
     package = getattr(transaction, "prewrite_package", None)
     write_set = getattr(package, "repository_write_set", None)
     greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+
+
+def require_product_create_transaction_compiler_provenance_payload(
+    provenance: Mapping[str, Any],
+    *,
+    quality_manifest: Mapping[str, Any],
+    repo_root: Path,
+) -> None:
+    """Validate compiler provenance before the transaction enters the write boundary."""
+
+    root = Path(repo_root).expanduser().resolve()
+    expected = {
+        "compiler": PRODUCT_CREATE_TRANSACTION_COMPILER,
+        "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
+        "phase": "pre_confirm_compile",
+        "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
+        "repo_root_fingerprint": hashlib.sha256(str(root).encode("utf-8")).hexdigest(),
+        "quality_manifest_version": str(quality_manifest.get("version", "")).strip(),
+        "quality_manifest_engine": str(quality_manifest.get("engine", "")).strip(),
+    }
+    for key, expected_value in expected.items():
+        if str(provenance.get(key, "")).strip() != expected_value:
+            raise ValueError(
+                "ProductCreateTransaction compiler provenance was invalidated by a runtime or repository-context change; "
+                "no Product Intent was rejected and no governed records were written. "
+                "Rebuild the pre-confirm transaction before committing."
+            )
+    identity = provenance.get("compiler_identity") if isinstance(provenance.get("compiler_identity"), Mapping) else {}
+    expected_identity = build_product_create_transaction_compiler_identity()
+    for key, expected_value in expected_identity.items():
+        if identity.get(key) != expected_value:
+            raise ValueError(
+                "ProductCreateTransaction compiler identity was invalidated by a runtime or compiler change; "
+                "no Product Intent or compiled artifact failed, and no governed records were written. "
+                "Rebuild the pre-confirm transaction before committing."
+            )
+    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != POST_CONFIRM_ALLOWED_OPERATIONS:
+        raise ValueError(
+            "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
+            "no Product Intent was rejected and no governed records were written. "
+            "Rebuild the pre-confirm transaction before committing."
+        )
+    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != POST_CONFIRM_FORBIDDEN_OPERATIONS:
+        raise ValueError(
+            "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
+            "no Product Intent was rejected and no governed records were written. "
+            "Rebuild the pre-confirm transaction before committing."
+        )
 
 
 def build_product_create_transaction_compiler_identity() -> dict[str, Any]:
@@ -281,5 +350,6 @@ __all__ = [
     "build_product_create_transaction_compiler_identity",
     "canonical_product_create_transaction_receipt_bytes",
     "load_sealed_product_create_commit",
+    "require_product_create_transaction_compiler_provenance_payload",
     "require_sealed_commit_transaction",
 ]

@@ -381,7 +381,6 @@ def test_commit_treats_product_quality_and_authority_as_opaque_after_hash_confir
     payload["quality_manifest"]["status"] = "failed"
     payload["intent_authority"]["authority_snapshot_sha256"] = "not-a-sha256"
     payload["proposal"][PRODUCT_INTENT_AUTHORITY_KEY]["authority_snapshot_sha256"] = "not-a-sha256"
-    payload["compiler_provenance"]["post_confirm_allowed_operations"] = []
     rewritten_hash = _rewrite_sealed_transaction(transaction_path, payload)
 
     result = greenfield_create_commit.commit_greenfield_create_transaction(
@@ -583,18 +582,27 @@ def test_canonical_create_cli_avoids_preconfirm_transaction_runtime(tmp_path: Pa
         {**product_create_transaction_compiler_identity(), "source_files_sha256": "stale"},
     ),
 )
-def test_commit_treats_compiler_identity_as_opaque_preconfirm_evidence(
+def test_commit_rejects_compiler_identity_drift_before_the_write_boundary(
     tmp_path: Path,
     identity: Mapping[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     transaction = _replace_compiler_identity(_transaction(tmp_path), identity)
-    transaction = seal_compiled_greenfield_transaction(repo_root=tmp_path, transaction=transaction)
+    transaction_path = tmp_path / "product-create-transaction.v1.json"
+    greenfield_create_transaction.write_compiled_product_create_transaction_file(transaction_path, transaction)
 
-    result = greenfield_create_commit.commit_greenfield_create_transaction(
-        repo_root=tmp_path,
-        transaction_file=transaction.transaction_file,
-        transaction_hash=transaction.transaction_hash,
-        confirm=True,
-    )
+    def forbidden(*_args: Any, **_kwargs: Any) -> None:
+        raise AssertionError("compiler identity drift must fail before the write boundary")
 
-    assert result["repository_write_set"]["status"] == "passed"
+    monkeypatch.setattr(greenfield_create_commit, "GreenfieldApplyTransaction", forbidden)
+    monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", forbidden)
+
+    with pytest.raises(ValueError, match="compiler (?:identity|provenance) was invalidated"):
+        greenfield_create_commit.commit_greenfield_create_transaction(
+            repo_root=tmp_path,
+            transaction_file=transaction_path,
+            transaction_hash=transaction.transaction_hash,
+            confirm=True,
+        )
+
+    assert not (tmp_path / "odylith/radar/source").exists()

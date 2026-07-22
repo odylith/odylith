@@ -65,6 +65,7 @@ def run_command_with_group_timeout(
     command: list[str],
     timeout: float,
     on_started: Callable[[int, int], None] | None = None,
+    pass_fds: tuple[int, ...] = (),
 ) -> subprocess.CompletedProcess[str]:
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("command timeout must be a positive finite number")
@@ -76,6 +77,7 @@ def run_command_with_group_timeout(
         stderr=subprocess.PIPE,
         text=True,
         start_new_session=True,
+        pass_fds=pass_fds,
     )
     started_at = time.monotonic()
     observer = _COMMAND_LIFECYCLE_OBSERVER.get()

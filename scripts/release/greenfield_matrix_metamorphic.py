@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from greenfield_matrix_types import GreenfieldMatrixResult
+from greenfield_matrix_clarification import focused_first_path_question
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
@@ -165,8 +166,8 @@ def _clarification_invariant_issues(
         issues.append(f"metamorphic group {group} case {case_id} lost its clarification expectation")
     if str(clarification.get("mode") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
         issues.append(f"metamorphic group {group} case {case_id} did not return the required clarification mode")
-    if not _plain_language_question(clarification.get("question")):
-        issues.append(f"metamorphic group {group} case {case_id} did not ask exactly one plain-language clarification question")
+    if not focused_first_path_question(clarification.get("question")):
+        issues.append(f"metamorphic group {group} case {case_id} did not ask the focused first-path question")
     if required_fields != ["first_path"]:
         issues.append(f"metamorphic group {group} case {case_id} did not require only first_path")
     if clarification.get("returncode") != 0:
@@ -177,6 +178,14 @@ def _clarification_invariant_issues(
         issues.append(f"metamorphic group {group} case {case_id} did not prove unchanged governed record counts")
     if no_write.get("staged_transaction_present") is not False:
         issues.append(f"metamorphic group {group} case {case_id} staged a transaction before clarification")
+    if no_write.get("write_audit_active") is not True:
+        issues.append(f"metamorphic group {group} case {case_id} did not activate the installed write audit")
+    if no_write.get("write_attempts") != []:
+        issues.append(f"metamorphic group {group} case {case_id} attempted repository writes before clarification")
+    if no_write.get("subprocess_attempts") != []:
+        issues.append(f"metamorphic group {group} case {case_id} attempted a child process before clarification")
+    if str(no_write.get("write_audit_error") or "").strip():
+        issues.append(f"metamorphic group {group} case {case_id} hit an installed write-audit error")
     if receipt:
         issues.append(f"metamorphic group {group} case {case_id} created a dry-run receipt before clarification")
     if _mapping(result.commit_manifest_summary):
@@ -221,14 +230,6 @@ def _mapping(value: Any) -> dict[str, Any]:
 
 def _is_sha256(value: str) -> bool:
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
-
-
-def _plain_language_question(value: Any) -> bool:
-    if not isinstance(value, str):
-        return False
-    question = value.strip()
-    words = tuple(token for token in question.replace("?", " ").split() if any(character.isalpha() for character in token))
-    return "\n" not in question and len(words) >= 3 and question.endswith("?") and question.count("?") == 1
 
 
 def _matching_record_counts(before: Any, after: Any) -> bool:

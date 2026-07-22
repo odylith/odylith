@@ -12,6 +12,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
 from greenfield_matrix_campaign import MatrixCampaignConfig
 from greenfield_matrix_campaign import campaign_summary
+from greenfield_matrix_clarification import FOCUSED_FIRST_PATH_QUESTION
 from greenfield_matrix_metamorphic import evaluate_metamorphic_outputs
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
@@ -82,7 +83,7 @@ def test_metamorphic_output_rejects_noncanonical_clarification() -> None:
     )
 
     assert evaluation["status"] == "failed"
-    assert any("did not ask exactly one plain-language clarification question" in issue for issue in evaluation["issues"])
+    assert any("did not ask the focused first-path question" in issue for issue in evaluation["issues"])
     assert any("did not require only first_path" in issue for issue in evaluation["issues"])
 
 
@@ -121,6 +122,22 @@ def test_metamorphic_output_rejects_clarification_with_write_artifacts() -> None
     assert any("changed governed records before clarification" in issue for issue in evaluation["issues"])
     assert any("created a dry-run receipt before clarification" in issue for issue in evaluation["issues"])
     assert any("produced a commit manifest before clarification" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_rejects_clarification_without_installed_write_audit() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(clarification_case, write_audit_active=False, write_audit_error="trace unavailable"),
+        ),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("did not activate the installed write audit" in issue for issue in evaluation["issues"])
+    assert any("hit an installed write-audit error" in issue for issue in evaluation["issues"])
 
 
 def test_metamorphic_output_is_pending_until_all_declared_variants_finish() -> None:
@@ -211,7 +228,7 @@ def _result(case: GreenfieldMatrixCase, *, committed_hash: str = HASH) -> Greenf
 def _clarification_result(
     case: GreenfieldMatrixCase,
     *,
-    question: str = "What is the first complete task a person should finish?",
+    question: str = FOCUSED_FIRST_PATH_QUESTION,
     required_fields: tuple[str, ...] = ("first_path",),
     staged_transaction_present: bool = False,
     before_record_count: int = 135,
@@ -219,6 +236,10 @@ def _clarification_result(
     changed_records: tuple[str, ...] = (),
     preconfirm_dry_run: bool = False,
     commit_manifest: bool = False,
+    write_audit_active: bool = True,
+    write_attempts: tuple[str, ...] = (),
+    subprocess_attempts: tuple[str, ...] = (),
+    write_audit_error: str = "",
 ) -> GreenfieldMatrixResult:
     evidence = {
         "case": case_evidence(case),
@@ -233,6 +254,10 @@ def _clarification_result(
             "after_record_count": after_record_count,
             "changed_records": list(changed_records),
             "staged_transaction_present": staged_transaction_present,
+            "write_audit_active": write_audit_active,
+            "write_attempts": list(write_attempts),
+            "subprocess_attempts": list(subprocess_attempts),
+            "write_audit_error": write_audit_error,
         },
     }
     if preconfirm_dry_run:

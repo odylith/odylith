@@ -37,6 +37,28 @@ def _module():
     return _load_module(SCRIPTS_ROOT / "greenfield_preconfirm_matrix.py", "greenfield_preconfirm_matrix")
 
 
+def _stub_active_clarification_audit(monkeypatch: pytest.MonkeyPatch, module) -> None:
+    class ActiveAudit:
+        pass_fds: tuple[int, ...] = ()
+
+        def environment(self) -> dict[str, str]:
+            return {}
+
+        def command(self, *, runtime_python: Path, arguments: tuple[str, ...]) -> tuple[str, ...]:
+            _ = runtime_python
+            return ("./.odylith/bin/odylith", *arguments)
+
+        def finish(self) -> SimpleNamespace:
+            return SimpleNamespace(
+                active=True,
+                write_attempts=(),
+                subprocess_attempts=(),
+                error="",
+            )
+
+    monkeypatch.setattr(module, "begin_installed_write_audit", lambda **_kwargs: ActiveAudit())
+
+
 def _scoring_module():
     if str(SCRIPTS_ROOT) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_ROOT))
@@ -845,7 +867,7 @@ def _clarification_payload() -> dict[str, object]:
     return {
         "mode": "clarification_required",
         "clarification": {
-            "question": "What is the first complete path a site coordinator follows?",
+            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
             "required_fields": ["first_path"],
         },
     }
@@ -1027,6 +1049,7 @@ def test_explicit_clarification_expectation_passes_without_create_or_records(
     monkeypatch, tmp_path: Path
 ) -> None:
     module = _module()
+    _stub_active_clarification_audit(monkeypatch, module)
     commands: list[list[str]] = []
     repo_root = tmp_path / "clarification-repo"
 
@@ -1060,12 +1083,16 @@ def test_explicit_clarification_expectation_passes_without_create_or_records(
     assert result.evidence["case"]["expectation"] == "clarification_required"
     assert result.evidence["clarification"] == {
         "mode": "clarification_required",
-        "question": "What is the first complete path a site coordinator follows?",
+        "question": "What is the first complete task the product should help a person finish, and what result should they see?",
         "required_fields": ["first_path"],
         "returncode": 0,
     }
     assert result.evidence["no_write"]["changed_records"] == []
     assert result.evidence["no_write"]["staged_transaction_present"] is False
+    assert result.evidence["no_write"]["write_audit_active"] is True
+    assert result.evidence["no_write"]["write_attempts"] == []
+    assert result.evidence["no_write"]["subprocess_attempts"] == []
+    assert result.evidence["no_write"]["write_audit_error"] == ""
     assert not (repo_root / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
     assert not (repo_root / "odylith").exists()
 
@@ -1074,6 +1101,7 @@ def test_explicit_clarification_expectation_rejects_staged_transaction_record(
     monkeypatch, tmp_path: Path
 ) -> None:
     module = _module()
+    _stub_active_clarification_audit(monkeypatch, module)
     commands: list[list[str]] = []
     repo_root = tmp_path / "clarification-repo"
 
@@ -1105,12 +1133,12 @@ def test_explicit_clarification_expectation_rejects_staged_transaction_record(
     assert result.status == "failed"
     assert result.quality.passed is False
     assert "clarification proposal created a staged transaction record" in result.quality.issues
-    assert any("created or changed governed or staged records" in issue for issue in result.quality.issues)
     assert not any(command[1:3] == ["greenfield", "create"] for command in commands)
 
 
 def test_explicit_clarification_expectation_rejects_extra_payload_fields(monkeypatch, tmp_path: Path) -> None:
     module = _module()
+    _stub_active_clarification_audit(monkeypatch, module)
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "propose" in command:
@@ -1140,6 +1168,7 @@ def test_explicit_clarification_expectation_rejects_extra_payload_fields(monkeyp
 
 def test_explicit_clarification_expectation_rejects_reply_instruction_inside_question(monkeypatch, tmp_path: Path) -> None:
     module = _module()
+    _stub_active_clarification_audit(monkeypatch, module)
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "propose" in command:
@@ -1166,7 +1195,100 @@ def test_explicit_clarification_expectation_rejects_reply_instruction_inside_que
     )
 
     assert result.status == "failed"
-    assert "clarification payload must contain exactly one plain-language question" in result.quality.issues
+    assert "clarification payload must contain the focused first-path question" in result.quality.issues
+
+
+def test_explicit_clarification_expectation_rejects_persisted_write_attempt(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    _stub_active_clarification_audit(monkeypatch, module)
+    repo_root = tmp_path / "clarification-repo"
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "propose" in command:
+            _write(cwd / "odylith/radar/source/workstreams.v1.json", "must not persist\n")
+            return subprocess.CompletedProcess(command, 0, json.dumps(_clarification_payload()), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="ambiguous cell therapy",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+            expectation="clarification_required",
+        ),
+        repo_root=repo_root,
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "failed"
+    assert any("created or changed governed or staged records" in issue for issue in result.quality.issues)
+    assert result.evidence["no_write"]["write_audit_active"] is True
+    assert (repo_root / "odylith/radar/source/workstreams.v1.json").exists()
+
+
+def test_explicit_clarification_expectation_requires_an_active_installed_write_audit(
+    monkeypatch, tmp_path: Path
+) -> None:
+    module = _module()
+    repo_root = tmp_path / "clarification-repo"
+    _write(repo_root / ".odylith/bin/odylith", "#!/usr/bin/env bash\n")
+    runtime_python = repo_root / ".odylith/runtime/current/bin/python"
+    runtime_python.parent.mkdir(parents=True, exist_ok=True)
+    runtime_python.symlink_to(sys.executable)
+
+    def fake_run(*, cwd, env, command, timeout, pass_fds):  # noqa: ANN001
+        assert pass_fds
+        if "propose" in command:
+            return subprocess.CompletedProcess(command, 0, json.dumps(_clarification_payload()), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="ambiguous cell therapy",
+            prompt="Create a cell therapy proposal with several possible operating paths.",
+            required_terms=("cell", "therapy"),
+            expectation="clarification_required",
+        ),
+        repo_root=repo_root,
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+        skip_install=True,
+        require_write_audit=True,
+    )
+
+    assert result.status == "failed"
+    assert "clarification proposal did not activate the installed write audit" in result.quality.issues
+    assert result.evidence["no_write"]["write_audit_active"] is False
+    assert result.evidence["no_write"]["write_audit_error"] == "installed write audit did not activate"
+
+
+def test_explicit_clarification_expectation_cannot_opt_out_of_the_write_audit(tmp_path: Path) -> None:
+    module = _module()
+    repo_root = tmp_path / "clarification-repo"
+    _write(repo_root / ".odylith/bin/odylith", "#!/usr/bin/env bash\n")
+
+    with pytest.raises(ValueError, match="require the installed write audit"):
+        module._run_case(  # noqa: SLF001
+            case=module.GreenfieldMatrixCase(
+                name="ambiguous cell therapy",
+                prompt="Create a cell therapy proposal with several possible operating paths.",
+                required_terms=("cell", "therapy"),
+                expectation="clarification_required",
+            ),
+            repo_root=repo_root,
+            install_script=tmp_path / "install.sh",
+            base_url="http://127.0.0.1:8123",
+            version="0.1.15",
+            skip_install=True,
+            require_write_audit=False,
+        )
 
 
 def test_release_proof_accepts_expected_clarification_cases(monkeypatch, tmp_path: Path) -> None:
@@ -1199,7 +1321,13 @@ def test_release_proof_accepts_expected_clarification_cases(monkeypatch, tmp_pat
     monkeypatch.setattr(module, "_serve_directory", lambda _release_dir: (Server(), "http://127.0.0.1:8123"))
     monkeypatch.setattr(module, "_with_case_platform_leakage_issues", lambda **kwargs: kwargs["result"])
     monkeypatch.setattr(module, "_cleanup_repo_before_next", lambda _repo_root: None)
-    monkeypatch.setattr(module, "_run_case", lambda **_kwargs: _passing_matrix_result(module))
+    audit_flags: list[bool] = []
+
+    def fake_run_case(**kwargs):  # noqa: ANN003
+        audit_flags.append(kwargs["require_write_audit"])
+        return _passing_matrix_result(module)
+
+    monkeypatch.setattr(module, "_run_case", fake_run_case)
 
     results = module.run_matrix(
         dist_dir=dist_dir,
@@ -1213,6 +1341,7 @@ def test_release_proof_accepts_expected_clarification_cases(monkeypatch, tmp_pat
     assert len(results) == 1
     assert results[0].status == "passed"
     assert policy_calls and policy_calls[0]["config"].proof_tier == "release"
+    assert audit_flags == [True]
 
 
 def test_source_evidence_custody_rejects_raw_multiword_excerpt() -> None:

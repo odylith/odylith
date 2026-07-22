@@ -42,16 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Completed in this window: Clarification no-write pairs were proven for this lane. That closes a key ambiguity and gives a cleaner boundary before the next behavior changes land. | Product code and runtime tests were updated together for B-142. That means execution now has concrete behavior coverage instead of just intent.",
-      "Current execution: Universal greenfield domain intelligence (B-142) is in active implementation now. The team is moving from framing to actual code progress. | ETA remains about four days with high confidence. That keeps pressure focused on finishing execution steps instead of reopening scope. | Most real movement is in B-142, and some active lanes still lack captured progress evidence. The picture is improving but cross-lane visibility is still uneven.",
-      "Next planned: The next concrete pull is the B-021 frontier push: expand benchmark corpus and bring Registry, Radar, Atlas, Compass, and benchmark docs back into line. | This is meant to force more maintainer coding through the CLI contract, so work moves from structure to execution in the high-trust path.",
-      "Risks to watch: Inline source evidence is still open at P1 and can displace the intended explicit greenfield-first path. If it keeps dominating, we risk drifting off the target build path."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Completed in this window: Proving clarification no-write pairs landed. That closes a source of ambiguity around what can be validated without writes, and it keeps execution checks on a narrower, safer footing. | Product code and runtime tests were updated for B-142. That gives the Universal greenfield domain intelligence work a firmer base, so the next cycle can move on behavior, not on scaffolding.",
-      "Current execution: Universal greenfield domain intelligence (B-142) is actively being implemented. This is the lane with real execution motion, not just plan-facing discussion. | ETA is still about four days and the signal is high-confidence. That makes the next few days the useful period to expose and absorb gaps while momentum is fresh. | There is still uneven evidence capture: some active lanes have no visible progress trail yet. That means the current picture is centered on B-142, and that concentration is intentional, not a full program update.",
-      "Next planned: Next is B-021, the corpus and frontier pass that brings Registry, Radar, Atlas, Compass, and benchmark docs back into scope. It is the bridge step before broadening runtime and governance visibility. | After the pull-in, next work is to add more maintainer coding through CLI contracts. That step keeps implementation evidence tied to the contracts we actually need to ship, instead of drifting into generic backlog churn.",
-      "Risks to watch: The main seam to watch is the P1 watch item: inline source evidence could eclipse the explicit greenfield-first path. If that happens, sequencing confidence drops, and the direction signal gets harder to defend."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -132,7 +126,7 @@
         "Nothing moved in this window: B-141 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -569,7 +563,7 @@
         "Nothing moved in this window: B-141 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-142": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-001": [
         "Nothing moved in this window: B-001 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -933,289 +927,51 @@
   "standup_brief": {
     "24h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "3d78c9f9be898db33f24beeed7315faf67f435a97a9589da399c5580812ed34c",
-      "generated_utc": "2026-07-22T20:38:45Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Clarification no-write pairs were proven for this lane. That closes a key ambiguity and gives a cleaner boundary before the next behavior changes land.",
-              "fact_ids": [
-                "F-001"
-              ]
-            },
-            {
-              "text": "Product code and runtime tests were updated together for B-142. That means execution now has concrete behavior coverage instead of just intent.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Universal greenfield domain intelligence (B-142) is in active implementation now. The team is moving from framing to actual code progress.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "ETA remains about four days with high confidence. That keeps pressure focused on finishing execution steps instead of reopening scope.",
-              "fact_ids": [
-                "F-005"
-              ]
-            },
-            {
-              "text": "Most real movement is in B-142, and some active lanes still lack captured progress evidence. The picture is improving but cross-lane visibility is still uneven.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "The next concrete pull is the B-021 frontier push: expand benchmark corpus and bring Registry, Radar, Atlas, Compass, and benchmark docs back into line.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "This is meant to force more maintainer coding through the CLI contract, so work moves from structure to execution in the high-trust path.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "Inline source evidence is still open at P1 and can displace the intended explicit greenfield-first path. If it keeps dominating, we risk drifting off the target build path.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Prove clarification no-write pairs.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Updated product code + runtime tests for B-142.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 24 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 4 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work stayed inside B-142.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Inline source evidence could eclipse an explicit greenfield first path. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "3d78c9f9be898db33f24beeed7315faf67f435a97a9589da399c5580812ed34c",
-      "bundle_fingerprint": "7206c93e0271301bd8319f5bfe6e4917f4d1872e62a158f56c5ae7ed7d302dff",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "3d78c9f9be898db33f24beeed7315faf67f435a97a9589da399c5580812ed34c"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-07-22T20:38:45Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Inline source evidence could eclipse an explicit greenfield first path. It is still open at P1."
+        ]
+      },
+      "evidence_lookup": {}
     },
     "48h": {
       "schema_version": "v25",
-      "status": "ready",
-      "source": "provider",
+      "status": "unavailable",
+      "source": "unavailable",
       "fingerprint": "58d13347f63bf94683d4e326efadd1357fb1f4265f20231b423b1c1206db752b",
-      "generated_utc": "2026-07-22T20:38:45Z",
-      "sections": [
-        {
-          "key": "completed",
-          "label": "Completed in this window",
-          "bullets": [
-            {
-              "text": "Proving clarification no-write pairs landed. That closes a source of ambiguity around what can be validated without writes, and it keeps execution checks on a narrower, safer footing.",
-              "fact_ids": [
-                "F-001"
-              ]
-            },
-            {
-              "text": "Product code and runtime tests were updated for B-142. That gives the Universal greenfield domain intelligence work a firmer base, so the next cycle can move on behavior, not on scaffolding.",
-              "fact_ids": [
-                "F-002"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "current_execution",
-          "label": "Current execution",
-          "bullets": [
-            {
-              "text": "Universal greenfield domain intelligence (B-142) is actively being implemented. This is the lane with real execution motion, not just plan-facing discussion.",
-              "fact_ids": [
-                "F-004"
-              ]
-            },
-            {
-              "text": "ETA is still about four days and the signal is high-confidence. That makes the next few days the useful period to expose and absorb gaps while momentum is fresh.",
-              "fact_ids": [
-                "F-005"
-              ]
-            },
-            {
-              "text": "There is still uneven evidence capture: some active lanes have no visible progress trail yet. That means the current picture is centered on B-142, and that concentration is intentional, not a full program update.",
-              "fact_ids": [
-                "F-006"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "next_planned",
-          "label": "Next planned",
-          "bullets": [
-            {
-              "text": "Next is B-021, the corpus and frontier pass that brings Registry, Radar, Atlas, Compass, and benchmark docs back into scope. It is the bridge step before broadening runtime and governance visibility.",
-              "fact_ids": [
-                "F-008"
-              ]
-            },
-            {
-              "text": "After the pull-in, next work is to add more maintainer coding through CLI contracts. That step keeps implementation evidence tied to the contracts we actually need to ship, instead of drifting into generic backlog churn.",
-              "fact_ids": [
-                "F-009"
-              ]
-            }
-          ]
-        },
-        {
-          "key": "risks_to_watch",
-          "label": "Risks to watch",
-          "bullets": [
-            {
-              "text": "The main seam to watch is the P1 watch item: inline source evidence could eclipse the explicit greenfield-first path. If that happens, sequencing confidence drops, and the direction signal gets harder to defend.",
-              "fact_ids": [
-                "F-010"
-              ]
-            }
-          ]
-        }
-      ],
-      "evidence_lookup": {
-        "F-001": {
-          "text": "Prove clarification no-write pairs.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-002": {
-          "text": "Updated product code + runtime tests for B-142.",
-          "section_key": "completed",
-          "kind": "execution_highlight"
-        },
-        "F-003": {
-          "text": "Nothing fully closed across the portfolio in the last 48 hours.",
-          "section_key": "completed",
-          "kind": "window_summary"
-        },
-        "F-004": {
-          "text": "Universal greenfield domain intelligence (B-142) is in active implementation.",
-          "section_key": "current_execution",
-          "kind": "direction",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-005": {
-          "text": "ETA is projected at roughly 4 days (high confidence).",
-          "section_key": "current_execution",
-          "kind": "timeline"
-        },
-        "F-006": {
-          "text": "Implementation is moving, but some active lanes still do not have progress evidence captured. Heaviest movement is in Universal greenfield domain intelligence (B-142).",
-          "section_key": "current_execution",
-          "kind": "portfolio_posture"
-        },
-        "F-007": {
-          "text": "Work stayed inside B-142.",
-          "section_key": "current_execution",
-          "kind": "window_coverage",
-          "workstreams": [
-            "B-142"
-          ]
-        },
-        "F-008": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
-          "section_key": "next_planned",
-          "kind": "forcing_function"
-        },
-        "F-009": {
-          "text": "Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Add more real maintainer coding work through CLI contract.",
-          "section_key": "next_planned",
-          "kind": "follow_on"
-        },
-        "F-010": {
-          "text": "Inline source evidence could eclipse an explicit greenfield first path. It is still open at P1.",
-          "section_key": "risks_to_watch",
-          "kind": "bug"
-        }
-      },
       "substrate_fingerprint": "58d13347f63bf94683d4e326efadd1357fb1f4265f20231b423b1c1206db752b",
-      "bundle_fingerprint": "2fa2e83afcef034c03e5428cf32c5fc85eb38d4da08dafa77f79eb04749df84b",
-      "provider_decision": "provider_called",
-      "last_successful_narration_fingerprint": "58d13347f63bf94683d4e326efadd1357fb1f4265f20231b423b1c1206db752b"
+      "bundle_fingerprint": "",
+      "provider_decision": "provider_deferred",
+      "last_successful_narration_fingerprint": "",
+      "generated_utc": "2026-07-22T20:38:45Z",
+      "sections": [],
+      "diagnostics": {
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: Inline source evidence could eclipse an explicit greenfield first path. It is still open at P1."
+        ]
+      },
+      "evidence_lookup": {}
     }
   },
   "standup_brief_scoped": {
@@ -1549,19 +1305,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "95e978766b8d80e5bca6fa32de2bbcf94777861f405579aa5291c73f4ae6c949",
+        "substrate_fingerprint": "95e978766b8d80e5bca6fa32de2bbcf94777861f405579aa5291c73f4ae6c949",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-22T20:38:45Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during.",
+            "Watch: Primary watch item is closure discipline: 21 plan items remain open for Universal greenfield domain intelligence (B-142)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -3443,19 +3203,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "b7c8730fe31de0c122edc245319af350cf10b10bd1e836cf47fc5ca3d034103d",
+        "substrate_fingerprint": "b7c8730fe31de0c122edc245319af350cf10b10bd1e836cf47fc5ca3d034103d",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-07-22T20:38:45Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Universal greenfield domain intelligence (B-142) is in active implementation.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Universal greenfield domain intelligence (B-142) so the greenfield failure was reported during.",
+            "Watch: Primary watch item is closure discipline: 21 plan items remain open for Universal greenfield domain intelligence (B-142)."
+          ]
         },
         "evidence_lookup": {}
       },

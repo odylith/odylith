@@ -199,22 +199,8 @@ def _transaction_output_path(*, repo_root: Path, output_path: str) -> Path | Non
 def _finish_clarification(
     *,
     exc: GreenfieldClarificationRequired,
-    repo_root: Path,
     as_json: bool,
-    output_path: str = "",
 ) -> int:
-    paths = [repo_root / ".odylith" / "runtime" / "greenfield" / "product-create-transaction.v1.json"]
-    if requested_output := _transaction_output_path(repo_root=repo_root, output_path=output_path):
-        paths.append(requested_output)
-    try:
-        for path in dict.fromkeys(paths):
-            path.unlink(missing_ok=True)
-    except OSError:
-        _print_greenfield_error(
-            RuntimeError("environment/IO failure while clearing a stale Greenfield transaction"),
-            as_json=as_json,
-        )
-        return 2
     _print_greenfield_clarification(exc, as_json=as_json)
     return 0
 
@@ -305,7 +291,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 edit_evidence=edit_evidence,
             )
         except GreenfieldClarificationRequired as exc:
-            return _finish_clarification(exc=exc, repo_root=repo_root, as_json=args.output_format == "json")
+            return _finish_clarification(exc=exc, as_json=args.output_format == "json")
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
@@ -399,9 +385,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         except GreenfieldClarificationRequired as exc:
             return _finish_clarification(
                 exc=exc,
-                repo_root=repo_root,
                 as_json=args.output_format == "json",
-                output_path=str(args.output or ""),
             )
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")

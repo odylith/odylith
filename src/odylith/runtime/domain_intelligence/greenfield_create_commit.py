@@ -70,7 +70,7 @@ def commit_greenfield_create_transaction(
     path = Path(transaction_file).expanduser()
     if not path.is_absolute():
         path = root / path
-    transaction = load_sealed_product_create_commit(path)
+    transaction = load_sealed_product_create_commit(path, repo_root=root)
     expected_hash = str(transaction_hash or "").strip()
     if not expected_hash:
         raise ValueError(

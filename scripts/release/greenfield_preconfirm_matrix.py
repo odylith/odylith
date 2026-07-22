@@ -40,6 +40,7 @@ from greenfield_matrix_leakage import with_platform_leakage_issues as _with_plat
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
+from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
 from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: E402
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
@@ -334,6 +335,7 @@ def run_matrix(
                         platform_baseline_terms=platform_baseline_terms,
                         skip_install=seed_repo is not None,
                         install_mode=install_mode,
+                        require_write_audit=True,
                     )
                 result = _with_case_platform_leakage_issues(result=result, release_dir=release_dir)
                 reason = stop_reason((*results, result), campaign_config)
@@ -747,6 +749,7 @@ def _run_case(
     platform_baseline_terms: Sequence[str] = (),
     skip_install: bool = False,
     install_mode: str = "full",
+    require_write_audit: bool = True,
 ) -> GreenfieldMatrixResult:
     env = _local_release_env(base_url=base_url, version=version)
     if not skip_install:
@@ -758,6 +761,8 @@ def _run_case(
     elif not (repo_root / ".odylith/bin/odylith").is_file():
         return _failed_case(case, repo_root, "seed_clone_failed", 1, "seeded repo clone is missing .odylith/bin/odylith")
     if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
+        if not require_write_audit:
+            raise ValueError("clarification matrix cases require the installed write audit")
         return _run_expected_clarification_case(
             case=case,
             repo_root=repo_root,
@@ -870,16 +875,34 @@ def _run_expected_clarification_case(
     version: str,
     install_mode: str,
 ) -> GreenfieldMatrixResult:
-    execution = run_expected_clarification(
-        repo_root=repo_root,
-        invoke=lambda: _run_greenfield_propose(
+    audit = begin_installed_write_audit(repo_root=repo_root)
+    try:
+        execution = run_expected_clarification(
             repo_root=repo_root,
-            env=env,
-            prompt=case.prompt,
-            edit_evidence=str(case.confirmed_intent_markdown or ""),
-            timeout=timeout,
-        ),
-        parse_payload=_parse_json_object,
+            invoke=lambda: _run_greenfield_propose(
+                repo_root=repo_root,
+                env={**env, **audit.environment()},
+                prompt=case.prompt,
+                edit_evidence=str(case.confirmed_intent_markdown or ""),
+                timeout=timeout,
+                command=(
+                    audit.command(
+                        runtime_python=repo_root / ".odylith/runtime/current/bin/python",
+                        arguments=(),
+                    )
+                ),
+                pass_fds=audit.pass_fds,
+            ),
+            parse_payload=_parse_json_object,
+        )
+    finally:
+        audit_evidence = audit.finish()
+    execution = replace(
+        execution,
+        write_audit_active=audit_evidence.active,
+        write_attempts=audit_evidence.write_attempts,
+        subprocess_attempts=audit_evidence.subprocess_attempts,
+        write_audit_error=audit_evidence.error,
     )
     payload = execution.payload
     issues = clarification_contract_issues(execution)
@@ -913,6 +936,10 @@ def _run_expected_clarification_case(
         "after_record_count": execution.after_record_count,
         "changed_records": list(execution.changed_records),
         "staged_transaction_present": execution.staged_transaction_present,
+        "write_audit_active": execution.write_audit_active,
+        "write_attempts": list(execution.write_attempts),
+        "subprocess_attempts": list(execution.subprocess_attempts),
+        "write_audit_error": execution.write_audit_error,
     }
     return GreenfieldMatrixResult(
         name=case.name,
@@ -981,9 +1008,29 @@ def _run_greenfield_propose(
     prompt: str,
     timeout: int,
     edit_evidence: str = "",
+    command: Sequence[str] | None = None,
+    pass_fds: tuple[int, ...] = (),
 ) -> Any:
-    propose_command = [
-        "./.odylith/bin/odylith",
+    propose_command = list(command) if command is not None else ["./.odylith/bin/odylith"]
+    propose_command.extend(
+        _greenfield_propose_arguments(
+            prompt=prompt,
+            edit_evidence=edit_evidence,
+        )
+    )
+    run_kwargs: dict[str, Any] = {
+        "cwd": repo_root,
+        "env": env,
+        "command": propose_command,
+        "timeout": timeout,
+    }
+    if pass_fds:
+        run_kwargs["pass_fds"] = pass_fds
+    return _run(**run_kwargs)
+
+
+def _greenfield_propose_arguments(*, prompt: str, edit_evidence: str = "") -> list[str]:
+    arguments = [
         "greenfield",
         "propose",
         "--repo-root",
@@ -994,8 +1041,8 @@ def _run_greenfield_propose(
         "json",
     ]
     if edit_evidence.strip():
-        propose_command.extend(["--edit", edit_evidence])
-    return _run(cwd=repo_root, env=env, command=propose_command, timeout=timeout)
+        arguments.extend(["--edit", edit_evidence])
+    return arguments
 
 
 def _case_evidence_manifest(

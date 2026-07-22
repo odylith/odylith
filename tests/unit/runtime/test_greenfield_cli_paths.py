@@ -563,7 +563,28 @@ def test_greenfield_propose_cli_returns_typed_clarification_without_staging(tmp_
     assert not (tmp_path / "odylith/radar/source").exists()
 
 
-def test_greenfield_clarification_removes_a_stale_default_transaction(tmp_path, capsys) -> None:
+def test_greenfield_clarification_does_not_unlink_a_missing_transaction(tmp_path, capsys, monkeypatch) -> None:
+    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    unlink_calls: list[Path] = []
+    original_unlink = Path.unlink
+
+    def track_unlink(path: Path, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
+        if path == transaction_path:
+            unlink_calls.append(path)
+        original_unlink(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", track_unlink)
+
+    rc = greenfield_proposals.main(
+        ["propose", "--repo-root", str(tmp_path), "--prompt", "Create assay review.", "--format", "json"]
+    )
+
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
+    assert unlink_calls == []
+
+
+def test_greenfield_clarification_preserves_a_stale_default_transaction(tmp_path, capsys) -> None:
     transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     transaction_path.parent.mkdir(parents=True)
     transaction_path.write_text('{"stale": true}\n', encoding="utf-8")
@@ -574,10 +595,10 @@ def test_greenfield_clarification_removes_a_stale_default_transaction(tmp_path, 
 
     assert rc == 0
     assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
-    assert not transaction_path.exists()
+    assert transaction_path.read_text(encoding="utf-8") == '{"stale": true}\n'
 
 
-def test_greenfield_compile_clarification_removes_stale_requested_output(tmp_path, capsys) -> None:
+def test_greenfield_compile_clarification_preserves_stale_requested_output(tmp_path, capsys) -> None:
     default_transaction = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     requested_output = tmp_path / "transactions/compiled.json"
     for path in (default_transaction, requested_output):
@@ -600,8 +621,32 @@ def test_greenfield_compile_clarification_removes_stale_requested_output(tmp_pat
 
     assert rc == 0
     assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
-    assert not default_transaction.exists()
-    assert not requested_output.exists()
+    assert default_transaction.read_text(encoding="utf-8") == '{"stale": true}\n'
+    assert requested_output.read_text(encoding="utf-8") == '{"stale": true}\n'
+
+
+def test_greenfield_compile_clarification_preserves_requested_output_outside_the_repo(tmp_path, capsys) -> None:
+    requested_output = tmp_path.parent / "outside-compiled.json"
+    requested_output.write_text('{"outside": true}\n', encoding="utf-8")
+    original = requested_output.read_bytes()
+
+    rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Create assay review.",
+            "--output",
+            str(requested_output),
+            "--format",
+            "json",
+        ]
+    )
+
+    assert rc == 0
+    assert json.loads(capsys.readouterr().out)["mode"] == "clarification_required"
+    assert requested_output.read_bytes() == original
 
 
 def test_greenfield_confirm_intent_flag_is_retired(tmp_path, capsys) -> None:

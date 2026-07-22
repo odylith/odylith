@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_confirmed_completion_text_model as completion_text
@@ -14,6 +14,25 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
+
+
+_EVIDENCE_KEYS = frozenset(
+    {
+        "host_instruction",
+        "observed_source",
+        "prompt",
+        "source_html",
+        "source_mmd",
+        "source_png",
+        "source_svg",
+        "source_title",
+    }
+)
+
+
+def _is_untrusted_evidence_key(key: Any) -> bool:
+    normalized = str(key).casefold()
+    return normalized in _EVIDENCE_KEYS or normalized.startswith("source_")
 
 
 def repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
@@ -61,7 +80,71 @@ def repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
         elif not actors:
             intelligence["actors"] = labels[:2]
             changed = True
+    changed |= _repair_public_actor_references(
+        proposal,
+        actor_rows=actor_rows,
+        project_focus=project_focus,
+        fallback=fallback,
+    )
     return changed
+
+
+def _repair_public_actor_references(
+    value: Any,
+    *,
+    actor_rows: Sequence[str],
+    project_focus: str,
+    fallback: str,
+) -> bool:
+    """Localize generic actor heads without rewriting the source-evidence record."""
+
+    if isinstance(value, dict):
+        changed = False
+        for key, nested in value.items():
+            if _is_untrusted_evidence_key(key):
+                continue
+            if isinstance(nested, str):
+                repaired = localize_leading_actor_reference(
+                    nested,
+                    actor_rows=actor_rows,
+                    project_focus=project_focus,
+                    fallback=fallback,
+                    sentence_context=True,
+                )
+                if repaired != _clean(nested):
+                    value[key] = repaired
+                    changed = True
+                continue
+            changed |= _repair_public_actor_references(
+                nested,
+                actor_rows=actor_rows,
+                project_focus=project_focus,
+                fallback=fallback,
+            )
+        return changed
+    if isinstance(value, list):
+        changed = False
+        for index, nested in enumerate(value):
+            if isinstance(nested, str):
+                repaired = localize_leading_actor_reference(
+                    nested,
+                    actor_rows=actor_rows,
+                    project_focus=project_focus,
+                    fallback=fallback,
+                    sentence_context=True,
+                )
+                if repaired != _clean(nested):
+                    value[index] = repaired
+                    changed = True
+                continue
+            changed |= _repair_public_actor_references(
+                nested,
+                actor_rows=actor_rows,
+                project_focus=project_focus,
+                fallback=fallback,
+            )
+        return changed
+    return False
 
 
 __all__ = ["repair_generic_actor_labels"]

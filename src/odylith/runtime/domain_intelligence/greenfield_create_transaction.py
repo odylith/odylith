@@ -24,6 +24,9 @@ from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     build_product_create_transaction_compiler_identity,
 )
+from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
+    require_product_create_transaction_compiler_provenance_payload,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
 )
@@ -246,43 +249,11 @@ def require_product_create_transaction_compiler_provenance(
     repo_root: Path,
 ) -> None:
     provenance = transaction.compiler_provenance if isinstance(transaction.compiler_provenance, Mapping) else {}
-    expected = {
-        "compiler": PRODUCT_CREATE_TRANSACTION_COMPILER,
-        "transaction_version": PRODUCT_CREATE_TRANSACTION_VERSION,
-        "phase": "pre_confirm_compile",
-        "commit_policy": PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
-        "repo_root_fingerprint": product_create_transaction_repo_fingerprint(repo_root),
-        "quality_manifest_version": str(transaction.quality_manifest.get("version", "")).strip(),
-        "quality_manifest_engine": str(transaction.quality_manifest.get("engine", "")).strip(),
-    }
-    for key, expected_value in expected.items():
-        if str(provenance.get(key, "")).strip() != expected_value:
-            raise ValueError(
-                "ProductCreateTransaction compiler provenance was invalidated by a runtime or repository-context change; "
-                "no Product Intent was rejected and no governed records were written. "
-                "Rebuild the pre-confirm transaction before committing."
-            )
-    identity = provenance.get("compiler_identity") if isinstance(provenance.get("compiler_identity"), Mapping) else {}
-    expected_identity = product_create_transaction_compiler_identity()
-    for key, expected_value in expected_identity.items():
-        if identity.get(key) != expected_value:
-            raise ValueError(
-                "ProductCreateTransaction compiler identity was invalidated by a runtime or compiler change; "
-                "no Product Intent or compiled artifact failed, and no governed records were written. "
-                "Rebuild the pre-confirm transaction before committing."
-            )
-    if tuple(provenance.get("post_confirm_allowed_operations") or ()) != POST_CONFIRM_ALLOWED_OPERATIONS:
-        raise ValueError(
-            "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
-            "no Product Intent was rejected and no governed records were written. "
-            "Rebuild the pre-confirm transaction before committing."
-        )
-    if tuple(provenance.get("post_confirm_forbidden_operations") or ()) != POST_CONFIRM_FORBIDDEN_OPERATIONS:
-        raise ValueError(
-            "ProductCreateTransaction was invalidated because the commit-only runtime contract changed; "
-            "no Product Intent was rejected and no governed records were written. "
-            "Rebuild the pre-confirm transaction before committing."
-        )
+    require_product_create_transaction_compiler_provenance_payload(
+        provenance,
+        quality_manifest=transaction.quality_manifest,
+        repo_root=repo_root,
+    )
 
 
 def require_product_create_transaction_intent_authority(
