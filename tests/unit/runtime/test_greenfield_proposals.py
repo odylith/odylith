@@ -77,13 +77,18 @@ def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
     cli_source = (ROOT / "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py").read_text(
         encoding="utf-8"
     )
+    create_cli_source = (ROOT / "src/odylith/runtime/domain_intelligence/greenfield_create_cli.py").read_text(
+        encoding="utf-8"
+    )
     diagram_source = (ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_diagrams.py").read_text(
         encoding="utf-8"
     )
 
     assert len(parent_source.splitlines()) < 800
     assert "greenfield_create_commit.commit_greenfield_create_transaction" not in parent_source
-    assert "greenfield_create_commit.commit_greenfield_create_transaction" in cli_source
+    assert "return create_main(tokens)" in cli_source
+    assert "greenfield_create_commit.commit_greenfield_create_transaction" not in cli_source
+    assert "greenfield_create_commit.commit_greenfield_create_transaction" in create_cli_source
     assert "greenfield_apply_write.write_greenfield_proposal" not in parent_source
     assert "greenfield_apply_write.release_assignment_note" in parent_source
     for moved in (
@@ -1009,8 +1014,8 @@ def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(t
     b002 = accepted["proposal"]["backlog"][1]
     text = json.dumps(payload, sort_keys=True).casefold()
 
-    assert accepted["proposal"]["intent"]["title"] == "Build An Ecommerce Site With Checkout Recovery"
-    assert accepted["proposal"]["intent"]["project_slug"] == "build-an-ecommerce-site-with-checkout-recovery"
+    assert accepted["proposal"]["intent"]["title"] == "Ecommerce Site With Checkout Recovery"
+    assert accepted["proposal"]["intent"]["project_slug"] == "ecommerce-site-with-checkout-recovery"
     assert b002["title"] == "Define Storefront boundary"
     assert b002["problem"].startswith("The user-facing browse and checkout UI")
     assert "created as a new queued workstream" not in backlog_index
@@ -1486,7 +1491,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert registry["releases"][0]["name"] == "0.0.1"
     assert len(result["backlog"]) == 3
     assert len(result["components"]) == 3
-    assert len(result["diagrams"]) == 2
+    assert len(result["diagrams"]) == 6
     assert result["validation_gate"]["status"] == "passed"
     assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert result["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
@@ -1529,7 +1534,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
         Path(result["backlog"][2]["idea_path"]).relative_to(tmp_path).as_posix(),
     ]
     assert "Payment sandbox" in system_context
-    assert "Order reliability" in program_waves
+    assert "recovery status" in program_waves
     assert system_context != program_waves
     assert "related_diagram_ids: D-001,D-002" in parent_idea
     assert "related_diagram_ids: D-001,D-002" in child_idea
@@ -1549,7 +1554,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "odylith-greenfield-prewrite" not in json.dumps(atlas_catalog)
     storefront = next(row for row in component_registry["components"] if row["component_id"] == "commerce-storefront")
     assert storefront["workstreams"] == ["B-002"]
-    assert storefront["diagrams"] == []
+    assert storefront["diagrams"] == ["D-002", "D-003", "D-004", "D-005", "D-006"]
     assert storefront["what_it_is"].startswith("Storefront defines the planned application ownership boundary")
     assert all(
         token in storefront["what_it_is"]
@@ -1564,6 +1569,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "Trace links for Storefront: workstreams B-002" in storefront_spec
     assert "| Workstreams | `B-002` |" not in storefront_spec
     assert "| Diagrams | none yet |" not in storefront_spec
+    assert "D-002" in storefront_spec
     assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
     assert result["memory"]["recorded"] is True
     assert result["memory"]["event"]["source"] == "domain-intelligence"
@@ -1610,12 +1616,11 @@ def test_greenfield_apply_reuses_existing_diagram_ids_for_backlog_traceability(t
     child_idea = Path(result["backlog"][1]["idea_path"]).read_text(encoding="utf-8")
     atlas_catalog = json.loads(atlas_catalog_path.read_text(encoding="utf-8"))
 
-    assert result["diagrams"] == ["D-001", "D-002"]
-    assert {row["diagram_id"] for row in atlas_catalog["diagrams"]} == {"D-001", "D-002"}
+    expected_diagram_ids = ["D-001", "D-002", "D-003", "D-004", "D-005", "D-006"]
+    assert result["diagrams"] == expected_diagram_ids
+    assert {row["diagram_id"] for row in atlas_catalog["diagrams"]} == set(expected_diagram_ids)
     assert "related_diagram_ids: D-001,D-002" in parent_idea
     assert "related_diagram_ids: D-001,D-002" in child_idea
-    assert "D-003" not in parent_idea
-    assert "D-003" not in child_idea
     assert build_traceability_graph.main(["--repo-root", str(tmp_path)]) == 0
     traceability_graph = json.loads((tmp_path / "odylith/radar/traceability-graph.v1.json").read_text(encoding="utf-8"))
     assert not any("not found in catalog" in warning for warning in traceability_graph["warnings"])

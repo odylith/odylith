@@ -618,6 +618,7 @@ def preview_accepted_project_memory(
         validation_gate=validation_gate,
         source_launch_context=source_launch_context,
         accepted_at=accepted_at,
+        repo_root=root,
     )
 
 
@@ -716,7 +717,8 @@ def _remap_component_item(
     updated = dict(row)
     for key in ("registry_path", "spec_path"):
         if str(updated.get(key, "")).strip():
-            updated[key] = _remap_path_text(updated.get(key), source_root=source_root, target_root=target_root)
+            remapped = _remap_path_text(updated.get(key), source_root=source_root, target_root=target_root)
+            updated[key] = _target_relative_path_text(remapped, target_root=target_root)
     return updated
 
 
@@ -760,6 +762,19 @@ def _remap_path_text(value: Any, *, source_root: Path, target_root: Path) -> str
     except ValueError:
         return str(path.resolve())
     return str((target_root / relative).resolve())
+
+
+def _target_relative_path_text(value: Any, *, target_root: Path) -> str:
+    """Keep compiled component links portable without accepting foreign roots."""
+
+    raw = str(value or "").strip()
+    path = Path(raw).expanduser()
+    if not raw or not path.is_absolute():
+        return raw
+    try:
+        return str(path.resolve(strict=False).relative_to(target_root.resolve(strict=False)))
+    except ValueError:
+        return raw
 
 
 __all__ = [

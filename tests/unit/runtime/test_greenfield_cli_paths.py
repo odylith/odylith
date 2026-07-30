@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECO
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
@@ -258,6 +259,35 @@ def test_greenfield_propose_clarifies_a_nonhuman_single_step_actor(tmp_path, cap
     assert not (tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
 
 
+def test_greenfield_propose_clarifies_an_action_rich_prompt_without_a_human_actor(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            (
+                "Build a Quantum Networking Lab Management App that coordinates lab devices, entanglement links, "
+                "calibration, reservations, telemetry, and auditable proof results."
+            ),
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload == {
+        "mode": "clarification_required",
+        "clarification": {
+            "question": "Who uses the product first, what complete task should that person finish, and what result should they see?",
+            "required_fields": ["human_actors", "first_path"],
+        },
+    }
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
 def test_greenfield_edit_rebuilds_a_generic_use_request_without_a_malformed_title(tmp_path, capsys) -> None:
     prompt = "Create a tool for extension publishers to use for release notes."
     rc = greenfield_proposals.main(
@@ -321,6 +351,7 @@ def test_greenfield_edit_rebuilds_the_staged_transaction_without_governed_writes
     assert initial_rc == edited_rc == 0
     assert initial["product_create_transaction"]["transaction_hash"] != edited["product_create_transaction"]["transaction_hash"]
     assert initial["product_create_transaction"]["product_facts_sha256"] != edited["product_create_transaction"]["product_facts_sha256"]
+    assert edited["product_create_transaction"]["product_facts_sha256"] == edited["intent_hypothesis"]["product_intent_authority"]["product_facts_sha256"]
     assert "shelter coordinator" in edited["intent_hypothesis"]["first_path"].casefold()
     assert not (tmp_path / "odylith/radar/source").exists()
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
@@ -439,6 +470,14 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, monkey
     assert compile_payload["product_create_transaction"]["transaction_hash"]
     assert "No governed records were written" not in output
     assert "post-confirm completion failed" not in output
+    create_payload = json.loads(output)
+    assert create_payload["post_confirm_navigation"] == {
+        "project": "odylith/index.html?tab=project",
+        "radar": "odylith/index.html?tab=radar",
+        "registry": "odylith/index.html?tab=registry",
+        "atlas": "odylith/index.html?tab=atlas",
+        "compass": "odylith/index.html?tab=compass&date=live",
+    }
     assert (tmp_path / "odylith/radar/source").is_dir()
     assert (tmp_path / "odylith/registry/source/components").is_dir()
     assert (tmp_path / "odylith/atlas/source").is_dir()
@@ -775,12 +814,49 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert payload["mode"] == "product_create_transaction"
     assert payload["product_create_transaction"]["transaction_hash"]
     assert payload["product_create_transaction"]["quality_status"] == "passed"
-    assert Path(payload["transaction_file"]).is_file()
+    assert (tmp_path / payload["transaction_file"]).is_file()
     assert payload["intent_hypothesis"]["product_story"]
     assert "host_reasoning_task" not in payload
     assert "backlog" not in payload
     assert "components" not in payload
     assert "diagrams" not in payload
+
+
+def test_greenfield_cli_compiles_a_complete_reservation_path_without_temp_path_leaks(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            (
+                "Build a Quantum Networking Lab Management App where lab operators reserve a calibrated entanglement "
+                "link for an experiment, confirm device and calibration availability, record either a conflict or an "
+                "accepted reservation, and see an auditable ready-to-run reservation."
+            ),
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    rendered = json.dumps(payload, sort_keys=True)
+
+    assert rc == 0
+    assert payload["product_create_transaction"]["quality_status"] == "passed"
+    assert payload["transaction_file"] == ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    assert payload["intent_hypothesis"]["human_actors"] == [
+        "Lab Operators: need the product to reserve a calibrated entanglement link for an experiment and keep the result visible and reviewable"
+    ]
+    assert payload["intent_hypothesis"]["first_path"] == (
+        "Lab operators reserve a calibrated entanglement link for an experiment. "
+        "Lab operators confirm device and calibration availability. "
+        "Lab operators record either a conflict or an accepted reservation. "
+        "Lab operators see an auditable ready-to-run reservation."
+    )
+    assert "/tmp/" not in rendered
+    assert "/private/" not in rendered
+    assert str(tmp_path) not in rendered
 
 
 def test_greenfield_cli_json_is_transaction_audit_from_typed_prompt_evidence(tmp_path, capsys) -> None:
@@ -929,6 +1005,13 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "atlas_sync" not in dashboard_calls[-1]
     assert "Odylith committed the validated Greenfield package." in out
     assert "- validation gate: passed" in out
+    assert "Open the generated governance workspace:" in out
+    assert "- Project: `odylith/index.html?tab=project`" in out
+    assert "- Radar: `odylith/index.html?tab=radar`" in out
+    assert "- Registry: `odylith/index.html?tab=registry`" in out
+    assert "- Atlas: `odylith/index.html?tab=atlas`" in out
+    assert "- Compass: `odylith/index.html?tab=compass&date=live`" in out
+    assert "no application code has been built" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()
     accepted = (tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8")
@@ -994,9 +1077,10 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
 
 def _compiled_transaction_for_cli(tmp_path: Path):
     intent = _confirmed_intent_with_authority(tmp_path)
-    authority = dict(intent[PRODUCT_INTENT_AUTHORITY_KEY])
+    proposal_intent = dict(intent)
+    authority = dict(proposal_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY))
     proposal = {
-        "intent": {"title": "Municipal Permit Review Workspace"},
+        "intent": proposal_intent,
         PRODUCT_INTENT_AUTHORITY_KEY: authority,
         "backlog": [{"title": "Prove permit review path"}],
         "components": [],
@@ -1490,7 +1574,7 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    rc, output, _compile_payload = _run_confirmed_transaction_create(
+    rc, output, compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a privacy request lifecycle console.",
         capsys=capsys,
@@ -1589,7 +1673,7 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    rc, output, _compile_payload = _run_confirmed_transaction_create(
+    rc, output, compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt="Draft a greenfield proposal for a cooking robot controller",
         capsys=capsys,
@@ -1622,6 +1706,12 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     assert not re.search(r"\bOperator\b", first_path)
     assert "generic actor label" not in rendered
     assert "- readback: passed" in output
+    staged_candidate = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8")
+    )
+    assert staged_candidate["decision_record"][PRODUCT_FACTS_HASH_KEY] == (
+        compile_payload["product_create_transaction"][PRODUCT_FACTS_HASH_KEY]
+    )
 
 
 def test_greenfield_create_cli_bootstraps_missing_indexes_and_repairs_scaffold_language(
@@ -1737,6 +1827,7 @@ def test_greenfield_create_cli_requires_confirmation_before_writes(tmp_path, cap
     out = capsys.readouterr().out
     assert rc == 2
     assert "greenfield create requires --confirm" in out
+    assert "Open the generated governance workspace:" not in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

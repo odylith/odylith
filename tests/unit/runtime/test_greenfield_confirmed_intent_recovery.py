@@ -73,6 +73,19 @@ def test_prompt_source_does_not_promote_source_metadata_to_a_product_first_path(
     assert source.first_path == ""
 
 
+def test_actorless_technical_list_does_not_invent_entanglement_as_a_human_actor() -> None:
+    prompt = (
+        "Build a Quantum Networking Lab Management App that coordinates lab devices, "
+        "entanglement links, calibration, reservations, telemetry, and auditable proof results."
+    )
+
+    intent = confirmation_from_operator_intent(prompt, prefer_product_title=True, as_mapping=True)
+
+    assert not any(row.casefold().startswith("entanglement:") for row in intent["human_actors"])
+    assert not intent["problem"].casefold().startswith("entanglement")
+    assert not intent["first_path"].casefold().startswith("an entanglement")
+
+
 def test_prompt_source_keeps_explicit_path_and_excludes_following_source_metadata() -> None:
     source = prompt_intent_source(
         "Create an accessibility product. An accessibility operator reviews one evidence item, records a decision, "

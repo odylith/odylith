@@ -750,6 +750,35 @@ def test_prompt_source_rejects_action_bearing_multi_role_actor_label() -> None:
     assert "assign investigation cases can be released" not in source.first_path
 
 
+def test_prompt_source_keeps_a_reservation_workflow_actor_before_the_first_action() -> None:
+    prompt = (
+        "Build a Quantum Networking Lab Management App where lab operators reserve a calibrated entanglement link "
+        "for an experiment, confirm device and calibration availability, record either a conflict or an accepted "
+        "reservation, and see an auditable ready-to-run reservation."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "lab operators"
+    assert source.first_path.startswith("lab operators reserve a calibrated entanglement link for an experiment")
+    assert "lab operators reserve a calibrated entanglement confirms" not in source.first_path.casefold()
+    assert "record either a conflict or an accepted reservation" in source.first_path
+    assert source.first_path.endswith("see an auditable ready-to-run reservation")
+
+
+def test_prompt_source_keeps_modal_verbs_out_of_explicit_actor_labels() -> None:
+    prompt = (
+        "Create a tool for extension publishers to assemble release notes from approved changelog fragments, "
+        "breaking-change notices, and compatibility windows."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "extension publishers"
+    assert source.first_path.startswith("extension publishers can assemble release notes")
+    assert "can can" not in source.first_path.casefold()
+
+
 def test_prompt_source_preserves_actor_after_leading_contextual_clause() -> None:
     prompt = (
         "Draft a greenfield proposal for a release board. During incident review, human operators assign "

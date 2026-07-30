@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import product_intent_source_text
@@ -138,7 +139,6 @@ _ORGANIZATION_ACTOR_TERMS = frozenset(
         "unit",
     }
 )
-_HUMAN_ROLE_SUFFIXES = ("ant", "ent", "er", "ian", "ist", "or", "ee", "owner")
 _ACTOR_BOUNDARY_RE = re.compile(
     r",\s+(?=(?:the|a|an)\s+\S+(?:\s+\S+){0,3}\s+(?:is|are|can|must|will|should|[a-z]+s)\b)",
     flags=re.IGNORECASE,
@@ -253,10 +253,9 @@ def confirmation_from_operator_intent(
     reviewer_obligations = operator_review_lens_obligations(product_source)
     direct_actor_row = _prompt_actor_row(prompt_source.actor, first_path_source)
     actor_rows = _unique_actor_rows(
-        [
-            *([direct_actor_row] if direct_actor_row else []),
-            *_human_actor_rows_from_first_path(first_path_source, title=title),
-        ]
+        [direct_actor_row]
+        if direct_actor_row
+        else _human_actor_rows_from_first_path(first_path_source, title=title)
     )
     if not direct_actor_row:
         actor_rows = [
@@ -728,7 +727,7 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
         row = _human_actor_row_from_clause(
             clause,
             allow_subject_fallback=not rows,
-            require_actor_signal=bool(rows),
+            require_actor_signal=True,
         )
         label = row.split(":", 1)[0].casefold() if row else ""
         if row and label not in seen_labels:
@@ -1072,8 +1071,7 @@ def _actor_prefix_contains_embedded_action(actor_words: Sequence[str]) -> bool:
 
 
 def _looks_like_human_actor_token(value: str) -> bool:
-    token = str(value or "").casefold().strip(".,:;")
-    return len(token) >= 5 and token.endswith(_HUMAN_ROLE_SUFFIXES)
+    return has_human_actor_signal(value)
 
 
 def _starts_with_action_without_actor(clause: str) -> bool:
@@ -1367,9 +1365,7 @@ def _looks_like_actor_subject(words: Sequence[str]) -> bool:
     actor_terms = _HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS
     if singular in actor_terms or last in actor_terms:
         return True
-    if any(singular.endswith(suffix) or last.endswith(suffix) for suffix in _HUMAN_ROLE_SUFFIXES):
-        return True
-    return False
+    return has_human_actor_signal(" ".join(cleaned))
 
 
 __all__ = ["confirmation_from_operator_intent"]

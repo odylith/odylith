@@ -16,10 +16,12 @@ from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_diagram_rows
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_intent_authority_from_envelope
+from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 
@@ -137,7 +139,6 @@ def commit_precompiled_greenfield_proposal(
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     root = Path(repo_root).expanduser().resolve()
-    proposal = _with_test_product_intent_authority(proposal, repo_root=root)
     if not proposal_ready:
         proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
         proposal = greenfield_proposals.complete_confirmed_proposal(
@@ -149,6 +150,7 @@ def commit_precompiled_greenfield_proposal(
             proposal,
             release_selector=release_selector,
         )
+    proposal = _with_test_product_intent_authority(proposal, repo_root=root)
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=root,
         proposal=proposal,
@@ -175,12 +177,12 @@ def _with_test_product_intent_authority(proposal: dict[str, object], *, repo_roo
     if isinstance(proposal.get(PRODUCT_INTENT_AUTHORITY_KEY), dict):
         return proposal
     prepared = dict(proposal)
-    prepared[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent_with_authority(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a governed ecommerce launch proposal",
-        repo_root=repo_root,
-        write_files=True,
-    )[PRODUCT_INTENT_AUTHORITY_KEY]
+    intent = prepared.get("intent")
+    if not isinstance(intent, Mapping):
+        raise ValueError("test proposal needs typed Product Intent before authority sealing")
+    sealed_intent = confirmed_mapping_with_authority(intent, repo_root=repo_root)
+    prepared["intent"] = sealed_intent
+    prepared[PRODUCT_INTENT_AUTHORITY_KEY] = sealed_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY)
     return prepared
 
 
@@ -501,20 +503,21 @@ def _seed_empty_governance_repo(repo_root: Path) -> None:
 
 
 def _governed_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, object]:
-    _ = repo_root
     proposal = copy.deepcopy(_host_reasoned_ecommerce_proposal())
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent_with_authority(
-        CONFIRMED_INTENT_TEXT,
-        prompt=prompt,
-        repo_root=repo_root,
-        write_files=True,
-    )[PRODUCT_INTENT_AUTHORITY_KEY]
-    title = " ".join(part[:1].upper() + part[1:] for part in greenfield_proposals.slugify(prompt).split("-"))
-    title = title or "Host Authored Greenfield Project"
+    title = greenfield_proposals.intent_title(prompt) or "Host Authored Greenfield Project"
     slug = greenfield_proposals.slugify(title)
     intent = proposal["intent"]
     assert isinstance(intent, dict)
-    intent.update({"prompt": prompt, "title": title, "project_slug": slug})
+    intent.update(
+        {
+            "prompt": prompt,
+            "title": title,
+            "project_slug": slug,
+            "human_actors": [
+                "Shopper: completes the browse-to-checkout path and reviews the order draft with recovery status.",
+            ],
+        }
+    )
     proposal["project_brief"] = _host_project_brief(title=title, prompt=prompt, release="0.0.1")
     proposal["project_intelligence"] = _host_project_intelligence(title=title, release="0.0.1")
     release_focus = _host_release_focus_for_prompt(prompt)
@@ -547,7 +550,16 @@ def _governed_greenfield_fixture(repo_root: Path, prompt: str) -> dict[str, obje
     proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
     proposal = greenfield_proposals.complete_confirmed_proposal(proposal, release_selector="0.0.1")
     proposal = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
-    return greenfield_proposals.complete_greenfield_semantic_apply_payload(proposal, release_selector="0.0.1")
+    proposal = greenfield_proposals.complete_greenfield_semantic_apply_payload(proposal, release_selector="0.0.1")
+    complete_diagram_rows(proposal)
+    proposal = attach_project_intelligence_bindings(proposal)
+    final_intent = proposal.get("intent")
+    assert isinstance(final_intent, Mapping)
+    sealed_intent = confirmed_mapping_with_authority(final_intent, repo_root=repo_root)
+    authority = sealed_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY)
+    proposal["intent"] = sealed_intent
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = authority
+    return proposal
 
 
 _apply_ready_greenfield_fixture = _governed_greenfield_fixture
@@ -578,6 +590,12 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "A shopper opens the storefront, adds one product to the cart, starts checkout, handles one failed "
                 "sandbox payment response, retries checkout, and sees the order draft with recovery status."
             ),
+            "human_actors": [
+                "Shopper: completes the browse-to-checkout path and verifies the order draft recovery status.",
+            ],
+            "external_systems": [
+                "Payment sandbox: returns the failed payment response used to prove checkout recovery.",
+            ],
             "proof_boundary": (
                 "Release 0.0.1 succeeds when one shopper can browse to cart, enter checkout, recover from one failed "
                 "sandbox payment, and review the order draft without claiming production payment readiness."
@@ -1199,7 +1217,13 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
         "mode": "greenfield",
         "intent": {
             "title": "Recipe-sharing app",
-            "summary": "A web app where home cooks publish, browse, and search recipes.",
+            "product_story": "A recipe-sharing app helps home cooks publish recipes, browse shared dishes, and search for a meal.",
+            "state_object": "A recipe draft tracks its author, ingredients, instructions, publication status, and reader-visible page.",
+            "first_path": "A home cook signs in, creates one recipe draft, publishes it, and reviews the public recipe page.",
+            "human_actors": [
+                "Home cook: authors a recipe and verifies its published page.",
+            ],
+            "proof_boundary": "Release 0.0.1 succeeds when a home cook can publish one recipe and review its public page with authorship preserved.",
         },
         "observed_source": {"evidence_tier": "docs_only", "notes": "Empty repo."},
         "assumptions": ["Web-first delivery.", "Relational data store."],
@@ -1452,7 +1476,17 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
     return {
         "schema_version": 1,
         "mode": "host_reasoned_greenfield_proposal",
-        "intent": {"title": "CRISPR Ethics Review App", "project_slug": "crispr-ethics-review-app"},
+        "intent": {
+            "title": "CRISPR Ethics Review App",
+            "project_slug": "crispr-ethics-review-app",
+            "product_story": "The CRISPR Ethics Review App helps a board chair govern sensitive protocol reviews with attributable decisions.",
+            "state_object": "A protocol review tracks the submitted protocol, reviewer access, conflict declarations, decision state, and audit record.",
+            "first_path": "A principal investigator submits one protocol, a conflicted reviewer is blocked, and the board chair records a traceable decision.",
+            "human_actors": [
+                "Board chair: reviews the protocol decision package and records the governing decision.",
+            ],
+            "proof_boundary": "Release 0.0.1 succeeds when a protocol decision is attributable and a conflicted reviewer cannot access the decision package.",
+        },
         "observed_source": {"summary": "No application source found."},
         "assumptions": ["Single-institution deployment.", "No PHI stored in the first release."],
         "open_questions": ["Are decisions advisory or legally binding later?"],

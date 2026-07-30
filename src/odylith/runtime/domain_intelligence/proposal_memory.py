@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import normalize_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_package_hygiene import managed_repo_path
 from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_terminal_punctuation
 
@@ -36,6 +37,16 @@ def _first_nonempty(values: Sequence[str], *, limit: int, structural: bool = Fal
     if structural:
         return dedupe_strings((str(raw or "").strip() for raw in values), limit=limit)
     return dedupe_strings((_clean(raw) for raw in values), limit=limit)
+
+
+def _durable_memory_row(row: Mapping[str, Any], *, repo_root: Path | None) -> dict[str, Any]:
+    """Keep governed artifact links portable across staged and committed workspaces."""
+
+    payload = dict(row)
+    for key in ("idea_path", "registry_path", "spec_path"):
+        if payload.get(key):
+            payload[key] = managed_repo_path(payload[key], repo_root=repo_root)
+    return payload
 
 
 def _intent(proposal: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -221,6 +232,7 @@ def build_accepted_project_source_payload(
     validation_gate: Mapping[str, Any] | None,
     source_launch_context: Mapping[str, Any] | None = None,
     accepted_at: str = "",
+    repo_root: Path | None = None,
 ) -> dict[str, Any]:
     """Build accepted-project memory payload before any durable write."""
 
@@ -234,8 +246,8 @@ def build_accepted_project_source_payload(
         "source": "greenfield_apply",
         "proposal": _accepted_memory_proposal(proposal),
         "created": {
-            "workstreams": [dict(row) for row in backlog_items],
-            "components": [dict(row) for row in component_items],
+            "workstreams": [_durable_memory_row(row, repo_root=repo_root) for row in backlog_items],
+            "components": [_durable_memory_row(row, repo_root=repo_root) for row in component_items],
             "diagrams": [str(item) for item in diagram_ids],
             "release_selector": _clean(release_selector),
             "release_id": _clean(release_id),
@@ -425,6 +437,7 @@ def _write_accepted_project_source(
         validation_gate=validation_gate,
         source_launch_context=source_launch_context,
         accepted_at=_clean(event.get("ts_iso")),
+        repo_root=repo_root,
     )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
@@ -708,7 +721,7 @@ def _artifact_signature(*, repo_root: Path, value: Any) -> str:
         try:
             return str(path.resolve().relative_to(repo_root))
         except ValueError:
-            return str(path.resolve())
+            return managed_repo_path(path.resolve(), repo_root=repo_root)
     return token[2:] if token.startswith("./") else token
 
 
@@ -717,5 +730,5 @@ def _event_artifact_token(*, repo_root: Path | None, value: Any) -> str:
     if not token:
         return ""
     if repo_root is None:
-        return token
+        return managed_repo_path(token, repo_root=None)
     return _artifact_signature(repo_root=Path(repo_root).expanduser().resolve(), value=token)

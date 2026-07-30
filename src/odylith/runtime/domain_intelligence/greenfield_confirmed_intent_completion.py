@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import re
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import first_path_has_distinct_outcome
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_rich_material_first_path_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, has_presentation_only_title_marker, material_first_path_action, normalize_project_title
@@ -576,13 +577,15 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         limit=240,
         max_steps=4,
     )
-    metric_proof_capability = readable_action_chain_sentence(
-        first_path,
-        fallback=proof_capability,
-        limit=240,
-        max_steps=5,
-        include_visible_results=True,
-    )
+    metric_proof_capability = action_chain_fragment(first_path)
+    if len(metric_proof_capability) > 240:
+        metric_proof_capability = readable_action_chain_sentence(
+            first_path,
+            fallback=proof_capability,
+            limit=240,
+            max_steps=5,
+            include_visible_results=True,
+        )
     needs_verb = _needs_verb(customer_text)
     decision_phrase = _decision_problem_phrase(outcome_text)
     outcome_inline = _inline_result_phrase(outcome_text)

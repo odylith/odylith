@@ -46,6 +46,8 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     require_product_intent_authority,
 )
@@ -129,6 +131,7 @@ def build_product_create_transaction(
 
     authority = dict(intent_authority) if isinstance(intent_authority, Mapping) else _authority_from_proposal(proposal)
     require_product_intent_authority(authority)
+    _require_proposal_intent_authority_binding(proposal, authority)
     release_text = str(release_selector or "").strip()
     greenfield_compiled_package_contract.require_complete_compiled_greenfield_package(
         prewrite_package,
@@ -208,10 +211,29 @@ def require_product_create_transaction_hash_verified(transaction: ProductCreateT
     """Verify serialized transaction integrity without granting compiler custody."""
 
     require_product_intent_authority(transaction.intent_authority)
+    _require_proposal_intent_authority_binding(transaction.proposal, transaction.intent_authority)
     expected = product_create_transaction_hash(transaction)
     if transaction.transaction_hash != expected:
         raise ValueError(
             "ProductCreateTransaction hash mismatch; rebuild the transaction before committing governed records"
+        )
+
+
+def _require_proposal_intent_authority_binding(
+    proposal: Mapping[str, Any],
+    authority: Mapping[str, Any],
+) -> None:
+    """Require the sealed facts hash to describe the transaction's typed intent."""
+
+    intent = proposal.get("intent") if isinstance(proposal, Mapping) else None
+    if not isinstance(intent, Mapping):
+        raise ValueError("ProductCreateTransaction proposal is missing typed Product Intent")
+    expected = product_facts_hash(intent)
+    actual = str(authority.get(PRODUCT_FACTS_HASH_KEY, "")).strip()
+    if actual != expected:
+        raise ValueError(
+            "ProductCreateTransaction proposal facts do not match its sealed Product Intent authority; "
+            "rebuild the transaction before showing CONFIRM"
         )
 
 

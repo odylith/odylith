@@ -137,6 +137,8 @@ def _single_actor_covers_first_path(row: str, intent: Mapping[str, Any]) -> bool
         return False
     first_path = _clean(intent.get("first_path"))
     subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
+    if not subject and first_path.casefold().startswith(f"{label.casefold()} "):
+        return True
     return bool(subject and _actor_reference(subject) == _actor_reference(label))
 
 

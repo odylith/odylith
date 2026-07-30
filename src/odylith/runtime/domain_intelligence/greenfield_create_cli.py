@@ -10,6 +10,15 @@ from typing import Sequence
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 
 
+_POST_CONFIRM_NAVIGATION = {
+    "project": "odylith/index.html?tab=project",
+    "radar": "odylith/index.html?tab=radar",
+    "registry": "odylith/index.html?tab=registry",
+    "atlas": "odylith/index.html?tab=atlas",
+    "compass": "odylith/index.html?tab=compass&date=live",
+}
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="odylith greenfield create")
     parser.add_argument("--repo-root", default=".")
@@ -68,8 +77,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as error:
         return _error(str(error), as_json=args.as_json, error=error)
+    navigation = _post_confirm_navigation()
     if args.as_json:
-        print(json.dumps(result, indent=2, sort_keys=True))
+        response = dict(result)
+        response["post_confirm_navigation"] = navigation
+        print(json.dumps(response, indent=2, sort_keys=True))
     else:
         summary = dict(result.get("product_create_transaction") or {})
         print("Odylith committed the validated Greenfield package.")
@@ -78,7 +90,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"- validation gate: {summary['validation_status']}")
         print(f"- sealed writes: {summary['repository_write_count']}")
         print("- readback: passed")
+        _print_post_confirm_navigation(navigation)
     return 0
+
+
+def _post_confirm_navigation() -> dict[str, str]:
+    """Return the stable, host-agnostic route contract after a confirmed create."""
+
+    return dict(_POST_CONFIRM_NAVIGATION)
+
+
+def _print_post_confirm_navigation(navigation: dict[str, str]) -> None:
+    print("")
+    print("Open the generated governance workspace:")
+    print(f"- Project: `{navigation['project']}`")
+    print(f"- Radar: `{navigation['radar']}`")
+    print(f"- Registry: `{navigation['registry']}`")
+    print(f"- Atlas: `{navigation['atlas']}`")
+    print(f"- Compass: `{navigation['compass']}`")
+    print(
+        "Next: Review the committed governance package before beginning implementation; "
+        "no application code has been built."
+    )
 
 
 def _create_arguments(argv: Sequence[str] | None) -> list[str]:

@@ -146,6 +146,8 @@ def looks_like_actor_subject_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     if not text or not _looks_like_actor_prefix(text):
         return False
+    if re.search(r"\b(?:can|could|must|should|will|would)\s*$", text, flags=re.IGNORECASE):
+        return False
     if re.search(r"[,;]", text):
         return False
     if _has_unowned_action_tail(text):

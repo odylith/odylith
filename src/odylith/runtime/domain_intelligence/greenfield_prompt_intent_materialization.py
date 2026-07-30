@@ -13,17 +13,22 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import PRECONFIRM_STAGING_MARKER
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_typed_candidate_intent_files
+from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import render_candidate_intent_markdown
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
     intent_hypothesis_from_operator_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import (
     internal_system_rows_from_recovered_title,
 )
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_first_path_actor_reference
+from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_human_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_has_material_first_path_gap
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_has_material_actor_gap
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
@@ -33,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_action_split import split_action_pieces
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraints_after_first_path_edit
@@ -48,6 +54,10 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality im
 
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
     r"\b(?:device|controller|sensor|monitor)\b[^.!?]{0,160}\bthat\s+[a-z]",
+    flags=re.IGNORECASE,
+)
+_EXPLICIT_VISIBLE_OUTCOME_RE = re.compile(
+    r"\b(?:see|sees|show|shows|receive|receives|view|views|display|displays)\b",
     flags=re.IGNORECASE,
 )
 _ACTOR_MODAL_SUFFIX_RE = re.compile(r"\b(?:can|could|should|must|will)$", flags=re.IGNORECASE)
@@ -86,13 +96,13 @@ def materialize_prompt_confirmed_intent(
         raise prompt_only_material_decision_error() from exc
     root = Path(repo_root).expanduser().resolve()
     path = root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
-    atomic_write_text(path, _render_confirmed_intent_markdown(intent), encoding="utf-8")
+    atomic_write_text(path, render_candidate_intent_markdown(intent), encoding="utf-8")
     record = load_confirmed_intent_record(path, prompt=prompt, fallback_title=fallback_title)
     structured_path = write_structured_confirmed_intent_file(path, record.product_facts, envelope=record.envelope)
     authority = product_intent_authority_from_envelope(
         record.envelope,
-        structured_intent_path=structured_path,
-        markdown_source_path=path,
+        structured_intent_path=structured_path.relative_to(root),
+        markdown_source_path=path.relative_to(root),
     )
     require_product_intent_authority(authority)
     accepted = dict(record.product_facts)
@@ -112,6 +122,8 @@ def materialize_prompt_intent_hypothesis(
     if not prompt.strip():
         raise prompt_only_material_decision_error()
     raw_edit = _without_edit_command(edit_evidence)
+    if _requires_actor_clarification(prompt=prompt, edit_evidence=raw_edit):
+        raise prompt_actor_material_decision_error()
     if _requires_first_path_clarification(prompt=prompt, edit_evidence=raw_edit):
         raise prompt_only_material_decision_error()
     baseline = normalize_confirmed_intent(
@@ -135,10 +147,30 @@ def materialize_prompt_intent_hypothesis(
     )
     if uses_title_only_first_path_hypothesis:
         _add_title_hypothesis_assumption(intent)
+    if _uses_actorless_workflow_assumption(prompt=prompt, edit_evidence=raw_edit):
+        _add_first_user_assumption(intent)
+    # Canonicalize typed facts before sealing their custody envelope. The
+    # compiler may validate those facts, but it must never revise a sealed one.
+    title_repair_payload = {"intent": intent}
+    repair_project_title(title_repair_payload)
+    intent = title_repair_payload["intent"]
+    actor_rows = confirmed_text_values(intent.get("human_actors"))
+    if actor_rows:
+        canonical_actor_rows = canonical_human_actor_rows(
+            project_label=domain_label(str(intent.get("title") or fallback_title), ""),
+            rows=actor_rows,
+        )
+        intent["human_actors"] = canonical_actor_rows
+        intent["first_path"] = canonical_first_path_actor_reference(
+            project_label=domain_label(str(intent.get("title") or fallback_title), ""),
+            first_path=intent.get("first_path"),
+            actor_rows=canonical_actor_rows,
+            fallback=f"{domain_label(str(intent.get('title') or fallback_title), '').casefold()} user",
+        )
     path = root / ".odylith" / "runtime" / "greenfield" / "candidate-intent.md"
     atomic_write_text(
         path,
-        f"{PRECONFIRM_STAGING_MARKER}\n{_render_confirmed_intent_markdown(intent)}",
+        f"{PRECONFIRM_STAGING_MARKER}\n{render_candidate_intent_markdown(intent)}",
         encoding="utf-8",
     )
     evidence_path = root / ".odylith" / "runtime" / "greenfield" / "candidate-evidence.md"
@@ -154,13 +186,13 @@ def materialize_prompt_intent_hypothesis(
     envelope = build_product_intent_envelope(
         intent,
         source_text=evidence_source,
-        source_path=evidence_path,
+        source_path=evidence_path.relative_to(root),
         source_format="operator_prompt_with_edit_evidence" if raw_edit else "operator_prompt",
     )
     envelope["source_evidence"]["evidence_sources"] = [
-        {"source_id": "operator_prompt", "source_path": str(prompt_evidence_path)},
+        {"source_id": "operator_prompt", "source_path": str(prompt_evidence_path.relative_to(root))},
         *(
-            [{"source_id": "operator_edit", "source_path": str(edit_evidence_path)}]
+            [{"source_id": "operator_edit", "source_path": str(edit_evidence_path.relative_to(root))}]
             if raw_edit
             else []
         ),
@@ -173,8 +205,8 @@ def materialize_prompt_intent_hypothesis(
     )
     authority = product_intent_authority_from_envelope(
         envelope,
-        structured_intent_path=structured_path,
-        markdown_source_path=evidence_path,
+        structured_intent_path=structured_path.relative_to(root),
+        markdown_source_path=evidence_path.relative_to(root),
     )
     require_product_intent_authority(authority)
     candidate = dict(intent)
@@ -185,7 +217,7 @@ def materialize_prompt_intent_hypothesis(
 def render_product_intent_preview(intent: Mapping[str, Any]) -> str:
     """Render the typed candidate that directly supplies the compiled transaction."""
 
-    return _render_confirmed_intent_markdown(intent).replace(
+    return render_candidate_intent_markdown(intent).replace(
         "Product Intent Confirmation", "Product Intent Preview", 1
     )
 
@@ -193,6 +225,13 @@ def render_product_intent_preview(intent: Mapping[str, Any]) -> str:
 def prompt_only_material_decision_error() -> GreenfieldClarificationRequired:
     return GreenfieldClarificationRequired(
         "What is the first complete task the product should help a person finish, and what result should they see?"
+    )
+
+
+def prompt_actor_material_decision_error() -> GreenfieldClarificationRequired:
+    return GreenfieldClarificationRequired(
+        "Who uses the product first, what complete task should that person finish, and what result should they see?",
+        required_fields=("human_actors", "first_path"),
     )
 
 
@@ -214,10 +253,73 @@ def _requires_first_path_clarification(*, prompt: str, edit_evidence: str) -> bo
     )
 
 
+def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
+    """Ask only when the evidence cannot support a bounded first-user assumption."""
+
+    edit_sections = confirmed_intent_sections(edit_evidence)
+    edited_first_path = _section_first_path_text(edit_sections)
+    edited_actor_rows = confirmed_text_values(edit_sections.get("human_actors"))
+    if (
+        edited_first_path
+        and first_path_model(edited_first_path).material_action
+        and any(
+            has_human_actor_signal(str(row).lstrip("-* ").partition(":")[0])
+            for row in edited_actor_rows
+        )
+    ):
+        return False
+    evidence = prompt
+    if edit_evidence.strip():
+        edited_first_path = prompt_intent_source(edit_evidence).first_path
+        if first_path_model(edited_first_path).material_action:
+            evidence = edit_evidence
+    source = prompt_intent_source(evidence)
+    model = first_path_model(source.first_path)
+    if not model.material_action or not (
+        len(model.steps) >= 2 or _EXPLICIT_VISIBLE_OUTCOME_RE.search(evidence)
+    ):
+        return False
+    if _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence):
+        return False
+    # An explicit actor remains a material boundary: automated actors are not a
+    # substitute for the human owner of the first path. When the prompt names
+    # no actor, a detailed operating chain is sufficient for the compiler to
+    # make and display a bounded first-user assumption instead of interrupting
+    # an otherwise usable onboarding flow.
+    if source.actor and is_automated_actor(source.actor):
+        return True
+    if source.actor and has_human_actor_signal(source.actor):
+        return False
+    if has_human_actor_signal(evidence):
+        return False
+    if len(model.steps) >= 3:
+        return False
+    return prompt_has_material_actor_gap(evidence)
+
+
 def _uses_title_only_first_path_hypothesis(*, prompt: str, edit_evidence: str) -> bool:
     evidence = tuple(value for value in (prompt, edit_evidence) if value.strip())
     return not any(_has_usable_first_path_evidence(value) for value in evidence) and any(
         _title_supports_first_path_hypothesis(value) for value in evidence
+    )
+
+
+def _uses_actorless_workflow_assumption(*, prompt: str, edit_evidence: str) -> bool:
+    """Record when a detailed workflow, rather than a named role, supplies the first user."""
+
+    evidence = prompt
+    if edit_evidence.strip():
+        edited_source = prompt_intent_source(edit_evidence)
+        if first_path_model(edited_source.first_path).material_action:
+            evidence = edit_evidence
+    source = prompt_intent_source(evidence)
+    model = first_path_model(source.first_path)
+    return bool(
+        model.material_action
+        and len(model.steps) >= 3
+        and not source.actor
+        and not has_human_actor_signal(evidence)
+        and not _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence)
     )
 
 
@@ -228,6 +330,15 @@ def _title_supports_first_path_hypothesis(evidence: str) -> bool:
 
 def _add_title_hypothesis_assumption(intent: dict[str, Any]) -> None:
     assumption = "The product title supplies the initial first-path hypothesis for this proposal."
+    assumptions = confirmed_text_values(intent.get("assumptions"))
+    if assumption not in assumptions:
+        intent["assumptions"] = [*assumptions, assumption]
+
+
+def _add_first_user_assumption(intent: dict[str, Any]) -> None:
+    actor_rows = confirmed_text_values(intent.get("human_actors"))
+    actor = actor_rows[0].partition(":")[0].strip() if actor_rows else "The inferred product user"
+    assumption = f"Assumption: {actor} owns the first path until a more specific role is supplied."
     assumptions = confirmed_text_values(intent.get("assumptions"))
     if assumption not in assumptions:
         intent["assumptions"] = [*assumptions, assumption]
@@ -248,16 +359,14 @@ def _has_explicit_single_step_actor_action(path_source: str) -> bool:
 
     actor, action = actor_led_action_parts(path_source)
     if not actor or not action:
+        actor, action = modal_actor_action_parts(path_source)
+    if not actor or not action:
         return False
     actor_without_modal = _ACTOR_MODAL_SUFFIX_RE.sub("", actor).strip()
     actor_words = tuple(word.casefold().strip(".,;:()[]{}") for word in actor_without_modal.split())
     if is_automated_actor(actor_without_modal):
         return False
-    has_human_role = any(
-        word_has_actor_role_signal(word)
-        or looks_actor_term(word[:-1] if word.casefold().endswith("s") else word)
-        for word in actor_words
-    )
+    has_human_role = has_human_actor_signal(actor_without_modal)
     action_head = action.split(maxsplit=1)[0].casefold()
     return (
         has_human_role
@@ -273,58 +382,6 @@ def _section_first_path_text(sections: Mapping[str, Any]) -> str:
 def _anaphoric_first_path_actor(value: str) -> str:
     match = _ANAPHORIC_FIRST_PATH_ACTOR_RE.fullmatch(str(value or "").strip())
     return _sentence_start(match.group("actor")) if match else ""
-
-
-def _render_confirmed_intent_markdown(intent: Mapping[str, Any]) -> str:
-    title = str(intent.get("title") or "Greenfield Project").strip()
-    lines = [
-        f"# {title} - Product Intent Confirmation",
-        "",
-        "## Product story",
-        str(intent.get("product_story") or "").strip(),
-        "",
-        "## State object",
-        str(intent.get("state_object") or "").strip(),
-        "",
-        "## First complete path",
-        str(intent.get("first_path") or "").strip(),
-        "",
-        "## Operational constraints",
-        *_bullet_lines(
-            intent.get("operational_constraints"),
-            empty_text="No site or time constraint narrows the first proof path.",
-        ),
-        "",
-        "## Human actors",
-        *_bullet_lines(intent.get("human_actors"), empty_text="Primary user: completes the first proof path."),
-        "",
-        "## External systems",
-        *_bullet_lines(
-            intent.get("external_systems"),
-            empty_text="No external systems are required for the first proof path.",
-        ),
-        "",
-        "## Internal product systems",
-        *_bullet_lines(intent.get("internal_systems"), empty_text="Core workspace: owns the first path state and proof."),
-        "",
-        "## Critical assumptions",
-        *_bullet_lines(
-            intent.get("assumptions"),
-            empty_text="Release 0.0.1 proves one complete path before broader automation.",
-        ),
-        "",
-        "## Ambiguities",
-        *_bullet_lines(intent.get("ambiguities"), empty_text="No material ambiguity blocks the first proof path."),
-        "",
-        "## Proof boundary",
-        str(intent.get("proof_boundary") or "").strip(),
-    ]
-    return "\n".join(lines).rstrip() + "\n"
-
-
-def _bullet_lines(value: Any, *, empty_text: str) -> list[str]:
-    rows = confirmed_text_values(value)
-    return [f"- {row}" for row in rows] if rows else [f"- {empty_text}"]
 
 
 def _merge_edit_evidence(

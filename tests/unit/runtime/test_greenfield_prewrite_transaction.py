@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import
     GreenfieldCompletionPackage,
     _component_preview_path_fidelity_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_preconfirm_package_hygiene import prewrite_path_leak_issues
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -1667,12 +1668,8 @@ def test_greenfield_prewrite_remaps_component_preview_paths_to_target_repo(tmp_p
         target_root=target_root,
     )
 
-    assert remapped[0]["registry_path"] == str(
-        (target_root / "odylith/registry/source/component_registry.v1.json").resolve()
-    )
-    assert remapped[0]["spec_path"] == str(
-        (target_root / "odylith/registry/source/components/c-001/CURRENT_SPEC.md").resolve()
-    )
+    assert remapped[0]["registry_path"] == "odylith/registry/source/component_registry.v1.json"
+    assert remapped[0]["spec_path"] == "odylith/registry/source/components/c-001/CURRENT_SPEC.md"
 
 
 def test_greenfield_component_memory_path_fidelity_treats_alias_roots_as_same_path(tmp_path: Path) -> None:
@@ -1702,8 +1699,24 @@ def test_greenfield_component_memory_path_fidelity_treats_alias_roots_as_same_pa
         actual=actual,
     ) == []
 
+    foreign_root = tmp_path / "foreign"
+    assert _component_preview_path_fidelity_issues(
+        owner="accepted-project memory preview",
+        expected=expected,
+        actual=(
+            {
+                "component_id": component_id,
+                "registry_path": str(foreign_root / "odylith/registry/source/component_registry.v1.json"),
+                "spec_path": str(foreign_root / "odylith/registry/source/components/c-001/CURRENT_SPEC.md"),
+            },
+        ),
+    ) == [
+        "accepted-project memory preview component `c-001` registry_path drifted from Registry prewrite output",
+        "accepted-project memory preview component `c-001` spec_path drifted from Registry prewrite output",
+    ]
 
-def test_greenfield_accepted_memory_preserves_structural_path_underscores() -> None:
+
+def test_greenfield_accepted_memory_preserves_structural_path_underscores(tmp_path: Path) -> None:
     proposal = {
         "intent": {
             "title": "Genomic Variant Triage Board",
@@ -1714,8 +1727,8 @@ def test_greenfield_accepted_memory_preserves_structural_path_underscores() -> N
     component = {
         "component_id": "variant-case-ledger",
         "label": "Variant Case Ledger",
-        "registry_path": "/private/tmp/odylith-variance-genomics-rfp-bullets-t__wl1oz/odylith/registry/source/component_registry.v1.json",
-        "spec_path": "/private/tmp/odylith-variance-genomics-rfp-bullets-t__wl1oz/odylith/registry/source/components/variant-case-ledger/CURRENT_SPEC.md",
+        "registry_path": str(tmp_path / "odylith/registry/source/component_registry.v1.json"),
+        "spec_path": str(tmp_path / "odylith/registry/source/components/variant-case-ledger/CURRENT_SPEC.md"),
     }
 
     accepted = proposal_memory.build_accepted_project_source_payload(
@@ -1728,6 +1741,7 @@ def test_greenfield_accepted_memory_preserves_structural_path_underscores() -> N
         validation_gate={"status": "passed"},
         source_launch_context=None,
         accepted_at="prewrite",
+        repo_root=tmp_path,
     )
     event = proposal_memory.build_greenfield_acceptance_event_preview(
         proposal=proposal,
@@ -1736,12 +1750,46 @@ def test_greenfield_accepted_memory_preserves_structural_path_underscores() -> N
         diagram_ids=(),
         release_selector="0.0.1",
         release_id="release-genomic-variant-triage-0-0-1",
+        repo_root=tmp_path,
     )
 
     created_component = accepted["created"]["components"][0]
-    assert created_component["registry_path"] == component["registry_path"]
-    assert created_component["spec_path"] == component["spec_path"]
-    assert component["spec_path"] in event["artifacts"]
+    assert created_component["registry_path"] == "odylith/registry/source/component_registry.v1.json"
+    assert created_component["spec_path"] == "odylith/registry/source/components/variant-case-ledger/CURRENT_SPEC.md"
+    assert created_component["spec_path"] in event["artifacts"]
+
+
+def test_greenfield_prewrite_hygiene_rejects_all_ephemeral_absolute_paths() -> None:
+    issues = prewrite_path_leak_issues(
+        "accepted-project memory preview",
+        {"source": "/private/tmp/odylith-quality-test/odylith/runtime/source/accepted-project.v1.json"},
+    )
+
+    assert issues == [
+        "accepted-project memory preview contains staged prewrite temp path(s) instead of durable target paths"
+    ]
+
+
+def test_greenfield_accepted_memory_rebases_staged_workstream_paths(tmp_path: Path) -> None:
+    proposal = {"intent": {"title": "Release Notes Workspace", "reasoning_mode": "odylith_confirmed_governed_proposal"}}
+    accepted = proposal_memory.build_accepted_project_source_payload(
+        proposal=proposal,
+        backlog_items=(
+            {
+                "idea_id": "B-001",
+                "idea_path": str(tmp_path / "odylith/radar/source/ideas/2026-07/release-notes.md"),
+            },
+        ),
+        component_items=(),
+        diagram_ids=(),
+        release_selector="0.0.1",
+        release_id="release-release-notes-0-0-1",
+        validation_gate={"status": "passed"},
+        accepted_at="prewrite",
+        repo_root=tmp_path,
+    )
+
+    assert accepted["created"]["workstreams"][0]["idea_path"] == "odylith/radar/source/ideas/2026-07/release-notes.md"
 
 
 def test_greenfield_package_gate_rejects_workstream_preview_without_semantic_proof(tmp_path: Path) -> None:

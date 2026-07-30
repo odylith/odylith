@@ -66,6 +66,8 @@ def _project_title_needs_repair(value: str) -> bool:
         return True
     if words[-1].casefold() in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
         return True
+    if re.match(r"^(?:build|create|design|develop|draft|launch|make|plan)\b", text, re.IGNORECASE):
+        return True
     return len(words) > 10 and bool(
         re.search(r"\b(?:that|what|so|because|captures?|follows?|makes?|buying|doing|needs?|wants?)\b", text, re.IGNORECASE)
     )
@@ -73,6 +75,8 @@ def _project_title_needs_repair(value: str) -> bool:
 
 def _existing_project_title_candidate(proposal: Mapping[str, Any], *, current: str) -> str:
     candidates: list[str] = []
+    for row in mapping_rows(proposal.get("backlog")):
+        candidates.extend(_title_candidates_from_text(row.get("title")))
     release_plan = proposal.get("release_plan")
     if isinstance(release_plan, Mapping):
         candidates.extend(_title_candidates_from_text(release_plan.get("label")))
@@ -104,6 +108,7 @@ def _title_candidates_from_text(value: Any) -> list[str]:
         return []
     rows: list[str] = []
     patterns = (
+        r"^Govern\s+(?P<title>.+?)$",
         r"^Ship\s+(?P<title>.+?)\s+First\s+Release$",
         r"^(?P<title>.+?)\s+\d+(?:\.\d+){1,2}\s+first\s+path\b",
         r"^(?P<title>.+?)\s+first[-\s]path\s+proof\b",
@@ -164,13 +169,13 @@ def _replace_title_text(value: Any, *, current: str, replacement: str) -> None:
     if isinstance(value, dict):
         for key, nested in list(value.items()):
             if isinstance(nested, str):
-                value[key] = nested.replace(current, replacement)
+                value[key] = re.sub(re.escape(current), replacement, nested, flags=re.IGNORECASE)
             else:
                 _replace_title_text(nested, current=current, replacement=replacement)
     elif isinstance(value, list):
         for index, nested in enumerate(list(value)):
             if isinstance(nested, str):
-                value[index] = nested.replace(current, replacement)
+                value[index] = re.sub(re.escape(current), replacement, nested, flags=re.IGNORECASE)
             else:
                 _replace_title_text(nested, current=current, replacement=replacement)
 

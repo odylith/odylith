@@ -61,30 +61,41 @@ def test_create_transaction_reuses_shared_mapping_coercion() -> None:
 
 def _proposal() -> dict[str, Any]:
     return {
-        "intent": {"title": "Supplier Risk Board"},
+        "intent": {
+            "title": "Supplier Risk Board",
+            "product_story": "Supplier risk analysts need one reviewable board for recording supplier risk decisions and their evidence.",
+            "state_object": "A supplier risk case tracks supplier evidence, review status, decision, owner, and proof record.",
+            "first_path": "A supplier risk analyst records one supplier case, reviews the evidence, records a decision, and sees a reviewable risk receipt.",
+            "human_actors": ["Supplier Risk Analyst: records supplier evidence, reviews the risk decision, and checks the receipt."],
+            "proof_boundary": "The first release works when a reviewer can inspect the supplier case, decision, and evidence together.",
+        },
         "backlog": [{"title": "Prove supplier risk review path"}],
         "components": [],
         "diagrams": [],
     }
 
 
-def _intent_authority(repo_root: Path, *, write_files: bool = False) -> dict[str, Any]:
+def _intent_authority(
+    repo_root: Path,
+    *,
+    write_files: bool = False,
+    intent: Mapping[str, Any] | None = None,
+    source_text: str = "",
+) -> dict[str, Any]:
     markdown_path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
     structured_path = markdown_path.with_suffix(".json")
-    intent = parse_confirmed_intent_text(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a greenfield proposal for a municipal permit review workspace",
-    )
+    facts = dict(intent) if isinstance(intent, Mapping) else dict(_proposal()["intent"])
+    evidence = source_text or f"# {facts['title']}\n"
     envelope = build_product_intent_envelope(
-        intent,
-        source_text=CONFIRMED_INTENT_TEXT,
+        facts,
+        source_text=evidence,
         source_path=markdown_path,
-        source_format="markdown",
+        source_format="markdown" if source_text else "in_memory_confirmed_intent",
     )
     if write_files:
         markdown_path.parent.mkdir(parents=True, exist_ok=True)
-        markdown_path.write_text(CONFIRMED_INTENT_TEXT, encoding="utf-8")
-        write_structured_confirmed_intent_file(markdown_path, intent, envelope=envelope)
+        markdown_path.write_text(evidence, encoding="utf-8")
+        write_structured_confirmed_intent_file(markdown_path, facts, envelope=envelope)
     return product_intent_authority_from_envelope(
         envelope,
         structured_intent_path=structured_path,
@@ -97,7 +108,12 @@ def _confirmed_intent_with_authority(repo_root: Path) -> dict[str, Any]:
         CONFIRMED_INTENT_TEXT,
         prompt="Draft a greenfield proposal for a municipal permit review workspace",
     )
-    intent[PRODUCT_INTENT_AUTHORITY_KEY] = _intent_authority(repo_root, write_files=True)
+    intent[PRODUCT_INTENT_AUTHORITY_KEY] = _intent_authority(
+        repo_root,
+        write_files=True,
+        intent=intent,
+        source_text=CONFIRMED_INTENT_TEXT,
+    )
     return intent
 
 
@@ -540,7 +556,7 @@ def test_product_create_transaction_hash_rejects_mutation() -> None:
     )
 
     assert not tampered.verified
-    with pytest.raises(ValueError, match="hash mismatch"):
+    with pytest.raises(ValueError, match="sealed Product Intent authority"):
         require_product_create_transaction_verified(tampered)
 
 

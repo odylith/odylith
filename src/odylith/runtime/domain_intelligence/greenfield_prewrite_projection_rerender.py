@@ -116,12 +116,17 @@ def rerender_prewrite_package_projections(
         updates["prewrite_safety_preview"] = prewrite_safety_preview
 
     if "registry" in scope:
-        component_preview = greenfield_apply_components.preview_prewrite_components(
+        staged_component_preview = greenfield_apply_components.preview_prewrite_components(
             root=target_root,
             proposal=package_proposal,
             release_selector=release_selector,
             backlog_result=backlog_result,
             program_result=program_result,
+        )
+        component_preview = greenfield_apply_prewrite.remap_prewrite_component_items(
+            staged_component_preview,
+            source_root=target_root,
+            target_root=target_root,
         )
         updates["rendered_component_specs"] = greenfield_apply_components.render_prewrite_component_specs(
             root=target_root,

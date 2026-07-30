@@ -8,6 +8,8 @@ import re
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import direct_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import before_can_outcome_clause
@@ -89,7 +91,6 @@ _REQUEST_PRODUCT_WORDS = frozenset(
 )
 _REQUEST_HELPER_WORDS = frozenset({"allow", "allows", "enable", "enables", "help", "helps", "let", "lets"})
 _REQUEST_ACTOR_PURPOSE_TOKENS = frozenset({"people", "person", "rep", "reps", "staff", "team", "teams", "user", "users"})
-_REQUEST_ACTOR_ROLE_SUFFIXES = ("ant", "ants", "ent", "ents", "er", "ers", "ian", "ians", "ist", "ists", "or", "ors", "owner", "owners")
 _NON_HUMAN_SUBJECT_TERMS = frozenset(
     {
         "approval",
@@ -279,12 +280,21 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         "",
     )
     if not resolved_actor:
-        first_path_actor, _ = modal_actor_action_parts(first_path)
+        first_path_actor, first_path_action = actor_led_action_parts(first_path)
+        recovery_kind = "actor_led" if first_path_actor else ""
         if not first_path_actor:
-            first_path_actor, _ = actor_led_action_parts(first_path)
+            first_path_actor, first_path_action = modal_actor_action_parts(first_path)
+            recovery_kind = "modal" if first_path_actor else ""
+        if not first_path_actor:
+            actor_action_match = leading_actor_action_match(first_path)
+            if actor_action_match:
+                first_path_actor, first_path_action = actor_action_match
+                recovery_kind = "leading"
         recovered_actor = _strip_leading_actor_article(first_path_actor)
         if _is_bounded_prompt_actor(recovered_actor):
             resolved_actor = recovered_actor
+            if first_path_action and _actor_recovery_needs_canonical_path(first_path, recovery_kind=recovery_kind):
+                first_path = f"{recovered_actor} can {first_path_action}".strip(" .")
     return PromptIntentSource(
         title=product_focus_after_command_sentence(product_text)
         or product_focus_after_need_sentence(product_text)
@@ -321,6 +331,19 @@ def prompt_has_material_first_path_gap(value: str) -> bool:
         and not _contains_compound_action_path(source.first_path)
         and _is_observation_only_action(action)
     )
+
+
+def prompt_has_material_actor_gap(value: str) -> bool:
+    """Return whether action-rich evidence lacks a credible human first actor."""
+
+    source = prompt_intent_source(value)
+    model = first_path_model(source.first_path)
+    if not model.material_action:
+        return False
+    actor = source.actor or _first_path_actor_candidate(source.first_path) or _first_path_actor_candidate(value)
+    if actor:
+        return is_automated_actor(actor) or not has_human_actor_signal(actor)
+    return len(model.steps) >= 2
 
 
 def _operator_context_from_product_text(value: str) -> str:
@@ -418,6 +441,8 @@ def _multi_role_modal_first_path(value: str) -> tuple[str, str]:
             if _word_key(word) not in _MULTI_ROLE_MODAL_TOKENS:
                 continue
             actor_words = words[:modal_index]
+            if any(_word_key(actor_word) in {"if", "that", "what", "when", "where", "whether", "which", "who"} for actor_word in actor_words):
+                continue
             comma_index = next(
                 (index for index, actor_word in enumerate(actor_words) if str(actor_word).rstrip().endswith(",")),
                 -1,
@@ -773,6 +798,9 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
             embedded_actor, embedded_action = _helper_relative_actor_action(raw_tail_words)
             if embedded_actor and embedded_action:
                 return embedded_actor, f"{embedded_actor} {embedded_action}".strip(" .")
+            use_actor, use_action = _use_to_actor_action(raw_tail_words)
+            if use_actor and use_action:
+                return use_actor, f"{use_actor} {use_action}".strip(" .")
             actor_words = _actor_role_suffix(words[for_index + 1 : connector_index])
             actor_words, moved_action_words = _trim_actor_action_split(actor_words, [])
             tail_words = raw_tail_words
@@ -919,17 +947,31 @@ def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:
     tail_words = words[1:]
     if tail_words and _word_key(tail_words[0]) == "to":
         tail_words = tail_words[1:]
-    for split_index in range(min(len(tail_words), 5), 0, -1):
+    role_candidates: list[tuple[str, str]] = []
+    workflow_candidates: list[tuple[str, str]] = []
+    for split_index in range(1, min(len(tail_words), 5) + 1):
         actor_words = tail_words[:split_index]
         action_words = tail_words[split_index:]
-        if not action_words or not _looks_like_actor_split_left(actor_words, allow_bounded_workflow_phrase=True):
+        if not action_words:
+            continue
+        explicit_role = _looks_like_actor_purpose_left(actor_words)
+        bounded_workflow = _looks_like_bounded_workflow_actor_phrase(actor_words)
+        if not explicit_role and not bounded_workflow:
             continue
         action_source = _smooth_request_first_path_clause(" ".join(action_words))
         if not looks_like_action_clause(action_source):
             continue
         action = base_action_clause(action_source, force_leading_finite=True)
         if action:
-            return _strip_leading_actor_article(" ".join(actor_words)), action
+            candidate = (_strip_leading_actor_article(" ".join(actor_words)), action)
+            if explicit_role:
+                role_candidates.append(candidate)
+            else:
+                workflow_candidates.append(candidate)
+    if role_candidates:
+        return role_candidates[0]
+    if workflow_candidates:
+        return workflow_candidates[0]
     return "", ""
 
 
@@ -1286,7 +1328,7 @@ def _looks_like_actor_purpose_left(words: list[str]) -> bool:
         or singular in _REQUEST_ACTOR_PURPOSE_TOKENS
         or word_has_actor_role_signal(last)
         or word_has_actor_role_signal(singular)
-        or any(last.endswith(suffix) or singular.endswith(suffix) for suffix in _REQUEST_ACTOR_ROLE_SUFFIXES)
+        or has_human_actor_signal(" ".join(tail))
     )
 
 
@@ -1440,13 +1482,43 @@ def _starts_with_explicit_human_actor(value: str) -> bool:
     words = [word.casefold().strip(".,:;") for word in _request_words(clean_markdown_text(value))[:5]]
     if words and words[0] in {"a", "an", "the"}:
         words = words[1:]
-    actor_positions = [index for index, word in enumerate(words) if word_has_actor_role_signal(word)]
+    actor_positions = [index for index, word in enumerate(words) if has_human_actor_signal(word)]
     non_human_positions = [index for index, word in enumerate(words) if word in _NON_HUMAN_SUBJECT_TERMINALS]
     if not actor_positions:
         return False
     if non_human_positions and max(non_human_positions) > max(actor_positions):
         return False
     return True
+
+
+def _first_path_actor_candidate(value: str) -> str:
+    text = clean_markdown_text(value)
+    labeled_path = re.search(r"\bfirst\s+complete\s+path\s*:\s*(?P<path>.+)$", text, flags=re.IGNORECASE)
+    if labeled_path:
+        text = labeled_path.group("path")
+    actor, _action = actor_led_action_parts(text)
+    if not actor:
+        actor, _action = modal_actor_action_parts(text)
+    if not actor:
+        leading = re.match(
+            r"^(?:a|an|the)\s+(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"
+            r"(?:can|could|should|must|will|[A-Za-z]+s)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if leading:
+            actor = leading.group("actor")
+    return _strip_leading_actor_article(actor)
+
+
+def _actor_recovery_needs_canonical_path(value: str, *, recovery_kind: str) -> bool:
+    """Normalize only paths whose context or nested modal would otherwise corrupt actor recovery."""
+
+    text = clean_markdown_text(value).strip(" .")
+    return bool(
+        recovery_kind == "leading"
+        or re.search(r"\b(?:what|that|which|whether|who|when|where)\s+(?:can|could|must|should|will|would)\b", text, flags=re.IGNORECASE)
+    )
 
 
 def _contains_compound_action_path(value: str) -> bool:
@@ -1471,6 +1543,7 @@ __all__ = [
     "product_intent_source_text",
     "prompt_first_path_source",
     "prompt_has_material_first_path_gap",
+    "prompt_has_material_actor_gap",
     "prompt_intent_source",
     "prompt_project_title_source",
 ]

@@ -38,7 +38,11 @@ mechanism-level learning.
    Create only verifies receipt, hash, compiler identity, and repo preconditions; writes
    sealed bytes atomically under rollback guard; validates readback; and reports success or
    an environment/IO failure. It does not parse Markdown, call a host model, generate
-   artifacts, or repair product prose after confirmation.
+   artifacts, or repair product prose after confirmation. Relay the returned post-confirm navigation block exactly once,
+   beginning with the Project route
+   `odylith/index.html?tab=project`; it is the user-facing handoff to the committed
+   governance package. Do not ask for another confirmation, run another refresh, or imply
+   that application code was created.
 6. If compilation, validation, or the Tribunal cannot produce a transaction, repair the
    product/compiler before presenting CONFIRM. Explain only material blockers in product
    language and write no records. If JSON is explicitly requested, use

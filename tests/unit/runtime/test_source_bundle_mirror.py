@@ -200,7 +200,7 @@ def test_human_visible_clarity_floor_travels_to_bundle_mirrors() -> None:
         (
             "odylith/skills/odylith-greenfield-governance/SKILL.md",
             "src/odylith/bundle/assets/odylith/skills/odylith-greenfield-governance/SKILL.md",
-            "Product meaning comes before artifact mapping",
+            "Relay the returned post-confirm navigation block exactly once",
         ),
         (
             "odylith/skills/odylith-component-registry/SKILL.md",

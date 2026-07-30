@@ -6,6 +6,8 @@ from dataclasses import dataclass
 import re
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
 
 
@@ -52,6 +54,8 @@ def leading_actor_action_match(value: str) -> tuple[str, str] | None:
             continue
         for boundary in range(1, min(6, len(words) - 1) + 1):
             actor_words = words[:boundary]
+            if looks_like_base_action_token(actor_words[0]) or looks_like_finite_action_token(actor_words[0]):
+                continue
             if not looks_like_actor_role_term(actor_words[-1]):
                 continue
             action = ", ".join((" ".join(words[boundary:]), *clauses[index + 1 :])).strip(" .")

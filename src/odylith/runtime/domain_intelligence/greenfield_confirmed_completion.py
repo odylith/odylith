@@ -126,7 +126,7 @@ def greenfield_repair_until_clean(
         if repair_greenfield_semantic_projections(payload):
             changed = True
             changed |= _complete_backlog(payload)
-        changed |= _complete_diagrams(payload)
+        changed |= complete_diagram_rows(payload)
         changed |= _repair_generated_modal_grammar(payload)
         issues = _preflight_issues(payload, release_selector=release_selector)
         if not issues:
@@ -452,7 +452,9 @@ def _reconcile_release_plan_with_backlog(proposal: dict[str, Any]) -> bool:
     return changed
 
 
-def _complete_diagrams(proposal: dict[str, Any]) -> bool:
+def complete_diagram_rows(proposal: dict[str, Any]) -> bool:
+    """Complete deterministic Atlas fields before the pre-confirm tribunal."""
+
     rows = proposal.get("diagrams")
     if not isinstance(rows, list):
         return False
@@ -490,4 +492,4 @@ def _complete_diagrams(proposal: dict[str, Any]) -> bool:
     return changed
 
 
-__all__ = ["complete_confirmed_proposal", "greenfield_repair_until_clean"]
+__all__ = ["complete_confirmed_proposal", "complete_diagram_rows", "greenfield_repair_until_clean"]

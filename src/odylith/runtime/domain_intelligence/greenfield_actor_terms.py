@@ -10,6 +10,7 @@ ROLEISH_TERMS = {
     "administrator",
     "applicant",
     "client",
+    "clerk",
     "coordinator",
     "customer",
     "manager",
@@ -56,8 +57,10 @@ CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
         "beneficiary",
         "chief",
         "client",
+        "clerk",
         "contact",
         "coordinator",
+        "counselor",
         "crew",
         "curator",
         "customer",
@@ -65,6 +68,7 @@ CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
         "engineer",
         "expert",
         "guardian",
+        "homeowner",
         "inspector",
         "lead",
         "liaison",
@@ -74,6 +78,7 @@ CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
         "officer",
         "owner",
         "planner",
+        "physicist",
         "registrar",
         "reviewer",
         "requester",
@@ -84,6 +89,7 @@ CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
         "steward",
         "sufferer",
         "team",
+        "teacher",
         "trainee",
         "user",
         "volunteer",
@@ -116,6 +122,23 @@ _AUTOMATED_ASSISTANT_MODIFIERS = frozenset(
 _HUMAN_PROFESSIONAL_ROLE_TERMS = frozenset(
     {"analyst", "architect", "designer", "developer", "director", "engineer", "manager", "operator", "researcher", "scientist"}
 )
+_EXPLICIT_HUMAN_ACTOR_TERMS = frozenset(
+    {
+        "aide",
+        "agent",
+        "assistant",
+        "client",
+        "cook",
+        "learner",
+        "nurse",
+        "parent",
+        "patient",
+        "publisher",
+        "resident",
+        "student",
+        "tenant",
+    }
+)
 _AUTOMATED_REVIEWER_MARKERS = frozenset({"ai", "llm"})
 _ABSTRACT_MATERIAL_ACTION_ACTORS = frozenset(
     {("end", "user"), ("individual",), ("person",), ("somebody",), ("someone",), ("user",)}
@@ -130,6 +153,25 @@ def looks_actor_term(value: str) -> bool:
 def word_has_actor_role_signal(value: str) -> bool:
     token = str(value or "").casefold().strip(".,;:()[]{}")
     return bool(token in CONFIRMED_ACTOR_ROLE_TERMS or (token.endswith("s") and token[:-1] in CONFIRMED_ACTOR_ROLE_TERMS))
+
+
+def has_human_actor_signal(value: str) -> bool:
+    """Return whether a label names a person-like product participant.
+
+    Human ownership must be explicit. Morphological suffixes make infrastructure
+    labels such as ``message broker`` look like people.
+    """
+
+    tokens = tuple(re.findall(r"[a-z]+", str(value or "").casefold()))
+    for token in tokens:
+        singular = token[:-1] if token.endswith("s") else token
+        if (
+            singular in CONFIRMED_ACTOR_ROLE_TERMS
+            or singular in _EXPLICIT_HUMAN_ACTOR_TERMS
+            or singular in _HUMAN_PROFESSIONAL_ROLE_TERMS
+        ):
+            return True
+    return False
 
 
 def is_automated_actor(value: str) -> bool:
@@ -192,6 +234,7 @@ __all__ = [
     "GENERIC_ACTOR_LABELS",
     "ROLEISH_TERMS",
     "generic_actor_label_prefix",
+    "has_human_actor_signal",
     "is_automated_actor",
     "localize_generic_actor_label",
     "looks_actor_term",

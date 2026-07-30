@@ -8,8 +8,8 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
+from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_first_path_actor_reference
+from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_human_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_program
@@ -88,14 +88,14 @@ def build_confirmed_greenfield_proposal(
         "proof_boundary",
         f"Release {release} is trustworthy only when the first path, {label_lower} record, and review evidence can be inspected together.",
     )
-    human_actors = _project_specific_actor_rows(
-        label=label,
+    human_actors = canonical_human_actor_rows(
+        project_label=label,
         rows=confirmed_intent_list(confirmed_intent, "human_actors"),
     )
-    first_path = localize_leading_actor_reference(
-        first_path,
+    first_path = canonical_first_path_actor_reference(
+        project_label=label,
+        first_path=first_path,
         actor_rows=human_actors,
-        project_focus=label,
         fallback=f"{label_lower} user",
     )
     external_systems = confirmed_intent_list(confirmed_intent, "external_systems")
@@ -228,7 +228,7 @@ def build_confirmed_greenfield_proposal(
             "human_actors": human_actors,
             "external_systems": external_systems,
             "internal_systems": internal_systems,
-            "critical_assumptions": assumptions,
+            "assumptions": assumptions,
             "ambiguities": ambiguities,
             "non_goals": non_goals,
             "problem": problem_summary,
@@ -650,32 +650,6 @@ def _parent_workstream_title(*, label: str, first_path: str) -> str:
         _title_label(f"Prove one complete {label} path")
         or f"Prove one complete {label} path"
     )
-
-
-def _project_specific_actor_rows(*, label: str, rows: list[str]) -> list[str]:
-    focus = _actor_focus_label(label)
-    result: list[str] = []
-    for row in rows:
-        text = str(row or "").strip()
-        if not text:
-            continue
-        result.append(_project_specific_actor_row(text, focus=focus))
-    return result
-
-
-def _project_specific_actor_row(row: str, *, focus: str) -> str:
-    return project_specific_actor_row(row, project_focus=focus) or row
-
-
-def _actor_focus_label(label: str) -> str:
-    text = re.sub(
-        r"\b(?:workspace|tracker|platform|system|application|app|tool|service|product|program)\b",
-        "",
-        str(label or ""),
-        flags=re.IGNORECASE,
-    )
-    text = " ".join(text.replace(":", " ").split()).strip(" -")
-    return text or str(label or "Project").strip() or "Project"
 
 
 def _actor_boundary_summary(values: list[str] | None, *, fallback: str) -> str:

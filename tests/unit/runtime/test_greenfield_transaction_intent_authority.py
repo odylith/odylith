@@ -16,10 +16,12 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_intent_authority
+from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_proposals import load_confirmed_intent_args
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
+    GreenfieldClarificationRequired,
     materialize_prompt_confirmed_intent,
     materialize_prompt_intent_hypothesis,
     render_product_intent_preview,
@@ -30,10 +32,12 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_from_envelope,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_snapshot_hash,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
+from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 
 
@@ -328,7 +332,68 @@ def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_author
     require_product_intent_authority(authority)
     assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.md").is_file()
     assert authority["source_format"] == "operator_prompt"
-    assert authority["markdown_source_path"].endswith("candidate-evidence.md")
+    assert authority["markdown_source_path"] == ".odylith/runtime/greenfield/candidate-evidence.md"
+    assert authority["structured_intent_path"] == ".odylith/runtime/greenfield/candidate-intent.json"
+    assert str(tmp_path) not in json.dumps(authority, sort_keys=True)
+    evidence_ledger = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/candidate-evidence.v1.json").read_text(encoding="utf-8")
+    )
+    evidence_sources = evidence_ledger["source_evidence"]
+    assert evidence_sources["source_path"] == ".odylith/runtime/greenfield/candidate-evidence.md"
+    assert evidence_sources["evidence_sources"] == [
+        {"source_id": "operator_prompt", "source_path": ".odylith/runtime/greenfield/operator-prompt.txt"}
+    ]
+    assert str(tmp_path) not in json.dumps(evidence_ledger, sort_keys=True)
+
+
+def test_prompt_intent_preview_and_compiled_proposal_share_the_sealed_first_path_facts(tmp_path: Path) -> None:
+    prompt = (
+        "Create a flood shelter intake system that helps city staff register displaced residents, match household needs "
+        "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
+    )
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Flood Shelter Intake System",
+        edit_evidence="Actually the visible result should be a confirmed placement receipt for the household.",
+    )
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        confirmed_intent=candidate,
+        require_completion_ready=False,
+    )
+
+    assert candidate["first_path"].startswith("City staff can")
+    assert product_facts_hash(proposal["intent"]) == candidate[PRODUCT_INTENT_AUTHORITY_KEY][PRODUCT_FACTS_HASH_KEY]
+
+
+def test_complete_edit_evidence_does_not_trigger_a_spurious_actor_clarification(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt="Draft a product-first greenfield proposal for a privacy request lifecycle console.",
+        repo_root=tmp_path,
+        fallback_title="Privacy Request Lifecycle Console",
+        edit_evidence="""# Privacy Request Lifecycle Console
+
+Product story
+A privacy operations team needs one console for accountable request lifecycle decisions.
+
+State object
+A privacy request record tracks requester authority, protected-record reference, decision, and audit event.
+
+First complete path
+A privacy coordinator opens one request, verifies requester authority, links the protected record, produces an allowed export package or blocked deletion decision, and reviews the audit event.
+
+Human actors
+- Privacy coordinator: verifies authority and reviews lifecycle status.
+
+Proof boundary
+One authorized request produces an export package or blocked decision with its audit event.""",
+    )
+
+    assert intent["first_path"].startswith("A privacy coordinator opens one request")
+    assert intent["human_actors"][0].startswith("Privacy coordinator:")
 
 
 @pytest.mark.parametrize(
@@ -364,6 +429,158 @@ def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_
         )
 
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_action_rich_prompt_without_a_human_actor_asks_one_focused_question(tmp_path: Path) -> None:
+    prompt = (
+        "Build a Quantum Networking Lab Management App that coordinates lab devices, entanglement links, "
+        "calibration, reservations, telemetry, and auditable proof results."
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired, match="Who uses the product first") as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Quantum Networking Lab Management App",
+        )
+
+    assert error.value.required_fields == ("human_actors", "first_path")
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_detailed_actorless_workflow_compiles_with_a_bounded_first_user_assumption(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a semiconductor reliability lab custody platform that receives wafer lot "
+        "samples, records chamber exposure conditions, preserves chain-of-custody evidence, tracks failed stress "
+        "runs, and prepares release readiness proof for engineering review."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Semiconductor Reliability Lab Custody Platform",
+    )
+
+    assert intent["first_path"]
+    assert intent["human_actors"]
+    assert any("owns the first path" in row.casefold() for row in intent["assumptions"])
+
+
+def test_explicit_human_context_overrides_a_nonhuman_parser_actor(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a port berth carbon tariff planner that lets port operations compare vessel "
+        "schedules, berth windows, shore-power availability, emissions evidence, tariff exceptions, and operator "
+        "signoff before publishing a daily berth plan."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Port Berth Carbon Tariff Planner",
+    )
+
+    assert intent["first_path"]
+    assert intent["human_actors"] == [
+        "Port Operations: need the product to compare vessel schedules, berth windows, shore-power availability, "
+        "emissions evidence, tariff exceptions, and operator signoff before publishing a daily berth plan and keep "
+        "the result visible and reviewable"
+    ]
+
+
+def test_preconfirm_finalization_reseals_repaired_typed_facts(tmp_path: Path) -> None:
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt=(
+            "Create a greenfield proposal for a semiconductor reliability lab custody platform that receives wafer "
+            "lot samples, records chamber exposure conditions, preserves chain-of-custody evidence, tracks failed "
+            "stress runs, and prepares release readiness proof for engineering review."
+        ),
+        repo_root=tmp_path,
+        fallback_title="Semiconductor Reliability Lab Custody Platform",
+    )
+    repaired = dict(candidate)
+    repaired["external_systems"] = ["Engineering review ledger: records the approved release-readiness decision."]
+
+    proposal, authority, restaged = greenfield_proposals._finalize_repaired_product_intent(
+        root=tmp_path,
+        proposal={"intent": repaired},
+        intent_authority=candidate[PRODUCT_INTENT_AUTHORITY_KEY],
+    )
+
+    assert restaged is True
+    assert product_facts_hash(proposal["intent"]) == authority[PRODUCT_FACTS_HASH_KEY]
+    staged = json.loads((tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8"))
+    assert staged["decision_record"][PRODUCT_FACTS_HASH_KEY] == authority[PRODUCT_FACTS_HASH_KEY]
+
+
+def test_final_recompile_preserves_preconfirm_rescue_evidence() -> None:
+    initial = {
+        "pass_records": [{"pass_index": 0}],
+        "repaired_issue_codes": ["structured_rescue_semantic_patch"],
+        "rescue_activated": True,
+        "repair_tier": "rescue",
+        "budget_seconds": 90,
+        "max_passes": 3,
+        "elapsed_seconds": 4.2,
+        "last_repair_patchset_request": {"operations": [{"issue_code": "structured_rescue_semantic_patch"}]},
+    }
+    final = {
+        "pass_records": [{"pass_index": 0}],
+        "repaired_issue_codes": [],
+        "rescue_activated": False,
+        "repair_tier": "standard",
+        "budget_seconds": 60,
+        "max_passes": 2,
+        "elapsed_seconds": 1.1,
+    }
+
+    merged = greenfield_proposals._merge_recompiled_quality_manifests(initial, final)
+
+    assert merged["passes"] == 2
+    assert merged["repaired_issue_codes"] == ["structured_rescue_semantic_patch"]
+    assert merged["rescue_activated"] is True
+    assert merged["repair_tier"] == "rescue"
+    assert merged["budget_seconds"] == 90
+    assert merged["last_repair_patchset_request"] == initial["last_repair_patchset_request"]
+
+
+def test_edit_with_an_automated_first_path_actor_requires_a_human_actor(tmp_path: Path) -> None:
+    with pytest.raises(GreenfieldClarificationRequired, match="Who uses the product first") as error:
+        materialize_prompt_intent_hypothesis(
+            prompt="Create a tool for extension publishers to use for release notes.",
+            repo_root=tmp_path,
+            fallback_title="Extension Release Notes",
+            edit_evidence=(
+                "First complete path: An AI assistant assembles approved changelog fragments and sees a "
+                "review-ready package."
+            ),
+        )
+
+    assert error.value.required_fields == ("human_actors", "first_path")
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_transaction_rejects_typed_intent_drift_from_its_sealed_authority(tmp_path: Path) -> None:
+    _path, facts, authority = _recorded_authority(tmp_path)
+    proposal = {
+        "intent": {**facts, "title": "Different Product Identity"},
+        PRODUCT_INTENT_AUTHORITY_KEY: authority,
+        "backlog": [{"title": "Prove lab evidence review path"}],
+        "components": [],
+        "diagrams": [],
+    }
+    package = compiled_greenfield_package_fixture(proposal=proposal, repo_root=tmp_path)
+
+    with pytest.raises(ValueError, match="proposal facts do not match its sealed Product Intent authority"):
+        build_product_create_transaction(
+            proposal=proposal,
+            release_selector="0.0.1",
+            validation_gate={"status": "passed", "issues": []},
+            prewrite_package=package,
+            backlog_result=package.backlog_result or {},
+            intent_authority=authority,
+            quality_manifest=_approved_quality_manifest(),
+            repo_root=tmp_path,
+        )
 
 
 @pytest.mark.parametrize(

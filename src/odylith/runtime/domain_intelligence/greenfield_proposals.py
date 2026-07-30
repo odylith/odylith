@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
+from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import restage_compiled_candidate_intent
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
@@ -36,9 +37,11 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import re
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_from_envelope,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
@@ -660,6 +663,25 @@ def compile_greenfield_create_transaction(
     if isinstance(package_proposal, Mapping):
         proposal = dict(package_proposal)
         proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
+    proposal, intent_authority, intent_was_restaged = _finalize_repaired_product_intent(
+        root=root,
+        proposal=proposal,
+        intent_authority=intent_authority,
+    )
+    if intent_was_restaged:
+        initial_quality_manifest = quality_manifest
+        proposal, tribunal, prewrite_build, quality_manifest = _build_repaired_prewrite_package(
+            root=root,
+            proposal=proposal,
+            release_selector=release_selector,
+            proposal_ready=proposal_ready,
+            repair_tier=repair_tier,
+        )
+        package_proposal = prewrite_build.package.proposal
+        if isinstance(package_proposal, Mapping):
+            proposal = dict(package_proposal)
+            proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
+        quality_manifest = _merge_recompiled_quality_manifests(initial_quality_manifest, quality_manifest)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector=release_selector,
@@ -672,6 +694,67 @@ def compile_greenfield_create_transaction(
     )
     require_product_create_transaction_verified(transaction)
     return transaction
+
+
+def _merge_recompiled_quality_manifests(
+    initial: Mapping[str, Any],
+    final: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Keep pre-confirm repair evidence when final facts require one clean recompile."""
+
+    merged = dict(final)
+    initial_records = initial.get("pass_records") if isinstance(initial.get("pass_records"), list) else []
+    final_records = final.get("pass_records") if isinstance(final.get("pass_records"), list) else []
+    merged["pass_records"] = [*initial_records, *final_records]
+    merged["passes"] = len(merged["pass_records"])
+    merged["repaired_issue_codes"] = sorted(
+        {
+            *[str(value) for value in initial.get("repaired_issue_codes", []) if str(value)],
+            *[str(value) for value in final.get("repaired_issue_codes", []) if str(value)],
+        }
+    )
+    merged["rescue_activated"] = bool(initial.get("rescue_activated") or final.get("rescue_activated"))
+    merged["repair_tier"] = _highest_repair_tier(
+        str(initial.get("repair_tier") or "standard"),
+        str(final.get("repair_tier") or "standard"),
+    )
+    merged["budget_seconds"] = max(float(initial.get("budget_seconds") or 0), float(final.get("budget_seconds") or 0))
+    merged["max_passes"] = max(int(initial.get("max_passes") or 0), int(final.get("max_passes") or 0))
+    merged["elapsed_seconds"] = round(
+        float(initial.get("elapsed_seconds") or 0) + float(final.get("elapsed_seconds") or 0), 3
+    )
+    if initial.get("last_repair_patchset_request") and not final.get("last_repair_patchset_request"):
+        merged["last_repair_patchset_request"] = initial["last_repair_patchset_request"]
+    return merged
+
+
+def _highest_repair_tier(*tiers: str) -> str:
+    order = {"standard": 0, "rescue": 1, "deep": 2}
+    return max(tiers, key=lambda tier: order.get(tier, 0))
+
+
+def _finalize_repaired_product_intent(
+    *,
+    root: Path,
+    proposal: Mapping[str, Any],
+    intent_authority: Mapping[str, Any],
+) -> tuple[Mapping[str, Any], Mapping[str, Any], bool]:
+    """Restage final pre-confirm facts once before the transaction is sealed."""
+
+    intent = proposal.get("intent") if isinstance(proposal, Mapping) else None
+    if not isinstance(intent, Mapping):
+        return proposal, intent_authority, False
+    if product_facts_hash(intent) == str(intent_authority.get(PRODUCT_FACTS_HASH_KEY) or ""):
+        return proposal, intent_authority, False
+    finalized_intent = restage_compiled_candidate_intent(
+        repo_root=root,
+        intent=intent,
+        previous_authority=intent_authority,
+    )
+    finalized_proposal = dict(proposal)
+    finalized_proposal["intent"] = finalized_intent
+    finalized_proposal[PRODUCT_INTENT_AUTHORITY_KEY] = finalized_intent[PRODUCT_INTENT_AUTHORITY_KEY]
+    return finalized_proposal, finalized_intent[PRODUCT_INTENT_AUTHORITY_KEY], True
 
 
 def _repair_confirmed_apply_payload(

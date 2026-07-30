@@ -8,8 +8,11 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
@@ -375,6 +378,11 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
 
     issues: list[str] = []
     actor_labels = _semantic_actor_labels(value)
+    for actor_label in actor_labels:
+        if _actor_label_contains_action_clause(actor_label):
+            issues.append(f"action clause leaked into actor label `{actor_label}`")
+        if _actor_label_has_dangling_relation(actor_label):
+            issues.append(f"dangling relation leaked into actor label `{actor_label}`")
     for path, text in _text_leaves(value):
         location = f"{root}.{path}" if path else root
         lowered = text.casefold()
@@ -509,6 +517,22 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
         ):
             issues.append(f"clipped generated sentence leaked at {location}")
     return _unique(issues)
+
+
+def _actor_label_contains_action_clause(value: str) -> bool:
+    words = re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value))
+    if words and word_has_actor_role_signal(words[-1]):
+        return False
+    return any(
+        (looks_like_base_action_token(words[index]) or looks_like_finite_action(words[index]))
+        and looks_like_action_clause(" ".join(words[index:]))
+        for index in range(1, len(words) - 1)
+    )
+
+
+def _actor_label_has_dangling_relation(value: str) -> bool:
+    words = re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value))
+    return bool(words and words[-1].casefold() in {"after", "before", "during", "from", "until", "when", "where", "with"})
 
 
 def _semantic_actor_labels(value: Any) -> frozenset[str]:

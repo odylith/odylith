@@ -1,11 +1,21 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-20
+Last updated (UTC): 2026-07-30
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-300 | 2026-07-30 | Final typed intent re seal discarded pre confirm rescue evidence | P1 | domain-intelligence | Open | [2026-07-30-final-typed-intent-re-seal-discarded-pre-confirm-rescue-evidence.md](2026-07-30-final-typed-intent-re-seal-discarded-pre-confirm-rescue-evidence.md) |
+| CB-299 | 2026-07-30 | Actor label quality gate rejected valid role ending labels | P1 | domain-intelligence | Open | [2026-07-30-actor-label-quality-gate-rejected-valid-role-ending-labels.md](2026-07-30-actor-label-quality-gate-rejected-valid-role-ending-labels.md) |
+| CB-296 | 2026-07-29 | Guidance envelope recovery loses explicit human actors and falls back to a gener | P1 | greenfield-prompt-intent-materialization | Open | [2026-07-29-guidance-envelope-recovery-loses-explicit-human-actors-and-falls-back-to-a-gener.md](2026-07-29-guidance-envelope-recovery-loses-explicit-human-actors-and-falls-back-to-a-gener.md) |
+| CB-298 | 2026-07-29 | Greenfield propose can mutate a sealed typed intent during pre confirm compilati | P1 | greenfield-preconfirm-compiler | Open | [2026-07-29-greenfield-propose-can-mutate-a-sealed-typed-intent-during-pre-confirm-compilati.md](2026-07-29-greenfield-propose-can-mutate-a-sealed-typed-intent-during-pre-confirm-compilati.md) |
+| CB-297 | 2026-07-29 | Commit only custody fixture seals product intent before its final deterministic | P1 | greenfield-commit-only-contract-tests | Open | [2026-07-29-commit-only-custody-fixture-seals-product-intent-before-its-final-deterministic-.md](2026-07-29-commit-only-custody-fixture-seals-product-intent-before-its-final-deterministic-.md) |
+| CB-295 | 2026-07-27 | Greenfield semantic diagrams can lose intelligence bindings before the pre confi | P1 | greenfield-preconfirm-compiler | Open | [2026-07-27-greenfield-semantic-diagrams-can-lose-intelligence-bindings-before-the-pre-confi.md](2026-07-27-greenfield-semantic-diagrams-can-lose-intelligence-bindings-before-the-pre-confi.md) |
+| CB-294 | 2026-07-27 | Greenfield commit only proof fixtures drifted from compile and cli ownership con | P1 | greenfield-governance | Open | [2026-07-27-greenfield-commit-only-proof-fixtures-drifted-from-compile-and-cli-ownership-con.md](2026-07-27-greenfield-commit-only-proof-fixtures-drifted-from-compile-and-cli-ownership-con.md) |
+| CB-292 | 2026-07-26 | Sealed greenfield actor rows drift during proposal projection | P1 | greenfield-governance | Open | [2026-07-26-sealed-greenfield-actor-rows-drift-during-proposal-projection.md](2026-07-26-sealed-greenfield-actor-rows-drift-during-proposal-projection.md) |
+| CB-293 | 2026-07-26 | Greenfield success metrics inflect slide derived first path actions incorrectly | P1 | greenfield-governance | Open | [2026-07-26-greenfield-success-metrics-inflect-slide-derived-first-path-actions-incorrectly.md](2026-07-26-greenfield-success-metrics-inflect-slide-derived-first-path-actions-incorrectly.md) |
+| CB-291 | 2026-07-23 | Confirmed greenfield handoff hides the completed governance workspace | P1 | domain-intelligence | Open | [2026-07-23-confirmed-greenfield-handoff-hides-the-completed-governance-workspace.md](2026-07-23-confirmed-greenfield-handoff-hides-the-completed-governance-workspace.md) |
 | CB-290 | 2026-07-20 | Installed recovery emits duplicate atlas review prose | P2 | odylith | Open | [2026-07-20-installed-recovery-emits-duplicate-atlas-review-prose.md](2026-07-20-installed-recovery-emits-duplicate-atlas-review-prose.md) |
 | CB-289 | 2026-07-20 | Inline source evidence could eclipse an explicit greenfield first path | P1 | domain-intelligence | Open | [2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md](2026-07-20-inline-source-evidence-could-eclipse-an-explicit-greenfield-first-path.md) |
 | CB-288 | 2026-07-19 | Thin greenfield titles could hide material operating mode alternatives | P1 | domain-intelligence | Open | [2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md](2026-07-19-thin-greenfield-titles-could-hide-material-operating-mode-alternatives.md) |

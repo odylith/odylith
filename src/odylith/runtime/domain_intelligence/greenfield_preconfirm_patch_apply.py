@@ -31,6 +31,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import (
     apply_semantic_patch_operations_detailed,
 )
+from odylith.runtime.domain_intelligence.project_intelligence_binding import (
+    attach_project_intelligence_bindings,
+)
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 
@@ -109,7 +112,7 @@ def complete_greenfield_semantic_apply_payload(
     projection_changed = repair_greenfield_semantic_projections(repaired)
     _refresh_semantic_diagrams(repaired, semantic_changed=semantic_changed)
     if proposal_completed and not projection_changed:
-        return repaired
+        return attach_project_intelligence_bindings(repaired)
     completed = complete_confirmed_proposal(repaired, release_selector=release_selector)
     if projection_changed or completed != repaired:
         repaired = completed
@@ -120,7 +123,7 @@ def complete_greenfield_semantic_apply_payload(
             repaired,
             semantic_changed=first_path_before != _first_path_contract_fingerprint(repaired),
         )
-    return repaired
+    return attach_project_intelligence_bindings(repaired)
 
 
 def _refresh_semantic_diagrams(proposal: dict[str, Any], *, semantic_changed: bool) -> None:

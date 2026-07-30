@@ -45,15 +45,37 @@ def _mechanical_copy_operation(*affected_projections: str, **overrides: object) 
     return operation
 
 
-def test_plain_title_actor_subjects_lower_coherently_before_finite_actions() -> None:
+def test_plain_title_actor_subjects_separate_coherently_from_actions() -> None:
     assert base_action_clause("Home Cook picks a recipe") == "home cook picks a recipe"
-    assert action_chain_fragment("Home Cook picks a recipe") == "home cook picks a recipe"
-    assert first_path_capability_phrase("Home Cook picks a recipe").startswith("home cook can pick a recipe")
+    assert action_chain_fragment("Home Cook picks a recipe") == "pick a recipe"
+    assert first_path_capability_phrase("Home Cook picks a recipe") == "pick a recipe"
     assert generated_semantic_slop_issues({"capability": first_path_capability_phrase("Home Cook picks a recipe")}) == []
 
     assert base_action_clause("Station Lead Review") == "station lead review"
     assert action_chain_fragment("Station Lead Review") == "station lead review"
     assert generated_semantic_slop_issues({"fragment": action_chain_fragment("Station Lead Review")}) == []
+
+
+def test_generated_semantic_slop_gate_rejects_malformed_actor_labels() -> None:
+    issues = generated_semantic_slop_issues(
+        {
+            "intent": {
+                "human_actors": [
+                    "Port Operations Compare Vessel: needs the product to schedule berth windows.",
+                    "Operator Signoff Before: needs the product to publish a daily berth plan.",
+                ]
+            }
+        }
+    )
+
+    assert any("action clause leaked into actor label" in issue for issue in issues)
+    assert any("dangling relation leaked into actor label" in issue for issue in issues)
+
+
+def test_generated_semantic_slop_gate_keeps_role_ending_actor_labels() -> None:
+    assert generated_semantic_slop_issues(
+        {"intent": {"human_actors": ["Lab Support Owner: needs the product to coordinate evidence."]}}
+    ) == []
 
 
 def test_action_chain_fragment_preserves_conditional_visible_result() -> None:

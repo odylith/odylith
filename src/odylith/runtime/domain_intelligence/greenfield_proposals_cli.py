@@ -241,6 +241,11 @@ def _compile_prompt_evidence_transaction(
         confirmed_intent=candidate_intent,
         require_completion_ready=False,
     )
+    candidate_authority = candidate_intent.get("product_intent_authority")
+    if not isinstance(candidate_authority, Mapping):
+        raise RuntimeError("pre-confirm typed Product Intent authority is missing")
+    proposal = dict(proposal)
+    proposal["product_intent_authority"] = candidate_authority
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=repo_root,
         proposal=proposal,
@@ -248,6 +253,8 @@ def _compile_prompt_evidence_transaction(
         proposal_ready=True,
         **({"repair_tier": repair_tier} if repair_tier else {}),
     )
+    candidate_intent = dict(transaction.proposal.get("intent") or {})
+    candidate_intent["product_intent_authority"] = transaction.intent_authority
     candidate_authority = candidate_intent.get("product_intent_authority")
     transaction_authority = transaction.intent_authority if isinstance(transaction.intent_authority, Mapping) else {}
     if not isinstance(candidate_authority, Mapping) or (
@@ -300,11 +307,14 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "mode": "product_create_transaction",
                 "intent_hypothesis": candidate_intent,
                 "product_create_transaction": transaction.summary(),
-                "transaction_file": str(transaction_path),
+                "transaction_file": str(transaction_path.relative_to(repo_root)),
             }, indent=2, sort_keys=True))
         else:
             preview = render_product_intent_preview(candidate_intent).rstrip()
-            print(f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=str(transaction_path))}", end="")
+            print(
+                f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=str(transaction_path.relative_to(repo_root)))}",
+                end="",
+            )
         return 0
     if args.command == "apply":
         message = _legacy_apply_disabled_error()

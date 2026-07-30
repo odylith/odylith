@@ -127,7 +127,7 @@ def _intent_signature_text(proposal: Mapping[str, Any]) -> str:
         *text_values(intent.get("human_actors")),
         *text_values(intent.get("external_systems")),
         *text_values(intent.get("internal_systems")),
-        *text_values(intent.get("critical_assumptions")),
+        *text_values(intent.get("assumptions") or intent.get("critical_assumptions")),
         *text_values(intent.get("ambiguities")),
         *text_values(intent.get("non_goals")),
     ]

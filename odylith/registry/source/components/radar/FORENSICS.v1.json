@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 563,
-    "mapped_workstream_evidence_count": 513,
+    "explicit_event_count": 564,
+    "mapped_workstream_evidence_count": 514,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 563
+    "timeline_event_count": 564
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/skills/odylith-greenfield-governance/SKILL.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_create_cli.py",
+        "tests/unit/runtime/test_greenfield_cli_paths.py"
+      ],
+      "confidence": "high",
+      "event_index": 1119,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-07-22T19:51:12-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

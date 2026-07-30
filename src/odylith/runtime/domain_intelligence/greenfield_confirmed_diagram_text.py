@@ -421,7 +421,8 @@ def _base_initial_action_clause(value: str) -> str:
 
 
 def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
-    lead = f"The {label} boundary must show"
+    boundary_label = label if re.search(r"\bboundary$", label, flags=re.IGNORECASE) else f"{label} boundary"
+    lead = f"The {boundary_label} must show"
     if kind == "adapter":
         return f"{lead} which source supplied the input, what result was accepted, and which error state blocked unsafe input"
     if kind == "client":

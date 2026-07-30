@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-20
+Last updated: 2026-07-22
 
 
 ## Overview
@@ -26,6 +26,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-22 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/skills/odylith-greenfield-governance/SKILL.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_cli.py`, `tests/unit/runtime/test_greenfield_cli_paths.py`
 - **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`, `tests/unit/runtime/test_greenfield_commit_journal.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
@@ -40,8 +43,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-022
   - Evidence: `odylith/casebook/bugs/2026-07-18-receipt-boundary-accepted-mutable-in-memory-greenfield-create-state.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
-- **2026-07-17 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

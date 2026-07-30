@@ -1,4 +1,5 @@
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
@@ -12,6 +13,15 @@ def test_generic_composite_actor_label_gets_project_focus() -> None:
 
     assert row == "Protocol Outcome Notebook Reviewer or Collaborator"
     assert not row.startswith("Reviewer")
+
+
+def test_leading_actor_path_uses_sentence_case_for_an_accepted_role() -> None:
+    assert localize_leading_actor_reference(
+        "Operator picks a recipe and sees a safe finished state.",
+        actor_rows=["Home Cook: selects recipes and responds to prompts."],
+        project_focus="Cooking Robot Controller",
+        sentence_context=True,
+    ) == "Home cook picks a recipe and sees a safe finished state."
 
 
 def test_generic_person_actor_uses_accepted_activity_not_project_fallback() -> None:
