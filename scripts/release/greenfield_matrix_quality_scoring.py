@@ -31,6 +31,7 @@ QUALITY_SCORE_DIMENSIONS = (
     "operator_usefulness",
     "implementation_prompts",
     "browser_surface_proof",
+    "confirmation_ux",
     "product_manager",
     "architect",
     "engineer",
@@ -47,6 +48,7 @@ def build_quality_verdict(
     browser_surface_issues: Sequence[str] = (),
     browser_surface_proof_attempted: bool = True,
     browser_surface_proof_required: bool = True,
+    confirmation_ux_issues: Sequence[str] = (),
     create_returncode: int,
     create_seconds: float,
     create_detail: str = "",
@@ -74,6 +76,7 @@ def build_quality_verdict(
             browser_surface_proof_required=browser_surface_proof_required,
             browser_surface_issues=browser_surface_issues,
         ),
+        *(str(issue).strip() for issue in confirmation_ux_issues if str(issue).strip()),
         *_create_failure_detail_issues(create_returncode=create_returncode, create_detail=create_detail),
         *_manifest_issues(
             manifest,
@@ -106,6 +109,7 @@ def build_quality_verdict(
         browser_surface_proof_attempted=browser_surface_proof_attempted,
         browser_surface_proof_required=browser_surface_proof_required,
         browser_surface_issues=browser_surface_issues,
+        confirmation_ux_issues=confirmation_ux_issues,
     )
     final_score = _final_quality_score(
         scores=scores,
@@ -380,6 +384,7 @@ def _quality_scores(
     browser_surface_proof_attempted: bool = True,
     browser_surface_proof_required: bool = True,
     browser_surface_issues: Sequence[str] = (),
+    confirmation_ux_issues: Sequence[str] = (),
 ) -> dict[str, int]:
     return {
         "completion": (
@@ -414,6 +419,10 @@ def _quality_scores(
             browser_surface_proof_attempted=browser_surface_proof_attempted,
             browser_surface_proof_required=browser_surface_proof_required,
             browser_surface_issues=browser_surface_issues,
+        ),
+        "confirmation_ux": _confirmation_ux_score(
+            create_returncode=create_returncode,
+            confirmation_ux_issues=confirmation_ux_issues,
         ),
         "product_manager": 10 if lenses.get("product_manager") else 0,
         "architect": 10 if lenses.get("architect") else 0,
@@ -725,6 +734,14 @@ def _browser_surface_proof_score(
     if not browser_surface_proof_required:
         return -1
     return 0
+
+
+def _confirmation_ux_score(*, create_returncode: int, confirmation_ux_issues: Sequence[str]) -> int:
+    """Score the visible decision rail and post-success routes as one hard contract."""
+
+    if create_returncode != 0 or confirmation_ux_issues:
+        return 0
+    return 10
 
 
 def _manifest_lenses(manifest: Mapping[str, Any]) -> Mapping[str, Any]:

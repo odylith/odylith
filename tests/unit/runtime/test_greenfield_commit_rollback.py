@@ -42,9 +42,10 @@ def _transaction(repo_root: Path) -> Any:
         repo_root=repo_root,
         write_files=True,
     )
-    authority = dict(intent[PRODUCT_INTENT_AUTHORITY_KEY])
+    proposal_intent = dict(intent)
+    authority = dict(proposal_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY))
     proposal = {
-        "intent": {"title": "Municipal Permit Review Workspace"},
+        "intent": proposal_intent,
         PRODUCT_INTENT_AUTHORITY_KEY: authority,
         "backlog": [{"title": "Prove permit review path"}],
         "components": [],

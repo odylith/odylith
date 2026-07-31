@@ -68,7 +68,11 @@ def _transaction(repo_root: Path) -> Any:
     )
     authority = dict(intent[PRODUCT_INTENT_AUTHORITY_KEY])
     proposal = {
-        "intent": {"title": "Municipal Permit Review Workspace"},
+        "intent": {
+            key: value
+            for key, value in intent.items()
+            if key != PRODUCT_INTENT_AUTHORITY_KEY
+        },
         PRODUCT_INTENT_AUTHORITY_KEY: authority,
         "backlog": [{"title": "Prove permit review path"}],
         "components": [],

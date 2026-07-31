@@ -15,7 +15,9 @@ if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
 from greenfield_matrix_transaction_evidence import commit_precompiled_transaction
+from greenfield_matrix_transaction_evidence import confirmation_preview_issues
 from greenfield_matrix_transaction_evidence import dry_run_commit_issues
+from greenfield_matrix_transaction_evidence import post_confirm_navigation_issues
 
 
 HASH = "a" * 64
@@ -123,6 +125,38 @@ def test_dry_run_commit_issues_detects_changed_commit_hash() -> None:
     )
 
 
+def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
+    payload = _proposal_payload(HASH)
+
+    assert confirmation_preview_issues(proposal_payload=payload) == ()
+
+    payload["confirmation"]["choices"][1]["description"] = "Change it later."
+
+    assert confirmation_preview_issues(proposal_payload=payload) == (
+        "EDIT does not explain that corrections are rebuilt as new evidence",
+    )
+
+
+def test_post_confirm_navigation_requires_every_governance_workspace_route() -> None:
+    payload = {
+        "post_confirm_navigation": {
+            "project": "odylith/index.html?tab=project",
+            "radar": "odylith/index.html?tab=radar",
+            "registry": "odylith/index.html?tab=registry",
+            "atlas": "odylith/index.html?tab=atlas",
+            "compass": "odylith/index.html?tab=compass&date=live",
+        }
+    }
+
+    assert post_confirm_navigation_issues(create_payload=payload) == ()
+
+    del payload["post_confirm_navigation"]["atlas"]
+
+    assert post_confirm_navigation_issues(create_payload=payload) == (
+        "post-confirm response does not expose the stable governance workspace routes: atlas",
+    )
+
+
 def _proposal(transaction_hash: str, *, transaction_file: str = TRANSACTION_FILE) -> SimpleNamespace:
     return SimpleNamespace(
         returncode=0,
@@ -135,6 +169,37 @@ def _proposal(transaction_hash: str, *, transaction_file: str = TRANSACTION_FILE
         ),
         stderr="",
     )
+
+
+def _proposal_payload(transaction_hash: str) -> dict[str, object]:
+    return {
+        "mode": "product_create_transaction",
+        "transaction_file": TRANSACTION_FILE,
+        "product_create_transaction": {"transaction_hash": transaction_hash},
+        "confirmation": {
+            "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+            "post_confirm_contract": (
+                "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
+                "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
+                "guard, validates readback, and reports success or environment/IO failure."
+            ),
+            "choices": [
+                {
+                    "command": "CONFIRM",
+                    "description": "Commit this exact validated package now.",
+                    "commit_command": (
+                        "odylith greenfield create --repo-root . "
+                        f"--transaction-file {TRANSACTION_FILE} --transaction-hash {transaction_hash} --confirm"
+                    ),
+                },
+                {
+                    "command": "EDIT",
+                    "description": "Do not commit. Treat corrections as new evidence and rebuild the package.",
+                },
+                {"command": "REJECT", "description": "Stop. No governed records are written."},
+            ],
+        },
+    }
 
 
 def _write_transaction(

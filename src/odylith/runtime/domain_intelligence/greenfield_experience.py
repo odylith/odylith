@@ -106,29 +106,25 @@ def build_next_steps(
     proposal: Mapping[str, Any],
     backlog_result: Mapping[str, Any],
     first_release_workstreams: Sequence[str],
-    program_result: Mapping[str, Any],
     release_selector: str,
 ) -> dict[str, Any]:
     created = mapping_rows(backlog_result.get("created"))
     by_id = _created_by_id(created)
-    umbrella_id = _umbrella_id(program_result)
-    umbrella_row = by_id.get(umbrella_id, {})
+    project_id = next(iter(by_id), "")
+    project_row = by_id.get(project_id, {})
     candidate_ids = _candidate_start_ids(
         first_release_workstreams=first_release_workstreams,
-        program_result=program_result,
-        umbrella_id=umbrella_id,
+        project_id=project_id,
     )
-    start_id = candidate_ids[0] if candidate_ids else (umbrella_id or (next(iter(by_id), "")))
+    start_id = candidate_ids[0] if candidate_ids else project_id
     start_row = by_id.get(start_id, {})
-    active_wave = _active_wave(program_result)
-    wave_label = _wave_label(active_wave)
     proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
-    validation_items = _validation_items(row=proposal_row, wave=active_wave)
+    validation_items = _validation_items(row=proposal_row, wave={})
     first_slice = _first_slice_text(proposal_row)
     first_path = _first_path_summary(proposal)
     release_requirements = _first_release_requirement_sentence(proposal)
     title = str(start_row.get("title", "")).strip()
-    project_title = str(umbrella_row.get("title", "")).strip() or str(
+    project_title = str(project_row.get("title", "")).strip() or str(
         proposal.get("intent", {}).get("title", "the greenfield project")
         if isinstance(proposal.get("intent"), Mapping)
         else "the greenfield project"
@@ -141,14 +137,13 @@ def build_next_steps(
         readiness_gates = [*readiness_gates, anchor_gate]
         validation_items = unique_text([*validation_items, anchor_gate])
     return {
-        "project_workstream_id": umbrella_id,
+        "project_workstream_id": project_id,
         "project_workstream_title": project_title,
         "start_workstream_id": start_id,
         "start_workstream_title": title,
-        "first_wave": wave_label,
         "release_selector": release_selector,
         "project_first_prompt": _project_first_prompt(
-            project_id=umbrella_id,
+            project_id=project_id,
             project_title=project_title,
             start_id=start_id,
             start_title=title,
@@ -166,11 +161,11 @@ def build_next_steps(
         "operator_sequence": [
             "Do not start source edits from this closeout; treat the applied records as the project review board.",
             (
-                f"Open the project program view for `{umbrella_id or start_id}` and review the project brief, "
+                f"Open the project dashboard for `{project_id or start_id}` and review the project brief, "
                 "direction choices, non-goals, diagrams, and proof gates."
             ),
             (
-                f"Open the progress view and verify the active wave `{wave_label}` plus release "
+                f"Open `{start_id}` and verify its first-release scope and release "
                 f"`{release_selector or '0.0.1'}` match the accepted project shape."
             ),
             (
@@ -191,13 +186,12 @@ def build_component_handoffs(
     proposal: Mapping[str, Any],
     backlog_result: Mapping[str, Any],
     first_release_workstreams: Sequence[str],
-    program_result: Mapping[str, Any],
     traceability_plan: greenfield_traceability.GreenfieldTraceabilityPlan,
     release_selector: str,
 ) -> dict[str, dict[str, Any]]:
     created = mapping_rows(backlog_result.get("created"))
     by_id = _created_by_id(created)
-    umbrella_id = _umbrella_id(program_result)
+    project_id = next(iter(by_id), "")
     first_release_ids = [str(item).strip().upper() for item in first_release_workstreams if str(item).strip()]
     handoffs: dict[str, dict[str, Any]] = {}
     components = mapping_rows(proposal.get("components"))
@@ -208,14 +202,14 @@ def build_component_handoffs(
             proposal=proposal,
             created=created,
             component_row=row,
-            umbrella_id=umbrella_id,
+            umbrella_id=project_id,
         )
         component_workstreams = [
             str(item).strip().upper()
             for item in traceability_plan.component_workstreams.get(key, ())
             if str(item).strip()
         ]
-        child_ids = [item for item in component_workstreams if item != umbrella_id]
+        child_ids = [item for item in component_workstreams if item != project_id]
         release_focused_ids = [item for item in focused_child_ids if item in first_release_ids]
         release_child_ids = [item for item in child_ids if item in first_release_ids]
         start_id = (
@@ -223,10 +217,9 @@ def build_component_handoffs(
             or focused_child_ids
             or release_child_ids
             or child_ids
-            or [umbrella_id]
+            or [project_id]
         )[0]
         proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
-        wave = _wave_for_workstream(program_result=program_result, workstream_id=start_id)
         title = str(by_id.get(start_id, {}).get("title", "")).strip()
         first_slice = _first_slice_text(proposal_row)
         first_slice = _component_local_first_slice(row, fallback=first_slice)
@@ -234,12 +227,9 @@ def build_component_handoffs(
             **project_context,
             "workstream_id": start_id,
             "workstream_title": title,
-            "wave_id": str(wave.get("wave_id", "")).strip(),
-            "wave_label": _wave_label(wave),
-            "wave_status": str(wave.get("status", "")).strip(),
             "release_selector": release_selector,
             "first_slice": first_slice,
-            "validation_gates": list(_validation_items(row=proposal_row, wave=wave)[:6]),
+            "validation_gates": list(_validation_items(row=proposal_row, wave={})[:6]),
             "verification_commands": verification_commands(start_id),
         }
     return handoffs
@@ -356,29 +346,16 @@ def _created_by_id(created: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[st
     }
 
 
-def _umbrella_id(program_result: Mapping[str, Any]) -> str:
-    return str(program_result.get("umbrella_id", "")).strip().upper() if isinstance(program_result, Mapping) else ""
-
-
 def _candidate_start_ids(
     *,
     first_release_workstreams: Sequence[str],
-    program_result: Mapping[str, Any],
-    umbrella_id: str,
+    project_id: str,
 ) -> list[str]:
     candidate_ids = [
         str(item).strip().upper()
         for item in first_release_workstreams
-        if str(item).strip().upper() and str(item).strip().upper() != umbrella_id
+        if str(item).strip().upper() and str(item).strip().upper() != project_id
     ]
-    if candidate_ids or not isinstance(program_result, Mapping):
-        return candidate_ids
-    first_wave = _first_wave(program_result)
-    for field in ("primary_workstreams", "carried_workstreams", "in_band_workstreams"):
-        for item in first_wave.get(field, []) if isinstance(first_wave.get(field), list) else []:
-            token = str(item).strip().upper()
-            if token and token != umbrella_id and token not in candidate_ids:
-                candidate_ids.append(token)
     return candidate_ids
 
 
@@ -395,39 +372,6 @@ def _proposal_row_for_created_id(
         if idea_id == target and index < len(proposal_rows):
             return proposal_rows[index]
     return {}
-
-
-def _first_wave(program_result: Mapping[str, Any]) -> Mapping[str, Any]:
-    waves = mapping_rows(program_result.get("waves"))
-    return waves[0] if waves else {}
-
-
-def _active_wave(program_result: Mapping[str, Any]) -> Mapping[str, Any]:
-    waves = mapping_rows(program_result.get("waves")) if isinstance(program_result, Mapping) else []
-    return next(
-        (row for row in waves if str(row.get("status", "")).strip().casefold() == "active"),
-        waves[0] if waves else {},
-    )
-
-
-def _wave_for_workstream(*, program_result: Mapping[str, Any], workstream_id: str) -> Mapping[str, Any]:
-    token = str(workstream_id or "").strip().upper()
-    waves = mapping_rows(program_result.get("waves")) if isinstance(program_result, Mapping) else []
-    for wave in waves:
-        for field in ("primary_workstreams", "carried_workstreams", "in_band_workstreams"):
-            values = wave.get(field, []) if isinstance(wave.get(field), list) else []
-            if token in {str(item).strip().upper() for item in values}:
-                return wave
-    return _active_wave(program_result)
-
-
-def _wave_label(wave: Mapping[str, Any]) -> str:
-    return (
-        str(wave.get("label", "")).strip()
-        or str(wave.get("name", "")).strip()
-        or str(wave.get("wave_id", "")).strip()
-        or "first wave"
-    )
 
 
 def _first_slice_text(row: Mapping[str, Any]) -> str:

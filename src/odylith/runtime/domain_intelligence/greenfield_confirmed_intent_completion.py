@@ -5,6 +5,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_drift
@@ -38,6 +39,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_completeness impo
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_rich_material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import is_supporting_setup_step
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, has_presentation_only_title_marker, material_first_path_action, normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_confirmed_intent_semantic_projections
@@ -81,10 +83,15 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
+    title = _clean(intent.get("title"))
     for key in ("product_story", "first_path", "problem", "product_view"):
         text = _clean(intent.get(key))
         if text:
-            normalized = normalize_first_path(text) if key == "first_path" else _normalize_visible_result_language(_strip_prompt_prefixes(text))
+            normalized = (
+                normalize_first_path(text, product_title=title)
+                if key == "first_path"
+                else _normalize_visible_result_language(_strip_prompt_prefixes(text))
+            )
             normalized = _normalize_understand_object_phrase(normalized)
             intent[key] = _sentence(normalized)
     state = _clean(intent.get("state_object"))
@@ -268,7 +275,7 @@ def _normalize_visible_result_language(value: str) -> str:
     return _clean(text)
 
 
-def normalize_first_path(value: str) -> str:
+def normalize_first_path(value: str, *, product_title: str = "") -> str:
     text = _strip_inline_meta_loop_clauses(
         _normalize_visible_result_language(_strip_prompt_prefixes(value))
     )
@@ -284,7 +291,72 @@ def normalize_first_path(value: str) -> str:
         for sentence in sentences
         if not _is_terminal_meta_loop_summary(sentence)
     ]
-    return " ".join(kept or sentences).strip()
+    normalized = _normalize_named_product_subjects(" ".join(kept or sentences).strip(), product_title=product_title)
+    return _separate_distinct_actor_steps(normalized)
+
+
+def _separate_distinct_actor_steps(value: str) -> str:
+    """Make an actor-to-actor handoff readable without flattening one actor's action chain."""
+
+    text = _clean(value).strip()
+    if not text or re.search(r"(?<=[.!?])\s+", text):
+        return text
+    steps = first_path_model(text).steps
+    if len(steps) < 2:
+        return text
+    subjects = [_first_path_step_subject(step) for step in steps]
+    if (
+        not all(subjects)
+        or not all(_looks_like_explicit_handoff_subject(subject) for subject in subjects)
+        or len({subject.casefold() for subject in subjects}) < 2
+    ):
+        return text
+    return ". ".join(step.strip(" .") for step in steps) + "."
+
+
+def _first_path_step_subject(step: str) -> str:
+    match = re.match(
+        rf"^(?P<subject>.+?)\s+(?:{action_verb_pattern()})\b",
+        _clean(step).strip(" ."),
+        flags=re.IGNORECASE,
+    )
+    return _clean(match.group("subject")) if match else ""
+
+
+def _looks_like_explicit_handoff_subject(value: str) -> bool:
+    words = re.findall(r"[A-Za-z]+", _clean(value).casefold())
+    if not words:
+        return False
+    if words[0] in {"a", "an", "the"}:
+        return len(words) > 1
+    last = words[-1]
+    return len(last) > 3 and last.endswith("s") and not last.endswith(("ics", "ss", "us"))
+
+
+def _normalize_named_product_subjects(value: str, *, product_title: str) -> str:
+    """Keep a known product identity out of a first-path action subject.
+
+    The title is an accepted fact, but the path describes the person and product
+    behavior, not a brand acting as a human participant. This is intentionally
+    limited to the already accepted project title and a recognized action verb.
+    """
+
+    text = _clean(value)
+    title = _clean(product_title).strip(" .")
+    if not text or not title:
+        return text
+    labels = [title]
+    if " — " in title:
+        labels.append(title.split(" — ", 1)[0].strip())
+    verb_pattern = action_verb_pattern()
+    for label in sorted({label for label in labels if label}, key=len, reverse=True):
+        text = re.sub(
+            rf"\b{re.escape(label)}\s+(?=(?:{verb_pattern})\b)",
+            "the product ",
+            text,
+            flags=re.IGNORECASE,
+        )
+    return text
 
 
 def _strip_inline_meta_loop_clauses(value: str) -> str:
@@ -577,7 +649,10 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         limit=240,
         max_steps=4,
     )
-    metric_proof_capability = action_chain_fragment(first_path)
+    metric_proof_capability = _metric_first_path_proof_capability(
+        first_path,
+        fallback=proof_capability,
+    )
     if len(metric_proof_capability) > 240:
         metric_proof_capability = readable_action_chain_sentence(
             first_path,
@@ -640,6 +715,13 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         intent["product_story"] = _sentence(
             f"{title} helps {_join(actors[:2]) or f'{focus} users'} complete one accountable path with state, evidence, and decision context visible."
         )
+
+
+def _metric_first_path_proof_capability(value: str, *, fallback: str) -> str:
+    model = first_path_model(value)
+    if any(is_supporting_setup_step(step) for step in model.steps):
+        return fallback
+    return action_chain_fragment(value) or fallback
 
 
 def _story_problem_sentence(value: str) -> str:

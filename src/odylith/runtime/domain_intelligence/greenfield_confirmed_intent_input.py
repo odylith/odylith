@@ -89,6 +89,9 @@ def thin_operator_intent_source(text: str, *, prompt: str = "") -> str:
 def thin_recovery_source_text(text: str, sections: Mapping[str, list[str]], title: str) -> str:
     """Preserve product-context paragraphs when recovering a thin confirmation."""
 
+    original_intent = _host_guidance_original_intent(text)
+    if original_intent:
+        return original_intent
     if not has_explicit_section_boundaries(sections):
         return _clean(text)
     paragraphs = product_context_paragraphs(text, sections, title)

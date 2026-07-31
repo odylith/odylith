@@ -262,6 +262,78 @@ def test_scoped_projection_rerender_passes_fresh_source_launch_to_accepted_proje
     assert result.package.next_steps_preview == {"implementation_prompt": "stale"}
 
 
+def test_scoped_rerender_keeps_first_release_handoff_without_program(
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    release_workstream_id = "B-101"
+
+    def first_release_workstream_ids(**kwargs: Any) -> tuple[str, ...]:
+        assert kwargs["program_result"] == {}
+        return (release_workstream_id,)
+
+    def next_steps(**kwargs: Any) -> dict[str, Any]:
+        assert kwargs["first_release_workstreams"] == (release_workstream_id,)
+        return {
+            "project_workstream_id": "B-100",
+            "start_workstream_id": release_workstream_id,
+            "start_workstream_title": "Prove the first release path",
+        }
+
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_programs,
+        "first_release_workstream_ids",
+        first_release_workstream_ids,
+    )
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_apply_prewrite,
+        "ensure_release_target",
+        lambda **_kwargs: {"dry_run": True, "release": {"release_id": "release-0-0-1"}},
+    )
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.release_planning_authoring,
+        "add_workstreams_to_release",
+        lambda **kwargs: {"dry_run": True, "workstream_ids": list(kwargs["workstream_ids"])},
+    )
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_experience,
+        "build_next_steps",
+        next_steps,
+    )
+    previous = GreenfieldPrewriteBuild(
+        package=GreenfieldCompletionPackage(
+            proposal={"intent": {"title": "Handoff Rerender"}},
+            release_selector="0.0.1",
+            program_result={},
+            backlog_result={"created": [{"id": "B-100"}, {"id": release_workstream_id}]},
+            release_workstream_ids=(release_workstream_id,),
+            component_registry_preview=(
+                {
+                    "component_id": "handoff-service",
+                    "implementation_handoff": {"workstream_id": release_workstream_id},
+                },
+            ),
+            surface_refresh_preview={"status": "passed"},
+        ),
+        backlog_result={"created": [{"id": "B-100"}, {"id": release_workstream_id}]},
+    )
+
+    result = greenfield_prewrite_projection_rerender.rerender_prewrite_package_projections(
+        root=tmp_path,
+        previous_prewrite_build=previous,
+        proposal={"intent": {"title": "Handoff Rerender"}},
+        release_selector="0.0.1",
+        validation_gate={"status": "passed"},
+        projections=("release", "next_steps"),
+        release_assignment_note="release assignment",
+    )
+
+    assert result.package.program_result == {}
+    assert result.package.release_workstream_ids == (release_workstream_id,)
+    assert result.package.next_steps_preview["start_workstream_id"] == release_workstream_id
+    assert result.package.component_registry_preview[0]["implementation_handoff"]["workstream_id"] == release_workstream_id
+
+
 def test_scoped_projection_rerender_refreshes_project_brief_record_text(tmp_path: Any) -> None:
     previous = GreenfieldPrewriteBuild(
         package=GreenfieldCompletionPackage(

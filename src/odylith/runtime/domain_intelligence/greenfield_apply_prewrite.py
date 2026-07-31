@@ -100,25 +100,20 @@ def build_prewrite_completion_package(
             root=prewrite_root,
             stale_ids=staged_backlog_result.get("stale_idea_ids", ()),
         )
-        preview_program_result = greenfield_programs.create_greenfield_program(
-            repo_root=prewrite_root,
-            proposal=proposal,
-            backlog_result=staged_backlog_result,
-            dry_run=True,
-        )
+        program_result: dict[str, Any] = {}
         rendered_component_specs = greenfield_apply_components.render_prewrite_component_specs(
             root=prewrite_root,
             proposal=proposal,
             release_selector=release_selector,
             backlog_result=staged_backlog_result,
-            program_result=preview_program_result,
+            program_result=program_result,
         )
         staged_component_registry_preview = greenfield_apply_components.preview_prewrite_components(
             root=prewrite_root,
             proposal=proposal,
             release_selector=release_selector,
             backlog_result=staged_backlog_result,
-            program_result=preview_program_result,
+            program_result=program_result,
         )
         component_registry_preview = remap_prewrite_component_items(
             staged_component_registry_preview,
@@ -141,11 +136,6 @@ def build_prewrite_completion_package(
             proposal=proposal,
             plan=traceability_plan,
         )
-        staged_program_result = greenfield_programs.materialize_compiled_greenfield_program(
-            repo_root=prewrite_root,
-            backlog_result=staged_backlog_result,
-            program_result=preview_program_result,
-        )
         staged_backlog_result = refresh_prewrite_backlog_result(staged_backlog_result)
         backlog_result = remap_prewrite_backlog_result(
             staged_backlog_result,
@@ -166,7 +156,7 @@ def build_prewrite_completion_package(
         first_release_workstreams = greenfield_programs.first_release_workstream_ids(
             proposal=proposal,
             created_backlog=backlog_result["created"],
-            program_result=preview_program_result,
+            program_result=program_result,
         )
         preview_release_target = None
         preview_release_assignment = None
@@ -207,7 +197,6 @@ def build_prewrite_completion_package(
             }
         prewrite_safety_preview = prewrite_safety_evidence(
             validation_gate=validation_gate,
-            program_result=preview_program_result,
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
             release_selector=release_selector,
@@ -218,7 +207,6 @@ def build_prewrite_completion_package(
             proposal=package_proposal,
             backlog_result=backlog_result,
             first_release_workstreams=first_release_workstreams,
-            program_result=preview_program_result,
             release_selector=release_selector,
         )
         accepted_project_preview = preview_accepted_project_memory(
@@ -297,7 +285,6 @@ def build_prewrite_completion_package(
                 project_brief_record_text=project_brief_record_text,
                 compass_memory_preview=compass_memory_preview,
                 next_steps_preview=next_steps_preview,
-                staged_program_result=staged_program_result,
                 prewrite_safety_preview=prewrite_safety_preview,
                 staged_release_bootstrap=staged_release_bootstrap,
                 staged_release_targeting=staged_release_targeting,
@@ -321,7 +308,7 @@ def build_prewrite_completion_package(
             compass_memory_preview=compass_memory_preview,
             next_steps_preview=next_steps_preview,
             backlog_result=backlog_result,
-            program_result=preview_program_result,
+            program_result=program_result,
             traceability_plan=traceability_plan,
             baseline_writes=baseline_writes,
             brand_asset_writes=brand_asset_writes,
@@ -354,7 +341,6 @@ def build_prewrite_completion_package(
                 project_brief_record_text=package.project_brief_record_text,
                 compass_memory_preview=package.compass_memory_preview,
                 next_steps_preview=package.next_steps_preview,
-                staged_program_result=package.program_result,
                 prewrite_safety_preview=package.prewrite_safety_preview,
                 staged_release_bootstrap=staged_release_bootstrap,
                 staged_release_targeting={
@@ -379,19 +365,16 @@ def build_prewrite_completion_package(
 def prewrite_safety_evidence(
     *,
     validation_gate: Mapping[str, Any],
-    program_result: Mapping[str, Any] | None,
     release_target_result: Mapping[str, Any] | None,
     release_assignment_result: Mapping[str, Any] | None,
     release_selector: str,
 ) -> dict[str, Any]:
     """Return explicit prewrite proof before final governed writes run."""
 
-    program = dict(program_result or {})
     release_target = dict(release_target_result or {})
     release_assignment = dict(release_assignment_result or {})
     selector = str(release_selector or "").strip()
     checks = {
-        "program_dry_run": bool(program.get("created")) and bool(program.get("dry_run")),
         "validation_gate_passed": str(validation_gate.get("status", "")).strip().casefold() == "passed",
         "release_target_dry_run": not selector or bool(release_target.get("dry_run")),
         "release_assignment_dry_run": not selector or bool(release_assignment.get("dry_run")),
@@ -399,7 +382,6 @@ def prewrite_safety_evidence(
     return {
         "status": "passed" if all(checks.values()) else "failed",
         "checks": checks,
-        "program": _safety_evidence_subset(program, keys=("created", "dry_run", "umbrella_id", "program_path")),
         "release_target": _safety_evidence_subset(release_target, keys=("dry_run", "release_id", "selector")),
         "release_assignment": _safety_evidence_subset(
             release_assignment,

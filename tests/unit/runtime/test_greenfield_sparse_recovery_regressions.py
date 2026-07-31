@@ -111,7 +111,6 @@ def test_project_brief_actor_choice_does_not_repeat_generic_team_label() -> None
             ]
         },
         first_release_workstreams=["B-001", "B-002"],
-        program_result={"umbrella_id": "B-001", "waves": [{"status": "active", "primary_workstreams": ["B-002"]}]},
         release_selector="0.0.1",
     )
     rendered_next_steps = json.dumps(next_steps, sort_keys=True)

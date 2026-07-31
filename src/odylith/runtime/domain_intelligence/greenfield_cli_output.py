@@ -86,7 +86,6 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     project_title = str(next_steps.get("project_workstream_title", "")).strip()
     start_id = str(next_steps.get("start_workstream_id", "")).strip()
     start_title = str(next_steps.get("start_workstream_title", "")).strip()
-    first_wave = str(next_steps.get("first_wave", "")).strip()
     next_release = str(next_steps.get("release_selector", "")).strip()
     project_prompt = str(next_steps.get("project_first_prompt", "")).strip()
     if project_id:
@@ -99,13 +98,8 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
     if start_id:
         print(f"- future first implementation lane after gates: {start_id} {start_title}".rstrip())
         print(f"- child lane: odylith/radar/radar.html?view=plan&workstream={start_id}")
-    if first_wave or next_release:
-        lane = " | ".join(
-            item
-            for item in (f"wave {first_wave}" if first_wave else "", f"release {next_release}" if next_release else "")
-            if item
-        )
-        print(f"- current project lane: {lane}")
+    if next_release:
+        print(f"- first release: {next_release}")
     choices = next_steps.get("customization_options", [])
     if isinstance(choices, list) and choices:
         print("- choose before coding:")

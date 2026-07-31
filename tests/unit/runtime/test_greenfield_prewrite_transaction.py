@@ -159,7 +159,6 @@ def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated()
 def test_prewrite_safety_evidence_records_dry_run_preview_before_commit() -> None:
     evidence = greenfield_apply_prewrite.prewrite_safety_evidence(
         validation_gate={"status": "passed"},
-        program_result={"created": True, "dry_run": True, "umbrella_id": "B-001"},
         release_target_result={"dry_run": True, "release_id": "release-0-0-1", "selector": "0.0.1"},
         release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
         release_selector="0.0.1",
@@ -167,12 +166,10 @@ def test_prewrite_safety_evidence_records_dry_run_preview_before_commit() -> Non
 
     assert evidence["status"] == "passed"
     assert evidence["checks"] == {
-        "program_dry_run": True,
         "validation_gate_passed": True,
         "release_target_dry_run": True,
         "release_assignment_dry_run": True,
     }
-    assert evidence["program"]["dry_run"] is True
 
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
@@ -288,7 +285,11 @@ def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(
     first_prompt = str(prompts[0].get("prompt", "")) if prompts else ""
 
     assert prewrite.package.prewrite_safety_preview["status"] == "passed"
-    assert prewrite.package.prewrite_safety_preview["checks"]["program_dry_run"] is True
+    assert prewrite.package.prewrite_safety_preview["checks"] == {
+        "validation_gate_passed": True,
+        "release_target_dry_run": True,
+        "release_assignment_dry_run": True,
+    }
     assert prewrite.package.surface_refresh_preview["status"] == "passed"
     assert prewrite.package.surface_refresh_preview["surfaces"] == [
         "radar",

@@ -118,6 +118,8 @@ def strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
         text = strip_clipped_terminal_action(text)
+        if re.search(r"\b(?:readiness|result|state|record|status)\s+reviewable$", text, flags=re.IGNORECASE):
+            return text
         cleaned = re.sub(
             r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|through|tied|to|trusted|until|visible|warning|when|while|with|without|alongside)$",
             "",

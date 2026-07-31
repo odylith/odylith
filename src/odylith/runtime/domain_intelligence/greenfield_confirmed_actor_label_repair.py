@@ -101,7 +101,7 @@ def _repair_public_actor_references(
     if isinstance(value, dict):
         changed = False
         for key, nested in value.items():
-            if _is_untrusted_evidence_key(key):
+            if _is_untrusted_evidence_key(key) or key == "human_actors":
                 continue
             if isinstance(nested, str):
                 repaired = localize_leading_actor_reference(

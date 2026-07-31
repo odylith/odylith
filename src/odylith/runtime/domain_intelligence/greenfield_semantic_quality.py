@@ -520,7 +520,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
 
 
 def _actor_label_contains_action_clause(value: str) -> bool:
-    words = re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value))
+    words = label_terms(_clean(value))
     if words and word_has_actor_role_signal(words[-1]):
         return False
     return any(
@@ -531,7 +531,7 @@ def _actor_label_contains_action_clause(value: str) -> bool:
 
 
 def _actor_label_has_dangling_relation(value: str) -> bool:
-    words = re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value))
+    words = label_terms(_clean(value))
     return bool(words and words[-1].casefold() in {"after", "before", "during", "from", "until", "when", "where", "with"})
 
 

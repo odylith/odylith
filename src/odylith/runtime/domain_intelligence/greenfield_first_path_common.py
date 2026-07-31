@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_verb_pattern
@@ -75,13 +76,19 @@ def is_noncompleting_action_head(value: str) -> bool:
     return head in _NONCOMPLETING_ACTION_HEADS
 
 
-def inline_first_path_scope_fragment(value: str) -> str:
+def inline_first_path_scope_fragment(
+    value: str,
+    *,
+    accepted_human_actors: Sequence[str] = (),
+) -> str:
     """Return a first-path fragment safe to embed inside a sentence."""
 
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
-    compact = _compact_first_path_scope_fragment(text)
+    compact = _compact_first_path_scope_fragment(
+        _canonicalize_accepted_actor_prefix(text, accepted_human_actors)
+    )
     if compact:
         text = compact
     text = re.sub(r",\s*(?:shows?|surfaces?)\s+progress,\s+and\s+", ", ", text, flags=re.IGNORECASE)
@@ -92,6 +99,23 @@ def inline_first_path_scope_fragment(value: str) -> str:
         lambda match: f"{match.group('head')} {match.group('title').casefold()} ",
         text,
     ).strip()
+
+
+def _canonicalize_accepted_actor_prefix(value: str, actors: Sequence[str]) -> str:
+    """Give the parser a neutral subject for an actor already accepted in typed intent."""
+
+    text = clean_first_path_text(value).strip()
+    for row in actors:
+        label = str(row or "").split(":", 1)[0].split("—", 1)[0].strip(" -.")
+        if not label:
+            continue
+        pattern = (
+            rf"^(?:(?:a|an|the)\s+)?{re.escape(label)}\s+"
+            rf"(?=(?:can|could|may|might|must|should|will|would)\b)"
+        )
+        if re.match(pattern, text, flags=re.IGNORECASE):
+            return re.sub(pattern, "A user ", text, count=1, flags=re.IGNORECASE)
+    return text
 
 
 def _compact_first_path_scope_fragment(value: str) -> str:

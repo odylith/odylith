@@ -65,6 +65,22 @@ def test_prompt_source_recovers_sentence_style_title_and_release_path() -> None:
     assert "greenfield proposal" not in source.first_path
 
 
+def test_thin_wrapper_preserves_original_user_intent_as_product_evidence() -> None:
+    prompt = (
+        "Create a greenfield product for a decision coach that lets a user describe a difficult choice, "
+        "compare options against stated values, record tradeoffs, and choose one next action with review evidence."
+    )
+
+    intent = parse_confirmed_intent_text(
+        f"Product Intent Confirmation needed\n\nOriginal user intent\n{prompt}\n",
+        prompt=prompt,
+    )
+
+    assert intent["title"] == "Decision Coach"
+    assert intent["first_path"].startswith("Decision User can describe a difficult choice")
+    assert intent["human_actors"][0].startswith("Decision User:")
+
+
 def test_prompt_source_does_not_promote_source_metadata_to_a_product_first_path() -> None:
     source = prompt_intent_source(
         "Source evidence: Radix Primitives is an open-source UI component library for building accessible interfaces."

@@ -385,7 +385,14 @@ def first_release_boundary_requirements(value: str) -> tuple[str, ...]:
     requirements: list[str] = []
     seen: set[str] = set()
     for match in _FIRST_RELEASE_BOUNDARY_RE.finditer(_clean(value)):
-        items = _FIRST_RELEASE_EXCLUSION_TAIL_RE.sub("", match.group("items")).strip(" ,;.")
+        items = re.sub(
+            r"\s*;\s*[^.!?]*\b(?:exclude(?:s|d|ing)?|(?:does|do|did)\s+not\s+include|"
+            r"not\s+(?:include(?:d)?|part)|out(?:\s+of)?\s+scope|outside)\b[^.!?]*$",
+            "",
+            match.group("items"),
+            flags=re.IGNORECASE,
+        )
+        items = _FIRST_RELEASE_EXCLUSION_TAIL_RE.sub("", items).strip(" ,;.")
         for item in re.split(r",\s*|\s+and\s+(?=(?:a|an|the|one)\b)", items, flags=re.IGNORECASE):
             requirement = re.sub(r"^(?:and\s+)", "", item, flags=re.IGNORECASE).strip(" ,;.")
             key = requirement.casefold()

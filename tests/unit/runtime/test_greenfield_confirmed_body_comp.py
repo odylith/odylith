@@ -344,6 +344,8 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
     assert "control actions to battery" not in intent_encoded
     assert "That single path" not in intent_encoded
     assert "whole product proven end to end" not in intent_encoded
+    assert "SunLedger pulls" not in intent_encoded
+    assert "the product pulls live generation" in intent_encoded
 
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,

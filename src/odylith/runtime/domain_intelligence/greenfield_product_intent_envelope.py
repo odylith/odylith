@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -153,6 +154,20 @@ def product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
         if text:
             payload[key] = text
     return payload
+
+
+def rebind_authoritative_product_facts(
+    intent: Mapping[str, Any],
+    *,
+    authoritative_intent: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Restore sealed product facts after proposal-only completion adds derived metadata."""
+
+    rebound = copy.deepcopy(dict(intent))
+    for key in PRODUCT_FACT_KEYS:
+        rebound.pop(key, None)
+    rebound.update(copy.deepcopy(product_facts_payload(authoritative_intent)))
+    return rebound
 
 
 def build_product_intent_envelope(
@@ -647,5 +662,6 @@ __all__ = [
     "product_intent_authority_snapshot_hash",
     "product_facts_from_envelope",
     "product_facts_payload",
+    "rebind_authoritative_product_facts",
     "require_product_intent_authority",
 ]

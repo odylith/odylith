@@ -58,6 +58,7 @@ from greenfield_matrix_campaign import required_stressors_from_values  # noqa: E
 from greenfield_matrix_campaign import stop_reason  # noqa: E402
 from greenfield_matrix_attempt_ledger import MatrixAttemptLedger  # noqa: E402
 from greenfield_matrix_metamorphic import evaluate_metamorphic_outputs  # noqa: E402
+from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard  # noqa: E402
 from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
 from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
 from greenfield_matrix_proof_scope import natural_rescue_quality_proven  # noqa: E402
@@ -84,7 +85,9 @@ from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
 from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
 from greenfield_matrix_transaction_evidence import CompiledCreateExecution  # noqa: E402
 from greenfield_matrix_transaction_evidence import commit_precompiled_transaction  # noqa: E402
+from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
 from greenfield_matrix_transaction_evidence import dry_run_commit_issues  # noqa: E402
+from greenfield_matrix_transaction_evidence import post_confirm_navigation_issues  # noqa: E402
 from greenfield_matrix_governed_readback import collect_governed_readback  # noqa: E402
 from greenfield_matrix_governed_readback import compass_record_count  # noqa: E402
 from greenfield_matrix_governed_readback import program_record_count  # noqa: E402
@@ -802,6 +805,8 @@ def _run_case(
         receipt=execution.dry_run_receipt,
         create_payload=payload,
     )
+    decision_rail_issues = confirmation_preview_issues(proposal_payload=execution.proposal_payload)
+    navigation_issues = post_confirm_navigation_issues(create_payload=payload)
     quality = build_quality_verdict(
         create_payload=payload,
         package=package,
@@ -810,10 +815,11 @@ def _run_case(
         browser_surface_issues=browser_surface_issues,
         browser_surface_proof_attempted=browser_surface_proof_attempted,
         browser_surface_proof_required=include_browser_proof,
+        confirmation_ux_issues=(*decision_rail_issues, *navigation_issues),
         create_returncode=create.returncode,
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
-        external_issues=(*receipt_issues, *source_custody_issues),
+        external_issues=(*receipt_issues, *decision_rail_issues, *navigation_issues, *source_custody_issues),
     )
     evidence = dict(
         _case_evidence_manifest(
@@ -831,6 +837,11 @@ def _run_case(
         )
     )
     evidence["preconfirm_dry_run"] = dict(execution.dry_run_receipt)
+    evidence["confirmation_contract"] = {
+        "status": "passed" if not decision_rail_issues and not navigation_issues else "failed",
+        "decision_rail_issues": list(decision_rail_issues),
+        "post_confirm_navigation_issues": list(navigation_issues),
+    }
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
@@ -2009,12 +2020,35 @@ def main(argv: Sequence[str] | None = None) -> int:
         stop_after_cluster_failures=positive_int(args.stop_after_cluster_failures),
         required_stressors=required_stressors,
     )
+    sealed_input_root = str(args.sealed_release_input_root or "").strip()
+    if not sealed_input_root:
+        # Missing proof flags are actionable before a caller has named sealed inputs.
+        _raise_for_invalid_campaign_policy(
+            config=campaign_config,
+            install_mode=str(args.install_mode),
+            include_browser_proof=bool(args.include_browser_proof),
+            include_rescue_smoke=bool(args.include_rescue_smoke),
+            include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
+            include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
+            allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
+            allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+        )
     _require_sealed_release_input_root(
         proof_tier=str(args.proof_tier),
         case_files=args.case_file or (),
         release_audit_file=str(args.release_audit_file or ""),
         release_audit_repo_root=release_audit_repo_root,
-        sealed_root=str(args.sealed_release_input_root or ""),
+        sealed_root=sealed_input_root,
+    )
+    _raise_for_invalid_campaign_policy(
+        config=campaign_config,
+        install_mode=str(args.install_mode),
+        include_browser_proof=bool(args.include_browser_proof),
+        include_rescue_smoke=bool(args.include_rescue_smoke),
+        include_natural_rescue_proof=bool(args.include_natural_rescue_proof),
+        include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
+        allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
+        allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
     )
     selected_cases = _load_cli_case_files(args.case_file or ())
     planned_cases = selected_cases or default_cases()
@@ -2195,6 +2229,15 @@ def _execute_matrix_campaign(
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
     cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
     metamorphic_output = evaluate_metamorphic_outputs(cases=selected_cases, results=results)
+    onboarding_quality_scorecard = build_onboarding_quality_scorecard(
+        results=results,
+        browser_proof=browser_proof,
+        platform_leakage_proof=platform_leakage_proof,
+        metamorphic_output=metamorphic_output,
+        rescue_proof=rescue,
+        natural_rescue_proof=natural_rescue,
+        commit_recovery_proof=commit_recovery,
+    )
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
@@ -2246,6 +2289,7 @@ def _execute_matrix_campaign(
         "browser_surface_proof": browser_proof,
         "platform_domain_leakage_proof": platform_leakage_proof,
         "temp_cleanup_proof": cleanup_proof,
+        "onboarding_quality_scorecard": onboarding_quality_scorecard,
         "proof_run": lease.to_dict(),
     }
     if rescue is not None:

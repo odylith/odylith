@@ -525,6 +525,22 @@ def _single_action_state_result_object(value: str) -> str:
     action = action_chain_fragment(text).strip(" .") if text else ""
     if not action:
         return ""
+    actor_terminal = re.match(
+        r"^(?:(?:a|an|the)\s+)?[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){0,4}\s+"
+        r"(?P<verb>accepts?|approves?|blocks?|declines?|denies?|dismisses?|rejects?)\s+(?P<object>[^.;]+)$",
+        action,
+        flags=re.IGNORECASE,
+    )
+    if actor_terminal:
+        participle = _BINARY_RESULT_PARTICIPLES.get(actor_terminal.group("verb").casefold(), "")
+        result_object = re.sub(
+            r"^(?:only|just|a|an|the)\s+",
+            "",
+            actor_terminal.group("object").strip(" ."),
+            flags=re.IGNORECASE,
+        )
+        if participle and word_count(result_object) >= 2:
+            return f"the {participle} {result_object}"
     binary = _binary_action_result_object_from_clause(action)
     if binary:
         return binary

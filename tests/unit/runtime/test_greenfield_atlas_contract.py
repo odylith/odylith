@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from tests.unit.runtime.greenfield_proposal_fixtures import (
     CONFIRMED_INTENT_TEXT,
     _host_reasoned_ecommerce_proposal,
@@ -412,7 +413,7 @@ def test_greenfield_tribunal_rejects_project_title_prefixed_diagram_titles() -> 
     assert any("title must name the architecture view" in issue for issue in decision.issues)
 
 
-def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -> None:
+def test_greenfield_preconfirm_rebuilds_unstyled_flowchart_evidence(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0]["mermaid_source"] = (
@@ -422,16 +423,20 @@ def test_greenfield_apply_rejects_unstyled_flowchart_diagram_sources(tmp_path) -
         "    shopper --> checkout\n"
     )
 
-    with pytest.raises(ValueError, match="semantic classDef/style colors"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = commit_precompiled_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    source = (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").read_text(encoding="utf-8")
+    assert len(result["diagrams"]) == 6
+    assert "classDef " in source and "fill:" in source
+    assert "shopper[Shopper]" not in source
 
 
-def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_accepts_styled_flowchart_evidence_without_forced_lanes(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     stub_preconfirm_surface_refresh(monkeypatch)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
@@ -462,10 +467,10 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
         release_selector="0.0.1",
     )
 
-    assert len(result["diagrams"]) == 2
+    assert len(result["diagrams"]) == 6
 
 
-def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) -> None:
+def test_greenfield_preconfirm_rebuilds_overlong_flowchart_evidence(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0]["mermaid_source"] = (
@@ -477,41 +482,61 @@ def test_greenfield_apply_rejects_overlong_unwrapped_flowchart_labels(tmp_path) 
         "    class checkout service;\n"
     )
 
+    result = commit_precompiled_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    source = (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").read_text(encoding="utf-8")
+    assert len(result["diagrams"]) == 6
+    assert "Checkout orchestrator that owns payment handoff" not in source
+
+
+def test_mermaid_validator_rejects_overlong_unwrapped_flowchart_labels() -> None:
+    source = (
+        "flowchart LR\n"
+        '  checkout["Checkout orchestrator that owns payment handoff order draft idempotency retry recovery and user visible repair state"]\n'
+        "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;\n"
+        "  class checkout service;\n"
+    )
+
     with pytest.raises(ValueError, match="wrap long labels"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+        validated_mermaid_source({"slug": "checkout", "mermaid_source": source})
 
 
-def test_greenfield_apply_rejects_missing_host_authored_diagram_source(tmp_path) -> None:
+def test_greenfield_preconfirm_rebuilds_missing_host_authored_diagram_source(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0].pop("mermaid_source")
 
-    with pytest.raises(ValueError, match="missing in-memory Mermaid source"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = commit_precompiled_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    assert len(result["diagrams"]) == 6
+    assert (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").is_file()
 
 
-def test_greenfield_apply_rejects_identical_diagram_sources(tmp_path) -> None:
+def test_greenfield_preconfirm_rebuilds_duplicate_diagram_evidence(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][1]["mermaid_source"] = proposal["diagrams"][0]["mermaid_source"]
 
-    with pytest.raises(ValueError, match="must not reuse identical Mermaid source"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = commit_precompiled_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    sources = [path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd")]
+    assert len(result["diagrams"]) == 6
+    assert len(sources) == len(set(sources)) == 6
 
 
 def test_greenfield_apply_rejects_child_without_topology(tmp_path) -> None:
@@ -543,15 +568,18 @@ def test_greenfield_apply_rejects_component_without_ownership_contract(tmp_path)
         )
 
 
-def test_greenfield_apply_rejects_diagram_without_workstream_traceability(tmp_path) -> None:
+def test_greenfield_preconfirm_rebuilds_diagram_workstream_traceability(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)
     proposal["diagrams"][0].pop("related_workstream_titles")
 
-    with pytest.raises(ValueError, match="diagram `commerce-launch-system-context` must name related workstream"):
-        commit_precompiled_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = commit_precompiled_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
+    assert len(result["diagrams"]) == 6
+    assert all(row["related_backlog"] for row in catalog["diagrams"])

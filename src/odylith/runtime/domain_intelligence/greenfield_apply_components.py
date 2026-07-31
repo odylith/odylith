@@ -147,7 +147,6 @@ def component_authoring_prewrite_inputs(
         proposal=proposal,
         backlog_result=backlog_result,
         first_release_workstreams=first_release_workstreams,
-        program_result=program_result,
         traceability_plan=traceability_plan,
         release_selector=release_selector,
     )

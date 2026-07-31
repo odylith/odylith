@@ -108,7 +108,6 @@ def rerender_prewrite_package_projections(
         updates["release_workstream_ids"] = release_workstream_ids
         prewrite_safety_preview = greenfield_apply_prewrite.prewrite_safety_evidence(
             validation_gate=validation_gate,
-            program_result=program_result,
             release_target_result=release_target_result,
             release_assignment_result=release_assignment_result,
             release_selector=release_selector,
@@ -168,7 +167,6 @@ def rerender_prewrite_package_projections(
             proposal=package_proposal,
             backlog_result=backlog_result,
             first_release_workstreams=release_workstream_ids,
-            program_result=program_result,
             release_selector=release_selector,
         )
         if {"accepted_project", "next_steps", "project_dashboard"} & scope
@@ -273,11 +271,6 @@ def _rerender_surface_refresh_preview(
             target_root=prewrite_root,
         )
         greenfield_apply_prewrite.materialize_prewrite_backlog_result(staged_backlog_result)
-        greenfield_programs.materialize_compiled_greenfield_program(
-            repo_root=prewrite_root,
-            backlog_result=staged_backlog_result,
-            program_result=package.program_result or {},
-        )
         diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
         diagram_ids = tuple(package.atlas_diagram_ids)
         traceability_plan = greenfield_traceability.build_traceability_plan(

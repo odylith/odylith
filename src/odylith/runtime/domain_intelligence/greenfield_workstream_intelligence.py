@@ -170,11 +170,13 @@ def build_workstream_domain_intelligence(
     internal_labels = join_system_labels(internals) or join_items(internals)
     externals = external_systems or ["No live external system is accepted for the first release."]
     non_goal_text = boundary_clause_text(list(non_goals), item_limit=150) or "unconfirmed broader platform behavior"
+    actor_labels = project_specific_actor_labels({"title": label, "human_actors": actors})
     scope_boundary = _accepted_scope_boundary(
         non_goal_text=non_goal_text,
         first_path=first_path,
         first_slice=first_slice,
         proof_boundary=proof_boundary,
+        accepted_human_actors=actor_labels,
     )
     focus = short_summary(product_view or first_slice or opportunity, limit=360)
     risk = short_summary(problem, limit=300) or f"{label} can fail if {row_title} is too vague to implement."
@@ -184,7 +186,6 @@ def build_workstream_domain_intelligence(
     dependency_summary = join_brief_items(dependencies, limit=2, item_limit=150)
     interface_summary = join_brief_items(interfaces, limit=2, item_limit=150)
     validation_summary = join_brief_items(validation, limit=3, item_limit=150)
-    actor_labels = project_specific_actor_labels({"title": label, "human_actors": actors})
     actor_summary = _join_actor_labels(actor_labels) or _join_actor_labels(actors) or join_items(actors)
     evaluation = evaluation_semantics_for_texts(
         title=label,
@@ -309,12 +310,13 @@ def _accepted_scope_boundary(
     first_path: str,
     first_slice: str,
     proof_boundary: str,
+    accepted_human_actors: Sequence[str] = (),
 ) -> str:
     path = short_summary(first_path or first_slice or proof_boundary, limit=620).strip(" .")
     scope = clean_text(non_goal_text).strip(" .")
     if not path:
         return scope or "unconfirmed broader platform behavior"
-    return f"Do not expand beyond {inline_first_path_scope_fragment(path)}"
+    return f"Do not expand beyond {inline_first_path_scope_fragment(path, accepted_human_actors=accepted_human_actors)}"
 
 
 def _join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:

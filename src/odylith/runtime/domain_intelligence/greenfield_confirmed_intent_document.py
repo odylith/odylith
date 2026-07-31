@@ -113,7 +113,8 @@ def product_context_paragraphs(
     sections: Mapping[str, list[str]],
     title: str,
 ) -> list[str]:
-    if not has_explicit_section_boundaries(sections):
+    core_sections = {"product_story", "state_object", "first_path"}
+    if not (set(sections) & core_sections):
         return _preamble_paragraphs(text, title)
     paragraphs: list[str] = []
     if sections.get("preamble"):

@@ -44,14 +44,17 @@ def _write_case_file(path: Path) -> None:
     )
 
 
-def test_release_cli_rejects_synthetic_case_file_before_any_installed_run(tmp_path: Path, monkeypatch) -> None:
+def test_release_cli_rejects_missing_commit_recovery_proof_before_any_installed_run(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     module = _module()
     case_file = tmp_path / "synthetic.json"
     _write_case_file(case_file)
     calls: list[object] = []
     monkeypatch.setattr(module, "run_matrix", lambda **kwargs: calls.append(kwargs))
 
-    with pytest.raises(RuntimeError, match="source-provenanced cases"):
+    with pytest.raises(RuntimeError, match="release proof must include installed commit recovery proof"):
         module.main(
             [
                 "--dist-dir",

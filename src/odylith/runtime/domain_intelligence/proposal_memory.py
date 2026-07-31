@@ -272,7 +272,6 @@ def _source_launch_payload(value: Mapping[str, Any] | None) -> dict[str, Any]:
         "project_workstream_title",
         "start_workstream_id",
         "start_workstream_title",
-        "first_wave",
         "release_selector",
         "implementation_prompt",
         "coding_readiness_gates",

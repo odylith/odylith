@@ -825,6 +825,13 @@ def _passing_create_payload() -> dict[str, object]:
         "commit_manifest": _passing_manifest(),
         "product_create_transaction": _passing_transaction_summary(),
         "validation_gate": {"visible_actors": _passing_visible_actors()},
+        "post_confirm_navigation": {
+            "project": "odylith/index.html?tab=project",
+            "radar": "odylith/index.html?tab=radar",
+            "registry": "odylith/index.html?tab=registry",
+            "atlas": "odylith/index.html?tab=atlas",
+            "compass": "odylith/index.html?tab=compass&date=live",
+        },
     }
 
 
@@ -836,10 +843,35 @@ def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, obje
 
 
 def _proposed_transaction_payload() -> dict[str, object]:
+    transaction_hash = "a" * 64
+    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     return {
         "mode": "product_create_transaction",
-        "product_create_transaction": {"transaction_hash": "a" * 64},
-        "transaction_file": ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+        "product_create_transaction": {"transaction_hash": transaction_hash},
+        "transaction_file": transaction_file,
+        "confirmation": {
+            "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+            "post_confirm_contract": (
+                "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
+                "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
+                "guard, validates readback, and reports success or environment/IO failure."
+            ),
+            "choices": [
+                {
+                    "command": "CONFIRM",
+                    "description": "Commit this exact validated package now.",
+                    "commit_command": (
+                        "odylith greenfield create --repo-root . "
+                        f"--transaction-file {transaction_file} --transaction-hash {transaction_hash} --confirm"
+                    ),
+                },
+                {
+                    "command": "EDIT",
+                    "description": "Do not commit. Treat corrections as new evidence and rebuild the package.",
+                },
+                {"command": "REJECT", "description": "Stop. No governed records are written."},
+            ],
+        },
     }
 
 
@@ -2866,6 +2898,26 @@ def test_quality_verdict_rejects_unattempted_browser_surface_proof(monkeypatch) 
     assert verdict.scores["browser_surface_proof"] == 0
     assert verdict.scores["copy_semantic_clarity"] == 10
     assert "browser surface proof was not attempted; premium release scoring requires headless rendered-surface proof" in verdict.issues
+
+
+def test_quality_verdict_rejects_missing_confirmation_or_success_navigation(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=_substantive_package(),
+        counts=_full_counts(module),
+        confirmation_ux_issues=("REJECT does not clearly promise no governed writes",),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 0
+    assert verdict.scores["confirmation_ux"] == 0
+    assert "REJECT does not clearly promise no governed writes" in verdict.issues
 
 
 def test_quality_verdict_allows_unattempted_browser_proof_for_volume_discovery(monkeypatch) -> None:

@@ -323,7 +323,10 @@ def test_scope_fragment_preserves_scientific_tail_actions_marked_system_side() -
         "Physicist can provide inputs, validate units and provenance, run the model, "
         "compare against a baseline, record uncertainty, and save a reviewable result."
     )
-    fragment = inline_first_path_scope_fragment(first_path)
+    fragment = inline_first_path_scope_fragment(
+        first_path,
+        accepted_human_actors=("Physicist",),
+    )
 
     assert "validate units and provenance" in fragment
     assert "run the model" in fragment
@@ -369,7 +372,10 @@ def test_project_judgment_accepts_terminal_published_readiness_scope_tail() -> N
         "Physicist can submit a scenario, inspect controls and assumptions, execute the simulation, "
         "review confidence and residuals, route exceptions, and publish readiness proof."
     )
-    fragment = inline_first_path_scope_fragment(first_path)
+    fragment = inline_first_path_scope_fragment(
+        first_path,
+        accepted_human_actors=("Physicist",),
+    )
     semantic_model = semantic_model_mapping(
         build_greenfield_semantic_model(
             title="Cryogenic Ion Trap Calibration Simulation Review Board",

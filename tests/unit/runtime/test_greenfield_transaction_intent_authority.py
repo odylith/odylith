@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_intent_authority
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_proposals import compile_greenfield_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_proposals import load_confirmed_intent_args
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_QUALITY_MANIFEST_VERSION
@@ -346,7 +347,7 @@ def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_author
     assert str(tmp_path) not in json.dumps(evidence_ledger, sort_keys=True)
 
 
-def test_prompt_intent_preview_and_compiled_proposal_share_the_sealed_first_path_facts(tmp_path: Path) -> None:
+def test_compiled_transaction_restages_product_facts_after_preconfirm_repairs(tmp_path: Path) -> None:
     prompt = (
         "Create a flood shelter intake system that helps city staff register displaced residents, match household needs "
         "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
@@ -365,8 +366,14 @@ def test_prompt_intent_preview_and_compiled_proposal_share_the_sealed_first_path
         require_completion_ready=False,
     )
 
+    transaction = compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+    )
+
     assert candidate["first_path"].startswith("City staff can")
-    assert product_facts_hash(proposal["intent"]) == candidate[PRODUCT_INTENT_AUTHORITY_KEY][PRODUCT_FACTS_HASH_KEY]
+    assert product_facts_hash(transaction.proposal["intent"]) == transaction.intent_authority[PRODUCT_FACTS_HASH_KEY]
 
 
 def test_complete_edit_evidence_does_not_trigger_a_spurious_actor_clarification(tmp_path: Path) -> None:

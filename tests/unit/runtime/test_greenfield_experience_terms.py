@@ -97,12 +97,14 @@ def test_implementation_handoff_preserves_explicit_first_release_requirements() 
             ]
         },
         first_release_workstreams=["B-001", "B-002"],
-        program_result={"umbrella_id": "B-001", "waves": [{"status": "active", "primary_workstreams": ["B-002"]}]},
         release_selector="0.0.1",
     )
 
     prompt = next_steps["implementation_prompt"].casefold()
 
+    assert "first_wave" not in next_steps
+    assert "program" not in " ".join(next_steps["operator_sequence"]).casefold()
+    assert "wave" not in " ".join(next_steps["operator_sequence"]).casefold()
     assert "one workspace per extension, a review queue, and an exportable release brief" in prompt
     assert "marketplace publishing" not in prompt
     assert "telemetry" not in prompt

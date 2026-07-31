@@ -13,6 +13,8 @@ from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
@@ -252,18 +254,33 @@ def confirmation_from_operator_intent(
     )
     reviewer_obligations = operator_review_lens_obligations(product_source)
     direct_actor_row = _prompt_actor_row(prompt_source.actor, first_path_source)
-    actor_rows = _unique_actor_rows(
-        [direct_actor_row]
-        if direct_actor_row
-        else _human_actor_rows_from_first_path(first_path_source, title=title)
+    recovered_actor_rows = _human_actor_rows_from_first_path(
+        first_path_source,
+        title=title,
+        include_fallback=not bool(direct_actor_row),
     )
-    if not direct_actor_row:
-        actor_rows = [
-            localized
-            for row in actor_rows
-            if (localized := project_specific_actor_row(row, project_focus=title))
-        ] or actor_rows
+    actor_rows = _unique_actor_rows(
+        [direct_actor_row, *recovered_actor_rows] if direct_actor_row else recovered_actor_rows
+    )
+    preserve_direct_actor = bool(
+        direct_actor_row
+        and _clean(prompt_source.actor).casefold() not in {"individual", "people", "person", "user"}
+    )
+    actor_rows = [
+        (
+            row
+            if preserve_direct_actor and row.casefold() == direct_actor_row.casefold()
+            else project_specific_actor_row(row, project_focus=title) or row
+        )
+        for row in actor_rows
+    ]
     lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
+    direct_actor_label = _lead_actor_label([direct_actor_row])
+    first_path_source = _replace_localized_direct_actor(
+        first_path_source,
+        original=direct_actor_label,
+        localized=lead_actor,
+    )
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
     outcome = _stable_outcome_phrase(
         first_path_outcome_phrase(first_path_source, fallback=""),
@@ -272,10 +289,11 @@ def confirmation_from_operator_intent(
     outcome_object = _object_result_phrase(outcome)
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
+    prompt_actor_is_generic = _clean(prompt_source.actor).casefold() in {"individual", "people", "person", "user"}
     force_actor_modal = bool(
         prompt_source.actor
         and prompt_source.command_led
-        and _actor_matches_product_focus(prompt_source.actor, title=title)
+        and (prompt_actor_is_generic or _actor_matches_product_focus(prompt_source.actor, title=title))
     )
     actor_words = _words(prompt_source.actor)
     if (
@@ -720,7 +738,12 @@ def _actor_purpose_parts(value: str) -> tuple[str, str]:
     return ("", "")
 
 
-def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[str]:
+def _human_actor_rows_from_first_path(
+    value: str,
+    *,
+    title: str = "",
+    include_fallback: bool = True,
+) -> list[str]:
     rows: list[str] = []
     seen_labels: set[str] = set()
     for clause in _first_path_actor_clauses(value):
@@ -735,6 +758,8 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
             rows.append(row)
     if rows:
         return rows[:3]
+    if not include_fallback:
+        return []
     actor = _fallback_actor_label(title)
     action = (
         _actorless_modal_action(value)
@@ -755,6 +780,23 @@ def _unique_actor_rows(rows: Sequence[str]) -> list[str]:
         seen_labels.add(label)
         unique.append(text)
     return unique
+
+
+def _replace_localized_direct_actor(value: str, *, original: str, localized: str) -> str:
+    """Keep a localized generic role consistent between typed actors and the first path."""
+
+    text = _clean(value).strip()
+    source = _clean(original).strip(" .")
+    target = _clean(localized).strip(" .")
+    if not text or not source or not target or source.casefold() == target.casefold():
+        return text
+    return re.sub(
+        rf"^(?:(?:a|an|the)\s+)?{re.escape(source)}(?=\s)",
+        target,
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
 
 
 def _proof_with_reviewer_obligations(proof: str, obligations: Sequence[str]) -> str:
@@ -891,7 +933,10 @@ def _human_actor_row_from_clause(
         flags=re.IGNORECASE,
     )
     if relative:
-        if require_actor_signal and not _looks_like_actor_subject(_words(relative.group("actor"))):
+        if require_actor_signal and not _has_actor_action_signal(
+            _words(relative.group("actor")),
+            _words(relative.group("action")),
+        ):
             return ""
         row = _human_actor_row(relative.group("actor"), relative.group("action"))
         if row:
@@ -901,12 +946,12 @@ def _human_actor_row_from_clause(
         return ""
     purpose_actor, purpose_action = _actor_purpose_parts(clause)
     if purpose_actor and purpose_action:
-        if require_actor_signal and not _looks_like_actor_subject(_words(purpose_actor)):
+        if require_actor_signal and not _has_actor_action_signal(_words(purpose_actor), _words(purpose_action)):
             return ""
         return _human_actor_row(purpose_actor, purpose_action)
     gerund_actor, gerund_action = _actor_gerund_action_parts(clause)
     if gerund_actor and gerund_action:
-        if require_actor_signal and not _looks_like_actor_subject(_words(gerund_actor)):
+        if require_actor_signal and not _has_actor_action_signal(_words(gerund_actor), _words(gerund_action)):
             return ""
         return _human_actor_row(gerund_actor, gerund_action, preserve_full_action=True)
     if _starts_with_action_without_actor(clause):
@@ -915,7 +960,7 @@ def _human_actor_row_from_clause(
     if marker_index > 0 and marker_index + 1 < len(words):
         actor_words = list(words[:marker_index])
         action = " ".join(words[marker_index + 1 :])
-        if require_actor_signal and not _looks_like_actor_subject(actor_words):
+        if require_actor_signal and not _has_actor_action_signal(actor_words, _words(action)):
             return ""
         if _looks_like_state_review_predicate(action):
             role_actor, role_action = _state_review_actor_action(actor_words)
@@ -929,13 +974,27 @@ def _human_actor_row_from_clause(
         if _looks_like_material_actor_fragment(actor_words, _words(action)):
             return ""
         return _human_actor_row(" ".join(actor_words), action)
+    explicit_split = _explicit_actor_action_split(words)
+    if explicit_split:
+        actor_words, action_words = explicit_split
+        actor = " ".join(actor_words)
+        action = " ".join(action_words)
+        if _actor_prefix_contains_embedded_action(actor_words):
+            return ""
+        if _looks_like_material_actor_fragment(actor_words, action_words):
+            return ""
+        if _looks_like_passive_object_subject(actor_words, action_words):
+            return ""
+        if _looks_like_role_object_relation_fragment(actor_words, action_words):
+            return ""
+        return _human_actor_row(actor, action)
     action_index = _action_start_index(words)
     if action_index > 0:
         actor_words = words[:action_index]
         action_words = words[action_index:]
         actor = " ".join(actor_words)
         action = " ".join(action_words)
-        if require_actor_signal and not _looks_like_actor_subject(actor_words):
+        if require_actor_signal and not _has_actor_action_signal(actor_words, action_words):
             return ""
         if _actor_prefix_contains_embedded_action(actor_words):
             return ""
@@ -951,12 +1010,36 @@ def _human_actor_row_from_clause(
         actor, action = fallback
         actor_words = _words(actor)
         action_words = _words(action)
-        if require_actor_signal and not _looks_like_actor_subject(actor_words):
+        if require_actor_signal and not _has_actor_action_signal(actor_words, action_words):
             return ""
         if _looks_like_role_object_relation_fragment(actor_words, action_words):
             return ""
         return _human_actor_row(actor, action)
     return ""
+
+
+def _explicit_actor_action_split(words: Sequence[str]) -> tuple[list[str], list[str]] | None:
+    """Find an unambiguous actor/action split in a source clause."""
+
+    for index in range(1, min(5, len(words) - 1) + 1):
+        actor_words = list(words[:index])
+        action_words = list(words[index:])
+        if (
+            _actor_prefix_contains_embedded_action(actor_words)
+            or _looks_like_material_actor_fragment(actor_words, action_words)
+            or _looks_like_passive_object_subject(actor_words, action_words)
+            or _looks_like_role_object_relation_fragment(actor_words, action_words)
+        ):
+            continue
+        if has_human_actor_action_context(" ".join(actor_words), " ".join(action_words)):
+            return actor_words, action_words
+        actor = _strip_leading_articles(actor_words)
+        if not actor or not _looks_like_actor_subject(actor):
+            continue
+        if not _looks_plural(actor[-1]) or not looks_like_base_action_token(action_words[0]):
+            continue
+        return actor_words, action_words
+    return None
 
 
 _RELATION_BOUNDARY_WORDS = frozenset(
@@ -1365,7 +1448,14 @@ def _looks_like_actor_subject(words: Sequence[str]) -> bool:
     actor_terms = _HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS
     if singular in actor_terms or last in actor_terms:
         return True
-    return has_human_actor_signal(" ".join(cleaned))
+    return has_human_actor_role_signal(" ".join(cleaned))
+
+
+def _has_actor_action_signal(actor_words: Sequence[str], action_words: Sequence[str]) -> bool:
+    return _looks_like_actor_subject(actor_words) or has_human_actor_action_context(
+        " ".join(actor_words),
+        " ".join(action_words),
+    )
 
 
 __all__ = ["confirmation_from_operator_intent"]

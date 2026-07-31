@@ -34,7 +34,6 @@ class GreenfieldPrewriteSealRequest:
     project_brief_record_text: str
     compass_memory_preview: Mapping[str, Any]
     next_steps_preview: Mapping[str, Any]
-    staged_program_result: Mapping[str, Any]
     prewrite_safety_preview: Mapping[str, Any]
     staged_release_bootstrap: Mapping[str, Any]
     staged_release_targeting: Mapping[str, Any]
@@ -87,7 +86,6 @@ def seal_staged_greenfield_create(request: GreenfieldPrewriteSealRequest) -> Gre
         backlog_result=request.target_backlog_result,
         components=staged_surfaces.components_created,
         diagrams=staged_surfaces.diagram_ids,
-        program_result=request.staged_program_result,
         backlog_topology=backlog_topology,
         staged_surfaces=staged_surfaces,
         next_steps=request.next_steps_preview,

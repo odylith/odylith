@@ -892,7 +892,7 @@ def test_build_product_create_transaction_rejects_unapproved_manifest_before_con
         )
 
 
-def test_write_greenfield_proposal_uses_precompiled_program_plan(
+def test_write_greenfield_proposal_does_not_materialize_a_program(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -917,24 +917,12 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
             diagram_ids=(),
         ),
     )
-    calls: dict[str, Any] = {}
-
     def forbidden(*_args: Any, **_kwargs: Any) -> None:
-        raise AssertionError("post-confirm write must consume the compiled program plan")
-
-    def fake_materialize(**kwargs: Any) -> dict[str, Any]:
-        calls["materialize"] = kwargs
-        return {
-            "created": True,
-            "umbrella_id": "B-001",
-            "program_path": str(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json"),
-            "waves": list(package.program_result["waves"]),
-            "program_count": 1,
-        }
+        raise AssertionError("greenfield onboarding must not create an execution program")
 
     monkeypatch.setattr(greenfield_programs, "create_greenfield_program", forbidden)
     monkeypatch.setattr(greenfield_programs, "first_release_workstream_ids", forbidden)
-    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", fake_materialize)
+    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "build_traceability_plan", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_traceability, "apply_backlog_traceability", forbidden)
     monkeypatch.setattr(greenfield_apply_write.greenfield_experience, "build_component_handoffs", forbidden)
@@ -948,6 +936,8 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_component_spec_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_next_steps_quality", forbidden)
     monkeypatch.setattr(greenfield_apply_write, "_raise_for_final_package_quality", forbidden)
+    calls: dict[str, Any] = {}
+
     def fake_compiled_readback(**kwargs: Any) -> None:
         calls["compiled_readback"] = kwargs
 
@@ -972,10 +962,10 @@ def test_write_greenfield_proposal_uses_precompiled_program_plan(
         prewrite_package=package,
     )
 
-    assert calls["materialize"]["program_result"] == package.program_result
     assert calls["compiled_readback"]["package"] is package
     assert result["next_steps"] == package.next_steps_preview
-    assert result["program"]["program_count"] == 1
+    assert "program" not in result
+    assert not list((tmp_path / "odylith/radar/source/programs").glob("*.execution-waves.v1.json"))
     assert result["backlog_topology"] == ["odylith/radar/source/ideas/B-001.md"]
 
 
@@ -1131,7 +1121,7 @@ def test_compiled_backlog_writer_rejects_path_escape(tmp_path: Path) -> None:
         )
 
 
-def test_prewrite_compiled_backlog_includes_final_program_metadata(tmp_path: Path) -> None:
+def test_prewrite_compiled_backlog_omits_program_metadata(tmp_path: Path) -> None:
     _seed_empty_governance_repo(tmp_path)
     prompt = "Draft a greenfield proposal for a municipal permit review workspace"
     proposal = greenfield_proposals.build_greenfield_proposal(
@@ -1151,13 +1141,12 @@ def test_prewrite_compiled_backlog_includes_final_program_metadata(tmp_path: Pat
         release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
     )
 
-    program_result = prewrite.package.program_result or {}
-    umbrella_id = str(program_result["umbrella_id"])
-    umbrella_row = next(row for row in prewrite.backlog_result["created"] if row["idea_id"] == umbrella_id)
-    umbrella_text = prewrite.backlog_result["idea_files"][umbrella_row["idea_path"]]
+    rendered_backlog = "\n".join(prewrite.backlog_result["idea_files"].values())
 
-    assert program_result["dry_run"] is True
-    assert "execution_model: umbrella_waves" in umbrella_text
+    assert prewrite.package.program_result == {}
+    assert prewrite.package.release_workstream_ids
+    assert "execution_model: umbrella_waves" not in rendered_backlog
+    assert not list((tmp_path / "odylith/radar/source/programs").glob("*.execution-waves.v1.json"))
 
 
 def test_write_greenfield_proposal_compiled_path_does_not_run_source_casing_repair(

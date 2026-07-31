@@ -147,7 +147,7 @@ def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any]) -> str
     first_path = _clean(intent.get("first_path"))
     subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
     if label and subject and _actor_reference(subject) == _actor_reference(label):
-        return label
+        return _title_case(label)
     return ""
 
 

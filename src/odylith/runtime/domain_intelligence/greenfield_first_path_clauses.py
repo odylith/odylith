@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     lowercase_leading_article as _lowercase_leading_article,
 )
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import omit_actor_from_material_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts as _source_actor_led_action_parts
@@ -25,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_view import First
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_step_view
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import is_supporting_setup_step
+from odylith.runtime.domain_intelligence.greenfield_first_path_text_case import lower_initial_for_fragment
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_text
 
@@ -239,7 +241,7 @@ def _first_path_capability_text(
             if not _fragment_already_present(outcome_fragment, fragments):
                 fragments.append(outcome_fragment)
     if not gerund:
-        fragments = _actor_led_capability_fragments(fragments)
+        fragments = _actor_led_capability_fragments(fragments, source=model.steps[0] if model.steps else "")
     text = _join_fragments_within_limit(fragments[: max(1, max_fragments)], limit=limit) or clean_first_path_text(fallback)
     return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
 
@@ -427,13 +429,13 @@ def _join_step_rows_within_limit(values: Sequence[str], *, limit: int) -> str:
     return "; ".join(selected).strip(" ,.")
 
 
-def _actor_led_capability_fragments(fragments: list[str]) -> list[str]:
-    if not fragments:
+def _actor_led_capability_fragments(fragments: list[str], *, source: str = "") -> list[str]:
+    if len(fragments) < 2:
         return fragments
-    actor, action = _actor_led_action_parts(fragments[0])
-    if not actor or not action:
+    actor, action = _actor_led_action_parts(source or fragments[0])
+    if not actor or not action or omit_actor_from_material_action(actor):
         return fragments
-    return [f"{actor} can {action}", *fragments[1:]]
+    return [lower_initial_for_fragment(f"{actor.casefold()} can {action}"), *fragments[1:]]
 
 
 def _actor_led_action_parts(value: str) -> tuple[str, str]:

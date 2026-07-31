@@ -2,17 +2,56 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-07-07
+Updated: 2026-07-29
 
 Backlog: B-142
 
-Goal: Re-architect confirmed greenfield create around a typed, host-reasoned
-semantic compiler and bounded semantic repair loop so Odylith can write
-complete, premium-quality project and governance artifacts for arbitrary
-domains without regex towers, rendered-string repair, domain-specific platform
-vocabulary, or degraded packages.
+Goal: Complete Greenfield as a narrow, high-trust onboarding capability. It
+must turn imperfect initial evidence into a coherent governed project without
+writing unconfirmed artifacts or needing product interpretation, quality repair,
+or generated content after confirmation.
 
-## Architecture
+## Current Product Contract (2026-07-29)
+
+Greenfield is not a generic mutation platform or an open-ended semantic rescue
+engine. Its bounded contract is:
+
+```
+untrusted evidence
+  -> typed product intent
+  -> complete package compiled in isolated staging
+  -> pre-confirm tribunal and sealed preview
+  -> visible CONFIRM / EDIT / REJECT
+  -> atomic commit of the exact sealed bytes
+  -> readback, surface refresh, and first-time-user success navigation
+```
+
+- Prompts, Markdown, research, host suggestions, and temporary paths are
+  evidence only. They cannot render directly into committed governance truth.
+- A normal thin prompt produces a usable proposal with visible assumptions.
+  One focused clarification is allowed only when an unresolved choice changes
+  the first user, first complete path, visible outcome, safety or proof
+  boundary, essential external dependency, or accepted non-goal.
+- The pre-confirm compiler owns semantic completion, projection, quality gates,
+  repairable typed-intent repair, hashes, manifest, preconditions, write order,
+  rollback plan, and traceability. A repair is complete only when the entire
+  package is rebuilt and revalidated before a new preview is shown.
+- CONFIRM verifies the hash and repository preconditions, atomically persists
+  the already staged bytes, validates readback, refreshes governed surfaces,
+  and reports the completed workspace. It must not parse evidence, call a host
+  model, generate prose, repair artifacts, reinterpret intent, or change the
+  reviewed write set.
+- EDIT is new evidence and forces a complete rebuild with a new hash. REJECT
+  discards the transaction with no governed writes.
+- Environmental persistence failures remain possible and must roll back and
+  report truthfully. Product or projection failure after confirmation is a
+  defect, not an expected user outcome.
+
+The quality target is hard 10/10 only for the versioned, explicit corpus and
+contract: no known material defect in that scope. It is not a claim of perfect
+interpretation for arbitrary prompts or hostile environments.
+
+## Historical Architecture (superseded)
 
 - Compile the accepted Product Intent Confirmation into a versioned
   `ProductIntentEnvelope` and lossless `ConfirmedIntentIR` with source
@@ -35,6 +74,10 @@ vocabulary, or degraded packages.
   projection isolation, artifact-size guards, grammar/copy guards,
   non-repetition guards, traceability guards, timing budgets, rollback, and
   final source-truth commit.
+
+The prior description of post-confirm semantic repair is retained below only
+as history. It is explicitly replaced by the pre-confirm-only repair contract
+above.
 
 ## Latency Budget
 
@@ -70,10 +113,11 @@ vocabulary, or degraded packages.
   Future hardening should decompose by ownership and remove semantic decision
   authority from regex-heavy modules without disturbing the proven
   post-confirm completion path.
-- The next architecture pass should preserve the completion-first invariant:
-  repairable post-confirm quality failures must prefer bounded semantic or plan
-  repair and retry over no-write failure, while keeping no-write failure for
-  non-repairable, unsafe, external, or budget-exhausted blockers.
+- The remaining architecture work must preserve the sealed-transaction
+  invariant. Repairable semantic and quality failures belong before preview;
+  material ambiguity belongs in one focused clarification; after CONFIRM only
+  environmental persistence failures may occur. Do not revive post-confirm
+  semantic repair to make a failing case look successful.
 
 ## Related Bugs
 

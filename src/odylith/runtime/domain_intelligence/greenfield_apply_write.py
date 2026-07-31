@@ -94,18 +94,7 @@ def write_greenfield_proposal(
     greenfield_backlog_commit.write_backlog_files(backlog_result, repo_root=root)
     if release_selector and prewrite_package is not None:
         release_bootstrap = greenfield_release_commit.materialize_compiled_release_target(repo_root=root, release_selector=release_selector, release_target_result=prewrite_package.release_target_result or {})
-    if prewrite_package is not None and isinstance(prewrite_package.program_result, Mapping):
-        program_result = greenfield_programs.materialize_compiled_greenfield_program(
-            repo_root=root,
-            backlog_result=backlog_result,
-            program_result=prewrite_package.program_result,
-        )
-    else:
-        program_result = greenfield_programs.create_greenfield_program(
-            repo_root=root,
-            proposal=proposal,
-            backlog_result=backlog_result,
-        )
+    program_result: dict[str, Any] = {}
     first_release_workstreams = (
         [str(item).strip().upper() for item in prewrite_package.release_workstream_ids if str(item).strip()]
         if prewrite_package is not None and prewrite_package.release_workstream_ids
@@ -178,7 +167,6 @@ def write_greenfield_proposal(
             proposal=proposal,
             backlog_result=backlog_result,
             first_release_workstreams=first_release_workstreams,
-            program_result=program_result,
             traceability_plan=traceability_plan,
             release_selector=release_selector,
         )
@@ -256,7 +244,6 @@ def write_greenfield_proposal(
             proposal=proposal,
             backlog_result=backlog_result,
             first_release_workstreams=first_release_workstreams,
-            program_result=program_result,
             release_selector=release_selector,
         )
     if source_text and not (prewrite_package is not None and isinstance(prewrite_package.next_steps_preview, Mapping)):
@@ -335,7 +322,6 @@ def write_greenfield_proposal(
         "backlog": backlog_result["created"],
         "components": components_created,
         "diagrams": diagrams_created,
-        "program": program_result,
         "backlog_topology": touched_backlog_paths,
         "atlas_scaffold_logs": atlas_scaffold_logs,
         "memory": memory_record,

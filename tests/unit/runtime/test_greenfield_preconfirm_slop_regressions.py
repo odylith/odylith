@@ -904,17 +904,6 @@ def test_next_steps_source_anchor_gate_dedupes_compound_boundary_copy() -> None:
         proposal=proposal,
         backlog_result={"created": created},
         first_release_workstreams=["B-002"],
-        program_result={
-            "umbrella_id": "B-001",
-            "waves": [
-                {
-                    "wave_id": "W-001",
-                    "label": "First wave",
-                    "status": "active",
-                    "primary_workstreams": ["B-002"],
-                }
-            ],
-        },
         release_selector="0.0.1",
     )
     text = json.dumps(next_steps, sort_keys=True)
@@ -3700,7 +3689,6 @@ def test_operator_next_steps_use_typed_first_path_instead_of_contract_field_dump
             ]
         },
         first_release_workstreams=["B-001", "B-002"],
-        program_result={"umbrella_id": "B-001", "waves": [{"status": "active", "primary_workstreams": ["B-002"]}]},
         release_selector="0.0.1",
     )
     prompt = next_steps["implementation_prompt"]
@@ -3743,7 +3731,6 @@ def test_source_launch_prompt_preserves_canonical_apply_first_path_over_project_
             ]
         },
         first_release_workstreams=["B-001", "B-002"],
-        program_result={"umbrella_id": "B-001", "waves": [{"status": "active", "primary_workstreams": ["B-002"]}]},
         release_selector="0.0.1",
     )
 

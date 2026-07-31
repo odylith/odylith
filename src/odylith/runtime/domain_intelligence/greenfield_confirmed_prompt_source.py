@@ -8,6 +8,8 @@ import re
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import direct_actor_action_match
@@ -254,15 +256,17 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     grant_actor, grant_first_path = _path_grant_actor_action(product_text)
     workflow_actor, workflow_first_path = _workflow_where_actor_action(product_text)
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
-    actor, actor_led_first_path = _actor_led_relative_clause(product_text)
+    purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
     direct_actor, direct_first_path = _direct_actor_action_sentence(product_text)
     context_actor, context_first_path = _for_role_actor_gerund_path(product_text)
+    actor, actor_led_first_path = _actor_led_relative_clause(product_text)
     non_human_relative_first_path = _non_human_subject_relative_action(product_text)
     first_path_source = (
         explicit_first_path
         or grant_first_path
         or workflow_first_path
         or multi_role_first_path
+        or purpose_first_path
         or need_first_path
         or actor_led_first_path
         or direct_first_path
@@ -274,7 +278,16 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     resolved_actor = next(
         (
             candidate
-            for candidate in (grant_actor, workflow_actor, multi_role_actor, need_actor, actor, direct_actor, context_actor)
+            for candidate in (
+                grant_actor,
+                workflow_actor,
+                multi_role_actor,
+                purpose_actor,
+                need_actor,
+                actor,
+                direct_actor,
+                context_actor,
+            )
             if _is_bounded_prompt_actor(candidate)
         ),
         "",
@@ -318,7 +331,9 @@ def product_intent_source_text(value: str) -> str:
 def prompt_has_material_first_path_gap(value: str) -> bool:
     """Return whether an explicit actor path names only one material action."""
 
-    source = prompt_intent_source(value)
+    product_text = product_intent_source_text(value)
+    source = prompt_intent_source(product_text)
+    need_actor, need_action = need_product_actor_action(product_text)
     model = first_path_model(source.first_path)
     actor, action = modal_actor_action_parts(source.first_path)
     if not actor or not action:
@@ -330,6 +345,7 @@ def prompt_has_material_first_path_gap(value: str) -> bool:
         and _starts_with_explicit_human_actor(actor)
         and not _contains_compound_action_path(source.first_path)
         and _is_observation_only_action(action)
+        and not (need_actor and need_action)
     )
 
 
@@ -414,6 +430,11 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
 
     for sentence in _sentence_fragments(value):
         text = clean_markdown_text(sentence).strip(" .")
+        if _is_release_boundary_statement(text):
+            continue
+        role_actor, role_first_path = _role_object_record_path(text)
+        if role_actor and role_first_path:
+            return role_actor, role_first_path
         match = direct_actor_action_match(text)
         if not match:
             continue
@@ -426,7 +447,115 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             action = f"{_base_direct_gerund(verb) or verb} {tail}".strip(" .")
             return actor, f"{actor} can {action}"
         return actor, f"{actor} {action}"
+    for sentence in _sentence_fragments(value):
+        actor, action, article = _explicit_human_actor_action(sentence)
+        if _is_release_boundary_statement(sentence):
+            continue
+        if _is_role_bound_review_statement(sentence):
+            action = _strip_role_bound_review_requirement(action)
+        if not actor or not action:
+            continue
+        if article:
+            return actor, f"{article.capitalize()} {actor} {action}"
+        canonical_action = base_action_clause(action, force_leading_finite=True).strip(" .") or action
+        return actor, f"{actor} can {canonical_action}"
     return "", ""
+
+
+def _leading_role_purpose_action_path(value: str) -> tuple[str, str]:
+    """Recover an explicit `<role> for <purpose>; <actions>` first path."""
+
+    text = clean_markdown_text(value).strip(" .")
+    match = re.match(
+        r"^(?P<actor>[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,5})"
+        r"\s+for\s+(?P<purpose>[^.;]{3,180});\s*(?P<actions>.+)$",
+        text,
+    )
+    if not match:
+        return "", ""
+    actor = _strip_leading_actor_article(match.group("actor"))
+    purpose = clean_markdown_text(match.group("purpose")).strip(" .")
+    action_source = clean_markdown_text(match.group("actions")).strip(" .")
+    if (
+        not actor
+        or not purpose
+        or not has_human_actor_role_signal(actor)
+        or not looks_like_action_clause(action_source)
+    ):
+        return "", ""
+    action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
+    if not action or not _looks_like_recoverable_first_path(action):
+        return "", ""
+    first_action, separator, remaining_actions = action.partition(",")
+    action_with_purpose = f"{first_action.strip()} for {purpose}"
+    if separator and remaining_actions.strip():
+        action_with_purpose = f"{action_with_purpose}, {remaining_actions.strip()}"
+    return actor, f"{actor} can {action_with_purpose}".strip(" .")
+
+
+def _role_object_record_path(value: str) -> tuple[str, str]:
+    """Keep a role's record object out of its actor label in a review constraint."""
+
+    text = clean_markdown_text(value).strip(" .")
+    match = re.match(
+        r"^(?:the\s+)?(?P<actor>[A-Za-z][A-Za-z0-9'/-]*)\s+"
+        r"(?P<object>[A-Za-z][A-Za-z0-9'/-]{1,80})\s+records?\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return "", ""
+    if not _is_role_bound_review_statement(text):
+        return "", ""
+    actor = _strip_leading_actor_article(match.group("actor"))
+    object_text = clean_markdown_text(match.group("object")).strip(" .")
+    if not actor or not object_text or not has_human_actor_role_signal(actor):
+        return "", ""
+    return actor, f"{actor} can review {actor.casefold()} {object_text} records and release readiness"
+
+
+def _explicit_human_actor_action(value: str) -> tuple[str, str, str]:
+    """Recover a direct unfamiliar actor only from its own finite action clause."""
+
+    words = _request_words(clean_markdown_text(value).strip(" ."))
+    for boundary in range(1, min(5, len(words) - 1) + 1):
+        actor_words = words[:boundary]
+        action_words = words[boundary:]
+        if not has_human_actor_action_context(" ".join(actor_words), " ".join(action_words)):
+            continue
+        actor = _strip_leading_actor_article(" ".join(actor_words))
+        action = " ".join(action_words).strip(" .")
+        if actor and action and _looks_like_recoverable_first_path(action):
+            article = _word_key(actor_words[0]) if _word_key(actor_words[0]) in {"a", "an", "the"} else ""
+            return actor, action, article
+    return "", "", ""
+
+
+def _is_release_boundary_statement(value: str) -> bool:
+    return bool(
+        re.match(
+            r"^(?:the\s+)?first\s+release\s+(?:boundary|scope)\b",
+            clean_markdown_text(value).strip(),
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _is_role_bound_review_statement(value: str) -> bool:
+    text = clean_markdown_text(value).strip()
+    return bool(re.search(r"\bmust\s+be\s+reviewable\b", text, flags=re.IGNORECASE))
+
+
+def _strip_role_bound_review_requirement(value: str) -> str:
+    """Retain a preceding user action while excluding a trailing proof requirement."""
+
+    text = clean_markdown_text(value).strip(" .")
+    return re.sub(
+        r"\s+(?:and|but)\s+[^.;]{0,120}?\bmust\s+be\s+reviewable\b.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
 
 
 def _multi_role_modal_first_path(value: str) -> tuple[str, str]:
@@ -705,7 +834,14 @@ def _workflow_where_actor_action(value: str) -> tuple[str, str]:
             actor_words = tail_words[:action_index]
             action_words = tail_words[action_index:]
             actor_words, action_words = _trim_actor_action_split(actor_words, action_words)
-            if not action_words or not _looks_like_actor_split_left(actor_words, allow_bounded_workflow_phrase=True):
+            recognized_actor = _looks_like_actor_split_left(
+                actor_words,
+                allow_bounded_workflow_phrase=True,
+            )
+            if not action_words or not (
+                recognized_actor
+                or has_human_actor_action_context(" ".join(actor_words), " ".join(action_words))
+            ):
                 continue
             action_source = _smooth_request_first_path_clause(" ".join(action_words))
             if not (
@@ -715,8 +851,11 @@ def _workflow_where_actor_action(value: str) -> tuple[str, str]:
                 continue
             action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
             if action and _looks_like_recoverable_first_path(action):
+                article = _word_key(actor_words[0]) if _word_key(actor_words[0]) in {"a", "an", "the"} else ""
                 actor = _strip_leading_actor_article(" ".join(actor_words))
-                return actor, f"{actor} {action}".strip(" .")
+                subject = actor if recognized_actor else f"{article.capitalize()} {actor}".strip()
+                selected_action = action if recognized_actor else action_source
+                return actor, f"{subject} {selected_action}".strip(" .")
     return "", ""
 
 
@@ -955,8 +1094,13 @@ def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:
         if not action_words:
             continue
         explicit_role = _looks_like_actor_purpose_left(actor_words)
+        article_led = bool(actor_words and _word_key(actor_words[0]) in {"a", "an", "the"})
+        explicit_actor_context = article_led and has_human_actor_action_context(
+            " ".join(actor_words),
+            " ".join(action_words),
+        )
         bounded_workflow = _looks_like_bounded_workflow_actor_phrase(actor_words)
-        if not explicit_role and not bounded_workflow:
+        if not explicit_role and not explicit_actor_context and not bounded_workflow:
             continue
         action_source = _smooth_request_first_path_clause(" ".join(action_words))
         if not looks_like_action_clause(action_source):
@@ -964,7 +1108,7 @@ def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:
         action = base_action_clause(action_source, force_leading_finite=True)
         if action:
             candidate = (_strip_leading_actor_article(" ".join(actor_words)), action)
-            if explicit_role:
+            if explicit_role or explicit_actor_context:
                 role_candidates.append(candidate)
             else:
                 workflow_candidates.append(candidate)
@@ -1049,9 +1193,23 @@ def _for_role_actor_gerund_path(value: str) -> tuple[str, str]:
                 continue
             actor = _strip_leading_actor_article(" ".join(actor_words))
             action = _smooth_request_first_path_clause(" ".join(tail[boundary:]))
+            followup = _contextual_gerund_followup_action(action)
+            if actor and followup:
+                return actor, f"{actor} can {followup}"
             if actor and action and _looks_like_recoverable_first_path(action):
                 return actor, f"{actor} {action}"
     return "", ""
+
+
+def _contextual_gerund_followup_action(value: str) -> str:
+    """Use the next workflow sentence when a role-gerund phrase is audience context."""
+
+    rows = _sentence_fragments(value)
+    if len(rows) < 2 or not _word_key(rows[0].split(maxsplit=1)[0]).endswith("ing"):
+        return ""
+    followup = re.sub(r"^(?:each|the)\s+\w+\s+", "", rows[1].strip(), flags=re.IGNORECASE)
+    action = base_action_clause(followup, force_leading_finite=True).strip(" .")
+    return action if action and _looks_like_recoverable_first_path(action) else ""
 
 
 def _strip_trailing_operator_instruction_sentences(value: str) -> str:
@@ -1328,7 +1486,7 @@ def _looks_like_actor_purpose_left(words: list[str]) -> bool:
         or singular in _REQUEST_ACTOR_PURPOSE_TOKENS
         or word_has_actor_role_signal(last)
         or word_has_actor_role_signal(singular)
-        or has_human_actor_signal(" ".join(tail))
+        or has_human_actor_role_signal(" ".join(tail))
     )
 
 
@@ -1479,6 +1637,8 @@ def _source_metadata_labels(value: str) -> list[re.Match[str]]:
 
 
 def _starts_with_explicit_human_actor(value: str) -> bool:
+    if has_human_actor_signal(value):
+        return True
     words = [word.casefold().strip(".,:;") for word in _request_words(clean_markdown_text(value))[:5]]
     if words and words[0] in {"a", "an", "the"}:
         words = words[1:]

@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
 )
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_first_path_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_human_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
@@ -210,6 +211,9 @@ def materialize_prompt_intent_hypothesis(
     )
     require_product_intent_authority(authority)
     candidate = dict(intent)
+    # Prompt and edit text remain inspectable evidence for the current proposal,
+    # but never enter persisted product facts or the authority hash.
+    candidate["prompt"] = evidence_source
     candidate[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     return candidate
 
@@ -258,6 +262,8 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
 
     edit_sections = confirmed_intent_sections(edit_evidence)
     edited_first_path = _section_first_path_text(edit_sections)
+    if edited_first_path and starts_with_automated_actor(edited_first_path):
+        return True
     edited_actor_rows = confirmed_text_values(edit_sections.get("human_actors"))
     if (
         edited_first_path

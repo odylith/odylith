@@ -25,8 +25,6 @@ def require_complete_compiled_greenfield_package(
 
     proposal = prewrite_package.proposal if isinstance(prewrite_package.proposal, Mapping) else {}
     issues: list[str] = []
-    if not isinstance(prewrite_package.program_result, Mapping) or not prewrite_package.program_result:
-        issues.append("missing compiled program_result")
     traceability_plan = greenfield_traceability_commit.compiled_traceability_plan(
         getattr(prewrite_package, "traceability_plan", None), required=False
     )

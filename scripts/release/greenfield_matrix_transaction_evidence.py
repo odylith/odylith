@@ -13,6 +13,13 @@ from typing import Any
 
 
 DRY_RUN_RECEIPT_VERSION = "odylith.greenfield.matrix.dry-run-receipt.v1"
+POST_CONFIRM_NAVIGATION = {
+    "project": "odylith/index.html?tab=project",
+    "radar": "odylith/index.html?tab=radar",
+    "registry": "odylith/index.html?tab=registry",
+    "atlas": "odylith/index.html?tab=atlas",
+    "compass": "odylith/index.html?tab=compass&date=live",
+}
 
 
 @dataclass(frozen=True)
@@ -22,6 +29,7 @@ class CompiledCreateExecution:
     create: Any
     create_seconds: float
     dry_run_receipt: Mapping[str, Any]
+    proposal_payload: Mapping[str, Any]
 
 
 def commit_precompiled_transaction(
@@ -36,9 +44,9 @@ def commit_precompiled_transaction(
         proposal_returncode = int(getattr(proposed, "returncode", 1))
     except (TypeError, ValueError):
         proposal_returncode = 1
-    if proposal_returncode != 0:
-        return CompiledCreateExecution(proposed, 0.0, _receipt(status="proposal_failed"))
     proposed_payload = _json_mapping(getattr(proposed, "stdout", ""))
+    if proposal_returncode != 0:
+        return CompiledCreateExecution(proposed, 0.0, _receipt(status="proposal_failed"), proposed_payload)
     proposal_mode = str(proposed_payload.get("mode") or "").strip()
     if proposal_mode == "clarification_required":
         return CompiledCreateExecution(
@@ -49,6 +57,7 @@ def commit_precompiled_transaction(
             ),
             0.0,
             _receipt(status="clarification_required", proposal_mode=proposal_mode),
+            proposed_payload,
         )
     summary = _mapping(proposed_payload.get("product_create_transaction"))
     transaction_hash = str(summary.get("transaction_hash") or "").strip()
@@ -58,6 +67,7 @@ def commit_precompiled_transaction(
             _error_result("greenfield propose did not return a ProductCreateTransaction hash and transaction file"),
             0.0,
             _receipt(status="proposal_contract_failed", proposal_mode=proposal_mode),
+            proposed_payload,
         )
     receipt, issues = _sealed_dry_run_receipt(
         repo_root=repo_root,
@@ -70,6 +80,7 @@ def commit_precompiled_transaction(
             _error_result("greenfield propose returned an invalid pre-confirm transaction: " + "; ".join(issues)),
             0.0,
             receipt,
+            proposed_payload,
         )
     started = time.perf_counter()
     create = invoke_create(
@@ -87,7 +98,65 @@ def commit_precompiled_transaction(
             "--json",
         )
     )
-    return CompiledCreateExecution(create, round(time.perf_counter() - started, 3), receipt)
+    return CompiledCreateExecution(create, round(time.perf_counter() - started, 3), receipt, proposed_payload)
+
+
+def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple[str, ...]:
+    """Require a readable, hash-bound decision rail before the matrix commits it."""
+
+    transaction = _mapping(proposal_payload.get("product_create_transaction"))
+    transaction_hash = str(transaction.get("transaction_hash") or "").strip()
+    confirmation = _mapping(proposal_payload.get("confirmation"))
+    choices = confirmation.get("choices")
+    issues: list[str] = []
+    if str(proposal_payload.get("mode") or "").strip() != "product_create_transaction":
+        issues.append("pre-confirm payload did not expose a ProductCreateTransaction")
+    if not _is_sha256(transaction_hash):
+        issues.append("pre-confirm payload is missing a valid transaction hash")
+    if not str(proposal_payload.get("transaction_file") or "").strip():
+        issues.append("pre-confirm payload is missing its transaction file")
+    if str(confirmation.get("command_rule") or "").strip() != (
+        "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
+    ):
+        issues.append("pre-confirm payload does not state the one-command decision rule")
+    if not isinstance(choices, list):
+        issues.append("pre-confirm payload is missing the CONFIRM, EDIT, and REJECT choices")
+        return tuple(issues)
+    commands = [str(_mapping(choice).get("command") or "").strip() for choice in choices]
+    if commands != ["CONFIRM", "EDIT", "REJECT"]:
+        issues.append("pre-confirm payload does not present CONFIRM, EDIT, and REJECT as distinct ordered choices")
+        return tuple(issues)
+    choice_by_command = {str(_mapping(choice).get("command") or "").strip(): _mapping(choice) for choice in choices}
+    confirm = choice_by_command["CONFIRM"]
+    edit = choice_by_command["EDIT"]
+    reject = choice_by_command["REJECT"]
+    commit_command = str(confirm.get("commit_command") or "").strip()
+    if transaction_hash not in commit_command or "--confirm" not in commit_command:
+        issues.append("CONFIRM does not name the exact hash-bound commit command")
+    if "exact validated package" not in str(confirm.get("description") or "").casefold():
+        issues.append("CONFIRM does not explain that it commits the validated package")
+    edit_text = " ".join(str(edit.get(key) or "") for key in ("description",))
+    if "new evidence" not in edit_text.casefold() or "rebuild" not in edit_text.casefold():
+        issues.append("EDIT does not explain that corrections are rebuilt as new evidence")
+    if "no governed records" not in str(reject.get("description") or "").casefold():
+        issues.append("REJECT does not clearly promise no governed writes")
+    contract = str(confirmation.get("post_confirm_contract") or "").casefold()
+    for required_phrase in ("hash", "compiler receipt", "repo preconditions", "sealed bytes", "rollback", "readback"):
+        if required_phrase not in contract:
+            issues.append(f"pre-confirm post-confirm contract omits `{required_phrase}`")
+    return tuple(issues)
+
+
+def post_confirm_navigation_issues(*, create_payload: Mapping[str, Any]) -> tuple[str, ...]:
+    """Require the commit response to lead a first-time user into the created workspace."""
+
+    navigation = _mapping(create_payload.get("post_confirm_navigation"))
+    if navigation == POST_CONFIRM_NAVIGATION:
+        return ()
+    missing = [key for key, value in POST_CONFIRM_NAVIGATION.items() if navigation.get(key) != value]
+    return (
+        "post-confirm response does not expose the stable governance workspace routes: " + ", ".join(missing),
+    )
 
 
 def dry_run_commit_issues(*, receipt: Mapping[str, Any], create_payload: Mapping[str, Any]) -> tuple[str, ...]:
