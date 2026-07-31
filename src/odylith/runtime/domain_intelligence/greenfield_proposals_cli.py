@@ -118,6 +118,48 @@ def _legacy_apply_disabled_error() -> str:
     )
 
 
+def _transaction_confirmation_payload(
+    *,
+    transaction: Any,
+    output_path: str = "",
+) -> dict[str, Any]:
+    summary = transaction.summary()
+    transaction_ref = output_path or "<compiled-transaction.json>"
+    commit_command = (
+        "odylith greenfield create --repo-root . "
+        f"--transaction-file {transaction_ref} "
+        f"--transaction-hash {summary['transaction_hash']} --confirm"
+    )
+    return {
+        "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+        "first_word_rule": "Only the first command counts. Do not paste Odylith system commands in your reply.",
+        "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
+        "post_confirm_contract": (
+            "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
+            "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
+            "guard, validates readback, and reports success or environment/IO failure."
+        ),
+        "choices": [
+            {
+                "command": "CONFIRM",
+                "description": "Commit this exact validated package now. Odylith verifies the hash and repo "
+                "preconditions, writes the sealed bytes, and validates readback. No product reinterpretation, "
+                "repair, or generation runs after CONFIRM.",
+                "commit_command": commit_command,
+            },
+            {
+                "command": "EDIT",
+                "description": "Do not commit. Put corrections after EDIT; Odylith treats them as new evidence, "
+                "rebuilds the package, and uses the new hash.",
+            },
+            {"command": "REJECT", "description": "Stop. No governed records are written."},
+        ],
+        "confirm": "CONFIRM - commit this exact validated package now",
+        "edit": "EDIT - add corrections after the command and rebuild the transaction",
+        "reject": "REJECT - stop with no governed records written",
+    }
+
+
 def _transaction_confirmation_text(
     *,
     transaction: Any,
@@ -131,7 +173,7 @@ def _transaction_confirmation_text(
     created = backlog_result.get("created") if isinstance(backlog_result.get("created"), list) else []
     components = package.component_registry_preview if isinstance(package.component_registry_preview, tuple) else ()
     diagrams = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
-    transaction_ref = output_path or "<compiled-transaction.json>"
+    confirmation = _transaction_confirmation_payload(transaction=transaction, output_path=output_path)
     lines = [
         "ProductCreateTransaction ready for final command",
         f"- transaction hash: {summary['transaction_hash']}",
@@ -144,19 +186,16 @@ def _transaction_confirmation_text(
         "- commands: CONFIRM commits this transaction hash; EDIT rebuilds from new evidence; REJECT stops with no writes",
         "",
         *format_confirmation_choice_lines(
-            (
+            tuple(
                 (
-                    "CONFIRM",
-                    "Commit this exact validated package now. Odylith verifies the hash and repo preconditions, writes the sealed bytes, and validates readback with "
-                    f"`odylith greenfield create --repo-root . --transaction-file {transaction_ref} "
-                    f"--transaction-hash {summary['transaction_hash']} --confirm`. "
-                    "No product reinterpretation, repair, or generation runs after CONFIRM.",
-                ),
-                (
-                    "EDIT",
-                    "Do not commit. Put corrections after EDIT; Odylith treats them as new evidence, rebuilds the package, and uses the new hash.",
-                ),
-                ("REJECT", "Stop. No governed records are written."),
+                    str(choice["command"]),
+                    (
+                        f"{choice['description']} Run `{choice['commit_command']}`"
+                        if str(choice["command"]) == "CONFIRM"
+                        else str(choice["description"])
+                    ),
+                )
+                for choice in confirmation["choices"]
             )
         ),
     ]
@@ -308,6 +347,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "intent_hypothesis": candidate_intent,
                 "product_create_transaction": transaction.summary(),
                 "transaction_file": str(transaction_path.relative_to(repo_root)),
+                "confirmation": _transaction_confirmation_payload(
+                    transaction=transaction,
+                    output_path=str(transaction_path.relative_to(repo_root)),
+                ),
             }, indent=2, sort_keys=True))
         else:
             preview = render_product_intent_preview(candidate_intent).rstrip()
@@ -346,45 +389,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_path = str(staged_path)
             if args.output_format == "json":
                 summary = transaction.summary()
-                transaction_ref = output_path or "<compiled-transaction.json>"
-                commit_command = (
-                    "odylith greenfield create --repo-root . "
-                    f"--transaction-file {transaction_ref} "
-                    f"--transaction-hash {summary['transaction_hash']} --confirm"
-                )
                 payload = {
                     "mode": "product_create_transaction",
                     "intent_hypothesis": candidate_intent,
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
-                    "confirmation": {
-                        "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
-                        "first_word_rule": "Only the first command counts. Do not paste Odylith system commands in your reply.",
-                        "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
-                        "post_confirm_contract": (
-                            "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
-                            "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
-                            "guard, validates readback, and reports success or environment/IO failure."
-                        ),
-                        "choices": [
-                            {
-                                "command": "CONFIRM",
-                                "description": "Commit this exact validated package now.",
-                                "commit_command": commit_command,
-                            },
-                            {
-                                "command": "EDIT",
-                                "description": "Do not commit. Put corrections after EDIT; Odylith treats them as new evidence, rebuilds the package, and uses the new hash.",
-                            },
-                            {
-                                "command": "REJECT",
-                                "description": "Stop. No governed records are written.",
-                            },
-                        ],
-                        "confirm": "CONFIRM - commit this exact validated package now",
-                        "edit": "EDIT - add corrections after the command and rebuild the transaction",
-                        "reject": "REJECT - stop with no governed records written",
-                    },
+                    "confirmation": _transaction_confirmation_payload(
+                        transaction=transaction,
+                        output_path=output_path,
+                    ),
                 }
                 if output_path:
                     payload["transaction_file"] = output_path

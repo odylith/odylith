@@ -595,20 +595,7 @@ def _substantive_governed_readback() -> SimpleNamespace:
                 },
             )
         },
-        program_records={
-            "odylith/radar/source/programs/B-001.execution-waves.v1.json": {
-                "umbrella_id": "B-001",
-                "version": "v1",
-                "waves": [
-                    {
-                        "wave_id": "W1",
-                        "label": "First governed path",
-                        "summary": "Prove one governed path before expanding scope.",
-                        "primary_workstreams": ["B-001"],
-                    }
-                ],
-            }
-        },
+        program_records={},
         compass_records={
             "odylith/compass/runtime/current.v1.json": {
                 "version": "v1",
@@ -745,11 +732,10 @@ def _substantive_package() -> SimpleNamespace:
             ],
             "operator_sequence": ["Review the project brief.", "Open B-001.", "Author the first technical plan."],
         },
-        program_result={"dry_run": "true"},
+        program_result={},
         prewrite_safety_preview={
             "status": "passed",
             "checks": {
-                "program_dry_run": True,
                 "validation_gate_passed": True,
                 "release_target_dry_run": True,
                 "release_assignment_dry_run": True,
@@ -768,7 +754,7 @@ def _full_counts(module) -> object:
         atlas_mermaid_sources=4,
         compass_records=1,
         release_records=1,
-        program_records=1,
+        program_records=0,
         project_brief_records=1,
         trace_nodes=12,
         trace_workstreams=4,
@@ -928,7 +914,6 @@ def test_collect_artifact_package_carries_prewrite_safety_evidence(tmp_path: Pat
             "prewrite_safety": {
                 "status": "passed",
                 "checks": {
-                    "program_dry_run": True,
                     "validation_gate_passed": True,
                     "release_target_dry_run": True,
                     "release_assignment_dry_run": True,
@@ -938,7 +923,7 @@ def test_collect_artifact_package_carries_prewrite_safety_evidence(tmp_path: Pat
     )
 
     assert package.prewrite_safety_preview["status"] == "passed"
-    assert package.prewrite_safety_preview["checks"]["program_dry_run"] is True
+    assert package.prewrite_safety_preview["checks"]["validation_gate_passed"] is True
 
 
 def _passing_matrix_result(module) -> object:
@@ -1588,13 +1573,12 @@ def test_collect_artifact_counts_does_not_count_compass_shell_assets_as_records(
     assert with_record.compass_records == 1
 
 
-def test_collect_artifact_counts_require_typed_release_program_and_compass_readback(tmp_path: Path) -> None:
+def test_collect_artifact_counts_require_typed_release_and_compass_readback(tmp_path: Path) -> None:
     module = _module()
     package = _empty_package()
     _write(tmp_path / "odylith/radar/source/releases/AGENTS.md", "# Release guidance\n")
     _write(tmp_path / "odylith/radar/source/releases/releases.v1.json", "{}\n")
     _write(tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl", '{"action":"add"}\n')
-    _write(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json", "{}\n")
     _write(tmp_path / "odylith/compass/runtime/current.v1.json", "{}\n")
     _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
 
@@ -1626,22 +1610,6 @@ def test_collect_artifact_counts_require_typed_release_program_and_compass_readb
         + "\n",
     )
     _write(
-        tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json",
-        json.dumps(
-            {
-                "umbrella_id": "B-001",
-                "waves": [
-                    {
-                        "wave_id": "W1",
-                        "label": "First path",
-                        "summary": "Prove the first governed path.",
-                        "primary_workstreams": ["B-001"],
-                    }
-                ],
-            }
-        ),
-    )
-    _write(
         tmp_path / "odylith/compass/runtime/current.v1.json",
         json.dumps({"version": "v1", "generated_utc": "2026-06-30T12:00:00Z", "sources": {}}),
     )
@@ -1649,7 +1617,7 @@ def test_collect_artifact_counts_require_typed_release_program_and_compass_readb
     valid_counts = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
 
     assert valid_counts.release_records == 2
-    assert valid_counts.program_records == 1
+    assert valid_counts.program_records == 0
     assert valid_counts.compass_records == 1
 
 
@@ -1887,7 +1855,7 @@ def test_package_evidence_rejects_preview_only_source_launch() -> None:
     assert any("persisted accepted source-launch readback" in finding.message for finding in findings)
 
 
-def test_package_evidence_rejects_stale_release_program_and_surface_readback() -> None:
+def test_package_evidence_rejects_stale_release_unexpected_program_and_surface_readback() -> None:
     module = _module()
     package = _substantive_package()
     stale = _substantive_governed_readback()
@@ -1923,7 +1891,7 @@ def test_package_evidence_rejects_stale_release_program_and_surface_readback() -
     messages = [finding.message for finding in findings]
 
     assert any("release assignment events do not cover workstream(s): B-001" in message for message in messages)
-    assert any("program readback does not cover release workstream(s): B-001" in message for message in messages)
+    assert any("Greenfield commit created unexpected Compass program record(s)" in message for message in messages)
     assert any("registry surface payload readback is missing or invalid" in message for message in messages)
     assert any("casebook surface payload readback is missing or invalid" in message for message in messages)
 
@@ -3271,7 +3239,7 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
         atlas_mermaid_sources=4,
         compass_records=1,
         release_records=1,
-        program_records=1,
+        program_records=0,
         project_brief_records=1,
         trace_nodes=12,
         trace_workstreams=4,
@@ -3305,7 +3273,7 @@ def test_quality_verdict_accepts_sparse_case_when_all_declared_domain_terms_surv
         atlas_mermaid_sources=4,
         compass_records=1,
         release_records=1,
-        program_records=1,
+        program_records=0,
         project_brief_records=1,
         trace_nodes=12,
         trace_workstreams=4,

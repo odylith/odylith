@@ -815,6 +815,10 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert payload["product_create_transaction"]["transaction_hash"]
     assert payload["product_create_transaction"]["quality_status"] == "passed"
     assert (tmp_path / payload["transaction_file"]).is_file()
+    confirmation = payload["confirmation"]
+    assert confirmation["command_rule"] == "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
+    assert [choice["command"] for choice in confirmation["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
+    assert payload["product_create_transaction"]["transaction_hash"] in confirmation["choices"][0]["commit_command"]
     assert payload["intent_hypothesis"]["product_story"]
     assert "host_reasoning_task" not in payload
     assert "backlog" not in payload

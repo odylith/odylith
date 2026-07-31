@@ -34,7 +34,7 @@ def _full_counts(module) -> object:
         atlas_mermaid_sources=4,
         compass_records=1,
         release_records=1,
-        program_records=1,
+        program_records=0,
         project_brief_records=1,
         trace_nodes=12,
         trace_workstreams=4,

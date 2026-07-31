@@ -177,7 +177,6 @@ def required_count_minimums() -> dict[str, int]:
         "Atlas Mermaid sources": 4,
         "Compass records": 1,
         "release records": 1,
-        "program records": 1,
         "project brief records": 1,
         "trace nodes": 12,
         "trace workstreams": 4,
@@ -195,7 +194,6 @@ def count_key(label: str) -> str:
         "Atlas Mermaid sources": "atlas_mermaid_sources",
         "Compass records": "compass_records",
         "release records": "release_records",
-        "program records": "program_records",
         "project brief records": "project_brief_records",
         "trace nodes": "trace_nodes",
         "trace workstreams": "trace_workstreams",
@@ -358,7 +356,7 @@ def _quality_lenses(
             and _lens_passed(package_lenses, "engineer")
             and not evidence_blocks_dimension(evidence_findings, "engineer")
             and counts.registry_component_specs >= 3
-            and counts.program_records >= 1
+            and counts.release_records >= 1
             and create_returncode == 0
             and write_committed(manifest)
         ),
@@ -484,13 +482,11 @@ def _operator_usefulness_score(*, counts: GreenfieldArtifactCounts, create_retur
         return 0
     minimums = {
         "release records": 1,
-        "program records": 1,
         "project brief records": 1,
         "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
     }
     values = {
         "release records": counts.release_records,
-        "program records": counts.program_records,
         "project brief records": counts.project_brief_records,
         "rendered surfaces": counts.rendered_surfaces,
     }
@@ -632,7 +628,6 @@ def _count_values(counts: GreenfieldArtifactCounts) -> dict[str, int]:
         "Atlas Mermaid sources": counts.atlas_mermaid_sources,
         "Compass records": counts.compass_records,
         "release records": counts.release_records,
-        "program records": counts.program_records,
         "project brief records": counts.project_brief_records,
         "trace nodes": counts.trace_nodes,
         "trace workstreams": counts.trace_workstreams,

@@ -75,7 +75,7 @@ def governed_readback_findings(
 
     findings: list[tuple[str, str]] = []
     findings.extend(_release_findings(readback, release_selector=release_selector, workstream_ids=release_workstream_ids))
-    findings.extend(_program_findings(readback, workstream_ids=release_workstream_ids))
+    findings.extend(_unexpected_program_findings(readback))
     findings.extend(_compass_findings(readback))
     findings.extend(_surface_payload_findings(readback))
     return tuple(dict.fromkeys(findings))
@@ -172,20 +172,12 @@ def _release_findings(
     return findings
 
 
-def _program_findings(readback: GovernedReadback, *, workstream_ids: Sequence[str]) -> list[tuple[str, str]]:
-    findings: list[tuple[str, str]] = []
+def _unexpected_program_findings(readback: GovernedReadback) -> list[tuple[str, str]]:
+    """Greenfield onboarding must not add Compass programs or execution waves."""
+
     if not readback.program_records:
-        findings.append(("engineer", "persisted program readback has no valid execution-wave record"))
-        return findings
-    expected = _normalized_ids(workstream_ids)
-    if expected:
-        covered = _program_workstream_ids(readback.program_records)
-        missing = sorted(expected - covered)
-        if missing:
-            findings.append(
-                ("engineer", f"persisted program readback does not cover release workstream(s): {', '.join(missing[:5])}")
-            )
-    return findings
+        return []
+    return [("engineer", "Greenfield commit created unexpected Compass program record(s)")]
 
 
 def _compass_findings(readback: GovernedReadback) -> list[tuple[str, str]]:
@@ -244,17 +236,6 @@ def _release_event_workstream_ids(events: Mapping[str, Sequence[Mapping[str, Any
         for row in rows
         if normalize_string(row.get("workstream_id"))
     }
-
-
-def _program_workstream_ids(programs: Mapping[str, Mapping[str, Any]]) -> set[str]:
-    ids: set[str] = set()
-    for program in programs.values():
-        ids.update(_normalized_ids((str(program.get("umbrella_id") or ""),)))
-        for wave in _mapping_rows(program.get("waves")):
-            for key in ("primary_workstreams", "carried_workstreams", "in_band_workstreams"):
-                ids.update(_normalized_ids(str(item) for item in _sequence(wave.get(key))))
-        ids.update(_normalized_ids(str(item) for item in _sequence(program.get("workstreams"))))
-    return ids
 
 
 def _release_row_is_valid(row: Mapping[str, Any]) -> bool:
