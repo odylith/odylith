@@ -7,6 +7,7 @@ from collections.abc import Iterable
 
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import sentence_actor_reference
 
 
 def canonical_human_actor_rows(*, project_label: str, rows: Iterable[object]) -> list[str]:
@@ -17,7 +18,10 @@ def canonical_human_actor_rows(*, project_label: str, rows: Iterable[object]) ->
     for row in rows:
         text = str(row or "").strip()
         if text:
-            result.append(project_specific_actor_row(text, project_focus=focus) or text)
+            projected = project_specific_actor_row(text, project_focus=focus) or text
+            label, separator, description = projected.partition(":")
+            label = sentence_actor_reference(label)
+            result.append(f"{label}:{description}" if separator else label)
     return result
 
 

@@ -142,7 +142,8 @@ on a risky step, and produce an accountable review record with evidence and deci
     )
 
     rendered = str(proposal)
-    assert "Agent Execution Operator: supervising an execution run" in rendered
-    assert "High-risk Boundaries Reviewer: approving high-risk boundaries" in rendered
+    assert "Agent execution operator: supervising an execution run" in rendered
+    assert "High-risk boundaries reviewer: approving high-risk boundaries" in rendered
+    assert proposal["intent"]["human_actors"][0] == "Agent execution operator: supervising an execution run"
     assert "customer': 'Operator'" not in rendered
     assert "['Operator']" not in rendered

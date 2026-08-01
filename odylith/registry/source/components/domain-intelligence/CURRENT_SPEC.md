@@ -45,6 +45,8 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-01: Made Greenfield material-fact custody source-verifiable inside a declared operating envelope. Raw operator prompts are evidence, never typed product truth; prompt-derived material fields are bounded interpretations tied to hashed evidence spans, while typed JSON fields earn accepted-fact custody only through exact structural value equality. The exact generic software-router replay no longer activates scientific-evaluation semantics, and canonical actor facts keep sentence case across actor rows and first-path prefixes. Final source proof passed 214 transaction/custody tests plus the focused 44-test operating-envelope, actor, and Product Intent matrix. Installed release replay remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-302`; Diagram: D-043)
+
 - 2026-07-19: Tightened the sealed Greenfield execution envelope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
   An adversarial boundary review found residual post-confirm adjudication. The
   confirmed path now hash-checks the receipt-bound transaction and its sealed

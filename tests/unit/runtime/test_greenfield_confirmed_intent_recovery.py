@@ -956,13 +956,10 @@ def test_scientific_recovery_preserves_loaded_measurement_source_step() -> None:
     assert source.first_path.casefold().startswith("researchers load orthopedic implant fatigue-test measurements")
     assert "load orthopedic implant fatigue-test measurements" in lowered
     assert "compare finite-element simulations against bench-test controls" in lowered
-    for phrase in (
-        "method version",
-        "baseline comparison",
-        "uncertainty or tolerance",
-        "reproducibility evidence",
-    ):
-        assert phrase in lowered
+    assert "track mesh and material parameters" in lowered
+    assert "capture tolerance bands and failure modes" in lowered
+    assert "method version" not in lowered
+    assert "reproducibility evidence" not in lowered
     assert "fatigue-test measurements" in rendered
     assert "finite-element simulations against bench-test controls" in rendered
     assert proposal["semantic_model"]["evaluation_semantics"]["focus"] == "Biomedical Engineering Review Platform"

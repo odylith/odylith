@@ -85,7 +85,7 @@ def _intent_authority(
     markdown_path = repo_root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
     structured_path = markdown_path.with_suffix(".json")
     facts = dict(intent) if isinstance(intent, Mapping) else dict(_proposal()["intent"])
-    evidence = source_text or f"# {facts['title']}\n"
+    evidence = source_text or json.dumps(facts, ensure_ascii=True, sort_keys=True)
     envelope = build_product_intent_envelope(
         facts,
         source_text=evidence,

@@ -213,9 +213,15 @@ def recovered_evaluation_context(*, source: str, title_source: str, first_path_s
 def evaluation_depth_required(value: Any) -> bool:
     tokens = {_word_key(word) for word in clean_text(value).replace("/", " ").split()}
     signals = tokens & _EVALUATION_SIGNAL_TERMS
-    if len(signals) >= 2 and signals & _EVALUATION_STRONG_TERMS:
+    # A model can be an evaluated method, but it can also be a routed provider,
+    # stored artifact, or integration. The word alone cannot select a research
+    # product profile.
+    independent_strong_signals = signals & (_EVALUATION_STRONG_TERMS - {"model"})
+    if len(signals) >= 2 and independent_strong_signals:
         return True
-    return bool(tokens & {"model", "prediction", "predictive", "simulate", "simulation", "simulator", "solver"} and tokens & _EVALUATION_CONTEXT_TERMS)
+    model_actions = tokens & _MODEL_ACTION_TERMS
+    model_objects = tokens & {"model", "prediction", "predictive", "simulate", "simulation", "simulator", "solver"}
+    return bool(model_objects and model_actions)
 
 
 def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -> tuple[str, ...]:
@@ -358,6 +364,11 @@ def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_so
     tokens = {_word_key(word) for word in text.replace("/", " ").split()}
     if not (tokens & {"model", "predict", "prediction", "simulate", "simulation"}):
         return False
+    path_model = first_path_model(first_path_source)
+    if len(path_model.steps) >= 2 and path_model.visible_outcome:
+        # Recovery may complete a sparse evaluation request. It must not replace
+        # an already complete actor-owned path with a researcher-shaped default.
+        return False
     raw_title = clean_text(title_source).strip(" .")
     title = _drop_generic_title_wrapper(raw_title).casefold()
     first_path = clean_text(first_path_source).casefold().strip(" .")
@@ -377,7 +388,7 @@ def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_so
     return bool(
         re.match(r"^(?:a|an|the)?\s*(?:ai[- ]?model|ml[- ]?model|model|simulation|simulator)\b", first_path)
         and re.search(r"\b(?:simulate|simulates|predict|predicts)\b", first_path)
-    ) or bool(evaluation_depth_required(text) and len(first_path_model(first_path_source).steps) >= 2)
+    ) or bool(evaluation_depth_required(text) and len(path_model.steps) >= 2)
 
 
 def _anchor_summary(values: Sequence[str]) -> str:

@@ -307,7 +307,7 @@ def localize_leading_actor_reference(
     if not prefix:
         if sentence_context:
             existing = _first_actor_display_label(actor_rows, project_focus=project_focus)
-            if existing and text.startswith(existing):
+            if existing and text[: len(existing)].casefold() == existing.casefold():
                 return f"{_sentence_actor_reference(existing)}{text[len(existing):]}"
         return text
     replacement = _first_actor_display_label(actor_rows, project_focus=project_focus) or fallback
@@ -323,6 +323,12 @@ def _sentence_actor_reference(value: str) -> str:
     lowered = [word if _preserve_actor_token_case(word) else word.casefold() for word in words]
     lowered[0] = lowered[0][:1].upper() + lowered[0][1:]
     return " ".join(lowered)
+
+
+def sentence_actor_reference(value: str) -> str:
+    """Return an actor noun phrase suitable for sentence-style product truth."""
+
+    return _sentence_actor_reference(value)
 
 
 def _preserve_actor_token_case(value: str) -> bool:

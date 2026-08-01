@@ -45,7 +45,7 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     PRODUCT_INTENT_LEDGER_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
-    STRUCTURED_SOURCE_FORMATS,
+    TYPED_SOURCE_FORMATS,
 )
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     product_intent_authority_snapshot_hash as _sealed_product_intent_authority_snapshot_hash,
@@ -57,6 +57,12 @@ from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_author
     require_product_intent_authority_structure,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    greenfield_operating_envelope_receipt,
+)
+from odylith.runtime.domain_intelligence.greenfield_typed_source_spans import (
+    append_typed_product_claim_spans,
+)
 
 
 PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
@@ -180,43 +186,67 @@ def build_product_intent_envelope(
     """Build the typed custody record trusted by pre-confirm compilers."""
 
     facts = product_facts_payload(intent)
-    sections = confirmed_intent_sections(source_text) if source_text else {}
+    sections = (
+        confirmed_intent_sections(source_text)
+        if source_text and source_format not in TYPED_SOURCE_FORMATS
+        else {}
+    )
     spans, source_span_ids_by_field, product_claim_span_ids_by_field = _source_spans(sections)
-    _add_source_title_span(
-        facts,
+    if source_format not in TYPED_SOURCE_FORMATS:
+        _add_source_title_span(
+            facts,
+            spans=spans,
+            source_span_ids_by_field=source_span_ids_by_field,
+            product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+            source_text=source_text,
+        )
+        _add_source_story_span(
+            facts,
+            spans=spans,
+            source_span_ids_by_field=source_span_ids_by_field,
+            product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+            source_text=source_text,
+        )
+        _add_unheaded_material_source_spans(
+            facts,
+            spans=spans,
+            source_span_ids_by_field=source_span_ids_by_field,
+            product_claim_span_ids_by_field=product_claim_span_ids_by_field,
+            source_sections=sections,
+        )
+    append_typed_product_claim_spans(
+        facts=facts,
         spans=spans,
         source_span_ids_by_field=source_span_ids_by_field,
         product_claim_span_ids_by_field=product_claim_span_ids_by_field,
         source_text=source_text,
+        source_format=source_format,
+        typed_source_formats=TYPED_SOURCE_FORMATS,
     )
-    _add_source_story_span(
+    _add_span_digests(spans)
+    evidence_span_ids = _evidence_span_ids(spans)
+    fields = _field_custody(
         facts,
-        spans=spans,
         source_span_ids_by_field=source_span_ids_by_field,
         product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-        source_text=source_text,
-    )
-    _add_unheaded_material_source_spans(
-        facts,
+        evidence_span_ids=evidence_span_ids,
         spans=spans,
-        source_span_ids_by_field=source_span_ids_by_field,
-        product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-        source_sections=sections,
+        source_format=source_format,
     )
     ignored = [span for span in spans if span.get("classification") == "ignored_instruction"]
     supporting = [span for span in spans if span.get("classification") == "supporting_evidence"]
     source_sha256 = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest() if source_text else ""
+    operating_envelope = greenfield_operating_envelope_receipt(
+        facts=facts,
+        source_format=source_format or "unknown",
+        source_size_bytes=len(str(source_text or "").encode("utf-8")),
+    )
     return {
         "schema_version": PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
         "product_facts": facts,
         "custody_ledger": {
             "version": PRODUCT_INTENT_LEDGER_VERSION,
-            "fields": _field_custody(
-                facts,
-                source_span_ids_by_field=source_span_ids_by_field,
-                product_claim_span_ids_by_field=product_claim_span_ids_by_field,
-                source_format=source_format,
-            ),
+            "fields": fields,
             "ignored_instructions": ignored,
             "supporting_evidence": supporting,
         },
@@ -226,7 +256,8 @@ def build_product_intent_envelope(
             "source_sha256": source_sha256,
             "spans": spans,
         },
-        "materiality_gate": _materiality_gate(facts),
+        "materiality_gate": _materiality_gate(facts, fields=fields),
+        "operating_envelope": operating_envelope,
         "decision_record": {
             "decision": "confirmed_intent_accepted",
             "fact_authority": "product_facts",
@@ -249,6 +280,9 @@ def product_intent_authority_from_envelope(
     decision_record = envelope.get("decision_record") if isinstance(envelope.get("decision_record"), Mapping) else {}
     materiality_gate = envelope.get("materiality_gate") if isinstance(envelope.get("materiality_gate"), Mapping) else {}
     fields = custody_ledger.get("fields") if isinstance(custody_ledger.get("fields"), Mapping) else {}
+    operating_envelope = (
+        envelope.get("operating_envelope") if isinstance(envelope.get("operating_envelope"), Mapping) else {}
+    )
     material_fields: dict[str, dict[str, Any]] = {}
     for key in MATERIAL_FACT_KEYS:
         field = fields.get(key) if isinstance(fields.get(key), Mapping) else {}
@@ -256,8 +290,10 @@ def product_intent_authority_from_envelope(
             "custody_state": clean_markdown_text(field.get("custody_state")),
             "derivation": clean_markdown_text(field.get("derivation")),
             "confidence": clean_markdown_text(field.get("confidence")),
+            "entailment_relationship": clean_markdown_text(field.get("entailment_relationship")),
             "source_span_ids": confirmed_text_values(field.get("source_span_ids")),
             "product_claim_span_ids": confirmed_text_values(field.get("product_claim_span_ids")),
+            "source_span_refs": _authority_span_refs(field.get("source_span_refs")),
         }
     material_custody_sha256 = product_intent_material_custody_hash(material_fields)
     authority = {
@@ -276,6 +312,7 @@ def product_intent_authority_from_envelope(
         "materiality_status": clean_markdown_text(materiality_gate.get("status")),
         "blocked_material_fields": confirmed_text_values(materiality_gate.get("blocked_fields")),
         "clarification_policy": clean_markdown_text(materiality_gate.get("clarification_policy")),
+        "operating_envelope": copy.deepcopy(dict(operating_envelope)),
         "material_fields": material_fields,
         "material_custody_sha256": material_custody_sha256,
     }
@@ -292,8 +329,11 @@ def product_intent_authority_from_intent(
 ) -> dict[str, Any]:
     """Build compact intent authority from an accepted in-memory intent mapping."""
 
+    facts = product_facts_payload(intent)
+    if not source_text and source_format in TYPED_SOURCE_FORMATS:
+        source_text = json.dumps(facts, ensure_ascii=True, sort_keys=True)
     envelope = build_product_intent_envelope(
-        product_facts_payload(intent),
+        facts,
         source_text=source_text,
         source_path=source_path,
         source_format=source_format,
@@ -571,20 +611,27 @@ def _field_custody(
     *,
     source_span_ids_by_field: Mapping[str, Sequence[str]],
     product_claim_span_ids_by_field: Mapping[str, Sequence[str]],
+    evidence_span_ids: Sequence[str],
+    spans: Sequence[Mapping[str, Any]],
     source_format: str,
 ) -> dict[str, dict[str, Any]]:
     fields: dict[str, dict[str, Any]] = {}
-    structured_source = source_format in STRUCTURED_SOURCE_FORMATS
+    typed_source = source_format in TYPED_SOURCE_FORMATS
+    span_refs = {str(span.get("span_id") or ""): span for span in spans}
     for key in PRODUCT_FACT_KEYS:
         if key not in facts or not _has_fact_value(facts.get(key)):
             continue
-        source_span_ids = list(source_span_ids_by_field.get(key, ()))
+        direct_source_span_ids = list(source_span_ids_by_field.get(key, ()))
         product_claim_span_ids = list(product_claim_span_ids_by_field.get(key, ()))
         canonical_claim = bool(product_claim_span_ids)
         state = _custody_state(
             key=key,
             span_ids=product_claim_span_ids,
-            structured_source=structured_source,
+            evidence_span_ids=evidence_span_ids,
+            typed_source=typed_source,
+        )
+        source_span_ids = direct_source_span_ids or (
+            list(evidence_span_ids) if state in {"bounded_interpretation", "assumption"} else []
         )
         fields[key] = {
             "custody_state": state,
@@ -594,31 +641,49 @@ def _field_custody(
                 else _derivation_for(
                     state=state,
                     span_ids=product_claim_span_ids,
-                    structured_source=structured_source,
+                    typed_source=typed_source,
                 )
             ),
             "confidence": _confidence_for(state),
+            "entailment_relationship": _entailment_relationship(state, canonical_claim=canonical_claim),
             "source_span_ids": source_span_ids,
             "product_claim_span_ids": product_claim_span_ids,
+            "source_span_refs": [
+                _span_ref(span_refs[span_id])
+                for span_id in source_span_ids
+                if span_id in span_refs
+            ],
         }
     return fields
 
 
-def _custody_state(*, key: str, span_ids: Sequence[str], structured_source: bool) -> str:
+def _custody_state(
+    *,
+    key: str,
+    span_ids: Sequence[str],
+    evidence_span_ids: Sequence[str],
+    typed_source: bool,
+) -> str:
     if key == "assumptions":
         return "assumption"
-    if span_ids or structured_source:
+    if span_ids:
         return "accepted_fact"
+    if evidence_span_ids:
+        return "bounded_interpretation"
+    if typed_source:
+        return "inferred_fact"
     return "inferred_fact"
 
 
-def _derivation_for(*, state: str, span_ids: Sequence[str], structured_source: bool) -> str:
+def _derivation_for(*, state: str, span_ids: Sequence[str], typed_source: bool) -> str:
     if span_ids:
         return "canonical_product_section"
-    if structured_source:
-        return "structured_intent_fact"
     if state == "assumption":
         return "visible_assumption"
+    if state == "bounded_interpretation":
+        return "bounded_interpretation_from_evidence"
+    if typed_source:
+        return "unresolved_typed_source_fact"
     return "normalization_or_completion"
 
 
@@ -627,16 +692,74 @@ def _confidence_for(state: str) -> str:
         return "high"
     if state == "assumption":
         return "visible"
+    if state == "bounded_interpretation":
+        return "review_required"
     return "medium"
 
 
-def _materiality_gate(facts: Mapping[str, Any]) -> dict[str, Any]:
+def _entailment_relationship(state: str, *, canonical_claim: bool) -> str:
+    if state == "accepted_fact":
+        return "direct_product_claim" if canonical_claim else "normalized_product_claim"
+    if state == "bounded_interpretation":
+        return "bounded_interpretation_of"
+    if state == "assumption":
+        return "visible_assumption_from"
+    return "unresolved"
+
+
+def _materiality_gate(
+    facts: Mapping[str, Any],
+    *,
+    fields: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
     missing = [key for key in MATERIAL_FACT_KEYS if not _has_fact_value(facts.get(key))]
+    unresolved = [
+        key
+        for key in MATERIAL_FACT_KEYS
+        if key not in missing
+        and str((fields.get(key) or {}).get("custody_state") or "")
+        not in {"accepted_fact", "bounded_interpretation"}
+    ]
+    blocked = [*missing, *unresolved]
     return {
-        "status": "clarification_required" if missing else "passed",
-        "blocked_fields": missing,
+        "status": "clarification_required" if blocked else "passed",
+        "blocked_fields": blocked,
         "clarification_policy": "block_only_material_unknowns",
     }
+
+
+def _add_span_digests(spans: Sequence[dict[str, Any]]) -> None:
+    for span in spans:
+        text = clean_markdown_text(span.get("text"))
+        span["text_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _evidence_span_ids(spans: Sequence[Mapping[str, Any]]) -> list[str]:
+    return [
+        str(span.get("span_id"))
+        for span in spans
+        if str(span.get("span_id") or "")
+        and span.get("classification") == "supporting_evidence"
+        and not clean_markdown_text(span.get("text")).startswith("<!-- odylith:")
+    ]
+
+
+def _span_ref(span: Mapping[str, Any]) -> dict[str, str]:
+    return {
+        "span_id": clean_markdown_text(span.get("span_id")),
+        "classification": clean_markdown_text(span.get("classification")),
+        "text_sha256": clean_markdown_text(span.get("text_sha256")),
+    }
+
+
+def _authority_span_refs(value: Any) -> list[dict[str, str]]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return []
+    return [
+        _span_ref(row)
+        for row in value
+        if isinstance(row, Mapping)
+    ]
 
 
 def _has_fact_value(value: Any) -> bool:

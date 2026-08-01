@@ -8,11 +8,15 @@ import hmac
 import json
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    require_supported_greenfield_operating_envelope,
+)
+
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v2"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v2"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v1"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v3"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v3"
+PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v2"
 MATERIAL_FACT_KEYS = (
     "product_story",
     "state_object",
@@ -20,16 +24,17 @@ MATERIAL_FACT_KEYS = (
     "proof_boundary",
     "human_actors",
 )
-STRUCTURED_SOURCE_FORMATS = frozenset(
+TYPED_SOURCE_FORMATS = frozenset(
     {
         "compiled_proposal_intent",
         "in_memory_confirmed_intent",
         "legacy_json",
-        "operator_prompt",
-        "operator_prompt_with_edit_evidence",
         "typed_envelope_json",
     }
 )
+# Compatibility export for callers that still use the older name. Raw operator
+# prompts are evidence, never structured product truth.
+STRUCTURED_SOURCE_FORMATS = TYPED_SOURCE_FORMATS
 
 
 def require_sealed_product_intent_authority_bytes(
@@ -59,6 +64,7 @@ def require_product_intent_authority_structure(authority: Mapping[str, Any]) -> 
     if not isinstance(authority, Mapping):
         raise ValueError("ProductCreateTransaction sealed Product Intent authority is malformed")
     _require_exact_authority_fields(authority)
+    _require_operating_envelope(authority.get("operating_envelope"))
     material_fields = authority.get("material_fields")
     if not isinstance(material_fields, Mapping):
         raise ValueError("ProductCreateTransaction sealed Product Intent authority is malformed")
@@ -103,19 +109,37 @@ def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
         raise ValueError("ProductCreateTransaction sealed Product Intent authority still has blocked material fields")
 
 
+def _require_operating_envelope(value: Any) -> None:
+    try:
+        require_supported_greenfield_operating_envelope(value)
+    except ValueError as error:
+        raise ValueError(
+            "ProductCreateTransaction sealed Product Intent authority has an invalid operating envelope"
+        ) from error
+
+
 def _require_material_custody(authority: Mapping[str, Any], material_fields: Mapping[str, Any]) -> None:
-    source_format = authority["source_format"]
     for key in MATERIAL_FACT_KEYS:
         field = material_fields.get(key)
-        if not isinstance(field, Mapping) or field.get("custody_state") != "accepted_fact":
+        if not isinstance(field, Mapping):
             raise ValueError("ProductCreateTransaction sealed Product Intent authority has unresolved material custody")
-        if source_format not in STRUCTURED_SOURCE_FORMATS:
-            if not _is_nonempty_string_sequence(field.get("source_span_ids")):
-                raise ValueError("ProductCreateTransaction sealed Product Intent authority is missing material source custody")
+        state = field.get("custody_state")
+        relationship = field.get("entailment_relationship")
+        if state not in {"accepted_fact", "bounded_interpretation"}:
+            raise ValueError("ProductCreateTransaction sealed Product Intent authority has unresolved material custody")
+        if not _is_nonempty_string_sequence(field.get("source_span_ids")):
+            raise ValueError("ProductCreateTransaction sealed Product Intent authority is missing material source custody")
+        if not _valid_span_refs(field.get("source_span_refs"), field.get("source_span_ids")):
+            raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid material source spans")
+        if state == "accepted_fact":
+            if relationship not in {"direct_product_claim", "normalized_product_claim"}:
+                raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid fact entailment")
             if not _is_nonempty_string_sequence(field.get("product_claim_span_ids")):
                 raise ValueError(
                     "ProductCreateTransaction sealed Product Intent authority is missing material product-claim custody"
                 )
+        elif relationship != "bounded_interpretation_of":
+            raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid interpretation custody")
 
 
 def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:
@@ -135,6 +159,7 @@ def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:
         "materiality_status": authority.get("materiality_status"),
         "blocked_material_fields": authority.get("blocked_material_fields"),
         "clarification_policy": authority.get("clarification_policy"),
+        "operating_envelope": authority.get("operating_envelope"),
         "material_fields": authority.get("material_fields"),
         "material_custody_sha256": authority.get("material_custody_sha256"),
     }
@@ -186,6 +211,22 @@ def _is_nonempty_string_sequence(value: Any) -> bool:
     )
 
 
+def _valid_span_refs(value: Any, span_ids: Any) -> bool:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)) or not value:
+        return False
+    expected_ids = list(span_ids) if _is_nonempty_string_sequence(span_ids) else []
+    actual_ids: list[str] = []
+    for row in value:
+        if not isinstance(row, Mapping):
+            return False
+        span_id = row.get("span_id")
+        digest = row.get("text_sha256")
+        if not _is_nonempty_string(span_id) or not _is_sha256(digest):
+            return False
+        actual_ids.append(span_id)
+    return actual_ids == expected_ids
+
+
 __all__ = [
     "MATERIAL_FACT_KEYS",
     "PRODUCT_INTENT_AUTHORITY_KEY",
@@ -193,6 +234,7 @@ __all__ = [
     "PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION",
     "PRODUCT_INTENT_LEDGER_VERSION",
     "STRUCTURED_SOURCE_FORMATS",
+    "TYPED_SOURCE_FORMATS",
     "product_intent_authority_snapshot_hash",
     "product_intent_material_custody_hash",
     "require_product_intent_authority_structure",

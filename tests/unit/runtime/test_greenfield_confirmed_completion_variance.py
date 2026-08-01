@@ -38,7 +38,7 @@ Proof: A reviewer can reproduce the same accepted or blocked decision from the s
 """,
         prompt="Productize PDE Solver Evaluation Lab from a PRD intent document.",
         repo_root=tmp_path,
-        source_format="in_memory_confirmed_intent",
+        source_format="markdown",
     )
     assert str(confirmed_intent["first_path"]).startswith("An evaluation researcher registers")
     assert str(confirmed_intent["state_object"]).startswith("A solver evaluation case tracks")

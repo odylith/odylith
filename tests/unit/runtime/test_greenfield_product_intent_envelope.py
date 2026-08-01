@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_proposals import load_confir
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 
 
@@ -84,6 +85,38 @@ def test_product_facts_hash_tracks_operational_constraints() -> None:
     constrained = {**baseline, "operational_constraints": ["Pier 7"]}
 
     assert product_facts_hash(baseline) != product_facts_hash(constrained)
+
+
+def test_typed_intent_receipts_require_exact_structured_fact_values() -> None:
+    intent = {
+        "product_story": "Dispatchers need one place to coordinate a service request.",
+        "state_object": "A service request records its owner, status, evidence, and outcome.",
+        "first_path": "A dispatcher opens one request, assigns it, records evidence, and publishes the outcome.",
+        "proof_boundary": "One request can be assigned and read back with its evidence and outcome intact.",
+        "human_actors": ["Dispatcher: assigns requests and reviews outcomes."],
+    }
+    source = json.dumps(intent, ensure_ascii=True, sort_keys=True)
+
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=source,
+        source_format="in_memory_confirmed_intent",
+    )
+    assert envelope["materiality_gate"]["status"] == "passed"
+    for key in ("product_story", "state_object", "first_path", "proof_boundary", "human_actors"):
+        field = envelope["custody_ledger"]["fields"][key]
+        assert field["custody_state"] == "accepted_fact"
+        assert field["source_span_ids"]
+        assert all("typed-source" in span_id for span_id in field["source_span_ids"])
+
+    altered_source = json.dumps({**intent, "state_object": "A different record."}, sort_keys=True)
+    altered = build_product_intent_envelope(
+        intent,
+        source_text=altered_source,
+        source_format="in_memory_confirmed_intent",
+    )
+    assert altered["materiality_gate"]["status"] == "clarification_required"
+    assert "state_object" in altered["materiality_gate"]["blocked_fields"]
 
 
 def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_sections(tmp_path: Path) -> None:
@@ -246,6 +279,41 @@ def test_prompt_hypothesis_compiles_complete_path_before_inline_source_evidence(
     assert "vidstack/player" not in candidate["first_path"]
 
 
+def test_prompt_router_keeps_software_meaning_and_seals_bounded_interpretation_custody(tmp_path: Path) -> None:
+    prompt = (
+        "Build a generic dynamic router that lets an individual software engineer submit one software engineering "
+        "request, decomposes and routes subtasks to appropriate models such as Kimi K3, GLM, Claude, or Codex "
+        "based on complexity and cost, and returns validated runnable Python code plus automated tests."
+    )
+
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Generic Dynamic Router",
+    )
+    runtime = tmp_path / ".odylith/runtime/greenfield"
+    evidence = json.loads((runtime / "candidate-evidence.v1.json").read_text(encoding="utf-8"))
+    rendered = json.dumps(candidate, sort_keys=True).casefold()
+
+    assert "researcher" not in rendered
+    assert "scientific truth" not in rendered
+    assert "baseline comparison" not in rendered
+    assert "individual software engineer" in candidate["first_path"].casefold()
+    assert "validated runnable python code plus automated tests" in candidate["first_path"].casefold()
+
+    material_fields = candidate["product_intent_authority"]["material_fields"]
+    for key in ("product_story", "state_object", "first_path", "proof_boundary", "human_actors"):
+        field = material_fields[key]
+        assert field["custody_state"] == "bounded_interpretation"
+        assert field["entailment_relationship"] == "bounded_interpretation_of"
+        assert field["source_span_ids"]
+        assert field["source_span_refs"]
+        assert field["product_claim_span_ids"] == []
+    assert candidate["product_intent_authority"]["operating_envelope"]["status"] == "supported"
+    assert candidate["product_intent_authority"]["materiality_status"] == "passed"
+    assert evidence["custody_ledger"]["fields"]["first_path"]["custody_state"] == "bounded_interpretation"
+
+
 def test_preconfirm_markdown_artifacts_cannot_promote_candidate_authority(tmp_path: Path) -> None:
     prompt = "Draft a greenfield proposal for a city zoning permit review app."
     materialize_prompt_intent_hypothesis(
@@ -406,7 +474,10 @@ def test_inline_meta_loop_clause_stays_evidence_while_material_fact_keeps_source
     custody = record.envelope["custody_ledger"]["fields"]["first_path"]
 
     assert "smallest version of the whole product" not in record.product_facts["first_path"]
-    assert first_path_spans == [
+    assert [
+        {key: value for key, value in span.items() if key != "text_sha256"}
+        for span in first_path_spans
+    ] == [
         {
             "span_id": "first_path:1.1",
             "section_key": "first_path",
@@ -429,6 +500,10 @@ def test_inline_meta_loop_clause_stays_evidence_while_material_fact_keeps_source
             "text": "reviews the result",
         },
     ]
+    assert all(
+        span["text_sha256"] == hashlib.sha256(span["text"].encode("utf-8")).hexdigest()
+        for span in first_path_spans
+    )
     assert custody["source_span_ids"] == ["first_path:1.1", "first_path:1.2", "first_path:1.3"]
     assert custody["product_claim_span_ids"] == ["first_path:1.1", "first_path:1.3"]
     assert custody["custody_state"] == "accepted_fact"

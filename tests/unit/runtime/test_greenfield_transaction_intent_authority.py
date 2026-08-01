@@ -137,7 +137,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v2"
+    assert persisted["version"] == "odylith.product-intent-authority.v3"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -149,6 +149,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     assert persisted["source_format"] == "markdown"
     assert persisted["materiality_status"] == "passed"
     assert persisted["material_custody_sha256"]
+    assert persisted["operating_envelope"]["status"] == "supported"
     assert persisted["authority_snapshot_sha256"] == product_intent_authority_snapshot_hash(persisted)
     assert persisted["material_fields"]["first_path"]["custody_state"] == "accepted_fact"
     assert payload["transaction_hash"] == transaction.transaction_hash
@@ -216,6 +217,24 @@ def test_product_create_transaction_rejects_accepted_material_fact_without_sourc
     mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
 
     with pytest.raises(ValueError, match="missing material source custody"):
+        _transaction(tmp_path, authority=mutated)
+
+
+def test_product_create_transaction_rejects_material_fact_without_resolvable_span_receipts(tmp_path: Path) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    material_fields = {key: dict(value) for key, value in authority["material_fields"].items()}
+    material_fields["first_path"] = {
+        **material_fields["first_path"],
+        "source_span_refs": [],
+    }
+    mutated = {
+        **authority,
+        "material_fields": material_fields,
+        "material_custody_sha256": _stable_hash(material_fields),
+    }
+    mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
+
+    with pytest.raises(ValueError, match="invalid material source spans"):
         _transaction(tmp_path, authority=mutated)
 
 
@@ -488,7 +507,7 @@ def test_explicit_human_context_overrides_a_nonhuman_parser_actor(tmp_path: Path
 
     assert intent["first_path"]
     assert intent["human_actors"] == [
-        "Port Operations: need the product to compare vessel schedules, berth windows, shore-power availability, "
+            "Port operations: need the product to compare vessel schedules, berth windows, shore-power availability, "
         "emissions evidence, tariff exceptions, and operator signoff before publishing a daily berth plan and keep "
         "the result visible and reviewable"
     ]

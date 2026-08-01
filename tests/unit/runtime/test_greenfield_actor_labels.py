@@ -22,6 +22,12 @@ def test_leading_actor_path_uses_sentence_case_for_an_accepted_role() -> None:
         project_focus="Cooking Robot Controller",
         sentence_context=True,
     ) == "Home cook picks a recipe and sees a safe finished state."
+    assert localize_leading_actor_reference(
+        "City Staff can register one household.",
+        actor_rows=["City staff: registers households."],
+        project_focus="Flood Shelter Intake",
+        sentence_context=True,
+    ) == "City staff can register one household."
 
 
 def test_generic_person_actor_uses_accepted_activity_not_project_fallback() -> None:
