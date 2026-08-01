@@ -71,6 +71,12 @@ def _package_evidence_module():
     return importlib.import_module("greenfield_matrix_package_evidence")
 
 
+def _governed_readback_module():
+    if str(SCRIPTS_ROOT) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_ROOT))
+    return importlib.import_module("greenfield_matrix_governed_readback")
+
+
 def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     module = _module()
 
@@ -1894,6 +1900,17 @@ def test_package_evidence_rejects_stale_release_unexpected_program_and_surface_r
     assert any("Greenfield commit created unexpected Compass program record(s)" in message for message in messages)
     assert any("registry surface payload readback is missing or invalid" in message for message in messages)
     assert any("casebook surface payload readback is missing or invalid" in message for message in messages)
+
+
+def test_governed_readback_rejects_malformed_program_artifacts(tmp_path: Path) -> None:
+    relative = "odylith/radar/source/programs/B-001.execution-waves.v1.json"
+    _write(tmp_path / relative, "{not valid JSON\n")
+
+    module = _governed_readback_module()
+    readback = module.collect_governed_readback(tmp_path)
+
+    assert relative in readback.program_records
+    assert ("engineer", "Greenfield commit created unexpected Compass program record(s)") in module.governed_readback_findings(readback)
 
 
 def test_domain_readback_excludes_accepted_project_source_launch_runtime_text() -> None:

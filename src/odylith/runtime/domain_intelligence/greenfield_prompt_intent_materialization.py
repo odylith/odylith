@@ -269,7 +269,7 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
         edited_first_path
         and first_path_model(edited_first_path).material_action
         and any(
-            has_human_actor_signal(str(row).lstrip("-* ").partition(":")[0])
+            _edited_actor_row_has_human_signal(row)
             for row in edited_actor_rows
         )
     ):
@@ -301,6 +301,14 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     if len(model.steps) >= 3:
         return False
     return prompt_has_material_actor_gap(evidence)
+
+
+def _edited_actor_row_has_human_signal(value: object) -> bool:
+    """Classify the explicit role label without treating its description as identity."""
+
+    label = str(value or "").lstrip("-* ").partition(":")[0]
+    label = re.split(r"\b(?:who|that|which)\b", label, maxsplit=1, flags=re.IGNORECASE)[0].strip()
+    return has_human_actor_signal(label)
 
 
 def _uses_title_only_first_path_hypothesis(*, prompt: str, edit_evidence: str) -> bool:

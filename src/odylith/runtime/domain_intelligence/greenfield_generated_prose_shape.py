@@ -61,6 +61,8 @@ def _gerund_actor_role_finite_action_splice_cached(value: str, allowed_actor_lab
                     continue
                 if _looks_like_title_compound_actor(prefix, normalized_prefix):
                     continue
+                if _gerund_prefix_has_explicit_object(prefix, normalized_prefix):
+                    continue
                 if not _has_actor_role_head(normalized_prefix):
                     continue
                 candidate = " ".join(window[split_index:]).strip(" .")
@@ -121,7 +123,11 @@ def _is_source_owned_actor_label_suffix(prefix: str, allowed_actor_labels: set[s
 
 
 def _token_segments(value: str) -> list[list[str]]:
-    return [tokens for part in re.split(r"[.!?;:,]+", str(value or "")) if (tokens := _word_tokens(part))]
+    return [
+        tokens
+        for part in re.split(r"[.!?;:,]+", str(value or ""))
+        if (tokens := _word_tokens(part))
+    ]
 
 
 def _has_actor_role_head(value: str) -> bool:
@@ -144,6 +150,29 @@ def _looks_like_title_compound_actor(prefix: str, normalized_prefix: str) -> boo
     if changed != [0]:
         return False
     return normalized[-1].casefold() in {"user", "users"} and len(normalized) >= 3
+
+
+def _gerund_prefix_has_explicit_object(prefix: str, normalized_prefix: str) -> bool:
+    """Reject a gerund phrase whose direct object happens to end in a role noun."""
+
+    original = _word_tokens(prefix)
+    normalized = _word_tokens(normalized_prefix)
+    if len(original) != len(normalized) or len(original) < 3:
+        return False
+    changed = [
+        index
+        for index, (raw, repaired) in enumerate(zip(original, normalized))
+        if raw.casefold() != repaired.casefold()
+    ]
+    return changed == [0] and normalized[1].casefold() in {
+        "a",
+        "an",
+        "that",
+        "the",
+        "these",
+        "this",
+        "those",
+    }
 
 
 def _candidate_starts_with_stative_ownership(value: str) -> bool:

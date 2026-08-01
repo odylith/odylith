@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 from dataclasses import replace
 from pathlib import Path
 
@@ -160,6 +161,7 @@ def _run_confirmed_transaction_create(
     compile_output = capsys.readouterr().out
     assert compile_rc == 0, compile_output
     compile_payload = json.loads(compile_output)
+    assert "product_create_transaction" in compile_payload, compile_output
     transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
     create_args = [
         "create",
@@ -824,6 +826,34 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert "backlog" not in payload
     assert "components" not in payload
     assert "diagrams" not in payload
+
+
+@pytest.mark.parametrize("output_name", ["compiled transaction.v1.json", "operator's transaction.v1.json"])
+def test_greenfield_confirmation_command_quotes_transaction_paths(tmp_path, capsys, output_name) -> None:
+    output_path = tmp_path / output_name
+    rc = greenfield_proposals.main(
+        [
+            "compile-transaction",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            (
+                "Build a statistics notebook workspace where analysts upload a dataset, run one reproducible analysis, "
+                "review the output, and save a notebook result with its source data and method."
+            ),
+            "--output",
+            str(output_path),
+            "--format",
+            "json",
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    command = payload["confirmation"]["choices"][0]["commit_command"]
+    arguments = shlex.split(command)
+    assert arguments[5:7] == ["--transaction-file", str(output_path)]
+    assert arguments[7:9] == ["--transaction-hash", payload["product_create_transaction"]["transaction_hash"]]
 
 
 def test_greenfield_cli_compiles_a_complete_reservation_path_without_temp_path_leaks(tmp_path, capsys) -> None:
@@ -1663,10 +1693,7 @@ Internal product systems
 Critical assumptions
 - A single robot cell per controller instance for the first version
 - Recipes are pre-authored structured programs
-
-Ambiguities
-- Software simulation/controller only, or driving real hardware from day one?
-- Target host: embedded device, edge box, or general server?
+- The first release drives real hardware through an edge controller; simulation-only and general-server deployment are non-goals.
 
 Proof boundary
 First version proves load a recipe, run its steps with closed-loop control, hit a safe finished state, and honor an emergency stop.

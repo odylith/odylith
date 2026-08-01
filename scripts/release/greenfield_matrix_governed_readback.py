@@ -112,6 +112,8 @@ def _read_release_events(repo_root: Path) -> dict[str, tuple[Mapping[str, Any], 
 
 
 def _read_program_records(repo_root: Path) -> dict[str, Mapping[str, Any]]:
+    """Return every program JSON artifact; Greenfield must not create any of them."""
+
     root = repo_root / "odylith/radar/source/programs"
     programs: dict[str, Mapping[str, Any]] = {}
     if not root.is_dir():
@@ -120,8 +122,7 @@ def _read_program_records(repo_root: Path) -> dict[str, Mapping[str, Any]]:
         if path.name in NON_ARTIFACT_MARKDOWN_FILES:
             continue
         payload = _read_json_mapping(path)
-        if _program_record_is_valid(payload):
-            programs[str(path.relative_to(repo_root))] = payload
+        programs[str(path.relative_to(repo_root))] = payload
     return programs
 
 
@@ -252,18 +253,6 @@ def _release_event_is_valid(row: Mapping[str, Any]) -> bool:
         and normalize_string(row.get("release_id") or row.get("to_release_id") or row.get("from_release_id"))
         and normalize_string(row.get("workstream_id"))
         and normalize_string(row.get("recorded_at"))
-    )
-
-
-def _program_record_is_valid(payload: Mapping[str, Any]) -> bool:
-    waves = _mapping_rows(payload.get("waves"))
-    if not waves:
-        return False
-    return any(
-        normalize_string(wave.get("wave_id"))
-        and normalize_string(wave.get("label"))
-        and normalize_string(wave.get("summary"))
-        for wave in waves
     )
 
 

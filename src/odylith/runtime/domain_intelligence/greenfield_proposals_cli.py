@@ -6,6 +6,7 @@ import argparse
 from collections.abc import Sequence
 import json
 from pathlib import Path
+import shlex
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -124,7 +125,7 @@ def _transaction_confirmation_payload(
     output_path: str = "",
 ) -> dict[str, Any]:
     summary = transaction.summary()
-    transaction_ref = output_path or "<compiled-transaction.json>"
+    transaction_ref = shlex.quote(output_path or "<compiled-transaction.json>")
     commit_command = (
         "odylith greenfield create --repo-root . "
         f"--transaction-file {transaction_ref} "
