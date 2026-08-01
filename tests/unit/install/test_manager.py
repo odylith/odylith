@@ -72,6 +72,8 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
         in guidance
     )
     assert "CONFIRM commits the shown hash-bound package" in guidance
+    assert "does not parse or generate product content after CONFIRM" in guidance
+    assert "only verifies the sealed receipt" in guidance
     assert "Markdown is a view, never product truth" in guidance
     assert (
         "greenfield create --transaction-file "

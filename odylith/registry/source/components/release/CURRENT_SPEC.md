@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-07-20
+Last updated: 2026-08-01
 
 
 ## Purpose
@@ -604,6 +604,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
+- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
+- **2026-07-31 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 - **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-07-18 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
@@ -612,12 +618,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-18 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-07-18-recovery-proof-reports-compiled-product-intent-facts-instead-of-phase-evidence.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_commit.py`
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-07-18-full-greenfield-matrix-stalls-in-final-installed-recovery-lane.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
-- **2026-07-18 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_corpus_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

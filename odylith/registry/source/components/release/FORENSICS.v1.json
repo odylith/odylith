@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 309,
+    "explicit_event_count": 313,
     "mapped_workstream_evidence_count": 209,
     "recent_path_match_count": 0,
     "spec_history_event_count": 62,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 309
+    "timeline_event_count": 313
   },
   "name": "Release",
   "path_prefixes": [
@@ -45,6 +45,107 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md",
+        "odylith/runtime/source/release-notes/v0.1.15.md",
+        "src/odylith/install/bootstrap_assets.py",
+        "tests/unit/install/test_manager.py",
+        "tests/unit/runtime/test_release_notes.py"
+      ],
+      "confidence": "high",
+      "event_index": 1124,
+      "explicit_components": [
+        "compass",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 5 verifiable artifact references.",
+      "ts_iso": "2026-08-01T11:34:26-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/runtime/test_greenfield_generated_prose_shape.py"
+      ],
+      "confidence": "high",
+      "event_index": 1123,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
+      "ts_iso": "2026-08-01T10:45:11-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+      ],
+      "confidence": "high",
+      "event_index": 1122,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
+      "ts_iso": "2026-08-01T10:03:38-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+      ],
+      "confidence": "high",
+      "event_index": 1121,
+      "explicit_components": [
+        "compass",
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-07-31T15:14:23-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 1,
       "artifacts": [

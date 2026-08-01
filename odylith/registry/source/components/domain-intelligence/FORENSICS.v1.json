@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 516,
-    "mapped_workstream_evidence_count": 428,
+    "explicit_event_count": 520,
+    "mapped_workstream_evidence_count": 429,
     "recent_path_match_count": 0,
     "spec_history_event_count": 262,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 516
+    "timeline_event_count": 520
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,114 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "tests/unit/install/test_greenfield_preconfirm_matrix.py",
+        "tests/unit/runtime/test_greenfield_generated_prose_shape.py"
+      ],
+      "confidence": "high",
+      "event_index": 1123,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
+      "ts_iso": "2026-08-01T10:45:11-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+      ],
+      "confidence": "high",
+      "event_index": 1122,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 4 verifiable artifact references.",
+      "ts_iso": "2026-08-01T10:03:38-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py"
+      ],
+      "confidence": "high",
+      "event_index": 1121,
+      "explicit_components": [
+        "compass",
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-07-31T15:14:23-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-07-30-actor-label-quality-gate-rejected-valid-role-ending-labels.md",
+        "odylith/casebook/bugs/2026-07-30-final-typed-intent-re-seal-discarded-pre-confirm-rescue-evidence.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 1120,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
+      "ts_iso": "2026-07-29T17:27:08-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

@@ -98,6 +98,16 @@ def test_repo_has_authored_release_note_for_current_product_version() -> None:
     assert note.summary
 
 
+def test_v0_1_15_release_note_matches_greenfield_no_program_boundary() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    note_path = repo_root / "odylith" / "runtime" / "source" / "release-notes" / "v0.1.15.md"
+    note_text = note_path.read_text(encoding="utf-8")
+
+    assert "Greenfield onboarding does not create Compass programs or execution waves." in note_text
+    assert "Greenfield output now carries a clearer program shape" not in note_text
+    assert "created release/program/wave state" not in note_text
+
+
 def test_repo_release_note_front_matter_stays_github_yaml_safe() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     notes_roots = (

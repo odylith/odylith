@@ -43,12 +43,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 196,
+    "explicit_event_count": 197,
     "mapped_workstream_evidence_count": 143,
     "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 196
+    "timeline_event_count": 197
   },
   "name": "Odylith Context Engine",
   "path_prefixes": [
@@ -57,6 +57,35 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md",
+        "odylith/runtime/source/release-notes/v0.1.15.md",
+        "src/odylith/install/bootstrap_assets.py",
+        "tests/unit/install/test_manager.py",
+        "tests/unit/runtime/test_release_notes.py"
+      ],
+      "confidence": "high",
+      "event_index": 1124,
+      "explicit_components": [
+        "compass",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "compass",
+        "odylith",
+        "odylith-context-engine",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 5 verifiable artifact references.",
+      "ts_iso": "2026-08-01T11:34:26-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 2,
       "artifacts": [

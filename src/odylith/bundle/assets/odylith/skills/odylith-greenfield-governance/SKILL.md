@@ -60,14 +60,15 @@ mechanism-level learning.
    correctness obligations such as proof checking, reproducibility, units,
    tolerances, derivation review, datasets, independent review, or validation
    fixtures only when they actually fit.
-8. For vague or broad prompts, preserve the project-first and
-   program-formation contract without forcing a fixed bucket: show the parent
-   workstream, child-boundary strategy, wave-to-workstream policy,
+8. For vague or broad prompts, preserve the project-formation contract without
+   forcing a fixed bucket: show the parent workstream, child-boundary strategy,
    provisional release selector, decisive assumptions, customization options,
    and coding-readiness gates before asking the operator to confirm or revise.
-   Do not rush to `start B-***`; confirmed create writes accepted project
-   truth, and coding begins only after the operator accepts the product gates
-   and a child workstream has a technical plan.
+   Greenfield onboarding must not create Compass program or execution-wave
+   records; those remain explicit later planning decisions. Do not rush to
+   `start B-***`; confirmed create writes accepted project truth, and coding
+   begins only after the operator accepts the product gates and a child
+   workstream has a technical plan.
 9. Keep latency low: rely on hash-confirmed `greenfield create
    --transaction-file ... --transaction-hash ... --confirm` for the final
    batched visibility refresh instead of running separate refresh commands
