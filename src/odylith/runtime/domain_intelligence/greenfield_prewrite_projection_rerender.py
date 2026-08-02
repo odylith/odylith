@@ -39,7 +39,6 @@ def rerender_prewrite_package_projections(
     target_root = Path(root).expanduser().resolve()
     package = previous_prewrite_build.package
     backlog_result = package.backlog_result or previous_prewrite_build.backlog_result
-    program_result = package.program_result or {}
     package_proposal = greenfield_apply_prewrite.proposal_with_component_brief_gate(proposal)
     component_preview: Sequence[Mapping[str, Any]] = package.component_registry_preview
     release_target_result = package.release_target_result
@@ -85,7 +84,6 @@ def rerender_prewrite_package_projections(
             greenfield_programs.first_release_workstream_ids(
                 proposal=package_proposal,
                 created_backlog=backlog_result.get("created", ()),
-                program_result=program_result,
             )
         )
         release_target_result = greenfield_apply_prewrite.ensure_release_target(
@@ -120,7 +118,6 @@ def rerender_prewrite_package_projections(
             proposal=package_proposal,
             release_selector=release_selector,
             backlog_result=backlog_result,
-            program_result=program_result,
         )
         component_preview = greenfield_apply_prewrite.remap_prewrite_component_items(
             staged_component_preview,
@@ -132,7 +129,6 @@ def rerender_prewrite_package_projections(
             proposal=package_proposal,
             release_selector=release_selector,
             backlog_result=backlog_result,
-            program_result=program_result,
         )
         updates["component_registry_preview"] = tuple(component_preview)
 
@@ -176,6 +172,7 @@ def rerender_prewrite_package_projections(
     if "accepted_project" in scope:
         updates["accepted_project_preview"] = greenfield_apply_prewrite.preview_accepted_project_memory(
             root=target_root,
+            target_root=target_root,
             proposal=package_proposal,
             backlog_result=backlog_result,
             component_items=component_preview,

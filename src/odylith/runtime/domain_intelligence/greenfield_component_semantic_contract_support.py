@@ -407,8 +407,19 @@ def _replace_casefold(value: str, needle: str, replacement: str) -> str:
             result.append(source[search_from:])
             return "".join(result)
         result.append(source[search_from:index])
-        result.append(replacement)
+        matched = source[index : index + len(needle)]
+        result.append(_replacement_for_surface_case(replacement, matched=matched))
         search_from = index + len(needle)
+
+
+def _replacement_for_surface_case(replacement: str, *, matched: str) -> str:
+    words = re.findall(r"[A-Za-z][A-Za-z0-9]*", matched)
+    if len(words) < 2 or not all(word[:1].isupper() for word in words):
+        return replacement
+    return " ".join(
+        "-".join(part[:1].upper() + part[1:] for part in token.split("-"))
+        for token in replacement.split()
+    )
 
 
 def _proof_family(value: str) -> str:

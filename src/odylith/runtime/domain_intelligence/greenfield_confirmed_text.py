@@ -884,6 +884,12 @@ def restore_source_token_casing(label: str, source: str) -> str:
     return _restore_source_mixed_case_tokens(restore_source_acronym_number_tokens(label, source), source)
 
 
+def preferred_source_casing_tokens(source: str, *, limit: int = 1024) -> tuple[str, ...]:
+    """Return a bounded, source-ordered set of source-owned casing tokens."""
+
+    return _preferred_source_casing_tokens(str(source or ""))[: max(0, limit)]
+
+
 def _restore_source_acronym_number_tokens(label: str, source: str) -> str:
     text = label
     lower_first_mixed = {

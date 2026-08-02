@@ -6,7 +6,6 @@ from pathlib import Path
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
-from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.project_intelligence import assets
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
@@ -109,6 +108,29 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         encoding="utf-8",
     )
     return page_path
+
+
+def _clipped_project_text(page) -> list[str]:  # noqa: ANN001
+    return page.locator(".project-surface").evaluate(
+        """(root) => Array.from(root.querySelectorAll("h1, h2, h3, h4, p, li, td, th, code, strong, span"))
+          .filter((node) => {
+            let current = node;
+            while (current && root.contains(current)) {
+              const style = window.getComputedStyle(current);
+              if (style.display === "none" || style.visibility === "hidden") return false;
+              const clipsX = style.overflowX === "hidden" || style.overflowX === "clip";
+              const clipsY = style.overflowY === "hidden" || style.overflowY === "clip";
+              const lineClamp = Number.parseInt(style.webkitLineClamp || "0", 10);
+              if ((clipsX && current.scrollWidth > current.clientWidth + 1)
+                || (clipsY && current.scrollHeight > current.clientHeight + 1)
+                || lineClamp > 0) return true;
+              current = current.parentElement;
+            }
+            return false;
+          })
+          .map((node) => String(node.innerText || node.textContent || "").trim().slice(0, 120))
+          .filter(Boolean)"""
+    )
 
 
 def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # noqa: ANN001
@@ -215,11 +237,13 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
             const list = node.querySelector(".project-story-records");
             const contract = node.querySelector(".project-story-contract-card p");
             const rows = Array.from(node.querySelectorAll(".project-story-contract-card"));
+            const bodies = rows.map((row) => String(row.querySelector("p")?.innerText || "").trim());
             return {
               narrativeParagraphCount: narrativeParagraphs.length,
               listFontSize: list ? window.getComputedStyle(list).fontSize : "",
               contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
               rowCount: rows.length,
+              distinctBodyCount: new Set(bodies.map((body) => body.toLocaleLowerCase())).size,
               rowLefts: rows.map((row) => Math.round(row.getBoundingClientRect().left)),
               rowTops: rows.map((row) => Math.round(row.getBoundingClientRect().top)),
               firstRowColumns: rows[0] ? window.getComputedStyle(rows[0]).gridTemplateColumns : "",
@@ -231,10 +255,13 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["listFontSize"] == ""
     assert story_layout["contractFontSize"] == "14px"
     assert story_layout["rowCount"] == 5
+    assert story_layout["distinctBodyCount"] == 5
     assert len(set(story_layout["rowLefts"])) == 1
     assert story_layout["rowTops"] == sorted(story_layout["rowTops"])
     assert story_layout["firstRowColumns"] != ""
     assert int(story_layout["scrollDelta"]) <= 4
+
+    assert _clipped_project_text(page) == []
 
 
 def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, compact: bool) -> None:  # noqa: ANN001
@@ -259,3 +286,20 @@ def test_project_tab_renders_accepted_greenfield_story_without_broken_layout(tmp
 
 def test_project_tab_renders_accepted_greenfield_story_in_compact_browser(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
     _run_greenfield_project_tab_browser_check(tmp_path, monkeypatch, compact=True)
+
+
+def test_project_tab_clipping_probe_detects_a_clipping_parent(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    _write_greenfield_project_page(tmp_path, monkeypatch)
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            context = browser.new_context(viewport={"width": 430, "height": 932})
+            page, _console_errors, _page_errors, _failed_requests, _bad_responses = _new_page(context)
+            try:
+                response = page.goto(base_url + "/index.html", wait_until="domcontentloaded")
+                assert response is not None and response.ok
+                card = page.locator(".project-story-contract-card").first
+                card.evaluate("(node) => { node.style.maxHeight = '24px'; node.style.overflow = 'hidden'; }")
+
+                assert _clipped_project_text(page)
+            finally:
+                context.close()

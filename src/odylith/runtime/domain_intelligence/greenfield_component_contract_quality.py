@@ -32,6 +32,7 @@ CONTRACT_KEYS = (
     "downstream_consumers",
     "unique_failure",
 )
+_INTERNAL_PROSE_ROOTS = frozenset({"artifact_plan_patch_ledger", "semantic_patch_ledger"})
 
 _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
@@ -389,7 +390,8 @@ def _text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, 
 
 def _is_path_excluded(path: str) -> bool:
     lowered = path.casefold()
-    return any(
+    root = lowered.split(".", 1)[0]
+    return root in _INTERNAL_PROSE_ROOTS or any(
         lowered.endswith(suffix)
         for suffix in (
             "_id",

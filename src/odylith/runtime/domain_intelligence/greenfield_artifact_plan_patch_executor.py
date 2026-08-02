@@ -614,11 +614,12 @@ def _tail_without_row_index(path: Sequence[str]) -> str:
 
 
 def _row_index_from_path(path: str) -> int | None:
-    marker = "["
-    if marker not in path:
-        return None
-    tail = path.split(marker, 1)[1].split("]", 1)[0]
-    return _int_or_none(tail)
+    cleaned = normalize_string(path)
+    if "[" in cleaned:
+        tail = cleaned.split("[", 1)[1].split("]", 1)[0]
+        return _int_or_none(tail)
+    parts = tuple(part for part in cleaned.split(".") if part)
+    return _int_or_none(parts[1]) if len(parts) > 1 else None
 
 
 def _int_or_none(value: Any) -> int | None:

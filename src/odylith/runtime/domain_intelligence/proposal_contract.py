@@ -19,7 +19,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "validation_gate",
-        "activation": "Adjudicate workstreams, component specs, architecture diagrams, waves, release targeting, and proof topology before source truth changes.",
+        "activation": "Adjudicate workstreams, component specs, architecture diagrams, release targeting, and proof topology before source truth changes.",
     },
     {
         "layer": "intervention_engine",
@@ -51,7 +51,7 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "memory_substrate",
-        "activation": "Record accepted proposal memory after confirmed writes so future sessions inherit the program context.",
+        "activation": "Record accepted project memory after confirmed writes so future sessions inherit the reviewed context.",
     },
     {
         "layer": "topology",
@@ -59,15 +59,15 @@ GREENFIELD_ENGINE_ACTIVATION_LAYERS: tuple[dict[str, str], ...] = (
     },
     {
         "layer": "taxonomies_fsms",
-        "activation": "Use open-world classification plus explicit proposal, confirmation, release, wave, and apply state transitions.",
+        "activation": "Use open-world classification plus explicit proposal, confirmation, release, commit, and recovery state transitions.",
     },
     {
         "layer": "greenfield_domain_intelligence",
-        "activation": "Let the host narrate product intent while Odylith owns confirmed proposal construction, normalization, deterministic validation, rollback, and apply.",
+        "activation": "Treat host output as evidence while Odylith compiles typed intent, the complete staged package, quality proof, and a hash-bound confirmation before any governed write.",
     },
     {
         "layer": "overall_ux",
-        "activation": "Make the operator sequence clear: draft, review, confirm, apply, render, and recover without hand cleanup.",
+        "activation": "Make the operator sequence clear: compile, review, confirm the sealed hash, commit exact bytes, and open the refreshed project without hand cleanup.",
     },
 )
 
@@ -87,7 +87,6 @@ def build_proposal_contract() -> dict[str, Any]:
             "validation_strategy",
             "project_brief",
             "project_intelligence",
-            "program",
             "release_plan",
             "backlog",
             "components",
@@ -142,8 +141,8 @@ def build_proposal_contract() -> dict[str, Any]:
         },
         "minimum_content": {
             "backlog": (
-                "an explicit parent/umbrella program workstream plus child workstreams when the project has multiple meaningful boundaries; "
-                "every child should carry first-slice, validation, component_focus, and related_diagram_slugs "
+                "a small set of first-release workstreams aligned to meaningful product boundaries; "
+                "every workstream should carry first-slice, validation, component_focus, and related_diagram_slugs "
                 "or enough specific language for Odylith to infer the topology; every row must carry structured "
                 "domain_intelligence covering intent, scope, ontology, state, operators, constraints, source of truth, "
                 "evidence, assumptions, topology, invariants, risks, validation, artifacts, authority, owners, memory, "
@@ -159,7 +158,6 @@ def build_proposal_contract() -> dict[str, Any]:
                 "domain-specific set; each diagram must name related components and workstream/backlog focus, "
                 "and flowcharts must use subtle diagram-internal colors plus wrapped labels"
             ),
-            "program": "wave plan with goals, validation gates, component focus, and evidence tier",
             "project_brief": (
                 "a project-first blueprint with customization options, pre-coding checkpoints, coding readiness gates, "
                 "and host-independent commands; it must make clear that confirmed create accepts project direction before "
@@ -171,9 +169,9 @@ def build_proposal_contract() -> dict[str, Any]:
                 "artifacts, owners, execution memory, metrics, change rules, invalidation rules, conflict rules, and transfer priors before coding"
             ),
             "implementation_runway": (
-                "post-apply handoff that names the project parent, first wave, release target, direction choices, "
-                "coding-readiness gates, eventual first child workstream, proof gates, repo-native validation "
-                "expectations, and dashboard surfaces to inspect before coding or advancing waves"
+                "post-commit handoff that names the first release target, direction choices, coding-readiness gates, "
+                "first implementation workstream, proof gates, repo-native validation expectations, and dashboard "
+                "surfaces to inspect before coding"
             ),
             "release_plan": (
                 "provisional release selector, first-target workstreams, stages, milestones, and promotion criteria; "
@@ -184,8 +182,8 @@ def build_proposal_contract() -> dict[str, Any]:
                 "operational risk posture; keep it concrete and proportional to the project"
             ),
             "validation_gate": (
-                "apply runs a deterministic proposal validation gate before writes; proposals fail if workstreams, components, "
-                "diagrams, program waves, or release targeting do not form a coherent topology"
+                "the pre-confirm compiler runs a deterministic proposal validation gate; proposals fail if workstreams, "
+                "components, diagrams, or release targeting do not form a coherent topology"
             ),
         },
         "quality_bar": [
@@ -203,7 +201,7 @@ def build_proposal_contract() -> dict[str, Any]:
             ),
             "For sequenceDiagram mermaid_source, keep message text parser-safe: use words instead of semicolons in arrow labels.",
             (
-                "Child workstreams must not be title-only tickets; include concrete first-slice proof, impacted "
+                "Workstreams must not be title-only tickets; include concrete first-slice proof, impacted "
                 "candidate components, topology/dependency hints, and validation gates."
             ),
             (
@@ -228,14 +226,14 @@ def build_proposal_contract() -> dict[str, Any]:
                 "For regulated or safety-sensitive domains, name the compliance or review posture explicitly "
                 "instead of hiding it in generic risk language."
             ),
-            "For simple projects, keep the plan small; for complex projects, form waves and release gates.",
+            "Keep the first release small even for complex projects; defer later sequencing until the operator expands scope.",
             (
                 "Default the first greenfield release target to exactly 0.0.1; do not prefix it with the project "
-                "name, wave name, or any other words."
+                "name or any other words."
             ),
             (
-                "Name the first release target workstreams from the first wave so the progress view can show "
-                "a concrete release lane without pretending every child belongs to the first release."
+                "Name the first release target workstreams from the accepted first path so the progress view can show "
+                "a concrete release lane without pretending every possible workstream belongs to the first release."
             ),
             (
                 "Greenfield UX is project-first: do not push the operator straight into coding. The proposal must "
@@ -243,22 +241,17 @@ def build_proposal_contract() -> dict[str, Any]:
                 "that work the same from CLI, Codex, and Claude Code."
             ),
             (
-                "Make the proposal easy to operate: name the program, waves, release selector, first target "
-                "workstreams, impacted components, diagrams, and proof gates in plain language."
+                "Make the proposal easy to operate: name the release selector, first target workstreams, impacted "
+                "components, diagrams, and proof gates in plain language."
             ),
             (
-                "Make the post-apply sequence explicit: which project brief to review first, which choices can be "
-                "customized, when the eventual first child workstream may start, what proof must pass before the next "
-                "wave, and which surfaces the operator should open to verify the program."
+                "Make the post-commit sequence explicit: which project brief to review first, which choices can be "
+                "customized, when the first implementation workstream may start, what proof must pass before scope "
+                "expands, and which surfaces the operator should open to verify the accepted package."
             ),
             (
-                "Candidate component specs must carry an implementation runway: first child workstream, wave, release, "
-                "first coding slice, definition of done, and verification commands. The umbrella parent is context, "
-                "not the first coding anchor."
-            ),
-            (
-                "Never let the first child workstream masquerade as the program parent; use WS-00 or a clearly "
-                "titled umbrella such as `Govern <Project>` for the parent and WS-01+ for implementation children."
+                "Candidate component specs must carry an implementation runway: first workstream, release, first coding "
+                "slice, definition of done, and verification commands."
             ),
             (
                 "Carry the engine activation layers: Context, Execution, Validation Gate, Intervention, Governance, "
@@ -266,7 +259,7 @@ def build_proposal_contract() -> dict[str, Any]:
                 "Taxonomies/FSMs, Greenfield Domain Intelligence, and Overall UX."
             ),
             (
-                "Expect a validation gate: child workstreams need component and diagram references, components need "
+                "Expect a validation gate: workstreams need component and diagram references, components need "
                 "boundary/interface/dependency/proof expectations, and diagrams need workstream plus component traceability."
             ),
         ],

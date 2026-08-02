@@ -545,7 +545,7 @@ def test_patchset_repair_skips_full_completion_for_scoped_artifact_plan_patch(
     assert application["rerender_scope"] == "affected_projections"
 
 
-def test_patchset_repair_routes_program_patch_to_full_prewrite(
+def test_patchset_repair_routes_radar_patch_to_full_prewrite(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
@@ -577,7 +577,7 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
             semantic_model=True,
             artifact_counts={},
             tribunal_status="passed",
-            issues=("program wave plan needs restaging",),
+            issues=("backlog product view needs restaging",),
         ),
         issues=(),
         review_report={"version": "odylith.greenfield.preconfirm.review_report.v1"},
@@ -585,15 +585,15 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
             "version": "odylith.greenfield.preconfirm.patchset_request.v1",
             "operations": [
                 {
-                    "operation_id": "GF-PATCH-PROGRAM",
+                    "operation_id": "GF-PATCH-RADAR",
                     "target_layer": "artifact_plan",
-                    "target_path": "program.waves",
-                    "projection_kind": "program",
-                    "semantic_node_id": "ArtifactPlanIR.program",
-                    "issue_code": "program_shape_drift",
+                    "target_path": "backlog.0.product_view",
+                    "projection_kind": "radar",
+                    "semantic_node_id": "ArtifactPlanIR.backlog",
+                    "issue_code": "product_view_drift",
                     "replacement_fact": {
-                        "path": "program.waves",
-                        "value": [{"wave_id": "W1", "goal": "Prove the governed acceptance path."}],
+                        "path": "backlog.0.product_view",
+                        "value": "Prove the governed acceptance path.",
                     },
                 }
             ],
@@ -605,22 +605,22 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
     )
 
     repaired = greenfield_preconfirm_patch_apply.apply_greenfield_patchset_repairs(
-        {"program": {"waves": []}},
+        {"backlog": [{"product_view": "Old product view."}]},
         release_selector="0.0.1",
         repair_context=context,
     )
 
     assert calls == []
-    assert repaired["program"]["waves"] == [{"wave_id": "W1", "goal": "Prove the governed acceptance path."}]
+    assert repaired["backlog"][0]["product_view"] == "Prove the governed acceptance path."
     application = repaired["preconfirm_patch_application_ledger"][-1]
-    assert application["affected_projections"] == ("program",)
+    assert application["affected_projections"] == ("radar",)
     assert application["rerender_projections"] == (
-        "program",
+        "radar",
+        "project_brief",
         "accepted_project",
         "project_dashboard",
         "compass",
         "next_steps",
-        "release",
     )
     assert application["full_prewrite_required"] is True
     assert application["rerender_scope"] == "full_prewrite"

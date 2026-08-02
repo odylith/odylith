@@ -972,7 +972,7 @@ This section captures synchronized requirement and contract signals derived from
   the accepted request says the product lets, helps, enables, or allows an actor
   to act. Project brief clipping now removes dangling terminal verbs after
   accepted-sentence shortening. Release-matrix package evidence now parses
-  persisted release catalogs/events, program wave records, Compass source/runtime
+  persisted release catalogs/events, Radar and Registry records, Compass source/runtime
   records, generated surface payload globals, and persisted source-launch
   readback before scoring. Omitted browser proof is a distinct premium blocker,
   not a semantic/copy finding. Source proof passed focused matrix, leakage,
@@ -1598,8 +1598,14 @@ This section captures synchronized requirement and contract signals derived from
 - `proposal_normalization.py` owns compatibility normalization for reasonable
   host-authored proposal shapes before strict validation. It may repair field
   spelling, release-plan shape, proof-field aliases, generic diagram
-  slugs, Mermaid sequence message punctuation, and missing umbrella program
-  parents, but it must not invent source-backed implementation evidence.
+  slugs, and Mermaid sequence message punctuation, but it must not invent
+  source-backed implementation evidence or synthesize program/wave structure.
+- `greenfield_canonical_meaning.py` owns source-grounded semantic slots shared
+  by public projections. Problem, first path, product boundary, owned
+  capabilities, proof, visible result, and component contracts must remain
+  complete and distinct. Renderers must not reconstruct missing meaning, reuse
+  one completion sentence across unrelated slots, or clip accepted sentences
+  to satisfy presentation limits.
 - `greenfield_repository_write_set.py` owns the exact pre-confirm repository
   mutation: approved managed paths, before/after tree fingerprints, file bytes,
   modes, file deletions, empty-directory creation/deletion, symlink refusal,
@@ -1611,8 +1617,9 @@ This section captures synchronized requirement and contract signals derived from
 - `greenfield_transaction.py` owns retry-safe rollback for failed confirmed
   create commits. It snapshots the sealed write set's non-overlapping affected
   paths before the first write, restores them on exceptions and graceful
-  SIGINT/SIGTERM interruption, and preserves its recovery snapshot when
-  rollback fails.
+  SIGINT/SIGTERM interruption, validates a durable manifest of every present or
+  missing affected path before restore, validates restored readback, and
+  preserves its recovery snapshot when rollback fails.
 - `proposal_rendering.py` owns operator-facing text so proposal compilation,
   planning, and presentation stay decoupled.
 - Default `greenfield propose` text is a no-write Product Intent Confirmation
@@ -1803,7 +1810,7 @@ This section captures synchronized requirement and contract signals derived from
   refresh after artifact-plan-only PatchSet repair. It may refresh project
   brief, Registry, Atlas, accepted-project, Compass, next-step, and release
   preview fields from the existing prewrite package and explicit projection
-  dependency scope. It must not restage Radar/program outputs or imply semantic
+  dependency scope. It must not restage Radar outputs or imply semantic
   scoped rerender when `greenfield_artifact_plan.py` marks full prewrite or
   semantic completion as required.
 - `greenfield_artifact_plan.py` owns the shared `ArtifactPlanIR` projection
@@ -1814,8 +1821,8 @@ This section captures synchronized requirement and contract signals derived from
   emission, artifact-plan execution, scoped prewrite rerender, and package
   repair may call this owner, but they must not reintroduce private projection
   maps, surface-name fallback tables, or renderer-specific routing rules.
-  Projection canonicalization must not collapse `program` into `release` before
-  full-prewrite policy runs, release-scope dependencies must include Compass
+  Legacy `program` input is compatibility evidence only and must not become a
+  Greenfield artifact projection. Release-scope dependencies must include Compass
   because release assignment feeds the Compass acceptance preview, and envelope
   paths such as `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` must
   be normalized structurally before projection lookup rather than by prose
@@ -2268,12 +2275,10 @@ This section captures synchronized requirement and contract signals derived from
   proposal fields must use `greenfield_text.word_count`. `proposal_validation.py`
   may own minimum thresholds and issue copy, but it must not reintroduce
   `_meaningful_word_count` or local raw word-count regexes.
-- Program wave-to-workstream matching must use
-  `greenfield_domain_term_index.ordered_terms` with program-owned stopwords and
-  a three-character minimum. `greenfield_programs.py` may own explicit ref
-  resolution, wave fallback order, release selector helpers, and execution-wave
-  document shape, but it must not reintroduce local `re.findall` token loops for
-  wave/backlog matching.
+- `greenfield_programs.py` is limited to first-release selector and backlog
+  targeting compatibility. Greenfield must not create, materialize, expose, or
+  require execution-wave programs in its proposal, sealed package, commit
+  result, Compass projection, or first-time-user handoff.
 - Registry contract field visible-word extraction for status-only fragments and
   ranked contract phrases must use `greenfield_text.visible_words`.
   `greenfield_component_contract_fields.py` may own shell-artifact rejection,
@@ -2284,8 +2289,8 @@ This section captures synchronized requirement and contract signals derived from
   proposals whose child workstreams lack component/diagram/dependency/proof
   topology, whose components lack boundary/interface/dependency/proof
   expectations, whose diagrams do not connect to backlog and Registry
-  components, or whose release/program structure cannot make Compass visibly
-  useful.
+  components, or whose release and project handoff cannot make Compass visibly
+  useful. Program/wave structure is not a Greenfield quality requirement.
 - Confirmed generated-artifact substance checks must stay in
   `proposal_tribunal_substance.py`. `proposal_tribunal.py` may call
   `check_confirmed_artifact_substance`, but it must not re-own confirmed Radar
@@ -2310,9 +2315,9 @@ This section captures synchronized requirement and contract signals derived from
   path text, or a local `shell_quote` helper. Command quoting belongs in
   `greenfield_command_text.py`.
 - Apply-ready proposal output must include observed source posture, user intent,
-  Odylith assumptions, backlog candidates, program formation, program waves,
-  release plan, planned Registry components, proposal draft Atlas Mermaid sources,
-  validation strategy, risks, open questions, exact apply commands, and
+  Odylith assumptions, backlog candidates, release plan, planned Registry
+  components, proposal draft Atlas Mermaid sources, validation strategy, risks,
+  open questions, exact apply commands, and
   domain-proportional security, privacy, compliance, abuse, accessibility,
   data-retention, and operational risk posture.
 - Greenfield backlog rows must carry structured `domain_intelligence` before
@@ -2332,9 +2337,9 @@ This section captures synchronized requirement and contract signals derived from
   contains historical bug, plan, or test fixtures with matching poison tokens.
 - Greenfield workstream Domain Intelligence must remain bespoke and
   non-repetitive. Ontology labels are unique inside each workstream; umbrella
-  workstreams use program/control-surface vocabulary rather than repeating child
-  implementation terms; generated ownership prose must not contain malformed
-  phrases such as `owns Own ...`.
+  project workstreams use project-boundary vocabulary rather than repeating
+  child implementation terms; generated ownership prose must not contain
+  malformed phrases such as `owns Own ...`.
 - Greenfield proposal risks must be domain-specific risk records, not copied
   boilerplate. The accepted risk shape preserves risk class, severity, trigger,
   early-warning signal, and mitigation through proposal text and applied Radar
@@ -2367,41 +2372,29 @@ This section captures synchronized requirement and contract signals derived from
   views.
 - If the operator does not provide a release target for a greenfield proposal,
   the default first release selector is `0.0.1`, not an Odylith product-version
-  alias such as `next`. Accepted proposals with child workstreams should create
-  an umbrella execution-wave program and target the umbrella plus first wave to
-  the first release so Compass can show program/wave/release structure without
-  pretending every future child is ready for the first release.
-- Apply must preserve all host-authored program waves. A weak or missing
-  token-overlap match may choose a deterministic fallback child, but it must not
-  erase the wave or report success with fewer waves than the accepted proposal.
+  alias such as `next`. Accepted proposals target the project workstream and
+  first implementable child workstreams directly; they do not create an
+  execution-wave program.
 - Apply must resolve proposal-local workstream identifiers such as `WS-01` and
-  `WS-IDENTITY-ACCESS` when assigning execution waves, release targets, and
-  traceability. The first child workstream must not become the program parent
-  simply because the host omitted a `WS-00` umbrella row.
+  `WS-IDENTITY-ACCESS` when assigning release targets and traceability.
 - Apply output must hand off the project first, not just artifact counts: it
-  names the program parent, project brief deep link, direction choices,
-  coding-readiness gates, active wave, release target, eventual first child
-  workstream, first validation gates, and verification commands the operator
-  should run before moving to code or the next wave.
+  names the project brief deep link, direction choices, coding-readiness gates,
+  release target, first child workstream, first validation gates, and
+  verification commands the operator should run before moving to code.
 - Greenfield apply must generate an implementation runway, not a governance
-  dead end. The runway includes a first child workstream, first active wave,
-  release target, first coding slice, definition of done, operator sequence, and
-  verification commands. The umbrella parent remains program context and must
-  not become the first component kickoff anchor.
-- Execution-wave source must preserve accepted proposal exit gates and
-  validation text so Compass and Radar can render what closes a wave instead of
-  only showing membership counts.
+  dead end. The runway includes a first child workstream, release target, first
+  coding slice, definition of done, operator sequence, and verification
+  commands.
 - Candidate component specs created from greenfield proposals are component
   dossiers, not project summaries. Project-level posture belongs in the
   project brief and Radar; each Registry spec must stay scoped to that
   component's own boundary, outside-boundary exclusions, collaborators,
   interfaces, failure modes, proof obligations, first source path, and most
   specific child workstream anchor.
-- Apply must run the greenfield Tribunal before any governed write and must
-  perform one final batched dashboard refresh for Radar, Registry, Atlas, and
-  Compass after backlog, program, release, Atlas, Registry, and Compass memory
-  records are written. Do not insert per-artifact refreshes that slow the happy
-  path or expose partial generated surfaces.
+- The pre-confirm compiler must run the Greenfield Tribunal and compile Radar,
+  Registry, Atlas, Compass, Project, and release surface bytes before any
+  governed write. Post-confirm apply writes the exact sealed package and must
+  not invoke dashboard or projection refresh logic.
 - Expert quality lenses are Tribunal-style adjudication records, not free-form
   diagnostics. Each PM, architect, engineer, and domain-expert check must carry
   the stable role, check id, status, evidence, source-map target path,

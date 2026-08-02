@@ -100,20 +100,17 @@ def build_prewrite_completion_package(
             root=prewrite_root,
             stale_ids=staged_backlog_result.get("stale_idea_ids", ()),
         )
-        program_result: dict[str, Any] = {}
         rendered_component_specs = greenfield_apply_components.render_prewrite_component_specs(
             root=prewrite_root,
             proposal=proposal,
             release_selector=release_selector,
             backlog_result=staged_backlog_result,
-            program_result=program_result,
         )
         staged_component_registry_preview = greenfield_apply_components.preview_prewrite_components(
             root=prewrite_root,
             proposal=proposal,
             release_selector=release_selector,
             backlog_result=staged_backlog_result,
-            program_result=program_result,
         )
         component_registry_preview = remap_prewrite_component_items(
             staged_component_registry_preview,
@@ -156,7 +153,6 @@ def build_prewrite_completion_package(
         first_release_workstreams = greenfield_programs.first_release_workstream_ids(
             proposal=proposal,
             created_backlog=backlog_result["created"],
-            program_result=program_result,
         )
         preview_release_target = None
         preview_release_assignment = None
@@ -211,6 +207,7 @@ def build_prewrite_completion_package(
         )
         accepted_project_preview = preview_accepted_project_memory(
             root=prewrite_root,
+            target_root=root,
             proposal=package_proposal,
             backlog_result=backlog_result,
             component_items=component_registry_preview,
@@ -308,7 +305,6 @@ def build_prewrite_completion_package(
             compass_memory_preview=compass_memory_preview,
             next_steps_preview=next_steps_preview,
             backlog_result=backlog_result,
-            program_result=program_result,
             traceability_plan=traceability_plan,
             baseline_writes=baseline_writes,
             brand_asset_writes=brand_asset_writes,
@@ -577,6 +573,7 @@ def ensure_release_target(
 def preview_accepted_project_memory(
     *,
     root: Path,
+    target_root: Path,
     proposal: Mapping[str, Any],
     backlog_result: Mapping[str, Any],
     component_items: Sequence[Mapping[str, Any]],
@@ -600,7 +597,7 @@ def preview_accepted_project_memory(
         validation_gate=validation_gate,
         source_launch_context=source_launch_context,
         accepted_at=accepted_at,
-        repo_root=root,
+        repo_root=target_root,
     )
 
 

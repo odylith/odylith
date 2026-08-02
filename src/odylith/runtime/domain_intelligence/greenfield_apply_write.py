@@ -42,7 +42,7 @@ from odylith.runtime.project_intelligence import builder as project_intelligence
 
 
 def release_assignment_note(*, selector: str) -> str:
-    return f"Target confirmed first-wave greenfield workstream(s) for release `{selector}`."
+    return f"Target confirmed first-release greenfield workstream(s) for release `{selector}`."
 
 
 def write_greenfield_proposal(
@@ -94,14 +94,12 @@ def write_greenfield_proposal(
     greenfield_backlog_commit.write_backlog_files(backlog_result, repo_root=root)
     if release_selector and prewrite_package is not None:
         release_bootstrap = greenfield_release_commit.materialize_compiled_release_target(repo_root=root, release_selector=release_selector, release_target_result=prewrite_package.release_target_result or {})
-    program_result: dict[str, Any] = {}
     first_release_workstreams = (
         [str(item).strip().upper() for item in prewrite_package.release_workstream_ids if str(item).strip()]
         if prewrite_package is not None and prewrite_package.release_workstream_ids
         else greenfield_programs.first_release_workstream_ids(
             proposal=proposal,
             created_backlog=backlog_result["created"],
-            program_result=program_result,
         )
     )
     if release_selector and prewrite_package is not None:
@@ -290,7 +288,6 @@ def write_greenfield_proposal(
             release_selector=release_selector,
             tribunal=tribunal,
             backlog_result=backlog_result,
-            program_result=program_result,
             release_bootstrap=release_bootstrap,
             release_targeting=release_targeting,
             first_release_workstreams=first_release_workstreams,
@@ -385,7 +382,6 @@ def _raise_for_final_package_quality(
     release_selector: str,
     tribunal: Any,
     backlog_result: Mapping[str, Any],
-    program_result: Mapping[str, Any],
     release_bootstrap: Mapping[str, Any] | None,
     release_targeting: Mapping[str, Any] | None,
     first_release_workstreams: Sequence[str],
@@ -421,7 +417,6 @@ def _raise_for_final_package_quality(
         compass_memory_preview=memory_record.get("event") if isinstance(memory_record.get("event"), Mapping) else {},
         next_steps_preview=next_steps,
         backlog_result=backlog_result,
-        program_result=program_result,
         release_target_result=release_bootstrap or {"created": False, "release": {}},
         release_assignment_result=release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
         release_workstream_ids=tuple(str(item) for item in first_release_workstreams if str(item).strip()),

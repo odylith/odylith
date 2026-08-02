@@ -68,6 +68,7 @@ _INFINITIVE_TO_FINITE = {
     "decide": "decides",
     "define": "defines",
     "delete": "deletes",
+    "decompose": "decomposes",
     "derive": "derives",
     "describe": "describes",
     "design": "designs",
@@ -176,6 +177,7 @@ _INFINITIVE_TO_FINITE = {
     "refresh": "refreshes",
     "register": "registers",
     "reject": "rejects",
+    "release": "releases",
     "remove": "removes",
     "report": "reports",
     "request": "requests",
@@ -505,6 +507,15 @@ def action_token_form(value: str) -> str:
     if looks_like_finite_action_token(value):
         return "finite"
     return ""
+
+
+def base_action_verb(value: str) -> str:
+    """Return the canonical base form for a recognized action token."""
+
+    token = _clean_word_token(value)
+    if token in _INFINITIVE_TO_FINITE:
+        return token
+    return _FINITE_TO_BASE.get(token, "")
 
 
 def coordinated_action_form_after_connector(tokens: tuple[str, ...] | list[str], connector_index: int) -> str:

@@ -198,7 +198,6 @@ def _cached_tribunal_result(preview: Mapping[str, Any] | None) -> tuple[str, lis
 def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     issues: list[str] = []
     backlog_result = package.backlog_result if isinstance(package.backlog_result, Mapping) else {}
-    program_result = package.program_result if isinstance(package.program_result, Mapping) else {}
     atlas_sources = package.rendered_atlas_sources if isinstance(package.rendered_atlas_sources, Mapping) else {}
     atlas_catalog_rows = [row for row in package.atlas_catalog_rows if isinstance(row, Mapping)]
     component_preview = [row for row in package.component_registry_preview if isinstance(row, Mapping)]
@@ -307,13 +306,11 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
         issues.append("prewrite package must include Compass memory event preview")
     if compass_preview:
         issues.extend(_compass_memory_preview_issues(package, compass_preview, component_preview))
-    if backlog_result and program_result and not next_steps_preview:
+    if backlog_result and not next_steps_preview:
         issues.append("prewrite package must include operator next-steps preview")
     if next_steps_preview:
         issues.extend(_next_steps_preview_issues(package, next_steps_preview))
     issues.extend(surface_refresh_preview_issues(package.surface_refresh_preview))
-    if program_result and bool(program_result.get("created")) and clean_text(program_result.get("dry_run")).casefold() not in {"true", "1"}:
-        issues.append("prewrite program package must be rendered in dry-run mode before governed writes")
     if package.release_selector and backlog_result and not package.release_workstream_ids:
         issues.append("prewrite release package must resolve first-release workstream ids")
     if package.release_selector:

@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
@@ -208,6 +209,13 @@ def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
         if imperative_action_with_copula_words(words, index):
             return "", ""
         return actor, action
+    words = text.split()
+    for index in range(1, min(5, len(words) - 1) + 1):
+        actor = " ".join(words[:index]).strip(" .")
+        action = " ".join(words[index:]).strip(" .")
+        if not has_human_actor_role_signal(actor) or imperative_action_with_copula_words(words, index):
+            continue
+        return actor, base_action_clause(action).strip(" .")
     return "", ""
 
 

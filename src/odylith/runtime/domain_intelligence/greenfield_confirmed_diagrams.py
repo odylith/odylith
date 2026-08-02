@@ -87,7 +87,7 @@ def confirmed_diagrams(
             "status": "draft",
             "link_state": "atlas_first_draft",
             "components": component_rows,
-            "related_workstream_titles": [titles["program"], titles["workflow"], titles["boundary"]],
+            "related_workstream_titles": [titles["parent"], titles["workflow"], titles["boundary"]],
             "related_components": [str(row["component_id"]) for row in release_components],
             "watch_paths": [],
             "evidence_tier": "user_intent",

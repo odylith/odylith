@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_confirmed_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import canonical_state_object_is_meaningful
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import first_path_has_distinct_outcome
 from odylith.runtime.domain_intelligence.greenfield_first_path_completeness import has_concise_coordinated_first_path
@@ -43,7 +44,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, has_presentation_only_title_marker, material_first_path_action, normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_confirmed_intent_semantic_projections
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_confirmed_proof_boundary_sentence, normalize_visible_result_language as _normalize_visible_result_terms, text_values
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_confirmed_proof_boundary_sentence, normalize_visible_result_language as _normalize_visible_result_terms
 
 
 CORE_FIELD_MIN_WORDS = {"product_story": 28, "state_object": 12, "first_path": 18, "proof_boundary": 18}
@@ -454,7 +455,10 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
             f"{story_head}. It keeps {state_fragment} tied to "
             f"{path_fragment} so the outcome, blockers, and evidence can be explained."
         )
-    if _word_count(state) < CORE_FIELD_MIN_WORDS["state_object"]:
+    if (
+        _word_count(state) < CORE_FIELD_MIN_WORDS["state_object"]
+        and not canonical_state_object_is_meaningful(state)
+    ):
         state_label = _state_label(state, title=title)
         intent["state_object"] = _sentence(
             f"{state_label} records the current status, actor, source input, decision, blocked reason, evidence links, timestamp, and version history for the accepted first path."

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import shlex
 from dataclasses import replace
@@ -32,12 +31,15 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.surfaces import brand_assets
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
-from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
-from tests.unit.runtime.greenfield_proposal_fixtures import _markdown_section
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_preview_fixture
+
+
+@pytest.fixture(autouse=True)
+def _prevent_real_browser_launch(monkeypatch) -> None:
+    monkeypatch.setattr(greenfield_create_cli.webbrowser, "open", lambda *_args, **_kwargs: False)
 
 
 def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
@@ -186,6 +188,36 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
     assert normalize_domain_token("processes") == "process"
     assert normalize_domain_token("statuses") == "status"
     assert normalize_domain_token("readings") == "reading"
+
+
+def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monkeypatch) -> None:
+    navigation = greenfield_create_cli._post_confirm_navigation(tmp_path)
+    opened: list[tuple[str, int]] = []
+    monkeypatch.setattr(
+        greenfield_create_cli.webbrowser,
+        "open",
+        lambda url, new=0: opened.append((url, new)) or True,
+    )
+
+    result = greenfield_create_cli._open_committed_dashboard(navigation)
+
+    expected_url = f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project"
+    assert result == {"status": "opened", "url": expected_url, "reason": ""}
+    assert opened == [(expected_url, 2)]
+
+
+def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypatch) -> None:
+    navigation = greenfield_create_cli._post_confirm_navigation(tmp_path)
+    monkeypatch.setattr(
+        greenfield_create_cli.webbrowser,
+        "open",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("browser unavailable")),
+    )
+
+    result = greenfield_create_cli._open_committed_dashboard(navigation)
+
+    assert result["status"] == "unavailable"
+    assert result["reason"] == "OSError: browser unavailable"
 
 
 def test_greenfield_text_compiles_concrete_prompt_into_transaction_with_assumptions(tmp_path, capsys) -> None:
@@ -479,6 +511,13 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, monkey
         "registry": "odylith/index.html?tab=registry",
         "atlas": "odylith/index.html?tab=atlas",
         "compass": "odylith/index.html?tab=compass&date=live",
+        "dashboard_path": str((tmp_path / "odylith/index.html").resolve()),
+        "project_url": f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project",
+    }
+    assert create_payload["post_confirm_browser"] == {
+        "status": "not_attempted",
+        "reason": "machine_readable_output",
+        "url": f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project",
     }
     assert (tmp_path / "odylith/radar/source").is_dir()
     assert (tmp_path / "odylith/registry/source/components").is_dir()
@@ -880,7 +919,7 @@ def test_greenfield_cli_compiles_a_complete_reservation_path_without_temp_path_l
     assert payload["product_create_transaction"]["quality_status"] == "passed"
     assert payload["transaction_file"] == ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     assert payload["intent_hypothesis"]["human_actors"] == [
-        "Lab Operators: need the product to reserve a calibrated entanglement link for an experiment and keep the result visible and reviewable"
+        "Lab operators: need the product to reserve a calibrated entanglement link for an experiment and keep the result visible and reviewable"
     ]
     assert payload["intent_hypothesis"]["first_path"] == (
         "Lab operators reserve a calibrated entanglement link for an experiment. "
@@ -1022,6 +1061,11 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         "assert_greenfield_completion_ready",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("builder must not own final create readiness")),
     )
+    monkeypatch.setattr(
+        greenfield_create_cli,
+        "_open_committed_dashboard",
+        lambda _navigation: {"status": "unavailable", "reason": "test browser unavailable"},
+    )
 
     rc, out, compile_payload = _run_confirmed_transaction_create(
         repo_root=tmp_path,
@@ -1039,12 +1083,10 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "atlas_sync" not in dashboard_calls[-1]
     assert "Odylith committed the validated Greenfield package." in out
     assert "- validation gate: passed" in out
-    assert "Open the generated governance workspace:" in out
-    assert "- Project: `odylith/index.html?tab=project`" in out
-    assert "- Radar: `odylith/index.html?tab=radar`" in out
-    assert "- Registry: `odylith/index.html?tab=registry`" in out
-    assert "- Atlas: `odylith/index.html?tab=atlas`" in out
-    assert "- Compass: `odylith/index.html?tab=compass&date=live`" in out
+    assert "The package was committed, but Odylith could not open a browser automatically." in out
+    assert f"Open the committed Project dashboard: {(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project" in out
+    assert f"Dashboard file: {(tmp_path / 'odylith/index.html').resolve()}" in out
+    assert "Next: Review the Product Story and first workstream" in out
     assert "no application code has been built" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert (tmp_path / "odylith/runtime/source/accepted-project.v1.json").is_file()

@@ -48,7 +48,7 @@ def test_diagram_proof_reference_uses_an_existing_backlog_workstream() -> None:
     ]
 
     assert _diagram_workstream_titles(rows=rows, proposal=proposal) == {
-        "program": "Govern Commerce Launch System",
+        "parent": "Govern Commerce Launch System",
         "workflow": "Define Storefront Boundary",
         "boundary": "Define Catalog Boundary",
         "proof": "Prepare Catalog Release Proof",

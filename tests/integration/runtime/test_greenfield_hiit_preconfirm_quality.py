@@ -50,7 +50,8 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
         payload["memory"]["event"],
         transaction_package["compass_memory_preview"],
     )
-    _assert_committed_program_matches_transaction(tmp_path, transaction_package["program_result"])
+    assert "program_result" not in transaction_package
+    assert not list((tmp_path / "odylith/radar/source/programs").glob("*.execution-waves.v1.json"))
     _assert_committed_registry_matches_transaction(tmp_path, transaction_package)
     _assert_committed_release_assignment_matches_transaction(
         tmp_path,
@@ -117,15 +118,6 @@ def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> 
     )
     payload = json.loads(capsys.readouterr().out)
     return started, rc, payload, transaction_payload
-
-
-def _assert_committed_program_matches_transaction(tmp_path: Path, program_result: dict) -> None:
-    umbrella_id = str(program_result["umbrella_id"]).strip().upper()
-    program_path = tmp_path / "odylith/radar/source/programs" / f"{umbrella_id}.execution-waves.v1.json"
-    committed = json.loads(program_path.read_text(encoding="utf-8"))
-
-    assert committed["umbrella_id"] == umbrella_id
-    assert committed["waves"] == program_result["waves"]
 
 
 def _assert_committed_atlas_matches_transaction(tmp_path: Path, transaction_package: dict) -> None:

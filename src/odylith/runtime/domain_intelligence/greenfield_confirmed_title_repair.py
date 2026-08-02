@@ -81,13 +81,6 @@ def _existing_project_title_candidate(proposal: Mapping[str, Any], *, current: s
     if isinstance(release_plan, Mapping):
         candidates.extend(_title_candidates_from_text(release_plan.get("label")))
         candidates.extend(_title_candidates_from_text(release_plan.get("strategy")))
-    program = proposal.get("program")
-    if isinstance(program, Mapping):
-        candidates.extend(_title_candidates_from_text(program.get("recommended_first_wave")))
-        blueprint = program.get("blueprint")
-        if isinstance(blueprint, Mapping):
-            candidates.extend(_title_candidates_from_text(blueprint.get("parent_workstream")))
-            candidates.extend(_title_candidates_from_text(blueprint.get("child_workstream_strategy")))
     project_brief = proposal.get("project_brief")
     if isinstance(project_brief, Mapping):
         candidates.extend(_title_candidates_from_text(project_brief.get("purpose")))

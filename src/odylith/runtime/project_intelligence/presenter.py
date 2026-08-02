@@ -10,7 +10,7 @@ from typing import Any
 from odylith.runtime.project_intelligence.deeplinks import deeplink_title_context
 from odylith.runtime.project_intelligence.deeplinks import inline_deeplink_html as _deeplink_html
 from odylith.runtime.project_intelligence.narration import table_columns as _default_table_columns
-from odylith.runtime.project_intelligence.utils import display_text, sentence
+from odylith.runtime.project_intelligence.utils import complete_text, display_text, sentence
 from odylith.runtime.surfaces.dashboard_shell_links import radar_workstream_href
 
 
@@ -219,23 +219,7 @@ def _compact_bullets(items: object, *, limit: int = 4, item_limit: int = 160) ->
 
 
 def _compact_sentence(value: str, *, limit: int) -> str:
-    text = " ".join(str(value or "").split()).strip()
-    if len(text) <= limit:
-        return text
-    for separator in (". ", "; ", ": "):
-        head, sep, _tail = text.partition(separator)
-        if sep and 42 <= len(head) <= limit:
-            return head.rstrip(" ,;:") + ("." if separator == ". " else "")
-    words = text.split()
-    clipped: list[str] = []
-    length = 0
-    for word in words:
-        next_length = length + len(word) + (1 if clipped else 0)
-        if next_length > limit:
-            break
-        clipped.append(word)
-        length = next_length
-    return " ".join(clipped).rstrip(" ,;:") + "."
+    return complete_text(value, limit=limit)
 
 
 def _display_title(value: object) -> str:

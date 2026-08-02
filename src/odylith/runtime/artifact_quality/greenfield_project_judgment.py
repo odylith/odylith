@@ -71,8 +71,46 @@ def greenfield_project_judgment_issues(package: Any) -> list[str]:
     issues.extend(_state_object_predicate_issues(proposal, text))
     issues.extend(_component_summary_clip_issues(proposal, text))
     issues.extend(_scope_boundary_tail_issues(proposal, text))
+    issues.extend(_project_story_repetition_issues(package))
     issues.extend(_accepted_assumption_coverage_issues(proposal, _rendered_artifact_text(package)))
     return unique_text(issues)
+
+
+def _project_story_repetition_issues(package: Any) -> list[str]:
+    preview = _as_mapping(getattr(package, "project_dashboard_preview", None))
+    story = _as_mapping(preview.get("product_story"))
+    cards = [row for row in mapping_rows(story.get("release_contract")) if normalize_string(row.get("body"))]
+    signatures = [
+        (
+            normalize_string(row.get("label")) or f"card {index + 1}",
+            set(
+                ordered_terms(
+                    normalize_string(row.get("body")),
+                    stopwords=_TERM_STOPWORDS,
+                    minimum=4,
+                    stem_ing=True,
+                )
+            ),
+        )
+        for index, row in enumerate(cards)
+    ]
+    for index, (left_label, left_terms) in enumerate(signatures):
+        if len(left_terms) < 8:
+            continue
+        for right_label, right_terms in signatures[index + 1 :]:
+            if len(right_terms) < 8:
+                continue
+            shared = left_terms & right_terms
+            if len(shared) < 8:
+                continue
+            containment = len(shared) / min(len(left_terms), len(right_terms))
+            similarity = len(shared) / len(left_terms | right_terms)
+            if containment >= 0.82 and similarity >= 0.68:
+                return [
+                    "greenfield Project Product Story cards are semantically repetitive: "
+                    f"`{left_label}` and `{right_label}` restate the same user meaning"
+                ]
+    return []
 
 
 def _mixed_case_drift_issues(proposal: Mapping[str, Any], text: str) -> list[str]:
@@ -376,7 +414,6 @@ def _package_text(package: Any) -> str:
         getattr(package, "compass_memory_preview", None),
         getattr(package, "next_steps_preview", None),
         getattr(package, "backlog_result", None),
-        getattr(package, "program_result", None),
         getattr(package, "release_target_result", None),
         getattr(package, "release_assignment_result", None),
     ]
@@ -393,7 +430,6 @@ def _rendered_artifact_text(package: Any) -> str:
         getattr(package, "compass_memory_preview", None),
         getattr(package, "next_steps_preview", None),
         getattr(package, "backlog_result", None),
-        getattr(package, "program_result", None),
         getattr(package, "release_target_result", None),
         getattr(package, "release_assignment_result", None),
     ]

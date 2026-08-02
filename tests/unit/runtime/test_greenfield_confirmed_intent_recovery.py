@@ -65,6 +65,195 @@ def test_prompt_source_recovers_sentence_style_title_and_release_path() -> None:
     assert "greenfield proposal" not in source.first_path
 
 
+def test_prompt_materialization_projects_actor_state_and_responsibilities_from_the_full_path(tmp_path: Path) -> None:
+    prompt = (
+        "Build a generic dynamic router that lets an individual software engineer submit one software engineering "
+        "request, decomposes and routes subtasks to appropriate models based on complexity and cost, and returns "
+        "validated runnable Python code plus automated tests."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Generic Dynamic Router",
+        edit_evidence=(
+            "No change to the first complete path: an individual software engineer submits one software "
+            "engineering request and receives runnable Python code plus automated tests."
+        ),
+    )
+
+    actor_text = " ".join(intent["human_actors"]).casefold()
+    system_text = " ".join(intent["internal_systems"]).casefold()
+    assert "individual software engineer" in actor_text
+    assert "router:" not in actor_text
+    assert "generic dynamic router workspace user" not in actor_text
+    assert "software engineering request" in intent["state_object"].casefold()
+    assert "python code plus automated tests record" not in intent["state_object"].casefold()
+    assert "decomposition" in system_text
+    assert "routing" in system_text
+    assert "intake register" not in system_text
+    assert "review workspace" not in system_text
+    assert "proof ledger" not in system_text
+    assert "the product decomposes and routes" in intent["first_path"].casefold()
+
+
+def test_canonical_meaning_bounds_state_and_preserves_mixed_human_ownership() -> None:
+    intent = confirmation_from_operator_intent(
+        "Build a review workspace that lets a reviewer submit evidence, and a supervisor approves the case.",
+        prefer_product_title=True,
+        as_mapping=True,
+    )
+
+    assert intent["state_object"] == "The primary state object is an evidence record."
+    assert "a supervisor approves the case" in intent["first_path"].casefold()
+    assert "The product approves the case" not in intent["first_path"]
+    system_text = " ".join(intent["internal_systems"]).casefold()
+    assert "records the supervisor decision" in system_text
+    assert "approves the case while" not in system_text
+    assert "source input, current status, owner" not in intent["state_object"]
+
+
+def test_canonical_meaning_keeps_actor_choice_out_of_product_ownership() -> None:
+    intent = confirmation_from_operator_intent(
+        "Build a cooking controller where a cook chooses a recipe and the controller sequences heat.",
+        prefer_product_title=True,
+        as_mapping=True,
+    )
+
+    assert intent["state_object"] == "The primary state object is a recipe."
+    system_text = " ".join(intent["internal_systems"]).casefold()
+    assert "records the cook decision" in system_text
+    assert "chooses a recipe and the controller" not in system_text
+    assert "sequences heat" in system_text
+
+
+def test_canonical_meaning_preserves_an_explicit_generic_user() -> None:
+    intent = confirmation_from_operator_intent(
+        "Build a decision workspace that lets a user submit a case and receive a decision.",
+        prefer_product_title=True,
+        as_mapping=True,
+    )
+
+    assert intent["state_object"] == "The primary state object is a case."
+    assert intent["human_actors"][0].startswith("User:")
+    actor_text = " ".join(intent["human_actors"])
+    assert "Decision user" not in actor_text
+    assert "An user" not in actor_text
+
+
+def test_unchanged_first_path_edit_still_applies_a_visible_result_correction(tmp_path: Path) -> None:
+    prompt = "Build a permit desk where a clerk submits one permit and receives review status."
+    baseline = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Permit Desk",
+    )
+
+    edited = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Permit Desk",
+        edit_evidence=(
+            "No change to the first complete path: a clerk submits one permit and receives review status. "
+            "The visible result should be a signed permit receipt."
+        ),
+    )
+
+    assert edited["first_path"] != baseline["first_path"]
+    assert "signed permit receipt" in edited["first_path"].casefold()
+
+
+def test_unchanged_first_path_edit_preserves_a_bulleted_visible_result_correction(tmp_path: Path) -> None:
+    prompt = "Build a permit desk where a clerk submits one permit and receives review status."
+    baseline = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Permit Desk",
+    )
+
+    edited = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Permit Desk",
+        edit_evidence=(
+            "No change to the first complete path: a clerk submits one permit and receives review status.\n"
+            "- The visible result should be a signed permit receipt."
+        ),
+    )
+
+    assert edited["first_path"] != baseline["first_path"]
+    assert "signed permit receipt" in edited["first_path"].casefold()
+
+
+def test_relative_clause_keeps_shared_subject_actor_actions_owned_by_the_actor() -> None:
+    intent = confirmation_from_operator_intent(
+        "Build a permit desk that lets a clerk submit one permit, review flagged issues, "
+        "and receive a signed permit receipt.",
+        prefer_product_title=True,
+        as_mapping=True,
+    )
+
+    assert intent["first_path"] == (
+        "A clerk can submit one permit, review flagged issues, and receive a signed permit receipt."
+    )
+    assert "the product reviews" not in " ".join(intent["internal_systems"]).casefold()
+
+
+def test_visible_confirmation_uses_the_same_canonical_internal_systems_as_typed_intent() -> None:
+    prompt = (
+        "Build a generic dynamic router that lets an individual software engineer submit one software engineering "
+        "request, decomposes and routes subtasks to appropriate models based on complexity and cost, and returns "
+        "validated runnable Python code plus automated tests."
+    )
+
+    intent = confirmation_from_operator_intent(prompt, prefer_product_title=True, as_mapping=True)
+    rendered = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+
+    assert intent["internal_systems"]
+    assert all(row in rendered for row in intent["internal_systems"])
+    assert "Intake Register" not in rendered
+    assert "Review Workspace" not in rendered
+    assert "Proof Ledger" not in rendered
+
+
+@pytest.mark.parametrize(
+    ("prompt", "actor", "state_term", "forbidden_actor"),
+    (
+        (
+            "Build a field service desk where a technician submits a repair request, a scheduler assigns a visit, "
+            "and the technician receives a confirmed appointment.",
+            "technician",
+            "repair request",
+            "scheduler service",
+        ),
+        (
+            "Build a lesson review tool where a teacher uploads one lesson plan, reviews accessibility findings, "
+            "and receives a revised lesson summary.",
+            "teacher",
+            "lesson plan",
+            "tool",
+        ),
+    ),
+)
+def test_prompt_materialization_keeps_unfamiliar_people_separate_from_product_systems(
+    tmp_path: Path,
+    prompt: str,
+    actor: str,
+    state_term: str,
+    forbidden_actor: str,
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Greenfield Product",
+    )
+
+    actor_text = " ".join(intent["human_actors"]).casefold()
+    assert actor in actor_text
+    assert forbidden_actor not in actor_text
+    assert state_term in intent["state_object"].casefold()
+
+
 def test_thin_wrapper_preserves_original_user_intent_as_product_evidence() -> None:
     prompt = (
         "Create a greenfield product for a decision coach that lets a user describe a difficult choice, "
@@ -77,8 +266,8 @@ def test_thin_wrapper_preserves_original_user_intent_as_product_evidence() -> No
     )
 
     assert intent["title"] == "Decision Coach"
-    assert intent["first_path"].startswith("Decision User can describe a difficult choice")
-    assert intent["human_actors"][0].startswith("Decision User:")
+    assert intent["first_path"].startswith("User can describe a difficult choice")
+    assert intent["human_actors"][0].startswith("User:")
 
 
 def test_prompt_source_does_not_promote_source_metadata_to_a_product_first_path() -> None:
@@ -691,7 +880,9 @@ Commit transaction after hash confirmation: odylith greenfield create --repo-roo
 
     assert intent["title"] == "Orbital Debris Conjunction Review Workspace"
     assert "mission analysts capture predicted close approaches" in intent["first_path"].casefold()
-    assert len(intent["internal_systems"]) == 3
+    assert 2 <= len(intent["internal_systems"]) <= 4
+    assert any("Close Approach" in row and "Intake" in row for row in intent["internal_systems"])
+    assert any("Review" in row for row in intent["internal_systems"])
     assert "Next step" not in rendered
     assert "Confirmed CLI" not in rendered
     assert "visible format contract" not in rendered.casefold()
@@ -1506,7 +1697,9 @@ def test_host_guidance_recovery_keeps_direct_where_prompt_title_instead_of_termi
     assert "supervisors verify tooling" in intent["first_path"].casefold()
     assert "the and restart approval" not in rendered
     assert "And Restart Approval Workspace" not in rendered
-    assert "Factory Line Changeover Readiness Board Intake Register" in rendered
+    assert "tooling record" in intent["state_object"].casefold()
+    assert any("Tooling Workflow Support" in row for row in intent["internal_systems"])
+    assert any("Restart Approval" in row for row in intent["internal_systems"])
     assert greenfield_quality_issues(proposal) == []
 
 
@@ -1549,7 +1742,9 @@ Commit transaction after hash confirmation: odylith greenfield create --repo-roo
 
     assert intent["title"] == "Digestive Health Tracking Notebook"
     assert "record meals, symptoms" in intent["first_path"].casefold()
-    assert len(intent["internal_systems"]) == 3
+    assert len(intent["internal_systems"]) == 2
+    assert any("Meals Recordkeeping" in row for row in intent["internal_systems"])
+    assert any("Result Review" in row for row in intent["internal_systems"])
     assert all("visible format" not in row.casefold() for row in intent["internal_systems"])
     assert "post-confirm repair loop" not in rendered.casefold()
     assert "product intent confirmation needed" not in rendered.casefold()
@@ -1578,10 +1773,11 @@ def test_host_guidance_recovery_preserves_explicit_system_rows_through_completio
     assert intent["human_actors"] == [
         "Research Nurses: need the product to verify participant consent and keep the result visible and reviewable"
     ]
-    assert len(intent["internal_systems"]) == 3
-    assert any("Intake Register" in row for row in intent["internal_systems"])
-    assert any("Review Workspace" in row for row in intent["internal_systems"])
-    assert any("Proof Ledger" in row for row in intent["internal_systems"])
+    assert len(intent["internal_systems"]) == 4
+    assert any("Participant Consent Workflow Support" in row for row in intent["internal_systems"])
+    assert any("Symptom Evidence Intake" in row for row in intent["internal_systems"])
+    assert any("Investigator Safety Review Workflow Support" in row for row in intent["internal_systems"])
+    assert any("Monitoring Report Delivery" in row for row in intent["internal_systems"])
     assert "component responsibility named by the accepted intent" not in rendered
     assert "Release a First-slice Monitoring" not in rendered
     assert "medical diagnosis" in rendered
@@ -1626,7 +1822,7 @@ def test_host_guidance_recovery_nominalizes_actor_led_state_outcomes() -> None:
     intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
     state = intent["state_object"]
 
-    assert state.startswith(("A missing methods record tracks", "A clean audit trail record tracks"))
+    assert state.startswith("The primary state object is a dataset.")
     assert "A Reviewers flag" not in state
     assert "A reviewers flag" not in state
 
@@ -1640,7 +1836,7 @@ def test_host_guidance_recovery_lowercases_generated_state_article_body() -> Non
 
     intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
 
-    assert intent["state_object"].startswith("A safe release status record tracks")
+    assert intent["state_object"].startswith("The primary state object is a tray readiness record.")
     assert "An Only" not in intent["state_object"]
 
 
@@ -1665,7 +1861,7 @@ def test_host_guidance_recovery_handles_broad_product_prompt_without_parser_debr
     assert intent["human_actors"] == [
         "Representative User: needs the product to review cooking robot controller details and keep the result visible and reviewable"
     ]
-    assert intent["state_object"].startswith("A cooking robot controller result record tracks")
+    assert intent["state_object"].startswith("The primary state object is a cooking robot controller result.")
     assert "the cooking robot controller result" in rendered
     assert "A a " not in rendered
     assert "A the " not in rendered
@@ -1804,12 +2000,12 @@ def test_host_guidance_recovery_handles_bare_short_product_noun_phrase() -> None
         "A representative user reviews warehouse slotting details"
     )
     assert len(intent["internal_systems"]) == 3
-    assert intent["internal_systems"][0].startswith("Warehouse Slotting Planner Intake Register ")
-    assert "records source input" in intent["internal_systems"][0]
-    assert intent["internal_systems"][1].startswith("Warehouse Slotting Planner Review Workspace ")
-    assert "presents current state" in intent["internal_systems"][1]
-    assert intent["internal_systems"][2].startswith("Warehouse Slotting Planner Proof Ledger ")
-    assert "replayable evidence" in intent["internal_systems"][2]
+    assert intent["internal_systems"][0].startswith("Warehouse Slotting Details Review ")
+    assert "reviews warehouse slotting details" in intent["internal_systems"][0]
+    assert intent["internal_systems"][1].startswith("Status Recordkeeping ")
+    assert "records the current status" in intent["internal_systems"][1]
+    assert intent["internal_systems"][2].startswith("Warehouse Slotting Result Delivery ")
+    assert "visible result" in intent["internal_systems"][2]
     assert "Recovered Product Workspace" not in rendered
     assert "First Participant" not in rendered
     assert greenfield_quality_issues(proposal) == []
@@ -1934,6 +2130,8 @@ def test_confirmed_recovery_uses_actor_subject_for_public_response_prompt(tmp_pa
     rendered = json.dumps(completed, sort_keys=True)
 
     assert intent["human_actors"][0].startswith("Agency Staff:")
+    assert {row["workstream_type"] for row in completed["backlog"]} == {"standalone"}
+    assert "program_parent" not in rendered
     assert "Public Comment Response Participant" not in rendered
     assert "First Participant" not in rendered
     assert "participant" not in next(

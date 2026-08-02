@@ -64,11 +64,45 @@ Confirm this interpretation to expand it into governed project records. Edit any
     assert intent["title"] == "Quantum Annealing Research Lab"
     assert "QUBO or Ising formulation" in intent["state_object"]
     assert len(intent["internal_systems"]) >= 3
+    assert "D-Wave Leap" in rendered
+    assert "D-Wave Ocean SDK" in rendered
     assert "Program Formation" not in rendered
     assert "Child boundaries after confirmation" not in rendered
     assert "Implementation Notes" not in rendered
     assert "Coding should start" not in rendered
     assert "Confirm this interpretation" not in rendered
+
+
+def test_grounded_program_and_wave_terms_remain_product_evidence() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Coastal Wave Monitoring Program
+
+## Product story
+Ocean engineers need one reviewable workspace for a coastal wave monitoring program.
+
+## State object
+A wave observation record tracks buoy source, wave height, period, quality flag, reviewer note, and version history.
+
+## First complete path
+A program coordinator imports one wave observation, checks its quality flag, records a reviewer note, and publishes an accepted or blocked monitoring result.
+
+## Human actors
+- Program coordinator: owns wave observation intake and review handoff.
+
+## Internal product systems
+- Wave observation ledger for source readings, quality flags, and history.
+- Monitoring review board for notes, accepted results, and blocked results.
+
+## Proof boundary
+Release 0.0.1 succeeds when one program coordinator can review one wave observation and reproduce the accepted or blocked result.
+""",
+        prompt="Build a coastal wave monitoring program.",
+    )
+
+    rendered = json.dumps(intent, sort_keys=True)
+    assert intent["title"] == "Coastal Wave Monitoring Program"
+    assert "program coordinator" in rendered.casefold()
+    assert "wave observation" in rendered.casefold()
 
 
 def test_confirmed_intent_accepts_custom_product_structure_but_quarantines_agent_guidance() -> None:

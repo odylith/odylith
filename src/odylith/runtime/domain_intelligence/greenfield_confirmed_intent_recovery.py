@@ -16,6 +16,10 @@ from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import internal_system_rows_from_first_path
+from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import product_handoff_first_path
+from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import state_object_from_first_path
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import product_intent_source_text
@@ -25,8 +29,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import actor_reference as _actor_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import actor_verb as _actor_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import clean_text as _clean
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import indefinite_phrase as _indefinite_phrase
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import internal_system_rows_from_recovered_title as _internal_system_rows_from_recovered_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import lower_leading_word as _lower_leading_word
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import object_result_phrase as _object_result_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_title as _recovered_title
@@ -142,7 +144,8 @@ _ORGANIZATION_ACTOR_TERMS = frozenset(
     }
 )
 _ACTOR_BOUNDARY_RE = re.compile(
-    r",\s+(?=(?:the|a|an)\s+\S+(?:\s+\S+){0,3}\s+(?:is|are|can|must|will|should|[a-z]+s)\b)",
+    r",\s+(?=(?:(?:and|or|then)\s+)?(?:the|a|an)\s+\S+(?:\s+\S+){0,3}\s+"
+    r"(?:is|are|can|must|will|should|[a-z]+s)\b)",
     flags=re.IGNORECASE,
 )
 _MATERIAL_FRAGMENT_ACTION_WORDS = frozenset(
@@ -264,7 +267,7 @@ def confirmation_from_operator_intent(
     )
     preserve_direct_actor = bool(
         direct_actor_row
-        and _clean(prompt_source.actor).casefold() not in {"individual", "people", "person", "user"}
+        and _clean(prompt_source.actor).casefold() not in {"individual", "people", "person"}
     )
     actor_rows = [
         (
@@ -293,7 +296,11 @@ def confirmation_from_operator_intent(
     force_actor_modal = bool(
         prompt_source.actor
         and prompt_source.command_led
-        and (prompt_actor_is_generic or _actor_matches_product_focus(prompt_source.actor, title=title))
+        and (
+            prompt_actor_is_generic
+            or _actor_matches_product_focus(prompt_source.actor, title=title)
+            or _prompt_actor_requires_modal(prompt_source.actor, first_path_source)
+        )
     )
     actor_words = _words(prompt_source.actor)
     if (
@@ -310,17 +317,16 @@ def confirmation_from_operator_intent(
         force_actor_modal=force_actor_modal,
     )
     first_path = _sentence_start(first_path_inline)
+    if _command_product_owns_following_actions(product_source, actor=prompt_source.actor):
+        first_path = product_handoff_first_path(actor=lead_actor_ref, first_path=first_path_source) or first_path
+        first_path_inline = first_path.rstrip(" .")
     story = _recovered_story_text(
         title=title,
         lead_actor_ref=lead_actor_ref,
         first_path_inline=first_path_inline,
         outcome_object=outcome_object,
     )
-    state_subject = _state_record_subject(outcome)
-    state = (
-        f"{_sentence_start(_indefinite_phrase(state_subject))} record tracks the actor, source input, current status, owner, "
-        "blocker, handoff, evidence, and version history for the first path."
-    )
+    state = state_object_from_first_path(first_path, fallback=title)
     proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
     if evaluation.story:
         story = evaluation.story
@@ -352,6 +358,16 @@ def confirmation_from_operator_intent(
     ambiguities = evaluation.ambiguities
     evidence_requirements = evidence_anchor_phrases(product_source)
     operational_constraints = operational_constraint_phrases(product_source)
+    internal_systems = tuple(
+        evaluation.internal_systems
+        or internal_system_rows_from_first_path(
+            title=title,
+            first_path=first_path,
+            state_object=state,
+            visible_result=outcome,
+            human_actors=actor_rows,
+        )
+    )
     hypothesis: dict[str, object] = {
         "title": title,
         "prompt": raw_source,
@@ -360,7 +376,7 @@ def confirmation_from_operator_intent(
         "first_path": first_path.rstrip(".") + ".",
         "human_actors": tuple(actor_rows),
         "external_systems": (),
-        "internal_systems": tuple(evaluation.internal_systems or tuple(_internal_system_rows_from_recovered_title(title))),
+        "internal_systems": internal_systems,
         "problem": problem,
         "opportunity": f"Prove the smallest complete {title.lower()} path before broader automation expands.",
         "product_view": product_view,
@@ -374,7 +390,7 @@ def confirmation_from_operator_intent(
     if as_mapping:
         return hypothesis
     actor_lines = "\n".join(f"- {row}" for row in actor_rows)
-    system_lines = "\n".join(f"- {row}" for row in (evaluation.internal_systems or tuple(_internal_system_rows_from_recovered_title(title))))
+    system_lines = "\n".join(f"- {row}" for row in internal_systems)
     sections = [
         f"# {title} - Product Intent Confirmation",
         "Product story\n" + story,
@@ -486,6 +502,43 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
             or re.search(r"[.;]", action)
         ),
     )
+
+
+def _prompt_actor_requires_modal(actor: str, first_path: str) -> bool:
+    """Repair a singular actor followed by a source infinitive such as ``lets an engineer submit``."""
+
+    actor_words = _strip_leading_articles(_words(actor))
+    if not actor_words or _looks_plural(actor_words[-1]):
+        return False
+    action = re.sub(
+        rf"^(?:(?:a|an|the)\s+)?{re.escape(_clean(actor).strip(' .'))}\s+",
+        "",
+        _clean(first_path).strip(" ."),
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    first = _words(action)
+    return bool(first and looks_like_base_action_token(first[0]) and not looks_like_finite_action_token(first[0]))
+
+
+def _command_product_owns_following_actions(source: str, *, actor: str) -> bool:
+    actor_text = _clean(actor).strip(" .")
+    if not actor_text:
+        return False
+    match = re.search(
+        rf"\b(?:that|which)\s+(?:allows?|enables?|helps?|lets?)\s+"
+        rf"(?:(?:a|an|the|one)\s+)?{re.escape(actor_text)}\b",
+        _clean(source),
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return False
+    following_clauses = re.split(r"\s*,\s*(?:and\s+)?", _clean(source)[match.end() :])
+    for clause in following_clauses[1:]:
+        first_word = next(iter(_words(clause)), "")
+        if looks_like_finite_action_token(first_word) and not looks_like_base_action_token(first_word):
+            return True
+    return False
 
 
 def _action_has_distinct_sequence(value: str) -> bool:
@@ -1257,7 +1310,11 @@ def _human_actor_row(actor: str, action: str, *, preserve_full_action: bool = Fa
     ):
         return ""
     actor_label = title_case_text(" ".join(actor_words))
-    action_source = action if preserve_full_action else _primary_actor_action_segment(action)
+    action_source = (
+        action
+        if preserve_full_action and _coordinated_actor_boundary_index(action) < 0
+        else _primary_actor_action_segment(action)
+    )
     action_text = _base_actor_action_clause(action_source)
     if _starts_with_relation_word(actor_label) or _starts_with_relation_word(action_text):
         return ""
@@ -1338,13 +1395,31 @@ def _primary_actor_action_segment(value: str) -> str:
     if not text:
         return ""
     text = _ACTOR_BOUNDARY_RE.split(text, maxsplit=1)[0]
+    boundary = _coordinated_actor_boundary_index(text)
+    if boundary >= 0:
+        text = text[:boundary].strip(" .")
     return re.split(r"[;,.]", text, maxsplit=1)[0].strip(" .")
+
+
+def _coordinated_actor_boundary_index(value: str) -> int:
+    text = _clean(value)
+    for match in re.finditer(r"\s+(?:and|or|then)\s+", text, flags=re.IGNORECASE):
+        tail = text[match.end() :].strip(" .")
+        words = _words(tail)
+        if not words:
+            continue
+        for subject_end in range(1, min(5, len(words))):
+            subject = " ".join(words[:subject_end])
+            action = " ".join(words[subject_end:])
+            if has_non_human_actor_signal(subject) or has_human_actor_action_context(subject, action):
+                return match.start()
+    return -1
 
 
 def _looks_like_non_human_actor(value: str) -> bool:
     terms = {term.casefold() for term in label_terms(value)}
     role_terms = terms | {term[:-1] for term in terms if term.endswith("s")}
-    if role_terms & (_HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS):
+    if has_human_actor_role_signal(value) or role_terms & (_HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS):
         return False
     return bool(terms & _NON_HUMAN_ACTOR_TERMS)
 

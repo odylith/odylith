@@ -50,7 +50,7 @@ def test_greenfield_quality_gate_ignores_internal_artifact_plan_patch_ledger() -
         "intent": {"prompt": "build a review workspace"},
         "artifact_plan_patch_ledger": [
             {
-                "rejected_interpretation": "Registry component spec failed before rerender.",
+                "rejected_interpretation": "Registry component spec failed before rerender",
                 "applied_paths": ("components[0].component_contract.produced_outputs",),
             }
         ],
@@ -58,11 +58,13 @@ def test_greenfield_quality_gate_ignores_internal_artifact_plan_patch_ledger() -
         "backlog": [],
     }
 
+    issues = greenfield_quality_issues(proposal)
     assert not [
         issue
-        for issue in greenfield_quality_issues(proposal)
+        for issue in issues
         if "control-plane term `Registry`" in issue
     ]
+    assert not [issue for issue in issues if "artifact_plan_patch_ledger" in issue]
 
 
 def test_greenfield_quality_gate_allows_source_grounded_control_plane_homonym_only_in_domain_context() -> None:
@@ -115,10 +117,6 @@ def test_greenfield_quality_gate_uses_confirmed_sections_for_atlas_review_homony
             "internal_systems": [
                 "Single Cell Perturbation Atlas Review Workspace presents current state and next action.",
             ],
-        },
-        "program": {
-            "blueprint": {"child_workstreams": [workstream]},
-            "waves": [{"workstream_titles": [workstream]}],
         },
         "release_plan": {"target_workstream_titles": [workstream]},
         "backlog": [{"title": workstream}],

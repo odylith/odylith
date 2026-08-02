@@ -254,7 +254,7 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
     )
     if subject_prefix and pronoun_action and _MATERIAL_ACTION_RE.match(pronoun_action.group("verb")):
         return f"{subject_prefix} {_carried_action_verb(subject_prefix, pronoun_action.group('verb'))}{pronoun_action.group('tail')}"
-    if not subject_prefix or _leading_subject_prefix(text):
+    if not subject_prefix or _leading_subject_prefix(text) or _actor_role_subject_action(text):
         return text
     temporal_action = re.match(
         r"^(?P<prefix>(?:at|after|before|during|on|when)\s+[A-Za-z0-9][A-Za-z0-9 '/-]{1,40}?)\s+"
@@ -388,6 +388,9 @@ def _actor_role_subject_action(value: str) -> bool:
         subject = " ".join(words[:index]).strip(" .")
         action = " ".join(words[index:]).strip(" .")
         if not subject or not action:
+            continue
+        subject_words = subject.casefold().split()
+        if subject_words and subject_words[-1] in {"a", "an", "the", "one"}:
             continue
         if not has_actor_role_word(subject):
             continue

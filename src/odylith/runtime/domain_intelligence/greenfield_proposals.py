@@ -25,13 +25,14 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import writ
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_prewrite_projection_rerender
-from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import ProductCreateTransaction
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import build_product_create_transaction
-from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
+from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+    product_create_transaction_to_dict as product_create_transaction_to_dict,
+)
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
@@ -49,7 +50,7 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_transaction_autho
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
-from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
+from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text as format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import assert_greenfield_completion_ready
@@ -341,11 +342,9 @@ def build_greenfield_proposal(
 ) -> dict[str, Any]:
     """Return the governed proposal after Product Intent is confirmed.
 
-    The no-write ``greenfield propose`` command still asks the host to narrate a
-    human Product Intent Confirmation first. After that confirmation, Odylith
-    owns the schema-shaped proposal artifact itself: it builds a prompt-general
-    proposal, normalizes it, validates it, and runs the deterministic proposal
-    gate before any write command sees it.
+    The no-write ``greenfield propose`` command treats prompt and edit text as
+    evidence, compiles the complete validated transaction, and renders its sole
+    confirmation view. A later CONFIRM only commits those sealed bytes.
     """
 
     root = Path(repo_root).expanduser().resolve()
@@ -478,7 +477,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
         if title == parent_title:
             success_metrics.extend(
                 [
-                    "Program waves are captured before implementation starts.",
+                    "The first release workstreams are explicit before implementation starts.",
                     "The provisional release plan is reviewed before release targeting writes occur.",
                 ]
             )
@@ -549,7 +548,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     first = rows[0]
     return argparse.Namespace(
-        workstream_type="umbrella" if len(rows) > 1 else "standalone",
+        workstream_type="standalone",
         problem=str(first.get("problem", "")).strip(),
         customer=str(first.get("customer", "")).strip(),
         opportunity=str(first.get("opportunity", "")).strip(),

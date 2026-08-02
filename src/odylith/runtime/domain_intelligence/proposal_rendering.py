@@ -345,7 +345,7 @@ def _format_governed_proposal_text(
                 "Greenfield UX",
                 f"- mode: {ux.get('mode', 'consumer_greenfield_proposal')}",
                 f"- guardrail: {ux.get('write_guardrail', 'confirm before accepted product writes')}",
-                f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first wave')}",
+                f"- next: {ux.get('next_best_action', 'confirm or revise the proposed first release')}",
             ]
         )
     project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
@@ -374,25 +374,6 @@ def _format_governed_proposal_text(
     if intelligence_lines:
         lines.extend(["", "Workstream domain intelligence"])
         lines.extend(intelligence_lines)
-    program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
-    blueprint = program.get("blueprint", {}) if isinstance(program.get("blueprint"), Mapping) else {}
-    if blueprint:
-        lines.extend(
-            [
-                "",
-                "Program formation",
-                f"- type: {blueprint.get('program_type')}",
-                f"- parent: {blueprint.get('parent_workstream')}",
-                f"- wave policy: {blueprint.get('wave_to_workstream_policy')}",
-                f"- release strategy: {blueprint.get('release_strategy')}",
-            ]
-        )
-    lines.extend(["", "Program waves"])
-    for row in program.get("waves", []) if isinstance(program.get("waves"), list) else []:
-        if isinstance(row, Mapping):
-            wave_id = row.get("wave") or row.get("wave_id") or row.get("id")
-            gate_text = row.get("validation") or row.get("validation_gate") or row.get("exit_gate")
-            lines.append(f"- Wave {wave_id}: {row.get('label') or row.get('name')} - {row.get('goal') or row.get('summary')} Proof: {gate_text}")
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     release_selector = _release_selector(release_plan)
     release_display = greenfield_programs.compact_release_target_label(release_selector)

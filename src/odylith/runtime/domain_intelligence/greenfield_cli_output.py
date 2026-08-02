@@ -14,9 +14,6 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
     print(f"- components: {len(result['components'])}")
     print(f"- diagrams: {len(result['diagrams'])}")
     print("- validation already run: proposal schema, product-quality gate, backlog checks, architecture scaffold, dashboard refresh attempt")
-    program = result.get("program", {})
-    if isinstance(program, Mapping) and bool(program.get("created")):
-        print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
     release_target = result.get("release_target", {})
     if isinstance(release_target, Mapping) and str(release_target.get("release_id", "none")).strip() != "none":
         workstreams = release_target.get("workstream_ids", [])
@@ -125,6 +122,6 @@ def _print_next_steps(next_steps: Mapping[str, Any]) -> None:
             print(f"  - {gate}")
     commands = next_steps.get("verification_commands", [])
     if isinstance(commands, list) and commands:
-        print("- after implementation, verify before next wave:")
+        print("- after implementation, verify before expanding scope:")
         for command in commands[:6]:
             print(f"  - {command}")

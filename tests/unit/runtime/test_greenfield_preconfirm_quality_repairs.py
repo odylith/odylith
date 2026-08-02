@@ -1020,15 +1020,6 @@ def test_greenfield_quality_gate_ignores_apply_result_operational_metadata() -> 
                 "./.odylith/bin/odylith context --repo-root . B-001",
             ]
         },
-        "program": {
-            "execution_engine": {
-                "contract": {
-                    "validation_plan": [
-                        "odylith validate backlog-contract --repo-root .",
-                    ]
-                }
-            }
-        },
     }
 
     assert greenfield_quality_issues(payload) == []

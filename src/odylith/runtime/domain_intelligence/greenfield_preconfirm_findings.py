@@ -555,7 +555,7 @@ def _quality_lens_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
         for check in checks:
             if not isinstance(check, Mapping):
                 continue
-            if clean_text(check.get("status")).casefold() == "passed":
+            if clean_text(check.get("status")).casefold() in {"passed", "not_applicable"}:
                 continue
             check_name = clean_text(check.get("name"))
             repair_owner = quality_lens_repair_owner(check_name)

@@ -582,8 +582,15 @@ def _package_for_quality_report(
         "compass_memory_preview": _compass_preview(proposal),
         "next_steps_preview": next_steps_preview,
         "backlog_result": _prewrite_backlog_result(proposal),
-        "program_result": {"created": True, "dry_run": True},
         "surface_refresh_preview": surface_refresh_preview_fixture(),
+        "prewrite_safety_preview": {
+            "status": "passed",
+            "checks": {
+                "validation_gate_passed": True,
+                "release_target_dry_run": True,
+                "release_assignment_dry_run": True,
+            },
+        },
         "release_target_result": {"dry_run": True, "release": {"release_id": "release-test"}},
         "release_assignment_result": {"dry_run": True, "workstream_ids": ["B-001"]},
         "release_workstream_ids": ("B-001",),
@@ -820,7 +827,6 @@ def test_greenfield_package_gate_requires_prewrite_atlas_sources(tmp_path: Path)
             proposal=proposal,
             release_selector="0.0.1",
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -841,7 +847,6 @@ def test_greenfield_package_gate_requires_component_authoring_preview(tmp_path: 
             rendered_component_specs={"Detached": "# Detached\n"},
             rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -862,7 +867,6 @@ def test_greenfield_package_gate_requires_accepted_project_memory_preview(tmp_pa
             rendered_atlas_sources=greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
             component_registry_preview=_prewrite_component_preview(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -884,7 +888,6 @@ def test_greenfield_package_gate_requires_compass_memory_preview(tmp_path: Path)
             component_registry_preview=_prewrite_component_preview(proposal),
             accepted_project_preview=_accepted_preview(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -909,7 +912,6 @@ def test_greenfield_package_gate_requires_project_brief_preview(tmp_path: Path) 
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=_next_steps_preview(),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -934,7 +936,6 @@ def test_greenfield_package_gate_requires_tribunal_evidence_preview(tmp_path: Pa
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=_next_steps_preview(),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -959,7 +960,6 @@ def test_greenfield_package_gate_requires_operator_next_steps_preview(tmp_path: 
             accepted_project_preview=_accepted_preview(proposal),
             compass_memory_preview=_compass_preview(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -990,7 +990,6 @@ def test_greenfield_package_gate_rejects_mechanical_operator_next_steps(tmp_path
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=next_steps,
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1031,13 +1030,11 @@ def test_greenfield_package_repair_does_not_rewrite_mixed_action_inflection(tmp_
 def test_greenfield_package_repair_does_not_rewrite_malformed_responsibility_copy(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)
-    program_result = {"created": True, "dry_run": True}
     rendered_specs = greenfield_apply_components.render_prewrite_component_specs(
         root=tmp_path,
         proposal=proposal,
         release_selector="0.0.1",
         backlog_result=backlog_result,
-        program_result=program_result,
     )
     first_label = next(iter(rendered_specs))
     rendered_specs[first_label] = f"{rendered_specs[first_label]}\n\n{first_label} owns maintains state."
@@ -1045,7 +1042,6 @@ def test_greenfield_package_repair_does_not_rewrite_malformed_responsibility_cop
         proposal,
         rendered_component_specs=rendered_specs,
         backlog_result=backlog_result,
-        program_result=program_result,
     )
 
     initial = build_greenfield_package_report(package)
@@ -1086,7 +1082,6 @@ def test_greenfield_package_gate_rejects_structural_contract_tuple_variants(tmp_
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=next_steps,
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1122,7 +1117,6 @@ def test_greenfield_package_gate_rejects_mechanical_radar_gate_copy(tmp_path: Pa
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=_next_steps_preview(),
             backlog_result=backlog_result,
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1153,7 +1147,6 @@ def test_greenfield_package_gate_rejects_mechanical_registry_preview_copy(tmp_pa
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=_next_steps_preview(),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1183,7 +1176,6 @@ def test_greenfield_package_gate_rejects_mechanical_accepted_project_copy(tmp_pa
             compass_memory_preview=_compass_preview(proposal),
             next_steps_preview=_next_steps_preview(),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1381,7 +1373,6 @@ def test_greenfield_package_gate_rejects_invalid_lifecycle_inflection(tmp_path: 
         proposal=proposal,
         release_selector="0.0.1",
         backlog_result=backlog_result,
-        program_result={"created": True, "dry_run": True},
     )
     first_key = next(iter(rendered_specs))
     rendered_specs[first_key] += "\n\nThe important lifecycle is requested, seted, flaging, and validated.\n"
@@ -1466,7 +1457,6 @@ def test_greenfield_package_gate_rejects_clipped_boundary_phrase(tmp_path: Path)
         proposal=proposal,
         release_selector="0.0.1",
         backlog_result=_prewrite_backlog_result(proposal),
-        program_result={"created": True, "dry_run": True},
     )
     first_key = next(iter(rendered_specs))
     rendered_specs[first_key] += "\n\nSibling state remains outside boundary.\n"
@@ -1610,7 +1600,6 @@ def test_greenfield_package_gate_rejects_staged_paths_in_accepted_project_previe
             compass_memory_preview=_compass_preview(proposal, component_preview=component_preview),
             next_steps_preview=_next_steps_preview(),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1641,7 +1630,6 @@ def test_greenfield_package_gate_rejects_staged_paths_in_compass_preview(tmp_pat
             compass_memory_preview=compass,
             next_steps_preview=_next_steps_preview(),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1671,6 +1659,43 @@ def test_greenfield_prewrite_remaps_component_preview_paths_to_target_repo(tmp_p
 
     assert remapped[0]["registry_path"] == "odylith/registry/source/component_registry.v1.json"
     assert remapped[0]["spec_path"] == "odylith/registry/source/components/c-001/CURRENT_SPEC.md"
+
+
+def test_greenfield_accepted_project_preview_relativizes_target_paths_against_target_root(tmp_path: Path) -> None:
+    staged_root = tmp_path / "stage" / "repo"
+    target_root = tmp_path / "target"
+    accepted = greenfield_apply_prewrite.preview_accepted_project_memory(
+        root=staged_root,
+        target_root=target_root,
+        proposal={"intent": {"title": "Case Review Workspace"}, "diagrams": []},
+        backlog_result={
+            "created": [
+                {
+                    "idea_id": "B-001",
+                    "idea_path": target_root / "odylith/radar/source/ideas/2026-08/case-review.md",
+                }
+            ]
+        },
+        component_items=(
+            {
+                "component_id": "case-review",
+                "spec_path": target_root
+                / "odylith/registry/source/components/case-review/CURRENT_SPEC.md",
+            },
+        ),
+        release_selector="0.0.1",
+        release_target_result=None,
+        release_assignment_result=None,
+        validation_gate={"status": "passed"},
+    )
+
+    assert accepted["created"]["workstreams"][0]["idea_path"] == (
+        "odylith/radar/source/ideas/2026-08/case-review.md"
+    )
+    assert accepted["created"]["components"][0]["spec_path"] == (
+        "odylith/registry/source/components/case-review/CURRENT_SPEC.md"
+    )
+    assert prewrite_path_leak_issues("accepted-project memory preview", accepted) == []
 
 
 def test_greenfield_component_memory_path_fidelity_treats_alias_roots_as_same_path(tmp_path: Path) -> None:
@@ -1807,7 +1832,6 @@ def test_greenfield_package_gate_rejects_workstream_preview_without_semantic_pro
             accepted_project_preview=_accepted_preview(proposal),
             compass_memory_preview=_compass_preview(proposal),
             backlog_result=backlog_result,
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1834,7 +1858,6 @@ def test_greenfield_package_gate_rejects_atlas_preview_without_proof_checkpoint(
             accepted_project_preview=_accepted_preview(proposal),
             compass_memory_preview=_compass_preview(proposal),
             backlog_result=_prewrite_backlog_result(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),

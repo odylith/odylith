@@ -498,6 +498,8 @@ def _pain_relief_tracking_proposal(tmp_path: Path) -> dict[str, object]:
         confirmed_intent=confirmed_intent_with_authority(
             PAIN_RELIEF_TRACKING_INTENT,
             prompt="Health Episode Journal (working title)",
+            repo_root=tmp_path,
+            write_files=True,
         ),
     )
 
@@ -1095,7 +1097,6 @@ def test_greenfield_completion_package_report_rejects_missing_project_dashboard_
         accepted_project_preview=accepted_project_preview,
         compass_memory_preview={"kind": "decision", "summary": "Accepted greenfield proposal", "evidence_tier": "user_intent", "work_category": "governance", "workstreams": ["B-001"], "components": [row["component_id"] for row in _prewrite_component_preview(proposal)]},
         next_steps_preview={"project_workstream_id": "B-001", "start_workstream_id": "B-001", "start_workstream_title": "Protocol Effect Tracking First Slice", "release_selector": "0.0.1", "implementation_prompt": "Start B-001 Protocol Effect Tracking First Slice from the accepted semantic model, create a protocol, log an active intervention, record baseline and follow-up measurements, and prove the timeline alignment, blocked-input handling, and replay evidence.", "operator_sequence": ["Review the project brief.", "Open the first workstream.", "Author the first technical plan."], "coding_readiness_gates": ["Semantic contract accepted.", "Release boundary accepted.", "Proof commands identified.", "Excluded scope preserved."], "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."]},
-        program_result={"created": True, "dry_run": True},
         release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
         release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
         release_workstream_ids=("B-001",),
@@ -1275,7 +1276,6 @@ def test_greenfield_completion_package_report_fails_incomplete_prewrite_radar_bu
             release_selector="0.0.1",
             backlog_result=backlog_result,
             rendered_atlas_sources=_prewrite_atlas_sources(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
             release_workstream_ids=("B-001",),
@@ -1295,7 +1295,6 @@ def test_greenfield_completion_package_report_fails_missing_release_assignment_p
             release_selector="0.0.1",
             backlog_result=_prewrite_backlog_result(proposal),
             rendered_atlas_sources=_prewrite_atlas_sources(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
             release_workstream_ids=("B-001",),
         )
@@ -1314,7 +1313,6 @@ def test_greenfield_completion_package_report_fails_release_assignment_preview_d
             release_selector="0.0.1",
             backlog_result=_prewrite_backlog_result(proposal),
             rendered_atlas_sources=_prewrite_atlas_sources(proposal),
-            program_result={"created": True, "dry_run": True},
             release_target_result={"release": {"release_id": "release-test"}},
             release_assignment_result={"dry_run": True, "workstream_ids": ["B-999"]},
             release_workstream_ids=("B-001",),
@@ -1883,7 +1881,7 @@ def test_greenfield_release_title_normalization_preserves_comma_bearing_titles()
         {
             "selector": "0.0.1",
             "target_workstream_titles": title,
-            "release_stages": [{"stage": "wave-1", "workstream_titles": title}],
+            "release_stages": [{"stage": "first-path", "workstream_titles": title}],
         }
     )
 
@@ -1898,7 +1896,7 @@ def test_greenfield_release_title_normalization_preserves_semicolon_bearing_titl
         {
             "selector": "0.0.1",
             "target_workstream_titles": title,
-            "release_stages": [{"stage": "wave-1", "workstream_titles": title}],
+            "release_stages": [{"stage": "first-path", "workstream_titles": title}],
         }
     )
 

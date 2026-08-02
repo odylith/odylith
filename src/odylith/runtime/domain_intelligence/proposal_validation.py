@@ -113,15 +113,11 @@ def collect_host_reasoned_proposal_issues(proposal: Mapping[str, Any]) -> list[s
         for issue in project_intelligence_issues(project_intelligence):
             issues.append(issue)
     issues.extend(greenfield_quality_issues(proposal))
-    program = capture(lambda: _require_mapping(proposal, "program"))
-    if isinstance(program, Mapping):
-        capture(lambda: _validate_program(program))
     capture(lambda: _require_mapping(proposal, "release_plan"))
     backlog = capture(lambda: _require_nonempty_sequence(proposal, "backlog"))
     components = capture(lambda: _require_nonempty_sequence(proposal, "components"))
     diagrams = capture(lambda: _require_nonempty_sequence(proposal, "diagrams"))
     if isinstance(backlog, list):
-        issues.extend(_backlog_program_parent_issues(backlog, proposal))
         for index, row in enumerate(backlog, start=1):
             capture(lambda row=row, index=index: _validate_backlog_row(row, index))
     if isinstance(components, list):
@@ -178,22 +174,6 @@ def _risk_text(value: Any) -> str:
     if isinstance(value, Mapping):
         return " ".join(str(nested or "") for nested in value.values())
     return str(value or "")
-
-
-def _backlog_program_parent_issues(backlog: list[Any], proposal: Mapping[str, Any]) -> list[str]:
-    mapping_rows = [row for row in backlog if isinstance(row, Mapping)]
-    program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
-    waves = [row for row in program.get("waves", []) if isinstance(row, Mapping)] if isinstance(program.get("waves"), list) else []
-    if len(mapping_rows) < 2 or not waves:
-        return []
-    first = mapping_rows[0]
-    row_type = str(first.get("workstream_type", "")).strip().casefold()
-    if row_type in {"umbrella", "program", "parent", "program_parent"}:
-        return []
-    return [
-        "proposal backlog must include a proposal-authored program parent as the first row; "
-        "Odylith will not synthesize an umbrella workstream from child rows"
-    ]
 
 
 def _first_content_line(source: str) -> str:
@@ -301,19 +281,6 @@ def _validate_rationale_lines(row: Mapping[str, Any], index: int) -> None:
     for line_index, line in enumerate(lines, start=1):
         if word_count(line) < 7:
             raise ValueError(f"backlog row {index} rationale_lines[{line_index}] is too shallow")
-
-
-def _validate_program(program: Mapping[str, Any]) -> None:
-    waves = program.get("waves")
-    if not isinstance(waves, list) or not waves:
-        raise ValueError("proposal `program.waves` must be a non-empty list")
-    for index, row in enumerate(waves, start=1):
-        if not isinstance(row, Mapping):
-            raise ValueError(f"program wave {index} must be an object")
-        if not any(str(row.get(key, "")).strip() for key in ("label", "name", "wave_id", "wave")):
-            raise ValueError(f"program wave {index} must include a label or wave id")
-        if not any(str(row.get(key, "")).strip() for key in ("goal", "summary", "validation", "validation_gate", "exit_gate")):
-            raise ValueError(f"program wave {index} must include a goal, summary, or validation gate")
 
 
 def _validate_component_row(row: Any, index: int) -> None:

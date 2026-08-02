@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 import json
 from pathlib import Path
 
@@ -11,7 +12,6 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_confirmed_prewrite_gate
-from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfie
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
+from odylith.runtime.domain_intelligence.proposal_contract import build_proposal_contract
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _role_suffixed_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _looks_like_actor_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
@@ -39,7 +40,7 @@ from odylith.runtime.project_intelligence import greenfield as project_intellige
 from odylith.runtime.project_intelligence import presenter as project_intelligence_presenter
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _governed_greenfield_fixture
-from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_crispr_without_parent
+from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_crispr_without_project_intelligence
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_recipe_legacy_shape
 from tests.unit.runtime.greenfield_proposal_fixtures import _ontology_term_labels
@@ -68,6 +69,13 @@ def _stub_rendered_surface_custody_for_legacy_proposal_units(monkeypatch: pytest
 def test_actor_label_detection_rejects_domain_objects_but_keeps_known_roles() -> None:
     assert _looks_like_actor_label("resident") is True
     assert _looks_like_actor_label("incident") is False
+
+
+def test_greenfield_host_contract_does_not_request_program_or_wave_artifacts() -> None:
+    rendered = json.dumps(build_proposal_contract(), sort_keys=True).casefold()
+
+    assert "program" not in rendered
+    assert "wave" not in rendered
     assert _looks_like_actor_label("patient") is False
 
 
@@ -809,9 +817,7 @@ def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -
     assert proposal["artifact_derivation"]["root"] == "project_intelligence"
     assert proposal["artifact_derivation"]["root_schema_version"] == schema
     assert proposal["release_plan"]["project_intelligence_binding"]["source"] == "project_intelligence"
-    assert proposal["program"]["project_intelligence_binding"]["source"] == "project_intelligence"
     for collection in (
-        proposal["program"]["waves"],
         proposal["backlog"],
         proposal["components"],
         proposal["diagrams"],
@@ -1196,11 +1202,6 @@ def test_greenfield_normalization_splits_scalar_quality_fields() -> None:
         "Replay proof blocks duplicate order creation.",
     ]
     proposal["release_plan"]["target_workstreams"] = "Define Storefront boundary, Define Catalog boundary"
-    proposal["program"]["waves"][0].pop("validation_gate", None)
-    proposal["program"]["waves"][0]["validation"] = [
-        "Browse-to-cart proof passes",
-        "Failed-payment recovery proof passes",
-    ]
 
     normalized = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
     normalized_identity = next(
@@ -1217,16 +1218,13 @@ def test_greenfield_normalization_splits_scalar_quality_fields() -> None:
         "Storefront should own browse, cart entry, checkout entry, and user-visible errors."
     )
     assert normalized["release_plan"]["target_workstreams"] == ["Define Storefront boundary", "Define Catalog boundary"]
-    assert normalized["program"]["waves"][0]["validation_gate"] == (
-        "Browse-to-cart proof passes; Failed-payment recovery proof passes"
-    )
     assert "['" not in normalized_identity["recommended_first_slice"]
-    assert "['" not in normalized["program"]["waves"][0]["validation_gate"]
+    assert "program" not in normalized
     greenfield_proposals.validate_host_reasoned_proposal(normalized)
     assert tribunal.passed
 
 
-def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_dedupes_handoff_validation_gates(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
@@ -1242,30 +1240,15 @@ def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path,
         "Browser proof covers happy path and failed-checkout recovery",
         "Replay proof blocks duplicate order creation",
     ]
-    proposal["program"]["waves"][0].pop("validation_gate", None)
-    proposal["program"]["waves"][0]["validation"] = [
-        "Browse-to-cart proof passes",
-        "Failed-payment recovery proof passes",
-    ]
-
     result = commit_precompiled_greenfield_proposal(
         repo_root=tmp_path,
         proposal=proposal,
         confirm=True,
         release_selector="0.0.1",
     )
-    first_wave = result["program"]["waves"][0]
-    joined_wave_gate = "Browse-to-cart proof passes; Failed-payment recovery proof passes"
-
-    assert first_wave["exit_gate"] == joined_wave_gate
-    assert first_wave["validation"] == [
-        "Browse-to-cart proof passes",
-        "Failed-payment recovery proof passes",
-    ]
-    assert joined_wave_gate not in result["next_steps"]["validation_gates"]
+    assert "program" not in result
     assert "Browser proof covers the happy path and failed-checkout recovery" in result["next_steps"]["validation_gates"]
     assert "Browser proof covers happy path" not in json.dumps(result["next_steps"], sort_keys=True)
-    assert result["next_steps"]["validation_gates"][-2:] == first_wave["validation"]
 
 
 def test_greenfield_release_target_label_extracts_numeric_selector_from_custom_text() -> None:
@@ -1472,10 +1455,6 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     registry = json.loads((tmp_path / "odylith/radar/source/releases/releases.v1.json").read_text(encoding="utf-8"))
     events = (tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl").read_text(encoding="utf-8")
     system_context = (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").read_text(encoding="utf-8")
-    program_waves = (tmp_path / "odylith/atlas/source/commerce-launch-program-waves.mmd").read_text(encoding="utf-8")
-    execution_program = json.loads(
-        (tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json").read_text(encoding="utf-8")
-    )
     atlas_catalog = json.loads((tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json").read_text(encoding="utf-8"))
     parent_idea = Path(result["backlog"][0]["idea_path"]).read_text(encoding="utf-8")
     child_idea = Path(result["backlog"][1]["idea_path"]).read_text(encoding="utf-8")
@@ -1501,17 +1480,8 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
         call["operation_label"] == "Greenfield pre-confirm staged surface refresh"
         for call in refresh_calls
     )
-    assert result["program"]["created"] is True
-    assert result["program"]["umbrella_id"] == "B-001"
-    assert len(result["program"]["waves"]) == 2
-    assert result["program"]["waves"][0]["wave_id"] == "W1"
-    assert result["program"]["waves"][0]["primary_workstreams"] == ["B-002"]
-    assert result["program"]["waves"][1]["wave_id"] == "W2"
-    assert result["program"]["waves"][1]["primary_workstreams"] == ["B-003"]
-    assert execution_program["waves"][0]["label"] == "Checkout spine"
-    assert execution_program["waves"][0]["primary_workstreams"] == ["B-002"]
-    assert execution_program["waves"][1]["label"] == "Catalog integrity"
-    assert execution_program["waves"][1]["primary_workstreams"] == ["B-003"]
+    assert "program" not in result
+    assert not list((tmp_path / "odylith/radar/source/programs").glob("*.execution-waves.v1.json"))
     assert result["release_bootstrap"]["release"]["version"] == "0.0.1"
     assert result["release_bootstrap"]["release"]["tag"] == "v0.0.1"
     assert result["release_bootstrap"]["release"]["name"] == "0.0.1"
@@ -1534,10 +1504,17 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
         Path(result["backlog"][2]["idea_path"]).relative_to(tmp_path).as_posix(),
     ]
     assert "Payment sandbox" in system_context
-    assert "recovery status" in program_waves
-    assert system_context != program_waves
+    checkout_recovery = (
+        tmp_path / "odylith/atlas/source/commerce-launch-checkout-recovery.mmd"
+    ).read_text(encoding="utf-8")
+    assert "recovery status" in checkout_recovery
+    assert system_context != checkout_recovery
     assert "related_diagram_ids: D-001,D-002" in parent_idea
     assert "related_diagram_ids: D-001,D-002" in child_idea
+    assert "workstream_type: standalone" in parent_idea
+    assert "workstream_type: standalone" in child_idea
+    assert "workstream_type: umbrella" not in parent_idea
+    assert "workstream_type: child" not in child_idea
     assert "## Impacted Components" in child_idea
     assert "`commerce-storefront`" in child_idea
     backlog_paths = {
@@ -1591,8 +1568,8 @@ def test_greenfield_apply_reuses_existing_diagram_ids_for_backlog_traceability(t
                     },
                     {
                         "diagram_id": "D-002",
-                        "slug": "commerce-launch-program-waves",
-                        "title": "Old Waves",
+                        "slug": "commerce-launch-checkout-recovery",
+                        "title": "Old Checkout Recovery",
                     },
                 ],
             },
@@ -1632,7 +1609,7 @@ def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_proj
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|program parent|quality gate"):
+    with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|quality gate"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
             proposal=_host_reasoned_recipe_legacy_shape(),
@@ -1644,16 +1621,16 @@ def test_greenfield_apply_rejects_legacy_recipe_shape_without_host_authored_proj
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
 
 
-def test_greenfield_apply_rejects_missing_host_authored_program_parent(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_rejects_missing_host_authored_project_intelligence(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_component_commit.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_diagrams.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    with pytest.raises(ValueError, match="program parent|project_intelligence|domain_intelligence|quality gate"):
+    with pytest.raises(ValueError, match="project_intelligence|domain_intelligence|quality gate"):
         commit_precompiled_greenfield_proposal(
             repo_root=tmp_path,
-            proposal=_host_reasoned_crispr_without_parent(),
+            proposal=_host_reasoned_crispr_without_project_intelligence(),
             confirm=True,
             release_selector="0.0.1",
         )

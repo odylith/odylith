@@ -43,7 +43,6 @@ from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_act
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_program
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_release_plan
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
@@ -147,15 +146,6 @@ def test_release_suffixed_labels_do_not_duplicate_release_across_governance_surf
         {"component_id": "safety", "label": "Safety Constraint Ledger", "kind": "service"},
         {"component_id": "readiness", "label": "Manufacturing Readiness Surface", "kind": "client"},
     ]
-    program = confirmed_program(
-        label="Battery Materials Release",
-        parent_title="Battery Materials Release Evidence Desk",
-        release="0.0.1",
-        workflow_title="Record one lab batch",
-        boundary_title="Prove safety constraints",
-        proof_title="Publish manufacturing readiness",
-        components=components,
-    )
     release_plan = confirmed_release_plan(
         label="Battery Materials Release",
         label_slug="battery-materials-release",
@@ -182,7 +172,7 @@ def test_release_suffixed_labels_do_not_duplicate_release_across_governance_surf
         evidence_record="Batch Evidence Console Proof Record",
         human_actors=["Materials reviewer"],
     )
-    rendered = json.dumps({"program": program, "release_plan": release_plan, "diagrams": diagrams}, sort_keys=True)
+    rendered = json.dumps({"release_plan": release_plan, "diagrams": diagrams}, sort_keys=True)
     duplicate_normalized = re.sub(r"<br\s*/?>", " ", rendered, flags=re.IGNORECASE)
 
     assert not re.search(r"\brelease\s+release\b", duplicate_normalized, flags=re.IGNORECASE)
@@ -3823,7 +3813,7 @@ def test_operator_next_steps_accept_literal_sparse_first_path_preservation() -> 
     package = _literal_sparse_first_path_package(
         "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
         f"{first_path} Treat `Let Representative User Record the Current Status` as the first coding "
-        "scope and do not advance waves until success, blocked-input, replay, and handoff evidence is "
+        "scope and do not expand scope until success, blocked-input, replay, and handoff evidence is "
         "written and reviewed."
     )
 
@@ -3836,7 +3826,7 @@ def test_operator_next_steps_reject_visible_result_only_first_path_fragment() ->
     package = _literal_sparse_first_path_package(
         "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
         "a greenfield proposal result with blockers and evidence for review. Treat "
-        "`Let Representative User Record the Current Status` as the first coding scope and do not advance waves "
+        "`Let Representative User Record the Current Status` as the first coding scope and do not expand scope "
         "until success, blocked-input, replay, and handoff evidence is written and reviewed."
     )
 
@@ -3849,7 +3839,7 @@ def test_operator_next_steps_reject_mutation_only_first_path_fragment() -> None:
     package = _literal_sparse_first_path_package(
         "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
         "Review greenfield proposal details. Treat `Let Representative User Record the Current Status` "
-        "as the first coding scope and do not advance waves until success, blocked-input, replay, and handoff "
+        "as the first coding scope and do not expand scope until success, blocked-input, replay, and handoff "
         "evidence is written and reviewed."
     )
 

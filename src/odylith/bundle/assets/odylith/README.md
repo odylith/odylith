@@ -198,7 +198,7 @@ Starter prompt for your agent when source-backed paths already exist:
 
 Starter prompt for a greenfield project:
 
-**Odylith, propose the first governed shape for this project. Give me a backlog tree, program waves, release plan, planned components, Atlas diagrams, assumptions, risks, validation obligations, and open questions. Do not claim source evidence. Ask for confirmation before writing anything.**
+**Odylith, build this project from my request. Compile the complete first-release governance package before asking me to confirm. Show the product story, first complete path, state object, assumptions, proof boundary, and one clear CONFIRM / EDIT / REJECT command block. After CONFIRM, commit only the reviewed transaction and take me to the finished project view.**
 
 Here are some starter prompt inspirations:
 

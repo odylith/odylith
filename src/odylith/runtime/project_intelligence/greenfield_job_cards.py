@@ -15,12 +15,11 @@ from odylith.runtime.project_intelligence.job_cards import job_card_summary
 from odylith.runtime.project_intelligence.job_cards import job_status_label
 from odylith.runtime.project_intelligence.job_cards import low_information_job_body
 from odylith.runtime.project_intelligence.product_story import summarize_first_path
-from odylith.runtime.project_intelligence.utils import dict_value, list_value, sentence, short
+from odylith.runtime.project_intelligence.utils import complete_text, dict_value, list_value, sentence
 
 def _jobs(
     *,
     backlog: Sequence[Mapping[str, Any]],
-    program: Mapping[str, Any],
     components: Sequence[Mapping[str, Any]] = (),
     first_path: str = "",
     project_title: str = "",
@@ -39,7 +38,7 @@ def _jobs(
         status = job_status_label(item.get("evidence_tier"))
         rows.append(
             (
-                short(_project_job_heading(title=title, project_title=project_title), limit=78),
+                complete_text(_project_job_heading(title=title, project_title=project_title), limit=78),
                 _bounded_job_body(body=body, title=title),
                 status,
                 _workstream_reference(item=item, created=created_workstreams[index] if index < len(created_workstreams) else {}),
@@ -47,21 +46,7 @@ def _jobs(
         )
     if rows:
         return rows
-    return [
-        (
-            short(
-                _project_job_heading(
-                    title=sentence(row.get("label"), "Proposed release step"),
-                    project_title=project_title,
-                ),
-                limit=78,
-            ),
-            short(sentence(row.get("goal"), "Proposed delivery step."), limit=145),
-            "Proposed",
-            _workstream_reference(item=row, created={}),
-        )
-        for row in [dict(value) for value in list_value(program.get("waves")) if isinstance(value, Mapping)][:6]
-    ]
+    return []
 
 
 def _project_job_heading(*, title: str, project_title: str) -> str:
@@ -141,8 +126,8 @@ def _job_body_text(
 
 
 def _job_first_path_body(first_path: str) -> str:
-    action = first_path_action_phrase(first_path, fallback="", limit=90, max_fragments=1)
-    outcome = first_path_outcome_phrase(first_path, fallback="", limit=90)
+    action = first_path_action_phrase(first_path, fallback="", limit=400, max_fragments=1)
+    outcome = first_path_outcome_phrase(first_path, fallback="", limit=400)
     if action and outcome:
         return f"Focuses the slice on {action} so the user receives {outcome}."
     if outcome:
@@ -151,9 +136,9 @@ def _job_first_path_body(first_path: str) -> str:
 
 
 def _bounded_job_body(*, body: str, title: str) -> str:
-    text = short(body, limit=145)
+    text = complete_text(body, limit=145)
     if low_information_job_body(text) or _looks_clipped_job_body(text):
-        text = short(_job_fallback_body(title), limit=145)
+        text = complete_text(_job_fallback_body(title), limit=145)
     return text
 
 

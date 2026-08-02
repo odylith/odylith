@@ -37,7 +37,6 @@ def _all_lens_check_names() -> set[str]:
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -104,7 +103,6 @@ def test_quality_lens_report_emits_typed_tribunal_repair_targets() -> None:
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -185,7 +183,6 @@ def test_quality_lens_accepts_two_component_confirmed_create_when_systems_are_co
         ),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -269,7 +266,6 @@ def test_quality_lens_accepts_deferred_component_topology_when_all_systems_are_c
         ),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -316,7 +312,6 @@ def test_quality_lens_does_not_use_proof_boundary_as_visible_result() -> None:
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -355,7 +350,6 @@ def test_domain_expert_lens_fails_when_scientific_source_terms_disappear() -> No
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -398,7 +392,6 @@ def test_product_manager_lens_requires_explicit_first_release_requirements_in_sc
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         accepted_project_preview={},
         compass_memory_preview={},
         release_target_result={},
@@ -442,7 +435,6 @@ def test_product_manager_lens_accepts_article_free_release_requirement_copy() ->
         rendered_component_specs={},
         component_registry_preview=(),
         backlog_result={},
-        program_result={},
         accepted_project_preview={},
         compass_memory_preview={},
         release_target_result={},
@@ -490,7 +482,6 @@ def test_domain_expert_lens_fails_when_high_risk_assumption_is_not_rendered() ->
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -537,7 +528,6 @@ def test_domain_expert_lens_accepts_short_high_risk_assumption_when_all_terms_re
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={
             "critical_assumptions": ["The first release records evidence only."],
         },
@@ -581,7 +571,6 @@ def test_quality_lens_requires_non_empty_external_boundary() -> None:
         component_registry_preview=(),
         next_steps_preview={},
         backlog_result={},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -596,7 +585,7 @@ def test_quality_lens_requires_non_empty_external_boundary() -> None:
     assert "0 external system boundary row(s)" in checks["system_boundary"]["evidence"]
 
 
-def test_quality_lens_requires_prewrite_program_dry_run_evidence() -> None:
+def test_quality_lens_requires_explicit_prewrite_safety_evidence() -> None:
     package = SimpleNamespace(
         proposal={
             "components": [{"component_id": "case-intake-register", "label": "Case Intake Register"}],
@@ -613,7 +602,6 @@ def test_quality_lens_requires_prewrite_program_dry_run_evidence() -> None:
             "coding_readiness_gates": ["semantic", "release", "proof", "excluded"],
         },
         backlog_result={"validation_gate": {"status": "passed"}},
-        program_result={},
         project_brief_preview={},
         accepted_project_preview={},
         compass_memory_preview={},
@@ -646,11 +634,9 @@ def test_quality_lens_accepts_explicit_prewrite_safety_preview_after_commit() ->
             "coding_readiness_gates": ["semantic", "release", "proof", "excluded"],
         },
         backlog_result={"validation_gate": {"status": "passed"}},
-        program_result={"created": True, "dry_run": False},
         prewrite_safety_preview={
             "status": "passed",
             "checks": {
-                "program_dry_run": True,
                 "validation_gate_passed": True,
                 "release_target_dry_run": True,
                 "release_assignment_dry_run": True,
@@ -667,7 +653,7 @@ def test_quality_lens_accepts_explicit_prewrite_safety_preview_after_commit() ->
     checks = {check["name"]: check for check in report["lenses"]["engineer"]["checks"]}
 
     assert checks["prewrite_safety"]["status"] == "passed"
-    assert "4 of 4 prewrite safety check(s) passed" in checks["prewrite_safety"]["evidence"]
+    assert "3 of 3 prewrite safety check(s) passed" in checks["prewrite_safety"]["evidence"]
 
 
 def test_gate_only_quality_lens_check_stays_non_patchable(
@@ -706,6 +692,36 @@ def test_gate_only_quality_lens_check_stays_non_patchable(
     assert finding.owner == "prewrite_gate"
     assert finding.target_path == "prewrite_package.validation"
     assert finding.repairability == "unrepairable"
+
+
+def test_not_applicable_quality_lens_check_does_not_emit_a_blocking_finding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={"intent": {"title": "No Explicit Release Requirements"}},
+        release_selector="0.0.1",
+    )
+    monkeypatch.setattr(
+        "odylith.runtime.domain_intelligence.greenfield_preconfirm_findings.build_greenfield_quality_lens_report",
+        lambda _package: {
+            "lenses": {
+                "product_manager": {
+                    "checks": [
+                        {
+                            "name": "first_release_requirements_project_brief",
+                            "status": "not_applicable",
+                            "evidence": "no explicit first-release requirements were accepted",
+                            "issue": "",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    findings = package_review_findings(package, package_issues=())
+
+    assert not any(finding.code == "quality_lens_gap" for finding in findings)
 
 
 def test_quality_lens_repair_contract_has_no_proposal_mutation_engine() -> None:

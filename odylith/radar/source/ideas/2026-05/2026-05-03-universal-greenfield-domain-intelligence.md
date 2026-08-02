@@ -2606,6 +2606,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   The next slice must make structured host repair low-latency and reliable
   inside the 90-second rescue tier while preserving fail-closed write custody.
 
+- 2026-08-02 Phase 2 checkpoint moved Greenfield back to the narrow onboarding
+  contract. Canonical meaning now owns distinct problem, first-path, boundary,
+  capability, proof, visible-result, and component-contract slots before
+  projection; public gates reject repeated slot copy, sentence fragments,
+  presentation wrappers, and internal patch-ledger prose. EDIT keeps later
+  bullet evidence after unchanged-field declarations, actor/product ownership
+  preserves coordinated human action chains, and source casing remains visible
+  without changing structural IDs. Greenfield program and execution-wave
+  creation was removed from compilation, commit, result, and first-release
+  targeting. The rollback guard now validates a durable complete snapshot
+  manifest before restore and validates restored readback, so missing snapshot
+  bytes cannot be reported as rollback success. Affected proposal, CLI,
+  anti-slop, Project, component, browser, transaction, recovery, provenance,
+  and high-variance suites are green. B-142 remains open for frozen-corpus,
+  cross-host, clean-install, full browser-state, and final release proof.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

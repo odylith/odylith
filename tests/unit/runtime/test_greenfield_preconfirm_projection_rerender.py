@@ -269,7 +269,7 @@ def test_scoped_rerender_keeps_first_release_handoff_without_program(
     release_workstream_id = "B-101"
 
     def first_release_workstream_ids(**kwargs: Any) -> tuple[str, ...]:
-        assert kwargs["program_result"] == {}
+        assert set(kwargs) == {"proposal", "created_backlog"}
         return (release_workstream_id,)
 
     def next_steps(**kwargs: Any) -> dict[str, Any]:
@@ -304,7 +304,6 @@ def test_scoped_rerender_keeps_first_release_handoff_without_program(
         package=GreenfieldCompletionPackage(
             proposal={"intent": {"title": "Handoff Rerender"}},
             release_selector="0.0.1",
-            program_result={},
             backlog_result={"created": [{"id": "B-100"}, {"id": release_workstream_id}]},
             release_workstream_ids=(release_workstream_id,),
             component_registry_preview=(
@@ -328,7 +327,7 @@ def test_scoped_rerender_keeps_first_release_handoff_without_program(
         release_assignment_note="release assignment",
     )
 
-    assert result.package.program_result == {}
+    assert "program" not in result.package.proposal
     assert result.package.release_workstream_ids == (release_workstream_id,)
     assert result.package.next_steps_preview["start_workstream_id"] == release_workstream_id
     assert result.package.component_registry_preview[0]["implementation_handoff"]["workstream_id"] == release_workstream_id

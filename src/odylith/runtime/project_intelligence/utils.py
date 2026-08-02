@@ -76,12 +76,31 @@ def sanitize_actor_body(value: object) -> str:
 
 
 def short(value: object, *, limit: int = 180, fallback: str = "") -> str:
+    """Return complete public sentences within a soft length preference."""
+
     token = sentence(value, fallback)
     if len(token) <= limit:
         return token
-    trimmed = token[: max(0, limit - 1)].rsplit(" ", 1)[0].rstrip(".,;:")
-    trimmed = _remove_dangling_tail(trimmed)
-    return f"{trimmed}."
+    sentences = [row.strip() for row in re.split(r"(?<=[.!?])\s+", token) if row.strip()]
+    if len(sentences) <= 1:
+        return token
+    selected: list[str] = []
+    total = 0
+    for row in sentences:
+        next_total = total + len(row) + (1 if selected else 0)
+        if selected and next_total > limit:
+            break
+        selected.append(row)
+        total = next_total
+        if total >= limit:
+            break
+    return " ".join(selected) if selected else token
+
+
+def complete_text(value: object, *, limit: int = 180, fallback: str = "") -> str:
+    """Explicit complete-copy alias for callers that need to signal intent."""
+
+    return short(value, limit=limit, fallback=fallback)
 
 
 def tidy_fragment(value: object) -> str:

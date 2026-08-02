@@ -109,6 +109,32 @@ def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns(
     assert not generated_semantic_slop_issues(evidence_contract)
 
 
+def test_protected_hyphen_surface_does_not_lowercase_a_generated_component_title() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Clinic Follow Up Coordination Details Review",
+            "source_system_description": (
+                "reviews clinic follow-up coordination details while preserving status, blockers, and handoff context"
+            ),
+        },
+        proposal={
+            "intent": {
+                "title": "Clinic Follow Up Coordination Desk",
+                "first_path": (
+                    "A representative user reviews clinic follow-up coordination details and sees a clear result."
+                ),
+            }
+        },
+        sibling={"label": "Status Recordkeeping Service"},
+        previous_label="Clinic Intake",
+        next_label="Status Recordkeeping Service",
+        state_label="Clinic Follow Up Coordination Record",
+    ).fields
+
+    assert contract["unique_failure"].startswith("Clinic Follow-Up Coordination Details Review can mislead users")
+    assert "clinic follow-up coordination details Review" not in json.dumps(contract)
+
+
 def test_component_contract_preserves_relative_clause_objects_as_artifacts() -> None:
     contract = derive_component_semantic_contract(
         {

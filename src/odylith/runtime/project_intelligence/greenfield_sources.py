@@ -10,9 +10,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_acronym_number_tokens
-from odylith.runtime.project_intelligence.product_story import summarize_first_path
-from odylith.runtime.project_intelligence.product_story import summarize_proof
-from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings
+from odylith.runtime.project_intelligence.utils import dict_value, list_value, sentence
 
 
 def _accepted_proposal(value: object) -> dict[str, Any]:
@@ -146,7 +144,6 @@ def _lens_label(value: str, *, proposal: Mapping[str, Any]) -> str:
 
 def _first_path(
     *,
-    program: Mapping[str, Any],
     release_plan: Mapping[str, Any],
     backlog: Sequence[Mapping[str, Any]],
     validation: Sequence[str] = (),
@@ -161,10 +158,6 @@ def _first_path(
         first_slice = sentence(item.get("recommended_first_slice"))
         if first_slice and not _is_meta_first_path(title=title, first_slice=first_slice):
             return first_slice
-    waves = [dict(row) for row in list_value(program.get("waves")) if isinstance(row, Mapping)]
-    if waves:
-        wave = waves[0]
-        return sentence(wave.get("goal") or wave.get("label"), "First proposed wave")
     stages = [dict(row) for row in list_value(release_plan.get("release_stages")) if isinstance(row, Mapping)]
     if stages:
         stage = stages[0]

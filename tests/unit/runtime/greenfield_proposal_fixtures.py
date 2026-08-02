@@ -333,28 +333,6 @@ def compiled_greenfield_package_fixture(
             "coding_readiness_gates": ["Transaction package accepted."],
             "verification_commands": [f"odylith context --repo-root . {idea_id}"],
         },
-        program_result={
-            "created": True,
-            "dry_run": True,
-            "umbrella_id": idea_id,
-            "program_path": str(Path(repo_root) / f"odylith/radar/source/programs/{idea_id}.execution-waves.v1.json"),
-            "waves": [
-                {
-                    "wave_id": "W1",
-                    "label": "First accepted path",
-                    "status": "active",
-                    "summary": "Deliver the first accepted path.",
-                    "exit_gate": "The first accepted path is proven.",
-                    "validation": [],
-                    "depends_on": [],
-                    "primary_workstreams": [idea_id],
-                    "carried_workstreams": [],
-                    "in_band_workstreams": [],
-                    "gate_refs": [],
-                }
-            ],
-            "program_count": 0,
-        },
         traceability_plan=traceability_plan,
         baseline_writes=baseline_writes,
         brand_asset_writes=brand_asset_writes,
@@ -402,7 +380,6 @@ def seal_compiled_greenfield_package_fixture(
         "backlog": list((package.backlog_result or {}).get("created", ())),
         "components": [dict(row) for row in package.component_registry_preview],
         "diagrams": list(package.atlas_diagram_ids),
-        "program": dict(package.program_result or {}),
         "backlog_topology": [
             str(row.get("idea_path", ""))
             for row in (package.backlog_result or {}).get("created", ())
@@ -622,48 +599,13 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
             "Checkout happy path and payment failure recovery must both pass.",
             "Order creation must be idempotent under retry and webhook replay.",
         ],
-        "program": {
-            "shape": "program_with_waves",
-            "wave_count": 4,
-            "recommended_first_wave": "Checkout spine",
-            "blueprint": {
-                "program_type": "greenfield_program",
-                "parent_workstream": "Govern Commerce Launch System",
-                "child_workstream_strategy": "Create child boundaries for storefront, catalog, checkout, and order reliability.",
-                "child_workstreams": ["Define Storefront boundary", "Define Checkout boundary"],
-                "wave_to_workstream_policy": "Waves are delivery checkpoints; workstreams remain user_intent until source evidence exists.",
-                "release_strategy": "Target the accepted first checkout slice to the provisional 0.0.1 release.",
-                "recommended_wave_order": ["Checkout spine", "Catalog integrity", "Payment recovery", "Operational hardening"],
-                "evidence_tier": "odylith_assumption",
-            },
-            "waves": [
-                {
-                    "wave": 1,
-                    "label": "Checkout spine",
-                    "goal": "Prove browse, cart, checkout handoff, and order draft.",
-                    "validation": "Browser proof covers happy path and failed payment recovery.",
-                    "workstream_titles": ["Define Storefront boundary"],
-                    "component_focus": ["commerce-storefront", "commerce-checkout"],
-                    "evidence_tier": "odylith_assumption",
-                },
-                {
-                    "wave": 2,
-                    "label": "Catalog integrity",
-                    "goal": "Make product, price, inventory, and merchandising reviewable.",
-                    "validation": "Price and inventory snapshot rules are explicit.",
-                    "workstream_titles": ["Define Catalog boundary"],
-                    "component_focus": ["commerce-catalog"],
-                    "evidence_tier": "odylith_assumption",
-                },
-            ],
-        },
         "release_plan": {
             "selector": "0.0.1",
             "label": "First governed commerce release",
             "provisional_release_id": "release-commerce-launch-first",
             "strategy": "Promote only after checkout validation and refreshed release evidence.",
             "release_stages": [
-                {"stage": "wave-1", "label": "Checkout spine", "release_gate": "Browser and recovery proof pass."},
+                {"stage": "first-path", "label": "Checkout spine", "release_gate": "Browser and recovery proof pass."},
             ],
             "target_workstream_titles": ["Define Storefront boundary"],
             "milestones": [
@@ -684,7 +626,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "success_metrics": [
                     "The checkout spine has a parent workstream and first child boundary.",
                     "Candidate components are user_intent until source evidence exists.",
-                    "Architecture diagrams carry distinct system-context and program-wave drafts.",
+                    "Architecture diagrams carry distinct system-context and checkout-recovery drafts.",
                 ],
                 "priority": "P1",
                 "sizing": "L",
@@ -707,7 +649,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "complexity": "Medium",
                 "recommended_first_slice": "Define the checkout route and state contract for browse-to-cart.",
                 "component_focus": ["commerce-storefront", "commerce-checkout"],
-                "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-program-waves"],
+                "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-checkout-recovery"],
                 "dependencies": [
                     "Depends on checkout handoff semantics and a catalog read model being explicit before source implementation.",
                 ],
@@ -734,7 +676,7 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "complexity": "Medium",
                 "recommended_first_slice": "Define the product, price, and inventory snapshot contract.",
                 "component_focus": ["commerce-catalog"],
-                "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-program-waves"],
+                "related_diagram_slugs": ["commerce-launch-system-context", "commerce-launch-checkout-recovery"],
                 "dependencies": [
                     "Depends on source-backed implementation planning to choose the actual catalog storage boundary.",
                 ],
@@ -852,10 +794,10 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 ),
             },
             {
-                "slug": "commerce-launch-program-waves",
-                "title": "Program Waves",
+                "slug": "commerce-launch-checkout-recovery",
+                "title": "Checkout Recovery Flow",
                 "kind": "flowchart",
-                "summary": "Show checkout spine, catalog integrity, payment recovery, and hardening waves.",
+                "summary": "Show checkout submission, payment failure recovery, order creation, and review evidence.",
                 "owner": "repo",
                 "status": "draft",
                 "link_state": "atlas_first_draft",
@@ -869,12 +811,17 @@ def _host_reasoned_ecommerce_proposal() -> dict[str, object]:
                 "watch_paths": [],
                 "evidence_tier": "user_intent",
                 "mermaid_source": (
-                    "timeline\n"
-                    "    title Program Waves\n"
-                    "    Checkout spine : Browse-to-cart proof : Payment failure recovery\n"
-                    "    Catalog integrity : Price snapshot rules : Inventory review\n"
-                    "    Order reliability : Idempotent creation : Webhook replay proof\n"
-                    "    Operational hardening : Observability : Release gate\n"
+                    "flowchart LR\n"
+                    "    cart[\"Cart ready\"] --> checkout[\"Submit checkout\"]\n"
+                    "    checkout --> payment{\"Payment accepted?\"}\n"
+                    "    payment -- yes --> order[\"Create order once\"]\n"
+                    "    payment -- no --> recovery[\"Show recovery status\"]\n"
+                    "    recovery --> checkout\n"
+                    "    order --> evidence[\"Attach review evidence\"]\n"
+                    "    classDef state fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;\n"
+                    "    classDef decision fill:#FFF8E8,stroke:#F4C96B,color:#17233A,stroke-width:1px;\n"
+                    "    class cart,checkout,order,recovery,evidence state;\n"
+                    "    class payment decision;\n"
                 ),
             },
         ],
@@ -896,7 +843,7 @@ def _complete_host_reasoned_proposal(proposal: dict[str, object]) -> dict[str, o
             if not isinstance(row, dict):
                 continue
             if index == 0:
-                row.setdefault("workstream_type", "program_parent")
+                row.setdefault("workstream_type", "standalone")
             row.setdefault("rationale_lines", _host_rationale_lines(row, prompt=prompt))
             row.setdefault(
                 "domain_intelligence",
@@ -1022,8 +969,8 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "id": "D5",
                 "decision": "First release ambition",
                 "recommended": f"Keep {release} focused on one complete journey and defer broad platform capability.",
-                "choices": ["one path", "one path plus audit", "one vertical slice", "multi-lane program"],
-                "impact": "Changes backlog depth, component boundaries, wave count, and delivery risk.",
+                "choices": ["one path", "one path plus audit", "one vertical slice", "multiple release paths"],
+                "impact": "Changes backlog depth, component boundaries, release scope, and delivery risk.",
             },
         ],
         "customization_prompts": [
@@ -1237,24 +1184,6 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
         "validation_strategy": {
             "release_gate": ["Golden path from sign-up to recipe detail must pass."],
         },
-        "program": {
-            "waves": [
-                {
-                    "id": "W1",
-                    "title": "Core authoring and browsing",
-                    "goal": "Ship account, authoring, browsing, and shared UI shell.",
-                    "release": "0.0.1",
-                    "workstreams": ["WS-01", "WS-02", "WS-03"],
-                },
-                {
-                    "id": "W2",
-                    "title": "Social layer",
-                    "goal": "Add favorites and comments after the first release is stable.",
-                    "release": "0.1.0",
-                    "workstreams": ["WS-04"],
-                },
-            ]
-        },
         "release_plan": [
             {
                 "release": "0.0.1",
@@ -1272,14 +1201,14 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
         "backlog": [
             {
                 "id": "WS-00",
-                "title": "Recipe-sharing app program",
-                "problem": "The repo has no confirmed program, release target, component boundaries, topology, or proof gates.",
+                "title": "Prove the recipe-sharing first path",
+                "problem": "The repo has no confirmed first path, release target, component boundaries, topology, or proof gates.",
                 "customer": "Cooks",
                 "opportunity": "Create a governed recipe-sharing plan with explicit first release behavior and proof.",
                 "product_view": "A browser app where cooks can sign in, publish recipes, browse, and search.",
                 "recommended_first_slice": "Create the first governed release lane for accounts, recipe authoring, browsing, and UI shell.",
                 "success_metrics": [
-                    "First release target includes the wave-one workstreams.",
+                    "First release target includes the accepted first-path workstreams.",
                     "Component and architecture records are linked to the created workstreams.",
                 ],
             },
@@ -1472,7 +1401,7 @@ def _host_reasoned_recipe_legacy_shape() -> dict[str, object]:
     }
 
 
-def _host_reasoned_crispr_without_parent() -> dict[str, object]:
+def _host_reasoned_crispr_without_project_intelligence() -> dict[str, object]:
     return {
         "schema_version": 1,
         "mode": "host_reasoned_greenfield_proposal",
@@ -1498,30 +1427,12 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
             "risk": "Domain risk centers on sensitive DURC protocol details, audit recovery, and access-control failure.",
         },
         "validation_strategy": ["Role matrix, FSM, ledger, audit, and browser proof gates must pass."],
-        "program": {
-            "waves": [
-                {
-                    "id": "W1",
-                    "label": "Foundations",
-                    "goal": "Prove attributable protocol review through a decision ledger.",
-                    "validation_gate": "End-to-end protocol submit, transition, decision, and audit proof passes.",
-                    "workstreams": ["WS-IA"],
-                },
-                {
-                    "id": "W2",
-                    "label": "Review intelligence",
-                    "goal": "Add CRISPR-specific review workflow gates.",
-                    "validation_gate": "FSM transition and DURC negative tests pass.",
-                    "workstreams": ["WS-WORKFLOW"],
-                },
-            ]
-        },
         "release_plan": {
             "selector": "0.0.1",
             "label": "0.0.1",
             "provisional_release_id": "release-crispr-ethics-0-0-1",
             "target_workstreams": ["WS-IA"],
-            "promotion_criteria": ["First-wave authorization and audit gates pass."],
+            "promotion_criteria": ["First-path authorization and audit gates pass."],
         },
         "backlog": [
             {

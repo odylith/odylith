@@ -1,16 +1,35 @@
 from __future__ import annotations
 
+from time import perf_counter
+
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_apply_write import _source_cased_validation_gate
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_source_casing import package_with_source_casing
 from odylith.runtime.domain_intelligence.greenfield_source_casing import proposal_source_casing_text
+from odylith.runtime.domain_intelligence.greenfield_source_casing import restore_source_casing_in_public_copy
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 
 
 def test_title_label_preserves_source_owned_mixed_case_tokens() -> None:
     assert title_label("mRNA stability batch comparison") == "mRNA Stability Batch Comparison"
+
+
+def test_source_casing_restoration_stays_bounded_for_dense_evidence() -> None:
+    source = " ".join(f"token{index}Case" for index in range(12_000))
+    public_copy = {
+        "title": "token0case TOKEN511CASE token1023case token11000case",
+        "rows": ["token100case remains visible"] * 20,
+    }
+
+    started = perf_counter()
+    restored = restore_source_casing_in_public_copy(public_copy, source_text=source)
+    elapsed = perf_counter() - started
+
+    assert elapsed < 2.0
+    assert restored["title"] == "token0Case token511Case token1023Case token11000case"
+    assert all(row.startswith("token100Case") for row in restored["rows"])
 
 
 def test_source_casing_custody_repairs_visible_copy_without_rewriting_structural_ids() -> None:

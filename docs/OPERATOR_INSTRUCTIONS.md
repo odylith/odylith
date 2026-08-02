@@ -30,15 +30,17 @@ Build governance records that give the agent durable context.
 ### Greenfield proposals
 
 Use these when the repo is new, thin, or the project exists mostly as intent.
-Odylith does not invent source evidence. The active host model authors the
-project-specific proposal in chat, while Odylith owns the evidence contract,
-validation, confirmation gate, topology hygiene, and apply path.
+Odylith does not invent source evidence. It treats the operator request and any
+edits as evidence, compiles typed product intent and the complete governed
+package before confirmation, and presents one hash-bound decision. `CONFIRM`
+commits the reviewed bytes; `EDIT` rebuilds them from new evidence; `REJECT`
+writes nothing.
 
 | Say this | What happens |
 |---|---|
-| **"Odylith, build an ecommerce site for me"** | Drafts a confirmation-gated greenfield proposal with backlog candidates, program waves, release plan, planned components, Atlas topology, assumptions, risks, validation obligations, open questions, and exact apply commands. `odylith greenfield propose` |
+| **"Odylith, build an ecommerce site for me"** | Compiles a confirmation-gated first-release package with typed product intent, a small grounded backlog, planned components, Atlas topology, assumptions, risks, validation obligations, a sealed write set, and one clear `CONFIRM` / `EDIT` / `REJECT` command block. `odylith greenfield propose` |
 | **"Help me govern a physics simulation project"** | Produces a science-aware proposal that distinguishes model, solver, data, experiment runner, visualization, reproducibility, and validation surfaces without inventing scientific claims. |
-| **"Apply this greenfield proposal"** | Validates the accepted proposal, runs the deterministic greenfield Tribunal, requires confirmation, rejects disconnected topology, writes through owned Radar, Registry, Atlas, release-targeting, and Compass memory paths, then refreshes the visible dashboard surfaces in one batch. `odylith greenfield apply --confirm` |
+| **`CONFIRM <transaction-hash>`** | Verifies the reviewed transaction hash and repo preconditions, commits its sealed bytes atomically, validates readback, refreshes the visible surfaces, and reports where to open the finished project. `odylith greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm` |
 
 ### Workstreams (Radar)
 

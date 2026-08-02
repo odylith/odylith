@@ -35,7 +35,7 @@ class TribunalLensCheck:
 
     @property
     def passed(self) -> bool:
-        return self.status == "passed"
+        return self.status in {"passed", "not_applicable"}
 
     def to_dict(self) -> dict[str, str]:
         return asdict(self)
@@ -56,6 +56,7 @@ def tribunal_lens_check(
     severity: str = "high",
     repairability: str = "semantic_patch",
     owner: str = "tribunal_lens",
+    applicable: bool = True,
 ) -> TribunalLensCheck:
     """Build a normalized Tribunal lens row without deriving routing from prose."""
 
@@ -65,9 +66,9 @@ def tribunal_lens_check(
         lens=normalize_token(lens) or "tribunal",
         role=normalize_string(role) or normalize_string(lens) or "Tribunal reviewer",
         name=normalize_token(name) or "review_check",
-        status="passed" if passed else "failed",
+        status="not_applicable" if not applicable else ("passed" if passed else "failed"),
         evidence=normalize_string(evidence),
-        issue="" if passed else normalize_string(issue),
+        issue="" if passed or not applicable else normalize_string(issue),
         surface=normalize_token(surface) or "review_report",
         target_path=normalize_string(target_path),
         projection_id=normalize_token(projection_id) or "review_report",
@@ -112,11 +113,12 @@ def tribunal_lens_report(
 def _check_dict(value: Mapping[str, Any] | TribunalLensCheck) -> dict[str, str]:
     if isinstance(value, TribunalLensCheck):
         return value.to_dict()
+    status = normalize_token(value.get("status"))
     return {
         "lens": normalize_token(value.get("lens")),
         "role": normalize_string(value.get("role")),
         "name": normalize_token(value.get("name")),
-        "status": "passed" if normalize_token(value.get("status")) == "passed" else "failed",
+        "status": status if status in {"passed", "not_applicable"} else "failed",
         "evidence": normalize_string(value.get("evidence")),
         "issue": normalize_string(value.get("issue")),
         "surface": normalize_token(value.get("surface")),

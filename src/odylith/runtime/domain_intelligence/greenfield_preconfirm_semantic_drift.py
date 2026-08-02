@@ -403,6 +403,7 @@ _CONTRASTIVE_GENERIC_TERMS = {
     "valid",
     "versioned",
     "visible",
+    "visibility",
     "workstream",
     "wrong",
 }

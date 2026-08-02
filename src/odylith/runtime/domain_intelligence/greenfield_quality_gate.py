@@ -749,7 +749,7 @@ def _raw_echo_matches(*, label: str, needle: str, text: str) -> bool:
 
 
 def _is_artifact_content_path(path: str) -> bool:
-    return path.startswith(("backlog.", "components.", "diagrams.", "program.", "release_plan.", "project_brief."))
+    return path.startswith(("backlog.", "components.", "diagrams.", "release_plan.", "project_brief."))
 
 
 def _is_project_brief_prose_path(path: str) -> bool:

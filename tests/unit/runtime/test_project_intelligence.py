@@ -10,7 +10,7 @@ from odylith.runtime.project_intelligence.greenfield_job_cards import _jobs
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
 from odylith.runtime.project_intelligence.participants import participant_title
 from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
-from odylith.runtime.project_intelligence.utils import short, tidy_fragment
+from odylith.runtime.project_intelligence.utils import complete_text, short, tidy_fragment
 from odylith.runtime.surfaces import dashboard_shell_links
 from tests.unit.runtime.greenfield_proposal_fixtures import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
@@ -33,19 +33,27 @@ def _assert_greenfield_story_cards(story: dict[str, object]) -> None:
     assert "additional accepted capabilities" not in encoded.casefold()
     assert "proof boundary blocks" not in encoded.casefold()
     assert "validation, replay, access, privacy, safety" not in encoded.casefold()
+    bodies = [str(row.get("body", "")).casefold() for row in story["release_contract"]]
+    assert len(set(bodies)) == len(bodies)
 
 
-def test_project_short_strips_dangling_terminal_verbs_after_clip() -> None:
+def test_project_short_preserves_one_long_public_sentence() -> None:
     value = (
         "Needs the product to record stunt cues, map performer clearance evidence, track prop inspection exceptions, "
         "coordinate medical standby signoff, and publish rehearsal readiness before opening night and keep the "
         "result visible and reviewable"
     )
 
-    clipped = short(value, limit=145)
+    assert short(value, limit=145) == value
 
-    assert clipped.endswith("medical standby signoff.")
-    assert not clipped.endswith("and keep.")
+
+def test_project_complete_text_never_cuts_a_single_public_sentence() -> None:
+    value = (
+        "An engineer submits one request, the product routes each subtask to an appropriate model, and the product "
+        "returns validated runnable code plus complete automated tests."
+    )
+
+    assert complete_text(value, limit=70) == value
 
 
 def test_project_participant_titles_preserve_lower_first_source_symbols() -> None:
@@ -81,16 +89,24 @@ def test_greenfield_story_cards_preserve_lower_first_source_symbol_participants(
     assert "MRNA Stability" not in encoded
 
 
-def test_project_short_strips_clipped_article_modifier_tail_after_clip() -> None:
+def test_project_short_preserves_long_sentence_instead_of_inventing_a_terminal_period() -> None:
     value = (
         "This slice preserves review context, publishes decision evidence, and recovers cleanly from a bad or incomplete attempt."
     )
 
-    clipped = short(value, limit=100)
+    assert short(value, limit=100) == value
+    assert short("The review status is final before handoff proof.", limit=34) == (
+        "The review status is final before handoff proof."
+    )
 
-    assert clipped.endswith("recovers cleanly.")
-    assert not clipped.endswith("a bad.")
-    assert short("The review status is final before handoff proof.", limit=34) == "The review status is final."
+
+def test_project_presenter_never_character_clips_public_copy() -> None:
+    value = (
+        "The expected outcome keeps the complete model-routing decision, validation result, automated test proof, "
+        "and implementation handoff visible to the engineer who must act on it."
+    )
+
+    assert presenter._compact_sentence(value, limit=72) == value
 
 
 def test_project_intelligence_blank_install_starts_with_minimal_project_state(tmp_path: Path) -> None:
@@ -746,8 +762,8 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
                 ],
                 "backlog": [
                     {
-                        "title": "Govern Forest Preservation Tracker Program",
-                        "customer": "Program coordinator running a conservation monitoring program.",
+                        "title": "Prove the Forest Preservation Tracker first path",
+                        "customer": "Project coordinator running a conservation monitoring effort.",
                         "recommended_first_slice": "Confirm the first path and release proof gates.",
                     },
                     {
@@ -772,14 +788,6 @@ def test_project_intelligence_accepted_greenfield_story_uses_product_narrative_b
                 "release_plan": {
                     "label": "0.0.1",
                     "strategy": "Release 0.0.1 proves the first forest parcel evidence path before broader buildout.",
-                },
-                "program": {
-                    "waves": [
-                        {
-                            "label": "Forest evidence primitive",
-                            "validation": "Release proof reproduces the current-state view from cited observations.",
-                        }
-                    ]
                 },
             },
         },
@@ -977,11 +985,11 @@ def test_greenfield_product_story_cards_explain_outcome_not_labels_or_fragments(
     assert "coordinator" in cards["First Path"].casefold()
     assert "Intake Service" not in encoded
     assert "Rules Engine" not in encoded
-    assert "automatic approval" in cards["Product Boundary"]
+    assert "automatic approval" in cards["Product Boundary"].casefold()
     assert "accepted or needs-information result" in cards["Proof"]
 
 
-def test_greenfield_product_story_participants_do_not_narrate_synthetic_reviewer_fragments() -> None:
+def test_greenfield_product_story_participants_preserve_accepted_reviewer_labels() -> None:
     story = product_story.build_greenfield_product_story(
         title="Technical Learning Lab",
         intro="A learner needs one short session that makes a difficult concept reviewable.",
@@ -1005,10 +1013,10 @@ def test_greenfield_product_story_participants_do_not_narrate_synthetic_reviewer
 
     assert "The result then moves through" not in rendered
     assert "Instructor assigning" not in rendered
-    assert "Technical Learning Lab proof reviewer" not in rendered
+    assert "Technical Learning Lab proof reviewer" in rendered
     assert "After the first result is produced" in rendered
     assert "Instructor supports by assigning or reviewing lab scenarios" in rendered
-    assert "Reviewer reviews product outcomes" in rendered
+    assert "Technical Learning Lab proof reviewer reviews product outcomes" in rendered
 
 
 def test_greenfield_job_cards_repair_clipped_dashboard_body_after_shortening() -> None:
@@ -1022,7 +1030,6 @@ def test_greenfield_job_cards_repair_clipped_dashboard_body_after_shortening() -
                 "evidence_tier": "proposal",
             }
         ],
-        program={},
         components=[],
         first_path="",
         project_title="Review Evidence Workspace",
@@ -1869,12 +1876,11 @@ def test_project_intelligence_greenfield_story_skips_meta_acceptance_path(tmp_pa
             ],
             "owners": ["Support agent owns answer review and citation acceptance."],
         },
-        "program": {"waves": []},
         "release_plan": {"label": "0.0.1", "strategy": "Promote only after answer review proof exists."},
         "observed_source": {"source_posture": "docs_only"},
         "backlog": [
             {
-                "title": "Guide knowledge assistant program",
+                "title": "Prove the knowledge assistant first path",
                 "recommended_first_slice": (
                     "Accept the answer-review path, component boundaries, release 0.0.1 proof gates, "
                     "and explicit non-goals before implementation planning starts."

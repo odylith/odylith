@@ -74,13 +74,13 @@ odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
 ```
 
 Before confirmation, Odylith stores only replaceable evidence and the compiled
-transaction under `.odylith/runtime/greenfield/`. After confirmation, Odylith
-turns that accepted narrative into backlog
-candidates, program waves, release planning, planned Registry components, Atlas
-topology, assumptions, risks, open questions, and validation obligations.
-No governed product record is written until the confirmed create path validates
-the accepted intent, runs the deterministic greenfield Tribunal, targets the
-first release lane, and refreshes Radar, Registry, Atlas, and Compass.
+transaction under `.odylith/runtime/greenfield/`. That transaction already
+contains the quality-gated backlog, first-release plan, Registry components,
+Atlas topology, assumptions, risks, open questions, validation obligations, and
+post-commit handoff. `CONFIRM` verifies its hash and commits those sealed bytes;
+it does not ask a model to interpret intent or generate artifacts after the
+decision. The commit-only path writes atomically, validates readback, refreshes
+Radar, Registry, Atlas, and Compass, and directs the operator to the project view.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.

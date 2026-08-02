@@ -291,14 +291,14 @@ def test_greenfield_atlas_sources_differ_by_host_reasoned_diagram_purpose() -> N
     }
 
     context = sources["commerce-launch-system-context"]
-    waves = sources["commerce-launch-program-waves"]
+    recovery = sources["commerce-launch-checkout-recovery"]
     assert context.startswith("flowchart LR")
     assert "subgraph experience_lane" in context
     assert "classDef actor fill:" in context
     assert "Payment sandbox" in context
-    assert waves.startswith("timeline")
-    assert "Order reliability" in waves
-    assert context != waves
+    assert recovery.startswith("flowchart LR")
+    assert "Show recovery status" in recovery
+    assert context != recovery
 
 
 def test_prewrite_atlas_catalog_rebases_absolute_backlog_links_to_repo_paths(tmp_path: Path) -> None:

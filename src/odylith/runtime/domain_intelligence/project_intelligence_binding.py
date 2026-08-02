@@ -14,7 +14,6 @@ ARTIFACT_DERIVATION_KEY = "artifact_derivation"
 PROJECT_INTELLIGENCE_ROOT = "project_intelligence"
 
 _DERIVED_ARTIFACTS = (
-    "program",
     "release_plan",
     "backlog",
     "components",
@@ -49,7 +48,6 @@ def attach_project_intelligence_bindings(proposal: Mapping[str, Any]) -> dict[st
         artifact_kind="release_plan",
         artifact_id=_release_identifier(result.get("release_plan")),
     )
-    result["program"] = _bind_program(result.get("program"), base=base)
     result["backlog"] = _bind_rows(result.get("backlog"), base=base, artifact_kind="radar_workstream")
     result["components"] = _bind_rows(result.get("components"), base=base, artifact_kind="registry_component")
     result["diagrams"] = _bind_rows(result.get("diagrams"), base=base, artifact_kind="atlas_diagram")
@@ -78,20 +76,6 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
     _check_mapping_binding(
         proposal.get("release_plan"),
         owner="release_plan",
-        expected_schema=expected_schema,
-        issues=issues,
-    )
-    _check_mapping_binding(
-        proposal.get("program"),
-        owner="program",
-        expected_schema=expected_schema,
-        issues=issues,
-    )
-    program = proposal.get("program")
-    waves = program.get("waves") if isinstance(program, Mapping) else None
-    _check_row_bindings(
-        waves,
-        owner="program wave",
         expected_schema=expected_schema,
         issues=issues,
     )
@@ -140,12 +124,6 @@ def _place_derivation_after_project_intelligence(proposal: dict[str, Any]) -> di
     if not inserted:
         ordered[ARTIFACT_DERIVATION_KEY] = derivation
     return ordered
-
-
-def _bind_program(value: Any, *, base: Mapping[str, str]) -> dict[str, Any]:
-    program = _bind_mapping(value, base=base, artifact_kind="greenfield_program", artifact_id="program")
-    program["waves"] = _bind_rows(program.get("waves"), base=base, artifact_kind="greenfield_program_wave")
-    return program
 
 
 def _bind_mapping(value: Any, *, base: Mapping[str, str], artifact_kind: str, artifact_id: str) -> dict[str, Any]:

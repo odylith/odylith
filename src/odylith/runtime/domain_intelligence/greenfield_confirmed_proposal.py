@@ -12,7 +12,6 @@ from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import 
 from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_human_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_program
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_release_plan
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import join_actor_labels
@@ -186,6 +185,7 @@ def build_confirmed_greenfield_proposal(
         components=release_components,
         diagram_slugs=diagram_slugs,
         evidence_requirements=evidence_requirements,
+        open_questions=ambiguities,
         visible_result=semantic_visible_result,
     )
     semantic_model = semantic_model_mapping(
@@ -347,15 +347,6 @@ def build_confirmed_greenfield_proposal(
             non_goals=non_goals,
             visible_result=semantic_visible_result,
         ),
-        "program": confirmed_program(
-            label=label,
-            parent_title=parent_title,
-            release=release,
-            workflow_title=workflow_title,
-            boundary_title=boundary_title,
-            proof_title=proof_title,
-            components=release_components,
-        ),
         "release_plan": confirmed_release_plan(
             label=label,
             label_slug=label_slug,
@@ -372,7 +363,7 @@ def build_confirmed_greenfield_proposal(
             components=components,
             diagram_slugs=diagram_slugs,
             workstream_titles={
-                "program": parent_title,
+                "parent": parent_title,
                 "workflow": workflow_title,
                 "boundary": boundary_title,
                 "proof": proof_title,

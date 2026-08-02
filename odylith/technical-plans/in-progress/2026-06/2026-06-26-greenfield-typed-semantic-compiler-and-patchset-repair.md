@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-07-29
+Updated: 2026-08-02
 
 Backlog: B-142
 
@@ -118,6 +118,37 @@ above.
   material ambiguity belongs in one focused clarification; after CONFIRM only
   environmental persistence failures may occur. Do not revive post-confirm
   semantic repair to make a failing case look successful.
+
+## Phase 2 Quality And Recovery Checkpoint (2026-08-02)
+
+- Canonical semantic-slot ownership now separates problem, first path, product
+  boundary, owned capabilities, proof, visible result, and component contracts
+  before any public projection. Package gates reject cross-slot repetition,
+  incomplete sentences, presentation wrappers in contract fields, and internal
+  patch-ledger prose. Project surfaces preserve complete sentences instead of
+  meeting length limits by clipping accepted meaning.
+- EDIT evidence custody preserves later Markdown bullets after an unchanged
+  first-path statement. First-path ownership distinguishes a finite product
+  clause from coordinated base-form human actions, so shared-subject action
+  chains remain with the accepted actor unless the evidence actually switches
+  to the product.
+- Greenfield no longer creates execution-wave programs. Release targeting uses
+  the compiled backlog directly, the sealed package contains no program result
+  or execution-wave artifact, and the first-time Project and Compass experience
+  do not introduce a second planning hierarchy.
+- The commit guard now writes a durable snapshot manifest containing the exact
+  affected-path inventory, present/missing state, and content fingerprints.
+  Recovery validates that complete manifest before touching the repository and
+  validates restored readback afterward. A missing or corrupt snapshot is a
+  truthful `rollback_failed` environment outcome with retained recovery
+  evidence, never a false rollback success.
+- Current affected-source proof is green: proposal compiler 69 tests; CLI path
+  59; anti-slop and component specifications 171; artifact and Project quality
+  158; rollback/journal/write boundary 45; high-variance actions, intent
+  authority, and provenance 92; browser contract 8. The broader transaction
+  family passed 225 tests before four adversarial contract mismatches were
+  repaired; all four affected slices then passed. Final frozen-corpus,
+  cross-host, clean-install, and full browser-state release proof remains open.
 
 ## Related Bugs
 

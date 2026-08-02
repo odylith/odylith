@@ -96,7 +96,6 @@ def normalize_project_intelligence(
     release_selector: str,
     domain_profile: Any | None = None,
     project_brief: Mapping[str, Any] | None = None,
-    program: Mapping[str, Any] | None = None,
     release_plan: Mapping[str, Any] | None = None,
     components: Sequence[Any] = (),
     diagrams: Sequence[Any] = (),
@@ -104,7 +103,7 @@ def normalize_project_intelligence(
 ) -> dict[str, Any]:
     """Normalize proposal project intelligence without inferring content."""
 
-    _ = intent, release_selector, domain_profile, project_brief, program, release_plan, components, diagrams, observed_source
+    _ = intent, release_selector, domain_profile, project_brief, release_plan, components, diagrams, observed_source
     if not isinstance(value, Mapping):
         return {}
     result = dict(value)

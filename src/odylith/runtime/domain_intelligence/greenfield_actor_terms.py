@@ -201,11 +201,12 @@ def has_human_actor_role_signal(value: str) -> bool:
     """Return whether a label contains a known, domain-neutral human role."""
 
     tokens = tuple(re.findall(r"[a-z]+", str(value or "").casefold()))
-    if (
-        not tokens
-        or is_automated_actor(value)
-        or set(tokens) & (_NON_HUMAN_ACTOR_CONTEXT_TERMS | _ACTOR_CONTEXT_BOUNDARY_TERMS)
-    ):
+    if not tokens or is_automated_actor(value) or set(tokens) & _ACTOR_CONTEXT_BOUNDARY_TERMS:
+        return False
+    terminal = tokens[-1][:-1] if tokens[-1].endswith("s") else tokens[-1]
+    if terminal in CONFIRMED_ACTOR_ROLE_TERMS or terminal in _HUMAN_PROFESSIONAL_ROLE_TERMS:
+        return True
+    if set(tokens) & _NON_HUMAN_ACTOR_CONTEXT_TERMS:
         return False
     for token in tokens:
         singular = token[:-1] if token.endswith("s") else token
@@ -349,6 +350,13 @@ def is_automated_actor(value: str) -> bool:
     return bool(set(tokens) & _AUTOMATED_REVIEWER_MARKERS and "reviewer" in tokens)
 
 
+def has_non_human_actor_signal(value: str) -> bool:
+    """Return whether a subject names a product or automated system actor."""
+
+    tokens = set(re.findall(r"[a-z]+", str(value or "").casefold()))
+    return bool(tokens & _NON_HUMAN_ACTOR_CONTEXT_TERMS) or is_automated_actor(value)
+
+
 def starts_with_automated_actor(value: str) -> bool:
     """Return whether the opening actor phrase is automated, not a later tool mention."""
 
@@ -407,6 +415,7 @@ __all__ = [
     "has_human_actor_action_context",
     "has_human_actor_role_signal",
     "has_human_actor_signal",
+    "has_non_human_actor_signal",
     "is_automated_actor",
     "starts_with_automated_actor",
     "localize_generic_actor_label",

@@ -20,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     normalize_confirmed_intent_heading,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
+    is_confirmed_intent_ignored_section,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
     prompt_first_path_source,
 )
@@ -92,13 +95,36 @@ def thin_recovery_source_text(text: str, sections: Mapping[str, list[str]], titl
     original_intent = _host_guidance_original_intent(text)
     if original_intent:
         return original_intent
+    if any(is_confirmed_intent_ignored_section(key) for key in sections):
+        section_evidence = _thin_section_evidence(sections, title=title)
+        if section_evidence:
+            return section_evidence
     if not has_explicit_section_boundaries(sections):
-        return _clean(text)
+        section_evidence = _thin_section_evidence(sections, title=title)
+        return section_evidence or _clean(text)
     paragraphs = product_context_paragraphs(text, sections, title)
     if not paragraphs:
         return ""
     title_text = _clean(title)
     return _clean(". ".join([title_text, *paragraphs] if title_text else paragraphs))
+
+
+def _thin_section_evidence(sections: Mapping[str, list[str]], *, title: str) -> str:
+    """Rebuild thin evidence without ignored host or implementation sections."""
+
+    title_text = _clean(title)
+    rows: list[str] = []
+    for key, values in sections.items():
+        if is_confirmed_intent_ignored_section(key):
+            continue
+        for value in values:
+            text = _clean(str(value or "").lstrip("#").strip())
+            if not text or (title_text and text.casefold() == title_text.casefold()):
+                continue
+            rows.append(text)
+    if not rows:
+        return ""
+    return _clean(". ".join([title_text, *rows] if title_text else rows))
 
 
 def has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:

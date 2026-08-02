@@ -152,6 +152,77 @@ def test_repetition_gate_allows_concrete_workstream_validation_across_projection
     assert "repeats noncanonical prose" not in "\n".join(issues)
 
 
+def test_repetition_gate_allows_concrete_component_validation_across_projections() -> None:
+    validation = (
+        "Reject release readiness when Site Record Intake Service cannot explain its result, changed state, "
+        "access posture, or recovery path."
+    )
+    package = SimpleNamespace(
+        proposal={
+            "components": [
+                {
+                    "component_id": "site-record-intake",
+                    "label": "Site Record Intake Service",
+                    "validation": [validation],
+                }
+            ]
+        },
+        backlog_result={},
+        rendered_component_specs={"site-record-intake.md": validation},
+        rendered_atlas_sources={"site-record-intake.mmd": f'flowchart LR\n  proof["{validation}"]\n'},
+        project_brief_preview={"proof": validation},
+        next_steps_preview={"implementation_prompt": validation},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
+def test_repetition_gate_allows_component_linked_workstream_validation_across_projections() -> None:
+    validation = (
+        "Reject release readiness when Site Record Intake Service cannot explain its result, changed state, "
+        "access posture, or recovery path."
+    )
+    package = SimpleNamespace(
+        proposal={
+            "components": [
+                {
+                    "component_id": "site-record-intake",
+                    "label": "Site Record Intake Service",
+                    "validation": ["Validate successful and blocked intake paths."],
+                }
+            ],
+            "backlog": [
+                {
+                    "title": "Prove the complete operator path",
+                    "component_focus": ["site-record-intake"],
+                    "validation": [validation],
+                },
+                {
+                    "title": "Deliver a reviewable result",
+                    "component_focus": ["site-record-intake"],
+                    "validation": [validation],
+                },
+            ],
+        },
+        backlog_result={
+            "idea_files": {
+                "B-001.md": validation,
+                "B-002.md": validation,
+            },
+        },
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={},
+        next_steps_preview={"implementation_prompt": validation},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
 def test_repetition_gate_allows_complete_semantic_event_custody() -> None:
     event = "A supervisor reviews the decision package with traceable documents, comments, checks, and final status"
     package = SimpleNamespace(

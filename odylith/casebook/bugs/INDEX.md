@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-01
+Last updated (UTC): 2026-08-02
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-303 | 2026-08-02 | Greenfield project surfaces repeated and clipped canonical meaning | P1 | domain-intelligence-greenfield | Open | [2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md](2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md) |
 | CB-302 | 2026-08-01 | Greenfield accepts wrong domain material facts without source entailment | P0 | domain-intelligence | FixedPendingRelease | [2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md](2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md) |
 | CB-301 | 2026-08-01 | Fresh install compact guidance omitted greenfield commit only boundary | P2 | odylith | Open | [2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md](2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md) |
 | CB-300 | 2026-07-30 | Final typed intent re seal discarded pre confirm rescue evidence | P1 | domain-intelligence | Open | [2026-07-30-final-typed-intent-re-seal-discarded-pre-confirm-rescue-evidence.md](2026-07-30-final-typed-intent-re-seal-discarded-pre-confirm-rescue-evidence.md) |

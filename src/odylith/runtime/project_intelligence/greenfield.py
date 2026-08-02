@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -32,8 +32,7 @@ from odylith.runtime.project_intelligence.greenfield_sources import _text_rows
 from odylith.runtime.project_intelligence.product_story import build_greenfield_product_story
 from odylith.runtime.project_intelligence.product_story import summarize_first_path
 from odylith.runtime.project_intelligence.source_launch import build_source_launch_handoff
-from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sanitize_actor_body, sentence, short, strings
-from odylith.runtime.project_intelligence.utils import tidy_fragment
+from odylith.runtime.project_intelligence.utils import complete_text, dict_value, list_value, sentence
 
 
 def proposal_from_sources(*, repo_root: Path, shell_payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -60,7 +59,6 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     intent = dict_value(proposal.get("intent"))
     project = dict_value(proposal.get("project_intelligence"))
     project_brief = dict_value(proposal.get("project_brief"))
-    program = dict_value(proposal.get("program"))
     release_plan = dict_value(proposal.get("release_plan"))
     observed = dict_value(proposal.get("observed_source"))
     backlog = [dict(row) for row in list_value(proposal.get("backlog")) if isinstance(row, Mapping)]
@@ -81,7 +79,6 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     raw_title = sentence(intent.get("title"), "Greenfield project")
     lens = _lens(proposal=proposal, backlog=backlog, components=components)
     first_path = sentence(intent.get("first_path")) or _first_path(
-        program=program,
         release_plan=release_plan,
         backlog=backlog,
         validation=raw_validation,
@@ -113,7 +110,6 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     actors = _actors(project, proposal=proposal)
     jobs = _jobs(
         backlog=backlog,
-        program=program,
         components=components,
         first_path=first_path,
         project_title=title,
@@ -177,7 +173,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "scenario": [
             "Proposed first path",
             title,
-            short(first_path_summary, limit=220, fallback="First proposed path"),
+            complete_text(first_path_summary, limit=220, fallback="First proposed path"),
             "Evidence is user-stated or inferred; source validation has not happened yet.",
             _scenario_body(project=project, first_path=first_path, validation=validation),
         ],

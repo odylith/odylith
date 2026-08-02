@@ -274,10 +274,10 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     payload = build_greenfield_payload(proposal=proposal, repo_root=tmp_path)
     participant_titles = [row[1] for row in payload["participants"]]
     assert len(participant_titles) >= 4
-    assert "Scientific Manuscript Author" in participant_titles
-    assert "Editor or Program Chair" in participant_titles
-    assert "Scientific Quality and Reproducibility Reviewer" in participant_titles
-    assert "Venue Policies, Templates, Deadlines, and Permissions Admin" in participant_titles
+    assert "Scientific manuscript author" in participant_titles
+    assert "Editor or program chair" in participant_titles
+    assert "Scientific quality and reproducibility reviewer" in participant_titles
+    assert "Venue policies, templates, deadlines, and permissions admin" in participant_titles
     assert all(" Managing " not in f" {title} " for title in participant_titles)
 
     components = {row["label"]: row for row in proposal["components"]}
@@ -323,7 +323,7 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     assert "..." not in mermaid_sources
     assert "sequenceDiagram" not in mermaid_sources
     assert "flowchart" in mermaid_sources
-    assert "Scientific Manuscript" in mermaid_sources
+    assert "Scientific manuscript" in mermaid_sources
     assert "Submission Intake and" in mermaid_sources
     assert "Structured Review Forms and" in mermaid_sources
     assert "Editorial Decision Workflow" in mermaid_sources

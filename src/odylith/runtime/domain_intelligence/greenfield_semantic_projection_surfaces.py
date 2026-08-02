@@ -17,7 +17,6 @@ PROJECTION_SCAN_ROOTS = (
     "diagrams",
     "experience",
     "intent",
-    "program",
     "project_brief",
     "project_dashboard",
     "project_dashboard_preview",

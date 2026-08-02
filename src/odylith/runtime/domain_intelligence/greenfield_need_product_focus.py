@@ -31,6 +31,7 @@ _TITLE_STOP_WORDS = frozenset(
     {"after", "at", "before", "between", "by", "from", "in", "on", "through", "using", "when", "where", "while", "with"}
 )
 _REQUEST_CONTAINER_PATTERN = r"(?:app|application|product|service|system|tool)"
+_REQUEST_CONTAINER_PHRASE_PATTERN = rf"(?:(?:greenfield|new|simple|small)\s+)?{_REQUEST_CONTAINER_PATTERN}"
 _REQUEST_COMMAND_PATTERN = r"(?:build|create|design|draft|develop|make|plan|propose)"
 
 
@@ -39,7 +40,7 @@ def product_focus_after_command_sentence(value: str) -> str:
 
     for sentence in _sentence_fragments(value):
         match = re.search(
-            rf"\b{_REQUEST_COMMAND_PATTERN}\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PATTERN}\s+for\s+(?P<focus>.+)$",
+            rf"\b{_REQUEST_COMMAND_PATTERN}\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PHRASE_PATTERN}\s+for\s+(?P<focus>.+)$",
             sentence,
             flags=re.IGNORECASE,
         )
@@ -60,7 +61,7 @@ def product_focus_after_need_sentence(value: str) -> str:
 
     for sentence in _sentence_fragments(value):
         match = re.search(
-            rf"\bneeds?\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PATTERN}\s+for\s+(?P<focus>.+)$",
+            rf"\bneeds?\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PHRASE_PATTERN}\s+for\s+(?P<focus>.+)$",
             sentence,
             flags=re.IGNORECASE,
         )
@@ -82,7 +83,7 @@ def need_product_actor_action(value: str) -> tuple[str, str]:
 
     for sentence in _sentence_fragments(value):
         match = re.search(
-            rf"\bneeds?\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PATTERN}\s+for\s+(?P<focus>.+)$",
+            rf"\bneeds?\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PHRASE_PATTERN}\s+for\s+(?P<focus>.+)$",
             sentence,
             flags=re.IGNORECASE,
         )
@@ -104,7 +105,7 @@ def is_requester_product_framing(value: str) -> bool:
 
     return bool(
         re.search(
-            rf"\b(?:needs?|requires?|wants?)\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PATTERN}\b",
+            rf"\b(?:needs?|requires?|wants?)\s+(?:a|an|the)\s+{_REQUEST_CONTAINER_PHRASE_PATTERN}\b",
             clean_markdown_text(value),
             flags=re.IGNORECASE,
         )
@@ -124,10 +125,15 @@ def _action_object_focus(value: str) -> str:
             if _word_key(raw) in _TITLE_STOP_WORDS:
                 break
             candidate.append(raw.strip(".,:;"))
+            if raw.rstrip().endswith((",", ";")):
+                break
         while candidate and _word_key(candidate[0]) in {"a", "an", "the", "one"}:
             candidate.pop(0)
         title = " ".join(candidate).strip(" .")
-        if 1 <= len(candidate) <= 6 and not looks_like_action_clause(title):
+        if 1 <= len(candidate) <= 6:
+            # The preceding actor + material-action grammar establishes this
+            # bounded span as the action object. A lexical verb heuristic is
+            # weaker evidence and misreads nouns such as "release notes".
             return title
     return ""
 
@@ -149,7 +155,10 @@ def _use_for_object_focus(value: str) -> str:
         while candidate and _word_key(candidate[0]) in {"a", "an", "the", "one"}:
             candidate.pop(0)
         title = " ".join(candidate).strip(" .")
-        if 1 <= len(candidate) <= 6 and not looks_like_action_clause(title):
+        if 1 <= len(candidate) <= 6:
+            # `use for` establishes a noun-object slot. Reclassifying the
+            # bounded object with an open-world verb heuristic turns valid
+            # product nouns such as "release notes" into imperative actions.
             return title
     return ""
 

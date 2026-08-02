@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import signal
 import shutil
 import tempfile
@@ -30,6 +31,7 @@ class GreenfieldApplyTransaction:
         "odylith/tooling-payload.v1.js",
         "odylith/tooling-app.v1.js",
     )
+    _SNAPSHOT_MANIFEST = ".snapshot-manifest.v1.json"
 
     def __init__(
         self,
@@ -88,6 +90,15 @@ class GreenfieldApplyTransaction:
                 _sync_path(target)
             else:
                 atomic_write_text(marker, "missing\n")
+        atomic_write_text(
+            self._snapshot_root / self._SNAPSHOT_MANIFEST,
+            json.dumps(
+                _snapshot_manifest(self._snapshot_root, self._snapshot_paths),
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+        )
         fsync_directory(self._snapshot_root)
         self._install_signal_guard()
         return self
@@ -131,20 +142,23 @@ class GreenfieldApplyTransaction:
     def _restore(self) -> None:
         if self._snapshot_root is None:
             return
+        manifest = _validated_snapshot_manifest(self._snapshot_root, self._snapshot_paths)
         for token in sorted(self._snapshot_paths, key=lambda item: len(Path(item).parts), reverse=True):
             target = self.repo_root / token
             snapshot = self._snapshot_root / token
-            marker = _missing_marker(self._snapshot_root, token)
+            entry = manifest[token]
             if target.exists() or target.is_symlink():
                 _remove_path(target)
                 fsync_directory(target.parent)
-            if snapshot.exists() or snapshot.is_symlink():
+            if entry["state"] == "present":
                 _copy_path(snapshot, target)
                 _sync_path(target)
                 fsync_directory(target.parent)
-            elif not marker.exists():
-                target.mkdir(parents=True, exist_ok=True)
-                fsync_directory(target.parent)
+                actual = _path_fingerprint(target)
+                if actual != entry["sha256"]:
+                    raise RuntimeError(f"greenfield rollback readback mismatch: {token}")
+            elif target.exists() or target.is_symlink():
+                raise RuntimeError(f"greenfield rollback expected an absent path: {token}")
 
     @classmethod
     def restore_snapshot(
@@ -182,6 +196,82 @@ def _validated_snapshot_paths(paths: Sequence[str]) -> tuple[str, ...]:
 def _missing_marker(snapshot_root: Path, token: str) -> Path:
     digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
     return snapshot_root / ".missing" / digest
+
+
+def _snapshot_manifest(snapshot_root: Path, paths: Sequence[str]) -> dict[str, object]:
+    entries: dict[str, dict[str, str]] = {}
+    for token in paths:
+        snapshot = snapshot_root / token
+        marker = _missing_marker(snapshot_root, token)
+        if snapshot.exists() or snapshot.is_symlink():
+            entries[token] = {"state": "present", "sha256": _path_fingerprint(snapshot)}
+        elif marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="utf-8") == "missing\n":
+            entries[token] = {"state": "missing", "sha256": ""}
+        else:
+            raise RuntimeError(f"greenfield rollback snapshot inventory is incomplete: {token}")
+    return {"schema_version": 1, "entries": entries}
+
+
+def _validated_snapshot_manifest(snapshot_root: Path, paths: Sequence[str]) -> dict[str, dict[str, str]]:
+    manifest_path = snapshot_root / GreenfieldApplyTransaction._SNAPSHOT_MANIFEST
+    if manifest_path.is_symlink() or not manifest_path.is_file():
+        raise RuntimeError("greenfield rollback snapshot manifest is missing or unsafe")
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("greenfield rollback snapshot manifest is unreadable") from exc
+    raw_entries = payload.get("entries") if isinstance(payload, dict) and payload.get("schema_version") == 1 else None
+    if not isinstance(raw_entries, dict) or set(raw_entries) != set(paths):
+        raise RuntimeError("greenfield rollback snapshot manifest does not match the guarded write set")
+    entries: dict[str, dict[str, str]] = {}
+    for token in paths:
+        raw_entry = raw_entries.get(token)
+        state = str(raw_entry.get("state") or "") if isinstance(raw_entry, dict) else ""
+        expected_hash = str(raw_entry.get("sha256") or "") if isinstance(raw_entry, dict) else ""
+        snapshot = snapshot_root / token
+        marker = _missing_marker(snapshot_root, token)
+        snapshot_present = snapshot.exists() or snapshot.is_symlink()
+        marker_valid = marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="utf-8") == "missing\n"
+        if state == "present":
+            if not snapshot_present or marker.exists() or not expected_hash:
+                raise RuntimeError(f"greenfield rollback snapshot inventory is invalid: {token}")
+            if _path_fingerprint(snapshot) != expected_hash:
+                raise RuntimeError(f"greenfield rollback snapshot integrity check failed: {token}")
+        elif state == "missing":
+            if snapshot_present or not marker_valid or expected_hash:
+                raise RuntimeError(f"greenfield rollback missing-path marker is invalid: {token}")
+        else:
+            raise RuntimeError(f"greenfield rollback snapshot state is invalid: {token}")
+        entries[token] = {"state": state, "sha256": expected_hash}
+    return entries
+
+
+def _path_fingerprint(path: Path) -> str:
+    digest = hashlib.sha256()
+
+    def update(candidate: Path, relative: str) -> None:
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        if candidate.is_symlink():
+            digest.update(b"symlink\0")
+            digest.update(str(candidate.readlink()).encode("utf-8"))
+            return
+        if candidate.is_file():
+            digest.update(b"file\0")
+            with candidate.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                    digest.update(chunk)
+            return
+        if candidate.is_dir():
+            digest.update(b"directory\0")
+            for child in sorted(candidate.iterdir(), key=lambda item: item.name):
+                child_relative = f"{relative}/{child.name}" if relative else child.name
+                update(child, child_relative)
+            return
+        raise RuntimeError(f"greenfield rollback snapshot path is unreadable: {candidate}")
+
+    update(path, "")
+    return digest.hexdigest()
 
 
 class GreenfieldCommitInterrupted(RuntimeError):

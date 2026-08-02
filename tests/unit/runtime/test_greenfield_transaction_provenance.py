@@ -40,7 +40,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
-from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
 
 
 def _quality_manifest() -> dict[str, Any]:
@@ -154,6 +153,7 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
     assert "runtime/domain_intelligence/greenfield_proposals_cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_transaction.py" in paths
     assert "runtime/domain_intelligence/greenfield_create_transaction.py" not in paths
+    assert "runtime/domain_intelligence/greenfield_operating_envelope.py" not in paths
     assert "runtime/domain_intelligence/greenfield_product_intent_envelope.py" not in paths
     assert "runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py" not in paths
     assert "runtime/domain_intelligence/greenfield_preconfirm_engine.py" not in paths

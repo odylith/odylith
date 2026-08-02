@@ -2,13 +2,12 @@
 
 The host model authors open-world project reasoning. Odylith's job is to keep
 the write path governed: fail before source-truth writes when the proposal does
-not form a coherent workstream/component/diagram/program/release topology.
+not form a coherent workstream/component/diagram/release topology.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
@@ -144,8 +143,6 @@ def run_greenfield_tribunal(
     backlog = mapping_rows(proposal.get("backlog"))
     components = mapping_rows(proposal.get("components"))
     diagrams = mapping_rows(proposal.get("diagrams"))
-    program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
-    waves = mapping_rows(program.get("waves"))
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     issues: list[str] = []
@@ -162,14 +159,10 @@ def run_greenfield_tribunal(
     _check_release_plan(
         release_plan=release_plan,
         selector=selector,
-        waves=waves,
         issues=issues,
         warnings=warnings,
     )
     dimensions["release_boundary"] = "first release selector, target scope, and promotion criteria are present"
-
-    _check_program_waves(waves=waves, issues=issues)
-    dimensions["delivery_waves"] = "waves carry labels, goals, validation gates, and product capability focus"
 
     _check_backlog_topology(
         backlog=backlog,
@@ -237,7 +230,6 @@ def _check_release_plan(
     *,
     release_plan: Mapping[str, Any],
     selector: str,
-    waves: Sequence[Mapping[str, Any]],
     issues: list[str],
     warnings: list[str],
 ) -> None:
@@ -249,31 +241,12 @@ def _check_release_plan(
         release_plan,
         ("target_workstreams", "target_workstream_titles", "target_workstream_ids"),
     ):
-        first_wave = waves[0] if waves else {}
-        if not _has_any_text(first_wave, ("workstreams", "workstream_titles", "primary_workstreams")):
-            warnings.append(
-                "release plan does not explicitly name first-wave workstreams; apply will infer from wave membership"
-            )
+        warnings.append("release plan does not explicitly name first-release workstreams")
     if not _has_any_text(
         release_plan,
         ("release_stages", "milestones", "promotion_criteria", "strategy"),
     ):
         issues.append("release plan must include stages, milestones, promotion criteria, or strategy")
-
-
-def _check_program_waves(*, waves: Sequence[Mapping[str, Any]], issues: list[str]) -> None:
-    if not waves:
-        issues.append("program must include at least one execution wave")
-        return
-    for index, wave in enumerate(waves, start=1):
-        if not _has_any_text(wave, ("label", "name", "wave_id", "wave")):
-            issues.append(f"program wave {index} must have a label or wave id")
-        if not _has_any_text(wave, ("goal", "summary")):
-            issues.append(f"program wave {index} must state the delivery goal")
-        if not _has_any_text(wave, ("validation", "validation_gate", "exit_gate")):
-            issues.append(f"program wave {index} must state the validation or exit gate")
-        if not _has_any_text(wave, (*_WORKSTREAM_REF_FIELDS, *_COMPONENT_REF_FIELDS)):
-            issues.append(f"program wave {index} must name workstream or component focus")
 
 
 def _check_backlog_topology(

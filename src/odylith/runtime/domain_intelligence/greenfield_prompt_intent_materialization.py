@@ -48,6 +48,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
+from odylith.runtime.domain_intelligence.greenfield_source_casing import restore_source_casing_in_public_copy
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality import (
     title_supports_conservative_first_path,
 )
@@ -150,6 +151,8 @@ def materialize_prompt_intent_hypothesis(
         _add_title_hypothesis_assumption(intent)
     if _uses_actorless_workflow_assumption(prompt=prompt, edit_evidence=raw_edit):
         _add_first_user_assumption(intent)
+    evidence_source = combined_prompt_evidence_source(prompt=prompt, edit_evidence=raw_edit)
+    intent = restore_source_casing_in_public_copy(intent, source_text=evidence_source)
     # Canonicalize typed facts before sealing their custody envelope. The
     # compiler may validate those facts, but it must never revise a sealed one.
     title_repair_payload = {"intent": intent}
@@ -180,7 +183,6 @@ def materialize_prompt_intent_hypothesis(
     if raw_edit:
         edit_evidence_path = root / ".odylith" / "runtime" / "greenfield" / "edit-evidence.md"
         atomic_write_text(edit_evidence_path, raw_edit + "\n", encoding="utf-8")
-    evidence_source = combined_prompt_evidence_source(prompt=prompt, edit_evidence=raw_edit)
     atomic_write_text(evidence_path, evidence_source, encoding="utf-8")
     from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 
@@ -409,6 +411,9 @@ def _merge_edit_evidence(
         return dict(baseline)
     sections = confirmed_intent_sections(edit_evidence)
     overrides = _explicit_edit_overrides(sections)
+    unchanged_first_path = _affirms_unchanged_first_path(edit_evidence)
+    if unchanged_first_path:
+        overrides.pop("first_path", None)
     actor_correction = _anaphoric_first_path_actor(_section_first_path_text(sections))
     if actor_correction:
         overrides.pop("first_path", None)
@@ -418,9 +423,16 @@ def _merge_edit_evidence(
         overrides["title"] = document_title
     plain_language_recovery = False
     if not overrides:
-        overrides = _plain_language_edit_overrides(edit_evidence, baseline=baseline)
+        plain_language_edit = (
+            _without_unchanged_first_path_statement(edit_evidence)
+            if unchanged_first_path
+            else edit_evidence
+        )
+        overrides = _plain_language_edit_overrides(plain_language_edit, baseline=baseline)
         plain_language_recovery = bool(overrides)
     if not overrides:
+        if unchanged_first_path:
+            return dict(baseline)
         raise ValueError(
             "What should change about the first complete path? "
             "Describe that correction in normal product language."
@@ -431,7 +443,15 @@ def _merge_edit_evidence(
         merged = _recompile_title_only_baseline(title=title_override)
     else:
         merged = dict(baseline)
-    if plain_language_recovery:
+    if "first_path" in overrides and not title_only_rebuild:
+        merged = _recompile_unusable_baseline_from_first_path(
+            baseline=baseline,
+            prompt=prompt,
+            first_path=overrides["first_path"],
+            title=str(overrides.get("title") or baseline.get("title") or "").strip(),
+        )
+        _preserve_nonderived_baseline_facts(merged, baseline=baseline, overrides=overrides)
+    elif plain_language_recovery:
         _clear_first_path_derivatives(merged)
     elif _material_edit_rebuilds_dependent_facts(overrides) and not title_only_rebuild:
         _clear_stale_baseline_derivatives(merged, overrides=overrides)
@@ -501,6 +521,49 @@ def _explicit_edit_overrides(sections: Mapping[str, list[str]]) -> dict[str, Any
     return overrides
 
 
+def _affirms_unchanged_first_path(value: str) -> bool:
+    return bool(
+        re.search(
+            r"(?:^|\n)\s*(?:[-*]\s*)?no\s+change\s+to\s+(?:the\s+)?first(?:\s+complete)?\s+path\s*:",
+            str(value or ""),
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _without_unchanged_first_path_statement(value: str) -> str:
+    """Remove one unchanged-path restatement while retaining later EDIT evidence."""
+
+    return re.sub(
+        r"(?:^|\n)\s*(?:[-*]\s*)?no\s+change\s+to\s+(?:the\s+)?first(?:\s+complete)?\s+path\s*:"
+        r"[^\n]*?(?:[.!?](?=\s+[A-Z])|(?=\n)|$)",
+        " ",
+        str(value or ""),
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip()
+
+
+def _preserve_nonderived_baseline_facts(
+    rebuilt: dict[str, Any],
+    *,
+    baseline: Mapping[str, Any],
+    overrides: Mapping[str, Any],
+) -> None:
+    """Keep evidence facts that a first-path edit does not semantically replace."""
+
+    for field in (
+        "external_systems",
+        "assumptions",
+        "ambiguities",
+        "non_goals",
+        "evidence_requirements",
+        "operational_constraints",
+    ):
+        if field not in overrides and baseline.get(field):
+            rebuilt[field] = baseline[field]
+
+
 def _edit_evidence_values(rows: object) -> list[str]:
     values: list[str] = []
     for value in confirmed_text_values(rows):
@@ -547,6 +610,7 @@ def _plain_language_edit_overrides(
     """
 
     text = " ".join(str(edit_evidence or "").split()).strip(" .")
+    text = re.sub(r"^(?:[-*]|\d+[.)])\s+", "", text).strip()
     if not text:
         return {}
     match = re.fullmatch(

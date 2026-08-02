@@ -238,6 +238,8 @@ def _title_result_focus(value: str) -> str:
         for term in label_terms(value)
         if term.casefold() not in _RESULT_FOCUS_CONTAINER_TERMS
     ]
+    while terms and terms[0] in {"at", "by", "for", "from", "of", "on", "to", "with"}:
+        terms.pop(0)
     return " ".join(terms).strip(" .") or lower_plain_title_subject_fragment(value, action_offset=0) or "accepted product"
 
 

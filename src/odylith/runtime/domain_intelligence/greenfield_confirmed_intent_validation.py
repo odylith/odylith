@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import canonical_state_object_is_meaningful
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
     contains_generic_system_scaffold,
 )
@@ -82,6 +83,8 @@ def validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
             continue
         if key == "first_path" and _first_path_is_clear_enough(intent):
             continue
+        if key == "state_object" and canonical_state_object_is_meaningful(clean_confirmed_text(intent.get(key))):
+            continue
         if word_count(clean_confirmed_text(intent.get(key))) < minimum:
             missing.append(key)
     actor_rows = confirmed_text_values(intent.get("human_actors"))
@@ -154,7 +157,10 @@ def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:
         _has_meaningful_story_shape(story) and _has_semantic_overlap(story, f"{actors} {systems} {state}", minimum=1)
     ):
         gaps.append("product_story")
-    if state and not (_has_meaningful_sentences(state, minimum=1) and has_progression_or_outcome(state)):
+    if state and not (
+        canonical_state_object_is_meaningful(state)
+        or (_has_meaningful_sentences(state, minimum=1) and has_progression_or_outcome(state))
+    ):
         gaps.append("state_object")
     if path and not (
         _first_path_is_clear_enough(intent)

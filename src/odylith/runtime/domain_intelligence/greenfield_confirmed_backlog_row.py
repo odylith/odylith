@@ -39,7 +39,8 @@ def build_backlog_row(
     source_requirements: list[str] | None = None,
     intelligence_actors: list[str] | None = None,
     prose_subject: str = "",
-    workstream_type: str = "implementation",
+    workstream_type: str = "standalone",
+    evidence_tier: str = "odylith_assumption",
 ) -> dict[str, Any]:
     clean_title = _row_text(title)
     clean_prose_subject = _row_text(prose_subject) or "This workstream"
@@ -68,7 +69,7 @@ def build_backlog_row(
         "dependencies": clean_dependencies,
         "interfaces": clean_interfaces,
         "validation": clean_validation,
-        "evidence_tier": "user_intent" if workstream_type == "program_parent" else "odylith_assumption",
+        "evidence_tier": evidence_tier,
         "rationale_lines": backlog_text.rationale_lines(
             label=label,
             title=clean_prose_subject,

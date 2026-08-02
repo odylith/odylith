@@ -113,6 +113,9 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
             has_implementation_prompts=True,
             max_prompt_overflow=0,
             pane_overflow=0,
+            rendered_story_body_count=5,
+            distinct_story_body_count=5,
+            clipped_text_count=0,
         )
         == ()
     )
@@ -127,6 +130,9 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
         has_implementation_prompts=False,
         max_prompt_overflow=20,
         pane_overflow=16,
+        rendered_story_body_count=5,
+        distinct_story_body_count=2,
+        clipped_text_count=3,
     )
 
     assert "browser surface project payload is not accepted greenfield project state" in issues
@@ -134,3 +140,5 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     assert "browser surface project payload contains empty implementation prompt text" in issues
     assert "browser surface project rendered fewer than five implementation prompt cards" in issues
     assert "browser surface project rendered the blank project state after commit-only create" in issues
+    assert "browser surface project repeated Product Story body copy" in issues
+    assert "browser surface project clips visible text" in issues

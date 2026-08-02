@@ -11,6 +11,7 @@ from local_release_smoke import _serve_directory
 
 
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
+BROWSER_PROJECT_MOBILE_VIEWPORT = {"width": 430, "height": 932}
 BROWSER_SURFACE_EXPECTATIONS = (
     ("radar", "#frame-radar", "h1", "Backlog Workstream Radar"),
     ("registry", "#frame-registry", "h1", "Component Registry"),
@@ -81,6 +82,18 @@ def browser_surface_proof_issues(*, repo_root: Path, timeout_ms: int = 15000) ->
                         )
                     finally:
                         context.close()
+                    mobile_context = browser.new_context(viewport=BROWSER_PROJECT_MOBILE_VIEWPORT)
+                    try:
+                        issues.extend(
+                            f"mobile viewport: {issue}"
+                            for issue in _project_generated_state_issues(
+                                context=mobile_context,
+                                base_url=base_url,
+                                timeout_ms=timeout_ms,
+                            )
+                        )
+                    finally:
+                        mobile_context.close()
                 finally:
                     browser.close()
         except PlaywrightError as exc:
@@ -137,9 +150,34 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
         project_state = page.locator("#pane-project").evaluate(
             """(node) => {
                 const prompts = Array.from(node.querySelectorAll(".project-host-prompt"));
+                const storyBodies = Array.from(node.querySelectorAll(".project-story-contract-card p"))
+                  .map((item) => String(item.innerText || "").trim())
+                  .filter(Boolean);
+                const clippedText = Array.from(
+                  node.querySelectorAll("h1, h2, h3, h4, p, li, td, th, code, strong, span")
+                ).filter((item) => {
+                  let current = item;
+                  while (current && node.contains(current)) {
+                    const style = window.getComputedStyle(current);
+                    if (style.display === "none" || style.visibility === "hidden") return false;
+                    const clipsX = style.overflowX === "hidden" || style.overflowX === "clip";
+                    const clipsY = style.overflowY === "hidden" || style.overflowY === "clip";
+                    const lineClamp = Number.parseInt(style.webkitLineClamp || "0", 10);
+                    if ((clipsX && current.scrollWidth > current.clientWidth + 1)
+                      || (clipsY && current.scrollHeight > current.clientHeight + 1)
+                      || lineClamp > 0) return true;
+                    current = current.parentElement;
+                  }
+                  return false;
+                });
                 const text = String(node.innerText || "");
                 return {
                   promptCount: prompts.length,
+                  storyBodyCount: storyBodies.length,
+                  distinctStoryBodyCount: new Set(
+                    storyBodies.map((body) => body.toLocaleLowerCase())
+                  ).size,
+                  clippedTextCount: clippedText.length,
                   hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
                   hasBlankState: text.includes("Project not defined yet"),
                   hasImplementationPrompts: [
@@ -184,6 +222,15 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 ),
                 max_prompt_overflow=int(project_state.get("maxPromptOverflow", 0) if isinstance(project_state, dict) else 0),
                 pane_overflow=int(project_state.get("paneOverflow", 0) if isinstance(project_state, dict) else 0),
+                rendered_story_body_count=int(
+                    project_state.get("storyBodyCount", 0) if isinstance(project_state, dict) else 0
+                ),
+                distinct_story_body_count=int(
+                    project_state.get("distinctStoryBodyCount", 0) if isinstance(project_state, dict) else 0
+                ),
+                clipped_text_count=int(
+                    project_state.get("clippedTextCount", 0) if isinstance(project_state, dict) else 0
+                ),
             )
         )
     except Exception as exc:
@@ -205,6 +252,9 @@ def _project_state_assertion_issues(
     has_implementation_prompts: bool,
     max_prompt_overflow: int,
     pane_overflow: int,
+    rendered_story_body_count: int = 5,
+    distinct_story_body_count: int = 5,
+    clipped_text_count: int = 0,
 ) -> tuple[str, ...]:
     issues: list[str] = []
     if payload_origin != "accepted greenfield project":
@@ -225,6 +275,12 @@ def _project_state_assertion_issues(
         issues.append("browser surface project implementation prompt cards overflow their containers")
     if pane_overflow > 4:
         issues.append("browser surface project pane overflows horizontally")
+    if rendered_story_body_count != 5:
+        issues.append("browser surface project did not render all five Product Story bodies")
+    if distinct_story_body_count != rendered_story_body_count:
+        issues.append("browser surface project repeated Product Story body copy")
+    if clipped_text_count:
+        issues.append("browser surface project clips visible text")
     return tuple(issues)
 
 

@@ -417,7 +417,7 @@
         "Nothing moved in this window: B-116 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-117": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-118": [
         "Nothing moved in this window: B-118 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -2947,19 +2947,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "127720aac91a0dedf2f3b44f02812e80bcca14cf377d5a6be1582b8f4b6c5607",
+        "substrate_fingerprint": "127720aac91a0dedf2f3b44f02812e80bcca14cf377d5a6be1582b8f4b6c5607",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-02T08:08:04Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Discipline Surfaces And Release Proof (B-117) is completed.",
+            "Next: Execution wave context: Primary in W7; under B-110.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Discipline Surfaces And Release Proof (B-117) is more than six hours old, so live momentum still needs another proving."
+          ]
         },
         "evidence_lookup": {}
       },

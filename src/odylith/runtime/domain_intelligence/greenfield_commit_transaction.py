@@ -36,7 +36,6 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/common/derivation_provenance.py",
     "runtime/domain_intelligence/greenfield_commit_journal.py",
     "runtime/domain_intelligence/greenfield_commit_transaction.py",
-    "runtime/domain_intelligence/greenfield_operating_envelope.py",
     "runtime/domain_intelligence/greenfield_create_cli.py",
     "runtime/domain_intelligence/greenfield_compiled_write.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",

@@ -77,8 +77,9 @@ def canonical_projection_facts(proposal: Mapping[str, Any]) -> tuple[CanonicalPr
     facts: list[CanonicalProjectionFact] = []
     if _complete_semantic_source(semantic_model):
         facts.extend(_first_path_facts(_mapping(semantic_model.get("first_path_contract"))))
-    facts.extend(_component_facts(proposal.get("components")))
-    facts.extend(_backlog_validation_facts(proposal.get("backlog")))
+    components = proposal.get("components")
+    facts.extend(_component_facts(components))
+    facts.extend(_backlog_validation_facts(proposal.get("backlog"), components=components))
     return _canonical_projection_variants(facts)
 
 
@@ -283,22 +284,44 @@ def _component_facts(value: Any) -> list[CanonicalProjectionFact]:
             for text in values
             if normalize_string(text)
         )
+        subject = normalize_string(item.get("label") or item.get("component_id"))
+        for validation in text_values(item.get("validation")):
+            text = normalize_string(validation)
+            if not _concrete_contract_validation(text, subject=subject):
+                continue
+            rows.append(
+                CanonicalProjectionFact(
+                    text=text,
+                    source_layer="component_contract",
+                    semantic_node_id=f"components[{index}].validation",
+                    source_path="proposal.components.validation",
+                    allowed_projection_ids=("registry", "atlas", "project_brief", "next_steps"),
+                    allowed_surface_roles=("validation", "proof", "implementation_prompt"),
+                    repair_owner="semantic_projection_custody",
+                )
+            )
     return rows
 
 
-def _backlog_validation_facts(value: Any) -> list[CanonicalProjectionFact]:
+def _backlog_validation_facts(value: Any, *, components: Any) -> list[CanonicalProjectionFact]:
     """Expose concrete workstream validation as reusable product contract facts."""
 
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return []
+    component_subjects = _component_subjects_by_id(components)
     rows: list[CanonicalProjectionFact] = []
     for index, item in enumerate(value, start=1):
         if not isinstance(item, Mapping):
             continue
-        subject = normalize_string(item.get("title") or item.get("summary") or item.get("problem"))
+        subjects = [normalize_string(item.get("title") or item.get("summary") or item.get("problem"))]
+        subjects.extend(
+            component_subjects[component_id]
+            for component_id in text_values(item.get("component_focus"))
+            if component_id in component_subjects
+        )
         for validation in text_values(item.get("validation")):
             text = normalize_string(validation)
-            if not _concrete_workstream_validation(text, subject=subject):
+            if not any(_concrete_contract_validation(text, subject=subject) for subject in subjects if subject):
                 continue
             rows.append(
                 CanonicalProjectionFact(
@@ -314,8 +337,20 @@ def _backlog_validation_facts(value: Any) -> list[CanonicalProjectionFact]:
     return rows
 
 
-def _concrete_workstream_validation(value: str, *, subject: str) -> bool:
-    """Avoid treating generic boilerplate as a canonical cross-surface fact."""
+def _component_subjects_by_id(value: Any) -> dict[str, str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return {}
+    return {
+        normalize_string(item.get("component_id")): normalize_string(item.get("label") or item.get("component_id"))
+        for item in value
+        if isinstance(item, Mapping)
+        and normalize_string(item.get("component_id"))
+        and normalize_string(item.get("label") or item.get("component_id"))
+    }
+
+
+def _concrete_contract_validation(value: str, *, subject: str) -> bool:
+    """Avoid treating generic validation boilerplate as cross-surface truth."""
 
     text = normalize_string(value)
     subject_terms = {

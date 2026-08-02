@@ -10,6 +10,7 @@ from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     capitalize_sentence_start_preserving_source_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
@@ -579,13 +580,12 @@ def _actor_story_title(value: object) -> str:
     if not title:
         return ""
     title = re.split(r"\b(?:who|that|with|for|and)\b", title, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .,:;")
-    if re.search(r"\bproof\s+reviewer\b", title, flags=re.IGNORECASE):
-        return "Reviewer"
     tokens = title.split()
-    for index, token in enumerate(tokens[1:], start=1):
-        if token.strip("()[]{}.,:;").casefold().endswith("ing"):
-            title = " ".join(tokens[:index]).strip(" .,:;")
-            break
+    if not has_human_actor_role_signal(title):
+        for index, token in enumerate(tokens[1:], start=1):
+            if token.strip("()[]{}.,:;").casefold().endswith("ing"):
+                title = " ".join(tokens[:index]).strip(" .,:;")
+                break
     words = title.split()
     if len(title) > 64 or len(words) > 6 or title.count(",") >= 1:
         return ""
@@ -823,17 +823,7 @@ def _story_excerpt(value: str, *, limit: int) -> str:
         total += row_len
     if selected:
         return _clean_excerpt_tail(" ".join(selected).rstrip(".") + ".")
-    words: list[str] = []
-    total = 0
-    for word in text.split():
-        next_total = total + len(word) + (1 if words else 0)
-        if next_total > limit:
-            break
-        words.append(word)
-        total = next_total
-    while words and words[-1].casefold().strip(".,;:") in {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
-        words.pop()
-    return _clean_excerpt_tail((" ".join(words).rstrip(" ,;:") or text[:limit].rstrip(" ,;:")).rstrip(".") + ".")
+    return _clean_excerpt_tail((sentences[0] if sentences else text).rstrip(".") + ".")
 
 
 def _clean_excerpt_tail(value: str) -> str:

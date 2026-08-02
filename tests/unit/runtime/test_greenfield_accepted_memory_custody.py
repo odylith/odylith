@@ -15,7 +15,7 @@ def test_accepted_memory_and_handoff_strip_editorial_first_path_framing() -> Non
         "semantic_model": {},
     }
 
-    accepted = proposal_memory._accepted_memory_proposal(proposal)
+    accepted = proposal_memory._accepted_memory_proposal(proposal, repo_root=None)
 
     assert "smallest version of the whole product" not in accepted["intent"]["first_path"]
     assert "smallest version of the whole product" not in greenfield_experience._first_path_summary(proposal)

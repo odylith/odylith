@@ -117,6 +117,27 @@ def test_greenfield_transaction_preserves_snapshot_when_rollback_fails(
             shutil.rmtree(transaction.recovery_path, ignore_errors=True)
 
 
+def test_greenfield_transaction_rejects_a_missing_retained_snapshot_entry(tmp_path) -> None:
+    target = tmp_path / "odylith/index.html"
+    target.parent.mkdir(parents=True)
+    target.write_text("before\n", encoding="utf-8")
+    transaction = GreenfieldApplyTransaction(tmp_path, paths=("odylith/index.html",))
+    transaction.__enter__()
+    assert transaction.snapshot_root is not None
+    snapshot = transaction.snapshot_root / "odylith/index.html"
+    snapshot.unlink()
+    target.write_text("after\n", encoding="utf-8")
+
+    try:
+        with pytest.raises(RuntimeError, match="snapshot inventory is invalid"):
+            transaction.__exit__(RuntimeError, RuntimeError("commit failed"), None)
+        assert transaction.rollback_status == "rollback_failed"
+        assert target.read_text(encoding="utf-8") == "after\n"
+        assert transaction.recovery_path == str(transaction.snapshot_root)
+    finally:
+        shutil.rmtree(transaction.snapshot_root, ignore_errors=True)
+
+
 def test_greenfield_transaction_rolls_back_graceful_termination(tmp_path) -> None:
     target = tmp_path / "odylith/index.html"
     target.parent.mkdir(parents=True)

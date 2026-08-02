@@ -55,7 +55,7 @@ flowchart LR
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, typed canonical repetition,<br/>source-owned package repetition,<br/>topology, Project prompt quality,<br/>typed generated-copy units,<br/>clipped terminal tails"]
       expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract<br/>coverage over accepted systems,<br/>including deferred topology"]
       persisted_readback["Persisted artifact readback<br/>create payload and accepted-project preview<br/>must agree before scoring"]
-      governed_readback["Governed record readback<br/>release catalogs/events,<br/>program waves,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch"]
+      governed_readback["Governed record readback<br/>release catalogs/events,<br/>Radar and Registry records,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch;<br/>no Greenfield program or wave"]
       evidence_readback["Independent package evidence<br/>project brief, Radar sections,<br/>Registry proof contracts,<br/>Atlas topology labels,<br/>prewrite safety,<br/>Project prompts from persisted payload,<br/>declared sentinel plus distinctive-anchor readback,<br/>guidance/catalog Markdown excluded"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, occurrence metadata,<br/>no proposal-repair lane"]
       source_addresses["ProjectionSourceAddress<br/>executable ArtifactPlanIR facts only:<br/>dict field, row index plus field,<br/>or owned list fact;<br/>preview roots are blockers"]
@@ -96,6 +96,7 @@ flowchart LR
       compiled_memory_previews["Compiled acceptance previews<br/>accepted project, project brief, and Compass event<br/>consumed without reconstruction"]
       report_envelope["Pre-confirm reporting envelope<br/>backlog, components, and diagrams<br/>are list-shaped sealed result fields"]
       transaction_seal["ProductCreateTransaction seal<br/>exact bytes, modes, file and directory deletes,<br/>repo fingerprints, result preview"]
+      snapshot_manifest["Durable rollback snapshot manifest<br/>exact affected paths, present/missing state,<br/>modes and SHA-256 fingerprints"]
       compiler_receipt["Detached compiler receipt<br/>transaction file digest and hash"]
       transaction_ready["Creation-ready confirmation view<br/>CONFIRM, EDIT, or REJECT"]
       commit_verify["Commit-only verification<br/>receipt, transaction hash, compiler identity,<br/>unchanged repo preconditions"]
@@ -117,7 +118,7 @@ flowchart LR
     shared_event_resolver -. "same resolved human event" .-> state_boundary_titles
     draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> blockers
-    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> transaction_ready --> commit_verify --> writes --> atomic_cleanup --> readback --> post_confirm_handoff --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
+    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> transaction_ready --> commit_verify --> snapshot_manifest --> writes --> atomic_cleanup --> readback --> post_confirm_handoff --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "quality debt remains" --> blockers
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
@@ -152,7 +153,7 @@ flowchart LR
     class visible_intent,confirmable_stdout,source_guard,operating_envelope,intent_section_parser,prose_boundary_guard,prompt_recovery,editorial_framing_guard,source_claim_custody,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,intent_visible_result,compiler,semantic_ir,evaluation_semantics,actor_role_owner,artifact_actor_filter,actor_path_role,shared_event_resolver,external_boundary,sequence_owner,subject_carry_guard,result_language,visible_result_priority,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,registry_contract_custody,semantic_result_custody,projections,confirmed_diagram_projection,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,transaction_ready,commit_verify,writes,atomic_cleanup,readback,rollback,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
+    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,transaction_ready,commit_verify,snapshot_manifest,writes,atomic_cleanup,readback,rollback,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52

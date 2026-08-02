@@ -23,7 +23,6 @@ from odylith.runtime.domain_intelligence import greenfield_prewrite_surface_stag
 from odylith.runtime.domain_intelligence import greenfield_prompt_intent_materialization
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_proposals_cli
-from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_release_commit
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
@@ -139,7 +138,6 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     monkeypatch.setattr(greenfield_apply_prewrite, "remove_stale_workstream_artifacts", forbidden)
     monkeypatch.setattr(greenfield_compiled_package_contract, "require_complete_compiled_greenfield_package", forbidden)
     monkeypatch.setattr(greenfield_backlog_commit, "write_backlog_files", forbidden)
-    monkeypatch.setattr(greenfield_programs, "materialize_compiled_greenfield_program", forbidden)
     monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_target", forbidden)
     monkeypatch.setattr(greenfield_release_commit, "materialize_compiled_release_assignment", forbidden)
     monkeypatch.setattr(greenfield_traceability_commit, "rebase_compiled_traceability_plan", forbidden)

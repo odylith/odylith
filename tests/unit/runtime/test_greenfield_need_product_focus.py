@@ -64,6 +64,16 @@ def test_command_container_recovers_a_use_for_title_without_completing_the_path(
     assert prompt_intent_source(prompt).title == "release notes"
 
 
+def test_command_container_stops_product_focus_at_the_first_action_boundary() -> None:
+    prompt = (
+        "Create a greenfield product for municipal permit clerks to intake permit applications, "
+        "validate zoning attachments, route reviewer decisions, and show applicants an approval packet."
+    )
+
+    assert product_focus_after_command_sentence(prompt) == "permit applications"
+    assert prompt_intent_source(prompt).title == "permit applications"
+
+
 def test_need_product_request_keeps_named_product_focus() -> None:
     prompt = "A research coordinator needs a product for assay review workspace."
 

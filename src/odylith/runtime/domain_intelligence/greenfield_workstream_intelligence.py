@@ -81,7 +81,6 @@ def enrich_backlog_rows(
     rows: Sequence[Any],
     *,
     intent: Mapping[str, Any],
-    program: Mapping[str, Any],
     release_plan: Mapping[str, Any],
     validation_strategy: Sequence[Any],
     security_compliance: Any,
@@ -91,7 +90,7 @@ def enrich_backlog_rows(
 ) -> list[Any]:
     """Preserve proposal workstream intelligence without synthesis."""
 
-    _ = intent, program, release_plan, validation_strategy, security_compliance, components, diagrams, domain_profile
+    _ = intent, release_plan, validation_strategy, security_compliance, components, diagrams, domain_profile
     return [dict(row) if isinstance(row, Mapping) else row for row in rows]
 
 

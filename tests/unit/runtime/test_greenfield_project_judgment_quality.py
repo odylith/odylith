@@ -549,3 +549,32 @@ def test_project_judgment_allows_single_concept_component_label_without_service_
     )
 
     assert greenfield_project_judgment_issues(package) == ()
+
+
+def test_project_judgment_rejects_near_duplicate_product_story_cards() -> None:
+    shared = (
+        "A permit reviewer records one application, checks the submitted evidence, publishes the review decision, "
+        "and leaves a traceable result for the applicant and supervising reviewer."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal=_proposal(),
+        project_dashboard_preview={
+            "product_story": {
+                "release_contract": [
+                    {"label": "First Path", "body": shared},
+                    {
+                        "label": "Product Boundary",
+                        "body": shared.replace("one application", "the application").replace(
+                            "supervising reviewer", "review supervisor"
+                        ),
+                    },
+                ]
+            }
+        },
+    )
+
+    assert (
+        "greenfield Project Product Story cards are semantically repetitive: "
+        "`First Path` and `Product Boundary` restate the same user meaning"
+        in greenfield_project_judgment_issues(package)
+    )

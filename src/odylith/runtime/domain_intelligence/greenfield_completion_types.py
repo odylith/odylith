@@ -53,7 +53,6 @@ class GreenfieldCompletionPackage:
     compass_memory_preview: Mapping[str, Any] | None = None
     next_steps_preview: Mapping[str, Any] | None = None
     backlog_result: Mapping[str, Any] | None = None
-    program_result: Mapping[str, Any] | None = None
     traceability_plan: Any = None
     baseline_writes: Mapping[str, str] | None = None
     brand_asset_writes: Mapping[str, Mapping[str, str]] | None = None

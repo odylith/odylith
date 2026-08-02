@@ -9,6 +9,8 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token, looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import CONFIRMED_ACTOR_ROLE_TERMS as _ROLE_WORDS
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal as _word_has_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions import actor_head_contains_role
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions import actor_row_description
@@ -349,8 +351,15 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generi
 
 
 def _derived_actor_label_has_human_signal(value: str) -> bool:
-    words = [word.casefold().strip(".,;:()[]{}") for word in _clean(value).replace("/", " ").split() if word.strip(".,;:()[]{}")]
-    return any(_word_has_role_signal(word) or _looks_like_derived_human_token(word) for word in words)
+    words = [word.casefold().strip(".,;:()[]{}") for word in _clean(value).split()]
+    return bool(
+        has_human_actor_role_signal(value)
+        or (
+            words
+            and _looks_like_derived_human_token(words[-1])
+            and not has_non_human_actor_signal(value)
+        )
+    )
 
 
 def _looks_like_derived_human_token(value: str) -> bool:
@@ -366,12 +375,20 @@ def _role_candidates(text: str) -> list[str]:
             candidates.append(subject)
         words = _label_terms(sentence)
         for index, word in enumerate(words):
-            if word.casefold() not in _ROLE_WORDS:
+            role_word = word.casefold()
+            if role_word not in _ROLE_WORDS and not (
+                role_word.endswith("s") and role_word[:-1] in _ROLE_WORDS
+            ):
                 continue
             if _role_token_is_artifact_context(words, index):
                 continue
             previous = words[index - 1].casefold().strip(".,;:-") if index > 0 else ""
-            start = index if previous in {"by", "for", "to", "with"} else max(0, index - 2)
+            action_modifier = _has_action_shaped_role_modifier(words, index)
+            start = (
+                index - 1
+                if action_modifier
+                else (index if previous in {"by", "for", "to", "with"} else max(0, index - 2))
+            )
             phrase = " ".join(words[start : index + 1])
             phrase = re.sub(
                 r"^(?:a|an|and|the|one|first|main|primary|current)\s+",
@@ -386,7 +403,8 @@ def _role_candidates(text: str) -> list[str]:
                 and phrase_words[0].casefold().endswith("ing")
             ):
                 phrase = phrase_words[-1]
-            phrase = _trim_non_actor_lead_words(phrase)
+            if not action_modifier:
+                phrase = _trim_non_actor_lead_words(phrase)
             if (
                 phrase
                 and phrase.casefold() not in {"team"}
@@ -461,7 +479,11 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
     if previous_token in {"explicit", "using"}:
         return True
     if looks_like_base_action_token(previous_token) or looks_like_finite_action_token(previous_token):
-        return True
+        # Some human roles use an action-shaped noun as a modifier, as in
+        # "release managers decide" or "support engineers deploy". The
+        # following predicate makes that role boundary explicit.
+        if not _has_action_shaped_role_modifier(words, index):
+            return True
     if previous_previous_token in {"without", "instead", "before", "after"} and previous_token.endswith("ing"):
         return True
     artifact_neighbors = {
@@ -493,6 +515,17 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
         return True
     current = words[index].casefold()
     return "-" in current and any(part in artifact_neighbors for part in current.split("-"))
+
+
+def _has_action_shaped_role_modifier(words: Sequence[str], index: int) -> bool:
+    if index <= 0 or index + 1 >= len(words):
+        return False
+    previous = words[index - 1].casefold().strip(".,;:-")
+    following = words[index + 1].casefold().strip(".,;:-")
+    return bool(
+        (looks_like_base_action_token(previous) or looks_like_finite_action_token(previous))
+        and (looks_like_base_action_token(following) or looks_like_finite_action_token(following))
+    )
 
 
 def _looks_plural_object_token(value: str) -> bool:

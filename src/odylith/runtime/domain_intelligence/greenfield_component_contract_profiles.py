@@ -139,7 +139,7 @@ def _object_phrase(value: str) -> str:
     if not text:
         return "domain record"
     words = label_terms(text, stopwords={"the", "primary", "core"})
-    return " ".join(words[:4]) or "domain record"
+    return " ".join(words[:6]) or "domain record"
 
 
 def _object_base(object_name: str) -> str:
@@ -148,7 +148,10 @@ def _object_base(object_name: str) -> str:
         for word in _clean(object_name).casefold().split()
         if word not in {"record", "file", "case", "item", "profile", "object"}
     ]
-    return " ".join(words[:3]) or _clean(object_name).casefold() or "domain item"
+    selected = words[:6]
+    while selected and selected[-1] in {"and", "or"}:
+        selected.pop()
+    return " ".join(selected) or _clean(object_name).casefold() or "domain item"
 
 
 def _packet_phrase(context: str, *, object_name: str) -> str:

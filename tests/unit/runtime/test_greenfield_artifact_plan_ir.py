@@ -164,22 +164,15 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
         "compass",
         "next_steps",
     )
-    assert artifact_plan_operation_affected_projections({"projection_kind": "program"}) == ("program",)
+    assert artifact_plan_operation_affected_projections({"projection_kind": "program"}) == ()
     assert artifact_plan_operation_affected_projections({"target_path": "prewrite_package.next_steps"}) == (
         "next_steps",
     )
-    assert artifact_plan_expand_projection_scope(("program",)) == (
-        "program",
-        "accepted_project",
-        "project_dashboard",
-        "compass",
-        "next_steps",
-        "release",
-    )
+    assert artifact_plan_expand_projection_scope(("program",)) == ()
     assert artifact_plan_scope_requires_full_prewrite(("project_brief",)) is False
     assert artifact_plan_scope_requires_full_prewrite(("release",)) is False
     assert artifact_plan_scope_requires_full_prewrite(("radar",)) is True
-    assert artifact_plan_scope_requires_full_prewrite(("program",)) is True
+    assert artifact_plan_scope_requires_full_prewrite(("program",)) is False
     assert artifact_plan_operation_affected_projections({"projection_kind": "product_manager"}) == ()
     assert artifact_plan_row_root_for_projection("registry") == "components"
     assert artifact_plan_row_root_for_projection("project_brief") == ""

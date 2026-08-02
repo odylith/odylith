@@ -59,3 +59,26 @@ def test_tribunal_lens_report_preserves_existing_report_shape() -> None:
     assert report["lenses"]["product_manager"]["status"] == "failed"
     assert report["lenses"]["product_manager"]["role"] == "Product manager"
     assert report["lenses"]["product_manager"]["checks"][0]["target_path"] == "proposal.assumptions"
+
+
+def test_tribunal_lens_report_keeps_inapplicable_checks_out_of_pass_counts() -> None:
+    check = tribunal_lens_check(
+        lens="product_manager",
+        role="Product manager",
+        name="first_release_requirements_project_brief",
+        passed=False,
+        applicable=False,
+        evidence="not applicable: no explicit first-release requirements were accepted",
+        issue="must not be surfaced",
+        surface="project_brief",
+        target_path="prewrite_package.project_brief",
+        projection_id="review_report",
+        semantic_node_id="ArtifactDraftSet.project_brief",
+    )
+
+    report = tribunal_lens_report({"product_manager": (check,)})
+
+    assert check.passed is True
+    assert report["status"] == "passed"
+    assert report["issues"] == []
+    assert report["lenses"]["product_manager"]["checks"][0]["status"] == "not_applicable"

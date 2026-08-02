@@ -6,6 +6,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import metric_capability_summary
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
@@ -36,6 +37,32 @@ def test_first_path_action_chain_keeps_workflow_verbs_from_becoming_actors() -> 
     assert "Restoration hydrologist escalates watershed review" in steps
     assert "Restoration hydrologist resolves exceptions" in steps
     assert all("escalate watershed resolves" not in step.casefold() for step in steps)
+
+
+def test_carried_actor_survives_a_visible_action_with_a_human_indirect_object() -> None:
+    steps = first_path_steps(
+        "Permit clerks intake applications, validate zoning attachments, route reviewer decisions, "
+        "and show applicants a clear approval packet."
+    )
+
+    assert steps[-1] == "Permit clerks show applicants a clear approval packet"
+
+
+def test_action_shaped_role_modifier_still_starts_an_explicit_actor_clause() -> None:
+    steps = first_path_steps(
+        "Evaluators upload benchmark runs, risk reviewers inspect failures, and release managers decide whether "
+        "a model can progress."
+    )
+
+    assert steps[-1] == "Release managers decide whether a model can progress"
+
+
+def test_action_fragment_preserves_a_chained_action_with_a_human_object() -> None:
+    fragment = action_chain_fragment(
+        "City staff can register displaced residents, match household needs to shelter capacity"
+    )
+
+    assert fragment == "register displaced residents, match household needs to shelter capacity"
 
 
 def test_metric_capability_summary_does_not_splice_long_paths_through_promised_result() -> None:

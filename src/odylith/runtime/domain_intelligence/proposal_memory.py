@@ -244,7 +244,7 @@ def build_accepted_project_source_payload(
         "accepted_at": _clean(accepted_at),
         "title": _clean(intent.get("title")) or "Greenfield Project",
         "source": "greenfield_apply",
-        "proposal": _accepted_memory_proposal(proposal),
+        "proposal": _accepted_memory_proposal(proposal, repo_root=repo_root),
         "created": {
             "workstreams": [_durable_memory_row(row, repo_root=repo_root) for row in backlog_items],
             "components": [_durable_memory_row(row, repo_root=repo_root) for row in component_items],
@@ -327,10 +327,14 @@ def build_project_brief_source_markdown(
     return display_text.strip_inline_markdown_emphasis_tokens(text).rstrip() + "\n"
 
 
-def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
+def _accepted_memory_proposal(
+    proposal: Mapping[str, Any],
+    *,
+    repo_root: Path | None,
+) -> dict[str, Any]:
     """Return the proposal shape stored in accepted memory."""
 
-    payload = copy.deepcopy(dict(proposal))
+    payload = _portable_repo_paths(copy.deepcopy(dict(proposal)), repo_root=repo_root)
     first_path = _canonical_accepted_first_path(payload) or _normalized_first_path_from_events(payload)
     if not first_path:
         return payload
@@ -356,6 +360,20 @@ def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
     if contract:
         contract["raw_path"] = first_path
     return payload
+
+
+def _portable_repo_paths(value: Any, *, repo_root: Path | None) -> Any:
+    """Make target-owned absolute paths portable without masking foreign paths."""
+
+    if isinstance(value, str):
+        return managed_repo_path(value, repo_root=repo_root)
+    if isinstance(value, Mapping):
+        return {key: _portable_repo_paths(item, repo_root=repo_root) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_portable_repo_paths(item, repo_root=repo_root) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_portable_repo_paths(item, repo_root=repo_root) for item in value)
+    return value
 
 
 def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:

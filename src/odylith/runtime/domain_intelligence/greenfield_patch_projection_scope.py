@@ -45,7 +45,7 @@ def patch_expand_projection_scope(projections: Sequence[Any]) -> tuple[str, ...]
 
 
 def patch_scope_requires_full_prewrite(projections: Sequence[Any]) -> bool:
-    """Return true when projection scope must restage Radar/program outputs."""
+    """Return true when projection scope must restage Radar outputs."""
 
     return artifact_plan_scope_requires_full_prewrite(projections)
 

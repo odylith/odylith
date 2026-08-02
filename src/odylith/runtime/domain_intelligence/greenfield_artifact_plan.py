@@ -13,7 +13,7 @@ from odylith.runtime.common.value_coercion import normalize_token
 
 
 ARTIFACT_PLAN_IR_VERSION = "odylith.greenfield.artifact_plan_ir.v1"
-ARTIFACT_PLAN_DICT_ROOTS = frozenset({"project_brief", "release_plan", "program"})
+ARTIFACT_PLAN_DICT_ROOTS = frozenset({"project_brief", "release_plan"})
 ARTIFACT_PLAN_LIST_ROOTS = frozenset({"assumptions", "open_questions", "risks", "validation_strategy"})
 ARTIFACT_PLAN_ROW_ROOTS = frozenset({"backlog", "components", "diagrams"})
 ARTIFACT_PLAN_ROOT_ALIASES = {
@@ -54,7 +54,6 @@ _PROJECTION_ALIASES = {
     "next_steps": "next_steps",
     "operator_next_steps": "next_steps",
     "open_questions": "project_brief",
-    "program": "program",
     "project_dashboard": "project_dashboard",
     "project_dashboard_preview": "project_dashboard",
     "project_brief": "project_brief",
@@ -76,9 +75,8 @@ _PROJECTION_DEPENDENCIES = {
     "atlas": ("accepted_project", "project_dashboard"),
     "release": ("accepted_project", "project_dashboard", "compass", "next_steps"),
     "radar": ("project_brief", "accepted_project", "project_dashboard", "compass", "next_steps"),
-    "program": ("accepted_project", "project_dashboard", "compass", "next_steps", "release"),
 }
-_FULL_PREWRITE_PROJECTIONS = frozenset({"radar", "program"})
+_FULL_PREWRITE_PROJECTIONS = frozenset({"radar"})
 _ARTIFACT_PLAN_SOURCE_ENVELOPES = frozenset({"artifactplanir", "proposal"})
 _PREWRITE_PACKAGE_ROUTE_ALIASES = {
     "accepted_project": "accepted_project",
@@ -354,7 +352,7 @@ def artifact_plan_expand_projection_scope(projections: Sequence[Any]) -> tuple[s
 
 
 def artifact_plan_scope_requires_full_prewrite(projections: Sequence[Any]) -> bool:
-    """Return true when a scope needs staged Radar/program recomputation."""
+    """Return true when a scope needs staged Radar recomputation."""
 
     expanded = artifact_plan_expand_projection_scope(projections)
     return any(projection in _FULL_PREWRITE_PROJECTIONS for projection in expanded)

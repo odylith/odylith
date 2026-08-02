@@ -104,7 +104,7 @@ def _diagram_workstream_titles(*, rows: list[Any], proposal: Mapping[str, Any]) 
             continue
         related = text_values(row.get("related_workstream_titles"))
         if index == 0 and len(related) >= 3:
-            result.setdefault("program", related[0])
+            result.setdefault("parent", related[0])
             result.setdefault("workflow", related[1])
             result.setdefault("boundary", related[2])
         elif index == 1 and len(related) >= 2:
@@ -127,7 +127,7 @@ def _diagram_workstream_titles(*, rows: list[Any], proposal: Mapping[str, Any]) 
         if isinstance(row, Mapping) and _clean(row.get("title"))
     ]
     if backlog_titles:
-        result["program"] = backlog_titles[0]
+        result["parent"] = backlog_titles[0]
         result["workflow"] = backlog_titles[min(1, len(backlog_titles) - 1)]
         result["boundary"] = backlog_titles[min(2, len(backlog_titles) - 1)]
         result["proof"] = backlog_titles[-1]

@@ -29,7 +29,6 @@ def render_prewrite_component_specs(
     proposal: Mapping[str, Any],
     release_selector: str,
     backlog_result: Mapping[str, Any],
-    program_result: Mapping[str, Any],
 ) -> dict[str, str]:
     """Render Registry specs in memory for the pre-confirm completion gate."""
 
@@ -39,7 +38,6 @@ def render_prewrite_component_specs(
         proposal=proposal,
         release_selector=release_selector,
         backlog_result=backlog_result,
-        program_result=program_result,
     ):
         specs[str(row["label"])] = build_component_spec(
             component_id=str(row["component_id"]),
@@ -69,7 +67,6 @@ def preview_prewrite_components(
     proposal: Mapping[str, Any],
     release_selector: str,
     backlog_result: Mapping[str, Any],
-    program_result: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
     """Run component authoring Tribunal checks before target writes begin."""
 
@@ -79,7 +76,6 @@ def preview_prewrite_components(
         proposal=proposal,
         release_selector=release_selector,
         backlog_result=backlog_result,
-        program_result=program_result,
     ):
         created = component_authoring.register_component(
             repo_root=root,
@@ -127,14 +123,12 @@ def component_authoring_prewrite_inputs(
     proposal: Mapping[str, Any],
     release_selector: str,
     backlog_result: Mapping[str, Any],
-    program_result: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
     """Build component-authoring inputs for first-release Registry previews."""
 
     first_release_workstreams = greenfield_programs.first_release_workstream_ids(
         proposal=proposal,
         created_backlog=backlog_result["created"],
-        program_result=program_result,
     )
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     diagram_ids = allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows)

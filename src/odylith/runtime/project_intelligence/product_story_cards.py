@@ -90,6 +90,7 @@ class _StoryCardContext:
     state_object: str
     proof_boundary: str
     non_goals: str
+    owned_capabilities: str
     actor: str
     participant: str
 
@@ -141,9 +142,9 @@ def _context(
     story = _product_sentence(intent.get("product_story")) or _product_sentence(objective)
     problem = _product_sentence(intent.get("problem")) or _project_line(project, "problem") or _problem_from_story(story)
     resolved_outcome = (
-        _product_sentence(outcome)
+        _outcome_from_text(first_path)
+        or _product_sentence(outcome)
         or _project_line(project, "user or stakeholder outcome")
-        or _outcome_from_text(first_path)
         or _outcome_from_text(story)
         or _product_sentence(intent.get("state_object"))
     )
@@ -164,6 +165,7 @@ def _context(
         state_object=_product_sentence(intent.get("state_object")),
         proof_boundary=proof,
         non_goals=non_goals,
+        owned_capabilities=_owned_capability_actions(intent.get("internal_systems")),
         actor=actor,
         participant=participant,
     )
@@ -198,7 +200,7 @@ def _product_boundary_card(ctx: _StoryCardContext) -> str:
         excluded = _clean_boundary_exclusion(ctx.non_goals)
         if excluded:
             return _ensure_period(
-                f"This release is limited to {outcome}. It leaves {excluded} for a later release unless those outcomes can be shown just as clearly"
+                f"This release is limited to {outcome}. Explicit exclusions remain: {_upper_first(excluded)}"
             )
     return _ensure_period(
         f"This release is limited to {outcome}. It does not claim every variant, exception, external handoff, or scaled operating path until those outcomes can be explained from the same user-visible result"
@@ -208,6 +210,10 @@ def _product_boundary_card(ctx: _StoryCardContext) -> str:
 def _owned_capabilities_card(ctx: _StoryCardContext) -> str:
     input_focus = _input_focus(ctx.first_path) or "the user request and required context"
     outcome = _outcome_phrase(ctx)
+    if ctx.owned_capabilities:
+        return _ensure_period(
+            f"The product owns these responsibilities: {ctx.owned_capabilities}. Together, they carry the accepted input through to {outcome} without shifting interpretation or reconstruction to another participant"
+        )
     return _ensure_period(
         f"The product is responsible for the first usable loop: {input_focus}. It turns that activity into {outcome}, shows the result plainly, keeps the underlying record available for follow-up, and does not ask another participant to reconstruct what happened by hand"
     )
@@ -241,12 +247,7 @@ def _repair_card(*, label: str, body: str, ctx: _StoryCardContext) -> str:
     fallback = _limit_card(_ensure_period(collapse_adjacent_duplicate_terms(fallback)), limit=620)
     if not _weak_card(fallback, ctx):
         return fallback
-    outcome = _outcome_phrase(ctx)
-    return collapse_adjacent_duplicate_terms(
-        _ensure_period(
-            f"{ctx.title} earns trust when {ctx.actor} can {_outcome_action_phrase(outcome)} and {ctx.participant} can understand what happened next"
-        )
-    )
+    return fallback
 
 
 def _weak_card(value: str, ctx: _StoryCardContext) -> bool:
@@ -828,6 +829,29 @@ def _product_items_sentence(value: Any) -> str:
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
+def _owned_capability_actions(value: Any) -> str:
+    actions: list[str] = []
+    for row in strings(value):
+        _name, separator, description = row.partition("—")
+        text = _product_sentence(description if separator else row).strip(" .")
+        text = re.split(
+            r"\s+(?:and keeps?|while preserving)\s+",
+            text,
+            maxsplit=1,
+            flags=re.IGNORECASE,
+        )[0].strip(" .")
+        if text:
+            actions.append(_lower_first(text))
+    actions = list(dict.fromkeys(actions))[:4]
+    if not actions:
+        return ""
+    if len(actions) == 1:
+        return actions[0]
+    if len(actions) == 2:
+        return f"{actions[0]} and {actions[1]}"
+    return f"{', '.join(actions[:-1])}, and {actions[-1]}"
+
+
 def _actor_title(actors: Sequence[tuple[str, str, str]], *, index: int) -> str:
     if len(actors) <= index:
         return ""
@@ -868,17 +892,8 @@ def _limit_card(value: str, *, limit: int) -> str:
         total += row_len
     if selected:
         return _ensure_period(" ".join(selected).rstrip("."))
-    words: list[str] = []
-    total = 0
-    for word in text.split():
-        next_total = total + len(word) + (1 if words else 0)
-        if next_total > limit:
-            break
-        words.append(word)
-        total = next_total
-    while words and words[-1].casefold().strip(".,;:") in {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
-        words.pop()
-    return _ensure_period(" ".join(words).rstrip(" ,;:"))
+    rows = _sentences(text)
+    return _ensure_period(rows[0] if rows else text)
 
 
 def _display_title(value: object) -> str:

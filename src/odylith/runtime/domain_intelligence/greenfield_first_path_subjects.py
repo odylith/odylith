@@ -31,6 +31,13 @@ SYSTEM_SUBJECT_TERMS = frozenset(
 def strip_action_subject(value: str) -> str:
     text = clean_first_path_text(value)
     text = re.sub(r"^on\s+save,\s*", "save, ", text, flags=re.IGNORECASE)
+    leading_action = MATERIAL_ACTION_RE.match(text)
+    if (
+        leading_action
+        and not action_word_starts_result_list_noun(text, leading_action.start())
+        and not _starts_with_action_shaped_actor_subject(text)
+    ):
+        return text
     _relative_actor, relative_action = _relative_actor_action_parts(text)
     if relative_action:
         return relative_action
@@ -80,6 +87,28 @@ def strip_action_subject(value: str) -> str:
         ):
             text = text[match.start() :]
     return text
+
+
+def _starts_with_action_shaped_actor_subject(value: str) -> bool:
+    """Recognize role nouns such as ``release managers`` before their predicate."""
+
+    text = clean_first_path_text(value).strip(" .")
+    word_matches = list(re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", text))
+    if len(word_matches) < 3:
+        return False
+    words = [match.group(0) for match in word_matches]
+    for predicate_index in range(2, min(5, len(words))):
+        subject_words = words[1:predicate_index]
+        if not any(looks_like_actor_role_term(word) for word in subject_words):
+            continue
+        if subject_words[-1].casefold() in {"a", "an", "the", "one"}:
+            continue
+        predicate_start = word_matches[predicate_index].start()
+        if "," in text[:predicate_start]:
+            continue
+        if MATERIAL_ACTION_RE.match(text[predicate_start:]):
+            return True
+    return False
 
 
 def actor_signature(value: str) -> str:

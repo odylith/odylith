@@ -2,7 +2,7 @@
 
 This module owns the text and ID shaping that turns an accepted proposal into
 the next coding move. Greenfield apply writes governance truth elsewhere; this
-owner keeps the human handoff, component runways, and first-wave proof language
+owner keeps the human handoff, component runways, and first-release proof language
 consistent across CLI output and candidate component specs.
 """
 
@@ -15,7 +15,6 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
-from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -119,7 +118,7 @@ def build_next_steps(
     start_id = candidate_ids[0] if candidate_ids else project_id
     start_row = by_id.get(start_id, {})
     proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
-    validation_items = _validation_items(row=proposal_row, wave={})
+    validation_items = _validation_items(row=proposal_row)
     first_slice = _first_slice_text(proposal_row)
     first_path = _first_path_summary(proposal)
     release_requirements = _first_release_requirement_sentence(proposal)
@@ -229,7 +228,7 @@ def build_component_handoffs(
             "workstream_title": title,
             "release_selector": release_selector,
             "first_slice": first_slice,
-            "validation_gates": list(_validation_items(row=proposal_row, wave={})[:6]),
+            "validation_gates": list(_validation_items(row=proposal_row)[:6]),
             "verification_commands": verification_commands(start_id),
         }
     return handoffs
@@ -514,14 +513,13 @@ def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> b
     return len(title_terms & label_terms) >= min(2, len(label_terms))
 
 
-def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tuple[str, ...]:
+def _validation_items(*, row: Mapping[str, Any]) -> tuple[str, ...]:
     return unique_text(
         [
             cleaned
             for item in [
                 *row_text_tuple(row, "validation", "test_strategy"),
                 *row_text_tuple(row, "success_metrics"),
-                *_wave_validation_items(wave),
             ]
             if (cleaned := _preview_safe_validation_item(item))
         ]
@@ -613,18 +611,6 @@ def _preview_allows_terminal_final(words: Sequence[str]) -> bool:
     )
 
 
-def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:
-    validation_items = text_values(wave.get("validation"))
-    joined_validation = join_sentence_text(validation_items)
-    items: list[str] = []
-    for token in [*text_values(wave.get("exit_gate")), *text_values(wave.get("validation_gate"))]:
-        if joined_validation and token.casefold() == joined_validation.casefold():
-            continue
-        items.append(token)
-    items.extend(validation_items)
-    return unique_text(items)
-
-
 def _customization_options(project_brief: Mapping[str, Any]) -> list[str]:
     rows = project_brief.get("customization_options", []) if isinstance(project_brief, Mapping) else []
     result: list[str] = []
@@ -650,7 +636,7 @@ def _readiness_gates(project_brief: Mapping[str, Any]) -> list[str]:
 
 
 def _project_first_prompt(*, project_id: str, project_title: str, start_id: str, start_title: str) -> str:
-    target = project_id or start_id or "<program-workstream-id>"
+    target = project_id or start_id or "<project-workstream-id>"
     next_lane = f"{start_id} {start_title}".strip() if start_id else "the first targeted child workstream"
     return (
         f"Deepen {target}: review `{project_title}`, choose or accept the project direction options, "
@@ -686,13 +672,13 @@ def _implementation_prompt(
             f"After project-first scope is accepted, start {start_id}. "
             f"Preserve this accepted first path: {first_path_text} "
             f"{release_requirements_text + ' ' if release_requirements_text else ''}"
-            f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
+            f"Treat `{title_text}` as the first coding scope and do not expand scope until success, blocked-input, "
             "replay, and handoff evidence is written and reviewed."
         )
     scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     return (
         f"After project-first scope is accepted, start {start_id}: {scope_sentence}"
         f"{release_requirements_text + ' ' if release_requirements_text else ''}"
-        f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
+        f"Treat `{title_text}` as the first coding scope and do not expand scope until success, blocked-input, "
         "replay, and handoff evidence is written and reviewed."
     )

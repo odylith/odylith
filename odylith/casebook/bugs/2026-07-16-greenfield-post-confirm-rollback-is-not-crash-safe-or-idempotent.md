@@ -67,3 +67,14 @@
 - src/odylith/install/fs.py
 
 - Delete-Phase Rollback Verification (2026-07-17): The write-set and journal proof now cover the missing delete phase. A mixed transaction first replaces a governed file, deletes a prior governed file, then receives an injected directory-delete error; `GreenfieldApplyTransaction` restores the changed file, deleted file, and removed empty directory, and recovery preconditions match the complete pre-confirm state. A separate child-process proof performs one sealed write, deletes the first of two governed files, receives SIGKILL before the second deletion, and `GreenfieldCommitJournal` recovery restores the changed file plus both deleted files before retry. Focused repository write-set and journal proof passed `34` tests. This proves the controlled exception and partial-crash branches for delete operations; it is not yet installed release proof. Failed mechanisms to avoid: do not infer atomicity from write-only rollback tests; do not kill a test process after its final mutation and call the durable after-state a partial failure; do not accept a retry until recovery has read back the full pre-confirm fingerprint boundary.
+
+- Snapshot-Integrity Verification (2026-08-02): Adversarial review found that
+  rollback could report success after a snapshot file disappeared because the
+  restore loop only visited files still present. The transaction guard now
+  persists `.snapshot-manifest.v1.json` with the exact affected-path inventory,
+  present/missing state, modes, and SHA-256 fingerprints. Recovery validates
+  the complete manifest before changing the repository and validates restored
+  readback afterward. Missing, unexpected, or corrupt snapshot material yields
+  `rollback_failed` and retains the recovery directory. Rollback, journal, and
+  write-boundary proof passed `45` tests. Hard-crash clean-install proof remains
+  a release gate, so CB-261 stays open.

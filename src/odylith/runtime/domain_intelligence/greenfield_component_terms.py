@@ -303,6 +303,7 @@ def _clean_visible_phrase_debris(value: str) -> str:
     text = normalize_visible_result_language(text)
     text = re.sub(r"^on\s+save,\s*", "", text, flags=re.I)
     text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.I)
+    text = re.sub(r"\s+as\s+(?:a|the)\s+visible\s+result\b.*$", "", text, flags=re.I)
     text = re.sub(
         r"\s+and\s+the\s+(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?",
         " and the ",

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import webbrowser
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 
@@ -77,12 +78,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as error:
         return _error(str(error), as_json=args.as_json, error=error)
-    navigation = _post_confirm_navigation()
+    navigation = _post_confirm_navigation(root)
     if args.as_json:
         response = dict(result)
         response["post_confirm_navigation"] = navigation
+        response["post_confirm_browser"] = {
+            "status": "not_attempted",
+            "reason": "machine_readable_output",
+            "url": navigation["project_url"],
+        }
         print(json.dumps(response, indent=2, sort_keys=True))
     else:
+        browser_result = _open_committed_dashboard(navigation)
         summary = dict(result.get("product_create_transaction") or {})
         print("Odylith committed the validated Greenfield package.")
         print(f"- transaction hash: {args.transaction_hash}")
@@ -90,28 +97,49 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"- validation gate: {summary['validation_status']}")
         print(f"- sealed writes: {summary['repository_write_count']}")
         print("- readback: passed")
-        _print_post_confirm_navigation(navigation)
+        _print_post_confirm_navigation(navigation, browser_result=browser_result)
     return 0
 
 
-def _post_confirm_navigation() -> dict[str, str]:
+def _post_confirm_navigation(repo_root: Path) -> dict[str, str]:
     """Return the stable, host-agnostic route contract after a confirmed create."""
 
-    return dict(_POST_CONFIRM_NAVIGATION)
+    root = Path(repo_root).expanduser().resolve()
+    dashboard_path = (root / "odylith" / "index.html").resolve()
+    navigation = dict(_POST_CONFIRM_NAVIGATION)
+    navigation["dashboard_path"] = str(dashboard_path)
+    navigation["project_url"] = f"{dashboard_path.as_uri()}?tab=project"
+    return navigation
 
 
-def _print_post_confirm_navigation(navigation: dict[str, str]) -> None:
+def _open_committed_dashboard(navigation: Mapping[str, str]) -> dict[str, Any]:
+    """Open the committed Project view without changing transaction success."""
+
+    url = str(navigation.get("project_url") or "").strip()
+    try:
+        opened = bool(url and webbrowser.open(url, new=2))
+    except Exception as error:  # pragma: no cover - browser integrations vary by host
+        return {"status": "unavailable", "url": url, "reason": f"{type(error).__name__}: {error}"}
+    return {
+        "status": "opened" if opened else "unavailable",
+        "url": url,
+        "reason": "" if opened else "no browser accepted the local dashboard URL",
+    }
+
+
+def _print_post_confirm_navigation(
+    navigation: Mapping[str, str],
+    *,
+    browser_result: Mapping[str, Any],
+) -> None:
     print("")
-    print("Open the generated governance workspace:")
-    print(f"- Project: `{navigation['project']}`")
-    print(f"- Radar: `{navigation['radar']}`")
-    print(f"- Registry: `{navigation['registry']}`")
-    print(f"- Atlas: `{navigation['atlas']}`")
-    print(f"- Compass: `{navigation['compass']}`")
-    print(
-        "Next: Review the committed governance package before beginning implementation; "
-        "no application code has been built."
-    )
+    if browser_result.get("status") == "opened":
+        print(f"Opened the committed Project dashboard: {navigation['project_url']}")
+    else:
+        print("The package was committed, but Odylith could not open a browser automatically.")
+        print(f"Open the committed Project dashboard: {navigation['project_url']}")
+        print(f"Dashboard file: {navigation['dashboard_path']}")
+    print("Next: Review the Product Story and first workstream before beginning implementation; no application code has been built.")
 
 
 def _create_arguments(argv: Sequence[str] | None) -> list[str]:

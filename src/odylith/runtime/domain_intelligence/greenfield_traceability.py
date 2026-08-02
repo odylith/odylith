@@ -445,7 +445,7 @@ def _patch_sections(
     )
     sections["Why Now"] = _why_now_text(row=row, focus=scope_ref, first_slice=first_slice) or sections.get("Why Now", "")
     row_questions = _question_lines(row.get("open_questions", []))
-    if not row_questions and _is_parent_workstream(row):
+    if not row_questions and _is_project_spine_workstream(row, proposal=proposal):
         row_questions = _scoped_question_lines(open_questions[:3], focus=focus)
     sections["Open Questions"] = (
         _bullets(_scoped_trace_rows(focus, row_questions))
@@ -453,6 +453,13 @@ def _patch_sections(
         else f"- {focus}: no unresolved questions are recorded for this slice."
     )
     sections.update(build_artifact_enrichment(row=row, proposal=proposal).radar_sections)
+
+
+def _is_project_spine_workstream(row: Mapping[str, Any], *, proposal: Mapping[str, Any]) -> bool:
+    backlog = [item for item in proposal.get("backlog", ()) if isinstance(item, Mapping)]
+    if not backlog:
+        return False
+    return _clean(row.get("title")).casefold() == _clean(backlog[0].get("title")).casefold()
 
 
 def _is_parent_workstream(row: Mapping[str, Any]) -> bool:

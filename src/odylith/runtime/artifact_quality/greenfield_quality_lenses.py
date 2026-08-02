@@ -152,8 +152,8 @@ _CHECK_TARGETS = {
     "prewrite_safety": {
         "role": "Engineer",
         "surface": "engineer",
-        "target_path": "prewrite_package.program",
-        "semantic_node_id": "ArtifactDraftSet.program",
+        "target_path": "prewrite_package.artifact_draft_set",
+        "semantic_node_id": "ArtifactDraftSet.package",
         "repairability": "unrepairable",
         "owner": "prewrite_gate",
     },
@@ -276,22 +276,28 @@ def _product_manager_checks(
             "quality lens product_manager missing first-release workstream scope",
         ),
         _check(
-            len(brief_release_requirements) == len(release_requirements),
+            bool(release_requirements) and len(brief_release_requirements) == len(release_requirements),
             "first_release_requirements_project_brief",
             (
                 f"{len(brief_release_requirements)} of {len(release_requirements)} accepted first-release "
                 "requirement(s) visible in the project brief"
+                if release_requirements
+                else "not applicable: no explicit first-release requirements were accepted"
             ),
             "quality lens product_manager missing accepted first-release requirements in the project brief",
+            applicable=bool(release_requirements),
         ),
         _check(
-            len(handoff_release_requirements) == len(release_requirements),
+            bool(release_requirements) and len(handoff_release_requirements) == len(release_requirements),
             "first_release_requirements_implementation_handoff",
             (
                 f"{len(handoff_release_requirements)} of {len(release_requirements)} accepted first-release "
                 "requirement(s) visible in the implementation handoff"
+                if release_requirements
+                else "not applicable: no explicit first-release requirements were accepted"
             ),
             "quality lens product_manager missing accepted first-release requirements in the implementation handoff",
+            applicable=bool(release_requirements),
         ),
         _check(
             len(assumptions) >= 2,
@@ -362,7 +368,6 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
     component_spec_evidence_count = len(specs) if specs else len(component_preview)
     next_steps = _as_mapping(getattr(package, "next_steps_preview", None))
     backlog_result = _as_mapping(getattr(package, "backlog_result", None))
-    program_result = _as_mapping(getattr(package, "program_result", None))
     prewrite_safety = _as_mapping(getattr(package, "prewrite_safety_preview", None))
     component_specs_complete = bool(components) and component_spec_evidence_count >= len(components)
     return [
@@ -391,9 +396,9 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
             "quality lens engineer missing passed validation evidence",
         ),
         _check(
-            _prewrite_safety_passed(program_result=program_result, prewrite_safety=prewrite_safety),
+            _prewrite_safety_passed(prewrite_safety=prewrite_safety),
             "prewrite_safety",
-            _prewrite_safety_evidence_summary(program_result=program_result, prewrite_safety=prewrite_safety),
+            _prewrite_safety_evidence_summary(prewrite_safety=prewrite_safety),
             "quality lens engineer missing prewrite dry-run safety evidence",
         ),
     ]
@@ -460,7 +465,14 @@ def _domain_expert_checks(
     ]
 
 
-def _check(condition: bool, name: str, evidence: str, issue: str) -> dict[str, str]:
+def _check(
+    condition: bool,
+    name: str,
+    evidence: str,
+    issue: str,
+    *,
+    applicable: bool = True,
+) -> dict[str, str]:
     meta = _CHECK_TARGETS.get(name, {})
     return tribunal_lens_check(
         lens=_lens_for_check(name),
@@ -476,6 +488,7 @@ def _check(condition: bool, name: str, evidence: str, issue: str) -> dict[str, s
         severity="high",
         repairability=str(meta.get("repairability", "semantic_patch")),
         owner=quality_lens_repair_owner(name) or str(meta.get("owner", "quality_lens_contract")),
+        applicable=applicable,
     ).to_dict()
 
 
@@ -590,7 +603,6 @@ def _rendered_text(package: Any) -> str:
                 getattr(package, "compass_memory_preview", None),
                 getattr(package, "next_steps_preview", None),
                 getattr(package, "backlog_result", None),
-                getattr(package, "program_result", None),
                 getattr(package, "release_target_result", None),
                 getattr(package, "release_assignment_result", None),
             ]
@@ -654,26 +666,22 @@ def _gate_status(value: Mapping[str, Any]) -> str:
 
 def _prewrite_safety_passed(
     *,
-    program_result: Mapping[str, Any],
     prewrite_safety: Mapping[str, Any],
 ) -> bool:
     if normalize_string(prewrite_safety.get("status")).casefold() == "passed":
         checks = _as_mapping(prewrite_safety.get("checks"))
         return bool(checks) and all(bool(value) for value in checks.values())
-    return bool(program_result) and normalize_string(program_result.get("dry_run")).casefold() in {"true", "1"}
+    return False
 
 
 def _prewrite_safety_evidence_summary(
     *,
-    program_result: Mapping[str, Any],
     prewrite_safety: Mapping[str, Any],
 ) -> str:
     if prewrite_safety:
         checks = _as_mapping(prewrite_safety.get("checks"))
         passed = sum(1 for value in checks.values() if bool(value))
         return f"{passed} of {len(checks)} prewrite safety check(s) passed"
-    if program_result:
-        return "prewrite program dry-run evidence inspected"
     return "0 prewrite safety check(s) present"
 
 

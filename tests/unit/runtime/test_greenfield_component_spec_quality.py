@@ -668,6 +668,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("representative user protocol") == "protocol"
     assert clean_artifact_phrase("running protocol") == "running protocol"
     assert clean_artifact_phrase("dashboard visibly updates web/ui surface") == "web/ui surface state"
+    assert clean_artifact_phrase("presents approval packet as the visible result to permit clerks") == "approval packet"
     assert clean_artifact_phrase("descriptions mechanism") == "descriptions"
     assert clean_artifact_phrase("metric moved usage protocol") == "usage protocol metric"
     assert clean_artifact_phrase("metric changed usage protocol") == "usage protocol metric"

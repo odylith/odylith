@@ -105,7 +105,7 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
     )
     releases = _release_rows(normalized["release_plan"])
     slug_map = _diagram_slug_map(normalized.get("diagrams"), project_slug=project_slug)
-    normalized["program"] = _normalize_program(normalized.get("program"), release_rows=releases)
+    normalized.pop("program", None)
     normalized["backlog"] = _normalize_backlog(normalized.get("backlog"), release_rows=releases, slug_map=slug_map)
     normalized["components"] = _normalize_components(normalized.get("components"))
     normalized["diagrams"] = _normalize_diagrams(
@@ -118,7 +118,6 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
         intent=normalized["intent"],
         release_selector=clean_text(normalized["release_plan"].get("selector")) or DEFAULT_GREENFIELD_RELEASE_SELECTOR,
         project_brief=normalized["project_brief"],
-        program=normalized["program"],
         release_plan=normalized["release_plan"],
         components=normalized["components"],
         diagrams=normalized["diagrams"],
@@ -127,7 +126,6 @@ def normalize_host_reasoned_proposal(proposal: Mapping[str, Any]) -> dict[str, A
     normalized["backlog"] = enrich_backlog_rows(
         normalized["backlog"],
         intent=normalized["intent"],
-        program=normalized["program"],
         release_plan=normalized["release_plan"],
         validation_strategy=normalized["validation_strategy"],
         security_compliance=normalized.get("security_compliance"),
@@ -220,7 +218,7 @@ def _normalize_release_plan(value: Any) -> dict[str, Any]:
             "label": label,
             "provisional_release_id": clean_text(first.get("provisional_release_id")) or f"release-{slugify(selector)}",
             "strategy": clean_text(first.get("strategy"))
-            or "Promote the accepted first wave through explicit release gates.",
+            or "Promote the accepted first path through explicit release gates.",
             "target_workstreams": target_workstreams,
             "release_stages": rows,
             "milestones": _release_milestones(rows),
@@ -286,29 +284,6 @@ def _release_gate_for(value: Any, *, release_rows: Sequence[Mapping[str, Any]]) 
         if selector and clean_text(row.get("release")) == selector:
             return join_sentence_text(row.get("exit_criteria")) or join_sentence_text(row.get("release_gate"))
     return ""
-
-
-def _normalize_program(value: Any, *, release_rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    program = _proposal_object(value)
-    waves = []
-    for index, raw in enumerate(_proposal_sequence(program.get("waves")), start=1):
-        if not isinstance(raw, Mapping):
-            continue
-        row = dict(raw)
-        _normalize_workstream_ref_fields(row)
-        row.setdefault("wave_id", clean_text(row.get("id")) or clean_text(row.get("wave")) or f"W{index}")
-        row.setdefault("label", clean_text(row.get("title")) or clean_text(row.get("name")) or str(row["wave_id"]))
-        gate = (
-            join_sentence_text(row.get("validation_gate"))
-            or join_sentence_text(row.get("validation"))
-            or join_sentence_text(row.get("exit_gate"))
-            or _release_gate_for(row.get("release"), release_rows=release_rows)
-        )
-        if gate:
-            row.setdefault("validation_gate", gate)
-        waves.append(row)
-    program["waves"] = waves
-    return program
 
 
 def _diagram_slug_map(value: Any, *, project_slug: str) -> dict[str, str]:

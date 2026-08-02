@@ -284,7 +284,7 @@ def workstream_titles(
     second_component = component_label(components, 1, fallback=label)
     third_component = component_label(components, 2, fallback=label)
     titles = {
-        "program": f"Establish {label} Program",
+        "parent": f"Prove One Complete Path for {label}",
         "workflow": f"Prove {first_component}",
         "boundary": f"Define {second_component} Boundary",
         "proof": f"Prepare {third_component} Release Proof",
