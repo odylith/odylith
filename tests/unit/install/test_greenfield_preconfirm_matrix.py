@@ -985,8 +985,10 @@ def _passing_natural_rescue_result(module) -> object:
         counts=_full_counts(module),
         issues=(),
         manifest={"repair_tier": "rescue"},
-        proof_scope="real_installed_structured_patch_plan_case",
+        proof_scope="real_installed_structured_patch_plan_and_provider_failure_cases",
         natural_rescue_quality_proven=True,
+        provider_failure_fallback_proven=True,
+        provider_failure_observation={"proven": True},
     )
 
 

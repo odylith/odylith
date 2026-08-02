@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import sys
 
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
@@ -119,6 +120,46 @@ def test_semantic_release_rejects_duplicate_result_ids() -> None:
 
     assert report["passed"] is False
     assert report["duplicate_result_ids"] == ["duplicate"]
+
+
+def test_semantic_release_does_not_let_aggregate_success_hide_one_weak_model_profile() -> None:
+    profiles = (
+        "provider-free-standard-v1",
+        "bounded-reasoning-standard-v1",
+        "lower-capability-safe-v1",
+    )
+    profile_sizes = (7, 7, 6)
+    cases: list[GreenfieldMatrixCase] = []
+    results: list[GreenfieldMatrixResult] = []
+    annotations: dict[str, dict[str, object]] = {}
+    for profile, size in zip(profiles, profile_sizes, strict=True):
+        for index in range(size):
+            case_id = f"{profile}-{index}"
+            case = replace(
+                _case(case_id, expectation="transaction_committed", input_style="direct_request"),
+                tags=("complexity:bounded", f"model-profile:{profile}"),
+            )
+            result = _commit_result(case)
+            if profile == "lower-capability-safe-v1" and index == 0:
+                result = replace(result, status="failed")
+            cases.append(case)
+            results.append(result)
+            annotations[case_id] = _commit_annotation()
+
+    report = evaluate_semantic_release(
+        cases=cases,
+        annotations=annotations,
+        results=results,
+        floors=FLOORS,
+    )
+    by_profile = {row["profile"]: row for row in report["model_profiles"]}
+
+    assert report["overall_case_success"]["rate"] == 0.95
+    assert report["worst_slice"]["point_estimate"] >= FLOORS["worst_slice_success"]
+    assert by_profile["provider-free-standard-v1"]["passed"] is True
+    assert by_profile["bounded-reasoning-standard-v1"]["passed"] is True
+    assert by_profile["lower-capability-safe-v1"]["passed"] is False
+    assert "model profile `lower-capability-safe-v1` failed" in " ".join(report["issues"])
 
 
 def _case(case_id: str, *, expectation: str, input_style: str) -> GreenfieldMatrixCase:

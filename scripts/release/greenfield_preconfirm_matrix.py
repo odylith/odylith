@@ -61,6 +61,20 @@ from greenfield_matrix_campaign import required_stressors_from_values  # noqa: E
 from greenfield_matrix_campaign import stop_reason  # noqa: E402
 from greenfield_matrix_attempt_ledger import MatrixAttemptLedger  # noqa: E402
 from greenfield_matrix_metamorphic import evaluate_metamorphic_outputs  # noqa: E402
+from greenfield_model_profiles import assign_model_profiles  # noqa: E402
+from greenfield_model_profiles import case_model_profile  # noqa: E402
+from greenfield_model_profiles import model_profile_environment  # noqa: E402
+from greenfield_model_profiles import model_profile_evidence  # noqa: E402
+from greenfield_model_profiles import profile_counts  # noqa: E402
+from greenfield_model_profile_proof import (  # noqa: E402
+    combine_natural_rescue_results as _combined_natural_rescue_result,
+)
+from greenfield_model_profile_proof import (  # noqa: E402
+    provider_failure_observation as _provider_failure_observation,
+)
+from greenfield_model_profile_proof import (  # noqa: E402
+    provider_failure_rescue_env as _installed_provider_failure_rescue_env,
+)
 from greenfield_onboarding_quality_scorecard import build_onboarding_quality_scorecard  # noqa: E402
 from greenfield_matrix_preflight import matrix_preflight_failures  # noqa: E402
 from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
@@ -189,7 +203,7 @@ def run_matrix(
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
 
-    selected_cases = tuple(cases) or default_cases()
+    selected_cases = assign_model_profiles(tuple(cases) or default_cases())
     _raise_for_unsupported_case_expectations(selected_cases)
     install_mode = _validated_install_mode(install_mode)
     campaign_config = MatrixCampaignConfig(
@@ -241,6 +255,7 @@ def run_matrix(
             "stop_after_failures": campaign_config.stop_after_failures,
             "stop_after_cluster_failures": campaign_config.stop_after_cluster_failures,
             "required_stressors": list(campaign_config.required_stressors),
+            "model_profile_counts": profile_counts(selected_cases),
         },
     )
     _flush_incremental_matrix_payload(
@@ -770,15 +785,24 @@ def run_natural_rescue_proof(
     run_root.mkdir(parents=True, exist_ok=False)
     server, base_url = _serve_directory(release_dir)
     try:
-        repo_root = run_root / f"odylith-sim-natural-rescue-{uuid.uuid4().hex[:8]}"
-        result = _run_natural_rescue_case(
-            repo_root=repo_root,
+        bounded_root = run_root / f"odylith-sim-natural-rescue-{uuid.uuid4().hex[:8]}"
+        bounded = _run_natural_rescue_case(
+            repo_root=bounded_root,
             install_script=install_script,
             base_url=base_url,
             version=version,
         )
-        _cleanup_repo_before_next(repo_root)
-        return result
+        _cleanup_repo_before_next(bounded_root)
+        failure_root = run_root / f"odylith-sim-provider-failure-{uuid.uuid4().hex[:8]}"
+        provider_failure = _run_natural_rescue_case(
+            repo_root=failure_root,
+            install_script=install_script,
+            base_url=base_url,
+            version=version,
+            require_provider_failure=True,
+        )
+        _cleanup_repo_before_next(failure_root)
+        return _combined_natural_rescue_result(bounded, provider_failure)
     finally:
         server.shutdown()
         server.server_close()
@@ -798,7 +822,12 @@ def _run_case(
     install_mode: str = "full",
     require_write_audit: bool = True,
 ) -> GreenfieldMatrixResult:
-    env = _local_release_env(base_url=base_url, version=version)
+    case = assign_model_profiles((case,))[0]
+    profile = case_model_profile(case)
+    env = model_profile_environment(
+        profile,
+        _local_release_env(base_url=base_url, version=version),
+    )
     if not skip_install:
         repo_root.mkdir(parents=True)
         _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
@@ -810,7 +839,7 @@ def _run_case(
     if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
         if not require_write_audit:
             raise ValueError("clarification matrix cases require the installed write audit")
-        return _run_expected_clarification_case(
+        result = _run_expected_clarification_case(
             case=case,
             repo_root=repo_root,
             env=env,
@@ -818,6 +847,10 @@ def _run_case(
             install_script=install_script,
             version=version,
             install_mode=install_mode,
+        )
+        return replace(
+            result,
+            evidence={**dict(result.evidence), "model_profile": model_profile_evidence(profile, env)},
         )
     execution = _run_compiled_greenfield_create_with_receipt(
         repo_root=repo_root,
@@ -886,6 +919,7 @@ def _run_case(
         "decision_rail_issues": list(decision_rail_issues),
         "post_confirm_navigation_issues": list(navigation_issues),
     }
+    evidence["model_profile"] = model_profile_evidence(profile, env)
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed" if quality.passed else "failed",
@@ -1410,6 +1444,7 @@ def _run_natural_rescue_case(
     install_script: Path,
     base_url: str,
     version: str,
+    require_provider_failure: bool = False,
 ) -> GreenfieldRescueSmokeResult:
     case = rescue_smoke_case()
     repo_root.mkdir(parents=True)
@@ -1426,7 +1461,11 @@ def _run_natural_rescue_case(
         )
     create, create_seconds = _run_compiled_greenfield_create(
         repo_root=repo_root,
-        env=_installed_structured_rescue_env(env),
+        env=(
+            _installed_provider_failure_rescue_env(env)
+            if require_provider_failure
+            else _installed_structured_rescue_env(env)
+        ),
         prompt=case.prompt,
         timeout=150,
     )
@@ -1454,6 +1493,11 @@ def _run_natural_rescue_case(
         )
     )
     issues.extend(_natural_rescue_manifest_issues(manifest))
+    provider_failure_observation = _provider_failure_observation(manifest)
+    if require_provider_failure and not provider_failure_observation.get("proven"):
+        issues.append(
+            "lower-capability rescue proof did not observe provider failure followed by source-anchored fallback"
+        )
     issues.extend(surface_issues)
     return _rescue_smoke_result(
         create_payload=payload,
@@ -1461,8 +1505,16 @@ def _run_natural_rescue_case(
         issues=tuple(issues),
         create_returncode=create.returncode,
         cli_create_seconds=create_seconds,
-        proof_scope="real_installed_structured_patch_plan_case",
+        proof_scope=(
+            "real_installed_provider_failure_fallback_case"
+            if require_provider_failure
+            else "real_installed_structured_patch_plan_case"
+        ),
         natural_rescue_quality_proven=not issues,
+        provider_failure_fallback_proven=bool(
+            require_provider_failure and provider_failure_observation.get("proven") and not issues
+        ),
+        provider_failure_observation=provider_failure_observation if require_provider_failure else {},
     )
 
 
@@ -1475,6 +1527,8 @@ def _rescue_smoke_result(
     cli_create_seconds: float = 0.0,
     proof_scope: str = "synthetic_typed_probe_wiring_only",
     natural_rescue_quality_proven: bool = False,
+    provider_failure_fallback_proven: bool = False,
+    provider_failure_observation: Mapping[str, Any] | None = None,
 ) -> GreenfieldRescueSmokeResult:
     cleaned_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
     return GreenfieldRescueSmokeResult(
@@ -1485,6 +1539,8 @@ def _rescue_smoke_result(
         manifest=_as_mapping(create_payload.get("commit_manifest")),
         proof_scope=proof_scope,
         natural_rescue_quality_proven=bool(natural_rescue_quality_proven and not cleaned_issues),
+        provider_failure_fallback_proven=bool(provider_failure_fallback_proven and not cleaned_issues),
+        provider_failure_observation=dict(provider_failure_observation or {}),
         create_returncode=create_returncode,
     )
 
@@ -2260,6 +2316,7 @@ def _execute_matrix_campaign(
     """Run one fully isolated proof campaign under its output lease."""
 
     temp_parent = lease.temp_namespace
+    profiled_cases = assign_model_profiles(selected_cases)
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
     provenance_summary = getattr(corpus_provenance, "summary", {})
     approved_audit_bindings = (
@@ -2282,7 +2339,7 @@ def _execute_matrix_campaign(
             dist_dir=Path(args.dist_dir),
             version=str(args.version),
             temp_parent=temp_parent,
-            cases=selected_cases,
+            cases=profiled_cases,
             include_browser_proof=bool(args.include_browser_proof),
             install_mode=str(args.install_mode),
             telemetry_jsonl=campaign_config.telemetry_jsonl,
@@ -2300,8 +2357,8 @@ def _execute_matrix_campaign(
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
             release_audits=release_audits,
             release_audit_repo_root=release_audit_repo_root,
-            semantic_annotations_file=str(args.semantic_annotations_file or ""),
-            evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+            semantic_annotations_file=str(getattr(args, "semantic_annotations_file", "") or ""),
+            evaluation_split_manifest=str(getattr(args, "evaluation_split_manifest", "") or ""),
             before_product_execution=before_product_execution,
         )
         commit_recovery = (
@@ -2312,7 +2369,7 @@ def _execute_matrix_campaign(
                 recovery_case=recovery_case,
                 require_release_binding=(
                     campaign_config.proof_tier == "release"
-                    and not str(args.semantic_annotations_file or "").strip()
+                    and not str(getattr(args, "semantic_annotations_file", "") or "").strip()
                 ),
                 release_audit_binding=(
                     approved_audit_bindings.get(recovery_case.case_id)
@@ -2363,6 +2420,9 @@ def _execute_matrix_campaign(
     natural_rescue_proven = natural_rescue_quality_proven(results) or bool(
         natural_rescue and natural_rescue.natural_rescue_quality_proven
     )
+    provider_failure_fallback_proven = bool(
+        natural_rescue and natural_rescue.provider_failure_fallback_proven
+    )
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped"
@@ -2370,7 +2430,7 @@ def _execute_matrix_campaign(
     )
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
     cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
-    metamorphic_output = evaluate_metamorphic_outputs(cases=selected_cases, results=results)
+    metamorphic_output = evaluate_metamorphic_outputs(cases=profiled_cases, results=results)
     onboarding_quality_scorecard = build_onboarding_quality_scorecard(
         results=results,
         browser_proof=browser_proof,
@@ -2382,14 +2442,17 @@ def _execute_matrix_campaign(
     )
     semantic_release = _semantic_release_report(
         args=args,
-        cases=selected_cases,
+        cases=profiled_cases,
         results=results,
     )
     semantic_release_passed = semantic_release.get("status") in {"not_requested", "passed"}
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
-        and (natural_rescue is None or natural_rescue.passed)
+        and (
+            natural_rescue is None
+            or (natural_rescue.passed and provider_failure_fallback_proven)
+        )
         and (commit_recovery is None or commit_recovery.passed)
         and browser_passed
         and platform_leakage_passed
@@ -2415,6 +2478,12 @@ def _execute_matrix_campaign(
                 else "not_proven"
             ),
             "natural_rescue_quality_proven": natural_rescue_proven,
+            "lower_capability_provider_failure_path": (
+                "real_installed_provider_failure_fallback_case"
+                if provider_failure_fallback_proven
+                else "not_proven"
+            ),
+            "lower_capability_provider_failure_proven": provider_failure_fallback_proven,
             "commit_recovery_path": (
                 COMMIT_RECOVERY_PROOF_SCOPE if commit_recovery is not None else "not_requested"
             ),

@@ -51,7 +51,11 @@
       "provider-free-standard-v1",
       "bounded-reasoning-standard-v1",
       "lower-capability-safe-v1"
-    ]
+    ],
+    "model_assignment": {
+      "version": "case-id-balanced-sha256-v1",
+      "seed": "f1e5a66a5cce578b0bd9f56d96f08887358632627231769667c432933b9dfe6f"
+    }
   },
   "frozen_floors": {
     "version": "greenfield-semantic-floors-v1",

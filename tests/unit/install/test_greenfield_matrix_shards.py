@@ -263,7 +263,7 @@ def test_shard_builder_can_emit_only_failed_subset_replay_tier(tmp_path: Path) -
     assert "GREENFIELD_MATRIX_VOLUME_CASE_FILES" not in payload["campaign_env"]
 
 
-def test_shard_builder_uses_content_identity_for_duplicate_names_without_case_ids(tmp_path: Path) -> None:
+def test_shard_builder_uses_content_identity_for_duplicate_names_with_distinct_case_ids(tmp_path: Path) -> None:
     module = _module()
     case_file = tmp_path / "cases.json"
     prompts = (
@@ -272,13 +272,14 @@ def test_shard_builder_uses_content_identity_for_duplicate_names_without_case_id
     )
     rows = [
         {
+            "case_id": f"alpha-review-{index}",
             "name": "alpha review",
             "prompt": prompt,
             "required_terms": ("alpha", "review"),
             "leakage_terms": ("alpha review",),
             "stressors": ("modal-expert-lens",),
         }
-        for prompt in prompts
+        for index, prompt in enumerate(prompts, start=1)
     ]
     case_file.write_text(json.dumps({"cases": rows}), encoding="utf-8")
     failed_result = tmp_path / "failed.json"
@@ -381,13 +382,14 @@ def test_shard_builder_does_not_overselect_duplicate_name_cluster_only_failures(
             {
                 "cases": [
                     {
+                        "case_id": f"alpha-review-{index}",
                         "name": "alpha review",
                         "prompt": prompt,
                         "required_terms": ("alpha", "review"),
                         "leakage_terms": ("alpha review",),
                         "stressors": ("modal-expert-lens",),
                     }
-                    for prompt in prompts
+                    for index, prompt in enumerate(prompts, start=1)
                 ]
             }
         ),

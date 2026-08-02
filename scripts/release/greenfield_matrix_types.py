@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
@@ -98,6 +98,8 @@ class GreenfieldRescueSmokeResult:
     manifest: Mapping[str, Any]
     proof_scope: str = "synthetic_typed_probe_wiring_only"
     natural_rescue_quality_proven: bool = False
+    provider_failure_fallback_proven: bool = False
+    provider_failure_observation: Mapping[str, Any] = field(default_factory=dict)
     create_returncode: int = 0
 
     @property
@@ -114,6 +116,8 @@ class GreenfieldRescueSmokeResult:
             "manifest": dict(self.manifest),
             "proof_scope": self.proof_scope,
             "natural_rescue_quality_proven": self.natural_rescue_quality_proven,
+            "provider_failure_fallback_proven": self.provider_failure_fallback_proven,
+            "provider_failure_observation": dict(self.provider_failure_observation),
         }
 
 

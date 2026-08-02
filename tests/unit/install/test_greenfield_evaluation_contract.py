@@ -15,6 +15,9 @@ from greenfield_evaluation_contract import assign_tracked_splits
 from greenfield_evaluation_contract import cross_split_leakage_issues
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract
 from greenfield_evaluation_contract import validate_atomic_annotations
+from greenfield_model_profiles import MODEL_PROFILES
+from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
+from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
@@ -198,20 +201,25 @@ def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_p
     }
     corpus_path.write_text(json.dumps(corpus), encoding="utf-8")
     holdout_path = tmp_path / "holdout.json"
-    holdout_case = _case("holdout-1", "Omega Operator records one proof token.")
+    holdout_cases = (
+        _case("holdout-1", "Omega Operator records one proof token."),
+        _case("holdout-2", "Sigma Operator accepts one permit decision."),
+        _case("holdout-3", "Delta Operator publishes one readiness result."),
+    )
     holdout = {
         "version": "odylith.greenfield.final-holdout.v1",
         "claim_class": "blinded-independent-synthetic-holdout",
         "cases": [
             {
-                "case_id": holdout_case.case_id,
-                "name": holdout_case.name,
-                "prompt": holdout_case.prompt,
-                "required_terms": ["Omega"],
-                "leakage_terms": ["Omega"],
+                "case_id": case.case_id,
+                "name": case.name,
+                "prompt": case.prompt,
+                "required_terms": [case.prompt.split()[0]],
+                "leakage_terms": [case.prompt.split()[0]],
             }
+            for case in holdout_cases
         ],
-        "annotations": [_annotation(holdout_case)],
+        "annotations": [_annotation(case) for case in holdout_cases],
     }
     holdout_path.write_text(json.dumps(holdout), encoding="utf-8")
     manifest_path = repo_root / "manifest.json"
@@ -234,12 +242,18 @@ def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_p
         "final_holdout": {
             "sha256": hashlib.sha256(holdout_path.read_bytes()).hexdigest(),
             "byte_size": holdout_path.stat().st_size,
-            "case_count": 1,
-            "annotation_count": 1,
+            "case_count": 3,
+            "annotation_count": 3,
             "claim_class": "blinded-independent-synthetic-holdout",
         },
         "frozen_floors": {"version": "floors-v1"},
-        "profiles": {},
+        "profiles": {
+            "models": list(MODEL_PROFILES),
+            "model_assignment": {
+                "version": MODEL_PROFILE_ASSIGNMENT_VERSION,
+                "seed": MODEL_PROFILE_ASSIGNMENT_SEED,
+            },
+        },
     }
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
@@ -251,7 +265,10 @@ def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_p
 
     assert report["passed"] is True
     assert report["tracked"]["case_count"] == 1
-    assert report["final_holdout"]["annotation_count"] == 1
+    assert report["final_holdout"]["annotation_count"] == 3
+    assert report["final_holdout"]["model_profile_counts"] == {
+        profile: 1 for profile in MODEL_PROFILES
+    }
 
 
 def test_frozen_contract_rejects_byte_size_or_declared_style_without_cases(tmp_path: Path) -> None:

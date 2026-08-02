@@ -62,6 +62,8 @@ def evaluate_semantic_release(
     annotations: Mapping[str, Mapping[str, Any]],
     results: Sequence[GreenfieldMatrixResult],
     floors: Mapping[str, Any],
+    _include_model_profiles: bool = True,
+    _allow_not_applicable_metrics: bool = False,
 ) -> dict[str, Any]:
     """Score result semantics without returning blinded evidence text."""
 
@@ -115,14 +117,32 @@ def evaluate_semantic_release(
         overall=overall,
         worst_slice=worst_slice,
         p0_findings=p0_findings,
+        allow_not_applicable_metrics=_allow_not_applicable_metrics,
     )
-    issues = [check["issue"] for check in checks if check["status"] != "passed"]
+    issues = [
+        str(check["issue"])
+        for check in checks
+        if check["status"] in {"failed", "unproven"} and str(check.get("issue") or "").strip()
+    ]
     if missing_case_ids:
         issues.append("semantic release results are incomplete")
     if duplicate_case_ids:
         issues.append("semantic release cases contain duplicate IDs")
     if duplicate_result_ids:
         issues.append("semantic release results contain duplicate IDs")
+    model_profiles = (
+        _model_profile_reports(
+            cases=cases,
+            annotations=annotations,
+            results=results,
+            floors=floors,
+        )
+        if _include_model_profiles
+        else []
+    )
+    for profile in model_profiles:
+        if profile["status"] != "passed":
+            issues.append(f"model profile `{profile['profile']}` failed the semantic release floors")
     return {
         "version": SEMANTIC_RELEASE_SCORE_VERSION,
         "status": "passed" if not issues else "failed",
@@ -140,6 +160,7 @@ def evaluate_semantic_release(
         "p0_findings": p0_findings,
         "floor_checks": checks,
         "issues": list(dict.fromkeys(issues)),
+        "model_profiles": model_profiles,
         "case_outcomes": [
             {
                 "case_id": row["case_id"],
@@ -151,6 +172,56 @@ def evaluate_semantic_release(
             for row in case_outcomes
         ],
     }
+
+
+def _model_profile_reports(
+    *,
+    cases: Sequence[Any],
+    annotations: Mapping[str, Mapping[str, Any]],
+    results: Sequence[GreenfieldMatrixResult],
+    floors: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    grouped: dict[str, list[Any]] = defaultdict(list)
+    for case in cases:
+        profile = _model_profile(case)
+        if profile:
+            grouped[profile].append(case)
+    results_by_id = {_result_case_id(result): result for result in results}
+    reports: list[dict[str, Any]] = []
+    for profile, profile_cases in sorted(grouped.items()):
+        case_ids = {_case_id(case) for case in profile_cases}
+        report = evaluate_semantic_release(
+            cases=profile_cases,
+            annotations={case_id: annotations[case_id] for case_id in case_ids if case_id in annotations},
+            results=[results_by_id[case_id] for case_id in case_ids if case_id in results_by_id],
+            floors=floors,
+            _include_model_profiles=False,
+            _allow_not_applicable_metrics=True,
+        )
+        reports.append(
+            {
+                "profile": profile,
+                "status": report["status"],
+                "passed": report["passed"],
+                "sample_count": report["sample_count"],
+                "metrics": report["metrics"],
+                "overall_case_success": report["overall_case_success"],
+                "worst_slice": report["worst_slice"],
+                "p0_count": report["p0_count"],
+                "floor_checks": report["floor_checks"],
+                "issues": report["issues"],
+            }
+        )
+    return reports
+
+
+def _model_profile(case: Any) -> str:
+    profiles = [
+        str(tag).partition(":")[2]
+        for tag in getattr(case, "tags", ()) or ()
+        if str(tag).startswith("model-profile:")
+    ]
+    return profiles[0] if len(profiles) == 1 else ""
 
 
 def _score_case(
@@ -297,6 +368,7 @@ def _floor_checks(
     overall: Mapping[str, Any],
     worst_slice: Mapping[str, Any],
     p0_findings: Sequence[Mapping[str, str]],
+    allow_not_applicable_metrics: bool,
 ) -> list[dict[str, Any]]:
     checks: list[dict[str, Any]] = []
     checks.append(
@@ -313,15 +385,30 @@ def _floor_checks(
         "material_question_recall",
         "first_path_comprehension",
     ):
-        checks.append(_metric_floor_check(name, metrics[name], floors.get(name)))
+        checks.append(
+            _metric_floor_check(
+                name,
+                metrics[name],
+                floors.get(name),
+                allow_not_applicable=allow_not_applicable_metrics,
+            )
+        )
     checks.append(
         _metric_ceiling_check(
             "unnecessary_question_rate",
             metrics["unnecessary_question_rate"],
             floors.get("unnecessary_question_rate_ceiling"),
+            allow_not_applicable=allow_not_applicable_metrics,
         )
     )
-    checks.append(_metric_floor_check("overall_case_success", overall, floors.get("overall_case_success")))
+    checks.append(
+        _metric_floor_check(
+            "overall_case_success",
+            overall,
+            floors.get("overall_case_success"),
+            allow_not_applicable=False,
+        )
+    )
     worst_rate = worst_slice.get("point_estimate") if worst_slice else None
     checks.append(
         _check_threshold(
@@ -334,14 +421,40 @@ def _floor_checks(
     return checks
 
 
-def _metric_floor_check(name: str, metric: Mapping[str, Any], expected: Any) -> dict[str, Any]:
+def _metric_floor_check(
+    name: str,
+    metric: Mapping[str, Any],
+    expected: Any,
+    *,
+    allow_not_applicable: bool = False,
+) -> dict[str, Any]:
+    if allow_not_applicable and metric.get("status") == "not_applicable":
+        return _not_applicable_check(name, expected)
     observed = metric.get("rate") if metric.get("status") == "measured" else None
     return _check_threshold(name, observed=observed, expected=expected, direction="floor")
 
 
-def _metric_ceiling_check(name: str, metric: Mapping[str, Any], expected: Any) -> dict[str, Any]:
+def _metric_ceiling_check(
+    name: str,
+    metric: Mapping[str, Any],
+    expected: Any,
+    *,
+    allow_not_applicable: bool = False,
+) -> dict[str, Any]:
+    if allow_not_applicable and metric.get("status") == "not_applicable":
+        return _not_applicable_check(name, expected)
     observed = metric.get("rate") if metric.get("status") == "measured" else None
     return _check_threshold(name, observed=observed, expected=expected, direction="ceiling")
+
+
+def _not_applicable_check(name: str, expected: Any) -> dict[str, Any]:
+    return {
+        "name": name,
+        "status": "not_applicable",
+        "observed": None,
+        "expected": expected,
+        "issue": "",
+    }
 
 
 def _check_threshold(name: str, *, observed: Any, expected: Any, direction: str) -> dict[str, Any]:

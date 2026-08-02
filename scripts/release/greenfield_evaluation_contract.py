@@ -14,6 +14,12 @@ from greenfield_matrix_case_file import load_case_file
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
+from greenfield_model_profiles import MODEL_PROFILES
+from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
+from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
+from greenfield_model_profiles import assign_model_profiles
+from greenfield_model_profiles import profile_coverage
+from greenfield_model_profiles import profile_counts
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 
 
@@ -146,6 +152,30 @@ def evaluate_frozen_evaluation_contract(
     missing_styles = [style for style in declared_styles if input_style_counts.get(style, 0) == 0]
     if missing_styles:
         issues.append("final holdout has no cases for declared evidence styles: " + ", ".join(missing_styles))
+    declared_models = _string_sequence(profiles.get("models"))
+    if declared_models != MODEL_PROFILES:
+        issues.append("evaluation profiles do not match the supported model-profile contract")
+    model_assignment = _mapping(profiles.get("model_assignment"))
+    if model_assignment.get("version") != MODEL_PROFILE_ASSIGNMENT_VERSION:
+        issues.append("evaluation model-profile assignment version is unsupported")
+    if model_assignment.get("seed") != MODEL_PROFILE_ASSIGNMENT_SEED:
+        issues.append("evaluation model-profile assignment seed does not match the frozen contract")
+    assigned_holdout_cases = assign_model_profiles(holdout_cases)
+    model_counts = profile_counts(assigned_holdout_cases) if assigned_holdout_cases else {}
+    missing_models = [profile for profile in MODEL_PROFILES if int(model_counts.get(profile, 0)) == 0]
+    if missing_models:
+        issues.append("final holdout has no assigned cases for model profiles: " + ", ".join(missing_models))
+    model_coverage = profile_coverage(assigned_holdout_cases) if assigned_holdout_cases else {}
+    for dimension, values in model_coverage.items():
+        for value, counts in values.items():
+            if sum(counts.values()) < len(MODEL_PROFILES):
+                continue
+            missing = [profile for profile in MODEL_PROFILES if int(counts.get(profile, 0)) == 0]
+            if missing:
+                issues.append(
+                    f"final holdout model profiles do not cover {dimension} `{value}`: "
+                    + ", ".join(missing)
+                )
     issues.extend(
         cross_split_leakage_issues(
             tracked_cases=tracked_cases,
@@ -170,6 +200,8 @@ def evaluate_frozen_evaluation_contract(
             "claim_class": str(final_ref.get("claim_class") or ""),
             "outcome_counts": _outcome_counts(holdout_cases),
             "input_style_counts": dict(sorted(input_style_counts.items())),
+            "model_profile_counts": model_counts,
+            "model_profile_coverage": model_coverage,
             "metamorphic_group_count": len(
                 {
                     str(case.metamorphic_group or "").strip()

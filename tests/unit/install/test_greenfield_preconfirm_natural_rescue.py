@@ -82,8 +82,10 @@ def _passing_natural_rescue_result(module) -> object:
         counts=_full_counts(module),
         issues=(),
         manifest={"repair_tier": "rescue"},
-        proof_scope="real_installed_structured_patch_plan_case",
+        proof_scope="real_installed_structured_patch_plan_and_provider_failure_cases",
         natural_rescue_quality_proven=True,
+        provider_failure_fallback_proven=True,
+        provider_failure_observation={"proven": True},
     )
 
 
@@ -122,6 +124,10 @@ def test_main_runs_natural_rescue_proof_when_requested(monkeypatch, tmp_path: Pa
     assert natural_kwargs["dist_dir"] == dist_dir
     assert payload["proof_scope"]["natural_rescue_quality_proven"] is True
     assert payload["proof_scope"]["natural_rescue_path"] == "real_installed_structured_patch_plan_case"
+    assert payload["proof_scope"]["lower_capability_provider_failure_proven"] is True
+    assert payload["proof_scope"]["lower_capability_provider_failure_path"] == (
+        "real_installed_provider_failure_fallback_case"
+    )
     assert payload["natural_rescue_proof"]["status"] == "passed"
     assert payload["natural_rescue_proof"]["natural_rescue_quality_proven"] is True
 
@@ -169,3 +175,46 @@ def test_main_fails_when_requested_natural_rescue_proof_fails(monkeypatch, tmp_p
     assert payload["natural_rescue_proof"]["issues"] == [
         "natural rescue proof did not record the structured patch provider"
     ]
+
+
+def test_main_rejects_passing_rescue_without_observed_provider_failure_fallback(
+    monkeypatch,
+    tmp_path: Path,
+    capsys,
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+    unobserved = _passing_natural_rescue_result(module)
+    monkeypatch.setattr(
+        module,
+        "run_natural_rescue_proof",
+        lambda **_kwargs: module.replace(
+            unobserved,
+            provider_failure_fallback_proven=False,
+            provider_failure_observation={"proven": False},
+        ),
+    )
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--proof-tier",
+            "discovery",
+            "--allow-skipped-browser-proof",
+            "--include-natural-rescue-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert payload["proof_scope"]["lower_capability_provider_failure_proven"] is False
+    assert payload["proof_scope"]["lower_capability_provider_failure_path"] == "not_proven"

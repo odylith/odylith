@@ -701,6 +701,41 @@ def test_natural_rescue_quality_requires_structured_non_probe_case() -> None:
     assert module.natural_rescue_quality_proven((fallback,)) is True
 
 
+def test_provider_failure_observation_requires_failed_plan_and_source_anchored_fallback() -> None:
+    module = _module()
+    manifest = {
+        "last_repair_patchset_request": {
+            "status": "repairable",
+            "operation_count": 1,
+            "operations": [{"operation_id": "GF-PATCH-001"}],
+            "tribunal_patch_plan": {
+                "status": "provider_failed",
+                "operation_count": 0,
+                "provider": {"provider": "codex-cli", "last_failure_code": "nonzero_exit"},
+            },
+            "structured_patch_fallback": {
+                "status": "applied",
+                "source": "source_anchored_semantic_fact",
+                "operation_count": 1,
+                "provider_failure": {"provider": "codex-cli", "code": "nonzero_exit"},
+            },
+        }
+    }
+
+    observation = module._provider_failure_observation(manifest)  # noqa: SLF001
+
+    assert observation == {
+        "proven": True,
+        "provider": "codex-cli",
+        "failure_code": "nonzero_exit",
+        "fallback_status": "applied",
+        "fallback_source": "source_anchored_semantic_fact",
+        "fallback_operation_count": 1,
+    }
+    manifest["last_repair_patchset_request"]["tribunal_patch_plan"]["status"] = "planned"
+    assert module._provider_failure_observation(manifest)["proven"] is False  # noqa: SLF001
+
+
 def test_commit_manifest_summary_uses_last_repair_patchset_for_clean_final_pass() -> None:
     module = _module()
 

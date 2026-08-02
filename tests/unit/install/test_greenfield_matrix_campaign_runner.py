@@ -15,6 +15,7 @@ from tests.greenfield_matrix_campaign_test_support import command_arg as _arg
 from tests.greenfield_matrix_campaign_test_support import load_module
 from tests.greenfield_matrix_campaign_test_support import write_case_file as _write_case_file
 from tests.greenfield_matrix_campaign_test_support import write_payload as _write_payload
+from tests.greenfield_matrix_campaign_test_support import write_semantic_release_fixture
 
 def _module():
     return load_module(
@@ -922,114 +923,9 @@ def test_campaign_refuses_release_execution_when_inputs_cannot_be_sealed(tmp_pat
 def test_semantic_release_inputs_are_sealed_and_forwarded_as_one_holdout(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
-    tracked_path = repo_root / "tests/fixtures/tracked.json"
-    tracked_path.parent.mkdir(parents=True)
-    tracked_path.write_text(
-        json.dumps(
-            {
-                "cases": [
-                    {
-                        "case_id": "tracked-1",
-                        "name": "tracked",
-                        "prompt": "Alpha reviewer records one result.",
-                        "required_terms": ["Alpha"],
-                        "leakage_terms": ["Alpha"],
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
-    )
-    holdout_path = tmp_path / "holdout.json"
-    prompt = "Omega Operator records one proof token."
-    actor = "Operator"
-    actor_start = prompt.encode("utf-8").index(actor.encode("utf-8"))
-    holdout = {
-        "version": "odylith.greenfield.final-holdout.v1",
-        "claim_class": "blinded-independent-synthetic-holdout",
-        "cases": [
-            {
-                "case_id": "holdout-1",
-                "name": "holdout",
-                "prompt": prompt,
-                "required_terms": ["Omega"],
-                "leakage_terms": ["Omega"],
-            }
-        ],
-        "annotations": [
-            {
-                "case_id": "holdout-1",
-                "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
-                "expected_outcome": "commit",
-                "expected_question_fields": [],
-                "actors": [
-                    {
-                        "id": "actor-1",
-                        "value": actor,
-                        "source_quote": actor,
-                        "source_start": actor_start,
-                        "source_end": actor_start + len(actor.encode("utf-8")),
-                        "materiality": "material",
-                        "expected_custody": "accepted_fact",
-                    }
-                ],
-                "actions": [],
-                "states": [],
-                "outputs": [],
-                "constraints": [],
-                "dependencies": [],
-                "assumptions": [],
-                "ambiguities": [],
-                "non_goals": [],
-                "material_questions": [],
-                "critical_constraints": [],
-                "explicit_systems": [],
-                "complexity": {
-                    "evidence_bytes": len(prompt.encode("utf-8")),
-                    "documents": 1,
-                    "actors": 1,
-                    "state_objects": 1,
-                    "paths": 1,
-                    "external_systems": 0,
-                    "contradictions": 0,
-                    "ambiguities": 0,
-                    "safety_boundaries": 0,
-                },
-            }
-        ],
-    }
-    holdout_path.write_text(json.dumps(holdout), encoding="utf-8")
-    manifest_path = repo_root / "evaluation-splits.json"
-    manifest_path.write_text(
-        json.dumps(
-            {
-                "version": "odylith.greenfield.evaluation-splits.v1",
-                "tracked_corpus": {
-                    "path": "tests/fixtures/tracked.json",
-                    "sha256": hashlib.sha256(tracked_path.read_bytes()).hexdigest(),
-                    "case_count": 1,
-                    "assignment": {
-                        "algorithm": "metamorphic-or-source-group-sha256-bucket-v1",
-                        "seed": "a" * 64,
-                        "buckets": {
-                            "development": [0, 5999],
-                            "regression": [6000, 8499],
-                            "private_validation": [8500, 9999],
-                        },
-                    },
-                },
-                "final_holdout": {
-                    "sha256": hashlib.sha256(holdout_path.read_bytes()).hexdigest(),
-                    "byte_size": holdout_path.stat().st_size,
-                    "case_count": 1,
-                    "annotation_count": 1,
-                    "claim_class": "blinded-independent-synthetic-holdout",
-                },
-                "profiles": {},
-                "frozen_floors": {},
-            }
-        ),
-        encoding="utf-8",
+    holdout_path, manifest_path = write_semantic_release_fixture(
+        repo_root=repo_root,
+        temp_root=tmp_path,
     )
 
     snapshot = module._seal_release_proof_inputs(  # noqa: SLF001

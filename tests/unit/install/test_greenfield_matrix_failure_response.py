@@ -36,6 +36,7 @@ def test_synthetic_live_duplicate_name_failure_requires_source_shard_replay(tmp_
             {
                 "cases": [
                     {
+                        "case_id": "shared-review-path-1",
                         "name": "shared review",
                         "prompt": "Create a greenfield proposal for shared review with path one.",
                         "required_terms": ("shared", "review"),
@@ -43,6 +44,7 @@ def test_synthetic_live_duplicate_name_failure_requires_source_shard_replay(tmp_
                         "stressors": ("registry-contract-pressure",),
                     },
                     {
+                        "case_id": "shared-review-path-2",
                         "name": "shared review",
                         "prompt": "Create a greenfield proposal for shared review with path two.",
                         "required_terms": ("shared", "review"),
