@@ -109,6 +109,10 @@ flowchart LR
       active_pointer["Active-generation pointer switch<br/>compare-and-switch from<br/>the pre-confirm identity"]
       published_verify["Published generation verification<br/>pointer, manifest, immutable tree,<br/>and compatibility readback agree"]
       journal_close["Durable journal close<br/>published receipt retained for<br/>same-hash retry and recovery"]
+      canonical_reader["Canonical current-view resolver<br/>shared repository lock,<br/>active generation while fingerprints match,<br/>uncertain drift fails unavailable"]
+      reviewed_receipt["Exact reviewed-generation route<br/>transaction-addressed immutable receipt<br/>remains available after later writes"]
+      later_writer["Supported later CLI writer<br/>exclusive managed-path lock;<br/>unknown commands default to writer"]
+      supersession["Successful-writer supersession<br/>zero exit plus changed managed readback;<br/>failed and no-op writers keep active generation"]
       rollback["Affected-path rollback guard<br/>SIGINT and SIGTERM included;<br/>failed rollback preserves recovery snapshot"]
       recovery_required["Post-publication recovery state<br/>never roll back an observed pointer;<br/>preserve generation and journal"]
       blockers["No-write pre-confirm blocker<br/>or post-confirm environment/invariant failure"]
@@ -125,7 +129,7 @@ flowchart LR
     shared_event_resolver -. "same resolved human event" .-> state_boundary_titles
     draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> blockers
-    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> pending_package --> transaction_ready --> commit_verify --> snapshot_manifest --> immutable_generation --> generation_readback --> writes --> atomic_cleanup --> readback --> active_pointer --> published_verify --> journal_close --> post_confirm_handoff --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
+    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> pending_package --> transaction_ready --> commit_verify --> snapshot_manifest --> immutable_generation --> generation_readback --> writes --> atomic_cleanup --> readback --> active_pointer --> published_verify --> journal_close --> canonical_reader --> post_confirm_handoff --> reviewed_receipt --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "quality debt remains" --> blockers
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
@@ -155,6 +159,9 @@ flowchart LR
     active_pointer -- "not visible" --> rollback
     active_pointer -- "visible, journal interrupted" --> published_verify
     published_verify -- "drift after publication" --> recovery_required --> blockers
+    canonical_reader -- "later managed command" --> later_writer --> supersession
+    supersession -- "changed success" --> canonical_reader
+    supersession -- "failed or no-op" --> canonical_reader
     rollback --> blockers
 
     classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1.2px;
@@ -164,7 +171,7 @@ flowchart LR
     class visible_intent,confirmable_stdout,source_guard,operating_envelope,intent_section_parser,prose_boundary_guard,prompt_recovery,editorial_framing_guard,source_claim_custody,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,intent_visible_result,compiler,semantic_ir,evaluation_semantics,actor_role_owner,artifact_actor_filter,actor_path_role,shared_event_resolver,external_boundary,sequence_owner,subject_carry_guard,result_language,visible_result_priority,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,registry_contract_custody,semantic_result_custody,projections,confirmed_diagram_projection,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,pending_package,transaction_ready,commit_verify,snapshot_manifest,immutable_generation,generation_readback,writes,atomic_cleanup,readback,active_pointer,published_verify,journal_close,rollback,recovery_required,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
+    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,pending_package,transaction_ready,commit_verify,snapshot_manifest,immutable_generation,generation_readback,writes,atomic_cleanup,readback,active_pointer,published_verify,journal_close,canonical_reader,reviewed_receipt,later_writer,supersession,rollback,recovery_required,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52

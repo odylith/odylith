@@ -31,6 +31,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_managed_mutation_boundary.py`, `src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py`, `tests/unit/runtime/test_greenfield_managed_mutation_boundary.py`
+- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md`, `src/odylith/runtime/domain_intelligence/greenfield_generation_store.py`, `src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py`
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
@@ -42,13 +45,11 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
-- **2026-07-31 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
 
-- 2026-08-02: Replaced mutable pending and file-by-file commit semantics with hash-addressed decision custody and generation publication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-304`; Diagram: D-043)
+- 2026-08-02: Replaced mutable pending and file-by-file commit semantics with hash-addressed decision custody and generation publication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-304`, `CB-305`; Diagram: D-043)
   The pre-confirm
   compiler now seals the complete managed after-image and active-generation
   precondition, then atomically stages transaction plus receipt under
@@ -61,9 +62,13 @@ This section captures synchronized requirement and contract signals derived from
   state. The proof set covers both SIGKILL sides of the pointer, generation
   corruption, active-pointer compare-and-switch, canonical reader pinning,
   Codex/Claude parity, A/B retarget resistance, 72 focused atomic-custody tests,
-  188 evaluation/campaign tests, and real cross-domain propose/create paths.
-  Later non-Greenfield writer supersession remains a release gate rather than an
-  implied platform claim.
+  188 evaluation/campaign tests, and real cross-domain propose/create paths. The
+  supported CLI now shares the managed repository lock for later writers, keeps
+  readers on the prior immutable generation while a write is in flight, and
+  supersedes only after zero-exit changed readback. Failed and no-op writers keep
+  the active generation; unexplained live drift fails the canonical current view
+  closed, while the exact reviewed generation remains an immutable receipt. This
+  is a Greenfield reader/writer boundary, not a universal transaction platform.
 
 - 2026-08-01: Made Greenfield material-fact custody source-verifiable inside a declared operating envelope. Raw operator prompts are evidence, never typed product truth; prompt-derived material fields are bounded interpretations tied to hashed evidence spans, while typed JSON fields earn accepted-fact custody only through exact structural value equality. The exact generic software-router replay no longer activates scientific-evaluation semantics, and canonical actor facts keep sentence case across actor rows and first-path prefixes. Final source proof passed 214 transaction/custody tests plus the focused 44-test operating-envelope, actor, and Product Intent matrix. Installed release replay remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-302`; Diagram: D-043)
 

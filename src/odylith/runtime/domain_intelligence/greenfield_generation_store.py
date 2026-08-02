@@ -222,6 +222,13 @@ def _require_generation_manifest(manifest: Mapping[str, Any], *, transaction_has
     for key in ("directory_count", "file_count", "byte_count"):
         if not isinstance(manifest.get(key), int) or int(manifest[key]) < 0:
             raise RuntimeError("Greenfield immutable generation manifest counts are invalid")
+    fingerprints = manifest.get("after_fingerprints")
+    if not isinstance(fingerprints, Mapping) or set(fingerprints) != set(
+        greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS
+    ):
+        raise RuntimeError("Greenfield immutable generation fingerprints are incomplete")
+    if any(not _DIGEST.fullmatch(str(value or "")) for value in fingerprints.values()):
+        raise RuntimeError("Greenfield immutable generation fingerprints are invalid")
 
 
 def _canonical_manifest_bytes(manifest: Mapping[str, Any]) -> bytes:

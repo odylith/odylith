@@ -48,9 +48,20 @@ inventing product truth.
 
 The supported publication target is one local writable repository with owned
 relative paths, no symlink traversal, an exclusive advisory lock, same-filesystem
-atomic file replacement, and durable `fsync` support. Current package publication
-uses journaled crash recovery. It does not yet claim atomic package visibility
-through an active-generation pointer.
+atomic file replacement, and durable `fsync` support. Greenfield materializes the
+sealed after-image as one immutable generation, projects compatibility files under
+rollback guard, and switches one active-generation record only after readback.
+Canonical Greenfield readers pin that record; injected failure before the switch
+cannot expose the new generation, and failure after the switch recovers forward.
+
+The supported `odylith` CLI is the cooperating boundary for later managed writes.
+While such a writer holds the repository lock, canonical readers remain on the old
+generation. A zero-exit writer supersedes it only after the managed tree actually
+changes. Failed and no-op writers do not supersede it. Unexplained drift from a
+direct filesystem edit or interrupted non-cooperating writer makes the canonical
+current view unavailable instead of exposing uncertain live bytes. The exact
+reviewed generation remains available as an immutable receipt. This is not a
+claim that arbitrary external writers are transactionally governed.
 
 ## Custody and ambiguity
 

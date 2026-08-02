@@ -25,6 +25,7 @@ from odylith.runtime.common.command_surface import (
     ensure_repo_root_args,
 )
 from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
+from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
 from odylith.runtime.surfaces import tooling_dashboard_version_state
 
 _CONTEXT_ENGINE_FEATURE_PACK_COMMANDS = {"warmup", "serve", "benchmark", "odylith-remote-sync"}
@@ -3636,7 +3637,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def _dispatch_main(argv: list[str] | None = None) -> int:
     tokens = [str(token) for token in (argv or sys.argv[1:])]
     if tokens:
         if tokens[0] in _CONTEXT_ENGINE_SHORTCUT_TARGETS and tokens[0] not in _EXPLICIT_CONTEXT_ENGINE_SHORTCUTS:
@@ -4091,6 +4092,20 @@ def main(argv: list[str] | None = None) -> int:
         return _cmd_codex_host_command(args)
     parser.error(f"unsupported command: {args.command}")
     return 2
+
+
+def main(argv: list[str] | None = None) -> int:
+    tokens = [str(token) for token in (argv or sys.argv[1:])]
+    repo_root, _forwarded = _extract_repo_root(tokens[1:] if tokens else ())
+    try:
+        return greenfield_managed_mutation_boundary.run_with_greenfield_managed_mutation_boundary(
+            repo_root=Path(repo_root),
+            command_tokens=tokens,
+            operation=lambda: _dispatch_main(tokens),
+        )
+    except greenfield_managed_mutation_boundary.GreenfieldManagedMutationBusyError as exc:
+        print(str(exc), file=sys.stderr)
+        return 75
 
 
 if __name__ == "__main__":

@@ -523,6 +523,8 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, monkey
         "project_url": f"{immutable_dashboard.as_uri()}?tab=project",
         "compatibility_dashboard_path": str((tmp_path / "odylith/index.html").resolve()),
         "generation_transaction_hash": transaction_hash,
+        "reviewed_generation_path": str(immutable_dashboard.parents[2]),
+        "view_status": "reviewed_generation",
     }
     assert create_payload["post_confirm_browser"] == {
         "status": "not_attempted",
@@ -779,8 +781,15 @@ def test_greenfield_propose_compiles_prompt_evidence_without_intent_file(tmp_pat
     assert rc == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["mode"] == "product_create_transaction"
-    assert payload["product_create_transaction"]["transaction_hash"]
-    assert (tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json").is_file()
+    transaction_hash = str(payload["product_create_transaction"]["transaction_hash"])
+    assert transaction_hash
+    transaction_file = Path(payload["transaction_file"])
+    assert transaction_file == (
+        Path(".odylith/runtime/greenfield/pending")
+        / transaction_hash
+        / "product-create-transaction.v1.json"
+    )
+    assert (tmp_path / transaction_file).is_file()
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
     assert not list((tmp_path / "odylith/atlas/source").glob("*.mmd"))
@@ -1102,8 +1111,15 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "Odylith committed the validated Greenfield package." in out
     assert "- validation gate: passed" in out
     assert "The package was committed, but Odylith could not open a browser automatically." in out
-    assert f"Open the committed Project dashboard: {(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project" in out
-    assert f"Dashboard file: {(tmp_path / 'odylith/index.html').resolve()}" in out
+    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    immutable_dashboard = (
+        tmp_path
+        / ".odylith/runtime/greenfield/generations"
+        / transaction_hash
+        / "repository/odylith/index.html"
+    ).resolve()
+    assert f"Open the committed Project dashboard: {immutable_dashboard.as_uri()}?tab=project" in out
+    assert f"Dashboard file: {immutable_dashboard}" in out
     assert "Next: Review the Product Story and first workstream" in out
     assert "no application code has been built" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
@@ -1344,6 +1360,16 @@ def test_greenfield_create_cli_commits_transaction_file_without_recompiling(
     monkeypatch.setattr(greenfield_proposals, "run_greenfield_preconfirm_engine", forbidden)
     monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", forbidden)
     monkeypatch.setattr(greenfield_create_commit, "commit_greenfield_create_transaction", fake_commit)
+    dashboard = (tmp_path / "odylith/index.html").resolve()
+    monkeypatch.setattr(
+        greenfield_post_confirm_handoff,
+        "post_confirm_navigation",
+        lambda _repo_root, *, transaction_hash="": {
+            "dashboard_path": str(dashboard),
+            "project_url": f"{dashboard.as_uri()}?tab=project",
+            "generation_transaction_hash": transaction_hash,
+        },
+    )
 
     rc = greenfield_proposals.main(
         [

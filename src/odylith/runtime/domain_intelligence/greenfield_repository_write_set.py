@@ -348,6 +348,12 @@ def greenfield_repository_write_paths(write_set: object) -> tuple[str, ...]:
     return tuple(result)
 
 
+def greenfield_managed_fingerprints(repo_root: Path) -> dict[str, str]:
+    """Fingerprint the complete managed boundary used by generation readers."""
+
+    return _managed_fingerprints(Path(repo_root).expanduser().resolve())
+
+
 def greenfield_repository_recovery_paths(write_set: object) -> tuple[str, ...]:
     """Return affected governed roots whose complete prestate protects rollback."""
 
@@ -661,6 +667,7 @@ __all__ = [
     "MAX_SEALED_GENERATION_BYTES",
     "apply_compiled_greenfield_repository_write_set",
     "compile_greenfield_repository_write_set",
+    "greenfield_managed_fingerprints",
     "greenfield_repository_recovery_paths",
     "greenfield_repository_write_paths",
     "materialize_compiled_greenfield_after_image",

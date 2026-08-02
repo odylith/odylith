@@ -7,7 +7,10 @@ from pathlib import Path
 from typing import Any
 import webbrowser
 
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_repository_lock
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
 
 POST_CONFIRM_NAVIGATION = {
@@ -19,28 +22,68 @@ POST_CONFIRM_NAVIGATION = {
 }
 
 
+class GreenfieldCanonicalViewUnavailableError(RuntimeError):
+    """The current governed view cannot be resolved without exposing uncertain bytes."""
+
+
+def canonical_current_project_root(repo_root: Path) -> tuple[Path, str]:
+    """Resolve one coherent current view through the active-generation state."""
+
+    root = Path(repo_root).expanduser().resolve()
+    try:
+        with greenfield_repository_lock.greenfield_repository_read_lock(root):
+            return _canonical_current_project_root_while_locked(root)
+    except greenfield_repository_lock.GreenfieldRepositoryBusyError as exc:
+        state = greenfield_generation_state.read_active_generation_state(root)
+        if state is not None and str(state.get("status") or "") == greenfield_generation_state.ACTIVE:
+            pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
+            return pinned.repository_root, "active_generation_during_managed_write"
+        raise GreenfieldCanonicalViewUnavailableError(
+            "The current project view is temporarily unavailable while a governed write is publishing."
+        ) from exc
+
+
+def _canonical_current_project_root_while_locked(root: Path) -> tuple[Path, str]:
+    state = greenfield_generation_state.read_active_generation_state(root)
+    if state is None:
+        return root, "live_without_generation"
+    if str(state.get("status") or "") == greenfield_generation_state.SUPERSEDED:
+        return root, "live_after_supersession"
+    pinned = greenfield_generation_store.pin_active_greenfield_generation(root)
+    expected = {str(key): str(value) for key, value in dict(pinned.manifest["after_fingerprints"]).items()}
+    actual = greenfield_repository_write_set.greenfield_managed_fingerprints(root)
+    if actual != expected:
+        raise GreenfieldCanonicalViewUnavailableError(
+            "The active Greenfield generation no longer matches the managed repository tree. "
+            "No potentially partial live view was opened."
+        )
+    return pinned.repository_root, "active_generation"
+
+
 def post_confirm_navigation(repo_root: Path, *, transaction_hash: str = "") -> dict[str, str]:
     """Return stable routes after a confirmed create."""
 
     root = Path(repo_root).expanduser().resolve()
-    pinned = (
-        greenfield_generation_store.pin_active_greenfield_generation(root)
-        if str(transaction_hash or "").strip()
-        else None
-    )
-    if pinned is not None and pinned.transaction_hash != str(transaction_hash).strip():
-        raise RuntimeError("committed Greenfield dashboard generation does not match the transaction")
-    dashboard_path = (
-        (pinned.repository_root / "odylith" / "index.html")
-        if pinned is not None
-        else (root / "odylith" / "index.html")
-    ).resolve()
+    transaction = str(transaction_hash or "").strip()
+    if transaction:
+        pinned = greenfield_generation_store.pin_greenfield_generation(
+            repo_root=root,
+            transaction_hash=transaction,
+        )
+        repository_root = pinned.repository_root
+        view_status = "reviewed_generation"
+    else:
+        pinned = None
+        repository_root, view_status = canonical_current_project_root(root)
+    dashboard_path = (repository_root / "odylith" / "index.html").resolve()
     navigation = dict(POST_CONFIRM_NAVIGATION)
     navigation["dashboard_path"] = str(dashboard_path)
     navigation["project_url"] = f"{dashboard_path.as_uri()}?tab=project"
+    navigation["view_status"] = view_status
     navigation["compatibility_dashboard_path"] = str((root / "odylith" / "index.html").resolve())
     if pinned is not None:
         navigation["generation_transaction_hash"] = pinned.transaction_hash
+        navigation["reviewed_generation_path"] = str(pinned.generation_root)
     return navigation
 
 
@@ -97,6 +140,8 @@ def completion_markdown(
 
 __all__ = [
     "POST_CONFIRM_NAVIGATION",
+    "GreenfieldCanonicalViewUnavailableError",
+    "canonical_current_project_root",
     "completion_markdown",
     "open_committed_dashboard",
     "post_confirm_navigation",

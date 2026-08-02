@@ -20,6 +20,20 @@ class GreenfieldRepositoryLockError(RuntimeError):
 def greenfield_repository_lock(repo_root: Path) -> Iterator[None]:
     """Serialize cooperating Greenfield publish, confirm, and reject operations."""
 
+    with _repository_lock(repo_root, mode=fcntl.LOCK_EX):
+        yield
+
+
+@contextmanager
+def greenfield_repository_read_lock(repo_root: Path) -> Iterator[None]:
+    """Prevent a canonical reader from crossing a cooperating writer switch."""
+
+    with _repository_lock(repo_root, mode=fcntl.LOCK_SH):
+        yield
+
+
+@contextmanager
+def _repository_lock(repo_root: Path, *, mode: int) -> Iterator[None]:
     lock_path = Path(repo_root).expanduser().resolve() / ".odylith/runtime/greenfield/create.lock"
     try:
         lock_path.parent.mkdir(parents=True, exist_ok=True)
@@ -28,7 +42,7 @@ def greenfield_repository_lock(repo_root: Path) -> Iterator[None]:
         raise GreenfieldRepositoryLockError("Greenfield repository lock is unavailable") from exc
     with handle:
         try:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(handle.fileno(), mode | fcntl.LOCK_NB)
         except BlockingIOError as exc:
             raise GreenfieldRepositoryBusyError("Greenfield repository mutation is already in progress") from exc
         except OSError as exc:
@@ -42,5 +56,6 @@ def greenfield_repository_lock(repo_root: Path) -> Iterator[None]:
 __all__ = [
     "GreenfieldRepositoryBusyError",
     "GreenfieldRepositoryLockError",
+    "greenfield_repository_read_lock",
     "greenfield_repository_lock",
 ]

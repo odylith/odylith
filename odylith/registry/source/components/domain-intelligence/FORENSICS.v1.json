@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 523,
-    "mapped_workstream_evidence_count": 432,
+    "explicit_event_count": 524,
+    "mapped_workstream_evidence_count": 433,
     "recent_path_match_count": 0,
     "spec_history_event_count": 264,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 523
+    "timeline_event_count": 524
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_managed_mutation_boundary.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
+        "tests/unit/runtime/test_greenfield_managed_mutation_boundary.py"
+      ],
+      "confidence": "high",
+      "event_index": 1128,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-02T04:31:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [
