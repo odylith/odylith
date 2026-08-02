@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 565,
-    "mapped_workstream_evidence_count": 515,
+    "explicit_event_count": 569,
+    "mapped_workstream_evidence_count": 519,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 565
+    "timeline_event_count": 569
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,150 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_managed_mutation_boundary.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
+        "tests/unit/runtime/test_greenfield_managed_mutation_boundary.py"
+      ],
+      "confidence": "high",
+      "event_index": 1128,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-02T04:31:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_generation_store.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py"
+      ],
+      "confidence": "high",
+      "event_index": 1127,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-02T03:51:07-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+      ],
+      "confidence": "high",
+      "event_index": 1126,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-02T01:06:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_product_intent_envelope.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_typed_source_spans.py"
+      ],
+      "confidence": "high",
+      "event_index": 1125,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-01T14:51:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

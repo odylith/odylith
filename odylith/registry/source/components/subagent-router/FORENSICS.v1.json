@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 139,
-    "mapped_workstream_evidence_count": 130,
+    "explicit_event_count": 140,
+    "mapped_workstream_evidence_count": 131,
     "recent_path_match_count": 0,
     "spec_history_event_count": 3,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 139
+    "timeline_event_count": 140
   },
   "name": "Subagent Router",
   "path_prefixes": [
@@ -46,6 +46,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_product_intent_envelope.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_typed_source_spans.py"
+      ],
+      "confidence": "high",
+      "event_index": 1125,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "subagent-router"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-01T14:51:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

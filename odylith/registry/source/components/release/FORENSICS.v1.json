@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 313,
-    "mapped_workstream_evidence_count": 209,
+    "explicit_event_count": 315,
+    "mapped_workstream_evidence_count": 210,
     "recent_path_match_count": 0,
     "spec_history_event_count": 62,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 313
+    "timeline_event_count": 315
   },
   "name": "Release",
   "path_prefixes": [
@@ -45,6 +45,65 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 1129,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 verifiable artifact references.",
+      "ts_iso": "2026-08-02T05:05:43-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py"
+      ],
+      "confidence": "high",
+      "event_index": 1126,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-02T01:06:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 5,
       "artifacts": [
