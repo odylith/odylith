@@ -14,10 +14,12 @@ from typing import Any
 from odylith.install.fs import atomic_write_bytes
 from odylith.install.fs import fsync_directory
 from odylith.install.fs import fsync_file
+from odylith.runtime.domain_intelligence import greenfield_generation_state
 
 
-GREENFIELD_REPOSITORY_WRITE_SET_VERSION = "odylith.greenfield.repository_write_set.v2"
+GREENFIELD_REPOSITORY_WRITE_SET_VERSION = "odylith.greenfield.repository_write_set.v3"
 GREENFIELD_REPOSITORY_WRITE_SET_PHASE = "pre_confirm_compile"
+MAX_SEALED_GENERATION_BYTES = 256 * 1024 * 1024
 GREENFIELD_REPOSITORY_WRITE_PATHS = (
     "odylith/radar",
     "odylith/technical-plans",
@@ -72,12 +74,15 @@ def compile_greenfield_repository_write_set(*, source_root: Path, staged_root: P
         {"path": path}
         for path in sorted(source_dirs - staged_dirs, key=lambda item: (-len(Path(item).parts), item))
     ]
+    after_image = _compile_after_image(files=staged_files, directories=staged_dirs)
     payload: dict[str, Any] = {
         "version": GREENFIELD_REPOSITORY_WRITE_SET_VERSION,
         "phase": GREENFIELD_REPOSITORY_WRITE_SET_PHASE,
         "managed_paths": list(GREENFIELD_REPOSITORY_WRITE_PATHS),
         "before_fingerprints": _managed_fingerprints(source),
         "after_fingerprints": _managed_fingerprints(staged),
+        "active_generation_precondition": greenfield_generation_state.active_generation_identity(source),
+        "after_image": after_image,
         "directories": directories,
         "directory_deletes": directory_deletes,
         "writes": writes,
@@ -110,6 +115,9 @@ def require_compiled_greenfield_repository_write_set(value: object) -> dict[str,
     expected_paths = set(GREENFIELD_REPOSITORY_WRITE_PATHS)
     if set(before) != expected_paths or set(after) != expected_paths:
         raise ValueError("ProductCreateTransaction repository fingerprints do not cover every managed path")
+    greenfield_generation_state.require_active_generation_identity(
+        payload.get("active_generation_precondition")
+    )
 
     directories = _mapping_rows(payload.get("directories"), label="directories")
     directory_deletes = _mapping_rows(payload.get("directory_deletes"), label="directory_deletes")
@@ -128,8 +136,16 @@ def require_compiled_greenfield_repository_write_set(value: object) -> dict[str,
         raise ValueError("ProductCreateTransaction repository write set creates and deletes the same directory")
     if set(write_paths) & set(delete_paths):
         raise ValueError("ProductCreateTransaction repository write set writes and deletes the same path")
+    after_files = _require_after_image(payload)
     for row in writes:
-        _decoded_write_bytes(row)
+        path = str(row.get("path", "")).strip()
+        after_row = after_files.get(path)
+        if after_row is None:
+            raise ValueError("ProductCreateTransaction repository write is absent from the sealed after-image")
+        if str(row.get("sha256", "")).strip() != str(after_row.get("sha256", "")).strip():
+            raise ValueError("ProductCreateTransaction repository write hash differs from its sealed after-image")
+        if row.get("mode") != after_row.get("mode"):
+            raise ValueError("ProductCreateTransaction repository write mode differs from its sealed after-image")
         previous = str(row.get("previous_sha256", "")).strip()
         if previous and previous != "missing" and not _DIGEST_PATTERN.fullmatch(previous):
             raise ValueError("ProductCreateTransaction repository write has an invalid previous digest")
@@ -167,6 +183,14 @@ def require_greenfield_repository_preconditions(*, repo_root: Path, write_set: o
             + ", ".join(changed)
             + ". Rebuild the transaction before committing governed records."
         )
+    expected_generation = greenfield_generation_state.require_active_generation_identity(
+        payload.get("active_generation_precondition")
+    )
+    if greenfield_generation_state.active_generation_identity(root) != expected_generation:
+        raise ValueError(
+            "ProductCreateTransaction active generation changed after pre-confirm compilation. "
+            "Rebuild the transaction before committing governed records."
+        )
     return payload
 
 
@@ -198,6 +222,7 @@ def apply_compiled_greenfield_repository_write_set(
     directories = _mapping_rows(payload.get("directories"), label="directories")
     directory_deletes = _mapping_rows(payload.get("directory_deletes"), label="directory_deletes")
     writes = _mapping_rows(payload.get("writes"), label="writes")
+    after_files = _require_after_image(payload)
     deletes = _mapping_rows(payload.get("deletes"), label="deletes")
 
     synced_directories: set[Path] = set()
@@ -209,7 +234,7 @@ def apply_compiled_greenfield_repository_write_set(
         target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
         atomic_write_bytes(
             target,
-            _decoded_write_bytes(row),
+            _decoded_after_image_bytes(after_files[str(row["path"])]),
             mode=int(row["mode"]),
             temporary_directory=temporary_directory,
         )
@@ -242,6 +267,49 @@ def apply_compiled_greenfield_repository_write_set(
         "directory_delete_count": len(directory_deletes),
         "write_count": len(writes),
         "delete_count": len(deletes),
+    }
+
+
+def materialize_compiled_greenfield_after_image(
+    *,
+    destination_root: Path,
+    write_set: object,
+    temporary_directory: Path | None = None,
+) -> dict[str, Any]:
+    """Materialize the complete pre-confirm after-image without reading live repo bytes."""
+
+    payload = require_compiled_greenfield_repository_write_set(write_set)
+    root = Path(destination_root).expanduser().resolve()
+    if root.is_symlink() or (root.exists() and (not root.is_dir() or any(root.iterdir()))):
+        raise ValueError("Greenfield generation destination must be a new empty directory")
+    root.mkdir(parents=True, exist_ok=True)
+    after_image = payload["after_image"]
+    directories = _mapping_rows(after_image.get("directories"), label="after-image directories")
+    files = _require_after_image(payload)
+    synced: set[Path] = set()
+    for row in sorted(directories, key=lambda item: (len(Path(str(item["path"])).parts), str(item["path"]))):
+        target = _target_path(root=root, token=str(row["path"]), allow_missing=True)
+        target.mkdir(parents=True, exist_ok=True)
+        _fsync_directory_chain(root=root, target=target, synced=synced)
+    for path, row in files.items():
+        target = _target_path(root=root, token=path, allow_missing=True)
+        atomic_write_bytes(
+            target,
+            _decoded_after_image_bytes(row),
+            mode=int(row["mode"]),
+            temporary_directory=temporary_directory,
+        )
+        fsync_file(target)
+        fsync_directory(target.parent)
+    require_greenfield_repository_after_state(repo_root=root, write_set=payload)
+    fsync_directory(root)
+    return {
+        "version": str(after_image["version"]),
+        "status": "passed",
+        "write_set_hash": str(payload["write_set_hash"]),
+        "directory_count": int(after_image["directory_count"]),
+        "file_count": int(after_image["file_count"]),
+        "byte_count": int(after_image["byte_count"]),
     }
 
 
@@ -313,11 +381,39 @@ def require_greenfield_repository_recovery_preconditions(*, repo_root: Path, wri
 def _write_entry(*, path: str, data: bytes, mode: int, previous: bytes | None) -> dict[str, Any]:
     return {
         "path": path,
-        "encoding": "base64",
-        "content_base64": base64.b64encode(data).decode("ascii"),
         "sha256": _sha256(data),
         "previous_sha256": _sha256(previous) if previous is not None else "missing",
         "mode": mode,
+    }
+
+
+def _compile_after_image(
+    *,
+    files: Mapping[str, tuple[bytes, int]],
+    directories: set[str],
+) -> dict[str, Any]:
+    byte_count = sum(len(state[0]) for state in files.values())
+    if byte_count > MAX_SEALED_GENERATION_BYTES:
+        raise ValueError(
+            "pre-confirm Greenfield package exceeds the sealed generation byte limit"
+        )
+    rows = [
+        {
+            "path": path,
+            "encoding": "base64",
+            "content_base64": base64.b64encode(data).decode("ascii"),
+            "sha256": _sha256(data),
+            "mode": mode,
+        }
+        for path, (data, mode) in sorted(files.items())
+    ]
+    return {
+        "version": "odylith.greenfield.repository-after-image.v1",
+        "directories": [{"path": path} for path in sorted(directories)],
+        "files": rows,
+        "directory_count": len(directories),
+        "file_count": len(rows),
+        "byte_count": byte_count,
     }
 
 
@@ -431,7 +527,7 @@ def _is_managed_path(token: str) -> bool:
     return any(token == root or token.startswith(root + "/") for root in GREENFIELD_REPOSITORY_WRITE_PATHS)
 
 
-def _decoded_write_bytes(row: Mapping[str, Any]) -> bytes:
+def _decoded_after_image_bytes(row: Mapping[str, Any]) -> bytes:
     if str(row.get("encoding", "")).strip() != "base64":
         raise ValueError("ProductCreateTransaction repository write has an unsupported encoding")
     try:
@@ -441,6 +537,82 @@ def _decoded_write_bytes(row: Mapping[str, Any]) -> bytes:
     if _sha256(data) != str(row.get("sha256", "")).strip():
         raise ValueError("ProductCreateTransaction repository write payload hash mismatch")
     return data
+
+
+def _require_after_image(payload: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
+    value = payload.get("after_image")
+    if not isinstance(value, Mapping) or str(value.get("version", "")).strip() != (
+        "odylith.greenfield.repository-after-image.v1"
+    ):
+        raise ValueError("ProductCreateTransaction repository after-image is missing")
+    directories = _mapping_rows(value.get("directories"), label="after-image directories")
+    files = _mapping_rows(value.get("files"), label="after-image files")
+    directory_paths = _validated_paths(directories, label="after-image directory")
+    file_paths = _validated_paths(files, label="after-image file")
+    if directory_paths != sorted(directory_paths) or file_paths != sorted(file_paths):
+        raise ValueError("ProductCreateTransaction repository after-image is not in deterministic order")
+    _require_count(value, "directory_count", directories)
+    _require_count(value, "file_count", files)
+    file_map: dict[str, Mapping[str, Any]] = {}
+    byte_count = 0
+    for row in files:
+        data = _decoded_after_image_bytes(row)
+        mode = row.get("mode")
+        if not isinstance(mode, int) or mode < 0 or mode > 0o777:
+            raise ValueError("ProductCreateTransaction repository after-image has an invalid file mode")
+        byte_count += len(data)
+        file_map[str(row["path"])] = row
+    if byte_count != value.get("byte_count") or byte_count > MAX_SEALED_GENERATION_BYTES:
+        raise ValueError("ProductCreateTransaction repository after-image has an invalid byte count")
+    expected = _fingerprint_mapping(payload.get("after_fingerprints"), label="after")
+    actual = _after_image_fingerprints(directories=set(directory_paths), files=file_map)
+    if actual != expected:
+        raise ValueError("ProductCreateTransaction repository after-image does not match its fingerprints")
+    return file_map
+
+
+def _after_image_fingerprints(
+    *,
+    directories: set[str],
+    files: Mapping[str, Mapping[str, Any]],
+) -> dict[str, str]:
+    fingerprints: dict[str, str] = {}
+    for token in GREENFIELD_REPOSITORY_WRITE_PATHS:
+        rows: list[dict[str, Any]] = []
+        if token in files:
+            row = files[token]
+            rows.append(
+                {
+                    "kind": "file",
+                    "path": token,
+                    "sha256": str(row["sha256"]),
+                    "mode": int(row["mode"]),
+                }
+            )
+        elif token in directories:
+            rows.append({"kind": "directory", "path": token})
+            descendants = sorted(
+                set(path for path in directories if path.startswith(token + "/"))
+                | set(path for path in files if path.startswith(token + "/"))
+            )
+            for path in descendants:
+                if path in directories:
+                    rows.append({"kind": "directory", "path": path})
+                else:
+                    row = files[path]
+                    rows.append(
+                        {
+                            "kind": "file",
+                            "path": path,
+                            "sha256": str(row["sha256"]),
+                            "mode": int(row["mode"]),
+                        }
+                    )
+        else:
+            rows.append({"kind": "missing", "path": token})
+        canonical = json.dumps(rows, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        fingerprints[token] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return fingerprints
 
 
 def _mapping_rows(value: object, *, label: str) -> list[Mapping[str, Any]]:
@@ -486,10 +658,12 @@ __all__ = [
     "GREENFIELD_REPOSITORY_WRITE_PATHS",
     "GREENFIELD_REPOSITORY_WRITE_SET_PHASE",
     "GREENFIELD_REPOSITORY_WRITE_SET_VERSION",
+    "MAX_SEALED_GENERATION_BYTES",
     "apply_compiled_greenfield_repository_write_set",
     "compile_greenfield_repository_write_set",
     "greenfield_repository_recovery_paths",
     "greenfield_repository_write_paths",
+    "materialize_compiled_greenfield_after_image",
     "require_compiled_greenfield_repository_write_set",
     "require_greenfield_repository_after_state",
     "require_greenfield_repository_preconditions",

@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_create_cli
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
 from odylith.runtime.surfaces import brand_assets
@@ -39,7 +40,7 @@ from tests.unit.runtime.greenfield_proposal_fixtures import surface_refresh_prev
 
 @pytest.fixture(autouse=True)
 def _prevent_real_browser_launch(monkeypatch) -> None:
-    monkeypatch.setattr(greenfield_create_cli.webbrowser, "open", lambda *_args, **_kwargs: False)
+    monkeypatch.setattr(greenfield_post_confirm_handoff.webbrowser, "open", lambda *_args, **_kwargs: False)
 
 
 def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
@@ -154,7 +155,6 @@ def _run_confirmed_transaction_create(
     edit_evidence_file: str = "",
     as_json: bool = False,
 ) -> tuple[int, str, dict[str, object]]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_args = ["propose", "--repo-root", str(repo_root), "--prompt", prompt]
     if edit_evidence_file:
         propose_args.extend(("--edit-evidence", edit_evidence_file))
@@ -165,6 +165,7 @@ def _run_confirmed_transaction_create(
     compile_payload = json.loads(compile_output)
     assert "product_create_transaction" in compile_payload, compile_output
     transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(compile_payload["transaction_file"])
     create_args = [
         "create",
         "--repo-root",
@@ -191,15 +192,15 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
 
 
 def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monkeypatch) -> None:
-    navigation = greenfield_create_cli._post_confirm_navigation(tmp_path)
+    navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     opened: list[tuple[str, int]] = []
     monkeypatch.setattr(
-        greenfield_create_cli.webbrowser,
+        greenfield_post_confirm_handoff.webbrowser,
         "open",
         lambda url, new=0: opened.append((url, new)) or True,
     )
 
-    result = greenfield_create_cli._open_committed_dashboard(navigation)
+    result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
 
     expected_url = f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project"
     assert result == {"status": "opened", "url": expected_url, "reason": ""}
@@ -207,14 +208,14 @@ def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monke
 
 
 def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypatch) -> None:
-    navigation = greenfield_create_cli._post_confirm_navigation(tmp_path)
+    navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     monkeypatch.setattr(
-        greenfield_create_cli.webbrowser,
+        greenfield_post_confirm_handoff.webbrowser,
         "open",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("browser unavailable")),
     )
 
-    result = greenfield_create_cli._open_committed_dashboard(navigation)
+    result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
 
     assert result["status"] == "unavailable"
     assert result["reason"] == "OSError: browser unavailable"
@@ -238,7 +239,7 @@ def test_greenfield_text_compiles_concrete_prompt_into_transaction_with_assumpti
     output = capsys.readouterr().out
     assert "ProductCreateTransaction ready for final command" in output
     assert "transaction hash:" in output
-    assert "### Command: `CONFIRM`" in output
+    assert "### CONFIRM" in output
     assert "Commit this exact validated package now" in output
 
 
@@ -505,19 +506,28 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, monkey
     assert "No governed records were written" not in output
     assert "post-confirm completion failed" not in output
     create_payload = json.loads(output)
+    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    immutable_dashboard = (
+        tmp_path
+        / ".odylith/runtime/greenfield/generations"
+        / transaction_hash
+        / "repository/odylith/index.html"
+    ).resolve()
     assert create_payload["post_confirm_navigation"] == {
         "project": "odylith/index.html?tab=project",
         "radar": "odylith/index.html?tab=radar",
         "registry": "odylith/index.html?tab=registry",
         "atlas": "odylith/index.html?tab=atlas",
         "compass": "odylith/index.html?tab=compass&date=live",
-        "dashboard_path": str((tmp_path / "odylith/index.html").resolve()),
-        "project_url": f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project",
+        "dashboard_path": str(immutable_dashboard),
+        "project_url": f"{immutable_dashboard.as_uri()}?tab=project",
+        "compatibility_dashboard_path": str((tmp_path / "odylith/index.html").resolve()),
+        "generation_transaction_hash": transaction_hash,
     }
     assert create_payload["post_confirm_browser"] == {
         "status": "not_attempted",
         "reason": "machine_readable_output",
-        "url": f"{(tmp_path / 'odylith/index.html').resolve().as_uri()}?tab=project",
+        "url": f"{immutable_dashboard.as_uri()}?tab=project",
     }
     assert (tmp_path / "odylith/radar/source").is_dir()
     assert (tmp_path / "odylith/registry/source/components").is_dir()
@@ -545,21 +555,21 @@ def test_greenfield_propose_shows_single_transaction_handoff(tmp_path, capsys) -
     assert "transaction hash:" in output
     assert "transaction file:" in output
     assert "## Choose one command" in output
-    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
-    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
-    assert "### Command: `CONFIRM`" in output
-    assert "**Reply starts with:** `CONFIRM`" in output
+    assert "approval code binds your choice to this reviewed package" in output
+    assert output.count("```text") == 3
+    assert "### CONFIRM" in output
+    assert re.search(r"CONFIRM [0-9a-f]{64}", output)
     assert "Commit this exact validated package now" in output
-    assert "### Command: `EDIT`" in output
-    assert "**Reply starts with:** `EDIT`" in output
-    assert "Put corrections after EDIT" in output
-    assert "### Command: `REJECT`" in output
-    assert "**Reply starts with:** `REJECT`" in output
-    assert "Stop. No governed records are written." in output
+    assert "### EDIT" in output
+    assert re.search(r"EDIT [0-9a-f]{64}", output)
+    assert "Put corrections after the hash" in output
+    assert "### REJECT" in output
+    assert re.search(r"REJECT [0-9a-f]{64}", output)
+    assert "Stop this exact pending package. No governed records are written." in output
     choose_index = output.index("## Choose one command")
-    confirm_index = output.index("### Command: `CONFIRM`", choose_index)
-    edit_index = output.index("### Command: `EDIT`", confirm_index)
-    reject_index = output.index("### Command: `REJECT`", edit_index)
+    confirm_index = output.index("### CONFIRM", choose_index)
+    edit_index = output.index("### EDIT", confirm_index)
+    reject_index = output.index("### REJECT", edit_index)
     transaction_index = output.index("transaction hash:")
     assert transaction_index < choose_index < confirm_index < edit_index < reject_index
     assert output.count("## Choose one command") == 1
@@ -798,21 +808,21 @@ def test_greenfield_text_full_detail_keeps_single_commit_path_available(tmp_path
     assert "Product story" in output
     assert "ProductCreateTransaction" in output
     assert "## Choose one command" in output
-    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
-    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
-    assert "### Command: `CONFIRM`" in output
-    assert "**Reply starts with:** `CONFIRM`" in output
+    assert "approval code binds your choice to this reviewed package" in output
+    assert output.count("```text") == 3
+    assert "### CONFIRM" in output
+    assert re.search(r"CONFIRM [0-9a-f]{64}", output)
     assert "Commit this exact validated package now" in output
-    assert "### Command: `EDIT`" in output
-    assert "**Reply starts with:** `EDIT`" in output
-    assert "Put corrections after EDIT" in output
-    assert "### Command: `REJECT`" in output
-    assert "**Reply starts with:** `REJECT`" in output
-    assert "Stop. No governed records are written." in output
+    assert "### EDIT" in output
+    assert re.search(r"EDIT [0-9a-f]{64}", output)
+    assert "Put corrections after the hash" in output
+    assert "### REJECT" in output
+    assert re.search(r"REJECT [0-9a-f]{64}", output)
+    assert "Stop this exact pending package. No governed records are written." in output
     choose_index = output.index("## Choose one command")
-    confirm_index = output.index("### Command: `CONFIRM`", choose_index)
-    edit_index = output.index("### Command: `EDIT`", confirm_index)
-    reject_index = output.index("### Command: `REJECT`", edit_index)
+    confirm_index = output.index("### CONFIRM", choose_index)
+    edit_index = output.index("### EDIT", confirm_index)
+    reject_index = output.index("### REJECT", edit_index)
     transaction_index = output.index("transaction hash:")
     assert transaction_index < choose_index < confirm_index < edit_index < reject_index
     assert output.count("## Choose one command") == 1
@@ -857,8 +867,13 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert payload["product_create_transaction"]["quality_status"] == "passed"
     assert (tmp_path / payload["transaction_file"]).is_file()
     confirmation = payload["confirmation"]
-    assert confirmation["command_rule"] == "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
-    assert [choice["command"] for choice in confirmation["choices"]] == ["CONFIRM", "EDIT", "REJECT"]
+    transaction_hash = str(payload["product_create_transaction"]["transaction_hash"])
+    assert confirmation["command_rule"] == "Copy exactly one hash-bound command: CONFIRM, EDIT, or REJECT."
+    assert [choice["command"] for choice in confirmation["choices"]] == [
+        f"CONFIRM {transaction_hash}",
+        f"EDIT {transaction_hash}",
+        f"REJECT {transaction_hash}",
+    ]
     assert payload["product_create_transaction"]["transaction_hash"] in confirmation["choices"][0]["commit_command"]
     assert payload["intent_hypothesis"]["product_story"]
     assert "host_reasoning_task" not in payload
@@ -917,7 +932,10 @@ def test_greenfield_cli_compiles_a_complete_reservation_path_without_temp_path_l
 
     assert rc == 0
     assert payload["product_create_transaction"]["quality_status"] == "passed"
-    assert payload["transaction_file"] == ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_hash = str(payload["product_create_transaction"]["transaction_hash"])
+    assert payload["transaction_file"] == (
+        f".odylith/runtime/greenfield/pending/{transaction_hash}/product-create-transaction.v1.json"
+    )
     assert payload["intent_hypothesis"]["human_actors"] == [
         "Lab operators: need the product to reserve a calibrated entanglement link for an experiment and keep the result visible and reviewable"
     ]
@@ -1062,8 +1080,8 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("builder must not own final create readiness")),
     )
     monkeypatch.setattr(
-        greenfield_create_cli,
-        "_open_committed_dashboard",
+        greenfield_post_confirm_handoff,
+        "open_committed_dashboard",
         lambda _navigation: {"status": "unavailable", "reason": "test browser unavailable"},
     )
 
@@ -1223,7 +1241,6 @@ def test_greenfield_propose_cli_outputs_hash_ready_contract(
     tmp_path,
     capsys,
 ) -> None:
-    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -1242,22 +1259,22 @@ def test_greenfield_propose_cli_outputs_hash_ready_contract(
     assert "ProductCreateTransaction ready for final command" in output
     assert "exact file writes" in output
     assert "hashed repo preconditions" in output
-    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
-    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
-    assert "### Command: `CONFIRM`" in output
-    assert "**Reply starts with:** `CONFIRM`" in output
+    assert "approval code binds your choice to this reviewed package" in output
+    assert output.count("```text") == 3
+    assert "### CONFIRM" in output
+    assert re.search(r"CONFIRM [0-9a-f]{64}", output)
     assert "Commit this exact validated package now." in output
     assert "verifies the hash and repo preconditions, writes the sealed bytes, and validates readback" in output
-    assert "### Command: `EDIT`" in output
-    assert "**Reply starts with:** `EDIT`" in output
-    assert "Do not commit. Put corrections after EDIT" in output
-    assert "### Command: `REJECT`" in output
-    assert "**Reply starts with:** `REJECT`" in output
-    assert "Stop. No governed records are written" in output
+    assert "### EDIT" in output
+    assert re.search(r"EDIT [0-9a-f]{64}", output)
+    assert "Do not commit. Put corrections after the hash" in output
+    assert "### REJECT" in output
+    assert re.search(r"REJECT [0-9a-f]{64}", output)
+    assert "Stop this exact pending package. No governed records are written" in output
     choose_index = output.index("## Choose one command")
-    confirm_index = output.index("### Command: `CONFIRM`", choose_index)
-    edit_index = output.index("### Command: `EDIT`", confirm_index)
-    reject_index = output.index("### Command: `REJECT`", edit_index)
+    confirm_index = output.index("### CONFIRM", choose_index)
+    edit_index = output.index("### EDIT", confirm_index)
+    reject_index = output.index("### REJECT", edit_index)
     assert choose_index < confirm_index < edit_index < reject_index
     assert output.count("## Choose one command") == 1
     assert "Compile transaction:" not in output
@@ -1265,6 +1282,14 @@ def test_greenfield_propose_cli_outputs_hash_ready_contract(
     assert "compiles a validated ProductCreateTransaction" not in output
     assert "--transaction-file" in output
     assert "--transaction-hash" in output
+    transaction_hash = re.search(r"transaction hash: ([0-9a-f]{64})", output)
+    assert transaction_hash is not None
+    transaction_path = (
+        tmp_path
+        / ".odylith/runtime/greenfield/pending"
+        / transaction_hash.group(1)
+        / "product-create-transaction.v1.json"
+    )
     assert transaction_path.is_file()
     assert transaction_path.with_name(transaction_path.name + ".compiler-receipt.v1.json").is_file()
     saved = json.loads(transaction_path.read_text(encoding="utf-8"))

@@ -10,6 +10,7 @@ import shlex
 from typing import Any, Mapping
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import GreenfieldClarificationRequired
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
@@ -114,7 +115,7 @@ def _legacy_apply_disabled_error() -> str:
     return (
         "greenfield apply is disabled for confirmed writes. Confirm now commits only an already compiled "
         "ProductCreateTransaction. Run `odylith greenfield propose --repo-root . --prompt <request>`, then run `odylith greenfield create "
-        "--repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json "
+        "--repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json "
         "--transaction-hash <hash> --confirm`. No governed records were written."
     )
 
@@ -125,6 +126,7 @@ def _transaction_confirmation_payload(
     output_path: str = "",
 ) -> dict[str, Any]:
     summary = transaction.summary()
+    transaction_hash = str(summary["transaction_hash"])
     transaction_ref = shlex.quote(output_path or "<compiled-transaction.json>")
     commit_command = (
         "odylith greenfield create --repo-root . "
@@ -132,9 +134,9 @@ def _transaction_confirmation_payload(
         f"--transaction-hash {summary['transaction_hash']} --confirm"
     )
     return {
-        "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
-        "first_word_rule": "Only the first command counts. Do not paste Odylith system commands in your reply.",
-        "edit_rule": "For EDIT, put corrections after the command so Odylith can rebuild from the new evidence.",
+        "command_rule": "Copy exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
+        "first_word_rule": "The transaction hash is part of the command and binds the decision to these reviewed bytes.",
+        "edit_rule": "For EDIT, put corrections after the hash so Odylith can rebuild from the new evidence.",
         "post_confirm_contract": (
             "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
             "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
@@ -142,22 +144,25 @@ def _transaction_confirmation_payload(
         ),
         "choices": [
             {
-                "command": "CONFIRM",
+                "command": f"CONFIRM {transaction_hash}",
                 "description": "Commit this exact validated package now. Odylith verifies the hash and repo "
                 "preconditions, writes the sealed bytes, and validates readback. No product reinterpretation, "
                 "repair, or generation runs after CONFIRM.",
                 "commit_command": commit_command,
             },
             {
-                "command": "EDIT",
-                "description": "Do not commit. Put corrections after EDIT; Odylith treats them as new evidence, "
+                "command": f"EDIT {transaction_hash}",
+                "description": "Do not commit. Put corrections after the hash; Odylith treats them as new evidence, "
                 "rebuilds the package, and uses the new hash.",
             },
-            {"command": "REJECT", "description": "Stop. No governed records are written."},
+            {
+                "command": f"REJECT {transaction_hash}",
+                "description": "Stop this exact pending package. No governed records are written.",
+            },
         ],
-        "confirm": "CONFIRM - commit this exact validated package now",
-        "edit": "EDIT - add corrections after the command and rebuild the transaction",
-        "reject": "REJECT - stop with no governed records written",
+        "confirm": f"CONFIRM {transaction_hash}",
+        "edit": f"EDIT {transaction_hash} <corrections>",
+        "reject": f"REJECT {transaction_hash}",
     }
 
 
@@ -184,7 +189,7 @@ def _transaction_confirmation_text(
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
         f"- sealed commit: {summary.get('repository_write_count', 0)} exact file writes, "
         f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions",
-        "- commands: CONFIRM commits this transaction hash; EDIT rebuilds from new evidence; REJECT stops with no writes",
+        "- commands below include this exact transaction hash; copy one command without changing it",
         "",
         *format_confirmation_choice_lines(
             tuple(
@@ -192,7 +197,7 @@ def _transaction_confirmation_text(
                     str(choice["command"]),
                     (
                         f"{choice['description']} Run `{choice['commit_command']}`"
-                        if str(choice["command"]) == "CONFIRM"
+                        if str(choice["command"]).startswith("CONFIRM ")
                         else str(choice["description"])
                     ),
                 )
@@ -304,8 +309,10 @@ def _compile_prompt_evidence_transaction(
         raise RuntimeError(
             "pre-confirm compiler produced a transaction whose product facts do not match the visible typed preview"
         )
-    transaction_path = repo_root / ".odylith" / "runtime" / "greenfield" / "product-create-transaction.v1.json"
-    greenfield_proposals.write_product_create_transaction_file(transaction_path, transaction)
+    transaction_path = greenfield_pending_transaction_store.stage_pending_transaction(
+        repo_root=repo_root,
+        transaction=transaction,
+    )
     return candidate_intent, transaction, transaction_path
 
 

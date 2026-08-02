@@ -62,10 +62,9 @@ shows you the component boundaries, workstreams, architecture diagrams, and
 issues it can create. Each suggestion comes with the command to run it.
 
 If the repo is still empty or too thin for source-backed boundaries, Odylith
-switches to greenfield mode instead of dead-ending. The host model drafts the
-Product Intent Confirmation in chat as clear sectioned Markdown, while Odylith
-supplies the evidence tiers, schema, topology requirements, confirmation gate,
-and governed create path.
+switches to greenfield mode instead of dead-ending. Odylith compiles untrusted
+evidence into typed product facts, the complete governed package, and a clear
+sectioned preview before it offers a decision.
 
 For example:
 
@@ -73,14 +72,15 @@ For example:
 odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
 ```
 
-Before confirmation, Odylith stores only replaceable evidence and the compiled
-transaction under `.odylith/runtime/greenfield/`. That transaction already
+Before confirmation, Odylith stores each compiled package at an immutable,
+transaction-addressed pending path under `.odylith/runtime/greenfield/`. That package already
 contains the quality-gated backlog, first-release plan, Registry components,
 Atlas topology, assumptions, risks, open questions, validation obligations, and
-post-commit handoff. `CONFIRM` verifies its hash and commits those sealed bytes;
+post-commit handoff. `CONFIRM <hash>` resolves only that reviewed package, verifies its hash,
+and publishes those sealed bytes;
 it does not ask a model to interpret intent or generate artifacts after the
-decision. The commit-only path writes atomically, validates readback, refreshes
-Radar, Registry, Atlas, and Compass, and directs the operator to the project view.
+decision. The commit-only path materializes an immutable generation, switches one
+active pointer, validates readback, and directs the operator to that exact project view.
 
 Then open `odylith/index.html` in a browser and follow the Cheatsheet in the
 drawer.

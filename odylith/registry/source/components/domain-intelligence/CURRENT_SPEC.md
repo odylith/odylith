@@ -1,18 +1,21 @@
 # Domain Intelligence
-Last updated: 2026-08-01
+Last updated: 2026-08-02
 
 
 ## Overview
 
-Domain Intelligence is the host-reasoning contract and confirmation-gated apply
-runtime for greenfield consumer governance. It gives every supported host a
-strict evidence/schema/validation contract, then writes accepted
-backlog, Registry, Atlas, release, Compass, assumptions, risks, and validation
-records only after explicit confirmation.
+Domain Intelligence owns the Greenfield evidence-to-transaction boundary. It
+turns untrusted operator evidence into typed product facts, compiles and validates
+the complete governed package before confirmation, stores each pending package at
+an immutable hash-addressed path, and publishes the accepted package as one
+transaction-addressed generation. Codex and Claude transport the same exact
+hash-bound `CONFIRM`, `EDIT`, and `REJECT` contract; host prose is never product
+truth and no product interpretation or artifact generation runs after confirmation.
 
 ## Boundary
 
-- **Logical boundary**: host-reasoned greenfield proposal validation and apply.
+- **Logical boundary**: deterministic Greenfield intent compilation, pre-confirm
+  package tribunal, immutable pending custody, and commit-only publication.
 - **Evidence anchor**: `src/odylith/runtime/domain_intelligence`; Project
   source-launch projection owner:
   `src/odylith/runtime/project_intelligence/source_launch.py`
@@ -26,24 +29,41 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md`, `src/odylith/runtime/domain_intelligence/greenfield_generation_store.py`, `src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py`
+- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_transaction.py`
+- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md`, `src/odylith/runtime/domain_intelligence/greenfield_product_intent_envelope.py`, `src/odylith/runtime/domain_intelligence/greenfield_typed_source_spans.py`
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 - **2026-07-31 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
-- **2026-07-29 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-07-30-actor-label-quality-gate-rejected-valid-role-ending-labels.md`, `odylith/casebook/bugs/2026-07-30-final-typed-intent-re-seal-discarded-pre-confirm-rescue-evidence.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py`
-- **2026-07-22 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/skills/odylith-greenfield-governance/SKILL.md`, `src/odylith/runtime/domain_intelligence/greenfield_create_cli.py`, `tests/unit/runtime/test_greenfield_cli_paths.py`
-- **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_commit_transaction.py`, `src/odylith/runtime/domain_intelligence/greenfield_create_transaction.py`, `tests/unit/runtime/test_greenfield_commit_journal.py`, `tests/unit/runtime/test_greenfield_transaction_provenance.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-02: Replaced mutable pending and file-by-file commit semantics with hash-addressed decision custody and generation publication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-304`; Diagram: D-043)
+  The pre-confirm
+  compiler now seals the complete managed after-image and active-generation
+  precondition, then atomically stages transaction plus receipt under
+  `pending/<transaction-hash>`. The visible rail carries that hash in all three
+  commands, so a later proposal cannot retarget an earlier reviewed decision.
+  Confirm and reject share one repository lock. Confirm materializes the sealed
+  after-image into a transaction-addressed generation, projects compatibility
+  files under rollback guard, switches one active pointer only after readback,
+  and recovers forward after pointer visibility instead of undoing published
+  state. The proof set covers both SIGKILL sides of the pointer, generation
+  corruption, active-pointer compare-and-switch, canonical reader pinning,
+  Codex/Claude parity, A/B retarget resistance, 72 focused atomic-custody tests,
+  188 evaluation/campaign tests, and real cross-domain propose/create paths.
+  Later non-Greenfield writer supersession remains a release gate rather than an
+  implied platform claim.
 
 - 2026-08-01: Made Greenfield material-fact custody source-verifiable inside a declared operating envelope. Raw operator prompts are evidence, never typed product truth; prompt-derived material fields are bounded interpretations tied to hashed evidence spans, while typed JSON fields earn accepted-fact custody only through exact structural value equality. The exact generic software-router replay no longer activates scientific-evaluation semantics, and canonical actor facts keep sentence case across actor rows and first-path prefixes. Final source proof passed 214 transaction/custody tests plus the focused 44-test operating-envelope, actor, and Product Intent matrix. Installed release replay remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-302`; Diagram: D-043)
 

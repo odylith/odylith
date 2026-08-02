@@ -95,15 +95,22 @@ flowchart LR
       acceptance_identity["Pre-confirm acceptance identity<br/>coherent prior accepted-project, brief, and Compass evidence;<br/>reuse its timestamp only for exact semantics after narrow<br/>target/current-stage path rebasing; otherwise keep fresh on<br/>malformed or inconsistent evidence, untrusted paths, or command drift"]
       compiled_memory_previews["Compiled acceptance previews<br/>accepted project, project brief, and Compass event<br/>consumed without reconstruction"]
       report_envelope["Pre-confirm reporting envelope<br/>backlog, components, and diagrams<br/>are list-shaped sealed result fields"]
-      transaction_seal["ProductCreateTransaction seal<br/>exact bytes, modes, file and directory deletes,<br/>repo fingerprints, result preview"]
+      transaction_seal["ProductCreateTransaction seal<br/>complete managed after-image, modes and deletes,<br/>repo fingerprints, active-generation precondition,<br/>result preview"]
       snapshot_manifest["Durable rollback snapshot manifest<br/>exact affected paths, present/missing state,<br/>modes and SHA-256 fingerprints"]
-      compiler_receipt["Detached compiler receipt<br/>transaction file digest and hash"]
-      transaction_ready["Creation-ready confirmation view<br/>CONFIRM, EDIT, or REJECT"]
+      compiler_receipt["Detached compiler receipt<br/>transaction file digest, runtime identity,<br/>and transaction hash"]
+      pending_package["Immutable pending package<br/>pending / transaction hash;<br/>transaction and receipt appear together"]
+      transaction_ready["Creation-ready confirmation view<br/>CONFIRM hash, EDIT hash, or REJECT hash"]
       commit_verify["Commit-only verification<br/>receipt, transaction hash, compiler identity,<br/>unchanged repo preconditions"]
-      writes["Sealed write set applied<br/>no parsing, generation, repair,<br/>quality work, or surface refresh"]
+      immutable_generation["Transaction-addressed generation<br/>full repository after-image materialized<br/>from sealed bytes only"]
+      generation_readback["Immutable generation readback<br/>manifest, write-set hash,<br/>tree fingerprints"]
+      writes["Compatibility tree projection<br/>sealed write set only;<br/>no parsing, repair, or artifact generation"]
       atomic_cleanup["Interrupt-safe atomic writes<br/>BaseException removes the temp sibling<br/>before rollback evaluates final paths"]
-      readback["Exact tree readback<br/>after fingerprints must match"]
+      readback["Compatibility tree readback<br/>after fingerprints must match<br/>before publication"]
+      active_pointer["Active-generation pointer switch<br/>compare-and-switch from<br/>the pre-confirm identity"]
+      published_verify["Published generation verification<br/>pointer, manifest, immutable tree,<br/>and compatibility readback agree"]
+      journal_close["Durable journal close<br/>published receipt retained for<br/>same-hash retry and recovery"]
       rollback["Affected-path rollback guard<br/>SIGINT and SIGTERM included;<br/>failed rollback preserves recovery snapshot"]
+      recovery_required["Post-publication recovery state<br/>never roll back an observed pointer;<br/>preserve generation and journal"]
       blockers["No-write pre-confirm blocker<br/>or post-confirm environment/invariant failure"]
       post_confirm_handoff["Post-confirm governance handoff<br/>Project route plus Radar, Registry,<br/>Atlas, and Compass routes;<br/>no second confirmation"]
       matrix_scorer["Hardened matrix scorer<br/>grounded anchor preflight,<br/>persisted governed readback,<br/>public artifact readback,<br/>Project shell payload readback,<br/>browser proof as premium blocker,<br/>runtime custody excluded"]
@@ -118,7 +125,7 @@ flowchart LR
     shared_event_resolver -. "same resolved human event" .-> state_boundary_titles
     draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> blockers
-    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> transaction_ready --> commit_verify --> snapshot_manifest --> writes --> atomic_cleanup --> readback --> post_confirm_handoff --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
+    final_manifest -- "pass" --> surface_custody --> portable_catalog_links --> transaction_quality --> acceptance_identity --> compiled_memory_previews --> report_envelope --> transaction_seal --> compiler_receipt --> pending_package --> transaction_ready --> commit_verify --> snapshot_manifest --> immutable_generation --> generation_readback --> writes --> atomic_cleanup --> readback --> active_pointer --> published_verify --> journal_close --> post_confirm_handoff --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "quality debt remains" --> blockers
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
@@ -142,8 +149,12 @@ flowchart LR
     rerender --> validators
     rescue_budget -- "no" --> blockers
     final_manifest -- "non-repairable" --> blockers
-    writes -- "environment or invariant failure" --> rollback --> blockers
-    readback -- "fingerprint drift" --> rollback
+    immutable_generation -- "before pointer failure" --> rollback --> blockers
+    writes -- "before pointer failure" --> rollback
+    readback -- "before pointer drift" --> rollback
+    active_pointer -- "not visible" --> rollback
+    active_pointer -- "visible, journal interrupted" --> published_verify
+    published_verify -- "drift after publication" --> recovery_required --> blockers
     rollback --> blockers
 
     classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1.2px;
@@ -153,7 +164,7 @@ flowchart LR
     class visible_intent,confirmable_stdout,source_guard,operating_envelope,intent_section_parser,prose_boundary_guard,prompt_recovery,editorial_framing_guard,source_claim_custody,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,intent_visible_result,compiler,semantic_ir,evaluation_semantics,actor_role_owner,artifact_actor_filter,actor_path_role,shared_event_resolver,external_boundary,sequence_owner,subject_carry_guard,result_language,visible_result_priority,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,registry_contract_custody,semantic_result_custody,projections,confirmed_diagram_projection,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,transaction_ready,commit_verify,snapshot_manifest,writes,atomic_cleanup,readback,rollback,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
+    class surface_custody,portable_catalog_links,transaction_quality,acceptance_identity,compiled_memory_previews,report_envelope,transaction_seal,compiler_receipt,pending_package,transaction_ready,commit_verify,snapshot_manifest,immutable_generation,generation_readback,writes,atomic_cleanup,readback,active_pointer,published_verify,journal_close,rollback,recovery_required,blockers,post_confirm_handoff,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#293D52

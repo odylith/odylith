@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 import hashlib
 import json
 import shutil
@@ -13,13 +13,29 @@ from typing import Any
 
 from odylith.install.fs import atomic_write_text
 from odylith.install.fs import fsync_directory
+from odylith.runtime.domain_intelligence import greenfield_create_lifecycle
+from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 
 
-JOURNAL_VERSION = "odylith.greenfield.commit_journal.v2"
-_LEGACY_JOURNAL_VERSION = "odylith.greenfield.commit_journal.v1"
-_STATES = frozenset({"preparing", "prepared", "applying", "committed", "rolled_back"})
+JOURNAL_VERSION = "odylith.greenfield.commit_journal.v3"
+_LEGACY_JOURNAL_VERSIONS = frozenset(
+    {"odylith.greenfield.commit_journal.v1", "odylith.greenfield.commit_journal.v2"}
+)
+_STATES = frozenset(
+    {
+        "preparing",
+        "prepared",
+        "projecting",
+        "published",
+        "verified",
+        "closed",
+        "aborted",
+        "recovery_required",
+    }
+)
 
 
 class GreenfieldCommitJournalError(RuntimeError):
@@ -92,7 +108,7 @@ class GreenfieldCommitJournal:
                 fsync_directory(journal_parent)
                 continue
             record = _read_journal_record(entry)
-            if str(record.get("version", "")) == _LEGACY_JOURNAL_VERSION:
+            if str(record.get("version", "")) in _LEGACY_JOURNAL_VERSIONS:
                 _quarantine_legacy_journal(entry, journal_parent=journal_parent)
                 continue
             if str(record.get("version", "")) != JOURNAL_VERSION:
@@ -105,12 +121,12 @@ class GreenfieldCommitJournal:
                 str(record.get("transaction_hash", "")),
                 label="transaction hash",
             )
-            if str(record["state"]) == "committed":
+            if str(record["state"]) == "closed":
                 _discard_committed_journal_artifacts(entry)
                 continue
             if transaction_hash == excluded:
                 continue
-            if str(record["state"]) == "applying":
+            if str(record["state"]) in {"projecting", "published", "recovery_required"}:
                 recovery_write_set = record.get("recovery_write_set")
                 journal = cls(
                     repo_root=root,
@@ -119,7 +135,7 @@ class GreenfieldCommitJournal:
                 )
                 journal.recover_or_return_committed()
                 continue
-            if str(record["state"]) in {"preparing", "prepared", "rolled_back"}:
+            if str(record["state"]) in {"preparing", "prepared", "aborted"}:
                 shutil.rmtree(entry)
                 fsync_directory(journal_parent)
                 continue
@@ -139,85 +155,136 @@ class GreenfieldCommitJournal:
             return None
         record = self._read_record()
         state = str(record["state"])
-        if state == "committed":
-            try:
-                greenfield_repository_write_set.require_greenfield_repository_after_state(
-                    repo_root=self.repo_root,
-                    write_set=self.write_set,
-                )
-            except (OSError, RuntimeError, ValueError) as exc:
-                raise GreenfieldCommitJournalError(
-                    "confirmed Greenfield transaction has a durable receipt, "
-                    "but its committed repository state changed",
-                    failure_kind="post_confirm_committed_state_drift",
-                    recovery_path=self.recovery_path,
-                ) from exc
-            result = record.get("commit_result")
-            if not isinstance(result, Mapping):
-                raise GreenfieldCommitJournalError(
-                    "confirmed Greenfield transaction is missing its durable commit result",
-                    failure_kind="post_confirm_commit_invariant_failure",
-                    recovery_path=self.recovery_path,
-                )
+        if state == "closed":
+            result = self._verified_published_result(record, drift_kind="post_confirm_committed_state_drift")
             self._discard_snapshot()
             self._discard_staging()
-            return _json_mapping(result)
-        if state == "applying":
-            result = record.get("commit_result")
-            if not isinstance(result, Mapping):
-                raise GreenfieldCommitJournalError(
-                    "interrupted Greenfield transaction is missing its sealed commit result",
-                    failure_kind="post_confirm_commit_invariant_failure",
-                    recovery_path=self.recovery_path,
+            return result
+        if state == "projecting":
+            if self._record_generation_is_active(record):
+                self._write_record(
+                    state="published",
+                    commit_result=self._record_result(record),
+                    recovery_write_set=self.write_set,
+                    generation_manifest_sha256=self._record_generation_manifest_hash(record),
                 )
-            try:
-                greenfield_repository_write_set.require_greenfield_repository_after_state(
-                    repo_root=self.repo_root,
-                    write_set=self.write_set,
-                )
-            except ValueError:
-                pass
-            except OSError as exc:
-                raise GreenfieldCommitJournalError(
-                    "greenfield commit recovery could not inspect the interrupted repository state",
-                    failure_kind="post_confirm_commit_environment_or_io_failure",
-                    recovery_path=self.recovery_path,
-                ) from exc
+                record = self._read_record()
+                state = "published"
             else:
-                self._write_record(state="committed", commit_result=result)
-                self._discard_snapshot()
-                self._discard_staging()
-                return _json_mapping(result)
-            if not self._safe_to_restore_interrupted_snapshot():
-                raise GreenfieldCommitJournalError(
-                    "greenfield commit recovery found a concurrent managed-path mutation; "
-                    "the retained snapshot was preserved without rollback",
-                    failure_kind="post_confirm_commit_recovery_conflict",
-                    recovery_path=self.recovery_path,
-                )
-            self._restore_interrupted_snapshot()
+                self._abort_projecting_transaction()
+                return None
+        if state == "published":
             try:
-                greenfield_repository_write_set.require_greenfield_repository_recovery_preconditions(
-                    repo_root=self.repo_root,
-                    write_set=self.write_set,
+                result = self._verified_published_result(
+                    record,
+                    drift_kind="post_confirm_published_state_drift",
                 )
-            except (OSError, ValueError) as exc:
-                raise GreenfieldCommitJournalError(
-                    "greenfield commit recovery did not restore the repository to its pre-confirm state",
-                    failure_kind="post_confirm_commit_environment_or_io_failure",
-                    recovery_path=self.recovery_path,
-                ) from exc
-            self._write_record(state="rolled_back")
+            except GreenfieldCommitJournalError:
+                self._write_record(
+                    state="recovery_required",
+                    commit_result=self._record_result(record),
+                    recovery_write_set=self.write_set,
+                    generation_manifest_sha256=self._record_generation_manifest_hash(record),
+                )
+                raise
+            self._write_record(
+                state="closed",
+                commit_result=result,
+                recovery_write_set=self.write_set,
+                generation_manifest_sha256=self._record_generation_manifest_hash(record),
+            )
             self._discard_snapshot()
             self._discard_staging()
-            return None
-        if state in {"preparing", "prepared", "rolled_back"}:
+            return result
+        if state == "recovery_required":
+            raise GreenfieldCommitJournalError(
+                "published Greenfield generation requires explicit recovery",
+                failure_kind="post_confirm_published_recovery_required",
+                recovery_path=self.recovery_path,
+            )
+        if state in {"preparing", "prepared", "aborted"}:
             self._discard_journal()
             return None
         raise GreenfieldCommitJournalError(
             f"greenfield commit journal has unsupported state: {state}",
             failure_kind="post_confirm_commit_invariant_failure",
             recovery_path=self.recovery_path,
+        )
+
+    def _verified_published_result(self, record: Mapping[str, Any], *, drift_kind: str) -> dict[str, Any]:
+        result = self._record_result(record)
+        try:
+            if not self._record_generation_is_active(record):
+                raise RuntimeError("active pointer does not name this transaction")
+            pinned = greenfield_generation_store.pin_greenfield_generation(
+                repo_root=self.repo_root,
+                transaction_hash=self.transaction_hash,
+                expected_write_set=self.write_set,
+            )
+            if pinned.manifest_sha256 != self._record_generation_manifest_hash(record):
+                raise RuntimeError("generation manifest hash differs from the journal")
+            greenfield_repository_write_set.require_greenfield_repository_after_state(
+                repo_root=self.repo_root,
+                write_set=self.write_set,
+            )
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise GreenfieldCommitJournalError(
+                "confirmed Greenfield transaction publication state changed",
+                failure_kind=drift_kind,
+                recovery_path=self.recovery_path,
+            ) from exc
+        return result
+
+    def _abort_projecting_transaction(self) -> None:
+        if not self._safe_to_restore_interrupted_snapshot():
+            raise GreenfieldCommitJournalError(
+                "greenfield commit recovery found a concurrent managed-path mutation; "
+                "the retained snapshot was preserved without rollback",
+                failure_kind="post_confirm_commit_recovery_conflict",
+                recovery_path=self.recovery_path,
+            )
+        self._restore_interrupted_snapshot()
+        try:
+            greenfield_repository_write_set.require_greenfield_repository_recovery_preconditions(
+                repo_root=self.repo_root,
+                write_set=self.write_set,
+            )
+        except (OSError, ValueError) as exc:
+            raise GreenfieldCommitJournalError(
+                "greenfield commit recovery did not restore the repository to its pre-confirm state",
+                failure_kind="post_confirm_commit_environment_or_io_failure",
+                recovery_path=self.recovery_path,
+            ) from exc
+        self._write_record(state="aborted")
+        greenfield_generation_store.discard_unpublished_greenfield_generation(
+            repo_root=self.repo_root,
+            transaction_hash=self.transaction_hash,
+        )
+        self._discard_snapshot()
+        self._discard_staging()
+
+    def _record_generation_is_active(self, record: Mapping[str, Any]) -> bool:
+        return greenfield_generation_state.active_generation_is(
+            repo_root=self.repo_root,
+            transaction_hash=self.transaction_hash,
+            write_set_hash=self.write_set_hash,
+            generation_manifest_sha256=self._record_generation_manifest_hash(record),
+        )
+
+    def _record_result(self, record: Mapping[str, Any]) -> dict[str, Any]:
+        result = record.get("commit_result")
+        if not isinstance(result, Mapping):
+            raise GreenfieldCommitJournalError(
+                "Greenfield transaction journal is missing its sealed commit result",
+                failure_kind="post_confirm_commit_invariant_failure",
+                recovery_path=self.recovery_path,
+            )
+        return _json_mapping(result)
+
+    def _record_generation_manifest_hash(self, record: Mapping[str, Any]) -> str:
+        return _require_digest(
+            str(record.get("generation_manifest_sha256") or ""),
+            label="generation manifest hash",
         )
 
     def prepare(self) -> None:
@@ -248,31 +315,87 @@ class GreenfieldCommitJournal:
             )
         self._write_record(state="prepared")
 
-    def mark_applying(self, result: Mapping[str, Any]) -> None:
+    def mark_projecting(self, result: Mapping[str, Any], *, generation_manifest_sha256: str) -> None:
         self._require_state("prepared")
-        self._write_record(state="applying", commit_result=result, recovery_write_set=self.write_set)
         self._prepare_staging_root()
+        self._write_record(
+            state="projecting",
+            commit_result=result,
+            recovery_write_set=self.write_set,
+            generation_manifest_sha256=generation_manifest_sha256,
+        )
 
-    def mark_committed(self, result: Mapping[str, Any]) -> dict[str, Any]:
-        self._require_state("applying")
-        self._write_record(state="committed", commit_result=result)
+    def mark_published(self, result: Mapping[str, Any], *, generation_manifest_sha256: str) -> None:
+        self._require_state("projecting")
+        self._write_record(
+            state="published",
+            commit_result=result,
+            recovery_write_set=self.write_set,
+            generation_manifest_sha256=generation_manifest_sha256,
+        )
+
+    def mark_closed(self, result: Mapping[str, Any], *, generation_manifest_sha256: str) -> dict[str, Any]:
+        self._require_state("published")
+        self._write_record(
+            state="closed",
+            commit_result=result,
+            recovery_write_set=self.write_set,
+            generation_manifest_sha256=generation_manifest_sha256,
+        )
         return _json_mapping(result)
 
-    def mark_rolled_back(self) -> None:
-        if not self.root.exists() or self._read_record().get("state") == "rolled_back":
+    def mark_recovery_required(
+        self,
+        result: Mapping[str, Any],
+        *,
+        generation_manifest_sha256: str,
+    ) -> None:
+        state = str(self._read_record().get("state") or "")
+        if state == "recovery_required":
             return
-        self._write_record(state="rolled_back")
+        if state == "projecting" and greenfield_generation_state.active_generation_is(
+            repo_root=self.repo_root,
+            transaction_hash=self.transaction_hash,
+            write_set_hash=self.write_set_hash,
+            generation_manifest_sha256=generation_manifest_sha256,
+        ):
+            self.mark_published(
+                result,
+                generation_manifest_sha256=generation_manifest_sha256,
+            )
+            state = "published"
+        if state != "published":
+            raise GreenfieldCommitJournalError(
+                "greenfield journal cannot require recovery before publication",
+                failure_kind="post_confirm_commit_invariant_failure",
+                recovery_path=self.recovery_path,
+            )
+        self._write_record(
+            state="recovery_required",
+            commit_result=result,
+            recovery_write_set=self.write_set,
+            generation_manifest_sha256=generation_manifest_sha256,
+        )
+
+    def mark_aborted(self) -> None:
+        if not self.root.exists() or self._read_record().get("state") == "aborted":
+            return
+        self._write_record(state="aborted")
+        greenfield_generation_store.discard_unpublished_greenfield_generation(
+            repo_root=self.repo_root,
+            transaction_hash=self.transaction_hash,
+        )
         self._discard_snapshot()
         self._discard_staging()
 
-    def discard_recovered_rollback(self) -> None:
-        """Remove a settled same-hash rollback before retrying its sealed commit."""
+    def discard_recovered_abort(self) -> None:
+        """Remove a settled same-hash abort before retrying its sealed commit."""
 
         if not self.root.exists() and not self.root.is_symlink():
             return
-        if str(self._read_record().get("state") or "") != "rolled_back":
+        if str(self._read_record().get("state") or "") != "aborted":
             raise GreenfieldCommitJournalError(
-                "greenfield commit journal cannot discard a recovery that did not roll back",
+                "greenfield commit journal cannot discard a recovery that did not abort",
                 failure_kind="post_confirm_commit_invariant_failure",
                 recovery_path=self.recovery_path,
             )
@@ -281,7 +404,7 @@ class GreenfieldCommitJournal:
     def discard_committed_snapshot(self) -> None:
         """Remove retained rollback bytes after a committed receipt is durable."""
 
-        self._require_state("committed")
+        self._require_state("closed")
         self._discard_snapshot()
         self._discard_staging()
 
@@ -311,7 +434,12 @@ class GreenfieldCommitJournal:
         try:
             writes = {
                 str(row["path"]): (
-                    greenfield_repository_write_set._decoded_write_bytes(row),  # noqa: SLF001
+                    greenfield_repository_write_set._decoded_after_image_bytes(  # noqa: SLF001
+                        {
+                            str(item["path"]): item
+                            for item in self.write_set["after_image"]["files"]
+                        }[str(row["path"])]
+                    ),
                     int(row["mode"]),
                 )
                 for row in self.write_set["writes"]
@@ -403,7 +531,7 @@ class GreenfieldCommitJournal:
                 failure_kind="post_confirm_commit_invariant_failure",
                 recovery_path=self.recovery_path,
             )
-        if str(record["state"]) == "applying":
+        if str(record["state"]) in {"projecting", "published", "closed", "recovery_required"}:
             try:
                 recovery_write_set = greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(
                     record.get("recovery_write_set"),
@@ -420,6 +548,8 @@ class GreenfieldCommitJournal:
                     failure_kind="post_confirm_commit_invariant_failure",
                     recovery_path=self.recovery_path,
                 )
+            self._record_result(record)
+            self._record_generation_manifest_hash(record)
         return record
 
     def _write_record(
@@ -428,13 +558,21 @@ class GreenfieldCommitJournal:
         state: str,
         commit_result: Mapping[str, Any] | None = None,
         recovery_write_set: Mapping[str, Any] | None = None,
+        generation_manifest_sha256: str = "",
     ) -> None:
+        current = self._read_record()
+        history = current.get("lifecycle_history")
+        if not isinstance(history, list):
+            history = list(greenfield_create_lifecycle.lifecycle_history_for_journal_state(str(current["state"])))
+        lifecycle_history = greenfield_create_lifecycle.advance_lifecycle_for_journal_state(history, state)
         _write_journal_record(
             self.root,
             self._record_payload(
                 state=state,
                 commit_result=commit_result,
                 recovery_write_set=recovery_write_set,
+                generation_manifest_sha256=generation_manifest_sha256,
+                lifecycle_history=lifecycle_history,
             ),
         )
 
@@ -444,11 +582,19 @@ class GreenfieldCommitJournal:
         state: str,
         commit_result: Mapping[str, Any] | None = None,
         recovery_write_set: Mapping[str, Any] | None = None,
+        generation_manifest_sha256: str = "",
+        lifecycle_history: Sequence[str] | None = None,
     ) -> dict[str, Any]:
         if state not in _STATES:
             raise ValueError(f"unsupported greenfield commit journal state: {state}")
+        history = greenfield_create_lifecycle.require_create_lifecycle_history(
+            lifecycle_history or greenfield_create_lifecycle.lifecycle_history_for_journal_state(state)
+        )
         record: dict[str, Any] = {
             "version": JOURNAL_VERSION,
+            "lifecycle_version": greenfield_create_lifecycle.CREATE_LIFECYCLE_VERSION,
+            "lifecycle_state": history[-1],
+            "lifecycle_history": list(history),
             "transaction_hash": self.transaction_hash,
             "repository_write_set_hash": self.write_set_hash,
             "snapshot_paths": list(self.paths),
@@ -458,6 +604,11 @@ class GreenfieldCommitJournal:
             record["commit_result"] = _json_mapping(commit_result)
         if recovery_write_set is not None:
             record["recovery_write_set"] = dict(recovery_write_set)
+        if generation_manifest_sha256:
+            record["generation_manifest_sha256"] = _require_digest(
+                generation_manifest_sha256,
+                label="generation manifest hash",
+            )
         record["record_hash"] = _record_hash(record)
         return record
 
@@ -517,12 +668,36 @@ def _read_journal_record(root: Path) -> dict[str, Any]:
             failure_kind="post_confirm_commit_invariant_failure",
             recovery_path=str(root),
         )
+    if str(record.get("version", "")) in _LEGACY_JOURNAL_VERSIONS:
+        return record
     if str(record.get("state", "")) not in _STATES:
         raise GreenfieldCommitJournalError(
             "greenfield commit journal state is invalid",
             failure_kind="post_confirm_commit_invariant_failure",
             recovery_path=str(root),
         )
+    lifecycle_version = str(record.get("lifecycle_version") or "")
+    if lifecycle_version:
+        if lifecycle_version != greenfield_create_lifecycle.CREATE_LIFECYCLE_VERSION:
+            raise GreenfieldCommitJournalError(
+                "greenfield commit journal lifecycle version is unsupported",
+                failure_kind="post_confirm_commit_invariant_failure",
+                recovery_path=str(root),
+            )
+        try:
+            history = greenfield_create_lifecycle.require_create_lifecycle_history(record.get("lifecycle_history"))
+        except ValueError as exc:
+            raise GreenfieldCommitJournalError(
+                "greenfield commit journal lifecycle history is invalid",
+                failure_kind="post_confirm_commit_invariant_failure",
+                recovery_path=str(root),
+            ) from exc
+        if str(record.get("lifecycle_state") or "") != history[-1]:
+            raise GreenfieldCommitJournalError(
+                "greenfield commit journal lifecycle state does not match its history",
+                failure_kind="post_confirm_commit_invariant_failure",
+                recovery_path=str(root),
+            )
     return record
 
 

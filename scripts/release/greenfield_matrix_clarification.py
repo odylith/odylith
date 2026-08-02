@@ -18,7 +18,7 @@ FOCUSED_FIRST_PATH_QUESTION = (
     "What is the first complete task the product should help a person finish, and what result should they see?"
 )
 _NO_WRITE_ROOTS = (Path(".odylith/runtime/greenfield"), Path("odylith"))
-_STAGED_TRANSACTION_PATH = Path(".odylith/runtime/greenfield/product-create-transaction.v1.json")
+_STAGED_TRANSACTION_ROOT = Path(".odylith/runtime/greenfield/pending")
 
 
 @dataclass(frozen=True)
@@ -62,7 +62,10 @@ def run_expected_clarification(
         before_record_count=len(before_records),
         after_record_count=len(after_records),
         changed_records=changed_records,
-        staged_transaction_present=_STAGED_TRANSACTION_PATH.as_posix() in after_records,
+        staged_transaction_present=any(
+            path.startswith(_STAGED_TRANSACTION_ROOT.as_posix() + "/")
+            for path in after_records
+        ),
     )
 
 

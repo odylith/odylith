@@ -55,6 +55,10 @@ class CampaignShard:
     release_audit_file: Path | None = None
     release_audit_repo_root: Path | None = None
     release_input_snapshot_root: Path | None = None
+    semantic_annotations_file: Path | None = None
+    evaluation_split_manifest: Path | None = None
+    final_holdout_run_ledger: Path | None = None
+    implementation_revision: str = ""
 
     @property
     def name(self) -> str:
@@ -876,6 +880,14 @@ def _matrix_command(
         command.extend(["--release-audit-repo-root", str(shard.release_audit_repo_root)])
     if shard.release_input_snapshot_root is not None:
         command.extend(["--sealed-release-input-root", str(shard.release_input_snapshot_root)])
+    if shard.semantic_annotations_file is not None:
+        command.extend(["--semantic-annotations-file", str(shard.semantic_annotations_file)])
+    if shard.evaluation_split_manifest is not None:
+        command.extend(["--evaluation-split-manifest", str(shard.evaluation_split_manifest)])
+    if shard.final_holdout_run_ledger is not None:
+        command.extend(["--final-holdout-run-ledger", str(shard.final_holdout_run_ledger)])
+    if shard.implementation_revision:
+        command.extend(["--implementation-revision", shard.implementation_revision])
     if shard.proof_tier == "discovery" and shard.required_stressors:
         command.append("--allow-partial-stressor-coverage")
     return command

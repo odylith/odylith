@@ -4,20 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
-import webbrowser
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
-
-
-_POST_CONFIRM_NAVIGATION = {
-    "project": "odylith/index.html?tab=project",
-    "radar": "odylith/index.html?tab=radar",
-    "registry": "odylith/index.html?tab=registry",
-    "atlas": "odylith/index.html?tab=atlas",
-    "compass": "odylith/index.html?tab=compass&date=live",
-}
+from odylith.runtime.domain_intelligence import greenfield_post_confirm_handoff
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -78,7 +69,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except (ValueError, RuntimeError, OSError, json.JSONDecodeError) as error:
         return _error(str(error), as_json=args.as_json, error=error)
-    navigation = _post_confirm_navigation(root)
+    navigation = greenfield_post_confirm_handoff.post_confirm_navigation(
+        root,
+        transaction_hash=str(args.transaction_hash),
+    )
     if args.as_json:
         response = dict(result)
         response["post_confirm_navigation"] = navigation
@@ -89,7 +83,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
         print(json.dumps(response, indent=2, sort_keys=True))
     else:
-        browser_result = _open_committed_dashboard(navigation)
+        browser_result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
         summary = dict(result.get("product_create_transaction") or {})
         print("Odylith committed the validated Greenfield package.")
         print(f"- transaction hash: {args.transaction_hash}")
@@ -99,32 +93,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("- readback: passed")
         _print_post_confirm_navigation(navigation, browser_result=browser_result)
     return 0
-
-
-def _post_confirm_navigation(repo_root: Path) -> dict[str, str]:
-    """Return the stable, host-agnostic route contract after a confirmed create."""
-
-    root = Path(repo_root).expanduser().resolve()
-    dashboard_path = (root / "odylith" / "index.html").resolve()
-    navigation = dict(_POST_CONFIRM_NAVIGATION)
-    navigation["dashboard_path"] = str(dashboard_path)
-    navigation["project_url"] = f"{dashboard_path.as_uri()}?tab=project"
-    return navigation
-
-
-def _open_committed_dashboard(navigation: Mapping[str, str]) -> dict[str, Any]:
-    """Open the committed Project view without changing transaction success."""
-
-    url = str(navigation.get("project_url") or "").strip()
-    try:
-        opened = bool(url and webbrowser.open(url, new=2))
-    except Exception as error:  # pragma: no cover - browser integrations vary by host
-        return {"status": "unavailable", "url": url, "reason": f"{type(error).__name__}: {error}"}
-    return {
-        "status": "opened" if opened else "unavailable",
-        "url": url,
-        "reason": "" if opened else "no browser accepted the local dashboard URL",
-    }
 
 
 def _print_post_confirm_navigation(

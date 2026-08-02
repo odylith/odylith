@@ -32,15 +32,15 @@ Build governance records that give the agent durable context.
 Use these when the repo is new, thin, or the project exists mostly as intent.
 Odylith does not invent source evidence. It treats the operator request and any
 edits as evidence, compiles typed product intent and the complete governed
-package before confirmation, and presents one hash-bound decision. `CONFIRM`
-commits the reviewed bytes; `EDIT` rebuilds them from new evidence; `REJECT`
-writes nothing.
+package before confirmation, and presents one hash-bound decision. `CONFIRM <hash>`
+commits the reviewed bytes; `EDIT <hash> <corrections>` rebuilds them from new evidence;
+`REJECT <hash>` writes nothing.
 
 | Say this | What happens |
 |---|---|
-| **"Odylith, build an ecommerce site for me"** | Compiles a confirmation-gated first-release package with typed product intent, a small grounded backlog, planned components, Atlas topology, assumptions, risks, validation obligations, a sealed write set, and one clear `CONFIRM` / `EDIT` / `REJECT` command block. `odylith greenfield propose` |
+| **"Odylith, build an ecommerce site for me"** | Compiles a confirmation-gated first-release package with typed product intent, a small grounded backlog, planned components, Atlas topology, assumptions, risks, validation obligations, a sealed write set, and one clear hash-bound `CONFIRM` / `EDIT` / `REJECT` command block. `odylith greenfield propose` |
 | **"Help me govern a physics simulation project"** | Produces a science-aware proposal that distinguishes model, solver, data, experiment runner, visualization, reproducibility, and validation surfaces without inventing scientific claims. |
-| **`CONFIRM <transaction-hash>`** | Verifies the reviewed transaction hash and repo preconditions, commits its sealed bytes atomically, validates readback, refreshes the visible surfaces, and reports where to open the finished project. `odylith greenfield create --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm` |
+| **`CONFIRM <transaction-hash>`** | Verifies the reviewed transaction hash and repo preconditions, commits its sealed bytes atomically, validates readback, refreshes the visible surfaces, and reports where to open the finished project. `odylith greenfield create --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm` |
 
 ### Workstreams (Radar)
 

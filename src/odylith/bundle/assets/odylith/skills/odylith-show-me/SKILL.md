@@ -48,12 +48,12 @@ placeholder products in response to a show-me request.
    ProductCreateTransaction, then renders the single visible confirmation view.
    Show the preview directly in chat, including Product story, State object, First
    complete path, actors, systems, assumptions, ambiguities, proof boundary, and one
-   clear `## Choose one command` block. **CONFIRM** commits the shown hash-bound
-   package; **EDIT** accepts corrections as new evidence and rebuilds a new package;
-   **REJECT** stops with no writes. Ask one focused question only for material
+   clear `## Choose one command` block. **`CONFIRM <hash>`** commits the shown hash-bound
+   package; **`EDIT <hash> <corrections>`** accepts corrections as new evidence and rebuilds a new package;
+   **`REJECT <hash>`** stops with no writes. Ask one focused question only for material
    uncertainty; otherwise make assumptions visible. Markdown is evidence and a view,
-   never product truth. After **CONFIRM**, run
-   `greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
+   never product truth. After **`CONFIRM <hash>`**, run
+   `greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
    Confirmed create only verifies receipt, hash, compiler identity, and repo
    preconditions; applies sealed bytes under rollback guard; validates readback; and
    reports success or environment/IO failure. It does not generate, repair, or parse

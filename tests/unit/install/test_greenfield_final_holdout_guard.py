@@ -1,0 +1,98 @@
+from __future__ import annotations
+
+import hashlib
+from pathlib import Path
+import sys
+
+import pytest
+
+from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
+
+
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from greenfield_final_holdout_guard import claim_final_holdout_run
+from greenfield_final_holdout_guard import complete_final_holdout_run
+from greenfield_final_holdout_guard import read_final_holdout_run
+
+
+def test_final_holdout_guard_allows_exactly_one_claim_and_binds_result(tmp_path: Path) -> None:
+    holdout = _write(tmp_path / "holdout.json", '{"cases": []}\n')
+    manifest = _write(tmp_path / "manifest.json", '{}\n')
+    result = _write(tmp_path / "result.json", '{"status": "passed"}\n')
+    ledger = tmp_path / "run-ledger.json"
+
+    claimed = claim_final_holdout_run(
+        ledger_path=ledger,
+        holdout_path=holdout,
+        evaluation_manifest_path=manifest,
+        implementation_revision="a" * 40,
+    )
+
+    assert claimed["status"] == "claimed"
+    assert claimed["disclosed"] is True
+    assert claimed["holdout_sha256"] == hashlib.sha256(holdout.read_bytes()).hexdigest()
+    with pytest.raises(RuntimeError, match="already claimed"):
+        claim_final_holdout_run(
+            ledger_path=ledger,
+            holdout_path=holdout,
+            evaluation_manifest_path=manifest,
+            implementation_revision="a" * 40,
+        )
+
+    completed = complete_final_holdout_run(
+        ledger_path=ledger,
+        result_path=result,
+        outcome="passed",
+    )
+
+    assert completed["status"] == "passed"
+    assert completed["result_sha256"] == hashlib.sha256(result.read_bytes()).hexdigest()
+    assert read_final_holdout_run(ledger) == completed
+
+
+def test_final_holdout_guard_rejects_short_revision_or_second_completion(tmp_path: Path) -> None:
+    holdout = _write(tmp_path / "holdout.json", '{}\n')
+    manifest = _write(tmp_path / "manifest.json", '{}\n')
+    result = _write(tmp_path / "result.json", '{}\n')
+    ledger = tmp_path / "run-ledger.json"
+
+    with pytest.raises(RuntimeError, match="full implementation Git revision"):
+        claim_final_holdout_run(
+            ledger_path=ledger,
+            holdout_path=holdout,
+            evaluation_manifest_path=manifest,
+            implementation_revision="short",
+        )
+    claim_final_holdout_run(
+        ledger_path=ledger,
+        holdout_path=holdout,
+        evaluation_manifest_path=manifest,
+        implementation_revision="b" * 40,
+    )
+    complete_final_holdout_run(ledger_path=ledger, result_path=result, outcome="failed")
+
+    with pytest.raises(RuntimeError, match="not in its one terminalizable claimed state"):
+        complete_final_holdout_run(ledger_path=ledger, result_path=result, outcome="passed")
+
+
+def test_final_holdout_guard_rejects_symlinked_inputs(tmp_path: Path) -> None:
+    holdout = _write(tmp_path / "holdout.json", '{}\n')
+    holdout_link = tmp_path / "holdout-link.json"
+    holdout_link.symlink_to(holdout)
+    manifest = _write(tmp_path / "manifest.json", '{}\n')
+
+    with pytest.raises(RuntimeError, match="missing or unsafe"):
+        claim_final_holdout_run(
+            ledger_path=tmp_path / "run-ledger.json",
+            holdout_path=holdout_link,
+            evaluation_manifest_path=manifest,
+            implementation_revision="c" * 40,
+        )
+
+
+def _write(path: Path, value: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(value, encoding="utf-8")
+    return path

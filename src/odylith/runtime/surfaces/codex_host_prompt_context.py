@@ -11,6 +11,7 @@ from typing import Mapping
 
 from odylith.runtime.intervention_engine import prompt_signal_runtime
 from odylith.runtime.surfaces import codex_host_shared
+from odylith.runtime.surfaces import greenfield_host_confirmation
 from odylith.runtime.surfaces import host_intervention_support
 from odylith.runtime.surfaces import host_prompt_route_locks
 
@@ -100,6 +101,14 @@ def main(argv: list[str] | None = None) -> int:
     payload = codex_host_shared.load_payload()
     prompt = str(payload.get("prompt", "")).strip()
     session_id = codex_host_shared.hook_session_id(payload)
+    greenfield_decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=args.repo_root,
+        host_family="codex",
+        prompt=prompt,
+    )
+    if greenfield_decision is not None:
+        sys.stdout.write(json.dumps(greenfield_host_confirmation.host_hook_payload(greenfield_decision)))
+        return 0
     route_context = host_prompt_route_locks.route_lock_context(host_family="codex", prompt=prompt)
     if route_context:
         sys.stdout.write(

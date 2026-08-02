@@ -12,6 +12,8 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_commit_journal
+from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
@@ -91,6 +93,54 @@ def _release_signal_guard(transaction: GreenfieldApplyTransaction) -> None:
     assert signal.getsignal(signal.SIGINT) is not None
 
 
+def _mark_projecting(
+    *,
+    root: Path,
+    journal: GreenfieldCommitJournal,
+    write_set: dict[str, object],
+    result: dict[str, object],
+):
+    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+        repo_root=root,
+        transaction_hash="a" * 64,
+        write_set=write_set,
+    )
+    journal.mark_projecting(result, generation_manifest_sha256=generation.manifest_sha256)
+    return generation
+
+
+def _publish_generation(
+    *,
+    root: Path,
+    journal: GreenfieldCommitJournal,
+    transaction: GreenfieldApplyTransaction,
+    write_set: dict[str, object],
+    result: dict[str, object],
+    close: bool,
+) -> None:
+    generation = greenfield_generation_store.pin_greenfield_generation(
+        repo_root=root,
+        transaction_hash="a" * 64,
+        expected_write_set=write_set,
+    )
+    transaction.publish(
+        lambda: greenfield_generation_store.publish_greenfield_generation(
+            repo_root=root,
+            generation=generation,
+            expected_active_identity=write_set["active_generation_precondition"],
+        ),
+        published_probe=lambda: greenfield_generation_state.active_generation_is(
+            repo_root=root,
+            transaction_hash="a" * 64,
+            write_set_hash=str(write_set["write_set_hash"]),
+            generation_manifest_sha256=generation.manifest_sha256,
+        ),
+    )
+    journal.mark_published(result, generation_manifest_sha256=generation.manifest_sha256)
+    if close:
+        journal.mark_closed(result, generation_manifest_sha256=generation.manifest_sha256)
+
+
 def _kill_commit_child(
     *,
     root: Path,
@@ -106,6 +156,8 @@ from pathlib import Path
 import signal
 import sys
 
+from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
@@ -123,7 +175,13 @@ transaction = GreenfieldApplyTransaction(
 )
 with transaction:
     journal.mark_prepared()
-    journal.mark_applying({\"repository_write_set\": {\"write_set_hash\": write_set[\"write_set_hash\"]}})
+    result = {\"repository_write_set\": {\"write_set_hash\": write_set[\"write_set_hash\"]}}
+    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+        repo_root=root,
+        transaction_hash=\"a\" * 64,
+        write_set=write_set,
+    )
+    journal.mark_projecting(result, generation_manifest_sha256=generation.manifest_sha256)
     if mode == \"first_write\":
         original = greenfield_repository_write_set.atomic_write_bytes
         calls = 0
@@ -148,7 +206,22 @@ with transaction:
         repo_root=root,
         write_set=write_set,
     )
-    if mode == \"after_readback\":
+    if mode == \"before_pointer\":
+        os.kill(os.getpid(), signal.SIGKILL)
+    if mode == \"after_pointer\":
+        transaction.publish(
+            lambda: greenfield_generation_store.publish_greenfield_generation(
+                repo_root=root,
+                generation=generation,
+                expected_active_identity=write_set[\"active_generation_precondition\"],
+            ),
+            published_probe=lambda: greenfield_generation_state.active_generation_is(
+                repo_root=root,
+                transaction_hash=\"a\" * 64,
+                write_set_hash=write_set[\"write_set_hash\"],
+                generation_manifest_sha256=generation.manifest_sha256,
+            ),
+        )
         os.kill(os.getpid(), signal.SIGKILL)
 """
     environment = {**os.environ, "PYTHONPATH": str(Path.cwd() / "src")}
@@ -161,14 +234,14 @@ with transaction:
     )
 
 
-def test_recovery_finalizes_applying_entry_when_after_state_is_already_durable(
+def test_recovery_aborts_projection_when_after_state_exists_without_published_pointer(
     tmp_path: Path,
 ) -> None:
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
     expected_result = {"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}}
-    journal.mark_applying(expected_result)
+    _mark_projecting(root=root, journal=journal, write_set=write_set, result=expected_result)
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,
@@ -181,7 +254,8 @@ def test_recovery_finalizes_applying_entry_when_after_state_is_already_durable(
     ).recover_or_return_committed()
 
     _release_signal_guard(transaction)
-    assert recovered == expected_result
+    assert recovered is None
+    assert (root / "odylith/radar/source/first.md").read_text() == "first before\n"
     assert not journal.snapshot_root.exists()
     assert (journal.root / "state.v1.json").is_file()
 
@@ -191,14 +265,20 @@ def test_committed_receipt_recovery_cleans_retained_transaction_artifacts(tmp_pa
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
     expected_result = {"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}}
-    journal.mark_applying(expected_result)
+    _mark_projecting(root=root, journal=journal, write_set=write_set, result=expected_result)
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,
         temporary_directory=journal.staging_root,
     )
-    transaction.commit()
-    journal.mark_committed(expected_result)
+    _publish_generation(
+        root=root,
+        journal=journal,
+        transaction=transaction,
+        write_set=write_set,
+        result=expected_result,
+        close=True,
+    )
 
     recovered = GreenfieldCommitJournal(
         repo_root=root,
@@ -209,20 +289,38 @@ def test_committed_receipt_recovery_cleans_retained_transaction_artifacts(tmp_pa
     assert recovered == expected_result
     assert not journal.snapshot_root.exists()
     assert not journal.staging_root.exists()
+    record = json.loads(journal.state_path.read_text(encoding="utf-8"))
+    assert record["lifecycle_state"] == "CLOSED"
+    assert record["lifecycle_history"] == [
+        "DRAFT",
+        "SEALED",
+        "PREPARED",
+        "PUBLISHING",
+        "PUBLISHED",
+        "VERIFIED",
+        "CLOSED",
+    ]
 
 
 def test_committed_rollback_guard_preserves_after_state_when_interrupted(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    result = {"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}}
+    _mark_projecting(root=root, journal=journal, write_set=write_set, result=result)
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,
         temporary_directory=journal.staging_root,
     )
-    transaction.commit()
-    journal.mark_committed({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _publish_generation(
+        root=root,
+        journal=journal,
+        transaction=transaction,
+        write_set=write_set,
+        result=result,
+        close=True,
+    )
 
     transaction.__exit__(GreenfieldCommitInterrupted, GreenfieldCommitInterrupted("interrupt"), None)
 
@@ -254,10 +352,18 @@ def test_durable_recovery_ignores_snapshot_cleanup_error(
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
     expected_result = {"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}}
-    journal.mark_applying(expected_result)
+    _mark_projecting(root=root, journal=journal, write_set=write_set, result=expected_result)
     greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
         repo_root=root,
         write_set=write_set,
+    )
+    _publish_generation(
+        root=root,
+        journal=journal,
+        transaction=transaction,
+        write_set=write_set,
+        result=expected_result,
+        close=False,
     )
 
     def fail_cleanup(_path: Path) -> None:
@@ -282,7 +388,12 @@ def test_recovery_rolls_back_partial_applying_entry_before_a_retry(tmp_path: Pat
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     _write(root / "odylith/radar/source/first.md", "first after\n")
 
     recovered = GreenfieldCommitJournal(
@@ -296,13 +407,20 @@ def test_recovery_rolls_back_partial_applying_entry_before_a_retry(tmp_path: Pat
     assert (root / "odylith/radar/source/first.md").read_text(encoding="utf-8") == "first before\n"
     assert (root / "odylith/radar/source/second.md").read_text(encoding="utf-8") == "second before\n"
     assert not journal.snapshot_root.exists()
+    record = json.loads(journal.state_path.read_text(encoding="utf-8"))
+    assert record["lifecycle_state"] == "ABORTED"
 
 
 def test_recovery_preserves_conflicting_operator_mutation(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     changed = root / "odylith/radar/source/first.md"
     _write(changed, "operator mutation after interruption\n")
 
@@ -323,7 +441,12 @@ def test_recovery_preserves_a_concurrent_mutation_elsewhere_in_the_governed_root
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     _write(root / "odylith/radar/source/first.md", "first after\n")
     changed = root / "odylith/radar/source/INDEX.md"
     _write(changed, "operator mutation after interruption\n")
@@ -345,7 +468,12 @@ def test_recovery_preserves_an_unknown_atomic_temp_sibling(tmp_path: Path) -> No
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     temp = root / "odylith/radar/source/.first.md.interrupted.tmp"
     _write(temp, "first after\n")
 
@@ -365,7 +493,12 @@ def test_recovery_preserves_an_unrelated_governed_root_mutation(tmp_path: Path) 
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     _write(root / "odylith/radar/source/first.md", "first after\n")
     changed = root / "odylith/casebook/INDEX.md"
     _write(changed, "operator mutation after interruption\n")
@@ -412,7 +545,12 @@ def test_recovery_rolls_back_a_safe_partial_new_directory(tmp_path: Path) -> Non
     root = tmp_path / "repo"
     write_set = _new_directory_write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     _write(root / "odylith/radar/source/generated/first.md", "generated after\n")
 
     recovered = GreenfieldCommitJournal(
@@ -430,7 +568,12 @@ def test_recovery_preserves_an_unsealed_file_in_a_partial_new_directory(tmp_path
     root = tmp_path / "repo"
     write_set = _new_directory_write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     changed = root / "odylith/radar/source/generated/operator.md"
     _write(changed, "operator mutation after interruption\n")
 
@@ -452,7 +595,12 @@ def test_new_transaction_recovers_a_stranded_foreign_journal_before_precondition
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal, transaction = _prepared_journal(root, write_set)
-    journal.mark_applying({"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}})
+    _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result={"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}},
+    )
     _write(root / "odylith/radar/source/first.md", "first after\n")
 
     GreenfieldCommitJournal.recover_pending_journals(
@@ -485,7 +633,7 @@ def test_sigkill_after_first_sealed_write_recovers_the_preconfirm_tree(
     assert (root / "odylith/radar/source/second.md").read_text(encoding="utf-8") == "second before\n"
 
 
-def test_same_hash_recovery_releases_the_rolled_back_journal_for_reprepare(tmp_path: Path) -> None:
+def test_same_hash_recovery_releases_the_aborted_journal_for_reprepare(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     write_set = _write_set(root)
     journal = GreenfieldCommitJournal(
@@ -497,9 +645,9 @@ def test_same_hash_recovery_releases_the_rolled_back_journal_for_reprepare(tmp_p
 
     assert child.returncode == -signal.SIGKILL, child.stderr
     assert journal.recover_or_return_committed() is None
-    assert json.loads(journal.state_path.read_text(encoding="utf-8"))["state"] == "rolled_back"
+    assert json.loads(journal.state_path.read_text(encoding="utf-8"))["state"] == "aborted"
 
-    journal.discard_recovered_rollback()
+    journal.discard_recovered_abort()
     assert not journal.root.exists()
     journal.prepare()
     assert json.loads(journal.state_path.read_text(encoding="utf-8"))["state"] == "preparing"
@@ -527,13 +675,35 @@ def test_sigkill_after_sealed_delete_recovers_the_preconfirm_tree(
     ).read_text(encoding="utf-8") == "delete second before\n"
 
 
-def test_sigkill_after_final_readback_finalizes_the_durable_receipt(
+def test_sigkill_after_final_readback_before_pointer_restores_the_preconfirm_tree(
     tmp_path: Path,
 ) -> None:
     root = tmp_path / "repo"
     write_set = _write_set(root)
 
-    child = _kill_commit_child(root=root, write_set=write_set, mode="after_readback")
+    child = _kill_commit_child(root=root, write_set=write_set, mode="before_pointer")
+    recovered = GreenfieldCommitJournal(
+        repo_root=root,
+        transaction_hash="a" * 64,
+        write_set=write_set,
+    ).recover_or_return_committed()
+
+    assert child.returncode == -signal.SIGKILL, child.stderr
+    assert recovered is None
+    assert (root / "odylith/radar/source/first.md").read_text(encoding="utf-8") == "first before\n"
+    assert (root / "odylith/radar/source/second.md").read_text(encoding="utf-8") == "second before\n"
+    assert greenfield_generation_state.active_generation_identity(
+        root
+    ) == greenfield_generation_state.no_active_generation_identity()
+
+
+def test_sigkill_after_pointer_finalizes_the_durable_receipt(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "repo"
+    write_set = _write_set(root)
+
+    child = _kill_commit_child(root=root, write_set=write_set, mode="after_pointer")
     recovered = GreenfieldCommitJournal(
         repo_root=root,
         transaction_hash="a" * 64,
@@ -544,11 +714,59 @@ def test_sigkill_after_final_readback_finalizes_the_durable_receipt(
     assert recovered == {"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}}
     record_path = root / ".odylith/runtime/greenfield/create-journal" / ("a" * 64) / "state.v1.json"
     record = json.loads(record_path.read_text())
-    assert "recovery_write_set" not in record
+    assert record["recovery_write_set"]["write_set_hash"] == write_set["write_set_hash"]
     greenfield_repository_write_set.require_greenfield_repository_after_state(
         repo_root=root,
         write_set=write_set,
     )
+
+
+def test_published_generation_corruption_requires_recovery_without_rollback(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    write_set = _write_set(root)
+    result = {"repository_write_set": {"write_set_hash": write_set["write_set_hash"]}}
+    journal, transaction = _prepared_journal(root, write_set)
+    generation = _mark_projecting(
+        root=root,
+        journal=journal,
+        write_set=write_set,
+        result=result,
+    )
+    greenfield_repository_write_set.apply_compiled_greenfield_repository_write_set(
+        repo_root=root,
+        write_set=write_set,
+    )
+    transaction.publish(
+        lambda: greenfield_generation_store.publish_greenfield_generation(
+            repo_root=root,
+            generation=generation,
+            expected_active_identity=write_set["active_generation_precondition"],
+        ),
+        published_probe=lambda: greenfield_generation_state.active_generation_is(
+            repo_root=root,
+            transaction_hash="a" * 64,
+            write_set_hash=str(write_set["write_set_hash"]),
+            generation_manifest_sha256=generation.manifest_sha256,
+        ),
+    )
+    (generation.repository_root / "odylith/radar/source/first.md").write_text(
+        "generation corruption\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(greenfield_commit_journal.GreenfieldCommitJournalError) as exc_info:
+        GreenfieldCommitJournal(
+            repo_root=root,
+            transaction_hash="a" * 64,
+            write_set=write_set,
+        ).recover_or_return_committed()
+
+    _release_signal_guard(transaction)
+    assert exc_info.value.failure_kind == "post_confirm_published_state_drift"
+    assert (root / "odylith/radar/source/first.md").read_text(encoding="utf-8") == "first after\n"
+    record = json.loads(journal.state_path.read_text(encoding="utf-8"))
+    assert record["state"] == "recovery_required"
+    assert record["lifecycle_state"] == "RECOVERY_REQUIRED"
 
 
 def test_same_hash_retry_returns_the_durable_result_without_reapplying(

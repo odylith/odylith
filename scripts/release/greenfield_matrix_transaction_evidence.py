@@ -20,6 +20,26 @@ POST_CONFIRM_NAVIGATION = {
     "atlas": "odylith/index.html?tab=atlas",
     "compass": "odylith/index.html?tab=compass&date=live",
 }
+SEMANTIC_FACT_KEYS = (
+    "product_story",
+    "state_object",
+    "first_path",
+    "proof_boundary",
+    "problem",
+    "customer",
+    "opportunity",
+    "product_view",
+    "success_metrics",
+    "component_responsibilities",
+    "human_actors",
+    "external_systems",
+    "internal_systems",
+    "assumptions",
+    "ambiguities",
+    "non_goals",
+    "evidence_requirements",
+    "operational_constraints",
+)
 
 
 @dataclass(frozen=True)
@@ -209,6 +229,7 @@ def _sealed_dry_run_receipt(
     transaction_file_sha256 = hashlib.sha256(transaction_bytes).hexdigest()
     compiler_receipt_sha256 = hashlib.sha256(compiler_receipt_bytes).hexdigest()
     quality_manifest = _mapping(transaction.get("quality_manifest"))
+    semantic_snapshot = _semantic_snapshot(transaction)
     receipt.update(
         {
             "transaction_file": str(transaction_path.relative_to(Path(repo_root).resolve())),
@@ -218,6 +239,8 @@ def _sealed_dry_run_receipt(
             "compiler_receipt_transaction_hash": str(compiler_receipt.get("transaction_hash") or "").strip(),
             "preconfirm_quality_status": str(quality_manifest.get("status") or "").strip(),
             "preconfirm_validation_status": str(quality_manifest.get("validation_status") or "").strip(),
+            "semantic_snapshot": semantic_snapshot,
+            "semantic_snapshot_sha256": _sha256_json(semantic_snapshot) if semantic_snapshot else "",
         }
     )
     issues: list[str] = []
@@ -231,6 +254,8 @@ def _sealed_dry_run_receipt(
         issues.append("pre-confirm transaction quality is not passed")
     if receipt["preconfirm_validation_status"] != "passed":
         issues.append("pre-confirm transaction validation is not passed")
+    if not semantic_snapshot:
+        issues.append("pre-confirm transaction does not expose canonical semantic facts")
     if issues:
         return receipt, tuple(issues)
     receipt["status"] = "compiled"
@@ -239,6 +264,46 @@ def _sealed_dry_run_receipt(
 
 def _receipt(*, status: str, **values: Any) -> dict[str, Any]:
     return {"version": DRY_RUN_RECEIPT_VERSION, "status": status, **values}
+
+
+def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
+    proposal = _mapping(transaction.get("proposal"))
+    intent = _mapping(proposal.get("intent"))
+    facts = {
+        key: intent[key]
+        for key in SEMANTIC_FACT_KEYS
+        if key in intent and _has_semantic_value(intent.get(key))
+    }
+    if not all(key in facts for key in ("product_story", "state_object", "first_path", "proof_boundary")):
+        return {}
+    authority = _mapping(transaction.get("intent_authority"))
+    material_fields = _mapping(authority.get("material_fields"))
+    custody = {
+        key: {
+            "custody_state": str(_mapping(value).get("custody_state") or "").strip(),
+            "entailment_relationship": str(_mapping(value).get("entailment_relationship") or "").strip(),
+        }
+        for key, value in sorted(material_fields.items())
+        if isinstance(value, Mapping)
+    }
+    return {
+        "facts": facts,
+        "material_custody": custody,
+        "product_facts_sha256": str(authority.get("product_facts_sha256") or "").strip(),
+    }
+
+
+def _has_semantic_value(value: Any) -> bool:
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return bool(value)
+    return isinstance(value, Mapping) and bool(value)
+
+
+def _sha256_json(value: Any) -> str:
+    encoded = json.dumps(value, ensure_ascii=True, separators=(",", ":"), sort_keys=True).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def _repo_path(repo_root: Path, token: str) -> tuple[Path, str]:
@@ -277,6 +342,7 @@ def _is_sha256(value: str) -> bool:
 
 __all__ = [
     "DRY_RUN_RECEIPT_VERSION",
+    "SEMANTIC_FACT_KEYS",
     "CompiledCreateExecution",
     "commit_precompiled_transaction",
     "dry_run_commit_issues",

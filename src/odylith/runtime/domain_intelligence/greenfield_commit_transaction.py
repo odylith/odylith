@@ -40,10 +40,17 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_compiled_write.py",
     "runtime/domain_intelligence/greenfield_create_commit.py",
     "runtime/domain_intelligence/greenfield_create_contract.py",
+    "runtime/domain_intelligence/greenfield_create_lifecycle.py",
+    "runtime/domain_intelligence/greenfield_generation_state.py",
+    "runtime/domain_intelligence/greenfield_generation_store.py",
     "runtime/domain_intelligence/greenfield_create_manifest.py",
+    "runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
+    "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
     "runtime/domain_intelligence/greenfield_proposals_cli.py",
+    "runtime/domain_intelligence/greenfield_repository_lock.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
+    "runtime/surfaces/greenfield_host_confirmation.py",
 )
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds"})
 _SEALED_COMMIT_ATTESTATION = object()

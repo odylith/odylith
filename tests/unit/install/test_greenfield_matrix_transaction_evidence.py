@@ -38,6 +38,10 @@ def test_commit_precompiled_transaction_validates_receipt_before_invoking_create
 
     assert execution.dry_run_receipt["status"] == "compiled"
     assert execution.dry_run_receipt["transaction_hash"] == HASH
+    assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["first_path"] == (
+        "An operator records one decision and reviews the accepted receipt."
+    )
+    assert len(execution.dry_run_receipt["semantic_snapshot_sha256"]) == 64
     assert calls and calls[0][1:3] == ("greenfield", "create")
 
 
@@ -212,6 +216,25 @@ def _write_transaction(
     transaction = {
         "transaction_hash": transaction_hash,
         "quality_manifest": {"status": "passed", "validation_status": "passed"},
+        "proposal": {
+            "intent": {
+                "product_story": "Decision Workspace helps an operator review one governed outcome.",
+                "state_object": "A decision record tracks its evidence, status, and accepted receipt.",
+                "first_path": "An operator records one decision and reviews the accepted receipt.",
+                "proof_boundary": "The first release proves one accepted decision with readback.",
+                "human_actors": ["Operator: records and reviews the decision."],
+                "external_systems": [],
+            }
+        },
+        "intent_authority": {
+            "product_facts_sha256": "c" * 64,
+            "material_fields": {
+                "first_path": {
+                    "custody_state": "accepted_fact",
+                    "entailment_relationship": "direct_product_claim",
+                }
+            },
+        },
     }
     encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)

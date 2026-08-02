@@ -7,7 +7,7 @@ import json
 import signal
 import shutil
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from odylith.install.fs import atomic_write_text
@@ -106,6 +106,17 @@ class GreenfieldApplyTransaction:
     def commit(self) -> None:
         self._restore_signal_handlers()
         self._committed = True
+
+    def publish(self, callback: Callable[[], object], *, published_probe: Callable[[], bool]) -> None:
+        """Cross the publication boundary without rolling back an observed pointer."""
+
+        try:
+            callback()
+            self.commit()
+        except BaseException:
+            if published_probe():
+                self.commit()
+            raise
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> bool:
         self._restore_signal_handlers()

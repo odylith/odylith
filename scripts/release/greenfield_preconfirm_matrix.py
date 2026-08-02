@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Mapping, Sequence
-from dataclasses import replace
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import os
@@ -45,7 +45,10 @@ from greenfield_matrix_corpus_provenance import GreenfieldReleaseAudit  # noqa: 
 from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa: E402
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
-from greenfield_matrix_release_artifacts import release_proof_input_snapshot_issues  # noqa: E402
+from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  # noqa: E402
+from greenfield_evaluation_contract import validate_atomic_annotations  # noqa: E402
+from greenfield_final_holdout_guard import claim_final_holdout_run  # noqa: E402
+from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
 from greenfield_matrix_campaign import MatrixCampaignConfig  # noqa: E402
 from greenfield_matrix_campaign import MatrixTelemetryWriter  # noqa: E402
 from greenfield_matrix_campaign import campaign_phase_from_value  # noqa: E402
@@ -66,6 +69,7 @@ from greenfield_matrix_proof_scope import commit_manifest_summary  # noqa: E402
 from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
 from greenfield_matrix_run_lease import acquire_matrix_run_lease  # noqa: E402
 from greenfield_matrix_run_lease import write_matrix_payload  # noqa: E402
+from greenfield_semantic_release_score import evaluate_semantic_release  # noqa: E402
 from greenfield_commit_recovery_proof import GreenfieldInstalledCommitRecoveryProof  # noqa: E402
 from greenfield_commit_recovery_proof import PROOF_SCOPE as COMMIT_RECOVERY_PROOF_SCOPE  # noqa: E402
 from greenfield_commit_recovery_proof import run_installed_commit_recovery_proof  # noqa: E402
@@ -133,6 +137,33 @@ SCORED_REQUIRED_TERM_SURFACES = frozenset(
 INSTALL_MODES = ("full", "seeded")
 
 
+@dataclass
+class _FinalHoldoutRun:
+    ledger_path: Path
+    holdout_path: Path
+    evaluation_manifest_path: Path
+    implementation_revision: str
+    claimed: bool = False
+
+    def claim(self) -> None:
+        claim_final_holdout_run(
+            ledger_path=self.ledger_path,
+            holdout_path=self.holdout_path,
+            evaluation_manifest_path=self.evaluation_manifest_path,
+            implementation_revision=self.implementation_revision,
+        )
+        self.claimed = True
+
+    def complete(self, *, result_path: Path, outcome: str) -> None:
+        if self.claimed:
+            complete_final_holdout_run(
+                ledger_path=self.ledger_path,
+                result_path=result_path,
+                outcome=outcome,
+            )
+            self.claimed = False
+
+
 def run_matrix(
     *,
     dist_dir: Path,
@@ -152,6 +183,9 @@ def run_matrix(
     allow_partial_stressor_coverage: bool = False,
     release_audits: Sequence[GreenfieldReleaseAudit] = (),
     release_audit_repo_root: Path | None = None,
+    semantic_annotations_file: str = "",
+    evaluation_split_manifest: str = "",
+    before_product_execution: Callable[[], None] | None = None,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
 
@@ -182,9 +216,11 @@ def run_matrix(
                 release_audits,
                 repo_root=release_audit_repo_root,
             ).issues
-            if campaign_config.proof_tier == "release"
+            if campaign_config.proof_tier == "release" and not semantic_annotations_file
             else ()
         ),
+        semantic_annotations_file=semantic_annotations_file,
+        evaluation_split_manifest=evaluation_split_manifest,
     )
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
     attempt_ledger = MatrixAttemptLedger(attempt_ledger_jsonl)
@@ -262,6 +298,8 @@ def run_matrix(
             stopped_reason=reason,
         )
         return tuple(results)
+    if before_product_execution is not None:
+        before_product_execution()
     platform_baseline_terms = _platform_baseline_required_terms(
         repo_root=REPO_ROOT,
         release_dir=release_dir,
@@ -595,6 +633,8 @@ def _raise_for_invalid_campaign_policy(
     allow_skipped_browser_proof: bool,
     allow_partial_stressor_coverage: bool = False,
     release_corpus_issues: Sequence[str] = (),
+    semantic_annotations_file: str = "",
+    evaluation_split_manifest: str = "",
 ) -> None:
     if config.proof_tier != "release":
         return
@@ -617,6 +657,10 @@ def _raise_for_invalid_campaign_policy(
         violations.append("release proof cannot stop after a failure threshold")
     if config.stop_after_cluster_failures:
         violations.append("release proof cannot stop after a cluster threshold")
+    if not str(semantic_annotations_file or "").strip():
+        violations.append("release proof requires blinded semantic annotations")
+    if not str(evaluation_split_manifest or "").strip():
+        violations.append("release proof requires a frozen evaluation split manifest")
     violations.extend(str(issue) for issue in release_corpus_issues if str(issue).strip())
     if violations:
         raise RuntimeError("invalid greenfield release proof policy: " + "; ".join(violations))
@@ -1961,6 +2005,26 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         default="",
         help="Optional path where the full matrix proof payload should be persisted.",
     )
+    parser.add_argument(
+        "--semantic-annotations-file",
+        default="",
+        help="Optional blinded atomic-annotation file for deterministic semantic release scoring.",
+    )
+    parser.add_argument(
+        "--evaluation-split-manifest",
+        default="",
+        help="Frozen split and floor manifest required with --semantic-annotations-file.",
+    )
+    parser.add_argument(
+        "--final-holdout-run-ledger",
+        default="",
+        help="Exclusive one-shot disclosure ledger required for release-tier semantic proof.",
+    )
+    parser.add_argument(
+        "--implementation-revision",
+        default="",
+        help="Full 40-character Git revision of the implementation under final holdout proof.",
+    )
     return parser.parse_args(argv)
 
 
@@ -1971,6 +2035,8 @@ def _require_sealed_release_input_root(
     release_audit_file: str,
     release_audit_repo_root: Path,
     sealed_root: str,
+    semantic_annotations_file: str,
+    evaluation_split_manifest: str,
 ) -> None:
     if proof_tier_from_value(proof_tier) != "release":
         return
@@ -1979,24 +2045,59 @@ def _require_sealed_release_input_root(
     root = Path(sealed_root).expanduser().resolve()
     if not root.is_dir():
         raise RuntimeError("release proof sealed input root does not exist")
-    if release_audit_repo_root != root:
-        raise RuntimeError("release proof audit root must equal the sealed input root")
-    values = (*case_files, release_audit_file)
+    values = (*case_files, semantic_annotations_file, evaluation_split_manifest)
     if not all(str(value or "").strip() for value in values):
-        raise RuntimeError("release proof requires sealed case and audit inputs")
+        raise RuntimeError("release proof requires sealed case, annotation, and evaluation-manifest inputs")
     for value in values:
         path = Path(str(value)).expanduser().resolve()
         try:
             path.relative_to(root)
         except ValueError as exc:
             raise RuntimeError("release proof inputs must live under the sealed input root") from exc
-    issues = release_proof_input_snapshot_issues(
-        root=root,
-        case_files=tuple(Path(str(value)).expanduser().resolve() for value in case_files),
-        audit_file=Path(release_audit_file).expanduser().resolve(),
+        if not path.is_file() or path.is_symlink():
+            raise RuntimeError(f"release proof sealed input is missing or unsafe: {path.name}")
+    if release_audit_file:
+        if release_audit_repo_root != root:
+            raise RuntimeError("release proof audit root must equal the sealed input root")
+        audit_path = Path(release_audit_file).expanduser().resolve()
+        try:
+            audit_path.relative_to(root)
+        except ValueError as exc:
+            raise RuntimeError("release proof audit input must live under the sealed input root") from exc
+
+
+def _final_holdout_run_from_args(
+    args: argparse.Namespace,
+    *,
+    sealed_input_root: str,
+) -> _FinalHoldoutRun | None:
+    if proof_tier_from_value(str(args.proof_tier)) != "release":
+        return None
+    ledger_token = str(getattr(args, "final_holdout_run_ledger", "") or "").strip()
+    revision = str(getattr(args, "implementation_revision", "") or "").strip().casefold()
+    output_token = str(getattr(args, "output_json", "") or "").strip()
+    if not ledger_token:
+        raise RuntimeError("release proof requires --final-holdout-run-ledger")
+    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
+        raise RuntimeError("release proof requires a full --implementation-revision")
+    if not output_token:
+        raise RuntimeError("release proof requires --output-json for terminal holdout evidence")
+    ledger_path = Path(ledger_token).expanduser().resolve()
+    if ledger_path.exists() or ledger_path.is_symlink():
+        raise RuntimeError("final holdout run ledger already exists; the holdout cannot be rerun")
+    sealed_root = Path(sealed_input_root).expanduser().resolve()
+    try:
+        ledger_path.relative_to(sealed_root)
+    except ValueError:
+        pass
+    else:
+        raise RuntimeError("final holdout run ledger must live outside the sealed input root")
+    return _FinalHoldoutRun(
+        ledger_path=ledger_path,
+        holdout_path=Path(str(args.semantic_annotations_file)).expanduser().resolve(),
+        evaluation_manifest_path=Path(str(args.evaluation_split_manifest)).expanduser().resolve(),
+        implementation_revision=revision,
     )
-    if issues:
-        raise RuntimeError("release proof sealed input validation failed: " + "; ".join(issues))
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -2032,6 +2133,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
             allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+            semantic_annotations_file=str(args.semantic_annotations_file or ""),
+            evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
         )
     _require_sealed_release_input_root(
         proof_tier=str(args.proof_tier),
@@ -2039,6 +2142,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         release_audit_file=str(args.release_audit_file or ""),
         release_audit_repo_root=release_audit_repo_root,
         sealed_root=sealed_input_root,
+        semantic_annotations_file=str(args.semantic_annotations_file or ""),
+        evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
@@ -2049,7 +2154,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         include_commit_recovery_proof=bool(args.include_commit_recovery_proof),
         allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
+        semantic_annotations_file=str(args.semantic_annotations_file or ""),
+        evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
+    final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     selected_cases = _load_cli_case_files(args.case_file or ())
     planned_cases = selected_cases or default_cases()
     release_audits = (
@@ -2060,15 +2168,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         if str(args.release_audit_file or "").strip()
         else ()
     )
-    corpus_provenance = (
-        evaluate_release_corpus(
-            planned_cases,
-            release_audits,
-            repo_root=release_audit_repo_root,
+    if campaign_config.proof_tier == "release":
+        corpus_provenance = evaluate_frozen_evaluation_contract(
+            repo_root=Path(sealed_input_root),
+            manifest_path=Path(str(args.evaluation_split_manifest)),
+            final_holdout_path=Path(str(args.semantic_annotations_file)),
         )
-        if campaign_config.proof_tier == "release"
-        else discovery_corpus_summary(planned_cases)
-    )
+    else:
+        corpus_provenance = discovery_corpus_summary(planned_cases)
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=str(args.install_mode),
@@ -2079,8 +2186,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         allow_skipped_browser_proof=bool(args.allow_skipped_browser_proof),
         allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
         release_corpus_issues=(
-            corpus_provenance.issues if campaign_config.proof_tier == "release" else ()
+            tuple(corpus_provenance.get("issues") or ())
+            if campaign_config.proof_tier == "release" and isinstance(corpus_provenance, Mapping)
+            else ()
         ),
+        semantic_annotations_file=str(args.semantic_annotations_file or ""),
+        evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
     )
     output_path = (
         Path(str(args.output_json)).expanduser().resolve()
@@ -2092,18 +2203,41 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_path=output_path,
     )
     try:
-        return _execute_matrix_campaign(
-            args=args,
-            selected_cases=selected_cases,
-            planned_cases=planned_cases,
-            release_audits=release_audits,
-            release_audit_repo_root=release_audit_repo_root,
-            campaign_config=campaign_config,
-            corpus_provenance=corpus_provenance,
-            output_path=output_path,
-            lease=lease,
-            finalize_lease=True,
-        )
+        try:
+            return_code = _execute_matrix_campaign(
+                args=args,
+                selected_cases=selected_cases,
+                planned_cases=planned_cases,
+                release_audits=release_audits,
+                release_audit_repo_root=release_audit_repo_root,
+                campaign_config=campaign_config,
+                corpus_provenance=corpus_provenance,
+                output_path=output_path,
+                lease=lease,
+                finalize_lease=True,
+                before_product_execution=(final_holdout_run.claim if final_holdout_run else None),
+            )
+            if final_holdout_run is not None and final_holdout_run.claimed:
+                if output_path is None or not output_path.is_file():
+                    raise RuntimeError("final holdout execution did not persist its result payload")
+                final_holdout_run.complete(
+                    result_path=output_path,
+                    outcome="passed" if return_code == 0 else "failed",
+                )
+            return return_code
+        except BaseException as error:
+            if final_holdout_run is not None and final_holdout_run.claimed:
+                interrupted = lease.temp_namespace / "final-holdout-interrupted-result.v1.json"
+                write_matrix_payload(
+                    output_path=interrupted,
+                    payload={
+                        "version": QUALITY_MATRIX_VERSION,
+                        "status": "interrupted",
+                        "error_type": type(error).__name__,
+                    },
+                )
+                final_holdout_run.complete(result_path=interrupted, outcome="interrupted")
+            raise
     finally:
         if not lease.released:
             lease.release()
@@ -2121,15 +2255,17 @@ def _execute_matrix_campaign(
     output_path: Path | None,
     lease: Any,
     finalize_lease: bool = False,
+    before_product_execution: Callable[[], None] | None = None,
 ) -> int:
     """Run one fully isolated proof campaign under its output lease."""
 
     temp_parent = lease.temp_namespace
     telemetry = MatrixTelemetryWriter(campaign_config.telemetry_jsonl)
+    provenance_summary = getattr(corpus_provenance, "summary", {})
     approved_audit_bindings = (
-        corpus_provenance.summary.get("approved_audit_bindings")
-        if campaign_config.proof_tier == "release"
-        and isinstance(corpus_provenance.summary.get("approved_audit_bindings"), Mapping)
+        provenance_summary.get("approved_audit_bindings")
+        if isinstance(provenance_summary, Mapping)
+        and isinstance(provenance_summary.get("approved_audit_bindings"), Mapping)
         else {}
     )
     recovery_case = (
@@ -2164,6 +2300,9 @@ def _execute_matrix_campaign(
             allow_partial_stressor_coverage=bool(args.allow_partial_stressor_coverage),
             release_audits=release_audits,
             release_audit_repo_root=release_audit_repo_root,
+            semantic_annotations_file=str(args.semantic_annotations_file or ""),
+            evaluation_split_manifest=str(args.evaluation_split_manifest or ""),
+            before_product_execution=before_product_execution,
         )
         commit_recovery = (
             run_installed_commit_recovery_proof(
@@ -2171,7 +2310,10 @@ def _execute_matrix_campaign(
                 version=str(args.version),
                 temp_parent=temp_parent,
                 recovery_case=recovery_case,
-                require_release_binding=campaign_config.proof_tier == "release",
+                require_release_binding=(
+                    campaign_config.proof_tier == "release"
+                    and not str(args.semantic_annotations_file or "").strip()
+                ),
                 release_audit_binding=(
                     approved_audit_bindings.get(recovery_case.case_id)
                     if recovery_case is not None
@@ -2238,6 +2380,12 @@ def _execute_matrix_campaign(
         natural_rescue_proof=natural_rescue,
         commit_recovery_proof=commit_recovery,
     )
+    semantic_release = _semantic_release_report(
+        args=args,
+        cases=selected_cases,
+        results=results,
+    )
+    semantic_release_passed = semantic_release.get("status") in {"not_requested", "passed"}
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
@@ -2247,6 +2395,7 @@ def _execute_matrix_campaign(
         and platform_leakage_passed
         and cleanup_passed
         and bool(metamorphic_output.get("passed"))
+        and semantic_release_passed
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
@@ -2275,7 +2424,9 @@ def _execute_matrix_campaign(
         },
         "corpus_provenance": (
             corpus_provenance.to_dict()
-            if campaign_config.proof_tier == "release"
+            if hasattr(corpus_provenance, "to_dict")
+            else dict(corpus_provenance)
+            if isinstance(corpus_provenance, Mapping)
             else corpus_provenance
         ),
         "results": [result.to_dict() for result in results],
@@ -2290,6 +2441,7 @@ def _execute_matrix_campaign(
         "platform_domain_leakage_proof": platform_leakage_proof,
         "temp_cleanup_proof": cleanup_proof,
         "onboarding_quality_scorecard": onboarding_quality_scorecard,
+        "semantic_release": semantic_release,
         "proof_run": lease.to_dict(),
     }
     if rescue is not None:
@@ -2306,6 +2458,87 @@ def _execute_matrix_campaign(
         _print_rescue_summary(rescue)
         _print_rescue_summary(natural_rescue)
     return 0 if payload["status"] in {"passed", "discovery-passed"} else 1
+
+
+def _semantic_release_report(
+    *,
+    args: argparse.Namespace,
+    cases: Sequence[GreenfieldMatrixCase],
+    results: Sequence[GreenfieldMatrixResult],
+) -> dict[str, Any]:
+    annotations_token = str(getattr(args, "semantic_annotations_file", "") or "").strip()
+    manifest_token = str(getattr(args, "evaluation_split_manifest", "") or "").strip()
+    if not annotations_token and not manifest_token:
+        return {"status": "not_requested", "passed": True}
+    if not annotations_token or not manifest_token:
+        return {
+            "status": "failed",
+            "passed": False,
+            "issues": ["semantic release scoring requires both annotations and a frozen split manifest"],
+        }
+    annotations_path = Path(annotations_token).expanduser().resolve()
+    manifest_path = Path(manifest_token).expanduser().resolve()
+    try:
+        contract = evaluate_frozen_evaluation_contract(
+            repo_root=Path(str(args.sealed_release_input_root)).expanduser().resolve()
+            if str(args.sealed_release_input_root or "").strip()
+            else REPO_ROOT,
+            manifest_path=manifest_path,
+            final_holdout_path=annotations_path,
+        )
+        payload = _parse_json_object(annotations_path.read_text(encoding="utf-8"))
+        annotation_rows = payload.get("annotations")
+        selected_case_ids = {str(case.case_id or case.slug).strip() for case in cases}
+        annotation_case_ids = (
+            {
+                str(row.get("case_id") or "").strip()
+                for row in annotation_rows
+                if isinstance(row, Mapping)
+            }
+            if isinstance(annotation_rows, Sequence)
+            and not isinstance(annotation_rows, (str, bytes, bytearray))
+            else set()
+        )
+        if selected_case_ids != annotation_case_ids:
+            return {
+                "status": "failed",
+                "passed": False,
+                "evaluation_contract": contract,
+                "issues": ["semantic release case set does not exactly match the frozen holdout"],
+            }
+        annotations, annotation_issues = validate_atomic_annotations(
+            cases=cases,
+            rows=annotation_rows,
+        )
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as error:
+        return {
+            "status": "failed",
+            "passed": False,
+            "issues": [f"semantic release inputs are invalid: {type(error).__name__}"],
+        }
+    if not contract.get("passed") or annotation_issues:
+        return {
+            "status": "failed",
+            "passed": False,
+            "evaluation_contract": contract,
+            "issues": list(
+                dict.fromkeys(
+                    [
+                        "frozen evaluation contract failed"
+                        if not contract.get("passed")
+                        else "atomic annotations failed validation"
+                    ]
+                )
+            ),
+        }
+    report = evaluate_semantic_release(
+        cases=cases,
+        annotations=annotations,
+        results=results,
+        floors=_as_mapping(contract.get("frozen_floors")),
+    )
+    report["evaluation_contract"] = contract
+    return report
 
 
 def _load_cli_case_files(case_files: Sequence[str]) -> tuple[GreenfieldMatrixCase, ...]:

@@ -109,15 +109,15 @@ The visible preview is a sectioned view of the transaction-bound facts: Product 
 State object, First complete path, Human actors, systems, assumptions, ambiguities, and
 proof boundary. It ends with one clear `## Choose one command` block:
 
-- **CONFIRM** commits the shown validated transaction hash.
-- **EDIT** adds corrections as new untrusted evidence and rebuilds a replacement transaction.
-- **REJECT** stops with no governed records written.
+- **`CONFIRM <hash>`** commits the shown validated transaction hash.
+- **`EDIT <hash> <corrections>`** adds corrections as new untrusted evidence and rebuilds a replacement transaction.
+- **`REJECT <hash>`** stops with no governed records written.
 
 Odylith asks one focused question only when an ambiguity materially changes the first
 release. Other gaps become visible assumptions. Markdown is evidence and a human view,
-not product truth. Before **CONFIRM**, `propose` may store replaceable evidence and the
-compiled transaction under `.odylith/runtime/greenfield/`; it does not change governed
-product records. After **CONFIRM**, create only verifies the receipt, transaction hash,
+not product truth. Before **`CONFIRM <hash>`**, `propose` stores each compiled package at an
+immutable transaction-addressed pending path under `.odylith/runtime/greenfield/`; it does
+not change governed product records. After **`CONFIRM <hash>`**, create only verifies the receipt, transaction hash,
 compiler identity, and unchanged repo preconditions; applies the sealed write set under a
 rollback guard; validates exact readback; and reports success or an environment/IO failure.
 It does not parse product Markdown, call a host model, generate artifacts, or repair prose
@@ -126,7 +126,7 @@ modules, or local examples to discover schema fields. Do not hand-author or repa
 JSON, narrate parser/schema retries, or request a second confirmation.
 
 ```bash
-./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
+./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 ```
 
 If a reviewer explicitly asks for JSON, use `greenfield propose --format json` as an audit
@@ -198,7 +198,7 @@ Starter prompt for your agent when source-backed paths already exist:
 
 Starter prompt for a greenfield project:
 
-**Odylith, build this project from my request. Compile the complete first-release governance package before asking me to confirm. Show the product story, first complete path, state object, assumptions, proof boundary, and one clear CONFIRM / EDIT / REJECT command block. After CONFIRM, commit only the reviewed transaction and take me to the finished project view.**
+**Odylith, build this project from my request. Compile the complete first-release governance package before asking me to confirm. Show the product story, first complete path, state object, assumptions, proof boundary, and one clear hash-bound CONFIRM / EDIT / REJECT command block. After CONFIRM, publish only the reviewed transaction and take me to the exact finished project view.**
 
 Here are some starter prompt inspirations:
 

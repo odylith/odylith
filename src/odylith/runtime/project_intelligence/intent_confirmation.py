@@ -96,7 +96,7 @@ def build_product_intent_confirmation(
                 + _shell_quote(clean_prompt)
             ),
             "commit_transaction_after_hash_confirmation": (
-                "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm"
+                "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm"
             ),
             "optional_review_json_before_confirmation": (
                 "odylith greenfield propose --repo-root . --prompt "
@@ -132,21 +132,19 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
     lines = [
         "## Choose one command",
         "",
-        "**Decision rail:** `CONFIRM` | `EDIT` | `REJECT`.",
-        "**Command buttons:** **`CONFIRM`**  |  **`EDIT`**  |  **`REJECT`**.",
-        "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`.",
-        "Do not write anything before the command. Only the first command counts. Do not paste Odylith system commands in your reply.",
+        "Copy one complete command exactly as shown. The approval code binds your choice to this reviewed package.",
     ]
     for label, detail in choices:
-        command = _clean(label).upper()
+        command = _clean(label)
+        verb = command.partition(" ")[0].upper()
         text = _clean(detail)
         if command and text:
             lines.extend(
                 [
                     "",
-                    f"### Command: `{command}`",
-                    f"**Reply starts with:** `{command}` | **Copy-ready reply:** `{command}`",
-                    f"**What happens:** {text}",
+                    f"### {verb}",
+                    f"```text\n{command}\n```",
+                    text,
                 ]
             )
     return lines

@@ -873,6 +873,24 @@ def _write_compiled_transaction(repo_root: Path, proposal: dict[str, object]) ->
     transaction = {
         "transaction_hash": transaction_hash,
         "quality_manifest": {"status": "passed", "validation_status": "passed"},
+        "proposal": {
+            "intent": {
+                "product_story": "Standard Project helps an operator complete one governed task.",
+                "state_object": "A project record tracks task evidence and accepted status.",
+                "first_path": "An operator submits one task and reviews the accepted result.",
+                "proof_boundary": "The first release proves one accepted task with readback.",
+                "human_actors": ["Operator: submits and reviews the task."],
+            }
+        },
+        "intent_authority": {
+            "product_facts_sha256": "c" * 64,
+            "material_fields": {
+                "first_path": {
+                    "custody_state": "accepted_fact",
+                    "entailment_relationship": "direct_product_claim",
+                }
+            },
+        },
     }
     encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
     transaction_file.parent.mkdir(parents=True, exist_ok=True)
@@ -1116,7 +1134,7 @@ def test_explicit_clarification_expectation_passes_without_create_or_records(
     assert result.evidence["no_write"]["write_attempts"] == []
     assert result.evidence["no_write"]["subprocess_attempts"] == []
     assert result.evidence["no_write"]["write_audit_error"] == ""
-    assert not (repo_root / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
+    assert not (repo_root / ".odylith/runtime/greenfield/pending").exists()
     assert not (repo_root / "odylith").exists()
 
 
@@ -1132,7 +1150,10 @@ def test_explicit_clarification_expectation_rejects_staged_transaction_record(
         commands.append(list(command))
         if "propose" in command:
             _write(
-                cwd / ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+                cwd
+                / ".odylith/runtime/greenfield/pending"
+                / ("a" * 64)
+                / "product-create-transaction.v1.json",
                 "unexpected staged transaction\n",
             )
             return subprocess.CompletedProcess(command, 0, json.dumps(_clarification_payload()), "")
@@ -1768,6 +1789,22 @@ def test_release_policy_rejects_missing_commit_recovery_proof() -> None:
         )
 
 
+def test_release_policy_rejects_omitted_semantic_proof() -> None:
+    module = _module()
+    config = SimpleNamespace(proof_tier="release", stop_after_failures=0, stop_after_cluster_failures=0)
+
+    with pytest.raises(RuntimeError, match="requires blinded semantic annotations"):
+        module._raise_for_invalid_campaign_policy(  # noqa: SLF001
+            config=config,
+            install_mode="full",
+            include_browser_proof=True,
+            include_rescue_smoke=True,
+            include_natural_rescue_proof=True,
+            include_commit_recovery_proof=True,
+            allow_skipped_browser_proof=False,
+        )
+
+
 def test_collect_artifact_counts_uses_token_aware_domain_terms(tmp_path: Path) -> None:
     module = _module()
     package = _empty_package()
@@ -2331,6 +2368,22 @@ def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
     assert case.tags == ("science", "regulated")
     assert case.stressors == ("thin prompt", "specialized vocabulary")
     assert case.source_file == str(case_file.resolve())
+
+
+def test_case_file_rejects_duplicate_case_ids(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "duplicate-cases.json"
+    row = {
+        "case_id": "duplicate-001",
+        "name": "permit workflow",
+        "prompt": "Create a proposal for a permit workflow.",
+        "required_terms": ["permit"],
+        "leakage_terms": ["permit workflow"],
+    }
+    case_file.write_text(json.dumps({"cases": [row, {**row, "name": "second permit workflow"}]}), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="duplicate case IDs: duplicate-001"):
+        module.load_case_file(case_file)
 
 
 def test_case_evidence_manifest_retains_artifact_hashes_and_grounding(tmp_path: Path) -> None:
@@ -3456,13 +3509,15 @@ def test_main_rejects_an_unsealed_release_root_before_loading_case_files(monkeyp
     module = _module()
     case_file = tmp_path / "release-cases.json"
     audit_file = tmp_path / "release-audit.json"
+    annotations_file = tmp_path / "final-holdout.json"
+    evaluation_manifest = tmp_path / "evaluation-splits.json"
 
     def fail_if_loaded(*_args, **_kwargs):  # noqa: ANN002, ANN003
         raise AssertionError("release evidence was loaded before snapshot validation")
 
     monkeypatch.setattr(module, "_load_cli_case_files", fail_if_loaded)
 
-    with pytest.raises(RuntimeError, match="sealed input manifest is missing"):
+    with pytest.raises(RuntimeError, match="sealed input is missing or unsafe"):
         module.main(
             [
                 "--dist-dir",
@@ -3481,6 +3536,10 @@ def test_main_rejects_an_unsealed_release_root_before_loading_case_files(monkeyp
                 str(tmp_path),
                 "--sealed-release-input-root",
                 str(tmp_path),
+                "--semantic-annotations-file",
+                str(annotations_file),
+                "--evaluation-split-manifest",
+                str(evaluation_manifest),
             ]
         )
 

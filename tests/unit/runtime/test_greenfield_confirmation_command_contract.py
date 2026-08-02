@@ -74,31 +74,27 @@ def _accepted_intent_with_authority(tmp_path: Path, *, prompt: str) -> dict[str,
 
 
 def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
+    transaction_hash = "a" * 64
     lines = format_confirmation_choice_lines(
         (
-            ("CONFIRM", "Commit the validated package."),
-            ("EDIT", "Rebuild from the corrected evidence."),
-            ("REJECT", "Stop without writing records."),
+            (f"CONFIRM {transaction_hash}", "Commit the validated package."),
+            (f"EDIT {transaction_hash}", "Rebuild from the corrected evidence."),
+            (f"REJECT {transaction_hash}", "Stop without writing records."),
         )
     )
     rendered = "\n".join(lines)
 
-    assert rendered.index("**Decision rail:** `CONFIRM` | `EDIT` | `REJECT`.") < (
-        rendered.index("### Command: `CONFIRM`")
-    )
-    assert "**Command buttons:** **`CONFIRM`**  |  **`EDIT`**  |  **`REJECT`**." in rendered
-    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in rendered
-    assert "Do not write anything before the command." in rendered
-    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in rendered
-    assert rendered.count("**Copy-ready reply:**") == 3
-    assert "**Copy-ready reply:** `CONFIRM`" in rendered
-    assert "**Copy-ready reply:** `EDIT`" in rendered
-    assert "**Copy-ready reply:** `REJECT`" in rendered
-    assert rendered.count("**Reply starts with:**") == 3
-    assert rendered.count("**What happens:**") == 3
-    assert "### Command: `CONFIRM`" in rendered
-    assert "### Command: `EDIT`" in rendered
-    assert "### Command: `REJECT`" in rendered
+    assert rendered.startswith("## Choose one command")
+    assert "approval code binds your choice to this reviewed package" in rendered
+    assert "### CONFIRM" in rendered
+    assert "### EDIT" in rendered
+    assert "### REJECT" in rendered
+    assert rendered.count("```text") == 3
+    assert f"CONFIRM {transaction_hash}" in rendered
+    assert f"EDIT {transaction_hash}" in rendered
+    assert f"REJECT {transaction_hash}" in rendered
+    assert "Command buttons" not in rendered
+    assert "Copy-ready reply" not in rendered
 
 
 def test_product_intent_preview_defers_the_only_command_rail_to_the_transaction() -> None:

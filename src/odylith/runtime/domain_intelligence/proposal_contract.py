@@ -130,7 +130,7 @@ def build_proposal_contract() -> dict[str, Any]:
             ],
             "canonical_commands": [
                 "odylith greenfield propose --repo-root . --prompt \"<request>\"",
-                "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
+                "odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm",
                 "odylith greenfield propose --repo-root . --prompt \"<request>\" --format json",
             ],
             "failure_policy": [

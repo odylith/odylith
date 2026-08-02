@@ -44,6 +44,19 @@ def test_metamorphic_output_rejects_changed_readback_hash() -> None:
     assert "changed the sealed transaction hash" in evaluation["issues"][0]
 
 
+def test_metamorphic_output_rejects_normalized_first_path_drift() -> None:
+    cases = _cases()
+    results = (
+        _result(cases[0]),
+        _result(cases[1], first_path="A reviewer exports unrelated payroll records to an external broker."),
+    )
+
+    evaluation = evaluate_metamorphic_outputs(cases=cases, results=results)
+
+    assert evaluation["status"] == "failed"
+    assert any("changed normalized first_path meaning" in issue for issue in evaluation["issues"])
+
+
 def test_metamorphic_output_accepts_required_clarification_without_a_transaction() -> None:
     committed_case, clarification_case = _clarification_pair_cases()
 
@@ -202,7 +215,12 @@ def _clarification_pair_cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixC
     return committed_case, replace(topic_case, expectation="clarification_required")
 
 
-def _result(case: GreenfieldMatrixCase, *, committed_hash: str = HASH) -> GreenfieldMatrixResult:
+def _result(
+    case: GreenfieldMatrixCase,
+    *,
+    committed_hash: str = HASH,
+    first_path: str = "An operator records one evidence decision and reviews the accepted result.",
+) -> GreenfieldMatrixResult:
     summary = {
         "write_transaction": {
             "commit_only": True,
@@ -220,7 +238,19 @@ def _result(case: GreenfieldMatrixCase, *, committed_hash: str = HASH) -> Greenf
         commit_manifest_summary=summary,
         evidence={
             "case": case_evidence(case),
-            "preconfirm_dry_run": {"status": "compiled", "transaction_hash": HASH},
+            "preconfirm_dry_run": {
+                "status": "compiled",
+                "transaction_hash": HASH,
+                "semantic_snapshot": {
+                    "facts": {
+                        "product_story": "Evidence Workspace helps an operator review a governed evidence decision.",
+                        "state_object": "An evidence decision tracks its status and accepted result.",
+                        "first_path": first_path,
+                        "proof_boundary": "The first release proves one accepted evidence decision.",
+                        "human_actors": ["Operator: records and reviews the evidence decision."],
+                    }
+                },
+            },
         },
     )
 

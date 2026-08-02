@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import re
 from typing import Any
 
 from greenfield_matrix_types import GreenfieldMatrixResult
@@ -13,6 +14,47 @@ from greenfield_preconfirm_matrix_cases import case_expectation
 
 
 METAMORPHIC_OUTPUT_VERSION = "odylith.greenfield.matrix.metamorphic-output.v1"
+INVARIANT_FACT_FLOORS = {
+    "product_story": 0.60,
+    "state_object": 0.65,
+    "first_path": 0.65,
+    "proof_boundary": 0.60,
+    "human_actors": 0.70,
+    "external_systems": 0.75,
+    "internal_systems": 0.70,
+    "non_goals": 0.70,
+    "operational_constraints": 0.70,
+}
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_NON_SEMANTIC_TOKENS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "be",
+        "before",
+        "by",
+        "can",
+        "for",
+        "from",
+        "in",
+        "into",
+        "is",
+        "it",
+        "of",
+        "on",
+        "one",
+        "or",
+        "that",
+        "the",
+        "their",
+        "this",
+        "to",
+        "with",
+    }
+)
 
 
 def evaluate_metamorphic_outputs(
@@ -101,6 +143,58 @@ def _group_issues(
                 evidence=evidence,
             )
         )
+    if all(case_expectation(case) != CLARIFICATION_REQUIRED_EXPECTATION for case in members):
+        issues.extend(
+            _invariant_meaning_issues(
+                group=group,
+                members=members,
+                results_by_case_id=results_by_case_id,
+            )
+        )
+    return issues
+
+
+def _invariant_meaning_issues(
+    *,
+    group: str,
+    members: Sequence[GreenfieldMatrixCase],
+    results_by_case_id: Mapping[str, GreenfieldMatrixResult],
+) -> list[str]:
+    snapshots = [
+        (
+            _case_id(case),
+            _mapping(
+                _mapping(
+                    _mapping(results_by_case_id[_case_id(case)].evidence).get("preconfirm_dry_run")
+                ).get("semantic_snapshot")
+            ),
+        )
+        for case in members
+    ]
+    missing = [case_id for case_id, snapshot in snapshots if not snapshot]
+    if missing:
+        return [f"metamorphic group {group} lacks pre-confirm semantic snapshots for: {', '.join(missing)}"]
+    baseline_id, baseline = snapshots[0]
+    baseline_facts = _mapping(baseline.get("facts"))
+    issues: list[str] = []
+    for case_id, snapshot in snapshots[1:]:
+        facts = _mapping(snapshot.get("facts"))
+        for field, floor in INVARIANT_FACT_FLOORS.items():
+            baseline_tokens = _semantic_tokens(baseline_facts.get(field))
+            candidate_tokens = _semantic_tokens(facts.get(field))
+            if not baseline_tokens and not candidate_tokens:
+                continue
+            if not baseline_tokens or not candidate_tokens:
+                issues.append(
+                    f"metamorphic group {group} changed canonical field presence for {field}: {baseline_id}, {case_id}"
+                )
+                continue
+            overlap = _jaccard(baseline_tokens, candidate_tokens)
+            if overlap < floor:
+                issues.append(
+                    f"metamorphic group {group} changed normalized {field} meaning "
+                    f"({overlap:.3f} < {floor:.2f}): {baseline_id}, {case_id}"
+                )
     return issues
 
 
@@ -138,7 +232,10 @@ def _commit_invariant_issues(
     if receipt.get("status") != "compiled" or not _is_sha256(expected_hash):
         issues.append(f"metamorphic group {group} case {case_id} lacks a sealed dry-run receipt")
         return issues
-    if write_transaction.get("commit_only") is not True or write_transaction.get("prewrite_clean_before_commit") is not True:
+    if (
+        write_transaction.get("commit_only") is not True
+        or write_transaction.get("prewrite_clean_before_commit") is not True
+    ):
         issues.append(f"metamorphic group {group} case {case_id} did not prove commit-only write custody")
     if str(write_transaction.get("product_create_transaction_hash") or "").strip() != expected_hash:
         issues.append(f"metamorphic group {group} case {case_id} changed the sealed transaction hash at commit")
@@ -242,4 +339,19 @@ def _matching_record_counts(before: Any, after: Any) -> bool:
     )
 
 
-__all__ = ["METAMORPHIC_OUTPUT_VERSION", "evaluate_metamorphic_outputs"]
+def _semantic_tokens(value: Any) -> frozenset[str]:
+    if isinstance(value, Mapping):
+        text = " ".join(str(item) for item in value.values())
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        text = " ".join(str(item) for item in value)
+    else:
+        text = str(value or "")
+    return frozenset(token for token in _TOKEN_RE.findall(text.casefold()) if token not in _NON_SEMANTIC_TOKENS)
+
+
+def _jaccard(left: frozenset[str], right: frozenset[str]) -> float:
+    union = left | right
+    return len(left & right) / len(union) if union else 1.0
+
+
+__all__ = ["INVARIANT_FACT_FLOORS", "METAMORPHIC_OUTPUT_VERSION", "evaluate_metamorphic_outputs"]

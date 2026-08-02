@@ -24,17 +24,17 @@ mechanism-level learning.
 3. Show that transaction-bound preview directly in chat. Keep product story, state object,
    first complete path, actors, systems, assumptions, ambiguities, and proof boundary clear
    and concise. End with one `## Choose one command` block:
-   - **CONFIRM** commits this already validated, hash-bound package.
-   - **EDIT** supplies corrections as new evidence and rebuilds a replacement package and hash.
-   - **REJECT** stops with no governed records written.
+   - **`CONFIRM <hash>`** commits this already validated, hash-bound package.
+   - **`EDIT <hash> <corrections>`** supplies corrections as new evidence and rebuilds a replacement package and hash.
+   - **`REJECT <hash>`** stops with no governed records written.
    Ask one focused question only when uncertainty materially changes the first release;
    otherwise state the assumption. Markdown is evidence and a human view, never product truth.
 4. Do not hide the final rail behind collapsed tool output or replace it with a generic menu.
    Do not expose internal repair chatter, proposal JSON, source-schema exploration, parser
    retries, or a second confirmation. The visible prose must remain simple, legible,
    grammatical, and specific.
-5. After **CONFIRM**, run
-   `./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
+5. After **`CONFIRM <hash>`**, run
+   `./.odylith/bin/odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm`.
    Create only verifies receipt, hash, compiler identity, and repo preconditions; writes
    sealed bytes atomically under rollback guard; validates readback; and reports success or
    an environment/IO failure. It does not parse Markdown, call a host model, generate

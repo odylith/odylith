@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Mapping, Sequence
 import json
 from pathlib import Path
@@ -30,7 +31,18 @@ def load_case_file(path: Path) -> tuple[GreenfieldMatrixCase, ...]:
     cases = _case_rows(raw)
     if not cases:
         raise RuntimeError(f"greenfield case file {case_path} must define at least one case")
-    return tuple(_case_from_row(row, index=index, source=case_path) for index, row in enumerate(cases, 1))
+    compiled = tuple(_case_from_row(row, index=index, source=case_path) for index, row in enumerate(cases, 1))
+    identity_counts = Counter(_case_identity(case) for case in compiled)
+    duplicates = sorted(identity for identity, count in identity_counts.items() if count > 1)
+    if duplicates:
+        raise RuntimeError(
+            f"greenfield case file {case_path} has duplicate case IDs: {', '.join(duplicates)}"
+        )
+    return compiled
+
+
+def _case_identity(case: GreenfieldMatrixCase) -> str:
+    return str(case.case_id or case.name or "").strip()
 
 
 def _case_rows(raw: Any) -> tuple[Mapping[str, Any], ...]:

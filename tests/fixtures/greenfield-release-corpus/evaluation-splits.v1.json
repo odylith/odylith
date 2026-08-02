@@ -1,0 +1,69 @@
+{
+  "version": "odylith.greenfield.evaluation-splits.v1",
+  "frozen_at_utc": "2026-08-02T09:51:10Z",
+  "claim_class": "semantic-baseline-frozen-before-final-release-execution",
+  "semantic_baseline_revision": "b524cd03e4ae91219f7735fb3c89996e4603a5c4",
+  "tracked_corpus": {
+    "path": "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json",
+    "sha256": "7e6259e23d275e905469f22428052ee5a6a6add5b91d0a3666bdfc68ffa77168",
+    "case_count": 200,
+    "assignment": {
+      "algorithm": "metamorphic-or-source-group-sha256-bucket-v1",
+      "seed": "0f5a0a433a6a5cb31b4d8d3fd4075a74e37c2a957d814a8865c27339dda9e8a1",
+      "buckets": {
+        "development": [0, 5999],
+        "regression": [6000, 8499],
+        "private_validation": [8500, 9999]
+      }
+    },
+    "final_holdout_eligible": false,
+    "reason": "This corpus predates the split freeze and is therefore development, regression, or private-validation evidence only."
+  },
+  "final_holdout": {
+    "path_hint": "/private/tmp/odylith-greenfield-final-holdout-v1.json",
+    "sha256": "3558ab3ffe23a285303b3dbdcca560cec31fb3eee261e0aa9bc610b9f04f5e2a",
+    "byte_size": 126834,
+    "case_count": 24,
+    "annotation_count": 24,
+    "claim_class": "blinded-independent-synthetic-holdout",
+    "disclosure_policy": "Run once after floors and implementation are frozen. A disclosed failure retires this holdout into regression and requires a new blinded holdout.",
+    "annotation_review": {
+      "independent_reviewed": true,
+      "disagreements_adjudicated": true,
+      "annotation_contract_issues": 0,
+      "product_executions": 0
+    }
+  },
+  "profiles": {
+    "evidence_styles": [
+      "direct_request",
+      "edited_confirmation",
+      "pasted_brief",
+      "research_evidence",
+      "thin_request"
+    ],
+    "hosts": [
+      "codex-deterministic-confirmation-v1",
+      "claude-deterministic-confirmation-v1",
+      "generic-proposal-only-v1"
+    ],
+    "models": [
+      "provider-free-standard-v1",
+      "bounded-reasoning-standard-v1",
+      "lower-capability-safe-v1"
+    ]
+  },
+  "frozen_floors": {
+    "version": "greenfield-semantic-floors-v1",
+    "no_observed_p0_contradiction": true,
+    "accepted_fact_custody": 1.0,
+    "critical_constraint_recall": 1.0,
+    "explicit_system_recall": 1.0,
+    "material_question_recall": 0.95,
+    "unnecessary_question_rate_ceiling": 0.05,
+    "first_path_comprehension": 0.9,
+    "overall_case_success": 0.95,
+    "worst_slice_success": 0.8,
+    "deterministic_law_failures": 0
+  }
+}
