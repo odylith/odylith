@@ -142,8 +142,8 @@ def _context(
     story = _product_sentence(intent.get("product_story")) or _product_sentence(objective)
     problem = _product_sentence(intent.get("problem")) or _project_line(project, "problem") or _problem_from_story(story)
     resolved_outcome = (
-        _outcome_from_text(first_path)
-        or _product_sentence(outcome)
+        _product_sentence(outcome)
+        or _outcome_from_text(first_path)
         or _project_line(project, "user or stakeholder outcome")
         or _outcome_from_text(story)
         or _product_sentence(intent.get("state_object"))
@@ -173,7 +173,7 @@ def _context(
 
 def _user_problem_card(ctx: _StoryCardContext) -> str:
     source = ctx.problem or ctx.story
-    if source and _specific_enough(source, ctx):
+    if source and _specific_enough(source, ctx) and not _same_story_meaning(source, ctx.first_path):
         return _limit_card(_ensure_period(source), limit=520)
     outcome = _lower_first(_outcome_phrase(ctx))
     outcome_action = _outcome_action_phrase(outcome)
@@ -212,7 +212,8 @@ def _owned_capabilities_card(ctx: _StoryCardContext) -> str:
     outcome = _outcome_phrase(ctx)
     if ctx.owned_capabilities:
         return _ensure_period(
-            f"The product owns these responsibilities: {ctx.owned_capabilities}. Together, they carry the accepted input through to {outcome} without shifting interpretation or reconstruction to another participant"
+            f"The product owns the system boundaries for {ctx.owned_capabilities}. Those boundaries keep state, "
+            f"blockers, evidence, and handoffs inside the product through to {outcome}, while external dependencies remain explicit"
         )
     return _ensure_period(
         f"The product is responsible for the first usable loop: {input_focus}. It turns that activity into {outcome}, shows the result plainly, keeps the underlying record available for follow-up, and does not ask another participant to reconstruct what happened by hand"
@@ -281,6 +282,15 @@ def _comma_rich_action_path(value: str) -> bool:
 
 def _specific_enough(value: str, ctx: _StoryCardContext) -> bool:
     return len(_clean(value).split()) >= 16 and _specific_term_count(value, ctx) >= 3
+
+
+def _same_story_meaning(left: str, right: str) -> bool:
+    left_terms = set(_terms(left))
+    right_terms = set(_terms(right))
+    if len(left_terms) < 8 or len(right_terms) < 8:
+        return False
+    shared = left_terms & right_terms
+    return len(shared) >= 8 and len(shared) / min(len(left_terms), len(right_terms)) >= 0.82
 
 
 def _specific_term_count(value: str, ctx: _StoryCardContext) -> int:
@@ -830,26 +840,20 @@ def _product_items_sentence(value: Any) -> str:
 
 
 def _owned_capability_actions(value: Any) -> str:
-    actions: list[str] = []
+    labels: list[str] = []
     for row in strings(value):
-        _name, separator, description = row.partition("—")
-        text = _product_sentence(description if separator else row).strip(" .")
-        text = re.split(
-            r"\s+(?:and keeps?|while preserving)\s+",
-            text,
-            maxsplit=1,
-            flags=re.IGNORECASE,
-        )[0].strip(" .")
+        name, separator, description = row.partition("—")
+        text = _product_sentence(name if separator else description or row).strip(" .")
         if text:
-            actions.append(_lower_first(text))
-    actions = list(dict.fromkeys(actions))[:4]
-    if not actions:
+            labels.append(text)
+    labels = list(dict.fromkeys(labels))[:4]
+    if not labels:
         return ""
-    if len(actions) == 1:
-        return actions[0]
-    if len(actions) == 2:
-        return f"{actions[0]} and {actions[1]}"
-    return f"{', '.join(actions[:-1])}, and {actions[-1]}"
+    if len(labels) == 1:
+        return labels[0]
+    if len(labels) == 2:
+        return f"{labels[0]} and {labels[1]}"
+    return f"{', '.join(labels[:-1])}, and {labels[-1]}"
 
 
 def _actor_title(actors: Sequence[tuple[str, str, str]], *, index: int) -> str:

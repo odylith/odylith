@@ -317,6 +317,23 @@ def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:
     )
 
 
+def test_ranking_basis_does_not_repeat_a_secondary_visible_result_sentence() -> None:
+    lines = rationale_lines(
+        label="Permit Review Workspace",
+        title="Prove One Complete Permit Review Path",
+        opportunity="Prove one permit review before optional scope expands.",
+        first_slice="Clerks submit permits and review status.",
+        proof_boundary=(
+            "Release 0.0.1 succeeds when clerks submit permits and review status. "
+            "The product shows the permit review result before adjacent scope enters the release."
+        ),
+    )
+
+    ranking_basis = lines[-1]
+    assert "clerks submit permits and review status" in ranking_basis.casefold()
+    assert "The product shows the permit review result" not in ranking_basis
+
+
 def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
     lines = rationale_lines(
         label="Choice Practice Journal",

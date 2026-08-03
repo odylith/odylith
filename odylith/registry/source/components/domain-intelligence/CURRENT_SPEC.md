@@ -49,6 +49,25 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-02: Hardened canonical meaning and generation recovery before the release checkpoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Context-only product titles now derive from the accepted durable state object;
+  coordinated action prefixes no longer leak into that object. Internal-system
+  projection retains every distinct accepted responsibility instead of keeping
+  the first three plus the terminal row, while sparse record components add
+  bounded state-object terms before Registry contract generation. Recovery
+  proof observes the actual generation, active pointer, journal, published, and
+  aborted states around governed SIGKILL and fsync faults. The recovery proof
+  owner is below 1,200 lines after generation assertions moved to one cohesive
+  module. Generation observation now validates sealed after-image bytes, and
+  navigation proof targets the exact reviewed-generation dashboard. Shared-subject
+  object lists no longer become fragments or fake signoff records, and Radar
+  rationale projection repairs repeated secondary proof copy without weakening
+  the package repetition gate. Fresh touched-surface proof passed 460 tests.
+  Exact pediatric, quantum, security, semiconductor, and thin permit CLI replays
+  compiled passed hash-bound transactions with visible CONFIRM, EDIT, and REJECT;
+  the semiconductor package retained all five explicit source responsibilities.
+  Installed and final frozen-holdout release proof remains pending.
+
 - 2026-08-02: Replaced mutable pending and file-by-file commit semantics with hash-addressed decision custody and generation publication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-304`, `CB-305`; Diagram: D-043)
   The pre-confirm
   compiler now seals the complete managed after-image and active-generation

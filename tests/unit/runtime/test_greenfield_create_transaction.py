@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_release_commit
+from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -834,7 +835,7 @@ def test_commit_product_create_transaction_rejects_busy_repository_before_write(
     def busy(*_args: Any, **_kwargs: Any) -> None:
         raise BlockingIOError("simulated competing create transaction")
 
-    monkeypatch.setattr(greenfield_create_commit.fcntl, "flock", busy)
+    monkeypatch.setattr(greenfield_repository_lock.fcntl, "flock", busy)
     monkeypatch.setattr(greenfield_compiled_write, "write_compiled_greenfield_package", lambda **_kwargs: None)
 
     with pytest.raises(greenfield_create_commit.GreenfieldCreateCommitError) as exc:

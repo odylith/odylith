@@ -50,7 +50,7 @@ def test_greenfield_quality_gate_ignores_internal_artifact_plan_patch_ledger() -
         "intent": {"prompt": "build a review workspace"},
         "artifact_plan_patch_ledger": [
             {
-                "rejected_interpretation": "Registry component spec failed before rerender",
+                "rejected_interpretation": "Registry component can submits malformed copy before rerender",
                 "applied_paths": ("components[0].component_contract.produced_outputs",),
             }
         ],

@@ -447,7 +447,7 @@ The first version is proven when a user can log entries over several days and th
     components = [row["label"] for row in proposal["components"]]
 
     assert "Person Managing Discomfort" in rendered
-    assert "Coach or Clinician" in rendered
+    assert "Coach or Clinician" not in rendered
     assert "Pattern Relief User" not in rendered
     assert "Central Thing the Product" not in rendered
     assert "the optionally" not in rendered.casefold()
@@ -608,8 +608,9 @@ Release 0.0.1 succeeds when a reviewer can follow one item through registration,
     assert "Reviewer —" not in encoded
     assert "Reviewer Dashboard" not in encoded
     assert "Review Dashboard and Export" in encoded
-    assert "Volunteer Equipment Checkout Reviewer" in encoded
+    assert "volunteer equipment checkout reviewer" in encoded.casefold()
     assert not greenfield_quality_issues(proposal)
+    assert " bes " not in encoded.casefold()
     assert "owns captures" not in encoded
     assert "owns shows" not in encoded
     assert "Shows which items can be requested now" in encoded

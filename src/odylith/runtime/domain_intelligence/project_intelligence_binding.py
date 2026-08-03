@@ -6,6 +6,7 @@ import copy
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
@@ -77,24 +78,29 @@ def project_intelligence_binding_issues(proposal: Mapping[str, Any]) -> list[str
         proposal.get("release_plan"),
         owner="release_plan",
         expected_schema=expected_schema,
+        expected_artifact_kind="release_plan",
+        expected_artifact_id=_release_identifier(proposal.get("release_plan")),
         issues=issues,
     )
     _check_row_bindings(
         proposal.get("backlog"),
         owner="backlog row",
         expected_schema=expected_schema,
+        artifact_kind="radar_workstream",
         issues=issues,
     )
     _check_row_bindings(
         proposal.get("components"),
         owner="component row",
         expected_schema=expected_schema,
+        artifact_kind="registry_component",
         issues=issues,
     )
     _check_row_bindings(
         proposal.get("diagrams"),
         owner="diagram row",
         expected_schema=expected_schema,
+        artifact_kind="atlas_diagram",
         issues=issues,
     )
     return issues
@@ -159,17 +165,23 @@ def _binding_for(base: Mapping[str, str], *, artifact_kind: str, artifact_id: st
 
 def _release_identifier(value: Any) -> str:
     row = mapping_copy(value)
+    label = clean_text(row.get("label"))
     return (
         clean_text(row.get("provisional_release_id"))
         or clean_text(row.get("selector"))
-        or clean_text(row.get("label"))
+        or (slugify(label) if label else "")
         or "release_plan"
     )
 
 
 def _artifact_identifier(row: Mapping[str, Any], *, fallback: str) -> str:
-    for key in ("id", "workstream_id", "idea_id", "component_id", "slug", "wave_id", "label", "title"):
+    for key in ("id", "workstream_id", "idea_id", "component_id", "slug", "wave_id"):
         token = clean_text(row.get(key))
+        if token:
+            return token
+    for key in ("label", "title"):
+        display = clean_text(row.get(key))
+        token = slugify(display) if display else ""
         if token:
             return token
     return fallback
@@ -180,12 +192,21 @@ def _check_mapping_binding(
     *,
     owner: str,
     expected_schema: str,
+    expected_artifact_kind: str,
+    expected_artifact_id: str,
     issues: list[str],
 ) -> None:
     if not isinstance(value, Mapping):
         issues.append(f"{owner} must be an object before project_intelligence binding can be checked")
         return
-    _check_binding(value, owner=owner, expected_schema=expected_schema, issues=issues)
+    _check_binding(
+        value,
+        owner=owner,
+        expected_schema=expected_schema,
+        expected_artifact_kind=expected_artifact_kind,
+        expected_artifact_id=expected_artifact_id,
+        issues=issues,
+    )
 
 
 def _check_row_bindings(
@@ -193,6 +214,7 @@ def _check_row_bindings(
     *,
     owner: str,
     expected_schema: str,
+    artifact_kind: str,
     issues: list[str],
 ) -> None:
     if not isinstance(value, list) or not value:
@@ -202,7 +224,14 @@ def _check_row_bindings(
         if not isinstance(row, Mapping):
             issues.append(f"{owner} {index} must be an object before project_intelligence binding can be checked")
             continue
-        _check_binding(row, owner=f"{owner} {index}", expected_schema=expected_schema, issues=issues)
+        _check_binding(
+            row,
+            owner=f"{owner} {index}",
+            expected_schema=expected_schema,
+            expected_artifact_kind=artifact_kind,
+            expected_artifact_id=_artifact_identifier(row, fallback=f"{artifact_kind}-{index}"),
+            issues=issues,
+        )
 
 
 def _check_binding(
@@ -210,6 +239,8 @@ def _check_binding(
     *,
     owner: str,
     expected_schema: str,
+    expected_artifact_kind: str,
+    expected_artifact_id: str,
     issues: list[str],
 ) -> None:
     binding = row.get(PROJECT_INTELLIGENCE_BINDING_KEY)
@@ -220,10 +251,14 @@ def _check_binding(
         issues.append(f"{owner} project_intelligence_binding.source must be project_intelligence")
     if expected_schema and clean_text(binding.get("schema_version")) != expected_schema:
         issues.append(f"{owner} project_intelligence_binding.schema_version must match project_intelligence")
-    if not clean_text(binding.get("artifact_kind")):
-        issues.append(f"{owner} project_intelligence_binding.artifact_kind must be present")
-    if not clean_text(binding.get("artifact_id")):
-        issues.append(f"{owner} project_intelligence_binding.artifact_id must be present")
+    if clean_text(binding.get("artifact_kind")) != expected_artifact_kind:
+        issues.append(
+            f"{owner} project_intelligence_binding.artifact_kind must be {expected_artifact_kind}"
+        )
+    if clean_text(binding.get("artifact_id")) != expected_artifact_id:
+        issues.append(
+            f"{owner} project_intelligence_binding.artifact_id must match its stable artifact identifier"
+        )
 
 
 __all__ = [

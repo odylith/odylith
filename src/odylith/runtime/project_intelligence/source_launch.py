@@ -628,6 +628,17 @@ def _base_action_from_step(value: str, *, actor_labels: Sequence[str] = ()) -> s
     actor_action = _actor_led_base_action_from_step(text, actor_labels=actor_labels)
     if actor_action:
         return actor_action
+    if re.match(r"^(?:a|an|the)\s+", text, flags=re.IGNORECASE):
+        for match in re.finditer(
+            rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_VERB_PATTERN})(?![A-Za-z0-9_-])",
+            text,
+            flags=re.IGNORECASE,
+        ):
+            if match.start() <= 0:
+                continue
+            action = repair_modal_base_form_drift(base_action_clause(text[match.start() :].strip(" .,")))
+            if action:
+                return _drop_embedded_outcome(_prompt_fragment(action))
     tokens = text.split()
     candidates = [text]
     for index in range(1, min(len(tokens), 9)):
@@ -874,6 +885,8 @@ def _received_outcome_phrase(value: object) -> str:
 
 def _action_outcome_result_object(value: str) -> str:
     text = _prompt_fragment(value)
+    if re.match(r"^[A-Za-z0-9][A-Za-z0-9'-]*\s+readiness\b", text, flags=re.IGNORECASE):
+        return ""
     if not looks_like_action_clause(text):
         return ""
     action = base_action_clause(text, force_leading_finite=True).strip(" .")

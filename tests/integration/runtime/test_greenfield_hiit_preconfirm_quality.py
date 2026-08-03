@@ -83,7 +83,6 @@ def test_hiit_greenfield_create_repairs_compact_path_and_quality_under_sixty_sec
 
 
 def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> tuple[float, int, dict, dict]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_rc = greenfield_proposals.main(
         [
             "propose",
@@ -101,6 +100,7 @@ def _run_proposed_transaction_create(tmp_path: Path, *, prompt: str, capsys) -> 
     assert propose_rc == 0, propose_output
     propose_payload = json.loads(propose_output)
     transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(propose_payload["transaction_file"])
     transaction_payload = json.loads((tmp_path / transaction_file).read_text(encoding="utf-8"))
     started = time.perf_counter()
     rc = greenfield_proposals.main(

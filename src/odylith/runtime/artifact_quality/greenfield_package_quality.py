@@ -15,6 +15,7 @@ from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfi
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -65,6 +66,27 @@ _ALLOWED_TERMINAL_PREPOSITION_BIGRAMS = frozenset(
         ("ready", "for"),
         ("searched", "for"),
         ("waited", "for"),
+    }
+)
+_ALLOWED_TERMINAL_QUESTION_PREPOSITIONS = frozenset(
+    {
+        "against",
+        "alongside",
+        "around",
+        "at",
+        "between",
+        "for",
+        "from",
+        "into",
+        "of",
+        "through",
+        "to",
+        "toward",
+        "towards",
+        "until",
+        "via",
+        "with",
+        "without",
     }
 )
 _MID_SENTENCE_CAPITALIZED_PRONOUNS = frozenset({"Her", "His", "Its", "Our", "Their", "Your"})
@@ -258,14 +280,18 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
             if looks_like_action_clause(f"{lowered[index + 1]} placeholder"):
                 phrase = " ".join(tokens[index : index + 3])
                 issues.append(f"{artifact.identity} has possessive/action title drift near `{phrase}`")
-    issues.extend(_coordinated_modal_drift_issues(artifact, tokens, lowered))
+    issues.extend(_coordinated_modal_drift_issues(artifact, text))
     issues.extend(_adjacent_repeated_word_issues(artifact, text, tokens, lowered))
     tail = lowered[-1].strip("'")
     if tail in _INVALID_INFLECTIONS:
         issues.append(f"{artifact.identity} has invalid verb inflection near `{tokens[-1]}`")
     if tail in _TERMINAL_ARTICLE_WORDS:
         issues.append(f"{artifact.identity} has a clipped article phrase ending in `{tokens[-1]}`")
-    if tail in _DANGLING_TAIL_WORDS and not _allowed_terminal_preposition_phrase(lowered):
+    if (
+        tail in _DANGLING_TAIL_WORDS
+        and not _allowed_terminal_preposition_phrase(lowered)
+        and not _allowed_terminal_question_preposition(text, tail)
+    ):
         issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
     if _has_clipped_terminal_final_phrase(text, tokens):
         issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
@@ -276,6 +302,10 @@ def _allowed_terminal_preposition_phrase(lowered: Sequence[str]) -> bool:
     if len(lowered) < 2:
         return False
     return (lowered[-2].strip("'"), lowered[-1].strip("'")) in _ALLOWED_TERMINAL_PREPOSITION_BIGRAMS
+
+
+def _allowed_terminal_question_preposition(text: str, tail: str) -> bool:
+    return text.rstrip().endswith("?") and tail in _ALLOWED_TERMINAL_QUESTION_PREPOSITIONS
 
 
 def _looks_like_to_plural_noun_context(lowered: Sequence[str], index: int) -> bool:
@@ -319,65 +349,13 @@ def _allowed_terminal_final_state_phrase(chunk: str, lowered: Sequence[str]) -> 
 
 def _coordinated_modal_drift_issues(
     artifact: RenderedArtifact,
-    tokens: Sequence[str],
-    lowered: Sequence[str],
+    text: str,
 ) -> list[str]:
-    issues: list[str] = []
-    for modal_index, token in enumerate(lowered):
-        if token not in {"can", "could", "may", "might", "must", "shall", "should", "will", "would"}:
-            continue
-        if token == "can" and lowered[modal_index : modal_index + 3] == ["can", "be", "trusted"]:
-            continue
-        window_end = min(len(lowered), modal_index + 18)
-        for index in range(modal_index + 1, window_end):
-            if lowered[index] not in {"and", "or"}:
-                continue
-            candidate_index = index + 1
-            if candidate_index < window_end and lowered[candidate_index].endswith("ly"):
-                candidate_index += 1
-            if candidate_index < window_end and _looks_like_coordinated_finite_action(tokens, lowered, candidate_index):
-                phrase = " ".join(tokens[index : candidate_index + 1])
-                issues.append(f"{artifact.identity} has coordinated modal grammar drift near `{phrase}`")
-    return issues
-
-
-def _looks_like_coordinated_finite_action(
-    tokens: Sequence[str],
-    lowered: Sequence[str],
-    candidate_index: int,
-) -> bool:
-    if not _looks_like_finite_verb(lowered[candidate_index]):
-        return False
-    token = str(tokens[candidate_index]).strip(".,;:")
-    next_token = str(tokens[candidate_index + 1]).strip(".,;:") if candidate_index + 1 < len(tokens) else ""
-    if token[:1].isupper() and next_token[:1].isupper():
-        return False
-    if _looks_like_conjunction_noun_compound(lowered, candidate_index):
-        return False
-    return True
-
-
-def _looks_like_conjunction_noun_compound(lowered: Sequence[str], candidate_index: int) -> bool:
-    token = lowered[candidate_index].strip(".,;:")
-    next_token = lowered[candidate_index + 1].strip(".,;:") if candidate_index + 1 < len(lowered) else ""
-    if token in {"records", "reports", "reviews"} and next_token in {
-        "archive",
-        "dashboard",
-        "evidence",
-        "export",
-        "history",
-        "ledger",
-        "log",
-        "record",
-        "service",
-        "store",
-        "summary",
-        "surface",
-        "trail",
-        "view",
-    }:
-        return True
-    return False
+    return [
+        f"{artifact.identity} has coordinated modal grammar drift near `{phrase}`"
+        for phrase in modal_base_form_drift_phrases(text)
+        if phrase.casefold().startswith(("and ", "or "))
+    ]
 
 
 def _adjacent_repeated_word_issues(
@@ -592,6 +570,8 @@ def _narrative_chunks(value: str) -> list[str]:
             continue
         for index, char in enumerate(line):
             if _package_repetition.is_sentence_boundary_char(line, index):
+                if char in "?!":
+                    current.append(char)
                 _package_repetition.append_chunk(chunks, current)
                 current = []
             elif char in ",;" and not _punctuation_continues_connector_clause(line, index, current):
@@ -740,9 +720,14 @@ def _has_comma_spliced_capitalized_clause(value: str) -> bool:
         if char != ",":
             continue
         word = _next_word_after(text, index + 1)
-        if word in _CAPITALIZED_CLAUSE_STARTERS:
+        if word in _CAPITALIZED_CLAUSE_STARTERS and not _capitalized_starter_begins_title(text, index + 1):
             return True
     return False
+
+
+def _capitalized_starter_begins_title(value: str, start: int) -> bool:
+    segment = re.split(r"[,.;:\n]", str(value or "")[start:], maxsplit=1)[0].strip()
+    return _looks_like_title_case_chunk(_package_repetition.word_tokens(segment))
 
 
 def _has_vague_missing_input_copy(value: str) -> bool:

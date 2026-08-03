@@ -119,6 +119,29 @@ def test_typed_intent_receipts_require_exact_structured_fact_values() -> None:
     assert "state_object" in altered["materiality_gate"]["blocked_fields"]
 
 
+def test_typed_intent_receipts_preserve_custody_across_case_only_normalization() -> None:
+    source_intent = {
+        "product_story": "Dispatchers need one place to coordinate a service request.",
+        "state_object": "A service request records its owner, status, evidence, and outcome.",
+        "first_path": "A dispatcher opens one request, assigns it, records evidence, and publishes the outcome.",
+        "proof_boundary": "One request can be assigned and read back with its evidence and outcome intact.",
+        "human_actors": ["Case Board Member: reviews requests and records outcomes."],
+    }
+    normalized_intent = {
+        **source_intent,
+        "human_actors": ["Case board member: reviews requests and records outcomes."],
+    }
+
+    envelope = build_product_intent_envelope(
+        normalized_intent,
+        source_text=json.dumps(source_intent, ensure_ascii=True, sort_keys=True),
+        source_format="in_memory_confirmed_intent",
+    )
+
+    assert envelope["materiality_gate"]["status"] == "passed"
+    assert envelope["custody_ledger"]["fields"]["human_actors"]["custody_state"] == "accepted_fact"
+
+
 def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_sections(tmp_path: Path) -> None:
     path = tmp_path / "confirmed-intent.md"
     path.write_text(_hostile_confirmation(), encoding="utf-8")

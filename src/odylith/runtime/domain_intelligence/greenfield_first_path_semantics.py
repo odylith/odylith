@@ -16,6 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import cle
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps as _drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_scope_or_deferred_statement as _is_scope_or_deferred_statement
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail as _strip_requirement_control_tail
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    strip_trailing_requirement_control_steps as _strip_trailing_requirement_control_steps,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment as _action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts as _actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
@@ -113,6 +116,7 @@ def _first_path_steps(value: str) -> list[str]:
     if not text:
         return []
     text = _strip_first_path_frame(text)
+    text = _strip_trailing_requirement_control_steps(text)
     text = _purpose_context.carry_semicolon_context_to_first_action(
         text, split_action_pieces=_split_action_pieces, step_has_action_signal=_step_has_action_signal
     )

@@ -52,7 +52,7 @@
 
 - Agent Guardrails: Do not use pinned runtime to author governed artifacts for unreleased product source, and do not bypass a source-local release gate with repeated sync-and-commit cycles.
 
-- Preflight Checks: Run PYTHONPATH=src .venv/bin/python -m odylith.cli governance sync-component-spec-requirements --repo-root . --check-only from the exact clean commit to be packaged.
+- Preflight Checks: Run odylith governance sync-component-spec-requirements --repo-root . --check-only from the exact clean commit to be packaged.
 
 - Monitoring Updates: Release proof records the maintainer runtime posture and the clean-head source-local convergence result.
 

@@ -235,6 +235,16 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
             "Public Records Redaction Workspace Proof Ledger"
         )
     )
+    assert (
+        join_system_labels(
+            [
+                "Public Records Intake Register — records source input.",
+                "Public Records Review Workspace — presents current state.",
+            ],
+            prose_list=True,
+        )
+        == "Public Records Intake Register and Public Records Review Workspace"
+    )
 
 
 def test_readable_action_chain_compacts_list_heavy_first_path() -> None:

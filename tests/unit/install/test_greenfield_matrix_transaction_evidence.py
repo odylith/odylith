@@ -21,7 +21,7 @@ from greenfield_matrix_transaction_evidence import post_confirm_navigation_issue
 
 
 HASH = "a" * 64
-TRANSACTION_FILE = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-transaction.v1.json"
 
 
 def test_commit_precompiled_transaction_validates_receipt_before_invoking_create(tmp_path: Path) -> None:
@@ -141,7 +141,18 @@ def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
     )
 
 
-def test_post_confirm_navigation_requires_every_governance_workspace_route() -> None:
+def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
+    dashboard = (
+        tmp_path
+        / ".odylith/runtime/greenfield/generations"
+        / HASH
+        / "repository/odylith/index.html"
+    ).resolve()
+    dashboard.parent.mkdir(parents=True)
+    dashboard.write_text("<html></html>", encoding="utf-8")
+    compatibility_dashboard = (tmp_path / "odylith/index.html").resolve()
+    compatibility_dashboard.parent.mkdir(parents=True)
+    compatibility_dashboard.write_text("<html></html>", encoding="utf-8")
     payload = {
         "post_confirm_navigation": {
             "project": "odylith/index.html?tab=project",
@@ -149,15 +160,28 @@ def test_post_confirm_navigation_requires_every_governance_workspace_route() -> 
             "registry": "odylith/index.html?tab=registry",
             "atlas": "odylith/index.html?tab=atlas",
             "compass": "odylith/index.html?tab=compass&date=live",
+            "dashboard_path": str(dashboard),
+            "project_url": f"{dashboard.as_uri()}?tab=project",
+            "view_status": "reviewed_generation",
+            "compatibility_dashboard_path": str(compatibility_dashboard),
+            "generation_transaction_hash": HASH,
         }
     }
 
-    assert post_confirm_navigation_issues(create_payload=payload) == ()
+    assert post_confirm_navigation_issues(
+        create_payload=payload,
+        repo_root=tmp_path,
+        transaction_hash=HASH,
+    ) == ()
 
-    del payload["post_confirm_navigation"]["atlas"]
+    payload["post_confirm_navigation"]["project_url"] = "file:///wrong/index.html?tab=project"
 
-    assert post_confirm_navigation_issues(create_payload=payload) == (
-        "post-confirm response does not expose the stable governance workspace routes: atlas",
+    assert post_confirm_navigation_issues(
+        create_payload=payload,
+        repo_root=tmp_path,
+        transaction_hash=HASH,
+    ) == (
+        "post-confirm response does not expose the reviewed generation workspace routes: project_url",
     )
 
 
@@ -181,7 +205,7 @@ def _proposal_payload(transaction_hash: str) -> dict[str, object]:
         "transaction_file": TRANSACTION_FILE,
         "product_create_transaction": {"transaction_hash": transaction_hash},
         "confirmation": {
-            "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+            "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
             "post_confirm_contract": (
                 "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
                 "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
@@ -189,7 +213,7 @@ def _proposal_payload(transaction_hash: str) -> dict[str, object]:
             ),
             "choices": [
                 {
-                    "command": "CONFIRM",
+                    "command": f"CONFIRM {transaction_hash}",
                     "description": "Commit this exact validated package now.",
                     "commit_command": (
                         "odylith greenfield create --repo-root . "
@@ -197,10 +221,13 @@ def _proposal_payload(transaction_hash: str) -> dict[str, object]:
                     ),
                 },
                 {
-                    "command": "EDIT",
+                    "command": f"EDIT {transaction_hash} <corrections>",
                     "description": "Do not commit. Treat corrections as new evidence and rebuild the package.",
                 },
-                {"command": "REJECT", "description": "Stop. No governed records are written."},
+                {
+                    "command": f"REJECT {transaction_hash}",
+                    "description": "Stop. No governed records are written.",
+                },
             ],
         },
     }

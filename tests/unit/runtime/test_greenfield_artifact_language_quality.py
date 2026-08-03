@@ -130,6 +130,67 @@ def test_greenfield_story_cards_keep_action_grammar_and_visible_outcome() -> Non
     assert "multi-asset automation" in cards["Product Boundary"].casefold()
 
 
+def test_greenfield_story_cards_do_not_reuse_a_path_shaped_problem() -> None:
+    first_path = (
+        "Pediatric therapy coordinators receive a referral, verify guardian consent, assign a therapist, confirm "
+        "care-plan readiness, record visit evidence, and route exceptions for review."
+    )
+    cards = {
+        row["label"]: row["body"]
+        for row in build_greenfield_story_cards(
+            title="Pediatric Therapy Agency Practice",
+            intent={
+                "problem": first_path,
+                "product_story": "Coordinators need one practice workspace for referral-to-review care readiness.",
+                "state_object": "A care readiness record tracks referral, consent, assignment, and evidence status.",
+                "proof_boundary": "One referral reaches review with consent, assignment, and evidence visible.",
+            },
+            project={},
+            objective="",
+            outcome="a reviewable care readiness result",
+            first_path=first_path,
+            actors=(("primary", "Pediatric therapy coordinators", "Coordinate the care path."),),
+            validation=(),
+        )
+    }
+
+    assert cards["User Problem"] != cards["First Path"]
+    assert "needs a clear way" in cards["User Problem"]
+    assert "receive a referral" in cards["First Path"].casefold()
+
+
+def test_greenfield_owned_capabilities_name_system_boundaries_instead_of_repeating_the_path() -> None:
+    first_path = (
+        "A lab user receives wafer lot samples, records chamber exposure conditions, preserves chain-of-custody "
+        "evidence, tracks failed stress runs, and prepares release readiness proof for engineering review."
+    )
+    cards = {
+        row["label"]: row["body"]
+        for row in build_greenfield_story_cards(
+            title="Semiconductor Reliability Lab Custody Platform",
+            intent={
+                "product_story": "A reliability lab needs one custody path from sample intake through release proof.",
+                "state_object": "A wafer lot custody record tracks exposure, evidence, failed runs, and review status.",
+                "internal_systems": [
+                    "Wafer Lot Intake — captures sample identity and custody context",
+                    "Exposure Conditions Record — preserves chamber conditions and failed-run evidence",
+                    "Release Readiness Review — presents proof and blockers for engineering review",
+                ],
+            },
+            project={},
+            objective="",
+            outcome="release readiness proof for engineering review",
+            first_path=first_path,
+            actors=(("primary", "Lab user", "Completes the custody path."),),
+            validation=(),
+        )
+    }
+
+    assert "system boundaries for Wafer Lot Intake" in cards["Owned Capabilities"]
+    assert "receives wafer lot samples" not in cards["Owned Capabilities"].casefold()
+    assert cards["Owned Capabilities"] != cards["First Path"]
+
+
 def test_greenfield_story_cards_normalize_clause_like_proof_outcomes() -> None:
     cards = {
         row["label"]: row["body"]

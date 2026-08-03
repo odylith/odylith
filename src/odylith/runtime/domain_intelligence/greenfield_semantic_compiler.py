@@ -128,7 +128,18 @@ def select_visible_result_candidate(
     proof = clean_first_path_text(proof_boundary)
     candidates: list[GreenfieldSemanticCandidate] = []
     proof_candidate: GreenfieldSemanticCandidate | None = None
-    visible = _product_result_from_visible_outcome(path_model.visible_outcome)
+    first_path_text = clean_first_path_text(first_path)
+    visible_source = (
+        first_path_text
+        if _is_visible_object_list_result(first_path_text)
+        and not any(
+            _is_actor_led_material_action_candidate(step)
+            or _actor_text_has_human_signal(actor_signature(step))
+            for step in path_model.steps
+        )
+        else path_model.visible_outcome
+    )
+    visible = _product_result_from_visible_outcome(visible_source)
     if visible:
         candidates.append(
             _candidate(
@@ -137,7 +148,7 @@ def select_visible_result_candidate(
                 source_path="first_path.visible_result",
                 confidence=_candidate_confidence(visible, source_kind="first_path_event")
                 + _terminal_visible_outcome_bonus(visible),
-                provenance=(path_model.visible_outcome,),
+                provenance=(visible_source,),
                 limit=limit,
             )
         )
@@ -348,10 +359,11 @@ def _product_result_from_visible_outcome(value: Any) -> str:
     visible_object = visible_result_object(text)
     if _starts_with_connector(visible_object) and _is_visible_object_list_result(text):
         visible_object = text
+    binary_result = _binary_actor_action_result_object(text)
     action_result = nominal_action_result_object(text, visible_object)
     if not action_result and (not visible_object or actor_signature(visible_object)):
         action_result = _single_action_state_result_object(text) or nominal_action_result_object(text, "")
-    candidate = action_result or visible_object or nominal_visible_result_object(text) or text
+    candidate = binary_result or action_result or visible_object or nominal_visible_result_object(text) or text
     if word_count(candidate) < 2:
         candidate = nominal_action_result_object(text, candidate) or candidate
     candidate = _confirmed_result_object(source=text, result=candidate)

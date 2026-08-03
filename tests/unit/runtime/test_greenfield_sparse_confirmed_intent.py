@@ -72,7 +72,6 @@ Trusted evidence custody and embargo decision.
 - Review log records cross-organization review decisions.
 - Embargo registry tracks embargo status.
 """.strip()
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_rc = greenfield_proposals.main(
         [
             "propose",
@@ -88,7 +87,9 @@ Trusted evidence custody and embargo decision.
     )
     propose_output = capsys.readouterr().out
     assert propose_rc == 0, propose_output
-    transaction_hash = str(json.loads(propose_output)["product_create_transaction"]["transaction_hash"])
+    propose_payload = json.loads(propose_output)
+    transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(propose_payload["transaction_file"])
     rc = greenfield_proposals.main(
         [
             "create",
@@ -148,8 +149,6 @@ def test_port_prompt_compiles_visible_constraints_into_a_commit_only_transaction
         "at Pier 7, reconciles carrier manifests with berth assignments, records an exception, and sees a signed "
         "handoff receipt."
     )
-    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-
     propose_rc = greenfield_proposals.main(
         ["propose", "--repo-root", str(tmp_path), "--prompt", prompt, "--format", "json"]
     )
@@ -158,6 +157,7 @@ def test_port_prompt_compiles_visible_constraints_into_a_commit_only_transaction
     assert propose_rc == 0, propose_output
     proposed = json.loads(propose_output)
     candidate = proposed["intent_hypothesis"]
+    transaction_path = tmp_path / str(proposed["transaction_file"])
     transaction = load_compiled_product_create_transaction_file(transaction_path)
     proposal = transaction.proposal
     assert "Pier 7" in candidate["operational_constraints"]
@@ -196,15 +196,15 @@ def test_logistics_fixture_compiles_a_clean_confirmation_transaction_and_commits
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_commit_only_create_dependencies(monkeypatch)
-    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-
     propose_rc = greenfield_proposals.main(
         ["propose", "--repo-root", str(tmp_path), "--prompt", PORT_OPERATIONS_PROMPT, "--format", "json"]
     )
     propose_output = capsys.readouterr().out
 
     assert propose_rc == 0, propose_output
-    candidate = json.loads(propose_output)["intent_hypothesis"]
+    proposed = json.loads(propose_output)
+    candidate = proposed["intent_hypothesis"]
+    transaction_path = tmp_path / str(proposed["transaction_file"])
     transaction = load_compiled_product_create_transaction_file(transaction_path)
     proposal = transaction.proposal
     assert "port operations director" not in candidate["title"].casefold()
@@ -349,8 +349,6 @@ def test_edit_rebuilds_operational_constraints_before_commit_only_create(
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_commit_only_create_dependencies(monkeypatch)
-    transaction_path = tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-
     propose_rc = greenfield_proposals.main(
         [
             "propose",
@@ -367,7 +365,9 @@ def test_edit_rebuilds_operational_constraints_before_commit_only_create(
     propose_output = capsys.readouterr().out
 
     assert propose_rc == 0, propose_output
-    candidate = json.loads(propose_output)["intent_hypothesis"]
+    proposed = json.loads(propose_output)
+    candidate = proposed["intent_hypothesis"]
+    transaction_path = tmp_path / str(proposed["transaction_file"])
     transaction = load_compiled_product_create_transaction_file(transaction_path)
     expected = list(expected_constraints)
     assert candidate["operational_constraints"] == expected

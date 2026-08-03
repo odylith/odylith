@@ -79,7 +79,7 @@ def test_first_path_action_grammar_keeps_close_as_action() -> None:
         "and close the incident with a timeline and unresolved follow-up list"
     )
     assert first_path_capability_phrase(first_path, max_fragments=7, limit=340) == (
-        "open a new incident for a fuel spill near a berth, record an approval for reopening the berth, "
+        "a dispatcher can open a new incident for a fuel spill near a berth, record an approval for reopening the berth, "
         "and close the incident with a timeline and unresolved follow-up list"
     )
     assert first_path_capability_phrase(first_path, gerund=True, max_fragments=7, limit=340) == (

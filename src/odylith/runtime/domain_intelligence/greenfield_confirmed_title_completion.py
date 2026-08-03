@@ -20,6 +20,18 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 
 
+_GENERIC_CONTAINER_TITLE_WORDS = _GENERIC_TITLE_WORDS | {
+    "admin",
+    "console",
+    "dashboard",
+    "lab",
+    "management",
+    "office",
+    "portal",
+    "site",
+}
+
+
 def title(intent: Mapping[str, Any]) -> str:
     return _clean(intent.get("title")) or "Greenfield Project"
 
@@ -33,6 +45,8 @@ def title_needs_repair(value: str) -> bool:
     words = label_terms(text)
     if not words:
         return True
+    if all(word.casefold() in _GENERIC_CONTAINER_TITLE_WORDS for word in words):
+        return True
     tail = words[-1].casefold()
     if tail in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
         return True
@@ -45,6 +59,9 @@ def title_needs_repair(value: str) -> bool:
 def derived_title(intent: Mapping[str, Any], *, fallback: str) -> str:
     system_labels = [_clean(label) for label in _system_labels(intent) if _clean(label)]
     context = _title_context(intent)
+    state_label = _state_label(_clean(intent.get("state_object")), title=fallback)
+    if _context_only_title(fallback) and _usable_state_title(state_label):
+        return _title_case(f"{state_label} Workspace")
     noun = _title_noun(context, system_labels)
     qualifier = _title_qualifier(context, system_labels, noun=noun)
     if qualifier and noun:
@@ -52,10 +69,24 @@ def derived_title(intent: Mapping[str, Any], *, fallback: str) -> str:
     for label in system_labels:
         if 2 <= _word_count(label) <= 7:
             return _title_case(label)
-    state_label = _state_label(_clean(intent.get("state_object")), title=fallback)
     if 2 <= _word_count(state_label) <= 7:
         return _title_case(state_label)
     return _focus_label(fallback)
+
+
+def _context_only_title(value: str) -> bool:
+    words = label_terms(_clean(value))
+    return bool(words) and all(word.casefold() in _GENERIC_CONTAINER_TITLE_WORDS for word in words)
+
+
+def _usable_state_title(value: str) -> bool:
+    text = _clean(value)
+    words = label_terms(text)
+    if not 2 <= len(words) <= 6:
+        return False
+    if all(word.casefold() in _GENERIC_CONTAINER_TITLE_WORDS for word in words):
+        return False
+    return not looks_like_action_clause(text)
 
 
 def _title_context(intent: Mapping[str, Any]) -> str:

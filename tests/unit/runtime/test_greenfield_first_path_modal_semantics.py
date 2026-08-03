@@ -46,7 +46,7 @@ PORT_OPERATIONS_PROMPT = json.loads(
 )["cases"][0]["prompt"]
 
 
-def test_first_path_steps_repair_carried_modal_base_form_drift() -> None:
+def test_first_path_steps_drop_release_boundary_without_modal_drift() -> None:
     steps = first_path_steps(
         "A city emergency team. Residents request beds, coordinators verify accessibility needs, "
         "shelters publish accepted assignments, and public officials track capacity evidence without exposing private details. "
@@ -54,9 +54,13 @@ def test_first_path_steps_repair_carried_modal_base_form_drift() -> None:
     )
 
     assert "A city emergency team" not in steps
-    assert steps[0] == "Residents request beds"
-    assert "The first release should keep a clear audit trail, and defer predictive routing" in steps
-    assert "The first release should keeps a clear audit trail, and defer predictive routing" not in steps
+    assert steps == (
+        "Residents request beds",
+        "Coordinators verify accessibility needs",
+        "Shelters publish accepted assignments",
+        "Public officials track capacity evidence without exposing private details",
+    )
+    assert not any("first release" in step.casefold() for step in steps)
     assert not [
         phrase
         for step in steps
@@ -261,6 +265,23 @@ def test_subjectless_action_chains_do_not_invent_carried_subjects() -> None:
     )
 
 
+def test_system_subject_carries_across_stream_and_following_actions() -> None:
+    steps = first_path_steps(
+        "The platform decomposes the work, routes subtasks to agents, streams progress into a live graph, "
+        "asks a human for approval, resolves conflicts, and delivers a final artifact."
+    )
+
+    assert steps == (
+        "The platform decomposes the work",
+        "The platform routes subtasks to agents",
+        "The platform streams progress into a live graph",
+        "The platform asks a human for approval",
+        "The platform resolves conflicts",
+        "The platform delivers a final artifact",
+    )
+    assert not any(step.startswith("Streams ") for step in steps)
+
+
 def test_leading_purpose_context_is_preserved_on_first_action_step() -> None:
     steps = first_path_steps(
         "lead service-line abatement; intake household records, prioritize vulnerable sites, "
@@ -287,7 +308,7 @@ def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_i
     )
     assert "where a city emergency team" not in str(confirmed_intent["product_story"]).casefold()
     assert "residents request beds coordinators" not in str(confirmed_intent["product_story"]).casefold()
-    assert str(confirmed_intent["first_path"]).startswith("Residents request beds.")
+    assert str(confirmed_intent["first_path"]).startswith("Residents can request beds")
     assert any(str(row).startswith("Residents:") for row in confirmed_intent["human_actors"])
 
     proposal = build_confirmed_greenfield_proposal(

@@ -76,7 +76,6 @@ def _run_confirmed_transaction_create(
     release: str = "0.0.1",
     edit_evidence_file: str = ".odylith/runtime/greenfield/confirmed-intent.md",
 ) -> tuple[int, str, dict[str, object]]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_args = ["propose", "--repo-root", str(repo_root), "--prompt", prompt]
     if edit_evidence_file:
         propose_args.extend(("--edit-evidence", edit_evidence_file))
@@ -86,6 +85,7 @@ def _run_confirmed_transaction_create(
     assert compile_rc == 0, compile_output
     compile_payload = json.loads(compile_output)
     transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(compile_payload["transaction_file"])
     create_rc = greenfield_proposals.main(
         [
             "create",
@@ -474,20 +474,14 @@ def test_confirmed_intent_parser_lifts_one_line_operator_request_into_confirmati
     assert intent["human_actors"] == [
         "Support Leads: need the product to triage delayed orders and keep the result visible and reviewable"
     ]
-    assert intent["internal_systems"] == [
-        (
-            "Customer Recovery Desk Intake Register — records source input, current status, owner, blocker, "
-            "handoff, and version history for the first path"
-        ),
-        (
-            "Customer Recovery Desk Review Workspace — presents current state, missing input, "
-            "user-facing confirmation, and the next useful action"
-        ),
-        (
-            "Customer Recovery Desk Proof Ledger — keeps validation results, release decisions, failure reasons, "
-            "and replayable evidence for review"
-        ),
-    ]
+    systems = "\n".join(intent["internal_systems"])
+    assert "Delayed Orders Workflow" in systems
+    assert "Owner Assignment" in systems
+    assert "Customer Trust Workflow" in systems
+    assert "Every Response Path Proof" in systems
+    assert "Owners Assignment" not in systems
+    assert "Customer Recovery Desk Intake Register" not in systems
+    assert "Customer Recovery Desk Review Workspace" not in systems
 
 
 def test_confirmed_intent_completion_preserves_explicit_actor_and_system_rows() -> None:
@@ -1076,12 +1070,9 @@ Internal product systems
 
 Critical assumptions
 - Release 0.0.1 supports one agenda item review path before live hearing-scale workflow.
-- Map and public comment sources can start from imported fixtures before live integrations.
+- Release 0.0.1 uses an imported static parcel and zoning layer; live GIS is deferred.
+- Release 0.0.1 includes only public comments already approved for board review; redaction workflow is deferred.
 - The product supports decision preparation and rationale capture; it does not automate legal approval or public hearing procedure.
-
-Ambiguities
-- Whether public comments need redaction before board member review.
-- Whether map context is live GIS or a static exported layer in the first release.
 
 Proof boundary
 Release 0.0.1 succeeds when a board member can open one civic case, inspect map and zoning context, compare staff recommendation with public concerns, save questions, record vote rationale, and trace every material claim back to its source without exposing out-of-scope private or legal decision automation.

@@ -675,7 +675,7 @@ def state_detail_restates_label_with_finite_action(detail: str, *, state_label: 
     return looks_like_finite_action(match.group("tail"))
 
 
-def join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
+def join_system_labels(items: list[str] | None, *, limit: int = 4, prose_list: bool = False) -> str:
     values: list[str] = []
     for item in items or []:
         label = _system_label(item)
@@ -686,7 +686,7 @@ def join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    return ", ".join(selected)
+    return join_confirmed_items(selected) if prose_list else ", ".join(selected)
 
 
 def _system_label(value: str) -> str:

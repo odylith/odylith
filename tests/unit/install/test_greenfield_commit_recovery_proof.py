@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
+import shutil
 from types import SimpleNamespace
+
+from odylith.runtime.domain_intelligence import greenfield_generation_store
+from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -40,6 +45,102 @@ def _receipt_payload(*, transaction_hash: str, product_facts_hash: str, write_se
             },
         },
     }
+
+
+def _generation_observation(
+    *,
+    transaction_hash: str = "a" * 64,
+    write_set_hash: str = "b" * 64,
+    active: bool = False,
+    generation_present: bool = False,
+    readback_status: str = "",
+) -> dict[str, object]:
+    manifest = "e" * 64 if generation_present else ""
+    return {
+        "active_identity": {
+            "status": "active" if active else "none",
+            "transaction_hash": transaction_hash if active else "",
+            "write_set_hash": write_set_hash if active else "",
+            "generation_manifest_sha256": manifest if active else "",
+        },
+        "active_pin_status": "active" if active else "none",
+        "active_pin_transaction_hash": transaction_hash if active else "",
+        "transaction_generation_status": "present" if generation_present else "missing",
+        "transaction_generation_manifest_sha256": manifest,
+        "transaction_generation_write_set_hash": write_set_hash if generation_present else "",
+        "transaction_generation_readback_status": readback_status or ("passed" if generation_present else "missing"),
+    }
+
+
+def test_generation_observation_rejects_manifest_only_published_proof() -> None:
+    module = _module()
+    invalid = _generation_observation(
+        active=True,
+        generation_present=True,
+        readback_status="invalid",
+    )
+    facts = {
+        "sigkill_generation_observations": {
+            "before": _generation_observation(),
+            "after_crash": _generation_observation(generation_present=True),
+            "after_recovery": invalid,
+        },
+        "operator_conflict_generation_observations": {
+            "before": _generation_observation(),
+            "after_conflict": _generation_observation(),
+        },
+        "fsync_generation_observations": {
+            "before": _generation_observation(),
+            "after_failure": _generation_observation(),
+            "after_retry": _generation_observation(active=True, generation_present=True),
+        },
+    }
+
+    assert "installed SIGKILL recovery published generation failed sealed after-image readback" in module._generation_observation_issues(facts)  # noqa: SLF001
+
+
+def test_installed_generation_observation_rejects_tampered_after_image(tmp_path: Path) -> None:
+    module = _module()
+    repo = tmp_path / "repo"
+    stage = tmp_path / "stage"
+    source_file = repo / "odylith/index.html"
+    source_file.parent.mkdir(parents=True)
+    source_file.write_text("before\n", encoding="utf-8")
+    shutil.copytree(repo / "odylith", stage / "odylith")
+    (stage / "odylith/index.html").write_text("after\n", encoding="utf-8")
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=repo,
+        staged_root=stage,
+    )
+    generation = greenfield_generation_store.materialize_immutable_greenfield_generation(
+        repo_root=repo,
+        transaction_hash="a" * 64,
+        write_set=write_set,
+    )
+    transaction_file = repo / "transaction.json"
+    transaction_file.write_text(
+        json.dumps({"prewrite_package": {"repository_write_set": write_set}}),
+        encoding="utf-8",
+    )
+    (generation.repository_root / "odylith/index.html").write_text("tampered\n", encoding="utf-8")
+
+    observed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            module._GENERATION_OBSERVATION_SCRIPT,  # noqa: SLF001
+            "a" * 64,
+            str(transaction_file),
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    payload = json.loads(observed.stdout)
+
+    assert payload["transaction_generation_status"] == "invalid"
+    assert payload["transaction_generation_readback_status"] == "invalid"
 
 
 def test_faulted_create_uses_the_installed_runtime_without_source_path(tmp_path: Path, monkeypatch) -> None:
@@ -363,14 +464,14 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         fsync_retry_returncode=0,
         fsync_same_hash_retry_returncode=0,
         operator_conflict_returncode=2,
-        journal_state_after_crash="applying",
-        journal_state_after_recovery="committed",
-        fsync_journal_state_after_failure="rolled_back",
-        fsync_journal_state_after_retry="committed",
+        journal_state_after_crash="projecting",
+        journal_state_after_recovery="closed",
+        fsync_journal_state_after_failure="aborted",
+        fsync_journal_state_after_retry="closed",
         fsync_failure_kind="post_confirm_commit_environment_or_io_failure",
         operator_conflict_failure_kind="post_confirm_commit_recovery_conflict",
         operator_conflict_rollback_status="not_started",
-        operator_conflict_journal_state="applying",
+        operator_conflict_journal_state="projecting",
         governed_write_observed_after_crash=True,
         operator_mutation_preserved=True,
         operator_conflict_snapshot_retained=True,
@@ -385,8 +486,23 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         },
         product_facts_hash_sources_by_phase={
             "sigkill": "success_receipt",
-            "operator_conflict": "applying_journal_commit_receipt",
+            "operator_conflict": "projecting_journal_commit_receipt",
             "fsync": "retry_success_receipt",
+        },
+        sigkill_generation_observations={
+            "before": _generation_observation(),
+            "after_crash": _generation_observation(generation_present=True),
+            "after_recovery": _generation_observation(active=True, generation_present=True),
+        },
+        operator_conflict_generation_observations={
+            "before": _generation_observation(),
+            "after_crash": _generation_observation(generation_present=True),
+            "after_conflict": _generation_observation(generation_present=True),
+        },
+        fsync_generation_observations={
+            "before": _generation_observation(),
+            "after_failure": _generation_observation(),
+            "after_retry": _generation_observation(active=True, generation_present=True),
         },
         recovery_case=recovery_case,
     )
@@ -404,14 +520,14 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         "fsync_retry_returncode": 0,
         "fsync_same_hash_retry_returncode": 0,
         "operator_conflict_returncode": 2,
-        "journal_state_after_crash": "applying",
-        "journal_state_after_recovery": "committed",
-        "fsync_journal_state_after_failure": "rolled_back",
-        "fsync_journal_state_after_retry": "committed",
+        "journal_state_after_crash": "projecting",
+        "journal_state_after_recovery": "closed",
+        "fsync_journal_state_after_failure": "aborted",
+        "fsync_journal_state_after_retry": "closed",
         "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
         "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
         "operator_conflict_rollback_status": "not_started",
-        "operator_conflict_journal_state": "applying",
+        "operator_conflict_journal_state": "projecting",
         "governed_write_observed_after_crash": True,
         "operator_mutation_preserved": True,
         "operator_conflict_snapshot_retained": True,
@@ -426,8 +542,23 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
         },
         "product_facts_hash_sources_by_phase": {
             "sigkill": "success_receipt",
-            "operator_conflict": "applying_journal_commit_receipt",
+            "operator_conflict": "projecting_journal_commit_receipt",
             "fsync": "retry_success_receipt",
+        },
+        "sigkill_generation_observations": {
+            "before": _generation_observation(),
+            "after_crash": _generation_observation(generation_present=True),
+            "after_recovery": _generation_observation(active=True, generation_present=True),
+        },
+        "operator_conflict_generation_observations": {
+            "before": _generation_observation(),
+            "after_crash": _generation_observation(generation_present=True),
+            "after_conflict": _generation_observation(generation_present=True),
+        },
+        "fsync_generation_observations": {
+            "before": _generation_observation(),
+            "after_failure": _generation_observation(),
+            "after_retry": _generation_observation(active=True, generation_present=True),
         },
         "recovery_case": recovery_case,
     }
@@ -451,9 +582,9 @@ def test_recovery_proof_rejects_a_success_record_missing_required_observations()
             "same_hash_retry_returncode": 0,
             "fsync_failure_returncode": 2,
             "fsync_retry_returncode": 0,
-            "journal_state_after_crash": "applying",
-            "journal_state_after_recovery": "committed",
-            "fsync_journal_state_after_failure": "rolled_back",
+            "journal_state_after_crash": "projecting",
+            "journal_state_after_recovery": "closed",
+            "fsync_journal_state_after_failure": "aborted",
             "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
         }
     )
@@ -498,13 +629,18 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
             "sigkill_returncode": -9,
             "recovery_returncode": 0,
                 "same_hash_retry_returncode": 0,
-                "journal_state_after_crash": "applying",
-                "journal_state_after_recovery": "committed",
+                "journal_state_after_crash": "projecting",
+                "journal_state_after_recovery": "closed",
                 "governed_write_observed_after_crash": True,
                 "installed_runtime_module_path": "/tmp/managed/odylith/__init__.py",
                 "installed_runtime_version": "0.1.15",
                 "product_facts_sha256": "c" * 64,
                 "product_facts_hash_source": "success_receipt",
+                "sigkill_generation_observations": {
+                    "before": _generation_observation(),
+                    "after_crash": _generation_observation(generation_present=True),
+                    "after_recovery": _generation_observation(active=True, generation_present=True),
+                },
         }
 
     def conflict_phase(**kwargs):  # noqa: ANN001
@@ -513,12 +649,17 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
             "operator_conflict_returncode": 2,
             "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
             "operator_conflict_rollback_status": "not_started",
-            "operator_conflict_journal_state": "applying",
+            "operator_conflict_journal_state": "projecting",
             "operator_mutation_preserved": True,
             "operator_conflict_snapshot_retained": True,
             "operator_conflict_recovery_path_bound": True,
             "product_facts_sha256": "c" * 64,
-            "product_facts_hash_source": "applying_journal_commit_receipt",
+            "product_facts_hash_source": "projecting_journal_commit_receipt",
+            "operator_conflict_generation_observations": {
+                "before": _generation_observation(),
+                "after_crash": _generation_observation(generation_present=True),
+                "after_conflict": _generation_observation(generation_present=True),
+            },
         }
 
     def fsync_phase(**kwargs):  # noqa: ANN001
@@ -527,11 +668,16 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
             "fsync_failure_returncode": 2,
                 "fsync_retry_returncode": 0,
                 "fsync_same_hash_retry_returncode": 0,
-                "fsync_journal_state_after_failure": "rolled_back",
-                "fsync_journal_state_after_retry": "committed",
+                "fsync_journal_state_after_failure": "aborted",
+                "fsync_journal_state_after_retry": "closed",
                 "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
                 "product_facts_sha256": "c" * 64,
                 "product_facts_hash_source": "retry_success_receipt",
+                "fsync_generation_observations": {
+                    "before": _generation_observation(),
+                    "after_failure": _generation_observation(),
+                    "after_retry": _generation_observation(active=True, generation_present=True),
+                },
             }
 
     monkeypatch.setattr(module, "_run_sigkill_recovery_phase", sigkill_phase)
@@ -554,7 +700,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     }
     assert proof.product_facts_hash_sources_by_phase == {
         "sigkill": "success_receipt",
-        "operator_conflict": "applying_journal_commit_receipt",
+        "operator_conflict": "projecting_journal_commit_receipt",
         "fsync": "retry_success_receipt",
     }
     assert captured_cases == [case, case, case]
@@ -643,8 +789,21 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
         module,
         "_journal_state",
         lambda **_kwargs: {
-            "state": "applying",
+            "state": "projecting",
+            "generation_manifest_sha256": "e" * 64,
         },
+    )
+    conflict_observations = iter(
+        (
+            _generation_observation(),
+            _generation_observation(generation_present=True),
+            _generation_observation(generation_present=True),
+        )
+    )
+    monkeypatch.setattr(
+        module,
+        "_installed_generation_observation",
+        lambda **_kwargs: next(conflict_observations),
     )
     captured_receipt: dict[str, object] = {}
 
@@ -669,12 +828,17 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
         "operator_conflict_returncode": 2,
         "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
         "operator_conflict_rollback_status": "not_started",
-        "operator_conflict_journal_state": "applying",
+        "operator_conflict_journal_state": "projecting",
         "operator_mutation_preserved": True,
         "operator_conflict_snapshot_retained": True,
         "operator_conflict_recovery_path_bound": True,
+        "operator_conflict_generation_observations": {
+            "before": _generation_observation(),
+            "after_crash": _generation_observation(generation_present=True),
+            "after_conflict": _generation_observation(generation_present=True),
+        },
         "product_facts_sha256": "d" * 64,
-        "product_facts_hash_source": "applying_journal_commit_receipt",
+        "product_facts_hash_source": "projecting_journal_commit_receipt",
     }
     assert captured_receipt["product_facts_hash"] == "c" * 64
     assert partial_write.read_bytes() == b"operator mutation retained by installed recovery proof\n"
@@ -700,8 +864,25 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(tmp_path: Path,
         "_run_faulted_create",
         lambda **_kwargs: SimpleNamespace(returncode=-9, stdout="", stderr=""),
     )
-    journal_states = iter(({"state": "applying"}, {"state": "committed"}))
+    journal_states = iter(
+        (
+            {"state": "projecting", "generation_manifest_sha256": "e" * 64},
+            {"state": "closed"},
+        )
+    )
     monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: next(journal_states))
+    sigkill_observations = iter(
+        (
+            _generation_observation(),
+            _generation_observation(generation_present=True),
+            _generation_observation(active=True, generation_present=True),
+        )
+    )
+    monkeypatch.setattr(
+        module,
+        "_installed_generation_observation",
+        lambda **_kwargs: next(sigkill_observations),
+    )
     monkeypatch.setattr(
         module,
         "_run",
@@ -758,8 +939,20 @@ def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, mon
             stderr="",
         ),
     )
-    journal_states = iter(({"state": "rolled_back"}, {"state": "committed"}))
+    journal_states = iter(({"state": "aborted"}, {"state": "closed"}))
     monkeypatch.setattr(module, "_journal_state", lambda **_kwargs: next(journal_states))
+    fsync_observations = iter(
+        (
+            _generation_observation(),
+            _generation_observation(),
+            _generation_observation(active=True, generation_present=True),
+        )
+    )
+    monkeypatch.setattr(
+        module,
+        "_installed_generation_observation",
+        lambda **_kwargs: next(fsync_observations),
+    )
     monkeypatch.setattr(
         module,
         "_run",

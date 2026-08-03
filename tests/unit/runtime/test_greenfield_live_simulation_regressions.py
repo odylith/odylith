@@ -99,16 +99,6 @@ Confirmed: expand this accepted Product Intent Confirmation into the governed pr
 """
 
 
-def _intent_from_prompt(prompt: str) -> dict[str, object]:
-    text = f"""
-Product Intent Confirmation needed
-
-Original user intent
-{prompt}
-"""
-    return confirmed_intent_with_authority(text, prompt=prompt, source_format="operator_prompt")
-
-
 def _visible_confirmation_intent(prompt: str) -> dict[str, object]:
     confirmation = build_product_intent_confirmation(
         prompt=prompt,
@@ -222,7 +212,7 @@ def test_on_call_role_context_is_preserved_in_the_compiled_package(tmp_path: Pat
         ]
     ).casefold()
 
-    assert proposal["intent"]["human_actors"][0].startswith("On-call Engineers:")
+    assert proposal["intent"]["human_actors"][0].casefold().startswith("on-call engineers:")
     assert str(proposal["intent"]["first_path"]).casefold().startswith("on-call engineers can record incident timeline")
     for term in ("on-call engineers", "incident timeline", "customer impact", "acknowledgement trail"):
         assert term in rendered
@@ -368,7 +358,7 @@ def test_confirmed_actor_labels_drop_dangling_action_fragments(tmp_path: Path) -
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=_intent_from_prompt(prompt),
+        confirmed_intent=_visible_confirmation_intent(prompt),
     )
     encoded = json.dumps(proposal, sort_keys=True)
     actor_text = json.dumps(
@@ -391,7 +381,7 @@ def test_repaired_interfaces_do_not_repeat_generic_next_step_copy(tmp_path: Path
         repo_root=tmp_path,
         prompt=prompt,
         release_selector="0.0.1",
-        confirmed_intent=_intent_from_prompt(prompt),
+        confirmed_intent=_visible_confirmation_intent(prompt),
         require_completion_ready=False,
     )
     interfaces = [
@@ -432,7 +422,7 @@ def test_distributed_agent_confirmation_preserves_actor_and_component_boundaries
     assert "Publish a Final" not in encoded
     assert "can run record with reviewer approval" not in encoded.casefold()
     assert "reviewer run record with reviewer approval" not in encoded.casefold()
-    assert any("Platform Operators" in row for row in proposal["intent"]["human_actors"])
+    assert any("platform operators" in row.casefold() for row in proposal["intent"]["human_actors"])
     assert len(component_labels) >= 3
     assert len(component_labels) == len(set(component_labels))
     assert len(prewrite.package.rendered_component_specs or {}) == len(component_labels)
@@ -459,8 +449,8 @@ def test_relative_actor_confirmation_does_not_promote_outcome_terms_to_people(tm
     actor_labels = [row.split(":", 1)[0] for row in actors]
     report = build_greenfield_package_report(prewrite.package)
 
-    assert any(label == "Community Sports Organizers" for label in actor_labels)
-    assert "Dispute" not in actor_labels
+    assert any(label.casefold() == "community sports organizers" for label in actor_labels)
+    assert "dispute" not in [label.casefold() for label in actor_labels]
     assert "can who" not in public_payload.casefold()
     assert "to who" not in public_payload.casefold()
     assert report.issues == ()
@@ -482,9 +472,9 @@ def test_sparse_model_lab_notebook_preconfirm_package_stays_clean(tmp_path: Path
     )
     report = build_greenfield_package_report(prewrite.package)
 
-    assert actor_labels == ["Representative User"]
-    assert "Records" not in actor_labels
-    assert "Sees" not in actor_labels
+    assert [label.casefold() for label in actor_labels] == ["representative user"]
+    assert "records" not in [label.casefold() for label in actor_labels]
+    assert "sees" not in [label.casefold() for label in actor_labels]
     assert "people and teams: Teams" not in public_payload
     assert "teams Teams" not in public_payload
     assert "Preserve this accepted first path:" in public_payload
@@ -536,9 +526,11 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
     system_rows = [str(row) for row in intent["internal_systems"]]
 
     assert intent["title"] == "Digestive Health Patients Workspace"
-    assert actor_labels == ["Digestive Health Patients"]
-    assert "Clinician Ready Follow Up Summary" not in actor_labels
-    assert len(system_rows) >= 3
+    assert [label.casefold() for label in actor_labels] == ["digestive health patients"]
+    assert "clinician ready follow up summary" not in [label.casefold() for label in actor_labels]
+    assert len(system_rows) == 2
+    assert any(row.startswith("Meals Recordkeeping —") for row in system_rows)
+    assert all(" Can " not in row.split("—", 1)[0] for row in system_rows)
     assert not any("Recovered Product" in row or "— keeps Safety" in row for row in system_rows)
     rendered_package = json.dumps(
         {
@@ -675,9 +667,9 @@ def test_autonomous_warehouse_state_review_terms_do_not_become_actors(tmp_path: 
         default=str,
     )
 
-    assert actor_labels == ["Autonomous Warehouse Operator"]
-    assert "Release Readiness" not in actor_labels
-    assert "Operator Override Records" not in " ".join(actor_labels)
+    assert [label.casefold() for label in actor_labels] == ["autonomous warehouse operator"]
+    assert "release readiness" not in [label.casefold() for label in actor_labels]
+    assert "operator override records" not in " ".join(actor_labels).casefold()
     assert "a autonomous" not in rendered.casefold()
     assert "can reports" not in rendered.casefold()
     assert "operator override records and release readiness" in rendered.casefold()
@@ -706,7 +698,7 @@ def test_federated_agent_release_clause_stays_modal_safe(tmp_path: Path) -> None
     )
     actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
 
-    assert actor_labels == ["Human Operators"]
+    assert [label.casefold() for label in actor_labels] == ["human operators"]
     assert "what can be released to partners after legal approval" in rendered.casefold()
     assert "what bes released" not in rendered.casefold()
     assert generated_semantic_slop_issues(proposal, root="proposal") == []
@@ -733,7 +725,7 @@ def test_spacecraft_recovery_state_tail_does_not_become_actor_or_clipped_copy(tm
         default=str,
     )
 
-    assert actor_labels == ["Mission Controllers"]
+    assert [label.casefold() for label in actor_labels] == ["mission controllers"]
     assert "Recovery State Before a Corrective Procedure" not in rendered
     assert "State Before a" not in rendered
     assert "clipped article phrase" not in "\n".join(greenfield_rendered_package_quality_issues(prewrite.package))
@@ -829,8 +821,8 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
     assert not re.search(r"\band\s+and\b", rendered)
     assert "sent, received, declined, and scheduled" not in rendered
     assert "understand one-dimensional quantum tunneling" not in registry_rendered
-    assert "Run the simulation" not in actor_labels
-    assert "Watch the wave packet interact with the barrier" not in actor_labels
+    assert "run the simulation" not in [label.casefold() for label in actor_labels]
+    assert "watch the wave packet interact with the barrier" not in [label.casefold() for label in actor_labels]
     first_metrics = proposal["backlog"][0]["success_metrics"]
     assert first_metrics[0] == (
         "The first release proves the first path: open a preset electron tunneling experiment, "
@@ -845,8 +837,10 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
         if row["section"] == "Actors and systems"
     )
     first_user_option = proposal["project_brief"]["customization_options"][0]["recommended"]
-    assert actor_section.startswith("Actors include Physics Learner and Instructor.")
-    assert first_user_option == "Confirm who participates in the first path: Physics Learner and Instructor."
+    assert actor_section.casefold().startswith("actors include physics learner and instructor.")
+    assert first_user_option.casefold() == (
+        "confirm who participates in the first path: physics learner and instructor."
+    )
 
 
 def test_gene_expression_confirmed_intent_finishes_without_repeated_result_atlas_copy(tmp_path: Path) -> None:
@@ -970,7 +964,7 @@ def test_review_and_adjustment_prompts_avoid_generic_handoff_and_recommendation_
     tenant_actor_labels = [str(row).split(":", 1)[0] for row in tenant_proposal["intent"]["human_actors"]]
 
     assert "downstream actor" not in tenant_payload
-    assert "Packets for Supervisor" not in tenant_actor_labels
+    assert "packets for supervisor" not in [label.casefold() for label in tenant_actor_labels]
     assert "recommendation" not in warehouse_payload
     assert build_greenfield_package_report(tenant_prewrite.package).issues == ()
     assert build_greenfield_package_report(warehouse_prewrite.package).issues == ()

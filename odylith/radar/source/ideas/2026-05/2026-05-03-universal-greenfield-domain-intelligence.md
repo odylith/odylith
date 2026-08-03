@@ -2621,6 +2621,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   anti-slop, Project, component, browser, transaction, recovery, provenance,
   and high-variance suites are green. B-142 remains open for frozen-corpus,
   cross-host, clean-install, full browser-state, and final release proof.
+- 2026-08-02 source-hardening checkpoint closed the remaining canonical-meaning
+  defects found by exact CLI replay. Context-only titles now derive a specific
+  product identity from the accepted state object, chained actions select the
+  durable object instead of retaining a verb, internal-system projection keeps
+  every distinct source responsibility, and sparse record components gain only
+  the state terms needed for component-local Registry proof. Recovery evidence
+  now records generation, active-pointer, journal, publication, and abort state
+  around governed SIGKILL and fsync faults. Adversarial review then closed stale
+  per-row action custody, fake imperative records, shared-subject fragment loss,
+  manifest-only generation observation, and route-only navigation proof. The
+  touched-surface suite passed `460` tests. Exact pediatric, quantum, security,
+  semiconductor, and thin permit source-local proposals all reached a passed
+  hash-bound transaction with visible CONFIRM, EDIT, and REJECT choices; installed,
+  cross-host, browser-state, and one-shot frozen-holdout proof remain open.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

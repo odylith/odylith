@@ -78,20 +78,21 @@ def test_confirmation_choice_block_highlights_exact_allowed_commands() -> None:
     lines = format_confirmation_choice_lines(
         (
             (f"CONFIRM {transaction_hash}", "Commit the validated package."),
-            (f"EDIT {transaction_hash}", "Rebuild from the corrected evidence."),
+            (f"EDIT {transaction_hash} <corrections>", "Rebuild from the corrected evidence."),
             (f"REJECT {transaction_hash}", "Stop without writing records."),
         )
     )
     rendered = "\n".join(lines)
 
     assert rendered.startswith("## Choose one command")
+    assert "For EDIT, replace `<corrections>` with your changes" in rendered
     assert "approval code binds your choice to this reviewed package" in rendered
     assert "### CONFIRM" in rendered
     assert "### EDIT" in rendered
     assert "### REJECT" in rendered
     assert rendered.count("```text") == 3
     assert f"CONFIRM {transaction_hash}" in rendered
-    assert f"EDIT {transaction_hash}" in rendered
+    assert f"EDIT {transaction_hash} <corrections>" in rendered
     assert f"REJECT {transaction_hash}" in rendered
     assert "Command buttons" not in rendered
     assert "Copy-ready reply" not in rendered

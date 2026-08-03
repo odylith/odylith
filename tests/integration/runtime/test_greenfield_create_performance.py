@@ -18,7 +18,6 @@ PRECONFIRM_WHOLE_PROJECT_BUDGET_SECONDS = 60.0
 
 
 def _run_proposed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[int, dict, float]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_rc = greenfield_proposals.main(
         [
             "propose",
@@ -34,7 +33,9 @@ def _run_proposed_create_main(tmp_path: Path, capsys, *, prompt: str) -> tuple[i
     )
     propose_output = capsys.readouterr().out
     assert propose_rc == 0, propose_output
-    transaction_hash = str(json.loads(propose_output)["product_create_transaction"]["transaction_hash"])
+    propose_payload = json.loads(propose_output)
+    transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(propose_payload["transaction_file"])
     started = time.perf_counter()
     rc = greenfield_proposals.main(
         [
@@ -61,7 +62,6 @@ def _run_proposed_create_subprocess(
     env: dict[str, str],
     timeout: float,
 ) -> tuple[subprocess.CompletedProcess[str], float]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_result = subprocess.run(
         [
             sys.executable,
@@ -86,7 +86,9 @@ def _run_proposed_create_subprocess(
     )
     if propose_result.returncode != 0:
         return propose_result, timeout
-    transaction_hash = str(json.loads(propose_result.stdout)["product_create_transaction"]["transaction_hash"])
+    propose_payload = json.loads(propose_result.stdout)
+    transaction_hash = str(propose_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(propose_payload["transaction_file"])
     started = time.perf_counter()
     create_result = subprocess.run(
         [
@@ -967,8 +969,10 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
         "Optionally log their weight",
         "Advances them along their titration schedule",
         "and advances them along their titration schedule",
-        "They optionally logs",
-        "reach the next due date",
+            "They optionally logs",
+            "When a dose confirms the injection",
+            "When a dose optionally logs their weight",
+            "reach the next due date",
         "and see what to fix when required information is missing",
         "and lets the person on the GLP-1 see the next due date, and see what to fix",
         "lets the caregiver reach",
@@ -1260,7 +1264,8 @@ def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(
             if str(row.get(key, "")).strip()
         ]
         assert accepted_paths
-        assert all(Path(path).resolve().is_relative_to(tmp_path.resolve()) for path in accepted_paths)
+        assert all(not Path(path).is_absolute() for path in accepted_paths)
+        assert all((tmp_path / path).resolve().is_relative_to(tmp_path.resolve()) for path in accepted_paths)
         project_brief = (tmp_path / "odylith/runtime/source/project-brief.v1.md").read_text(encoding="utf-8")
         brief_timestamp = next(
             line.removeprefix("- accepted_at: ")

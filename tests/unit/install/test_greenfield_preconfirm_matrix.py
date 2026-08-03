@@ -106,16 +106,16 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert "personalized notification" in sparse_prompt
     assert "first release" in sparse_prompt
     assert sparse_case.required_terms == ("disclosure", "council", "evidence", "embargo")
-    for name in ("security disclosure council", "assay drift prediction model"):
-        case = next(case for case in cases if case.name == name)
-        assert case.expectation == "clarification_required"
+    security_case = next(case for case in cases if case.name == "security disclosure council")
+    assert security_case.expectation == "transaction_committed"
+    assay_case = next(case for case in cases if case.name == "assay drift prediction model")
+    assert assay_case.expectation == "clarification_required"
     quantum_case = next(case for case in cases if case.name == "quantum communication lab")
     quantum_prompt = quantum_case.prompt.casefold()
     assert "communication run" in quantum_prompt
     assert "chsh" in quantum_prompt
     assert "qber" in quantum_prompt
     assert quantum_case.required_terms == ("quantum", "e91", "qber", "chsh")
-    assay_case = next(case for case in cases if case.name == "assay drift prediction model")
     assert "assay drift prediction model" in assay_case.prompt
     assert assay_case.required_terms == ("assay", "drift", "prediction", "model")
 
@@ -827,6 +827,32 @@ def _passing_create_payload() -> dict[str, object]:
     }
 
 
+def _passing_create_payload_for_repo(repo_root: Path) -> dict[str, object]:
+    payload = _passing_create_payload()
+    transaction_hash = str(_passing_transaction_summary()["transaction_hash"])
+    dashboard = (
+        repo_root
+        / ".odylith/runtime/greenfield/generations"
+        / transaction_hash
+        / "repository/odylith/index.html"
+    ).resolve()
+    compatibility_dashboard = (repo_root / "odylith/index.html").resolve()
+    _write(dashboard, "<!doctype html><title>Reviewed generation</title>\n")
+    _write(compatibility_dashboard, "<!doctype html><title>Current project</title>\n")
+    navigation = dict(payload["post_confirm_navigation"])
+    navigation.update(
+        {
+            "dashboard_path": str(dashboard),
+            "project_url": f"{dashboard.as_uri()}?tab=project",
+            "view_status": "reviewed_generation",
+            "compatibility_dashboard_path": str(compatibility_dashboard),
+            "generation_transaction_hash": transaction_hash,
+        }
+    )
+    payload["post_confirm_navigation"] = navigation
+    return payload
+
+
 def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, object]:
     return {
         "commit_manifest": manifest,
@@ -836,13 +862,15 @@ def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, obje
 
 def _proposed_transaction_payload() -> dict[str, object]:
     transaction_hash = "a" * 64
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
+    transaction_file = (
+        f".odylith/runtime/greenfield/pending/{transaction_hash}/product-create-transaction.v1.json"
+    )
     return {
         "mode": "product_create_transaction",
         "product_create_transaction": {"transaction_hash": transaction_hash},
         "transaction_file": transaction_file,
         "confirmation": {
-            "command_rule": "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT.",
+            "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
             "post_confirm_contract": (
                 "CONFIRM commits only this hash-bound transaction; commit-only create verifies the hash, "
                 "compiler receipt, and repo preconditions, writes only sealed bytes under the rollback "
@@ -850,7 +878,7 @@ def _proposed_transaction_payload() -> dict[str, object]:
             ),
             "choices": [
                 {
-                    "command": "CONFIRM",
+                    "command": f"CONFIRM {transaction_hash}",
                     "description": "Commit this exact validated package now.",
                     "commit_command": (
                         "odylith greenfield create --repo-root . "
@@ -858,10 +886,13 @@ def _proposed_transaction_payload() -> dict[str, object]:
                     ),
                 },
                 {
-                    "command": "EDIT",
+                    "command": f"EDIT {transaction_hash} <corrections>",
                     "description": "Do not commit. Treat corrections as new evidence and rebuild the package.",
                 },
-                {"command": "REJECT", "description": "Stop. No governed records are written."},
+                {
+                    "command": f"REJECT {transaction_hash}",
+                    "description": "Stop. No governed records are written.",
+                },
             ],
         },
     }
@@ -1009,7 +1040,7 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
             return subprocess.CompletedProcess(command, 0, json.dumps(proposal), "")
         if "create" in command:
             create_envs.append(dict(env))
-            payload = _passing_create_payload()
+            payload = _passing_create_payload_for_repo(cwd)
             return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
         return subprocess.CompletedProcess(command, 0, "", "")
 
@@ -1052,7 +1083,7 @@ def test_standard_matrix_propose_compiles_before_hash_bound_create_without_rescu
             return subprocess.CompletedProcess(command, 0, json.dumps(proposal), "")
         if "create" in command:
             create_envs.append(dict(env))
-            payload = _passing_create_payload()
+            payload = _passing_create_payload_for_repo(cwd)
             return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
         return subprocess.CompletedProcess(command, 0, "", "")
 

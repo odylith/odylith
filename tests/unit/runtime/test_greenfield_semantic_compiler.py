@@ -133,6 +133,17 @@ def test_semantic_compiler_derives_terminal_approval_result_before_proof_boundar
     assert report.status == "passed"
 
 
+def test_semantic_compiler_preserves_both_binary_outcomes() -> None:
+    first_path = (
+        "An intake coordinator records a batch, a reviewer checks blocking observations, "
+        "and an approval reviewer approves or rejects manufacturing readiness."
+    )
+
+    candidate = select_visible_result_candidate(first_path)
+
+    assert candidate.text == "the approved or rejected manufacturing readiness"
+
+
 def test_semantic_compiler_keeps_object_list_results_ahead_of_proof_boundary() -> None:
     proof = "The product shows the workspace result and keeps replayable evidence for review."
     disclosure = (

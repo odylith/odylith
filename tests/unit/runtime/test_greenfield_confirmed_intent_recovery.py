@@ -199,6 +199,37 @@ def test_relative_clause_keeps_shared_subject_actor_actions_owned_by_the_actor()
     assert "the product reviews" not in " ".join(intent["internal_systems"]).casefold()
 
 
+def test_command_relative_clause_preserves_a_role_with_a_system_qualifier() -> None:
+    intent = confirmation_from_operator_intent(
+        "Create a greenfield product for platform operators who submit distributed agent jobs, "
+        "track assigned worker progress, collect execution evidence, surface blockers, and publish "
+        "a final run record with reviewer approval.",
+        prefer_product_title=True,
+        as_mapping=True,
+    )
+
+    assert intent["first_path"] == (
+        "Platform operators can submit distributed agent jobs, track assigned worker progress, "
+        "collect execution evidence, surface blockers, and publish a final run record with reviewer approval."
+    )
+    assert intent["human_actors"][0].startswith("Platform Operators:")
+    assert "representative user" not in intent["first_path"].casefold()
+
+
+def test_actor_led_object_list_stays_one_path_without_fake_records() -> None:
+    intent = confirmation_from_operator_intent(
+        "Build an evidence review workspace where researchers compare evidence, exceptions, "
+        "and signoff before release.",
+        prefer_product_title=True,
+        as_mapping=True,
+    )
+
+    assert intent["first_path"] == "Researchers compare evidence, exceptions, and signoff before release."
+    systems = " ".join(intent["internal_systems"])
+    assert "Signoff Record" not in systems
+    assert "compare evidence, exceptions, and signoff before release" in systems.casefold()
+
+
 def test_visible_confirmation_uses_the_same_canonical_internal_systems_as_typed_intent() -> None:
     prompt = (
         "Build a generic dynamic router that lets an individual software engineer submit one software engineering "
@@ -1773,10 +1804,11 @@ def test_host_guidance_recovery_preserves_explicit_system_rows_through_completio
     assert intent["human_actors"] == [
         "Research Nurses: need the product to verify participant consent and keep the result visible and reviewable"
     ]
-    assert len(intent["internal_systems"]) == 4
+    assert len(intent["internal_systems"]) == 5
     assert any("Participant Consent Workflow Support" in row for row in intent["internal_systems"])
     assert any("Symptom Evidence Intake" in row for row in intent["internal_systems"])
     assert any("Investigator Safety Review Workflow Support" in row for row in intent["internal_systems"])
+    assert any("Audit-ready Decisions" in row for row in intent["internal_systems"])
     assert any("Monitoring Report Delivery" in row for row in intent["internal_systems"])
     assert "component responsibility named by the accepted intent" not in rendered
     assert "Release a First-slice Monitoring" not in rendered

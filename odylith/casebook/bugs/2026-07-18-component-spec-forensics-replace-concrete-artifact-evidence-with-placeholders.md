@@ -22,7 +22,7 @@
 
 - Failure Signature: FORENSICS.v1.json contains tracked_artifact_N instead of supplied event artifacts
 
-- Trigger Path: PYTHONPATH=src .venv/bin/python -m odylith.cli governance sync-component-spec-requirements --repo-root .
+- Trigger Path: odylith governance sync-component-spec-requirements --repo-root .
 
 - Ownership: Registry governance sync
 

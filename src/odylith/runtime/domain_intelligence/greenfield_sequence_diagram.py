@@ -8,10 +8,12 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_grammar import base_action_verb
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import base_from_gerund_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label, strip_actor_role_subject as _strip_actor_role_subject, subjectless_action_label_clause as _subjectless_action_label_clause
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text, flow_label as _flow_label, header_body_label as _header_body_label, node_id as _node_id, strip_dangling_tail as _strip_dangling_tail, trim as _trim, without_ellipsis as _without_ellipsis
@@ -48,8 +50,13 @@ _SEQUENCE_TERM_STOPWORDS = {
 }
 _COMPONENT_ACTION_AXES: tuple[tuple[frozenset[str], frozenset[str], int], ...] = (
     (
+        frozenset({"configure", "create", "define", "setup"}),
+        frozenset({"builder", "configuration", "management", "manager", "setup", "workspace"}),
+        18,
+    ),
+    (
         frozenset({"add", "attach", "capture", "create", "draft", "enter", "import", "intake", "log", "open", "record", "save", "select", "store", "submit", "upload"}),
-        frozenset({"capture", "entry", "form", "intake", "record", "register", "source", "store", "submission"}),
+        frozenset({"capture", "entry", "form", "intake", "ledger", "log", "record", "register", "source", "store", "submission"}),
         14,
     ),
     (
@@ -352,13 +359,20 @@ def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: in
     if not step_terms:
         return None
     step_words = _axis_words(routing_text)
+    object_terms = {term for term in step_terms if not base_action_verb(term)}
     scored: list[tuple[int, int, int]] = []
     for index, row in enumerate(rows):
         row_terms = _sequence_terms(row)
         row_words = _axis_words(row)
         exact = len(step_terms & row_terms)
         fuzzy = sum(1 for step_term in step_terms for row_term in row_terms if _term_related(step_term, row_term))
-        score = exact * 3 + fuzzy + _component_axis_score(step_words, row_words)
+        object_overlap = any(
+            _term_related(step_term, row_term)
+            for step_term in object_terms
+            for row_term in row_terms
+        )
+        axis_score = _component_axis_score(step_words, row_words) if not object_terms or object_overlap else 0
+        score = exact * 3 + fuzzy + axis_score
         if index == fallback_index and exact:
             score += 6
         if score:
@@ -389,6 +403,12 @@ def _axis_words(value: object) -> set[str]:
         if not token:
             continue
         words.add(token)
+        action_base = base_action_verb(token)
+        if action_base:
+            words.add(action_base)
+        gerund_base = base_from_gerund_action(token)
+        if gerund_base:
+            words.add(gerund_base)
         if token.endswith("ies") and len(token) > 4:
             words.add(f"{token[:-3]}y")
         elif token.endswith("es") and len(token) > 4:

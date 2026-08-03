@@ -1084,6 +1084,7 @@ def test_compact_existing_install_surface_failure_hides_sync_internals(
 
 
 def test_install_opens_dashboard_browser_on_successful_first_install(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     opened: dict[str, object] = {}
     refresh_capture: dict[str, object] = {}
@@ -1251,6 +1252,7 @@ def test_compact_install_env_browser_opt_out_prints_dashboard_path_and_hint(monk
 
 
 def test_install_opens_dashboard_browser_on_successful_rematerialize(monkeypatch, tmp_path: Path, capsys) -> None:
+    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     launcher_path = tmp_path / ".odylith" / "bin" / "odylith"
     install_state = tmp_path / ".odylith" / "install.json"
     install_state.parent.mkdir(parents=True, exist_ok=True)

@@ -65,6 +65,22 @@ def test_first_release_boundary_requirements_keep_in_scope_capabilities() -> Non
     )
 
 
+def test_where_clause_keeps_action_words_out_of_the_actor() -> None:
+    prompt = (
+        "Draft a greenfield proposal for a lab app where researchers configure and launch an E91 quantum "
+        "communication run on real hardware, observe live coincidence counts, Bell inequality checks, CHSH, "
+        "QBER, and established key bits, then compare the saved run against prior results."
+    )
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert source.actor == "researchers"
+    assert source.first_path.casefold().startswith("researchers configure and launch")
+    assert "researchers configure and can" not in source.first_path.casefold()
+    assert intent["title"] == "E91 Quantum Communication Run Workspace"
+    assert intent["state_object"] == "The primary state object is an E91 quantum communication run."
+
+
 def test_first_release_boundary_requirements_drop_natural_language_exclusions() -> None:
     prompt = (
         "The first release boundary is one workspace per extension, a review queue, and an exportable release brief "

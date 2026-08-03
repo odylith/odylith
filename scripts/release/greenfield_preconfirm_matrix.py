@@ -883,7 +883,11 @@ def _run_case(
         create_payload=payload,
     )
     decision_rail_issues = confirmation_preview_issues(proposal_payload=execution.proposal_payload)
-    navigation_issues = post_confirm_navigation_issues(create_payload=payload)
+    navigation_issues = post_confirm_navigation_issues(
+        create_payload=payload,
+        repo_root=repo_root,
+        transaction_hash=str(execution.dry_run_receipt.get("transaction_hash") or ""),
+    )
     quality = build_quality_verdict(
         create_payload=payload,
         package=package,

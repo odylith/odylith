@@ -830,6 +830,28 @@ def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -
             assert binding["artifact_id"]
 
 
+def test_greenfield_title_only_bindings_use_casing_insensitive_structural_ids(tmp_path) -> None:
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
+    row = proposal["backlog"][0]
+    for key in ("id", "workstream_id", "idea_id", "component_id", "slug", "wave_id"):
+        row.pop(key, None)
+    row["title"] = "Let Homeowner Connect Sources, sunLedger Pulls Readings"
+
+    rebound = greenfield_proposals.normalize_host_reasoned_proposal(proposal)
+    binding = rebound["backlog"][0]["project_intelligence_binding"]
+
+    assert binding["artifact_id"] == "let-homeowner-connect-sources-sunledger-pulls-readings"
+    assert "sunLedger" not in binding["artifact_id"]
+
+
+def test_greenfield_validation_rejects_stale_project_intelligence_artifact_id(tmp_path) -> None:
+    proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
+    proposal["backlog"][0]["project_intelligence_binding"]["artifact_id"] = "stale-display-title"
+
+    with pytest.raises(ValueError, match="artifact_id must match its stable artifact identifier"):
+        greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
 def test_greenfield_validation_rejects_artifacts_without_project_intelligence_binding(tmp_path) -> None:
     proposal = _governed_greenfield_fixture(tmp_path, "DeFi risk sentinel app")
     proposal["components"][0].pop("project_intelligence_binding")

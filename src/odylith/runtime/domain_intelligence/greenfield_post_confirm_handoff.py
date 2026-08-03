@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 import webbrowser
 
+from odylith.runtime.common.environment import env_flag_enabled
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_generation_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
@@ -91,6 +92,9 @@ def open_committed_dashboard(navigation: Mapping[str, str]) -> dict[str, Any]:
     """Open the committed Project view without changing transaction success."""
 
     url = str(navigation.get("project_url") or "").strip()
+    blocker = _browser_launch_blocker()
+    if blocker:
+        return {"status": "unavailable", "url": url, "reason": blocker}
     try:
         opened = bool(url and webbrowser.open(url, new=2))
     except Exception as error:  # pragma: no cover - browser integrations vary by host
@@ -100,6 +104,14 @@ def open_committed_dashboard(navigation: Mapping[str, str]) -> dict[str, Any]:
         "url": url,
         "reason": "" if opened else "no browser accepted the local dashboard URL",
     }
+
+
+def _browser_launch_blocker() -> str:
+    if env_flag_enabled("ODYLITH_NO_BROWSER"):
+        return "browser auto-open disabled by ODYLITH_NO_BROWSER"
+    if any(env_flag_enabled(name) for name in ("CI", "GITHUB_ACTIONS", "BUILD_BUILDID")):
+        return "browser auto-open disabled in an automated environment"
+    return ""
 
 
 def completion_markdown(

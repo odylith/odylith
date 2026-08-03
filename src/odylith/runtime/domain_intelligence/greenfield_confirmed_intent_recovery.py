@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_actor_obligation_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import internal_system_rows_from_first_path
 from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import product_handoff_first_path
 from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import state_object_from_first_path
@@ -47,14 +48,17 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
+from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import assumptions_with_reviewer_obligations
+from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import localize_direct_actor
+from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import proof_with_reviewer_obligations
+from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import story_with_operator_context
+from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import unique_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
-from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import proof_boundary_with_first_release_requirements
 
@@ -262,7 +266,7 @@ def confirmation_from_operator_intent(
         title=title,
         include_fallback=not bool(direct_actor_row),
     )
-    actor_rows = _unique_actor_rows(
+    actor_rows = unique_actor_rows(
         [direct_actor_row, *recovered_actor_rows] if direct_actor_row else recovered_actor_rows
     )
     preserve_direct_actor = bool(
@@ -279,7 +283,7 @@ def confirmation_from_operator_intent(
     ]
     lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
     direct_actor_label = _lead_actor_label([direct_actor_row])
-    first_path_source = _replace_localized_direct_actor(
+    first_path_source = localize_direct_actor(
         first_path_source,
         original=direct_actor_label,
         localized=lead_actor,
@@ -330,12 +334,12 @@ def confirmation_from_operator_intent(
     proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
     if evaluation.story:
         story = evaluation.story
-    story = _story_with_explicit_operator_context(story, context=prompt_source.operator_context)
+    story = story_with_operator_context(story, context=prompt_source.operator_context)
     if evaluation.state_object:
         state = evaluation.state_object
     if evaluation.proof_boundary:
         proof = evaluation.proof_boundary
-    proof = _proof_with_reviewer_obligations(proof, reviewer_obligations)
+    proof = proof_with_reviewer_obligations(proof, reviewer_obligations)
     proof = proof_boundary_with_first_release_requirements(proof, product_source)
     problem = (
         f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
@@ -351,7 +355,7 @@ def confirmation_from_operator_intent(
         "Missing or invalid input produces a clear blocker instead of a false success.",
         f"Review evidence backs {outcome_object} with replayable proof.",
     )
-    assumptions = _assumptions_with_reviewer_obligations(
+    assumptions = assumptions_with_reviewer_obligations(
         evaluation.assumptions or ("Release 0.0.1 proves the first path before broader automation or live integrations.",),
         reviewer_obligations,
     )
@@ -449,6 +453,7 @@ def _usable_first_path_source(
             or _preserve_one_line_action_source(text)
             or _preserve_one_line_sequence_source(text)
             or _preserve_one_line_relative_actor_source(text)
+            or _preserve_one_line_actor_source(text)
         ):
             return text
         return _first_path_source_from_steps(model.steps) or text
@@ -458,7 +463,15 @@ def _usable_first_path_source(
 
 
 def _path_starts_with_non_human_workflow_subject(value: str) -> bool:
-    words = _strip_leading_articles(_words(value))
+    text = _clean(value).strip(" .")
+    relative = re.match(
+        r"^(?P<subject>[A-Za-z][A-Za-z0-9 /&'()-]{1,100}?)\s+(?:who|that)\s+.+$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if relative and _looks_like_actor_subject(_words(relative.group("subject"))):
+        return False
+    words = _strip_leading_articles(_words(text))
     candidates = [words]
     candidates.extend(words[index + 1 :] for index, word in enumerate(words[:-1]) if word.casefold() == "where")
     for candidate in candidates:
@@ -578,6 +591,19 @@ def _preserve_one_line_relative_actor_source(value: str) -> bool:
     if not text or any(mark in text for mark in ".!?"):
         return False
     return bool(_relative_actor_action(text))
+
+
+def _preserve_one_line_actor_source(value: str) -> bool:
+    """Keep one grammatical actor-led path from becoming sentence fragments."""
+
+    text = _clean(value).strip(" .")
+    if not text or any(mark in text for mark in ".!?"):
+        return False
+    actor, action = _actor_led_base_action_parts(text)
+    if not actor or not action or not _looks_like_actor_subject(_words(actor)):
+        return False
+    steps = first_path_model(text).steps
+    return len(steps) >= 2 and any(not _actor_led_base_action_parts(step)[1] for step in steps[1:])
 
 
 def _path_source_restates_title(value: str, *, title: str) -> bool:
@@ -713,7 +739,8 @@ def _action_compaction_loses_material_terms(*, source: str, compact: str) -> boo
     compact_terms = _semantic_terms(compact_text)
     if len(source_terms) < 5:
         return False
-    return len(source_terms & compact_terms) < max(4, len(source_terms) // 2)
+    missing = source_terms - compact_terms
+    return len(missing) > max(1, len(source_terms) // 5)
 
 
 def _relative_actor_action(value: str) -> str:
@@ -822,70 +849,6 @@ def _human_actor_rows_from_first_path(
     return [f"{actor}: needs the product to {action} and keep the result visible and reviewable"]
 
 
-def _unique_actor_rows(rows: Sequence[str]) -> list[str]:
-    unique: list[str] = []
-    seen_labels: set[str] = set()
-    for row in rows:
-        text = _clean(row)
-        label = text.split(":", 1)[0].casefold()
-        if not text or not label or label in seen_labels:
-            continue
-        seen_labels.add(label)
-        unique.append(text)
-    return unique
-
-
-def _replace_localized_direct_actor(value: str, *, original: str, localized: str) -> str:
-    """Keep a localized generic role consistent between typed actors and the first path."""
-
-    text = _clean(value).strip()
-    source = _clean(original).strip(" .")
-    target = _clean(localized).strip(" .")
-    if not text or not source or not target or source.casefold() == target.casefold():
-        return text
-    return re.sub(
-        rf"^(?:(?:a|an|the)\s+)?{re.escape(source)}(?=\s)",
-        target,
-        text,
-        count=1,
-        flags=re.IGNORECASE,
-    )
-
-
-def _proof_with_reviewer_obligations(proof: str, obligations: Sequence[str]) -> str:
-    base = _clean(proof).strip(" .")
-    obligation_text = "; ".join(_clean(row).strip(" .") for row in obligations if _clean(row).strip(" ."))
-    if not obligation_text:
-        return base
-    if obligation_text.casefold() in base.casefold():
-        return base
-    return f"{base}. Reviewer obligations: {obligation_text}."
-
-
-def _story_with_explicit_operator_context(story: str, *, context: str) -> str:
-    """Keep a user-stated target context visible in product truth and projections."""
-
-    clean_story = _clean(story).strip()
-    clean_context = _clean(context).strip(" .")
-    if not clean_context or clean_context.casefold() in clean_story.casefold():
-        return clean_story
-    return f"{clean_story.rstrip(' .')}. The initial product scope serves {clean_context}."
-
-
-def _assumptions_with_reviewer_obligations(
-    assumptions: Sequence[str],
-    obligations: Sequence[str],
-) -> tuple[str, ...]:
-    rows = [_clean(row).strip(" .") for row in assumptions if _clean(row).strip(" .")]
-    seen = {row.casefold() for row in rows}
-    for obligation in obligations:
-        cleaned = _clean(obligation).strip(" .")
-        if cleaned and cleaned.casefold() not in seen:
-            seen.add(cleaned.casefold())
-            rows.append(cleaned)
-    return tuple(rows)
-
-
 def _fallback_actor_label(title: str) -> str:
     label = _clean(title).strip(" .") or "Product"
     candidate = _title_without_terminal_container(label)
@@ -980,6 +943,8 @@ def _human_actor_row_from_clause(
     allow_subject_fallback: bool,
     require_actor_signal: bool = False,
 ) -> str:
+    if is_actor_obligation_noun_phrase(clause):
+        return ""
     relative = re.match(
         r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<action>.+)$",
         _clean(clause),
@@ -1458,41 +1423,6 @@ def _lead_actor_action(actor_rows: Sequence[str]) -> str:
             if marker in body:
                 return body.split(marker, 1)[1].split(" and keep ", 1)[0].strip(" .")
     return ""
-
-
-def _state_record_subject(value: str) -> str:
-    text = lower_plain_title_subject_fragment(_clean(value), action_offset=0).strip(" .")
-    if not text:
-        return "first visible result"
-    text = _drop_terminal_result_action_participle(text)
-    words = _strip_leading_articles(_words(text))
-    if (
-        2 <= len(words) <= 4
-        and words[-1].casefold().strip(".,:;") == "result"
-        and not looks_like_base_action_token(words[0].casefold().strip(".,:;"))
-        and not looks_like_finite_action_token(words[0].casefold().strip(".,:;"))
-    ):
-        return " ".join(words).strip(" .")
-    action_object = _actor_action_object(text)
-    if action_object:
-        text = nominal_visible_result_object(action_object).strip(" .") or action_object
-    text = re.sub(r"\s+\b(?:after|before|during|when|where|while)\b.+$", "", text, flags=re.IGNORECASE).strip(" .")
-    words = _strip_leading_articles(_words(text))
-    if len(words) >= 3 and words[0].casefold() == "only":
-        words = words[1:]
-    if words and words[-1].casefold() == "record":
-        words = words[:-1]
-    return " ".join(words).strip(" .") or "first visible result"
-
-
-def _drop_terminal_result_action_participle(value: str) -> str:
-    words = _words(value)
-    if len(words) < 2:
-        return _clean(value).strip(" .")
-    first = words[0].casefold().strip(".,:;")
-    if first not in {"accepted", "approved", "captured", "cleaned", "completed", "generated", "published", "recorded", "saved"}:
-        return _clean(value).strip(" .")
-    return " ".join(words[1:]).strip(" .") or _clean(value).strip(" .")
 
 
 def _actor_action_object(value: str) -> str:

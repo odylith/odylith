@@ -75,11 +75,7 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "does not parse or generate product content after CONFIRM" in guidance
     assert "only verifies the sealed receipt" in guidance
     assert "Markdown is a view, never product truth" in guidance
-    assert (
-        "greenfield create --transaction-file "
-        ".odylith/runtime/greenfield/product-create-transaction.v1.json"
-        in guidance
-    )
+    assert ".odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json" in guidance
     assert "confirmed-intent.json" not in guidance
     assert "greenfield compile-transaction" not in guidance
     assert "ProductCreateTransaction" in guidance

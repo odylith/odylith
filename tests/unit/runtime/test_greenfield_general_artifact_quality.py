@@ -867,7 +867,7 @@ def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeli
 
     release_scopes = {str(row["label"]): str(row["release_scope"]) for row in proposal["components"]}  # type: ignore[index]
     assert release_scopes["Intervention Log with Dosing, Scheduling, and Adherence Tracking Service"] == "first_path_required"
-    assert release_scopes["Measurement Store"] == "first_path_required"
+    assert release_scopes["Tracked Protocol Measurement Store"] == "first_path_required"
     assert release_scopes["Timeline and Correlation View Service"] == "first_path_required"
     assert (
         release_scopes["Protocol Management Grouping Interventions and Measurements Into a Tracked Plan Service"]
@@ -1153,6 +1153,33 @@ def test_rendered_package_quality_flags_placeholder_gate_copy_and_inline_actor_c
     assert "Radar workstream `idea.md` contains placeholder TBD copy" in issues
     assert "Radar workstream `idea.md` uses generic validation-gate copy" in issues
     assert "Radar workstream `idea.md` has inline actor casing drift" in issues
+
+
+def test_rendered_package_quality_allows_question_final_prepositions_but_rejects_clipped_statements() -> None:
+    question = GreenfieldCompletionPackage(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                "idea.md": (
+                    "## Open Questions\n"
+                    "- Single shared lab instrument set, or multiple rigs the app must select between?\n"
+                )
+            }
+        },
+    )
+
+    question_issues = greenfield_rendered_package_quality_issues(question)
+
+    assert not any("ending in `between`" in issue for issue in question_issues)
+
+    clipped = GreenfieldCompletionPackage(
+        proposal={},
+        backlog_result={"idea_files": {"idea.md": "The operator must select between"}},
+    )
+
+    assert "Radar workstream `idea.md` has a clipped or dangling phrase ending in `between`" in (
+        greenfield_rendered_package_quality_issues(clipped)
+    )
 
 
 def test_rendered_package_quality_requires_registry_proof_floor() -> None:

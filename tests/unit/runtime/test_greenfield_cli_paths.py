@@ -192,6 +192,7 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
 
 
 def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monkeypatch) -> None:
+    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     opened: list[tuple[str, int]] = []
     monkeypatch.setattr(
@@ -208,6 +209,7 @@ def test_greenfield_completion_opens_exact_committed_project_url(tmp_path, monke
 
 
 def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypatch) -> None:
+    monkeypatch.delenv("ODYLITH_NO_BROWSER", raising=False)
     navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
     monkeypatch.setattr(
         greenfield_post_confirm_handoff.webbrowser,
@@ -219,6 +221,20 @@ def test_greenfield_completion_browser_failure_does_not_raise(tmp_path, monkeypa
 
     assert result["status"] == "unavailable"
     assert result["reason"] == "OSError: browser unavailable"
+
+
+def test_greenfield_completion_respects_automated_browser_opt_out(tmp_path, monkeypatch) -> None:
+    navigation = greenfield_post_confirm_handoff.post_confirm_navigation(tmp_path)
+
+    def fail_open(*_args, **_kwargs) -> bool:
+        raise AssertionError("automated validation must not open a desktop browser")
+
+    monkeypatch.setattr(greenfield_post_confirm_handoff.webbrowser, "open", fail_open)
+
+    result = greenfield_post_confirm_handoff.open_committed_dashboard(navigation)
+
+    assert result["status"] == "unavailable"
+    assert result["reason"] == "browser auto-open disabled by ODYLITH_NO_BROWSER"
 
 
 def test_greenfield_text_compiles_concrete_prompt_into_transaction_with_assumptions(tmp_path, capsys) -> None:
@@ -563,8 +579,8 @@ def test_greenfield_propose_shows_single_transaction_handoff(tmp_path, capsys) -
     assert re.search(r"CONFIRM [0-9a-f]{64}", output)
     assert "Commit this exact validated package now" in output
     assert "### EDIT" in output
-    assert re.search(r"EDIT [0-9a-f]{64}", output)
-    assert "Put corrections after the hash" in output
+    assert re.search(r"EDIT [0-9a-f]{64} <corrections>", output)
+    assert "Replace <corrections> with your changes" in output
     assert "### REJECT" in output
     assert re.search(r"REJECT [0-9a-f]{64}", output)
     assert "Stop this exact pending package. No governed records are written." in output
@@ -823,8 +839,8 @@ def test_greenfield_text_full_detail_keeps_single_commit_path_available(tmp_path
     assert re.search(r"CONFIRM [0-9a-f]{64}", output)
     assert "Commit this exact validated package now" in output
     assert "### EDIT" in output
-    assert re.search(r"EDIT [0-9a-f]{64}", output)
-    assert "Put corrections after the hash" in output
+    assert re.search(r"EDIT [0-9a-f]{64} <corrections>", output)
+    assert "Replace <corrections> with your changes" in output
     assert "### REJECT" in output
     assert re.search(r"REJECT [0-9a-f]{64}", output)
     assert "Stop this exact pending package. No governed records are written." in output
@@ -877,10 +893,10 @@ def test_greenfield_cli_json_defaults_to_intent_confirmation(tmp_path, capsys) -
     assert (tmp_path / payload["transaction_file"]).is_file()
     confirmation = payload["confirmation"]
     transaction_hash = str(payload["product_create_transaction"]["transaction_hash"])
-    assert confirmation["command_rule"] == "Copy exactly one hash-bound command: CONFIRM, EDIT, or REJECT."
+    assert confirmation["command_rule"] == "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT."
     assert [choice["command"] for choice in confirmation["choices"]] == [
         f"CONFIRM {transaction_hash}",
-        f"EDIT {transaction_hash}",
+        f"EDIT {transaction_hash} <corrections>",
         f"REJECT {transaction_hash}",
     ]
     assert payload["product_create_transaction"]["transaction_hash"] in confirmation["choices"][0]["commit_command"]
@@ -1137,7 +1153,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     spec_root = tmp_path / "odylith/registry/source/components"
     specs = {path.parent.name: path.read_text(encoding="utf-8") for path in spec_root.glob("*/CURRENT_SPEC.md")}
     permit_spec = specs["permit-file-registry"]
-    zoning_spec = specs["zoning-check-ledger"]
+    zoning_spec = next(text for slug, text in specs.items() if slug.endswith("zoning-check-ledger"))
     revision_spec = next(text for slug, text in specs.items() if slug.endswith("revision-tracker"))
     decision_spec = specs["decision-package-review"]
     permit_spec_lower = permit_spec.casefold()
@@ -1282,8 +1298,8 @@ def test_greenfield_propose_cli_outputs_hash_ready_contract(
     assert "Commit this exact validated package now." in output
     assert "verifies the hash and repo preconditions, writes the sealed bytes, and validates readback" in output
     assert "### EDIT" in output
-    assert re.search(r"EDIT [0-9a-f]{64}", output)
-    assert "Do not commit. Put corrections after the hash" in output
+    assert re.search(r"EDIT [0-9a-f]{64} <corrections>", output)
+    assert "Do not commit. Replace <corrections> with your changes" in output
     assert "### REJECT" in output
     assert re.search(r"REJECT [0-9a-f]{64}", output)
     assert "Stop this exact pending package. No governed records are written" in output

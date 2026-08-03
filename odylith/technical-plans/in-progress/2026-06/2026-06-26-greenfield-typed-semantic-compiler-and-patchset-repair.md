@@ -149,6 +149,27 @@ above.
   family passed 225 tests before four adversarial contract mismatches were
   repaired; all four affected slices then passed. Final frozen-corpus,
   cross-host, clean-install, and full browser-state release proof remains open.
+- The final source-hardening pass rejects context-only container titles when
+  the accepted state object provides a specific product identity, removes the
+  positional four-system cap, and keeps every distinct accepted
+  responsibility. Sparse record components combine their accepted state object
+  with the responsibility before Registry contract generation, so added depth
+  remains implementation-specific instead of failing a generic quality gate.
+- Recovery proof now observes the actual transaction generation, active
+  pointer, journal, and published or aborted state around governed SIGKILL and
+  fsync faults. The main proof owner is back below the 1,200-line hard pressure
+  threshold after generation-state assertions moved into one cohesive module.
+  Adversarial review additionally required byte-level generation validation,
+  exact reviewed-dashboard navigation, per-row action custody, actor-safe
+  imperative handling, and shared-subject fragment preservation. Radar rationale
+  projection now removes a repeated secondary proof sentence before package
+  quality evaluation instead of refusing a usable thin prompt. Fresh source
+  evidence is `460 passed` across the touched semantic, artifact, repetition,
+  component, matrix, and recovery surfaces. Exact pediatric, quantum, security,
+  semiconductor, and thin permit CLI replays compiled passed hash-bound
+  transactions with visible CONFIRM, EDIT, and REJECT; the semiconductor replay
+  retained all five source responsibilities and passed both pre-confirm quality
+  and validation.
 
 ## Related Bugs
 

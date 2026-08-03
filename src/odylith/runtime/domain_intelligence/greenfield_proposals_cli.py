@@ -134,7 +134,7 @@ def _transaction_confirmation_payload(
         f"--transaction-hash {summary['transaction_hash']} --confirm"
     )
     return {
-        "command_rule": "Copy exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
+        "command_rule": "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT.",
         "first_word_rule": "The transaction hash is part of the command and binds the decision to these reviewed bytes.",
         "edit_rule": "For EDIT, put corrections after the hash so Odylith can rebuild from the new evidence.",
         "post_confirm_contract": (
@@ -151,9 +151,9 @@ def _transaction_confirmation_payload(
                 "commit_command": commit_command,
             },
             {
-                "command": f"EDIT {transaction_hash}",
-                "description": "Do not commit. Put corrections after the hash; Odylith treats them as new evidence, "
-                "rebuilds the package, and uses the new hash.",
+                "command": f"EDIT {transaction_hash} <corrections>",
+                "description": "Do not commit. Replace <corrections> with your changes; Odylith treats them as new "
+                "evidence, rebuilds the package, and uses the new hash.",
             },
             {
                 "command": f"REJECT {transaction_hash}",
@@ -189,7 +189,8 @@ def _transaction_confirmation_text(
         f"- governed package: {len(created)} workstreams, {len(components)} component previews, {len(diagrams)} Atlas previews",
         f"- sealed commit: {summary.get('repository_write_count', 0)} exact file writes, "
         f"{summary.get('repository_delete_count', 0)} deletions, and hashed repo preconditions",
-        "- commands below include this exact transaction hash; copy one command without changing it",
+        "- commands below include this exact transaction hash; copy CONFIRM or REJECT unchanged, or replace the "
+        "EDIT corrections placeholder",
         "",
         *format_confirmation_choice_lines(
             tuple(

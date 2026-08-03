@@ -24,6 +24,7 @@ from odylith.runtime.common.command_surface import (
     ensure_nested_subcommand_repo_root_args,
     ensure_repo_root_args,
 )
+from odylith.runtime.common.environment import env_flag_enabled
 from odylith.runtime.common.repo_shape import PRODUCT_REPO_ROLE, repo_role_from_local_shape
 from odylith.runtime.domain_intelligence import greenfield_managed_mutation_boundary
 from odylith.runtime.surfaces import tooling_dashboard_version_state
@@ -642,17 +643,12 @@ def _has_complete_existing_consumer_install(*, repo_root: Path) -> bool:
     )
 
 
-def _env_flag_enabled(name: str) -> bool:
-    token = str(os.environ.get(name) or "").strip().lower()
-    return token not in {"", "0", "false", "no", "off"}
-
-
 def _print_install_progress(label: str, message: str) -> None:
     print(f"{str(label).strip():<6} {str(message).strip()}")
 
 
 def _install_progress_bar_enabled() -> bool:
-    if not _env_flag_enabled(_INSTALL_COMPACT_ENV):
+    if not env_flag_enabled(_INSTALL_COMPACT_ENV):
         return False
     token = str(os.environ.get("ODYLITH_INSTALL_PROGRESS", "1") or "").strip().lower()
     if token in {"0", "false", "no", "off"}:
@@ -695,7 +691,7 @@ def _install_progress_bar(label: str, message: str) -> Iterator[None]:
 
 
 def _browser_launch_disabled_message() -> str:
-    if _env_flag_enabled("ODYLITH_NO_BROWSER"):
+    if env_flag_enabled("ODYLITH_NO_BROWSER"):
         return "Browser auto-open disabled by ODYLITH_NO_BROWSER."
     return ""
 
@@ -703,7 +699,7 @@ def _browser_launch_disabled_message() -> str:
 def _interactive_browser_launch_possible() -> bool:
     if _browser_launch_disabled_message():
         return False
-    if _env_flag_enabled("CI") or _env_flag_enabled("GITHUB_ACTIONS") or _env_flag_enabled("BUILD_BUILDID"):
+    if env_flag_enabled("CI") or env_flag_enabled("GITHUB_ACTIONS") or env_flag_enabled("BUILD_BUILDID"):
         return False
     if any(str(os.environ.get(name) or "").strip() for name in ("SSH_CONNECTION", "SSH_CLIENT", "SSH_TTY")):
         return False
@@ -1286,7 +1282,7 @@ def _cmd_install_common(
     target_version = str(getattr(args, "version", "") or getattr(args, "target_version", "") or "").strip()
     if _has_complete_existing_consumer_install(repo_root=requested_repo_root):
         if not bool(getattr(args, "dry_run", False)):
-            if _env_flag_enabled(_INSTALL_COMPACT_ENV):
+            if env_flag_enabled(_INSTALL_COMPACT_ENV):
                 _print_install_progress(
                     "upgrade",
                     "Existing Odylith install detected; running upgrade lifecycle.",
@@ -1309,7 +1305,7 @@ def _cmd_install_common(
             )
         )
     compact_output = (
-        _env_flag_enabled(_INSTALL_COMPACT_ENV)
+        env_flag_enabled(_INSTALL_COMPACT_ENV)
         and not bool(getattr(args, "dry_run", False))
         and not bool(getattr(args, "verbose", False))
     )
@@ -1318,7 +1314,7 @@ def _cmd_install_common(
         adopt_latest=adopt_latest,
         align_pin=align_pin,
         target_version=target_version,
-        bootstrap_runtime_prestaged=_env_flag_enabled(_BOOTSTRAP_RUNTIME_PRESTAGED_ENV),
+        bootstrap_runtime_prestaged=env_flag_enabled(_BOOTSTRAP_RUNTIME_PRESTAGED_ENV),
     )
     if compact_output:
         if not _install_progress_bar_enabled():

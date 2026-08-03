@@ -66,7 +66,9 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
 
     assert decision.passed, decision.issues
     by_label = {str(component["label"]): component["component_contract"] for component in proposal["components"]}
-    checklist = by_label["Compliance Checklist Ledger"]
+    checklist = next(
+        contract for label, contract in by_label.items() if label.endswith("Compliance Checklist Ledger")
+    )
     risk_review = by_label["Risk Review Workspace"]
     checklist_rendered = json.dumps(checklist, sort_keys=True).casefold()
     risk_owned = str(risk_review["owned_state"]).casefold()
@@ -101,7 +103,7 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
     assert "Suggested fixture:" not in checklist_spec
     assert "compliance" in checklist_spec.casefold()
     assert "stops before a trusted result" in checklist_spec
-    assert (
-        "Replay evidence for Compliance Checklist Ledger: actor, input facts, status, explanation, and proof trail."
-        in checklist_spec
-    )
+    replay_lines = [line for line in checklist_spec.splitlines() if line.startswith("- Replay evidence for ")]
+    assert len(replay_lines) == 1
+    assert "Compliance Checklist Ledger" in replay_lines[0]
+    assert replay_lines[0].endswith(": actor, input facts, status, explanation, and proof trail.")

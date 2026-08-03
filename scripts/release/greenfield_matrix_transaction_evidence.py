@@ -136,20 +136,25 @@ def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple
     if not str(proposal_payload.get("transaction_file") or "").strip():
         issues.append("pre-confirm payload is missing its transaction file")
     if str(confirmation.get("command_rule") or "").strip() != (
-        "Start your reply with exactly one command: CONFIRM, EDIT, or REJECT."
+        "Use exactly one hash-bound command: CONFIRM, EDIT, or REJECT."
     ):
         issues.append("pre-confirm payload does not state the one-command decision rule")
     if not isinstance(choices, list):
         issues.append("pre-confirm payload is missing the CONFIRM, EDIT, and REJECT choices")
         return tuple(issues)
+    expected_commands = [
+        f"CONFIRM {transaction_hash}",
+        f"EDIT {transaction_hash} <corrections>",
+        f"REJECT {transaction_hash}",
+    ]
     commands = [str(_mapping(choice).get("command") or "").strip() for choice in choices]
-    if commands != ["CONFIRM", "EDIT", "REJECT"]:
+    if commands != expected_commands:
         issues.append("pre-confirm payload does not present CONFIRM, EDIT, and REJECT as distinct ordered choices")
         return tuple(issues)
     choice_by_command = {str(_mapping(choice).get("command") or "").strip(): _mapping(choice) for choice in choices}
-    confirm = choice_by_command["CONFIRM"]
-    edit = choice_by_command["EDIT"]
-    reject = choice_by_command["REJECT"]
+    confirm = choice_by_command[expected_commands[0]]
+    edit = choice_by_command[expected_commands[1]]
+    reject = choice_by_command[expected_commands[2]]
     commit_command = str(confirm.get("commit_command") or "").strip()
     if transaction_hash not in commit_command or "--confirm" not in commit_command:
         issues.append("CONFIRM does not name the exact hash-bound commit command")
@@ -167,16 +172,39 @@ def confirmation_preview_issues(*, proposal_payload: Mapping[str, Any]) -> tuple
     return tuple(issues)
 
 
-def post_confirm_navigation_issues(*, create_payload: Mapping[str, Any]) -> tuple[str, ...]:
+def post_confirm_navigation_issues(
+    *,
+    create_payload: Mapping[str, Any],
+    repo_root: Path,
+    transaction_hash: str,
+) -> tuple[str, ...]:
     """Require the commit response to lead a first-time user into the created workspace."""
 
     navigation = _mapping(create_payload.get("post_confirm_navigation"))
-    if navigation == POST_CONFIRM_NAVIGATION:
-        return ()
     missing = [key for key, value in POST_CONFIRM_NAVIGATION.items() if navigation.get(key) != value]
-    return (
-        "post-confirm response does not expose the stable governance workspace routes: " + ", ".join(missing),
-    )
+    root = Path(repo_root).expanduser().resolve()
+    dashboard = (
+        root
+        / ".odylith/runtime/greenfield/generations"
+        / transaction_hash
+        / "repository/odylith/index.html"
+    ).resolve()
+    expected = {
+        "dashboard_path": str(dashboard),
+        "project_url": f"{dashboard.as_uri()}?tab=project",
+        "view_status": "reviewed_generation",
+        "compatibility_dashboard_path": str((root / "odylith/index.html").resolve()),
+        "generation_transaction_hash": transaction_hash,
+    }
+    missing.extend(key for key, value in expected.items() if navigation.get(key) != value)
+    if not dashboard.is_file():
+        missing.append("dashboard_target")
+    if missing:
+        return (
+            "post-confirm response does not expose the reviewed generation workspace routes: "
+            + ", ".join(dict.fromkeys(missing)),
+        )
+    return ()
 
 
 def dry_run_commit_issues(*, receipt: Mapping[str, Any], create_payload: Mapping[str, Any]) -> tuple[str, ...]:

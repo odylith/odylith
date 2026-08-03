@@ -522,6 +522,60 @@ def test_first_path_flowchart_terminal_label_preserves_distinctive_tail_terms() 
     assert 'S3["Progress evidence"]' not in mermaid
 
 
+def test_first_path_flowchart_routes_object_creation_to_management_not_generic_store() -> None:
+    components = [
+        {
+            "component_id": "intervention-log",
+            "label": "Intervention Log with Dosing and Adherence Tracking Service",
+            "release_scope": "first_path_required",
+        },
+        {
+            "component_id": "measurement-store",
+            "label": "Tracked Protocol Measurement Store",
+            "release_scope": "first_path_required",
+        },
+        {
+            "component_id": "timeline",
+            "label": "Timeline and Correlation View Service",
+            "release_scope": "first_path_required",
+        },
+        {
+            "component_id": "protocol-management",
+            "label": "Protocol Management Service",
+            "release_scope": "first_path_required",
+        },
+    ]
+
+    mermaid = first_path_flowchart_mermaid(
+        label="Protocol Effect Tracker",
+        actors=["Self-experimenter"],
+        components=components,
+        first_path="A self-experimenter creates a protocol, then records a baseline measurement.",
+    )
+
+    assert "S1 --> C4" in mermaid
+    assert "S2 --> C2" in mermaid
+
+
+def test_first_path_flowchart_does_not_let_generic_axes_override_named_object_owners() -> None:
+    components = [
+        {"component_id": "capture", "label": "Baseline Context Capture Service", "release_scope": "first_path_required"},
+        {"component_id": "progress", "label": "Daily Progress Logging Service", "release_scope": "first_path_required"},
+        {"component_id": "fare", "label": "Fare Evidence Service", "release_scope": "first_path_required"},
+        {"component_id": "ranking", "label": "Option Ranking Engine", "release_scope": "first_path_required"},
+    ]
+
+    mermaid = first_path_flowchart_mermaid(
+        label="Planning Comparison Workspace",
+        actors=["Operations user"],
+        components=components,
+        first_path="An operations user logs progress, then calculates fare evidence.",
+    )
+
+    assert "S1 --> C2" in mermaid
+    assert "S2 --> C3" in mermaid
+
+
 def test_release_proof_control_does_not_render_as_first_path_step() -> None:
     first_path = (
         "A city dispatcher records an evacuation support request. A tribal liaison reviews restricted access needs. "

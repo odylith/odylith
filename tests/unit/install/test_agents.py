@@ -129,19 +129,19 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
 def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     block = managed_block(repo_role="product_repo")
 
-    assert "Product repo release/benchmark publishing uses `odylith/maintainer/AGENTS.md`." in block
-    assert "the consumer lane and the Odylith product repo's maintainer mode" in block
-    assert "pinned dogfood and detached `source-local` maintainer-dev posture" in block
-    assert "pinned dogfood is default proof; detached `source-local` is explicit dev" in block
-    assert "Codex and Claude Code are both validated Odylith delegation hosts under the same grounding, routing, and validation contract" in block
+    assert "maintainer-only release and benchmark publishing work follows `odylith/maintainer/AGENTS.md`" in block
+    assert "substantive grounded consumer and maintainer work" in block
+    assert "transport support does not prove current-session spawn permission or effectiveness" in block
+    assert "pinned dogfood is the default proof posture and detached `source-local` is the explicit dev posture" in block
+    assert "Codex and Claude Code share one grounding, routing, and validation contract" in block
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
-    assert "Do not inspect Odylith source" in block
+    assert "Do not inspect source" in block
     assert "hand-author/repair proposal JSON" in block
     assert "parser/schema retries" in block
-    assert "Do not narrate parser/schema retries or request a second confirmation" in block
-    assert "Surface only the final transaction, created-record summary, or blocker" in block
+    assert "narrate parser/schema retries, or request a second confirmation" in block
+    assert "Surface only the final transaction, created-record summary, or a material blocker" in block
     assert "Confirm/Edit/Reject" not in block
     assert "confirm to expand" not in block
     assert len(block.encode("utf-8")) < 11600

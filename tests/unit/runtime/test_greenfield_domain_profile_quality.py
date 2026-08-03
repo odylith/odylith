@@ -63,17 +63,19 @@ def test_product_intent_preview_stages_one_rail_transaction_without_governed_rec
     assert "transaction hash:" in output
     assert "transaction file:" in output
     assert "## Choose one command" in output
-    assert "**Start your reply with exactly one command:** `CONFIRM`, `EDIT`, or `REJECT`." in output
-    assert "Only the first command counts. Do not paste Odylith system commands in your reply." in output
-    assert "### Command: `CONFIRM`" in output
-    assert "**Reply starts with:** `CONFIRM`" in output
+    assert "For EDIT, replace `<corrections>` with your changes." in output
+    transaction_hash = output.split("transaction hash: ", maxsplit=1)[1].splitlines()[0]
+    assert len(transaction_hash) == 64
+    assert output.count("```text") == 3
+    assert "### CONFIRM" in output
+    assert f"CONFIRM {transaction_hash}" in output
     assert "Commit this exact validated package now" in output
-    assert "### Command: `EDIT`" in output
-    assert "**Reply starts with:** `EDIT`" in output
-    assert "Put corrections after EDIT" in output
-    assert "### Command: `REJECT`" in output
-    assert "**Reply starts with:** `REJECT`" in output
-    assert "Stop. No governed records are written." in output
+    assert "### EDIT" in output
+    assert f"EDIT {transaction_hash} <corrections>" in output
+    assert "treats them as new evidence, rebuilds the package" in output
+    assert "### REJECT" in output
+    assert f"REJECT {transaction_hash}" in output
+    assert "No governed records are written." in output
     assert "greenfield create --repo-root ." in output
     assert "--transaction-hash" in output
     assert "No product reinterpretation, repair, or generation runs after CONFIRM." in output

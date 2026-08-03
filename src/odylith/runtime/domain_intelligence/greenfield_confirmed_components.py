@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_system_description,
     confirmed_system_name,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
@@ -25,6 +26,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     validation_from_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_kinds import system_kind
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     differentiate_component_contracts,
     preserve_first_path_signal_terms,
@@ -148,7 +151,7 @@ def _confirmed_system_components(
     for index, system in enumerate(internal_systems, start=1):
         name = system_component_name(confirmed_system_name(system))
         description = confirmed_system_description(system).replace("/", " and ")
-        name = _enriched_component_name(name=name, description=description)
+        name = _enriched_component_name(name=name, description=description, state_object=state_object)
         component_slug = slugify(name) or f"{label_slug}-component-{index}"
         if not component_slug.startswith(label_slug) and len(component_slug.split("-")) <= 2:
             component_id = _component_id(label_slug, component_slug)
@@ -213,6 +216,7 @@ def _confirmed_system_components(
         contract = row.get("component_contract")
         if not isinstance(contract, dict):
             continue
+        source_action = str(row.get("source_system_description", ""))
         preserve_first_path_signal_terms(contract, first_path=first_path)
         label_text = str(row.get("label", "")).strip()
         if _generated_or_weak(row.get("responsibility")):
@@ -344,10 +348,17 @@ def system_component_name(value: str) -> str:
     return _title_phrase(name)
 
 
-def _enriched_component_name(*, name: str, description: str) -> str:
+def _enriched_component_name(*, name: str, description: str, state_object: str = "") -> str:
     """Fold concise ownership detail into short generic component heads."""
 
     clean_name = re.sub(r"\s+", " ", str(name or "")).strip(" .")
+    name_terms = component_domain_terms(clean_name)
+    if len(name_terms) < 4 and re.search(r"\b(?:ledger|record|recordkeeping|store)\b", clean_name, re.IGNORECASE):
+        state_label = _domain_object_label(state_object, fallback="")
+        additions = [term for term in ordered_domain_terms(state_label) if term not in name_terms]
+        if additions:
+            needed = max(1, 4 - len(name_terms))
+            clean_name = f"{_title_phrase(' '.join(additions[:needed]))} {clean_name}"
     if word_count(clean_name) > 3:
         return clean_name
     if not re.search(r"\b(?:log|record|store|tracker|tracking)\b", clean_name, flags=re.IGNORECASE):

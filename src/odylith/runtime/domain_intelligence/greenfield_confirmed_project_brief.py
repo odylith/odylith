@@ -90,7 +90,7 @@ def confirmed_project_brief(
     state_ref = sentence_label(state_label)
     evidence_ref = sentence_label(evidence_label)
     actor_summary = _actor_boundary_text(human_actors, project_focus=label, limit=8) or f"the first {label_lower} operator and reviewer"
-    internal_summary = join_system_labels(internal_systems, limit=8) or (
+    internal_summary = join_system_labels(internal_systems, limit=8, prose_list=True) or (
         f"{state_ref} ownership and {evidence_ref} review"
     )
     component_summary = _join_component_display_labels(component_labels, limit=8) or internal_summary

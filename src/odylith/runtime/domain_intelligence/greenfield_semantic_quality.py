@@ -706,7 +706,7 @@ def _text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, 
     if isinstance(value, Mapping):
         rows: list[tuple[str, str]] = []
         for key, nested in value.items():
-            if str(key).casefold() in {"source_title"}:
+            if str(key).casefold() in {"artifact_plan_patch_ledger", "semantic_patch_ledger", "source_title"}:
                 continue
             rows.extend(_text_leaves(nested, path=(*path, str(key))))
         return tuple(rows)

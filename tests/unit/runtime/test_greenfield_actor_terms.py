@@ -5,6 +5,7 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_actor_obligation_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import omit_actor_from_material_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_automated_actor
 
@@ -63,6 +64,18 @@ def test_human_actor_signal_recognizes_domain_role_labels(actor: str) -> None:
 
 def test_human_actor_signal_rejects_short_connective_suffixes() -> None:
     assert not has_human_actor_signal("booking workspace for")
+
+
+@pytest.mark.parametrize(
+    "value",
+    ("explicit expert review", "independent safety approval", "required operator signoff"),
+)
+def test_actor_obligation_noun_phrases_do_not_become_actor_actions(value: str) -> None:
+    assert is_actor_obligation_noun_phrase(value)
+
+
+def test_actor_obligation_classifier_preserves_real_actor_actions() -> None:
+    assert not is_actor_obligation_noun_phrase("Expert reviewers approve the release")
 
 
 @pytest.mark.parametrize(

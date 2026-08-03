@@ -617,6 +617,13 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
     ) == []
     assert modal_base_form_drift_phrases("A decision about whether a model can progress is shown.") == []
     assert modal_base_form_drift_phrases(
+        "Whether Model Can Progress Workflow decides whether a model can progress and keeps status."
+    ) == []
+    assert modal_base_form_drift_phrases(
+        "Whether Vessel Can Sail Delivery Service accepts the facts needed for whether vessel can sail delivery "
+        "and rejects incomplete entries."
+    ) == []
+    assert modal_base_form_drift_phrases(
         "The release must still prove: one site ingests readings, produces a plan, and shows the plan."
     ) == []
     assert modal_base_form_drift_phrases(
@@ -634,9 +641,18 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
     assert modal_base_form_drift_phrases("The user can coordinator creates packet state.") == [
         "can coordinator creates"
     ]
+    assert modal_base_form_drift_phrases(
+        "The workflow can evaluate a model and keeps status."
+    ) == ["and keeps"]
+    assert modal_base_form_drift_phrases(
+        "The workflow decides whether a model can progresses and keeps status."
+    ) == ["can progresses"]
     assert repair_modal_base_form_drift("One analyst can records benchmark datasets and exports a review packet.") == (
         "One analyst can record benchmark datasets and export a review packet."
     )
+    assert repair_modal_base_form_drift(
+        "Whether Model Can Progress Workflow decides whether a model can progress and keeps status."
+    ) == "Whether Model Can Progress Workflow decides whether a model can progress and keeps status."
     assert repair_infinitive_base_form_drift("The review prompt asks a user to inspects retrieved keys and exports proof.") == (
         "The review prompt asks a user to inspect retrieved keys and export proof."
     )

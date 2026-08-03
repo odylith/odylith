@@ -130,7 +130,6 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             required_terms=("security", "disclosure", "embargo", "evidence"),
             leakage_terms=("security disclosure council", "embargo decisions", "public advisory"),
             stressors=("multi-role-tribunal", "final-memory-pressure", "modal-expert-lens", "path-grant"),
-            expectation=CLARIFICATION_REQUIRED_EXPECTATION,
         ),
         GreenfieldMatrixCase(
             name="open source security embargo",

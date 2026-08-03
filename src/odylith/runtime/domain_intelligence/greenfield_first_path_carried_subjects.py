@@ -40,10 +40,12 @@ _SUBJECT_PREFIX_BOUNDARY_WORDS = frozenset(
 
 
 def carried_subject_prefix(value: str) -> str:
+    text = clean_first_path_text(value).strip()
+    if re.match(r"^(?:after|before|during|once|until|when|while)\b", text, flags=re.IGNORECASE):
+        return ""
     subject = leading_subject_prefix(value)
     if subject:
         return subject
-    text = clean_first_path_text(value).strip()
     pronoun = re.match(r"^(?P<subject>they|we|he|she|it)\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
     if pronoun and MATERIAL_ACTION_RE.match(pronoun.group("tail")):
         raw_subject = pronoun.group("subject").casefold()

@@ -723,7 +723,7 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(
     assert "It should explain how the energy-out number is calculated" in component_text
     assert "Successful path evidence for Burn Estimation Engine: energy-out number" in component_text
     assert "Successful path evidence for Recommendation Engine: next-day adjustment recommendation" in component_text
-    assert "Successful path evidence for Activity Log and Profile Store" in activity_component_text
+    assert "Successful path evidence for Daily Activity Log and Profile Store" in activity_component_text
     assert "No explicit dependency recorded yet" not in idea_text
     assert "Run focused validation for the touched paths once implementation begins" not in idea_text
     assert "Queue now, then bind a technical plan when the implementation wave starts" not in idea_text
@@ -1432,6 +1432,53 @@ def test_greenfield_package_gate_rejects_comma_spliced_capitalized_clause(tmp_pa
 
     assert not report.passed
     assert "comma-spliced capitalized clause drift" in "\n".join(report.issues)
+
+
+def test_greenfield_package_gate_allows_comma_separated_capitalized_component_label(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += (
+        "\nimpacted_parts: Container Discharge Workflow Support Service, "
+        "Whether Vessel Can Sail Delivery Service\n"
+    )
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, backlog_result=backlog_result)
+    )
+
+    assert "comma-spliced capitalized clause drift" not in "\n".join(report.issues)
+
+
+def test_greenfield_package_gate_scopes_modal_coordination_to_one_markdown_line(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += (
+        "\n- Delivery Service can accept incomplete input and explain the risk.\n"
+        "- Delivery Service accepts the required facts and rejects incomplete entries.\n"
+    )
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, backlog_result=backlog_result)
+    )
+
+    assert "coordinated modal grammar drift" not in "\n".join(report.issues)
+
+
+def test_greenfield_package_gate_rejects_same_line_modal_coordination_drift(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += (
+        "\nDelivery Service can accept the required facts and rejects incomplete entries.\n"
+    )
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, backlog_result=backlog_result)
+    )
+
+    assert "coordinated modal grammar drift" in "\n".join(report.issues)
 
 
 def test_greenfield_package_gate_rejects_open_scope_question_as_boundary(tmp_path: Path) -> None:

@@ -63,9 +63,6 @@ def system_labels(intent: Mapping[str, Any]) -> list[str]:
 def state_label(value: str, *, title: str) -> str:
     text = _clean(value)
     if text:
-        shared_label = _domain_object_label(text, fallback="")
-        if shared_label:
-            return shared_label
         first = re.split(r"[.;]", text, maxsplit=1)[0]
         match = re.search(
             r"\b(?:state object is|primary state object is|is)\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)",
@@ -74,6 +71,9 @@ def state_label(value: str, *, title: str) -> str:
         )
         if match:
             return _title_case(match.group("label"))
+        shared_label = _domain_object_label(text, fallback="")
+        if shared_label:
+            return shared_label
         match = re.match(
             r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,90}?)\s+"
             r"(?:tracks|records|stores|captures|moves|starts|changes)\b",

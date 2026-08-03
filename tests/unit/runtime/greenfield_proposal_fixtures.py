@@ -233,6 +233,10 @@ def confirmed_mapping_with_authority(
         source_path=markdown_path,
         source_format="in_memory_confirmed_intent",
     )
+    if repo_root is not None:
+        markdown_path.parent.mkdir(parents=True, exist_ok=True)
+        markdown_path.write_text(source_text, encoding="utf-8")
+        write_structured_confirmed_intent_file(markdown_path, prepared, envelope=envelope)
     prepared[PRODUCT_INTENT_AUTHORITY_KEY] = product_intent_authority_from_envelope(
         envelope,
         structured_intent_path=markdown_path.with_suffix(".json"),

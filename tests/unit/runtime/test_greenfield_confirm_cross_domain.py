@@ -54,7 +54,6 @@ def _run_confirmed_transaction_create(
     capsys,
     release: str = "0.0.1",
 ) -> tuple[int, str]:
-    transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     propose_args = [
         "propose",
         "--repo-root",
@@ -69,7 +68,9 @@ def _run_confirmed_transaction_create(
     compile_rc = greenfield_proposals.main(propose_args)
     compile_output = capsys.readouterr().out
     assert compile_rc == 0, compile_output
-    transaction_hash = str(json.loads(compile_output)["product_create_transaction"]["transaction_hash"])
+    compile_payload = json.loads(compile_output)
+    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
+    transaction_file = str(compile_payload["transaction_file"])
     create_rc = greenfield_proposals.main(
         [
             "create",

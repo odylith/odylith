@@ -1,20 +1,24 @@
 {
-  "active_version": "0.1.15",
+  "active_version": "source-local",
   "by_category": {
     "bundle_surface_mirror": {
-      "bytes": 205735,
-      "count": 1
+      "bytes": 269130,
+      "count": 3
     },
     "compass": {
-      "bytes": 7082077,
-      "count": 2
+      "bytes": 31266330,
+      "count": 9
+    },
+    "radar": {
+      "bytes": 4292796,
+      "count": 7
     },
     "tooling_shell": {
-      "bytes": 239554,
+      "bytes": 241575,
       "count": 2
     }
   },
-  "content_fingerprint": "f4b30e6a75a881f85cf989a803a937966e4c776e372e4d37a6ba88272907c316",
+  "content_fingerprint": "e66a7773e0a4ae4cc561d2ebc29544127325c9c4a3dee5367a5e24b8edbe977d",
   "dashboard_refresh": {
     "command": [
       "/Volumes/FREEDOM_RESEARCH/research-code/odylith/.odylith/bin/odylith",
@@ -40,50 +44,180 @@
   },
   "entries": [
     {
-      "byte_count": 0,
+      "byte_count": 2575,
       "category": "compass",
-      "line_count": 0,
-      "path": "odylith/compass/runtime/history/2026-07-05.v1.json",
-      "sha256": "",
-      "state": "deleted"
-    },
-    {
-      "byte_count": 7082077,
-      "category": "compass",
-      "line_count": 173846,
-      "path": "odylith/compass/runtime/history/2026-07-21.v1.json",
-      "sha256": "6cdcb5aa4f05e773337bf10986363ddcaa3fa006db1ca56ccf0a1e88862fc7c7",
+      "line_count": 1,
+      "path": "odylith/compass/compass-payload.v1.js",
+      "sha256": "aa6e8cc44d76034f6eae65b08108d26c19a5224ac0da9b5413f54ab5b13b7428",
       "state": "present"
     },
     {
-      "byte_count": 205735,
+      "byte_count": 5214870,
+      "category": "compass",
+      "line_count": 125599,
+      "path": "odylith/compass/compass-source-truth.v1.json",
+      "sha256": "0fb1f4339c63952d38d45e2bde4308bf1230c9202451d059631b2ea8a916b49b",
+      "state": "present"
+    },
+    {
+      "byte_count": 6699,
+      "category": "compass",
+      "line_count": 138,
+      "path": "odylith/compass/compass.html",
+      "sha256": "3b881869767bf562a8040f1df8e0ca2af13f6021ccaad3596a4ee33a5b376eec",
+      "state": "present"
+    },
+    {
+      "byte_count": 1253567,
+      "category": "compass",
+      "line_count": 1130,
+      "path": "odylith/compass/runtime/agent-stream.v1.jsonl",
+      "sha256": "1003c4a7adcdf6caa31a19e3d930deed79f42b0448fc9c4c33e144edf7893ac1",
+      "state": "present"
+    },
+    {
+      "byte_count": 4642441,
+      "category": "compass",
+      "line_count": 1,
+      "path": "odylith/compass/runtime/current.v1.js",
+      "sha256": "e5813444ff2fb7fbc43b9d980203170b9001f6a7c74c51ba14c5f3d5da5aa492",
+      "state": "present"
+    },
+    {
+      "byte_count": 6496077,
+      "category": "compass",
+      "line_count": 157144,
+      "path": "odylith/compass/runtime/current.v1.json",
+      "sha256": "c826964d367366b918c4f59685e63e0de37fffe7bb157ff4de2c5e0569874224",
+      "state": "present"
+    },
+    {
+      "byte_count": 6496077,
+      "category": "compass",
+      "line_count": 157144,
+      "path": "odylith/compass/runtime/history/2026-08-02.v1.json",
+      "sha256": "c826964d367366b918c4f59685e63e0de37fffe7bb157ff4de2c5e0569874224",
+      "state": "present"
+    },
+    {
+      "byte_count": 7153593,
+      "category": "compass",
+      "line_count": 1,
+      "path": "odylith/compass/runtime/history/embedded.v1.js",
+      "sha256": "aa586a92c0ce3e64561a01a13d8adc4ca30d9be5c5ca431874696e5b8ae7dc7e",
+      "state": "present"
+    },
+    {
+      "byte_count": 431,
+      "category": "compass",
+      "line_count": 25,
+      "path": "odylith/compass/runtime/history/index.v1.json",
+      "sha256": "a7a62340f9d1df5d339e773260b53535012225860b6c29bd99c9f242476e733b",
+      "state": "present"
+    },
+    {
+      "byte_count": 205742,
       "category": "tooling_shell",
       "line_count": 4467,
       "path": "odylith/index.html",
-      "sha256": "38b7627d1b7ca56aec443939fa6003bd16d55b369089e65ace1ee5c1d090825f",
+      "sha256": "319ee2489cd97e8d294668ed744b3836f499f01afd11193a4cd4e8835e3489e1",
       "state": "present"
     },
     {
-      "byte_count": 33819,
+      "byte_count": 499448,
+      "category": "radar",
+      "line_count": 1,
+      "path": "odylith/radar/backlog-detail-shard-001.v1.js",
+      "sha256": "0debef716698008d0dfaf5fe12b2f9801543d15747d3b0824029c234be6c89b3",
+      "state": "present"
+    },
+    {
+      "byte_count": 449993,
+      "category": "radar",
+      "line_count": 1,
+      "path": "odylith/radar/backlog-detail-shard-002.v1.js",
+      "sha256": "25aaaf953f4656eafe3afee6e6d40205722cb2e6a457757c10a8f4e105e816f9",
+      "state": "present"
+    },
+    {
+      "byte_count": 431631,
+      "category": "radar",
+      "line_count": 1,
+      "path": "odylith/radar/backlog-detail-shard-003.v1.js",
+      "sha256": "c24baca82abdac919ef3391401b2ab5ddbfaedc0864197c318e362c19f8b91de",
+      "state": "present"
+    },
+    {
+      "byte_count": 7237,
+      "category": "radar",
+      "line_count": 1,
+      "path": "odylith/radar/backlog-detail-shard-004.v1.js",
+      "sha256": "3c740f3cd9b2758313ced8559cafb090f5af2552819648c0f2b710851c5ee0eb",
+      "state": "present"
+    },
+    {
+      "byte_count": 2077832,
+      "category": "radar",
+      "line_count": 1,
+      "path": "odylith/radar/backlog-payload.v1.js",
+      "sha256": "1920b7f546a9918023ef65dcb9f9425f5a4a892a159738afd8f17bf168100b35",
+      "state": "present"
+    },
+    {
+      "byte_count": 56689,
+      "category": "radar",
+      "line_count": 2595,
+      "path": "odylith/radar/radar.html",
+      "sha256": "a303eb0560adfeabda0708d615604e026fe0cfff52636e085b05ea91e4fafa49",
+      "state": "present"
+    },
+    {
+      "byte_count": 769966,
+      "category": "radar",
+      "line_count": 24939,
+      "path": "odylith/radar/traceability-graph.v1.json",
+      "sha256": "03ceda947c68f616413490ac06f00dbb1f5abd80f4eb80d25ac496be2685a110",
+      "state": "present"
+    },
+    {
+      "byte_count": 35833,
       "category": "tooling_shell",
       "line_count": 1,
       "path": "odylith/tooling-payload.v1.js",
-      "sha256": "ac024285b612ed3e38e4e00e02d8dc5abbf09b771b2598ccbcf0aa6888bfdd89",
+      "sha256": "54765080e8fe8afbf224d01718e6200bcdbf0d093aa07a1ed0fa2792e71f44fd",
       "state": "present"
     },
     {
-      "byte_count": 205735,
+      "byte_count": 6699,
+      "category": "bundle_surface_mirror",
+      "line_count": 138,
+      "path": "src/odylith/bundle/assets/odylith/compass/compass.html",
+      "sha256": "3b881869767bf562a8040f1df8e0ca2af13f6021ccaad3596a4ee33a5b376eec",
+      "state": "present"
+    },
+    {
+      "byte_count": 205742,
       "category": "bundle_surface_mirror",
       "line_count": 4467,
       "path": "src/odylith/bundle/assets/odylith/index.html",
-      "sha256": "38b7627d1b7ca56aec443939fa6003bd16d55b369089e65ace1ee5c1d090825f",
+      "sha256": "319ee2489cd97e8d294668ed744b3836f499f01afd11193a4cd4e8835e3489e1",
+      "state": "present"
+    },
+    {
+      "byte_count": 56689,
+      "category": "bundle_surface_mirror",
+      "line_count": 2595,
+      "path": "src/odylith/bundle/assets/odylith/radar/radar.html",
+      "sha256": "a303eb0560adfeabda0708d615604e026fe0cfff52636e085b05ea91e4fafa49",
       "state": "present"
     }
   ],
-  "generated_changed_bytes": 7527366,
-  "generated_changed_count": 5,
+  "generated_changed_bytes": 36069831,
+  "generated_changed_count": 21,
   "manifest_path": "odylith/upgrade-generated-changes.v1.json",
-  "other_changed_paths": [],
+  "other_changed_paths": [
+    "odylith/runtime/delivery_intelligence.v4.json"
+  ],
   "pinned_version": "0.1.15",
   "previous_version": "0.1.15",
   "review_note": "Compact review manifest for generated Odylith surface churn. Reviewers can inspect these hashes and counts before opening large generated JS/JSON diffs.",

@@ -10,9 +10,12 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.common.prose_grammar import strip_leading_action_modal
+from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import indefinite_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import looks_plural
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
@@ -36,7 +39,7 @@ _ACTION_RESPONSIBILITIES = (
     (frozenset({"generate", "produce"}), "Generation"),
     (frozenset({"match"}), "Matching"),
     (frozenset({"route"}), "Routing"),
-    (frozenset({"preserve", "record", "save", "store", "track"}), "Recordkeeping"),
+    (frozenset({"log", "preserve", "record", "save", "store", "track"}), "Recordkeeping"),
     (frozenset({"review"}), "Review"),
     (frozenset({"schedule"}), "Scheduling"),
     (frozenset({"score"}), "Scoring"),
@@ -70,6 +73,7 @@ _WEAK_STATE_OBJECTS = frozenset(
 _GENERIC_CANONICAL_STATE_TERMS = frozenset(
     {"detail", "details", "information", "item", "object", "record", "state", "status", "thing"}
 )
+_CONTEXTUAL_ON_RE = r"on(?!\s+(?:file|hand|hold|record)\b)"
 
 
 def product_handoff_first_path(*, actor: str, first_path: str) -> str:
@@ -156,7 +160,18 @@ def internal_system_rows_from_first_path(
 ) -> list[str]:
     """Project distinct product responsibilities from first-path actions."""
 
+    source_path = clean_text(first_path).strip(" .")
     model = first_path_model(first_path)
+    source_human_subject = _matching_human_subject(source_path, human_actors=human_actors)
+    source_has_nominal_carry = bool(
+        source_human_subject
+        and any(
+            not _matching_human_subject(step, human_actors=human_actors)
+            and not _non_human_subject_prefix(step)
+            and not _starts_with_material_action(step)
+            for step in model.steps[1:]
+        )
+    )
     steps = [
         owned_step
         for step in model.steps
@@ -171,8 +186,18 @@ def internal_system_rows_from_first_path(
     used_responsibilities: set[str] = set()
     for index, step in enumerate(steps):
         human_subject = _matching_human_subject(step, human_actors=human_actors)
+        nominal_row = _nominal_responsibility_row(
+            step,
+            human_subject=human_subject,
+            source_first_path=first_path,
+        )
+        if nominal_row:
+            rows.append(nominal_row)
+            continue
         if human_subject:
             action = _action_after_subject(step, subject=human_subject) or _action_without_subject(step)
+            if index == 0 and source_has_nominal_carry and not re.search(r"[.!?]\s+\S", source_path):
+                action = _action_after_subject(source_path, subject=source_human_subject) or action
             rows.append(
                 _human_supported_system_row(
                     action=action,
@@ -215,19 +240,138 @@ def internal_system_rows_from_first_path(
             description = f"{_finite_action(step)} and keeps the visible result, failure reason, and review evidence together"
         else:
             suffix = _join_labels(responsibilities)
+            if any(label in {"Approval", "Assignment", "Selection"} for label in responsibilities):
+                action_label = singularize_last_word(action_label)
             name = f"{action_label} Workflow" if responsibilities == ["Processing"] else f"{action_label} {suffix}"
             owned_action = _lower_sentence_start(step) if non_human_subject else _finite_action(step)
-            description = f"{owned_action} while preserving status, ownership, blockers, and handoff context"
+            description = f"{owned_action} and keeps status, ownership, blockers, and handoff context"
         rows.append(f"{title_case_text(name)} — {description.rstrip('.')}")
-    if len(rows) == 1:
-        rows.append(
-            f"{title_case_text(f'{result_label} Review')} — presents the completed result, known limits, "
-            "failure reason, and evidence needed for the next decision"
+    exception_row = _exception_review_system_row(first_path=first_path, state_label=state_label)
+    removed_signoff_duplicate = False
+    if exception_row:
+        retained_rows = [row for row in rows if not _standalone_signoff_record(row)]
+        removed_signoff_duplicate = len(retained_rows) != len(rows)
+        rows = retained_rows
+        if not any("exception" in row.split("—", 1)[0].casefold() for row in rows):
+            rows.insert(max(1, len(rows) - 1), exception_row)
+    decision_row = _decision_signoff_system_row(first_path=first_path)
+    if decision_row and not any(
+        {"decision", "signoff"} <= set(re.findall(r"[a-z]+", row.split("—", 1)[0].casefold()))
+        for row in rows
+    ):
+        rows.insert(max(1, len(rows) - 1), decision_row)
+    if len(rows) == 1 or (removed_signoff_duplicate and len(rows) < 3):
+        rows.append(_result_review_system_row(result_label))
+    return list(unique_text(rows))
+
+
+def _exception_review_system_row(*, first_path: str, state_label: str) -> str:
+    text = clean_text(first_path)
+    if not re.search(r"\bexceptions?\b", text, flags=re.IGNORECASE):
+        return ""
+    if not re.search(
+        r"\b(?:approv(?:al|e[sd]?)|authori[sz](?:ation|e[sd]?)|decision|sign[ -]?off|waiver)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return ""
+    return (
+        f"{title_case_text(f'{state_label} Exception Review')} — records exception disposition and signoff for the "
+        "accepted path with owner, source evidence, blocked reason, and handoff state visible"
+    )
+
+
+def _decision_signoff_system_row(*, first_path: str) -> str:
+    text = clean_text(first_path)
+    if not re.search(r"\bdecisions?\b", text, flags=re.IGNORECASE):
+        return ""
+    if not re.search(
+        r"\b(?:approv(?:al|e[sd]?)|authori[sz](?:ation|e[sd]?)|sign[ -]?off)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return ""
+    return (
+        "Decision and Signoff Review — records the accepted decision and signoff with owner, source evidence, "
+        "blocked reason, and handoff state visible"
+    )
+
+
+def _standalone_signoff_record(row: str) -> bool:
+    name = clean_text(row).split("—", 1)[0].casefold().strip()
+    return bool(re.fullmatch(r"(?:operator\s+)?sign[ -]?off record", name))
+
+
+def _result_review_system_row(result_label: str) -> str:
+    return (
+        f"{title_case_text(f'{result_label} Review')} — presents the completed result, known limits, "
+        "failure reason, and evidence needed for the next decision"
+    )
+
+
+def _nominal_responsibility_row(step: str, *, human_subject: str, source_first_path: str) -> str:
+    if human_subject:
+        return ""
+    text = clean_text(step).strip(" .")
+    if not text:
+        return ""
+    subject = _explicit_action_subject(text)
+    action = _action_after_subject(text, subject=subject) or text
+    words = re.findall(r"[A-Za-z][A-Za-z0-9'-]*", action)
+    if not words:
+        return ""
+    first = words[0].casefold()
+    base = base_action_verb(first)
+    base_action = looks_like_base_action_token(base)
+    finite_action = looks_like_finite_action_token(first)
+    comma_head = text.split(",", 1)[0].strip()
+    comma_head_words = re.findall(r"[A-Za-z][A-Za-z0-9'-]*", comma_head)
+    action_shaped_list_head = bool(
+        "," in text
+        and comma_head_words
+        and looks_like_finite_action_token(comma_head_words[-1].casefold())
+    )
+    if subject:
+        nominal = not has_actor_role_word(subject) and (
+            (base_action and not finite_action) or action_shaped_list_head
         )
-    unique_rows = list(unique_text(rows))
-    if len(unique_rows) <= 4:
-        return unique_rows
-    return [*unique_rows[:3], unique_rows[-1]]
+    else:
+        nominal = (
+            len(words) == 2
+            and base_action
+            and not finite_action
+            and _source_list_context_is_nominal(source_first_path, text)
+        )
+    if not nominal:
+        return ""
+    label_source = comma_head if comma_head else text
+    label = _compact_label(label_source, fallback="Evidence", max_words=5)
+    name = label if label.casefold().endswith("record") else f"{label} Record"
+    detail = text[:1].casefold() + text[1:]
+    return (
+        f"{title_case_text(name)} — maintains {detail} with provenance, status, blockers, and handoff context"
+    )
+
+
+def _source_list_context_is_nominal(source: str, item: str) -> bool:
+    segments = [clean_text(part).strip(" .") for part in clean_text(source).split(",")]
+    item_key = clean_text(item).casefold().strip(" .")
+    for index, segment in enumerate(segments):
+        segment_key = re.sub(r"^(?:and|or)\s+", "", segment, flags=re.IGNORECASE).casefold()
+        if not segment_key.startswith(item_key) or index < 2:
+            continue
+        prior = [re.sub(r"^(?:and|or)\s+", "", row, flags=re.IGNORECASE) for row in segments[index - 2 : index]]
+        if all(not _starts_with_material_action(row) for row in prior):
+            return True
+    return False
+
+
+def _starts_with_material_action(value: str) -> bool:
+    words = re.findall(r"[A-Za-z][A-Za-z0-9'-]*", clean_text(value))
+    if not words:
+        return False
+    first = words[0].casefold()
+    return looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first)
 
 
 def _action_object(value: str) -> str:
@@ -238,6 +382,16 @@ def _action_object(value: str) -> str:
         base = base_action_verb(first)
         if looks_like_base_action_token(base) or looks_like_finite_action_token(first):
             action = " ".join(words[1:]).strip(" .")
+    chained_action = re.match(
+        r"^(?:and|or|then)\s+(?P<verb>[A-Za-z][A-Za-z'-]*)\s+(?P<object>.+)$",
+        action,
+        flags=re.IGNORECASE,
+    )
+    if chained_action:
+        verb = chained_action.group("verb").casefold()
+        base = base_action_verb(verb)
+        if looks_like_base_action_token(base) or looks_like_finite_action_token(verb):
+            action = chained_action.group("object").strip(" .")
     into_match = re.search(r"\binto\s+(?P<object>(?:a|an|the|one)?\s*[^.;]+)$", action, flags=re.IGNORECASE)
     text = clean_text(into_match.group("object") if into_match else strip_action(action)).strip(" .")
     text = re.split(r"\s*,\s*", text, maxsplit=1)[0]
@@ -247,7 +401,7 @@ def _action_object(value: str) -> str:
     text = " ".join(words).strip(" .")
     text = _before_coordinated_action(text)
     text = re.split(
-        r"\s+(?:based on|for|from|so that|such as|through|to|using|with|without)\s+",
+        rf"\s+(?:based on|for|from|{_CONTEXTUAL_ON_RE}|so that|such as|through|to|using|with|without)\s+",
         text,
         maxsplit=1,
         flags=re.IGNORECASE,
@@ -280,8 +434,9 @@ def _state_label(value: str, *, fallback: str) -> str:
 
 def _compact_label(value: str, *, fallback: str, max_words: int) -> str:
     text = clean_text(value).strip(" .")
+    text = re.sub(r"\s*:\s*", " ", text)
     text = re.split(
-        r"\s+(?:after|based on|before|for|from|so that|such as|through|using|with|without)\s+",
+        rf"\s+(?:after|based on|before|for|from|{_CONTEXTUAL_ON_RE}|so that|such as|through|using|with|without)\s+",
         text,
         maxsplit=1,
         flags=re.IGNORECASE,
@@ -327,7 +482,7 @@ def _explicit_action_subject(value: str) -> str:
         return ""
     subject = text[:index].strip(" ,.;:-")
     subject = re.sub(r"^(?:and|or|then)\s+", "", subject, flags=re.IGNORECASE).strip(" ,.;:-")
-    return subject
+    return strip_trailing_subject_modal(subject)
 
 
 def _sentence_start(value: str) -> str:
@@ -341,7 +496,7 @@ def _matching_human_subject(value: str, *, human_actors: Sequence[str]) -> str:
     if not subject_key:
         return ""
     for row in human_actors:
-        label = re.split(r"\s*(?::|—|–|-)\s*", clean_text(row), maxsplit=1)[0]
+        label = re.split(r"\s*(?::|—|–)\s*|\s+-\s+", clean_text(row), maxsplit=1)[0]
         label_key = _actor_key(label)
         if label_key and (subject_key == label_key or subject_key.endswith(f" {label_key}")):
             return subject
@@ -456,6 +611,9 @@ def _non_human_subject_prefix(value: str) -> str:
     words = clean_text(value).strip(" .").split()
     if not words:
         return ""
+    first = words[0].casefold().strip(".,;:")
+    if looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first):
+        return ""
     for end in range(1, min(5, len(words))):
         candidate = " ".join(words[:end]).strip(" ,.;:-")
         if has_non_human_actor_signal(candidate):
@@ -468,7 +626,8 @@ def _action_after_subject(value: str, *, subject: str) -> str:
     prefix = clean_text(subject).strip(" .")
     if not text or not prefix:
         return ""
-    return re.sub(rf"^{re.escape(prefix)}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    action = re.sub(rf"^{re.escape(prefix)}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    return strip_leading_action_modal(action)
 
 
 def _lower_sentence_start(value: str) -> str:
@@ -478,7 +637,10 @@ def _lower_sentence_start(value: str) -> str:
 
 def _action_verbs(value: str) -> list[str]:
     verbs: list[str] = []
-    for segment in re.split(r"\s*,\s*(?:and\s+)?|\s+(?:and|or|then)\s+", clean_text(value), flags=re.IGNORECASE):
+    source = clean_text(value)
+    for segment in re.split(r"\s*,\s*(?:and\s+)?|\s+(?:and|or|then)\s+", source, flags=re.IGNORECASE):
+        if _source_list_context_is_nominal(source, segment):
+            continue
         first = next(iter(re.findall(r"[A-Za-z]+", segment)), "")
         base = base_action_verb(first)
         if base and (looks_like_base_action_token(base) or looks_like_finite_action_token(first)):

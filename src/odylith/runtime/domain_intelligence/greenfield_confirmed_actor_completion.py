@@ -437,7 +437,10 @@ def _subject_candidate(sentence: str) -> str:
     lowered = subject.casefold()
     if lowered in {"app", "application", "product", "service", "system", "tool", "workspace"}:
         return ""
-    if re.search(r"\b(?:app|application|engine|platform|product|service|system|tool|workspace)\b", lowered):
+    if re.search(
+        r"\b(?:app|application|console|dashboard|engine|platform|product|service|system|tool|workspace)\b",
+        lowered,
+    ):
         return ""
     return _trim_non_actor_lead_words(subject)
 
@@ -491,6 +494,8 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
         "approvals",
         "confirmation",
         "contact",
+        "console",
+        "dashboard",
         "decision",
         "detail",
         "details",

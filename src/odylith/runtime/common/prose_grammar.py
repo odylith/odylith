@@ -11,6 +11,9 @@ from functools import lru_cache
 import re
 
 
+_ACTION_MODAL_WORDS = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
+
+
 _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
     "acknowledge": "acknowledges",
@@ -34,6 +37,7 @@ _INFINITIVE_TO_FINITE = {
     "attest": "attests",
     "assign": "assigns",
     "bind": "binds",
+    "be": "is",
     "block": "blocks",
     "book": "books",
     "bring": "brings",
@@ -56,6 +60,7 @@ _INFINITIVE_TO_FINITE = {
     "compute": "computes",
     "complete": "completes",
     "confirm": "confirms",
+    "configure": "configures",
     "connect": "connects",
     "contain": "contains",
     "control": "controls",
@@ -81,6 +86,7 @@ _INFINITIVE_TO_FINITE = {
     "drill": "drills",
     "draft": "drafts",
     "drive": "drives",
+    "do": "does",
     "edit": "edits",
     "emit": "emits",
     "enforce": "enforces",
@@ -110,6 +116,7 @@ _INFINITIVE_TO_FINITE = {
     "guide": "guides",
     "handle": "handles",
     "hand": "hands",
+    "have": "has",
     "harmonize": "harmonizes",
     "highlight": "highlights",
     "hold": "holds",
@@ -210,6 +217,7 @@ _INFINITIVE_TO_FINITE = {
     "start": "starts",
     "store": "stores",
     "stop": "stops",
+    "stream": "streams",
     "submit": "submits",
     "suggest": "suggests",
     "supply": "supplies",
@@ -270,6 +278,7 @@ _FINITE_ACTION_SUFFIX_FALSE_POSITIVES = frozenset(
 )
 _MODAL_BASE_FORM_MARKERS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 _MODAL_COORDINATORS = frozenset({"and", "or"})
+_EMBEDDED_QUESTION_PREPOSITIONS = frozenset({"about", "for", "of", "on", "over"})
 _MODAL_COORDINATED_PLURAL_OBJECT_TERMS = frozenset(
     {"blocks", "checks", "controls", "moves", "offers", "orders", "records", "requests", "runs", "signals", "updates"}
 )
@@ -368,6 +377,29 @@ TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"
 TERMINAL_FINAL_STATE_WORDS = frozenset({"case", "decision", "match", "record", "result", "review", "score", "status"})
 
 
+def strip_trailing_subject_modal(value: str) -> str:
+    """Remove a modal that subject extraction absorbed before an action."""
+
+    text = str(value or "").strip(" .")
+    words = text.split()
+    if len(words) >= 2 and words[-1].casefold().strip(".,;:()[]{}") in _ACTION_MODAL_WORDS:
+        return " ".join(words[:-1]).strip(" .")
+    return text
+
+
+def strip_leading_action_modal(value: str) -> str:
+    """Remove a modal wrapper from an already separated action clause."""
+
+    text = str(value or "").strip(" .")
+    return re.sub(
+        r"^(?:(?:can|could|may|might|must|should|will|would)\s+|needs?\s+to\s+|has\s+to\s+|have\s+to\s+)",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+
+
 def strip_dangling_word_tail(
     value: str,
     *,
@@ -457,6 +489,7 @@ def _modal_base_form_drift_segment(value: str, *, window: int) -> list[str]:
     for modal_index, token in enumerate(lowered):
         if token not in _MODAL_BASE_FORM_MARKERS:
             continue
+        embedded_question_scope = _modal_has_embedded_question_scope(lowered, modal_index)
         window_end = min(len(lowered), modal_index + max(2, window))
         direct_index = _next_modal_candidate(lowered, modal_index + 1, window_end)
         if direct_index is not None and lowered[direct_index] == "be":
@@ -480,9 +513,32 @@ def _modal_base_form_drift_segment(value: str, *, window: int) -> list[str]:
                 continue
             if _coordinated_candidate_is_plural_object(lowered, candidate_index, window_end):
                 continue
+            if embedded_question_scope:
+                continue
             if looks_like_finite_action_token(lowered[candidate_index]):
                 phrases.append(" ".join(tokens[index : candidate_index + 1]))
     return _unique_strings(phrases)
+
+
+def _modal_has_embedded_question_scope(tokens: list[str], modal_index: int) -> bool:
+    """Return whether a modal belongs to an embedded ``whether`` or ``if`` clause."""
+
+    for marker_index in range(modal_index - 1, -1, -1):
+        marker = tokens[marker_index]
+        if marker not in {"if", "whether"}:
+            continue
+        if marker == "whether" and marker_index == 0:
+            return True
+        previous_index = marker_index - 1
+        while previous_index >= 0 and tokens[previous_index].endswith("ly"):
+            previous_index -= 1
+        if previous_index >= 0 and (
+            tokens[previous_index] in _EMBEDDED_QUESTION_PREPOSITIONS
+            or action_token_form(tokens[previous_index])
+        ):
+            return True
+        return False
+    return False
 
 
 def _coordinated_candidate_is_plural_object(tokens: list[str], candidate_index: int, window_end: int) -> bool:
@@ -672,7 +728,15 @@ def repair_modal_base_form_drift(value: str) -> str:
     modal_pattern = "|".join(re.escape(modal) for modal in sorted(_MODAL_BASE_FORM_MARKERS))
 
     def replace_clause(match: re.Match[str]) -> str:
-        return f"{match.group('modal')} {_repair_modal_clause_body(match.group('body'), finite_pattern=finite_pattern)}"
+        prefix = str(value or "")[: match.start("modal")]
+        segment_prefix = re.split(r"[.!?;:,]+", prefix)[-1]
+        prefix_tokens = [_clean_word_token(token) for token in _word_tokens(segment_prefix)]
+        modal_tokens = [*prefix_tokens, _clean_word_token(match.group("modal"))]
+        repair_coordinated = not _modal_has_embedded_question_scope(modal_tokens, len(modal_tokens) - 1)
+        return (
+            f"{match.group('modal')} "
+            f"{_repair_modal_clause_body(match.group('body'), finite_pattern=finite_pattern, repair_coordinated=repair_coordinated)}"
+        )
 
     return re.sub(
         rf"\b(?P<modal>{modal_pattern})\s+(?P<body>[^.!?;:]+)",
@@ -728,12 +792,14 @@ def _previous_word_before(value: str, index: int) -> str:
     return _clean_word_token(match.group(1)) if match else ""
 
 
-def _repair_modal_clause_body(value: str, *, finite_pattern: str) -> str:
+def _repair_modal_clause_body(value: str, *, finite_pattern: str, repair_coordinated: bool = True) -> str:
     text = str(value or "")
     first, separator, rest = text.partition(" ")
     first_token = _clean_word_token(first)
     if separator and first_token != "be" and first_token in _FINITE_TO_BASE:
         text = f"{_replace_word_token(first, _FINITE_TO_BASE[first_token])} {rest}"
+    if not repair_coordinated:
+        return text
 
     def replace_coordinated(match: re.Match[str]) -> str:
         verb = match.group("verb")

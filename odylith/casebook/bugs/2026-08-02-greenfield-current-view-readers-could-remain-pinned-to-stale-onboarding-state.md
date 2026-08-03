@@ -20,7 +20,7 @@
 
 - Detected By: Adversarial transaction and recovery review under B-142
 
-- Failure Signature: Active generation remains status=active after a later managed-path mutation; no production supersession caller distinguishes successful, failed, and in-flight writers.
+- Failure Signature: Active generation remains status=active after a later managed-path mutation; no production supersession caller distinguishes successful, failed, and in-flight writers. Adversarial recovery review also found that installed generation observation pinned metadata without the sealed expected write set, allowing manifest-consistent but corrupted after-image bytes to satisfy the proof, and that matrix navigation checks ignored the emitted `dashboard_path` and `project_url`.
 
 - Trigger Path: Greenfield CONFIRM followed by any supported Odylith CLI command that mutates GREENFIELD_REPOSITORY_WRITE_PATHS
 
@@ -38,13 +38,13 @@
 
 - Invariant Violated: Canonical readers must resolve a coherent active generation and move to live truth only after a successful changed writer completes.
 
-- Root Cause: The active-generation pointer had no cooperating later-writer boundary; supersession existed only as an unused primitive and reader drift alone could not distinguish success from partial failure.
+- Root Cause: The active-generation pointer had no cooperating later-writer boundary; supersession existed only as an unused primitive and reader drift alone could not distinguish success from partial failure. The recovery harness validated generation identity but did not provide the expected sealed write set to byte-level after-state validation, while navigation proof remained bound only to legacy route aliases.
 
 - Solution: Serialize supported CLI mutations with the Greenfield repository lock, retain the old generation while a writer runs, supersede only after zero-exit changed managed readback, fail closed on unexplained drift, and retain exact reviewed-generation routes.
 
 - Rollback/Forward Fix: Forward fix; preserve immutable generations and existing journals.
 
-- Verification: 84 focused atomic/custody tests pass, including in-flight reader, changed success, failed partial, no-op, exact receipt, and lock contention cases; real CLI contract tests cover immutable navigation.
+- Verification: 84 focused atomic/custody tests pass, including in-flight reader, changed success, failed partial, no-op, exact receipt, and lock contention cases; real CLI contract tests cover immutable navigation. The recovery harness now loads the sealed expected write set, corrupts a generation byte while preserving pointer and manifest metadata, and observes invalid readback. Matrix navigation proof binds `dashboard_path`, `project_url`, compatibility path, view status, and transaction hash to the reviewed immutable generation dashboard and requires that file to exist. These checks are included in the 460-test touched source checkpoint; clean installed fault and browser proof remains open.
 
 - Prevention: Keep command_may_mutate_greenfield_managed_paths conservative, require run_with_greenfield_managed_mutation_boundary around top-level CLI dispatch, and block merges unless test_greenfield_managed_mutation_boundary.py proves changed-success, failed, no-op, and contention behavior.
 

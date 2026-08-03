@@ -385,6 +385,9 @@ def rationale_scope_focus(value: str, *, fallback: str) -> str:
 
 def rationale_proof_focus(value: str, *, fallback: str) -> str:
     text = proof_claim_summary(value, limit=160).strip(" .")
+    sentences = [row.strip(" .") for row in re.split(r"(?<=[.!?])\s+", text) if row.strip(" .")]
+    if len(sentences) > 1 and word_count(sentences[0]) >= 5:
+        text = sentences[0]
     text = re.split(r"\s+without\s+|\s+and\s+missing\b|\s+and\s+deferred\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     if word_count(text) > 14:
         text = _bounded_complete_proof_focus(text, max_words=18)

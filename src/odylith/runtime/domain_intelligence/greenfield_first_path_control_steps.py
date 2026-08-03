@@ -233,7 +233,7 @@ def strip_trailing_requirement_control_steps(value: str) -> str:
         kept.append(row)
     if not dropped_tail:
         return text
-    return " ".join(kept).strip(" .") or text
+    return ". ".join(kept).strip(" .") or text
 
 
 def contains_requirement_control_clause(value: str) -> bool:
@@ -302,6 +302,12 @@ def is_requirement_control_step(value: str) -> bool:
     words = _words(text)
     return bool(
         re.match(
+            r"^(?:(?:the|this|that)\s+)?(?:first|initial)\s+(?:release|version)\s+"
+            rf"{modal}",
+            text,
+            flags=re.IGNORECASE,
+        )
+        or re.match(
             r"^(?:(?:the|this|that)\s+)?"
             r"(?:accepted\s+path|application|app|artifact|artifacts|generated\s+artifacts|"
             r"flow|journey|output|path|product|result|system|tool|workflow|workspace|it)"

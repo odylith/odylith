@@ -88,8 +88,12 @@ def _source_facts(value: Any) -> Mapping[str, Any] | None:
 
 def _same_fact(source_value: Any, fact_value: Any) -> bool:
     if _is_row_sequence(fact_value):
-        return confirmed_text_values(source_value) == confirmed_text_values(fact_value)
-    return clean_markdown_text(source_value) == clean_markdown_text(fact_value)
+        return _casefold_rows(source_value) == _casefold_rows(fact_value)
+    return clean_markdown_text(source_value).casefold() == clean_markdown_text(fact_value).casefold()
+
+
+def _casefold_rows(value: Any) -> list[str]:
+    return [row.casefold() for row in confirmed_text_values(value)]
 
 
 def _fact_rows(value: Any) -> list[str]:

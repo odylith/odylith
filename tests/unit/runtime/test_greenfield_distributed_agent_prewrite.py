@@ -95,6 +95,9 @@ def test_prewrite_package_repairs_relative_actor_clause_before_public_previews(t
     assert report.passed, "\n".join(report.issues)
     assert "Launches launches" not in preview_text
     assert "Operator Who Launches" not in preview_text
-    assert "Actors include Workflow Designer, Distributed Multi-Agent Operator, Risky Actions Reviewer" in preview_text
+    actor_text = preview_text.casefold()
+    assert "actors include workflow designer, distributed multi-agent operator, risky actions reviewer" in actor_text
     assert "Risky Actions or Validates Final Outputs Reviewer" not in preview_text
+    assert "Streams asks" not in preview_text
+    assert "Streams resolves" not in preview_text
     assert "Core Product State Is a Durable Work Graph" not in preview_text

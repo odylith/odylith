@@ -190,7 +190,7 @@ def singularize_last_word(value: str) -> str:
         words[-1] = f"{last[:-3]}y"
     elif len(last) > 4 and lowered.endswith(("ches", "shes", "xes", "zes")):
         words[-1] = last[:-2]
-    elif len(last) > 3 and lowered.endswith("s") and not lowered.endswith("ss"):
+    elif len(last) > 3 and lowered.endswith("s") and lowered not in {"status"} and not lowered.endswith("ss"):
         words[-1] = last[:-1]
     return " ".join(words)
 

@@ -357,6 +357,15 @@ def has_non_human_actor_signal(value: str) -> bool:
     return bool(tokens & _NON_HUMAN_ACTOR_CONTEXT_TERMS) or is_automated_actor(value)
 
 
+def is_actor_obligation_noun_phrase(value: str) -> bool:
+    """Return whether a review obligation is being mistaken for an actor action."""
+
+    words = re.findall(r"[a-z]+", str(value or "").casefold())
+    if len(words) < 3 or words[0] not in {"explicit", "independent", "manual", "required"}:
+        return False
+    return words[-1] in {"approval", "decision", "judgment", "review", "signoff", "validation"}
+
+
 def starts_with_automated_actor(value: str) -> bool:
     """Return whether the opening actor phrase is automated, not a later tool mention."""
 
@@ -416,6 +425,7 @@ __all__ = [
     "has_human_actor_role_signal",
     "has_human_actor_signal",
     "has_non_human_actor_signal",
+    "is_actor_obligation_noun_phrase",
     "is_automated_actor",
     "starts_with_automated_actor",
     "localize_generic_actor_label",

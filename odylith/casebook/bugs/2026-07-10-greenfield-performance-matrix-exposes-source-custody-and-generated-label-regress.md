@@ -1,6 +1,6 @@
 - Bug ID: CB-227
 
-- Status: FixedPendingRelease
+- Status: InProgress
 
 - Fixed: Pending
 
@@ -48,6 +48,12 @@
 
 - Verification: Source-local proof passed the exact three replays, 3 tests in 141.48s; pattern and authority coverage, 26 tests in 69.48s; focused actor, envelope, text, and semantic coverage, 72 tests in 21.81s; the performance file, 13 tests in 876.57s; and the full slop, artifact, and render suite, 198 tests in 198.86s. Adversarial follow-up added literal claim-span authority, qualified-system ownership, actor-led concise-path, terminal-flow-proof, receipt, and atomic-write regressions. The final focused actor/envelope suite passed 30 tests in 13.31s, and the complete current-source performance matrix passed all 13 cases in 698.98s. Fresh installed dist `9606871db` then passed all 14 standard cases at 10/10 with zero issues, browser proof 14/14, platform-leakage and temporary-root cleanup proof, and synthetic/natural rescue. Standard create totals were 37.280-50.035s and commit-only apply was 0.106-0.120s.
 
+- Follow-Up Failure Mechanisms (2026-08-02): The current-source performance gate found three adjacent contract defects. Title-only `project_intelligence_binding.artifact_id` values copied mutable display prose before source-casing repair, so an internal `sunLedger` token survived after the visible workstream title became `SunLedger`. The rendered-copy parser discarded terminal question marks before evaluating dangling prepositions, so the valid ambiguity `multiple rigs the app must select between?` became a false pre-confirm Product Intent failure. The rerun path test also resolved repo-relative durable paths against the Odylith source checkout instead of the consumer repo, falsely reporting a containment failure.
+
+- Follow-Up Solution (2026-08-02): Title-only binding IDs now use casing-insensitive structural slugs, and proposal validation requires every binding kind and ID to match the current artifact contract. Narrative quality parsing now retains question punctuation and permits only question-final prepositions while continuing to reject the same tail in declarative copy. The idempotency test now requires durable paths to remain relative and resolves them against the consumer root before checking containment.
+
+- Follow-Up Verification (2026-08-02): Six binding tests, nineteen casing and title tests, eight focused rendered-copy tests, the exact SunLedger journey, the exact quantum journey, three later performance journeys, and the two-cycle multi-actor idempotency journey pass. Full source validation, rebuilt distribution, and clean installed proof remain open.
+
 - Prevention: Keep exact high-variance source and label fixtures in the performance gate, reject actorless status prose from concise-path completion, classify terminal proof loops as supporting evidence, and require generated source plus visible-surface scans, not only returned payload checks.
 
 - Agent Guardrails: Do not delete evidence blindly, patch rendered files, add domain-specific word lists, or weaken banned-copy assertions. Repair classification and projection owners.
@@ -64,7 +70,7 @@
 
 - Related Incidents/Bugs: CB-198, CB-215, CB-223, CB-226
 
-- Fixed In: 0.1.15 release proof verified; shipment pending
+- Fixed In: 0.1.15 source fix under validation; fresh installed release proof pending
 
 - Code References: - tests/integration/runtime/test_greenfield_create_performance.py
 - src/odylith/runtime/domain_intelligence

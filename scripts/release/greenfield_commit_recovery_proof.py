@@ -20,6 +20,18 @@ from greenfield_process import run_command_with_group_timeout as _run
 from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
 from greenfield_commit_recovery_cases import recovery_case_evidence
 from greenfield_commit_recovery_cases import select_recovery_case
+from greenfield_commit_recovery_generation import FSYNC_FAILURE_FAULT as _FSYNC_FAILURE_FAULT
+from greenfield_commit_recovery_generation import GENERATION_OBSERVATION_SCRIPT as _GENERATION_OBSERVATION_SCRIPT
+from greenfield_commit_recovery_generation import SIGKILL_FAULT as _SIGKILL_FAULT
+from greenfield_commit_recovery_generation import generation_observation_issues as _generation_observation_issues
+from greenfield_commit_recovery_generation import require_aborted_generation_boundary as _require_aborted_generation_boundary
+from greenfield_commit_recovery_generation import require_journal_generation_binding as _require_journal_generation_binding
+from greenfield_commit_recovery_generation import (
+    require_prepublication_generation_boundary as _require_prepublication_generation_boundary,
+)
+from greenfield_commit_recovery_generation import (
+    require_published_generation_boundary as _require_published_generation_boundary,
+)
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from local_release_smoke import _cleanup_smoke_temp_root
@@ -30,40 +42,6 @@ from local_release_smoke import _serve_directory
 COMMAND_TIMEOUT_SECONDS = 300
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
-_SIGKILL_FAULT = """
-import os
-import signal
-import sys
-
-from odylith import cli
-from odylith.runtime.domain_intelligence import greenfield_repository_write_set
-
-original = greenfield_repository_write_set.atomic_write_bytes
-
-
-def crash_after_first_sealed_write(*args, **kwargs):
-    result = original(*args, **kwargs)
-    os.kill(os.getpid(), signal.SIGKILL)
-    return result
-
-
-greenfield_repository_write_set.atomic_write_bytes = crash_after_first_sealed_write
-raise SystemExit(cli.main(sys.argv[1:]))
-"""
-_FSYNC_FAILURE_FAULT = """
-import sys
-
-from odylith import cli
-from odylith.runtime.domain_intelligence import greenfield_repository_write_set
-
-
-def fail_after_first_sealed_write(*_args, **_kwargs):
-    raise OSError("injected installed Greenfield fsync failure")
-
-
-greenfield_repository_write_set.fsync_file = fail_after_first_sealed_write
-raise SystemExit(cli.main(sys.argv[1:]))
-"""
 
 
 @dataclass(frozen=True)
@@ -96,6 +74,9 @@ class GreenfieldInstalledCommitRecoveryProof:
     product_facts_sha256: str = ""
     product_facts_hashes_by_phase: Mapping[str, str] = field(default_factory=dict)
     product_facts_hash_sources_by_phase: Mapping[str, str] = field(default_factory=dict)
+    sigkill_generation_observations: Mapping[str, Any] = field(default_factory=dict)
+    operator_conflict_generation_observations: Mapping[str, Any] = field(default_factory=dict)
+    fsync_generation_observations: Mapping[str, Any] = field(default_factory=dict)
     recovery_case: Mapping[str, Any] = field(default_factory=dict)
 
     @property
@@ -132,6 +113,9 @@ class GreenfieldInstalledCommitRecoveryProof:
             "product_facts_sha256": self.product_facts_sha256,
             "product_facts_hashes_by_phase": dict(self.product_facts_hashes_by_phase),
             "product_facts_hash_sources_by_phase": dict(self.product_facts_hash_sources_by_phase),
+            "sigkill_generation_observations": dict(self.sigkill_generation_observations),
+            "operator_conflict_generation_observations": dict(self.operator_conflict_generation_observations),
+            "fsync_generation_observations": dict(self.fsync_generation_observations),
             "recovery_case": dict(self.recovery_case),
         }
 
@@ -257,6 +241,11 @@ def run_installed_commit_recovery_proof(
         product_facts_sha256=str(facts.get("product_facts_sha256") or ""),
         product_facts_hashes_by_phase=_mapping(facts.get("product_facts_hashes_by_phase")),
         product_facts_hash_sources_by_phase=_mapping(facts.get("product_facts_hash_sources_by_phase")),
+        sigkill_generation_observations=_mapping(facts.get("sigkill_generation_observations")),
+        operator_conflict_generation_observations=_mapping(
+            facts.get("operator_conflict_generation_observations")
+        ),
+        fsync_generation_observations=_mapping(facts.get("fsync_generation_observations")),
         recovery_case=_mapping(facts.get("recovery_case")),
     )
 
@@ -266,14 +255,14 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
 
     missing: list[str] = []
     required_values = {
-        "journal_state_after_crash": "applying",
-        "journal_state_after_recovery": "committed",
-        "fsync_journal_state_after_failure": "rolled_back",
-        "fsync_journal_state_after_retry": "committed",
+        "journal_state_after_crash": "projecting",
+        "journal_state_after_recovery": "closed",
+        "fsync_journal_state_after_failure": "aborted",
+        "fsync_journal_state_after_retry": "closed",
         "fsync_failure_kind": "post_confirm_commit_environment_or_io_failure",
         "operator_conflict_failure_kind": "post_confirm_commit_recovery_conflict",
         "operator_conflict_rollback_status": "not_started",
-        "operator_conflict_journal_state": "applying",
+        "operator_conflict_journal_state": "projecting",
     }
     for key, expected in required_values.items():
         if str(facts.get(key) or "") != expected:
@@ -306,7 +295,7 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
     phase_sources = _mapping(facts.get("product_facts_hash_sources_by_phase"))
     required_phase_sources = {
         "sigkill": "success_receipt",
-        "operator_conflict": "applying_journal_commit_receipt",
+        "operator_conflict": "projecting_journal_commit_receipt",
         "fsync": "retry_success_receipt",
     }
     for phase, required_source in required_phase_sources.items():
@@ -314,6 +303,7 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
             missing.append(f"installed recovery proof did not retain the sealed Product Intent facts hash for {phase}")
         if phase_sources.get(phase) != required_source:
             missing.append(f"installed recovery proof did not record the observed Product Intent facts source for {phase}")
+    missing.extend(_generation_observation_issues(facts))
     recovery_case = _mapping(facts.get("recovery_case"))
     for key in ("id", "prompt_sha256"):
         if not str(recovery_case.get(key) or "").strip():
@@ -364,6 +354,12 @@ def _run_sigkill_recovery_phase(
         case=case,
     )
     before = _governed_fingerprint(repo_root)
+    generation_before = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
     command = _create_command(
         transaction_file=compiled.transaction_file,
         transaction_hash=compiled.transaction_hash,
@@ -377,9 +373,22 @@ def _run_sigkill_recovery_phase(
     after_crash = _governed_fingerprint(repo_root)
     if not after_crash or after_crash == before:
         raise RuntimeError("SIGKILL proof did not observe a partial sealed governed write before recovery")
+    generation_after_crash = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
+    _require_prepublication_generation_boundary(
+        before=generation_before,
+        after=generation_after_crash,
+        write_set_hash=compiled.write_set_hash,
+        label="SIGKILL",
+    )
     journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
-    if journal.get("state") != "applying":
-        raise RuntimeError("SIGKILL proof did not leave the installed commit journal in applying state")
+    if journal.get("state") != "projecting":
+        raise RuntimeError("SIGKILL proof did not leave the installed commit journal in projecting state")
+    _require_journal_generation_binding(journal=journal, observation=generation_after_crash)
     recovered = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
     recovery_payload = _require_success_payload(recovered, label="installed SIGKILL recovery create")
     recovered_product_facts_hash = _require_receipt_identity(
@@ -392,8 +401,20 @@ def _run_sigkill_recovery_phase(
     if not after_recovery or after_recovery == before:
         raise RuntimeError("installed SIGKILL recovery did not materialize the sealed governed package")
     completed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
-    if completed_journal.get("state") != "committed":
-        raise RuntimeError("installed SIGKILL recovery did not produce a committed durable receipt")
+    if completed_journal.get("state") != "closed":
+        raise RuntimeError("installed SIGKILL recovery did not produce a closed durable receipt")
+    generation_after_recovery = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
+    _require_published_generation_boundary(
+        observation=generation_after_recovery,
+        transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash,
+        label="SIGKILL recovery",
+    )
     journal_root = _journal_root(repo_root, compiled.transaction_hash)
     if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
         raise RuntimeError("installed SIGKILL recovery retained rollback artifacts after durable commit")
@@ -418,6 +439,11 @@ def _run_sigkill_recovery_phase(
         "journal_state_after_crash": str(journal.get("state") or ""),
         "journal_state_after_recovery": str(completed_journal.get("state") or ""),
         "governed_write_observed_after_crash": True,
+        "sigkill_generation_observations": {
+            "before": generation_before,
+            "after_crash": generation_after_crash,
+            "after_recovery": generation_after_recovery,
+        },
         "product_facts_sha256": recovered_product_facts_hash,
         "product_facts_hash_source": "success_receipt",
         **runtime_identity,
@@ -441,6 +467,12 @@ def _run_operator_conflict_recovery_phase(
         case=case,
     )
     before = _governed_fingerprint(repo_root)
+    generation_before = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
     command = _create_command(
         transaction_file=compiled.transaction_file,
         transaction_hash=compiled.transaction_hash,
@@ -451,6 +483,18 @@ def _run_operator_conflict_recovery_phase(
             "installed conflict proof did not terminate with SIGKILL after its first sealed write: "
             + _command_detail(crashed)
         )
+    generation_after_crash = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
+    _require_prepublication_generation_boundary(
+        before=generation_before,
+        after=generation_after_crash,
+        write_set_hash=compiled.write_set_hash,
+        label="operator-conflict SIGKILL",
+    )
     partial_write = _interrupted_governed_write_path(
         repo_root=repo_root,
         before=before,
@@ -474,8 +518,9 @@ def _run_operator_conflict_recovery_phase(
             f"{rollback_status or 'missing'}"
         )
     journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
-    if journal.get("state") != "applying":
+    if journal.get("state") != "projecting":
         raise RuntimeError("installed conflict recovery changed the interrupted journal state")
+    _require_journal_generation_binding(journal=journal, observation=generation_after_crash)
     conflict_product_facts_hash = _require_journal_receipt_identity(
         journal,
         transaction_hash=compiled.transaction_hash,
@@ -492,6 +537,14 @@ def _run_operator_conflict_recovery_phase(
         raise RuntimeError("installed conflict recovery discarded the retained rollback snapshot")
     if partial_write.read_bytes() != operator_bytes:
         raise RuntimeError("installed conflict recovery overwrote the later operator mutation")
+    generation_after_conflict = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
+    if generation_after_conflict != generation_after_crash:
+        raise RuntimeError("installed conflict recovery changed generation or pointer state")
     return {
         "operator_conflict_returncode": conflicted.returncode,
         "operator_conflict_failure_kind": failure_kind,
@@ -500,8 +553,13 @@ def _run_operator_conflict_recovery_phase(
         "operator_mutation_preserved": True,
         "operator_conflict_snapshot_retained": True,
         "operator_conflict_recovery_path_bound": True,
+        "operator_conflict_generation_observations": {
+            "before": generation_before,
+            "after_crash": generation_after_crash,
+            "after_conflict": generation_after_conflict,
+        },
         "product_facts_sha256": conflict_product_facts_hash,
-        "product_facts_hash_source": "applying_journal_commit_receipt",
+        "product_facts_hash_source": "projecting_journal_commit_receipt",
     }
 
 
@@ -520,6 +578,12 @@ def _run_fsync_rollback_phase(
         case=case,
     )
     before = _governed_fingerprint(repo_root)
+    generation_before = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
     command = _create_command(
         transaction_file=compiled.transaction_file,
         transaction_hash=compiled.transaction_hash,
@@ -535,8 +599,19 @@ def _run_fsync_rollback_phase(
     if _governed_fingerprint(repo_root) != before:
         raise RuntimeError("installed fsync failure left partial governed writes after rollback")
     failed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
-    if failed_journal.get("state") != "rolled_back":
-        raise RuntimeError("installed fsync failure did not persist a rolled_back journal state")
+    if failed_journal.get("state") != "aborted":
+        raise RuntimeError("installed fsync failure did not persist an aborted journal state")
+    generation_after_failure = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
+    _require_aborted_generation_boundary(
+        before=generation_before,
+        after=generation_after_failure,
+        label="fsync rollback",
+    )
     journal_root = _journal_root(repo_root, compiled.transaction_hash)
     if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
         raise RuntimeError("installed fsync failure retained rollback artifacts after cleanup")
@@ -552,8 +627,20 @@ def _run_fsync_rollback_phase(
     if not after_retry:
         raise RuntimeError("installed fsync rollback retry did not materialize the sealed governed package")
     completed_journal = _journal_state(repo_root=repo_root, transaction_hash=compiled.transaction_hash)
-    if completed_journal.get("state") != "committed":
-        raise RuntimeError("installed fsync rollback retry did not produce a committed durable receipt")
+    if completed_journal.get("state") != "closed":
+        raise RuntimeError("installed fsync rollback retry did not produce a closed durable receipt")
+    generation_after_retry = _installed_generation_observation(
+        repo_root=repo_root,
+        env=env,
+        transaction_hash=compiled.transaction_hash,
+        transaction_file=compiled.transaction_file,
+    )
+    _require_published_generation_boundary(
+        observation=generation_after_retry,
+        transaction_hash=compiled.transaction_hash,
+        write_set_hash=compiled.write_set_hash,
+        label="fsync retry",
+    )
     if (journal_root / "snapshot").exists() or (journal_root / "staging").exists():
         raise RuntimeError("installed fsync rollback retry retained rollback artifacts after durable commit")
     same_hash_retry = _run(cwd=repo_root, env=dict(env), command=command, timeout=COMMAND_TIMEOUT_SECONDS)
@@ -577,6 +664,11 @@ def _run_fsync_rollback_phase(
         "fsync_journal_state_after_failure": str(failed_journal.get("state") or ""),
         "fsync_journal_state_after_retry": str(completed_journal.get("state") or ""),
         "fsync_failure_kind": failure_kind,
+        "fsync_generation_observations": {
+            "before": generation_before,
+            "after_failure": generation_after_failure,
+            "after_retry": generation_after_retry,
+        },
         "product_facts_sha256": retry_product_facts_hash,
         "product_facts_hash_source": "retry_success_receipt",
     }
@@ -727,6 +819,32 @@ def _installed_runtime_identity(*, repo_root: Path, env: Mapping[str, str], vers
         "installed_runtime_module_path": str(module_path),
         "installed_runtime_version": installed_version,
     }
+
+
+def _installed_generation_observation(
+    *,
+    repo_root: Path,
+    env: Mapping[str, str],
+    transaction_hash: str,
+    transaction_file: str,
+) -> Mapping[str, Any]:
+    """Observe the installed pointer, canonical pin, and transaction generation together."""
+
+    runtime_python = repo_root / ".odylith" / "runtime" / "current" / "bin" / "python"
+    observed = _run(
+        cwd=repo_root,
+        env=dict(env),
+        command=[
+            str(runtime_python),
+            "-I",
+            "-c",
+            _GENERATION_OBSERVATION_SCRIPT,
+            transaction_hash,
+            transaction_file,
+        ],
+        timeout=COMMAND_TIMEOUT_SECONDS,
+    )
+    return _require_success_payload(observed, label="installed generation observation")
 
 
 def _create_command(*, transaction_file: str, transaction_hash: str) -> list[str]:

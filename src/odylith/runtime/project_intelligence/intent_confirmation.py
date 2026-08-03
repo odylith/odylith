@@ -132,7 +132,8 @@ def format_confirmation_choice_lines(choices: Sequence[tuple[str, str]]) -> list
     lines = [
         "## Choose one command",
         "",
-        "Copy one complete command exactly as shown. The approval code binds your choice to this reviewed package.",
+        "Use one complete command below. Copy CONFIRM or REJECT exactly. For EDIT, replace `<corrections>` with "
+        "your changes. The approval code binds your choice to this reviewed package.",
     ]
     for label, detail in choices:
         command = _clean(label)

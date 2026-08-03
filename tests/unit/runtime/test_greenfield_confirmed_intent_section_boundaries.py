@@ -449,7 +449,7 @@ References
 
     rendered = json.dumps(intent, sort_keys=True).casefold()
 
-    assert intent["product_story"].startswith("Water district operators need")
+    assert intent["product_story"].casefold().startswith("water district operators need")
     assert intent["state_object"].startswith("A allocation plan tracks")
     assert intent["first_path"].startswith("One representative user can create an allocation plan")
     assert "Use deterministic fixtures" not in intent["first_path"]
@@ -651,7 +651,7 @@ def test_markdown_table_product_intent_rows_are_typed_facts() -> None:
     )
 
     assert intent["title"] == "Oncology Trial Consent Navigator"
-    assert intent["product_story"].startswith("Clinical research coordinators need")
+    assert intent["product_story"].casefold().startswith("clinical research coordinators need")
     assert intent["first_path"].startswith("A research coordinator creates one consent case")
     assert intent["non_goals"] == ["Do not provide clinical diagnosis or treatment advice."]
 

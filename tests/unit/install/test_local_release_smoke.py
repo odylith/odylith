@@ -250,7 +250,7 @@ def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch,
                     '{\n'
                     '  "mode": "product_create_transaction",\n'
                     '  "product_create_transaction": {"transaction_hash": "unit-transaction-hash"},\n'
-                    '  "transaction_file": ".odylith/runtime/greenfield/product-create-transaction.v1.json"\n'
+                    '  "transaction_file": ".odylith/runtime/greenfield/pending/unit-transaction-hash/product-create-transaction.v1.json"\n'
                     '}\n'
                 )
             elif "create" in command:
@@ -290,7 +290,7 @@ def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch,
             "--repo-root",
             ".",
             "--transaction-file",
-            ".odylith/runtime/greenfield/product-create-transaction.v1.json",
+            ".odylith/runtime/greenfield/pending/unit-transaction-hash/product-create-transaction.v1.json",
             "--transaction-hash",
             "unit-transaction-hash",
             "--confirm",
@@ -313,7 +313,7 @@ def test_release_smoke_requires_installed_greenfield_guidance_uses_proposal_firs
     repo_root.mkdir()
     _write_greenfield_guidance(
         repo_root,
-        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction before showing the only hash-bound CONFIRM rail. EDIT supplies new evidence and rebuilds the proposal; REJECT writes nothing. Run odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm to commit. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after CONFIRM. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
+        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction before showing the only hash-bound CONFIRM rail. EDIT supplies new evidence and rebuilds the proposal; REJECT writes nothing. Run odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm to commit. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after CONFIRM. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
     )
 
     module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
