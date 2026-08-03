@@ -409,10 +409,14 @@ def test_greenfield_propose_command_is_provider_free(tmp_path: Path, capsys) -> 
 
     payload = json.loads(capsys.readouterr().out)
     assert rc == 0
-    assert payload["mode"] == "product_create_transaction"
-    assert payload["product_create_transaction"]["compiler_phase"] == "pre_confirm_compile"
-    assert payload["product_create_transaction"]["quality_status"] == "passed"
-    assert payload["product_create_transaction"]["verified"] is True
+    assert payload == {
+        "mode": "clarification_required",
+        "clarification": {
+            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
+            "required_fields": ["first_path"],
+        },
+    }
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
     assert "provider_calls" not in payload
     assert "host_reasoning_task" not in payload
     assert "backlog" not in payload

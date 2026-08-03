@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-02
+Last updated (UTC): 2026-08-03
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-307 | 2026-08-03 | Automated greenfield create opened committed dashboard in operator browser | P2 | domain-intelligence | Open | [2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md](2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md) |
 | CB-303 | 2026-08-02 | Greenfield project surfaces repeated and clipped canonical meaning | P1 | domain-intelligence-greenfield | Open | [2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md](2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md) |
 | CB-306 | 2026-08-02 | Greenfield model profile claimed unobserved provider failure | P1 | domain-intelligence | Open | [2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md](2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md) |
 | CB-305 | 2026-08-02 | Greenfield current view readers could remain pinned to stale onboarding state | P0 | domain-intelligence | Open | [2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md](2026-08-02-greenfield-current-view-readers-could-remain-pinned-to-stale-onboarding-state.md) |
@@ -81,7 +82,7 @@ Last updated (UTC): 2026-08-02
 | CB-229 | 2026-07-10 | Installed matrix does not prove commit only transaction custody | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-07-10-installed-matrix-does-not-prove-commit-only-transaction-custody.md](2026-07-10-installed-matrix-does-not-prove-commit-only-transaction-custody.md) |
 | CB-226 | 2026-07-10 | Greenfield staged atlas refresh resolves links against consumer target root | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-07-10-greenfield-staged-atlas-refresh-resolves-links-against-consumer-target-root.md](2026-07-10-greenfield-staged-atlas-refresh-resolves-links-against-consumer-target-root.md) |
 | CB-228 | 2026-07-10 | Greenfield rerun loses accepted project memory reuse signal | P1 | domain-intelligence, odylith-memory-backend | FixedPendingRelease | [2026-07-10-greenfield-rerun-loses-accepted-project-memory-reuse-signal.md](2026-07-10-greenfield-rerun-loses-accepted-project-memory-reuse-signal.md) |
-| CB-227 | 2026-07-10 | Greenfield performance matrix exposes source custody and generated label regress | P1 | domain-intelligence | FixedPendingRelease | [2026-07-10-greenfield-performance-matrix-exposes-source-custody-and-generated-label-regress.md](2026-07-10-greenfield-performance-matrix-exposes-source-custody-and-generated-label-regress.md) |
+| CB-227 | 2026-07-10 | Greenfield performance matrix exposes source custody and generated label regress | P1 | domain-intelligence | InProgress | [2026-07-10-greenfield-performance-matrix-exposes-source-custody-and-generated-label-regress.md](2026-07-10-greenfield-performance-matrix-exposes-source-custody-and-generated-label-regress.md) |
 | CB-233 | 2026-07-10 | Greenfield confirmation parser drops unpunctuated proof custody | P2 | odylith | Open | [2026-07-10-greenfield-confirmation-parser-drops-unpunctuated-proof-custody.md](2026-07-10-greenfield-confirmation-parser-drops-unpunctuated-proof-custody.md) |
 | CB-234 | 2026-07-10 | Greenfield atlas guides duplicate leading product articles | P2 | atlas | Open | [2026-07-10-greenfield-atlas-guides-duplicate-leading-product-articles.md](2026-07-10-greenfield-atlas-guides-duplicate-leading-product-articles.md) |
 | CB-235 | 2026-07-10 | Concise first path gate accepts noun list tails as second actions | P2 | odylith | Open | [2026-07-10-concise-first-path-gate-accepts-noun-list-tails-as-second-actions.md](2026-07-10-concise-first-path-gate-accepts-noun-list-tails-as-second-actions.md) |

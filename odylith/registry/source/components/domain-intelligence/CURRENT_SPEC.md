@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-02
+Last updated: 2026-08-03
 
 
 ## Overview
@@ -29,6 +29,12 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md`, `src/odylith/runtime/common/environment.py`, `src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py`, `tests/conftest.py`
+- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_managed_mutation_boundary.py`, `src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py`, `tests/unit/runtime/test_greenfield_managed_mutation_boundary.py`
@@ -41,10 +47,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md`, `src/odylith/runtime/domain_intelligence/greenfield_product_intent_envelope.py`, `src/odylith/runtime/domain_intelligence/greenfield_typed_source_spans.py`
-- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
-- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

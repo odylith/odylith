@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-07-20
+Last updated: 2026-08-03
 
 
 ## Purpose
@@ -645,6 +645,9 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
+  - Scope: B-145
+  - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `src/odylith/install/agents.py`, `tests/unit/install/test_agents.py`
 - **2026-07-08 · Implementation:** Implementation evidence linked this component to governed work with 7 verifiable artifact references.
   - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/AGENTS.md`, `odylith/README.md`, `src/odylith/bundle/assets/odylith/README.md`, plus 3 more
 - **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
@@ -656,9 +659,6 @@ This section captures synchronized requirement and contract signals derived from
   - Scope: B-090
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-089
-- **2026-04-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
-  - Scope: B-021, B-022
-  - Evidence: `sha256:b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5`, `sha256:e25064ece33fba6568bfc992d2a9adbe1bbde7cb987e0e230116b03ecd63b68a`, `odylith/registry/source/components/benchmark/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md`, plus 1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

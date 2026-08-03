@@ -28,7 +28,7 @@ confidence: High
 
 founder_override: no
 
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md
 
 execution_model: standard
 
@@ -42,7 +42,7 @@ workstream_depends_on:
 
 workstream_blocks:
 
-related_diagram_ids:
+related_diagram_ids: D-023,D-042
 
 workstream_reopens:
 
@@ -61,7 +61,7 @@ supersedes:
 superseded_by:
 
 ## Problem
-The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`.
+The v0.1.15 release changes managed guidance, browser-rendered governance surfaces, and install-managed assets. Existing consumer installs need an explicit assessment before promotion. Evidence markers: `migration-observer:0.1.15:guidance-and-skills:1dbd05321562`; `migration-observer:0.1.15:guidance-and-skills:5cf1c66e46da`; `migration-observer:0.1.15:browser-surfaces:e400b39b824e`; `migration-observer:0.1.15:browser-surfaces:835aaa4f49de`; `migration-observer:0.1.15:browser-surfaces:9a4db93486ab`; `migration-observer:0.1.15:browser-surfaces:e64341855d69`; `migration-observer:0.1.15:install-managed-assets:352b7f58e4df`; `migration-observer:0.1.15:install-managed-assets:fae6b20b969f`; `migration-observer:0.1.15:install-managed-assets:46796f8138f3`.
 
 ## Customer
 Odylith operators upgrading managed guidance, skill, Atlas, and Casebook browser surfaces.

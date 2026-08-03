@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "7f2d3ded74dcc5cb87191fdab8e6138111e4496129d71989d44572fdbc118448",
-    "file_count": 316,
+    "digest": "aabac230e72c789d21d2655d703457b77bdc5c55f72baa22bf5fabcc1c9f42b5",
+    "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -264,6 +264,7 @@
       "odylith/technical-plans/done/2026-04/2026-04-28-sync-failure-summary-dedup-and-next-action-routing.md",
       "odylith/technical-plans/done/2026-04/2026-04-28-trust-bootstrap-warning-suppression-and-success-clarity.md",
       "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+      "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
       "odylith/technical-plans/parked/.gitkeep",
       "odylith/atlas/source/catalog/diagrams.v1.json",
       "odylith/registry/source/component_registry.v1.json",
@@ -8698,9 +8699,12 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-023",
+        "D-042"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-20-assess-v0-1-15-guidance-and-browser-surface-migration.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -8736,8 +8740,8 @@
       ],
       "release_history_summary": "Removed from 0.1.15",
       "coverage": {
-        "linked_plan_count": 0,
-        "linked_diagram_count": 0,
+        "linked_plan_count": 1,
+        "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -14199,6 +14203,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
       "file": "odylith/technical-plans/done/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
+      "file": "odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md"
     },
     {
       "id": "plan:odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
@@ -20770,6 +20780,21 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-145",
+      "target": "diagram:D-023",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-145",
+      "target": "diagram:D-042",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-145",
+      "target": "plan:odylith/technical-plans/done/2026-07/2026-07-20-v0-1-15-guidance-and-browser-surface-migration-assessment.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
       "source": "component:atlas",
       "target": "diagram:D-001",
       "edge_type": "component_diagram"
@@ -24810,8 +24835,8 @@
       "code_reference_count": 0
     },
     "B-145": {
-      "linked_plan_count": 0,
-      "linked_diagram_count": 0,
+      "linked_plan_count": 1,
+      "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -24910,7 +24935,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1711,
+      "structural_edge_count": 1713,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -24928,12 +24953,12 @@
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 353,
-    "edge_count": 1815,
+    "node_count": 354,
+    "edge_count": 1818,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-02 16:20:44Z"
+  "generated_utc": "2026-08-03 22:24:21Z"
 }
