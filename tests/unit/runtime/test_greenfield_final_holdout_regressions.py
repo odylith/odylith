@@ -168,6 +168,24 @@ def test_unresolved_domain_state_does_not_invent_a_material_contradiction(tmp_pa
     assert "resolution queue" in str(intent["first_path"]).casefold()
 
 
+def test_domain_conflict_outcome_does_not_invent_a_material_contradiction(tmp_path: Path) -> None:
+    prompt = (
+        "Build a Quantum Networking Lab Management App where lab operators reserve a calibrated entanglement "
+        "link for an experiment, confirm device and calibration availability, record either a conflict or an "
+        "accepted reservation, and see an auditable ready-to-run reservation."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Quantum Networking Lab Management App",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert "record either a conflict or an accepted reservation" in first_path
+    assert "auditable ready-to-run reservation" in first_path
+
+
 @pytest.mark.parametrize(
     "edit_evidence",
     (

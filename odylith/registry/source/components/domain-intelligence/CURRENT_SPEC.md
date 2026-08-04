@@ -51,7 +51,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
-- 2026-08-04: Made narrative evidence ranking subordinate to typed and specialized workflow ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bugs: `CB-227`, `CB-315`, `CB-316`, `CB-317`, `CB-318`; Diagram: D-043)
+- 2026-08-04: Made narrative evidence ranking subordinate to typed and specialized workflow ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bugs: `CB-227`, `CB-315`, `CB-316`, `CB-317`, `CB-318`, `CB-319`; Diagram: D-043)
   Raw create instructions, source-reporting wrappers, word-sense metadata, and
   material control prose cannot become first-path truth. Bounded workflow and
   enablement payloads remain eligible, direct canonicalization cannot reduce the
@@ -62,12 +62,17 @@ This section captures synchronized requirement and contract signals derived from
   constraints. Registry release proof derives expected component identities
   from the sealed transaction instead of imposing a synthetic three-component
   floor, then independently checks that component specs preserve every accepted
-  internal-system responsibility.
+  internal-system responsibility. Material contradiction routing now requires
+  an evidence-disagreement relation; ordinary domain outcomes such as recording
+  a conflict remain valid path evidence and do not trigger clarification.
   Fresh source proof passed 44 high-variance prompt-source tests, 10 sparse
   compile-and-commit tests, 28 intent-envelope tests, 62 transaction-authority
   tests, and the 25-test anti-clipping, anti-repetition, clarification, EDIT,
-  and dynamic Registry pack. CLI, clean installed, browser, and fresh holdout proof
-  remain release gates.
+  and dynamic Registry pack. The subsequent focused materiality and reservation
+  compile pack passed 19 tests. The full CLI run passed its first 36 cases before
+  exposing `CB-319`; the repaired 24-case tail passed, and one uninterrupted
+  60-case rerun remains required. Clean installed, browser, and fresh holdout
+  proof remain release gates.
 
 - 2026-08-04: Preserved sparse first-path action ownership in Greenfield component boundaries before pre-confirm rendering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
   Canonical component projection now classifies source actions `receive` and

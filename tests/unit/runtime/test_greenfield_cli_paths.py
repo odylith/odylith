@@ -663,8 +663,8 @@ def test_greenfield_propose_cli_returns_typed_clarification_without_staging(tmp_
     assert payload == {
         "mode": "clarification_required",
         "clarification": {
-            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
-            "required_fields": ["first_path"],
+            "question": "Who uses the product first, what complete task should that person finish, and what result should they see?",
+            "required_fields": ["human_actors", "first_path"],
         },
     }
     assert not transaction_path.exists()
@@ -965,11 +965,11 @@ def test_greenfield_cli_compiles_a_complete_reservation_path_without_temp_path_l
         "Lab operators: need the product to reserve a calibrated entanglement link for an experiment and keep the result visible and reviewable"
     ]
     assert payload["intent_hypothesis"]["first_path"] == (
-        "Lab operators reserve a calibrated entanglement link for an experiment. "
-        "Lab operators confirm device and calibration availability. "
-        "Lab operators record either a conflict or an accepted reservation. "
-        "Lab operators see an auditable ready-to-run reservation."
+        "Lab operators reserve a calibrated entanglement link for an experiment, confirm device and calibration "
+        "availability, record either a conflict or an accepted reservation, and see an auditable ready-to-run "
+        "reservation."
     )
+    assert payload["intent_hypothesis"]["first_path"].count("Lab operators") == 1
     assert "/tmp/" not in rendered
     assert "/private/" not in rendered
     assert str(tmp_path) not in rendered

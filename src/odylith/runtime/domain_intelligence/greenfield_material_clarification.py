@@ -22,8 +22,13 @@ class MaterialClarification:
 
 
 _EXPLICIT_CONTRADICTION_RE = re.compile(
-    r"\b(?:conflict|conflicts|conflicting|contradict(?:s|ory)?|mutually\s+exclusive|"
-    r"which\s+.+?\s+is\s+intended|ask\s+which)\b",
+    r"\b(?:which\s+.+?\s+is\s+intended|ask\s+which)\b",
+    flags=re.IGNORECASE,
+)
+_DECLARED_CONTRADICTION_RE = re.compile(
+    r"\b(?:requirements?|evidence|instructions?|sources?|accounts?|descriptions?|claims?|"
+    r"statements?|notes?|sentences?|boundaries)\s+(?:are\s+)?(?:in\s+conflict|conflicts?|"
+    r"contradict(?:s|ory)?|mutually\s+exclusive)\b",
     flags=re.IGNORECASE,
 )
 _UNRESOLVED_RE = re.compile(r"\bunresolved\b", flags=re.IGNORECASE)
@@ -95,6 +100,7 @@ def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> 
 def _has_explicit_material_conflict(value: str) -> bool:
     return bool(
         _EXPLICIT_CONTRADICTION_RE.search(value)
+        or _DECLARED_CONTRADICTION_RE.search(value)
         or (_UNRESOLVED_RE.search(value) and _OPPOSING_EVIDENCE_RE.search(value))
     )
 
