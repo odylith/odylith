@@ -78,3 +78,12 @@ def test_canonical_validate_uses_process_isolated_pytest_runner() -> None:
 
     assert 'scripts/run_pytest_shards.py"' in validate
     assert '"$odylith_python" -m pytest -q' not in validate
+
+
+def test_canonical_validate_rejects_source_domain_leakage_before_pytest() -> None:
+    validate = (ROOT / "bin" / "validate").read_text(encoding="utf-8")
+
+    leakage_check = "scripts/release/platform_domain_leakage_check.py"
+    pytest_runner = "scripts/run_pytest_shards.py"
+    assert leakage_check in validate
+    assert validate.index(leakage_check) < validate.index(pytest_runner)

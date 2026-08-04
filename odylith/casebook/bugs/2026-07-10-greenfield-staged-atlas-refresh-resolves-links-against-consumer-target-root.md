@@ -50,7 +50,9 @@
 
 - Release Build Finding: The first committed-head package build stopped at the platform-domain leakage gate because the public Domain Intelligence living spec repeated the private QA scenario label. The spec now records only generic cross-domain proof language; public product contracts must never carry scenario fixture names even when the underlying replay is valid.
 
-- Prevention: Keep governed catalog links repository-relative at the compiler owner, reject cross-root absolute paths before sealing, and exercise target and staging roots as intentionally different repositories in regression and installed release proof.
+- Release Build Regression (2026-08-04): The same failed mechanism recurred when a later Domain Intelligence spec checkpoint named five private replay domains and repeated one scenario label while summarizing successful proof. Canonical pytest completed all 6,235 cases before the late dist preflight rejected `semiconductor` in the source spec. The correction restores generic complexity-shaped proof language and runs the existing source-only platform-domain leakage check before pytest in `bin/validate`, so fixture custody now fails fast instead of consuming a multi-hour validation and package build first. Source leakage proof passed across 87 distinctive fixture terms; the validation-order, leakage, and release-bootstrap regression pack passed 55 tests; Registry validation passed with all 690 meaningful events mapped; and Casebook source validation passed for all 307 records.
+
+- Prevention: Keep governed catalog links repository-relative at the compiler owner, reject cross-root absolute paths before sealing, exercise target and staging roots as intentionally different repositories in regression and installed release proof, and run source-domain leakage preflight before canonical pytest so public product contracts cannot retain private scenario vocabulary.
 
 - Agent Guardrails: Do not move this failure after confirmation, bypass Atlas validation, lower the Tribunal, or ask the consumer to repair links. Fix stage-root custody before compiling the confirmation transaction.
 

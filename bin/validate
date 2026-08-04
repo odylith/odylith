@@ -11,6 +11,7 @@ fi
 
 "$odylith_python" "$odylith_host_repo_root/scripts/validate_git_identity.py" history --repo-root . HEAD
 "$odylith_python" "$odylith_host_repo_root/scripts/sync_version_truth.py" --repo-root . check
+"$odylith_python" "$odylith_host_repo_root/scripts/release/platform_domain_leakage_check.py" --repo-root "$odylith_host_repo_root"
 "$odylith_python" "$odylith_host_repo_root/scripts/run_pytest_shards.py"
 "$odylith_python" -m compileall src/odylith
 "$odylith_host_repo_root/bin/license-audit"

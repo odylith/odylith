@@ -88,9 +88,9 @@ This section captures synchronized requirement and contract signals derived from
   object lists no longer become fragments or fake signoff records, and Radar
   rationale projection repairs repeated secondary proof copy without weakening
   the package repetition gate. Fresh touched-surface proof passed 460 tests.
-  Exact pediatric, quantum, security, semiconductor, and thin permit CLI replays
-  compiled passed hash-bound transactions with visible CONFIRM, EDIT, and REJECT;
-  the semiconductor package retained all five explicit source responsibilities.
+  Fresh high-variance CLI replays across five distinct complexity shapes compiled
+  passed hash-bound transactions with visible CONFIRM, EDIT, and REJECT; the most
+  structurally dense package retained all five explicit source responsibilities.
   Installed and final frozen-holdout release proof remains pending.
 
 - 2026-08-02: Replaced mutable pending and file-by-file commit semantics with hash-addressed decision custody and generation publication. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-304`, `CB-305`; Diagram: D-043)
