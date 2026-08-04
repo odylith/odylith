@@ -19,10 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_CARD_SLOTS
 from odylith.runtime.project_intelligence.utils import display_text, sentence, strings
 
-
-_CARD_LABELS = ("User Problem", "First Path", "Product Boundary", "Owned Capabilities", "Proof")
 
 _GENERIC_CARD_PATTERNS = (
     r"\baccepted\s+first\s+path\b",
@@ -118,14 +117,21 @@ def build_greenfield_story_cards(
         actors=actors,
         validation=validation,
     )
-    rows = [
-        ("User Problem", _user_problem_card(ctx)),
-        ("First Path", _first_path_card(ctx)),
-        ("Product Boundary", _product_boundary_card(ctx)),
-        ("Owned Capabilities", _owned_capabilities_card(ctx)),
-        ("Proof", _proof_card(ctx)),
+    bodies = {
+        "User Problem": _user_problem_card(ctx),
+        "First Path": _first_path_card(ctx),
+        "Product Boundary": _product_boundary_card(ctx),
+        "Owned Capabilities": _owned_capabilities_card(ctx),
+        "Proof": _proof_card(ctx),
+    }
+    return [
+        {
+            "label": label,
+            "semantic_slot": semantic_slot,
+            "body": _repair_card(label=label, body=bodies[label], ctx=ctx),
+        }
+        for label, semantic_slot in PRODUCT_STORY_CARD_SLOTS
     ]
-    return [{"label": label, "body": _repair_card(label=label, body=body, ctx=ctx)} for label, body in rows]
 
 
 def _context(

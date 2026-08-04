@@ -1182,6 +1182,22 @@ def test_rendered_package_quality_allows_question_final_prepositions_but_rejects
     )
 
 
+def test_rendered_package_quality_rejects_punctuated_determiner_modifier_clipping() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                "idea.md": "The router sends each accepted request to the appropriate."
+            }
+        },
+    )
+
+    assert (
+        "Radar workstream `idea.md` has clipped modifier phrase ending in `the appropriate`"
+        in greenfield_rendered_package_quality_issues(package)
+    )
+
+
 def test_rendered_package_quality_requires_registry_proof_floor() -> None:
     missing = GreenfieldCompletionPackage(
         proposal={},

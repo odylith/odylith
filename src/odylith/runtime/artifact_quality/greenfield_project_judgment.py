@@ -13,6 +13,8 @@ from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_CARD_SLOTS
+from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_SLOT_BY_LABEL
 
 
 _SCOPE_BOUNDARY_RE = re.compile(
@@ -59,8 +61,6 @@ _TERM_STOPWORDS = frozenset(
         "without",
     }
 )
-
-
 def greenfield_project_judgment_issues(package: Any) -> list[str]:
     """Return human-quality failures that structural package gates cannot see."""
 
@@ -80,6 +80,15 @@ def _project_story_repetition_issues(package: Any) -> list[str]:
     preview = _as_mapping(getattr(package, "project_dashboard_preview", None))
     story = _as_mapping(preview.get("product_story"))
     cards = [row for row in mapping_rows(story.get("release_contract")) if normalize_string(row.get("body"))]
+    return project_story_semantic_issues(cards)
+
+
+def project_story_semantic_issues(cards: Sequence[Mapping[str, Any]]) -> list[str]:
+    """Return role-ownership and repetition failures for rendered story cards."""
+
+    if not cards:
+        return []
+    issues = _project_story_role_issues(cards)
     signatures = [
         (
             normalize_string(row.get("label")) or f"card {index + 1}",
@@ -106,11 +115,54 @@ def _project_story_repetition_issues(package: Any) -> list[str]:
             containment = len(shared) / min(len(left_terms), len(right_terms))
             similarity = len(shared) / len(left_terms | right_terms)
             if containment >= 0.82 and similarity >= 0.68:
-                return [
+                issues.append(
                     "greenfield Project Product Story cards are semantically repetitive: "
                     f"`{left_label}` and `{right_label}` restate the same user meaning"
-                ]
-    return []
+                )
+    return issues
+
+
+def _project_story_role_issues(cards: Sequence[Mapping[str, Any]]) -> list[str]:
+    issues: list[str] = []
+    label_counts: dict[str, int] = {}
+    slot_owners: dict[str, str] = {}
+    for row in cards:
+        label = normalize_string(row.get("label"))
+        expected_slot = PRODUCT_STORY_SLOT_BY_LABEL.get(label)
+        if not expected_slot:
+            issues.append(
+                "greenfield Project Product Story card has an unexpected semantic label: "
+                f"`{label or 'unlabeled card'}`"
+            )
+            continue
+        label_counts[label] = label_counts.get(label, 0) + 1
+        semantic_slot = normalize_string(row.get("semantic_slot"))
+        if not semantic_slot:
+            issues.append(
+                "greenfield Project Product Story card is missing its owned semantic slot: "
+                f"`{label}` expects `{expected_slot}`"
+            )
+            continue
+        if semantic_slot != expected_slot:
+            issues.append(
+                "greenfield Project Product Story card is bound to the wrong semantic slot: "
+                f"`{label}` uses `{semantic_slot}` instead of `{expected_slot}`"
+            )
+        previous_owner = slot_owners.get(semantic_slot)
+        if previous_owner and previous_owner != label:
+            issues.append(
+                "greenfield Project Product Story cards reuse one semantic slot: "
+                f"`{previous_owner}` and `{label}` both use `{semantic_slot}`"
+            )
+        else:
+            slot_owners[semantic_slot] = label
+    for label, _semantic_slot in PRODUCT_STORY_CARD_SLOTS:
+        count = label_counts.get(label, 0)
+        if count == 0:
+            issues.append(f"greenfield Project Product Story is missing its `{label}` card")
+        elif count > 1:
+            issues.append(f"greenfield Project Product Story repeats its `{label}` card")
+    return issues
 
 
 def _mixed_case_drift_issues(proposal: Mapping[str, Any], text: str) -> list[str]:
@@ -272,6 +324,8 @@ def _scope_boundary_tail_issues(proposal: Mapping[str, Any], text: str) -> list[
             continue
         issues.append("greenfield scope boundary truncates the accepted first-path tail")
     return issues
+
+
 def _accepted_assumption_coverage_issues(proposal: Mapping[str, Any], rendered_text: str) -> list[str]:
     """Require high-risk accepted assumptions to survive into generated artifacts."""
 
@@ -444,4 +498,4 @@ def _as_mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
-__all__ = ["greenfield_project_judgment_issues"]
+__all__ = ["greenfield_project_judgment_issues", "project_story_semantic_issues"]

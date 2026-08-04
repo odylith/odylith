@@ -61,7 +61,12 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
     assert payload["sections"][0] == "product_story"
     assert (tmp_path / "odylith" / "runtime" / "source" / "accepted-project.v1.json").is_file()
 
-    page_path = tmp_path / "index.html"
+    return _write_project_page(tmp_path / "index.html", payload)
+
+
+def _write_project_page(page_path: Path, payload: dict[str, object]) -> Path:
+    """Write one static Project surface using the product presenter and CSS."""
+
     page_path.write_text(
         "\n".join(
             (
@@ -108,6 +113,74 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         encoding="utf-8",
     )
     return page_path
+
+
+def _degraded_project_payload() -> dict[str, object]:
+    payload = project_intelligence_presenter._fallback_payload()
+    payload.update(
+        {
+            "mode": "operating",
+            "title": "Cross-Region Permit Review and Recovery Workspace",
+            "intro": (
+                "The source projection is partially degraded, but every visible explanation must remain readable "
+                "through the final clause on both compact and desktop screens."
+            ),
+            "sections": ["scenario", "trust", "state", "next"],
+            "answers": [
+                (
+                    "What changed?",
+                    "Source projection degraded",
+                    (
+                        "The current readout preserves the complete operator explanation, including the final "
+                        "recovery condition that used to disappear inside fixed-height summary cards."
+                    ),
+                )
+            ],
+            "scenario": [
+                "Current work",
+                "Permit Review",
+                "Recover source-backed review state",
+                "One source is unavailable.",
+                (
+                    "The operator can inspect the surviving evidence, identify the unavailable source, and keep "
+                    "the recovery boundary visible without reconstructing the missing final clause."
+                ),
+            ],
+            "scenario_title": "Current degraded work",
+            "scenario_note": "The page must expose the degraded state without hiding its recovery boundary.",
+            "scenario_details": [
+                (
+                    "Recovery boundary",
+                    "Keep the last verified permit decision visible until the unavailable source is restored.",
+                )
+            ],
+            "current": [
+                "The last verified permit decision remains available with its complete evidence explanation."
+            ],
+            "desired": [
+                "The unavailable source returns and the operator can reconcile the next decision without ambiguity."
+            ],
+            "host_handoff_title": "How to continue in the host chat",
+            "host_handoff_note": "Use the bounded recovery prompt after reviewing the degraded evidence.",
+            "host_handoff_steps": [
+                "Review the complete degraded-state explanation before starting recovery.",
+                "Stop when the source boundary and proof obligation are explicit.",
+            ],
+            "host_handoff_prompts": [
+                {
+                    "label": "Prepare bounded recovery",
+                    "when": "Use after the unavailable source is identified.",
+                    "prompt": (
+                        "Odylith, prepare a bounded recovery plan that preserves the last verified decision and "
+                        "names the exact source evidence required before replacement state is accepted."
+                    ),
+                    "result": "A reviewable recovery plan with a complete source and proof boundary.",
+                    "stop": "Stop before changing product or governance truth.",
+                }
+            ],
+        }
+    )
+    return payload
 
 
 def _clipped_project_text(page) -> list[str]:  # noqa: ANN001
@@ -244,6 +317,7 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
               contractFontSize: contract ? window.getComputedStyle(contract).fontSize : "",
               rowCount: rows.length,
               distinctBodyCount: new Set(bodies.map((body) => body.toLocaleLowerCase())).size,
+              semanticSlots: rows.map((row) => String(row.dataset.semanticSlot || "")),
               rowLefts: rows.map((row) => Math.round(row.getBoundingClientRect().left)),
               rowTops: rows.map((row) => Math.round(row.getBoundingClientRect().top)),
               firstRowColumns: rows[0] ? window.getComputedStyle(rows[0]).gridTemplateColumns : "",
@@ -256,12 +330,37 @@ def _assert_greenfield_project_tab_layout(page, *, compact: bool) -> None:  # no
     assert story_layout["contractFontSize"] == "14px"
     assert story_layout["rowCount"] == 5
     assert story_layout["distinctBodyCount"] == 5
+    assert story_layout["semanticSlots"] == [
+        "user_problem",
+        "first_path",
+        "product_boundary",
+        "owned_capabilities",
+        "proof",
+    ]
     assert len(set(story_layout["rowLefts"])) == 1
     assert story_layout["rowTops"] == sorted(story_layout["rowTops"])
     assert story_layout["firstRowColumns"] != ""
     assert int(story_layout["scrollDelta"]) <= 4
 
     assert _clipped_project_text(page) == []
+
+
+def _assert_project_sections_do_not_overflow(page, selectors: list[str]) -> None:  # noqa: ANN001
+    assert _clipped_project_text(page) == []
+    for selector in selectors:
+        locator = page.locator(selector)
+        assert locator.count() >= 1
+        overflow = locator.evaluate_all(
+            """(nodes) => nodes.map((node) => ({
+              x: node.scrollWidth - node.clientWidth,
+              clamp: (() => {
+                const value = Number.parseInt(window.getComputedStyle(node).webkitLineClamp || "0", 10);
+                return Number.isFinite(value) ? value : 0;
+              })(),
+            }))"""
+        )
+        assert all(int(row["x"]) <= 4 for row in overflow), (selector, overflow)
+        assert all(int(row["clamp"]) == 0 for row in overflow), (selector, overflow)
 
 
 def _run_greenfield_project_tab_browser_check(tmp_path: Path, monkeypatch, *, compact: bool) -> None:  # noqa: ANN001
@@ -303,3 +402,42 @@ def test_project_tab_clipping_probe_detects_a_clipping_parent(tmp_path: Path, mo
                 assert _clipped_project_text(page)
             finally:
                 context.close()
+
+
+def test_project_tab_blank_and_degraded_states_wrap_at_desktop_and_mobile_widths(tmp_path: Path) -> None:
+    blank = project_intelligence_builder.build_project_intelligence_payload(
+        repo_root=tmp_path / "blank-repo",
+        shell_payload={"shell_repo_name": "blank-repo"},
+    )
+    assert blank["mode"] == "blank"
+    _write_project_page(tmp_path / "blank.html", blank)
+    _write_project_page(tmp_path / "degraded.html", _degraded_project_payload())
+
+    cases = (
+        (
+            "blank.html",
+            [".project-empty-panel", ".project-empty-action", ".project-empty-preview-card"],
+            "What is included now, what is excluded, and what must be proven next.",
+        ),
+        (
+            "degraded.html",
+            [".project-scenario", ".project-answer-strip", ".project-state-grid", ".project-host-handoff"],
+            "Keep the last verified permit decision visible until the unavailable source is restored.",
+        ),
+    )
+    viewports = ({"width": 1440, "height": 1100}, {"width": 430, "height": 932})
+
+    with _static_server(root=tmp_path) as base_url:
+        for _pw, browser in _browser():
+            for filename, selectors, terminal_text in cases:
+                for viewport in viewports:
+                    context = browser.new_context(viewport=viewport)
+                    page, console_errors, page_errors, failed_requests, bad_responses = _new_page(context)
+                    try:
+                        response = page.goto(f"{base_url}/{filename}", wait_until="domcontentloaded")
+                        assert response is not None and response.ok
+                        assert terminal_text in page.locator(".project-surface").inner_text()
+                        _assert_project_sections_do_not_overflow(page, selectors)
+                        _assert_clean_page(page, console_errors, page_errors, failed_requests, bad_responses)
+                    finally:
+                        context.close()

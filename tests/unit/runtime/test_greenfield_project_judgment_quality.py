@@ -578,3 +578,80 @@ def test_project_judgment_rejects_near_duplicate_product_story_cards() -> None:
         "`First Path` and `Product Boundary` restate the same user meaning"
         in greenfield_project_judgment_issues(package)
     )
+
+
+def test_project_judgment_rejects_hard_paraphrase_in_the_wrong_story_slot() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal=_proposal(),
+        project_dashboard_preview={
+            "product_story": {
+                "release_contract": [
+                    {
+                        "label": "First Path",
+                        "semantic_slot": "first_path",
+                        "body": (
+                            "The first usable path follows this sequence: A coordinator submits one permit packet, "
+                            "the service checks its evidence, and the applicant receives a review decision."
+                        ),
+                    },
+                    {
+                        "label": "Product Boundary",
+                        "semantic_slot": "first_path",
+                        "body": (
+                            "A clerk provides a single application, the workspace inspects the supporting material, "
+                            "and the requester gets the adjudicated outcome."
+                        ),
+                    },
+                ]
+            }
+        },
+    )
+
+    issues = greenfield_project_judgment_issues(package)
+
+    assert (
+        "greenfield Project Product Story card is bound to the wrong semantic slot: "
+        "`Product Boundary` uses `first_path` instead of `product_boundary`"
+        in issues
+    )
+    assert (
+        "greenfield Project Product Story cards reuse one semantic slot: "
+        "`First Path` and `Product Boundary` both use `first_path`"
+        in issues
+    )
+
+
+def test_project_judgment_requires_each_canonical_story_label_exactly_once() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal=_proposal(),
+        project_dashboard_preview={
+            "product_story": {
+                "release_contract": [
+                    {"label": "User Problem", "semantic_slot": "user_problem", "body": "A reviewer needs a decision."},
+                    {"label": "First Path", "semantic_slot": "first_path", "body": "A reviewer submits one packet."},
+                    {
+                        "label": "Product Boundary",
+                        "semantic_slot": "product_boundary",
+                        "body": "The product owns packet review only.",
+                    },
+                    {
+                        "label": "Owned Capabilities",
+                        "semantic_slot": "owned_capabilities",
+                        "body": "The product validates packet evidence.",
+                    },
+                    {
+                        "label": "Owned Capabilities",
+                        "semantic_slot": "owned_capabilities",
+                        "body": "The product records review decisions.",
+                    },
+                    {"label": "Evidence", "semantic_slot": "proof", "body": "A receipt proves the decision."},
+                ]
+            }
+        },
+    )
+
+    issues = greenfield_project_judgment_issues(package)
+
+    assert "greenfield Project Product Story repeats its `Owned Capabilities` card" in issues
+    assert "greenfield Project Product Story card has an unexpected semantic label: `Evidence`" in issues
+    assert "greenfield Project Product Story is missing its `Proof` card" in issues

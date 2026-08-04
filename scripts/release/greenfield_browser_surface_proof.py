@@ -8,6 +8,7 @@ from urllib.parse import quote
 from urllib.parse import urlparse
 
 from local_release_smoke import _serve_directory
+from odylith.runtime.artifact_quality.greenfield_project_judgment import project_story_semantic_issues
 
 
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
@@ -153,6 +154,13 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 const storyBodies = Array.from(node.querySelectorAll(".project-story-contract-card p"))
                   .map((item) => String(item.innerText || "").trim())
                   .filter(Boolean);
+                const storyRows = Array.from(node.querySelectorAll(".project-story-contract-card"))
+                  .map((item) => ({
+                    label: String(item.querySelector("h3")?.innerText || "").trim(),
+                    semantic_slot: String(item.dataset.semanticSlot || "").trim(),
+                    body: String(item.querySelector("p")?.innerText || "").trim()
+                  }))
+                  .filter((item) => item.label || item.body);
                 const clippedText = Array.from(
                   node.querySelectorAll("h1, h2, h3, h4, p, li, td, th, code, strong, span")
                 ).filter((item) => {
@@ -177,6 +185,7 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                   distinctStoryBodyCount: new Set(
                     storyBodies.map((body) => body.toLocaleLowerCase())
                   ).size,
+                  storyRows,
                   clippedTextCount: clippedText.length,
                   hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
                   hasBlankState: text.includes("Project not defined yet"),
@@ -231,6 +240,9 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 clipped_text_count=int(
                     project_state.get("clippedTextCount", 0) if isinstance(project_state, dict) else 0
                 ),
+                story_rows=(
+                    project_state.get("storyRows", ()) if isinstance(project_state, dict) else ()
+                ),
             )
         )
     except Exception as exc:
@@ -255,6 +267,7 @@ def _project_state_assertion_issues(
     rendered_story_body_count: int = 5,
     distinct_story_body_count: int = 5,
     clipped_text_count: int = 0,
+    story_rows: Any = (),
 ) -> tuple[str, ...]:
     issues: list[str] = []
     if payload_origin != "accepted greenfield project":
@@ -279,6 +292,8 @@ def _project_state_assertion_issues(
         issues.append("browser surface project did not render all five Product Story bodies")
     if distinct_story_body_count != rendered_story_body_count:
         issues.append("browser surface project repeated Product Story body copy")
+    rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
+    issues.extend(project_story_semantic_issues(rows))
     if clipped_text_count:
         issues.append("browser surface project clips visible text")
     return tuple(issues)

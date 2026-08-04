@@ -35,6 +35,13 @@ def _assert_greenfield_story_cards(story: dict[str, object]) -> None:
     assert "validation, replay, access, privacy, safety" not in encoded.casefold()
     bodies = [str(row.get("body", "")).casefold() for row in story["release_contract"]]
     assert len(set(bodies)) == len(bodies)
+    assert [row.get("semantic_slot") for row in story["release_contract"]] == [
+        "user_problem",
+        "first_path",
+        "product_boundary",
+        "owned_capabilities",
+        "proof",
+    ]
 
 
 def test_project_short_preserves_one_long_public_sentence() -> None:

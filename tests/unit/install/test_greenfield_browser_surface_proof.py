@@ -142,3 +142,32 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     assert "browser surface project rendered the blank project state after commit-only create" in issues
     assert "browser surface project repeated Product Story body copy" in issues
     assert "browser surface project clips visible text" in issues
+
+
+def test_project_state_assertion_rejects_wrong_semantic_story_slot() -> None:
+    module = _module()
+
+    issues = module._project_state_assertion_issues(
+        payload_origin="accepted greenfield project",
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        story_rows=[
+            {
+                "label": "Product Boundary",
+                "semantic_slot": "first_path",
+                "body": "A clerk submits one request and the workspace returns one reviewed result.",
+            }
+        ],
+    )
+
+    assert (
+        "greenfield Project Product Story card is bound to the wrong semantic slot: "
+        "`Product Boundary` uses `first_path` instead of `product_boundary`"
+        in issues
+    )

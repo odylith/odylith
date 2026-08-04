@@ -565,18 +565,22 @@ def _product_story_narrative(
 
 def _product_story_contract(rows: Sequence[Mapping[str, Any]]) -> str:
     items = [
-        (str(row.get("label") or "").strip(), str(row.get("body") or "").strip())
+        (
+            str(row.get("label") or "").strip(),
+            str(row.get("body") or "").strip(),
+            str(row.get("semantic_slot") or "").strip(),
+        )
         for row in rows
         if str(row.get("label") or row.get("body") or "").strip()
     ]
     if not items:
         return ""
     cells = "".join(
-        '<article class="project-story-contract-card" role="listitem">'
+        f'<article class="project-story-contract-card" role="listitem" data-semantic-slot="{_e(semantic_slot)}">'
         f"<h3>{_d(label)}</h3>"
         f"<p>{_d(body)}</p>"
         "</article>"
-        for label, body in items
+        for label, body, semantic_slot in items
     )
     return f'<div class="project-story-contract" role="list">{cells}</div>'
 

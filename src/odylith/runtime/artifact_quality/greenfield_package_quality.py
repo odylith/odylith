@@ -13,6 +13,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_r
 from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_text_issues
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
+from odylith.runtime.common.prose_grammar import has_clipped_terminal_modifier
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
@@ -94,23 +95,6 @@ _POSSESSIVE_PRONOUNS = frozenset({"her", "his", "its", "our", "their", "your"})
 _OBJECT_MARKERS = frozenset({"a", "an", "one", "the", "their", "this"})
 _TITLE_CONNECTOR_WORDS = frozenset({"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"})
 _LOWERCASE_FRAGMENT_STARTS = frozenset({"and", "for", "from", "or", "to", "users", "with", "without"})
-_TERMINAL_MODIFIER_WORDS = frozenset(
-    {
-        "actionable",
-        "accepted",
-        "clear",
-        "complete",
-        "concrete",
-        "daily",
-        "first",
-        "reviewable",
-        "safety",
-        "specific",
-        "trusted",
-        "visible",
-    }
-)
-_TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
 _TERMINAL_ARTICLE_WORDS = frozenset({"a", "an", "that", "the", "their", "this"})
 _INVALID_INFLECTIONS = frozenset({"flaging", "intaked", "runing", "seted", "stoping"})
 _VAGUE_MISSING_SUBJECTS = frozenset({"anything", "something", "stuff", "things"})
@@ -214,7 +198,7 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
             issues.append(f"{artifact.identity} has invalid verb inflection near `{token}`")
     for chunk in _surface_terminal_chunks(artifact):
         tokens = _package_repetition.word_tokens(chunk)
-        if _has_clipped_terminal_modifier(tokens):
+        if has_clipped_terminal_modifier(tokens):
             issues.append(f"{artifact.identity} has clipped modifier phrase ending in `{tokens[-2]} {tokens[-1]}`")
         if _has_clipped_terminal_final_phrase(chunk, tokens):
             issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
@@ -423,14 +407,6 @@ def _surface_terminal_chunks(artifact: RenderedArtifact) -> list[str]:
     if artifact.kind == "mermaid":
         return _package_repetition.mermaid_label_chunks(artifact.text)
     return _package_repetition.repetition_chunks(artifact.text)
-
-
-def _has_clipped_terminal_modifier(tokens: Sequence[str]) -> bool:
-    if len(tokens) < 2:
-        return False
-    tail = tokens[-1].casefold().strip(".,;:'")
-    previous = tokens[-2].casefold().strip(".,;:'")
-    return tail in _TERMINAL_MODIFIER_WORDS and previous in _TERMINAL_MODIFIER_PRECEDERS
 
 
 def _has_clipped_terminal_action_label(chunk: str, tokens: Sequence[str]) -> bool:

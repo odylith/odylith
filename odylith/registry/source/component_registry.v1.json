@@ -97,17 +97,22 @@
       "path_prefixes": [
         "src/odylith/runtime/surfaces/render_tooling_dashboard.py",
         "src/odylith/runtime/surfaces/dashboard_surface_bundle.py",
+        "src/odylith/runtime/project_intelligence",
+        "src/odylith/runtime/artifact_quality",
+        "scripts/release/greenfield_browser_surface_proof.py",
         "odylith/surfaces/README.md"
       ],
       "workstreams": [
         "B-001",
-        "B-058"
+        "B-058",
+        "B-142"
       ],
       "diagrams": [
         "D-001",
         "D-004",
         "D-005",
-        "D-006"
+        "D-006",
+        "D-043"
       ],
       "owner": "product",
       "status": "active",

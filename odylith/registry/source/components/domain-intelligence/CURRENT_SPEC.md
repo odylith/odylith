@@ -51,6 +51,18 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-03: Closed the remaining source-level Project repetition and sentence-integrity gaps with typed semantic slots and full rendered-state proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Product Story cards now carry an exact label-to-slot identity from view-model
+  generation through HTML and installed release proof. Package judgment rejects
+  missing, mismatched, reused, exact-duplicate, and near-duplicate slots before
+  confirmation. Shared prose grammar rejects punctuation-complete terminal
+  determiner/modifier clips instead of accepting an invented period as sentence
+  completion. The Project browser matrix covers accepted, blank, and degraded
+  states at desktop and mobile widths and found a real 14-pixel mobile overflow
+  before the layout fix. Source proof passed the focused semantic, artifact,
+  cross-domain, hygiene, and full Playwright files; clean installed and untouched
+  holdout proof remain release gates.
+
 - 2026-08-02: Hardened canonical meaning and generation recovery before the release checkpoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Context-only product titles now derive from the accepted durable state object;
   coordinated action prefixes no longer leak into that object. Internal-system
@@ -1652,6 +1664,15 @@ This section captures synchronized requirement and contract signals derived from
   complete and distinct. Renderers must not reconstruct missing meaning, reuse
   one completion sentence across unrelated slots, or clip accepted sentences
   to satisfy presentation limits.
+- `project_intelligence/product_story_contract.py` owns the stable Product Story
+  label-to-semantic-slot mapping. Generated cards, rendered DOM, pre-confirm
+  package judgment, and installed browser proof must preserve that same typed
+  identity; a label may not borrow or reuse another card's slot even when the
+  prose is lexically different.
+- `common/prose_grammar.py` owns reusable public-sentence terminal integrity.
+  Length-limited projections must choose complete clauses rather than append
+  punctuation to prefixes, and terminal determiner/modifier phrases remain
+  clipped even when a period is present.
 - `greenfield_repository_write_set.py` owns the exact pre-confirm repository
   mutation: approved managed paths, before/after tree fingerprints, file bytes,
   modes, file deletions, empty-directory creation/deletion, symlink refusal,

@@ -5,14 +5,14 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-07-20
+Last updated: 2026-08-03
 
 
 ## Purpose
 Dashboard is the shell host for Odylith. It provides the top-level tabbed,
-deep-linkable parent surface that composes Radar, Atlas, Compass, Registry, and
-Casebook into one navigable product entrypoint without flattening each child
-surface into the shell renderer.
+deep-linkable parent surface that composes Project, Radar, Atlas, Compass,
+Registry, and Casebook into one navigable product entrypoint without flattening
+each child surface into the shell renderer.
 
 ## Scope And Non-Goals
 ### Dashboard owns
@@ -21,6 +21,8 @@ surface into the shell renderer.
 - Shared developer-note and cheatsheet drawers.
 - Shared branding, favicon, manifest, and tab lockup behavior.
 - Externalized shell asset bundling for the checked-in root surface.
+- Project view-model projection, Product Story semantic-slot rendering, and the
+  responsive Project child-surface contract.
 - Runtime version-state sidecar detection for stale generated shell payloads.
 - A hard product boundary that keeps internal diagnostics, provider-spend
   evidence, recorder tapes, cockpit panels, charts, and status slabs out of the
@@ -107,6 +109,16 @@ surface into the shell renderer.
   Mutable runtime sidecar sourced from `odylith version` so an open or stale
   shell can detect when the generated dashboard payload lags the authoritative
   runtime version.
+- `src/odylith/runtime/project_intelligence/`
+  Project view-model and renderer ownership. Product Story cards carry one
+  typed semantic slot each, and accepted, blank, and degraded states must remain
+  fully readable at desktop and mobile widths.
+- `src/odylith/runtime/artifact_quality/greenfield_project_judgment.py`
+  Shared Project Story slot-custody and lexical repetition judgment used before
+  confirmation and by installed browser release proof.
+- `scripts/release/greenfield_browser_surface_proof.py`
+  Installed generated-surface proof for rendered semantic-slot identity and
+  Product Story distinctness.
 - `src/odylith/runtime/surfaces/templates/tooling_dashboard/`
   Shell HTML/CSS/JS template assets.
 
@@ -367,24 +379,31 @@ artifacts to that header.
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_render_tooling_dashboard.py tests/unit/runtime/test_brand_assets.py tests/unit/runtime/test_tooling_dashboard_frontend_contract.py`
 - `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_tooling_dashboard_onboarding_browser.py::test_shell_never_renders_internal_status_across_tabs`
 
+### Project
+- `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_project_intelligence.py tests/unit/runtime/test_greenfield_project_judgment_quality.py tests/unit/install/test_greenfield_browser_surface_proof.py`
+- `PYTHONPATH=src python -m pytest -q tests/integration/runtime/test_project_tab_browser.py`
+
 ## Requirements Trace
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
-  - Evidence: `odylith/registry/source/components/atlas/CURRENT_SPEC.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, plus 1 more
-- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 5 verifiable artifact references.
-  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md`, `odylith/registry/source/components/odylith/CURRENT_SPEC.md`, plus 1 more
-- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 verifiable artifact references.
-  - Evidence: `odylith/radar/source/INDEX.md`, `odylith/registry/source/components/dashboard/CURRENT_SPEC.md`, `odylith/technical-plans/INDEX.md`
-- **2026-03-05 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/compass/compass.html`, `odylith/index.html`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_tooling_dashboard.py`
-- **2026-03-05 · Decision:** Decision evidence linked this component to governed work with 4 verifiable artifact references.
-  - Evidence: `odylith/compass/compass.html`, `odylith/index.html`, `src/odylith/runtime/governance/sync_workstream_artifacts.py`, `src/odylith/runtime/surfaces/render_tooling_dashboard.py`
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
+- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
+- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
+- **2026-07-31 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
+- **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-08-03: Bound each Project Product Story card to a distinct typed semantic slot, reused the same judgment in pre-confirm and installed browser proof, and expanded Playwright coverage to accepted, blank, and degraded desktop/mobile states with no overflow, line clamp, or hidden text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-06-30: Added release-proof custody for generated shell payload readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-046)
   Greenfield release proof now treats generated shell payload globals as
   persisted evidence, not incidental route files. Project implementation prompts

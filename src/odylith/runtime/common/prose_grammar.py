@@ -7,13 +7,12 @@ not classify domains or infer project meaning.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from functools import lru_cache
 import re
 
 
 _ACTION_MODAL_WORDS = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
-
-
 _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
     "acknowledge": "acknowledges",
@@ -361,21 +360,29 @@ TERMINAL_MODIFIER_WORDS = frozenset(
         "concrete",
         "corrected",
         "daily",
+        "expected",
         "failed",
         "final",
         "first",
         "incomplete",
         "invalid",
         "missing",
+        "appropriate",
+        "configured",
+        "relevant",
+        "required",
         "reviewable",
+        "runnable",
         "specific",
+        "supported",
         "trusted",
+        "valid",
+        "validated",
         "visible",
     }
 )
 TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
 TERMINAL_FINAL_STATE_WORDS = frozenset({"case", "decision", "match", "record", "result", "review", "score", "status"})
-
 
 def strip_trailing_subject_modal(value: str) -> str:
     """Remove a modal that subject extraction absorbed before an action."""
@@ -432,6 +439,16 @@ def strip_clipped_terminal_fragment(value: str, *, rstrip_chars: str = " ,;:.") 
             text = " ".join(words[:-1]).rstrip(rstrip_chars)
             continue
         return text
+
+
+def has_clipped_terminal_modifier(tokens: Sequence[str]) -> bool:
+    """Return true when a determiner ends with a modifier but no owned noun."""
+
+    if len(tokens) < 2:
+        return False
+    tail = str(tokens[-1]).casefold().strip(".,;:'")
+    previous = str(tokens[-2]).casefold().strip(".,;:'")
+    return tail in TERMINAL_MODIFIER_WORDS and previous in TERMINAL_MODIFIER_PRECEDERS
 
 
 def _allows_terminal_final(words: list[str]) -> bool:
