@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-03
+Last updated (UTC): 2026-08-04
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-308 | 2026-08-04 | Canonical validation loses trustworthy proof after long process state accumulati | P1 | odylith | Open | [2026-08-04-canonical-validation-loses-trustworthy-proof-after-long-process-state-accumulati.md](2026-08-04-canonical-validation-loses-trustworthy-proof-after-long-process-state-accumulati.md) |
 | CB-307 | 2026-08-03 | Automated greenfield create opened committed dashboard in operator browser | P2 | domain-intelligence | Open | [2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md](2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md) |
 | CB-303 | 2026-08-02 | Greenfield project surfaces repeated and clipped canonical meaning | P1 | domain-intelligence-greenfield | Open | [2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md](2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md) |
 | CB-306 | 2026-08-02 | Greenfield model profile claimed unobserved provider failure | P1 | domain-intelligence | Open | [2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md](2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md) |

@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "aabac230e72c789d21d2655d703457b77bdc5c55f72baa22bf5fabcc1c9f42b5",
+    "digest": "1441f2b5c09438291edfd60edc12e000df7145f8e0da964864e1b30625ebe9e3",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -12362,6 +12362,7 @@
       "workstreams": [
         "B-005",
         "B-063",
+        "B-142",
         "B-007",
         "B-021",
         "B-026",
@@ -20716,6 +20717,11 @@
     },
     {
       "source": "B-142",
+      "target": "component:release",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-142",
       "target": "diagram:D-023",
       "edge_type": "diagram_linkage"
     },
@@ -24935,7 +24941,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1713,
+      "structural_edge_count": 1714,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -24954,11 +24960,11 @@
     "execution_program_count": 5,
     "execution_wave_count": 30,
     "node_count": 354,
-    "edge_count": 1818,
+    "edge_count": 1819,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-03 22:24:21Z"
+  "generated_utc": "2026-08-04 03:07:15Z"
 }

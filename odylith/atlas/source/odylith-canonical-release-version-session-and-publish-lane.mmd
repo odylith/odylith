@@ -1,8 +1,8 @@
-%% Reviewed 2026-03-30 for isolated clean release-proof checkout and explicit detached source-local validation.
+%% Reviewed 2026-08-03 for deterministic process-isolated full-suite validation and aggregate shard failure reporting.
 flowchart TD
     maintainer["Maintainer Workspace"]
     preview["release-version-preview / release-version-show"]
-    devvalidate["dev-validate<br/>detached source-local lane"]
+    devvalidate["dev-validate<br/>detached source-local lane<br/>fresh-process pytest shards"]
     preflight["release-preflight"]
     session[".odylith/locks/release-session.json"]
     dispatch["release-dispatch"]

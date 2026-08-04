@@ -79,7 +79,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -113,7 +114,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -186,7 +188,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -221,7 +224,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -295,6 +299,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "subagent-router"
       ],
       "meaningful": true,
@@ -331,7 +336,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -366,7 +372,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -402,7 +409,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -437,7 +445,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -476,7 +485,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -623,7 +633,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -658,7 +669,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -692,7 +704,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -768,6 +781,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -825,6 +839,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -882,6 +897,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -939,6 +955,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -996,6 +1013,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -1053,6 +1071,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -1103,7 +1122,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -1136,7 +1156,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -1169,7 +1190,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -1204,7 +1226,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -1235,7 +1258,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1266,7 +1290,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1369,7 +1394,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1400,7 +1426,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
@@ -1434,7 +1461,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -1465,7 +1493,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1500,7 +1529,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -1534,7 +1564,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -1570,7 +1601,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -1609,7 +1641,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 verifiable artifact references.",
@@ -1646,7 +1679,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -1723,7 +1757,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -1850,7 +1885,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1881,7 +1917,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1912,7 +1949,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1943,7 +1981,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -1974,7 +2013,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2005,7 +2045,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2061,7 +2102,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2092,7 +2134,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2123,7 +2166,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2187,7 +2231,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2218,7 +2263,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2254,7 +2300,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -2494,7 +2541,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -2658,7 +2706,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -2902,7 +2951,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -2937,7 +2987,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -2973,7 +3024,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -3084,7 +3136,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -3178,7 +3231,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -3209,7 +3263,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -3240,7 +3295,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -3368,7 +3424,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -3403,7 +3460,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -3467,7 +3525,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -3498,7 +3557,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -3529,7 +3589,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -3560,7 +3621,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -3591,7 +3653,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -3996,7 +4059,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -4060,7 +4124,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -4091,7 +4156,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -4188,7 +4254,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -4393,7 +4460,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -4428,7 +4496,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -4461,7 +4530,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -4494,7 +4564,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -4527,7 +4598,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -4561,7 +4633,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -4766,7 +4839,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -4801,7 +4875,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -4872,7 +4947,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -5093,7 +5169,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -5130,7 +5207,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -5287,7 +5365,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -5327,7 +5406,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -5360,7 +5440,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -5395,7 +5476,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -5430,7 +5512,8 @@
         "odylith",
         "odylith-context-engine",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -5469,7 +5552,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -5505,7 +5589,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -5538,7 +5623,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -5573,7 +5659,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -5710,7 +5797,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -5741,7 +5829,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
@@ -5772,7 +5861,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -5948,7 +6038,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -5981,7 +6072,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6014,7 +6106,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6047,7 +6140,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6080,7 +6174,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6113,7 +6208,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6144,7 +6240,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -6175,7 +6272,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -6209,7 +6307,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -6243,7 +6342,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -6274,7 +6374,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -6305,7 +6406,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -6369,7 +6471,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -6440,7 +6543,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -6588,7 +6692,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -6693,7 +6798,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -6760,7 +6866,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -6794,7 +6901,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -6827,7 +6935,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6860,7 +6969,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -6926,6 +7036,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -6957,7 +7068,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -6988,7 +7100,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -7023,7 +7136,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -7058,7 +7172,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -7643,7 +7758,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -7783,7 +7899,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -8073,7 +8190,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -8106,7 +8224,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -8139,7 +8258,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -8179,7 +8299,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -8322,7 +8443,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 verifiable artifact references.",
@@ -8427,7 +8549,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -8461,7 +8584,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -8642,7 +8766,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -8678,7 +8803,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -8711,7 +8837,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -8745,7 +8872,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -8780,7 +8908,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -8811,7 +8940,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -8842,7 +8972,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -8873,7 +9004,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -8942,7 +9074,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -8978,7 +9111,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -9127,7 +9261,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -9483,7 +9618,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -9555,7 +9691,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -9592,7 +9729,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -9628,7 +9766,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -9717,7 +9856,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -9931,7 +10071,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -10004,7 +10145,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -10040,7 +10182,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -10071,7 +10214,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -10168,7 +10312,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -10232,7 +10377,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -10395,7 +10541,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -10428,7 +10575,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -10500,7 +10648,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -10570,7 +10719,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -10601,7 +10751,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -10668,7 +10819,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -10742,7 +10894,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -10779,7 +10932,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -10854,6 +11008,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -10890,6 +11045,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -10928,6 +11084,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -10959,7 +11116,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -11035,6 +11193,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -11075,6 +11234,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -11183,6 +11343,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -11219,6 +11380,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -11291,7 +11453,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -11433,7 +11596,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -11467,7 +11631,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -11503,7 +11668,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -11600,7 +11766,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
@@ -11631,7 +11798,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -11662,7 +11830,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Decision evidence linked this component to governed work. workstream scope preserved.",
@@ -11697,7 +11866,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -11734,7 +11904,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -11768,7 +11939,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -11870,7 +12042,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -11903,7 +12076,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
@@ -11940,7 +12114,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -11981,7 +12156,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 9 verifiable artifact references.",
@@ -12020,7 +12196,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 verifiable artifact references.",
@@ -12059,7 +12236,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 verifiable artifact references.",
@@ -12097,7 +12275,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -12134,7 +12313,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -12171,7 +12351,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -12212,7 +12393,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 9 verifiable artifact references.",
@@ -12250,7 +12432,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -12287,7 +12470,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -12323,7 +12507,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -12364,7 +12549,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 9 verifiable artifact references.",
@@ -12406,7 +12592,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 10 verifiable artifact references.",
@@ -12443,7 +12630,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -12481,6 +12669,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -12519,7 +12708,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -12554,7 +12744,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12589,7 +12780,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12624,7 +12816,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12659,7 +12852,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12694,7 +12888,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12729,7 +12924,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12764,7 +12960,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12799,7 +12996,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12834,7 +13032,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12869,7 +13068,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12904,7 +13104,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12939,7 +13140,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -12974,7 +13176,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13046,7 +13249,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13082,7 +13286,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -13117,7 +13322,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13152,7 +13358,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13187,7 +13394,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13222,7 +13430,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13257,7 +13466,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13292,7 +13502,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13327,7 +13538,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13362,7 +13574,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13397,7 +13610,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13434,6 +13648,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -13469,7 +13684,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13505,7 +13721,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -13578,7 +13795,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -13615,7 +13833,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -13646,7 +13865,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
@@ -13683,7 +13903,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -13718,7 +13939,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13752,7 +13974,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -13786,7 +14009,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -13820,7 +14044,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -13855,7 +14080,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13889,7 +14115,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -13924,7 +14151,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -13960,7 +14188,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -13995,7 +14224,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14068,6 +14298,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -14102,7 +14333,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -14136,7 +14368,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -14171,7 +14404,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14209,7 +14443,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
@@ -14244,7 +14479,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14280,7 +14516,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -14316,7 +14553,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -14351,7 +14589,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14386,7 +14625,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14421,7 +14661,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14574,7 +14815,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14608,7 +14850,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 verifiable artifact references.",
@@ -14643,7 +14886,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14678,7 +14922,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14713,7 +14958,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14749,7 +14995,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -14784,7 +15031,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -14839,7 +15087,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -14872,6 +15121,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -14908,7 +15158,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -14944,6 +15195,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -14977,6 +15229,7 @@
         "odylith",
         "radar",
         "registry",
+        "release",
         "tribunal"
       ],
       "meaningful": true,
@@ -15041,7 +15294,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -15076,7 +15330,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
@@ -15112,7 +15367,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",

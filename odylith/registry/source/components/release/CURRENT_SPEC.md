@@ -17,6 +17,9 @@ governed subsystem.
 - Stable semver discovery anchored to published canonical releases and
   reusable unpublished tag reservations for the canonical lane.
 - Canonical release preflight and dispatch orchestration.
+- Process-isolated full-suite execution for the canonical maintainer validation
+  lane, with deterministic collection order and an aggregate verdict across
+  every shard.
 - Release-planning selector resolution, alias ownership, append-only
   workstream assignment history, and the `odylith release ...` command group.
 - The generic maintainer GTM-and-release checklist plus the release-readiness
@@ -250,7 +253,10 @@ governed subsystem.
   Show session state, highest stable semver tag, and the next auto version.
 - `make dev-validate`
   Run the detached `source-local` maintainer validation lane against current
-  unreleased workspace changes. This is maintainer-only and release-ineligible.
+  unreleased workspace changes. Pytest runs in bounded fresh-process shards so
+  one order-contaminated or crashed interpreter cannot erase prior evidence;
+  every shard still runs and the command fails on any nonzero shard result.
+  This is maintainer-only and release-ineligible.
 - `make license-audit`
   Refresh and audit the checked-in third-party attribution ledger.
 - `make release-session-show`
@@ -284,6 +290,9 @@ governed subsystem.
 - `bin/_odylith.sh`
   Shared maintainer release-lane authority checks, local session-file
   location, and wrapper plumbing.
+- `bin/validate` and `scripts/run_pytest_shards.py`
+  Canonical maintainer validation entrypoint and deterministic process-
+  isolation boundary for the complete pytest corpus.
 - `.github/workflows/release.yml`
   Canonical release workflow with authority, commit-binding, and self-host
   validation gates.
@@ -421,6 +430,11 @@ governed subsystem.
   temp-only changes.
 - A failed or partial release attempt should remain recoverable by reusing the
   same local session after the maintainer fixes the blocking issue.
+- Full-suite test validation must collect one stable node order, run bounded
+  contiguous shards in fresh Python processes, continue after a failed or
+  signaled shard, and return one aggregate failure after all shards finish.
+  Replaying a failed node in isolation is diagnostic evidence, not a substitute
+  for a complete canonical verdict.
 - Session cleanup is explicit so retry evidence is not silently discarded.
 - Managed runtime bundles must preserve runtime isolation so a consumer repo's
   active `VIRTUAL_ENV`, Conda env, `PYTHONHOME`, `PYTHONPATH`,
@@ -595,6 +609,7 @@ governed subsystem.
 - `make release-version-preview`
 - `make release-version-show`
 - `make license-audit`
+- `PYTHONPATH=src python -m pytest -q tests/unit/test_pytest_shards.py`
 - `make release-preflight [VERSION=X.Y.Z]`
 - `make release-session-show`
 - `odylith validate self-host-posture --repo-root . --mode release --expected-tag vX.Y.Z`
@@ -620,6 +635,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-08-03: Moved canonical full-suite pytest execution behind deterministic fresh-process shards after a long-lived Python 3.13 process emitted order-dependent failures and terminated with `SIGBUS`. The runner preserves collected order, reports every failed or signaled shard, continues the remaining corpus, and returns one fail-closed aggregate verdict. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-308`)
 - 2026-07-05: Proved the retained final local-installable dist through strict installed release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
   Release proof for
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-final-20260705T200258Z`

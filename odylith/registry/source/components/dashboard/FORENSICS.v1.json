@@ -83,7 +83,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -150,7 +151,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
@@ -224,6 +226,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -281,6 +284,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -338,6 +342,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -395,6 +400,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -452,6 +458,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -509,6 +516,7 @@
         "proof-state",
         "radar",
         "registry",
+        "release",
         "remediator",
         "subagent-orchestrator",
         "subagent-router",
@@ -656,7 +664,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 verifiable artifact references.",
@@ -727,7 +736,8 @@
         "governance-intervention-engine",
         "odylith",
         "radar",
-        "registry"
+        "registry",
+        "release"
       ],
       "meaningful": true,
       "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",

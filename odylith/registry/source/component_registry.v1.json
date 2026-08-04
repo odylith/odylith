@@ -347,10 +347,13 @@
         "bin/release-session-clear",
         "bin/release-preflight",
         "bin/release-dispatch",
+        "bin/validate",
+        "bin/dev-validate",
         "bin/dogfood-activate",
         "bin/consumer-rehearsal",
         "bin/ga-gate",
         "bin/_odylith.sh",
+        "scripts/run_pytest_shards.py",
         "src/odylith/runtime/governance/release_planning_authoring.py",
         "src/odylith/runtime/governance/release_planning_contract.py",
         "src/odylith/runtime/governance/release_planning_view_model.py",
@@ -361,7 +364,8 @@
       ],
       "workstreams": [
         "B-005",
-        "B-063"
+        "B-063",
+        "B-142"
       ],
       "diagrams": [
         "D-022"
