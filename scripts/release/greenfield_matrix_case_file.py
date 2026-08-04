@@ -31,7 +31,19 @@ def load_case_file(path: Path) -> tuple[GreenfieldMatrixCase, ...]:
     cases = _case_rows(raw)
     if not cases:
         raise RuntimeError(f"greenfield case file {case_path} must define at least one case")
-    compiled = tuple(_case_from_row(row, index=index, source=case_path) for index, row in enumerate(cases, 1))
+    question_fields = _expected_question_fields_by_case(raw)
+    compiled = tuple(
+        _case_from_row(
+            row,
+            index=index,
+            source=case_path,
+            expected_question_fields=question_fields.get(
+                _optional_text(row.get("case_id")) or _optional_text(row.get("id")),
+                (),
+            ),
+        )
+        for index, row in enumerate(cases, 1)
+    )
     identity_counts = Counter(_case_identity(case) for case in compiled)
     duplicates = sorted(identity for identity, count in identity_counts.items() if count > 1)
     if duplicates:
@@ -60,7 +72,13 @@ def _case_rows(raw: Any) -> tuple[Mapping[str, Any], ...]:
     return tuple(rows)
 
 
-def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> GreenfieldMatrixCase:
+def _case_from_row(
+    row: Mapping[str, Any],
+    *,
+    index: int,
+    source: Path,
+    expected_question_fields: tuple[str, ...] = (),
+) -> GreenfieldMatrixCase:
     name = _required_text(row, "name", index=index, source=source)
     prompt = _canonical_text(_required_text(row, "prompt", index=index, source=source))
     required_terms = _string_tuple(row.get("required_terms"))
@@ -121,7 +139,25 @@ def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> Green
         input_style_declared=bool(input_style_token),
         metamorphic_group=metamorphic_group,
         metamorphic_transform=metamorphic_transform,
+        expected_question_fields=expected_question_fields,
     )
+
+
+def _expected_question_fields_by_case(raw: Any) -> dict[str, tuple[str, ...]]:
+    if not isinstance(raw, Mapping):
+        return {}
+    annotations = raw.get("annotations")
+    if not isinstance(annotations, Sequence) or isinstance(annotations, (str, bytes, bytearray)):
+        return {}
+    fields: dict[str, tuple[str, ...]] = {}
+    for row in annotations:
+        if not isinstance(row, Mapping):
+            continue
+        case_id = _optional_text(row.get("case_id"))
+        expected = _string_tuple(row.get("expected_question_fields"))
+        if case_id and expected:
+            fields[case_id] = expected
+    return fields
 
 
 def ungrounded_required_terms(

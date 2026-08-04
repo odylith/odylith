@@ -1394,7 +1394,7 @@ def test_command_led_sentence_target_preserves_domain_frame_without_container(tm
     assert source.title == "weather radar calibration setup"
     assert intent["title"] == "Weather Radar Calibration Setup Workspace"
     assert "weather radar calibration setup workspace" in rendered
-    assert "meteorologist manage a radar scan" in rendered
+    assert "meteorologist can manage a radar scan" in rendered
     assert "beam blockage evidence" in rendered
     assert "Calibration Decision Workspace" not in json.dumps(proposal, sort_keys=True)
     assert greenfield_quality_issues(proposal) == []
@@ -1421,7 +1421,7 @@ def test_command_led_platform_homonym_target_preserves_project_domain_frame(tmp_
     assert source.title == "geologic atlas field mapping setup"
     assert intent["title"] == "Geologic Atlas Field Mapping Setup Workspace"
     assert "geologic atlas field mapping setup workspace" in rendered
-    assert "field geologist manage a map sheet" in rendered
+    assert "field geologist can manage a map sheet" in rendered
     assert "stratigraphy evidence" in rendered
     assert "Mapping Release Workspace" not in json.dumps(proposal, sort_keys=True)
     assert greenfield_quality_issues(proposal) == []

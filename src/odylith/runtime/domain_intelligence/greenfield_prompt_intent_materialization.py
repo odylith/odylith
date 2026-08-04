@@ -52,6 +52,12 @@ from odylith.runtime.domain_intelligence.greenfield_source_casing import restore
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality import (
     title_supports_conservative_first_path,
 )
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    explicit_material_clarification,
+)
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    incomplete_path_clarification,
+)
 
 
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
@@ -124,10 +130,20 @@ def materialize_prompt_intent_hypothesis(
     if not prompt.strip():
         raise prompt_only_material_decision_error()
     raw_edit = _without_edit_command(edit_evidence)
+    material_clarification = explicit_material_clarification(prompt=prompt, edit_evidence=raw_edit)
+    if material_clarification:
+        raise GreenfieldClarificationRequired(
+            material_clarification.question,
+            required_fields=material_clarification.required_fields,
+        )
     if _requires_actor_clarification(prompt=prompt, edit_evidence=raw_edit):
         raise prompt_actor_material_decision_error()
     if _requires_first_path_clarification(prompt=prompt, edit_evidence=raw_edit):
-        raise prompt_only_material_decision_error()
+        clarification = incomplete_path_clarification(prompt=prompt, edit_evidence=raw_edit)
+        raise GreenfieldClarificationRequired(
+            clarification.question,
+            required_fields=clarification.required_fields,
+        )
     baseline = normalize_confirmed_intent(
         intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True),
         prompt=prompt,
@@ -165,12 +181,16 @@ def materialize_prompt_intent_hypothesis(
             rows=actor_rows,
         )
         intent["human_actors"] = canonical_actor_rows
-        intent["first_path"] = canonical_first_path_actor_reference(
-            project_label=domain_label(str(intent.get("title") or fallback_title), ""),
-            first_path=intent.get("first_path"),
-            actor_rows=canonical_actor_rows,
-            fallback=f"{domain_label(str(intent.get('title') or fallback_title), '').casefold()} user",
-        )
+        source_first_path = prompt_intent_source(prompt).first_path if not raw_edit else ""
+        if source_first_path and len(first_path_model(source_first_path).steps) >= 2:
+            intent["first_path"] = source_first_path.rstrip(" .") + "."
+        else:
+            intent["first_path"] = canonical_first_path_actor_reference(
+                project_label=domain_label(str(intent.get("title") or fallback_title), ""),
+                first_path=intent.get("first_path"),
+                actor_rows=canonical_actor_rows,
+                fallback=f"{domain_label(str(intent.get('title') or fallback_title), '').casefold()} user",
+            )
     path = root / ".odylith" / "runtime" / "greenfield" / "candidate-intent.md"
     atomic_write_text(
         path,
@@ -277,8 +297,7 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     ):
         return False
     evidence = prompt
-    if edit_evidence.strip():
-        edited_first_path = prompt_intent_source(edit_evidence).first_path
+    if edit_evidence.strip() and edited_first_path:
         if first_path_model(edited_first_path).material_action:
             evidence = edit_evidence
     source = prompt_intent_source(evidence)
@@ -325,8 +344,9 @@ def _uses_actorless_workflow_assumption(*, prompt: str, edit_evidence: str) -> b
 
     evidence = prompt
     if edit_evidence.strip():
-        edited_source = prompt_intent_source(edit_evidence)
-        if first_path_model(edited_source.first_path).material_action:
+        edit_sections = confirmed_intent_sections(edit_evidence)
+        edited_first_path = _section_first_path_text(edit_sections)
+        if edited_first_path and first_path_model(edited_first_path).material_action:
             evidence = edit_evidence
     source = prompt_intent_source(evidence)
     model = first_path_model(source.first_path)
@@ -430,6 +450,8 @@ def _merge_edit_evidence(
         )
         overrides = _plain_language_edit_overrides(plain_language_edit, baseline=baseline)
         plain_language_recovery = bool(overrides)
+    if not overrides:
+        overrides = _additive_edit_evidence_overrides(edit_evidence, baseline=baseline)
     if not overrides:
         if unchanged_first_path:
             return dict(baseline)
@@ -660,6 +682,53 @@ def _plain_language_edit_overrides(
         if result:
             return _first_path_visible_result_overrides(result=result, baseline=baseline)
     return {}
+
+
+def _additive_edit_evidence_overrides(
+    edit_evidence: str,
+    *,
+    baseline: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Preserve explicit boundary evidence that does not replace the first path."""
+
+    rows = [
+        row.strip(" -*.")
+        for row in re.split(r"(?<=[.!?])\s+|\n+", " ".join(str(edit_evidence or "").split()))
+        if row.strip(" -*.")
+    ]
+    hard_boundary = re.compile(
+        r"\b(?:must\s+not|may\s+not|does\s+not|do\s+not|never)\b",
+        flags=re.IGNORECASE,
+    )
+    mutation_directive = re.compile(
+        r"\b(?:add|change|correct|remove|rename|replace|update)\b",
+        flags=re.IGNORECASE,
+    )
+    if any(mutation_directive.search(row) and not hard_boundary.search(row) for row in rows):
+        return {}
+    boundaries = [
+        row
+        for row in rows
+        if re.search(
+            r"\b(?:boundary|keep|preserve|must\s+not|may\s+not|does\s+not|do\s+not|never|only)\b",
+            row,
+            flags=re.IGNORECASE,
+        )
+    ]
+    if not boundaries:
+        return {}
+    existing_constraints = confirmed_text_values(baseline.get("operational_constraints"))
+    constraints = list(dict.fromkeys([*existing_constraints, *boundaries]))
+    non_goals = confirmed_text_values(baseline.get("non_goals"))
+    explicit_non_goals = [
+        row
+        for row in boundaries
+        if hard_boundary.search(row)
+    ]
+    return {
+        "operational_constraints": constraints,
+        "non_goals": list(dict.fromkeys([*non_goals, *explicit_non_goals])),
+    }
 
 
 def _first_path_actor_overrides(

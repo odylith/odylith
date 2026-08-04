@@ -69,7 +69,11 @@ def run_expected_clarification(
     )
 
 
-def clarification_contract_issues(execution: ClarificationExecution) -> tuple[str, ...]:
+def clarification_contract_issues(
+    execution: ClarificationExecution,
+    *,
+    expected_fields: Sequence[str] = (),
+) -> tuple[str, ...]:
     """Require exactly the small, host-neutral clarification payload and no writes."""
 
     issues: list[str] = []
@@ -95,10 +99,23 @@ def clarification_contract_issues(execution: ClarificationExecution) -> tuple[st
     clarification = payload.get("clarification") if isinstance(payload.get("clarification"), Mapping) else {}
     if set(clarification) != {"question", "required_fields"}:
         issues.append("clarification payload must contain only question and required_fields")
-    if not focused_first_path_question(clarification.get("question")):
-        issues.append("clarification payload must contain the focused first-path question")
-    if clarification.get("required_fields") != ["first_path"]:
-        issues.append("clarification payload must require only first_path")
+    required_fields = tuple(
+        str(field).strip()
+        for field in (expected_fields or ("first_path",))
+        if str(field).strip()
+    )
+    observed_fields = tuple(
+        str(field).strip()
+        for field in (clarification.get("required_fields") or ())
+        if str(field).strip()
+    )
+    if not focused_material_question(clarification.get("question"), required_fields=required_fields):
+        issues.append("clarification payload must ask one focused question about the expected material fields")
+    if observed_fields != required_fields:
+        issues.append(
+            "clarification payload required_fields must match the expected material fields: "
+            + ", ".join(required_fields)
+        )
     if execution.staged_transaction_present:
         issues.append("clarification proposal created a staged transaction record")
     if execution.changed_records:
@@ -143,6 +160,30 @@ def focused_first_path_question(value: Any) -> bool:
     return isinstance(value, str) and value.strip() == FOCUSED_FIRST_PATH_QUESTION
 
 
+def focused_material_question(value: Any, *, required_fields: Sequence[str]) -> bool:
+    """Require one concise question whose language covers each typed material field."""
+
+    if not isinstance(value, str):
+        return False
+    question = " ".join(value.strip().split())
+    if not question.endswith("?") or question.count("?") != 1 or len(question) > 280:
+        return False
+    lowered = question.casefold()
+    anchors = {
+        "display_audience": ("who", "audience", "public", "private", "allowed to see"),
+        "visible_result": ("result", "see", "show", "display", "receive"),
+        "dependency_source": ("source", "where", "supply", "from"),
+        "state_transition": ("state", "status", "change", "transition"),
+        "proof_boundary": ("proof", "claim", "boundary", "safety", "demonstrate"),
+        "human_actors": ("who", "person", "people", "user"),
+        "first_path": ("first complete", "complete task", "finish", "first path"),
+    }
+    return all(
+        any(anchor in lowered for anchor in anchors.get(str(field), (str(field).replace("_", " "),)))
+        for field in required_fields
+    )
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -157,6 +198,7 @@ __all__ = [
     "ClarificationExecution",
     "clarification_contract_issues",
     "clarification_quality_verdict",
+    "focused_material_question",
     "focused_first_path_question",
     "run_expected_clarification",
 ]

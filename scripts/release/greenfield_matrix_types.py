@@ -11,6 +11,7 @@ from typing import Any
 class GreenfieldArtifactCounts:
     radar_workstreams: int = 0
     registry_component_specs: int = 0
+    expected_registry_components: int = 0
     atlas_mermaid_sources: int = 0
     compass_records: int = 0
     release_records: int = 0

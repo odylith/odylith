@@ -51,6 +51,24 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-04: Made narrative evidence ranking subordinate to typed and specialized workflow ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bugs: `CB-227`, `CB-315`, `CB-316`, `CB-317`, `CB-318`; Diagram: D-043)
+  Raw create instructions, source-reporting wrappers, word-sense metadata, and
+  material control prose cannot become first-path truth. Bounded workflow and
+  enablement payloads remain eligible, direct canonicalization cannot reduce the
+  ranked step count, and non-path EDIT sections cannot replace accepted path
+  custody. Clarification now distinguishes title-only or automated prompts from
+  grounded human actor paths and names every unresolved material field in one
+  question. Vague EDIT mutation directives cannot fall through as additive
+  constraints. Registry release proof derives expected component identities
+  from the sealed transaction instead of imposing a synthetic three-component
+  floor, then independently checks that component specs preserve every accepted
+  internal-system responsibility.
+  Fresh source proof passed 44 high-variance prompt-source tests, 10 sparse
+  compile-and-commit tests, 28 intent-envelope tests, 62 transaction-authority
+  tests, and the 25-test anti-clipping, anti-repetition, clarification, EDIT,
+  and dynamic Registry pack. CLI, clean installed, browser, and fresh holdout proof
+  remain release gates.
+
 - 2026-08-04: Preserved sparse first-path action ownership in Greenfield component boundaries before pre-confirm rendering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
   Canonical component projection now classifies source actions `receive` and
   `coordinate` as Intake and Coordination responsibilities instead of generic

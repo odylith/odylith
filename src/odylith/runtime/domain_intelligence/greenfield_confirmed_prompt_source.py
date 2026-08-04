@@ -41,6 +41,10 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import without_leading_explicit_intent_label
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import without_source_metadata_clauses
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import word_key
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import ranked_first_path_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_product_title_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import structured_prompt_facts
 from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
@@ -203,6 +207,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     """Return shared title and first-path sources for thin prompt recovery."""
 
     original_intent = product_intent_source_text(value)
+    structured_facts = structured_prompt_facts(original_intent)
     explicit_first_path = markdown_section_text(
         original_intent,
         headings=frozenset({"first complete path", "first path"}),
@@ -212,6 +217,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     )
     text = without_leading_explicit_intent_label(text)
     product_text = without_source_metadata_clauses(text)
+    ranked_first_path = ranked_first_path_evidence(original_intent)
+    explicit_actor = explicit_actor_evidence(original_intent)
+    explicit_title = explicit_product_title_evidence(original_intent)
     operator_context = operator_context_from_product_text(product_text)
     words = request_words(product_text)
     start, command_led = _request_content_start(words)
@@ -221,19 +229,27 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     workflow_actor, workflow_first_path = _workflow_where_actor_action(product_text)
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
     purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
-    direct_actor, direct_first_path = _direct_actor_action_sentence(product_text)
+    direct_actor, direct_first_path = _direct_actor_action_sentence(ranked_first_path or product_text)
+    preferred_direct_first_path = direct_first_path
+    if (
+        ranked_first_path
+        and len(first_path_model(direct_first_path).steps) < len(first_path_model(ranked_first_path).steps)
+    ):
+        preferred_direct_first_path = ""
     context_actor, context_first_path = _for_role_actor_gerund_path(product_text)
     actor, actor_led_first_path = _actor_led_relative_clause(product_text)
     non_human_relative_first_path = _non_human_subject_relative_action(product_text)
     first_path_source = (
         explicit_first_path
+        or structured_facts.first_path
         or grant_first_path
         or workflow_first_path
         or multi_role_first_path
         or purpose_first_path
         or need_first_path
+        or preferred_direct_first_path
+        or ranked_first_path
         or actor_led_first_path
-        or direct_first_path
         or context_first_path
         or non_human_relative_first_path
         or ("" if is_source_metadata_clause(product_text) else _first_path_source_from_text(product_text))
@@ -244,6 +260,8 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             candidate
             for candidate in (
                 grant_actor,
+                explicit_actor,
+                structured_facts.actor,
                 workflow_actor,
                 multi_role_actor,
                 purpose_actor,
@@ -273,7 +291,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             if first_path_action and _actor_recovery_needs_canonical_path(first_path, recovery_kind=recovery_kind):
                 first_path = f"{recovered_actor} can {first_path_action}".strip(" .")
     return PromptIntentSource(
-        title=product_focus_after_command_sentence(product_text)
+        title=structured_facts.title
+        or explicit_title
+        or product_focus_after_command_sentence(product_text)
         or product_focus_after_need_sentence(product_text)
         or contextual_product_title(product_text)
         or _project_title_source_from_words(words, start=start, command_led=command_led)
@@ -324,6 +344,9 @@ def _first_path_source_from_text(value: str) -> str:
     if is_source_metadata_clause(raw_text):
         return ""
     text = _strip_operator_request_wrapper(raw_text)
+    ranked = ranked_first_path_evidence(text)
+    if ranked:
+        return _strip_release_proof_tail(ranked)
     for sentence in re.split(r"(?<=[.!?])\s+", text):
         candidate = sentence.strip(" .")
         if (

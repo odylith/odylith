@@ -258,9 +258,13 @@ def _registry_findings(
     findings: list[PackageEvidenceFinding] = []
     specs = [artifact for artifact in artifacts if artifact.surface == "Registry component spec"]
     active_components = _active_components(proposal)
-    if len(specs) < max(3, len(active_components)):
+    if len(specs) != len(active_components):
         findings.append(
-            _finding("architect", f"independent Registry readback has only {len(specs)} component spec artifact(s)")
+            _finding(
+                "architect",
+                "independent Registry readback does not match the accepted component set: "
+                f"expected {len(active_components)}, found {len(specs)} component spec artifact(s)",
+            )
         )
     for artifact in specs:
         missing = [phrase for phrase in _REGISTRY_REQUIRED_PROOF if phrase not in artifact.text]
@@ -268,6 +272,34 @@ def _registry_findings(
             findings.append(_finding("engineer", f"{artifact.identity} is missing proof contract text: {', '.join(missing)}"))
         if word_count(artifact.text) < 70:
             findings.append(_finding("engineer", f"{artifact.identity} is too shallow for implementation ownership"))
+    component_text = " ".join(
+        [artifact.text for artifact in specs]
+        + [
+            " ".join(
+                text_values(
+                    {
+                        "label": component.get("label"),
+                        "responsibility": component.get("responsibility"),
+                        "boundary": component.get("boundary"),
+                    }
+                )
+            )
+            for component in active_components
+        ]
+    )
+    component_terms = _terms(component_text)
+    intent = package_mapping(proposal.get("intent"))
+    for responsibility in unique_text(text_values(intent.get("internal_systems"))):
+        responsibility_terms = _terms(responsibility)
+        required_overlap = min(2, len(responsibility_terms))
+        if required_overlap and len(responsibility_terms & component_terms) < required_overlap:
+            findings.append(
+                _finding(
+                    "architect",
+                    "accepted internal-system responsibility is not covered by the Registry package: "
+                    f"{responsibility}",
+                )
+            )
     return findings
 
 
@@ -336,6 +368,7 @@ def _governed_readback_findings(package: Any) -> list[PackageEvidenceFinding]:
             readback,
             release_selector=str(getattr(package, "release_selector", "") or ""),
             release_workstream_ids=tuple(str(item) for item in getattr(package, "release_workstream_ids", ())),
+            expected_registry_components=len(_active_components(package_mapping(getattr(package, "proposal", None)))),
         )
     ]
 

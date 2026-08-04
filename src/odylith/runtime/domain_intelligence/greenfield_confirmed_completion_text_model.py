@@ -97,6 +97,12 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "window",
     "saved",
 }
+_APPOSITIVE_MODAL_PATH_RE = re.compile(
+    r"^(?P<name>[A-Za-z][A-Za-z0-9'/-]{0,60}),\s+"
+    r"(?:a|an|the)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?),\s+"
+    r"(?:can|could|may|might|must|shall|should|will|would)\s+(?P<action>.+)$",
+    flags=re.IGNORECASE,
+)
 _FINITE_ACTION_PATTERN = action_verb_pattern(include_base=False, include_finite=True)
 
 
@@ -202,6 +208,12 @@ def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
     text = _clean(value).strip(" .")
     if not text:
         return "", ""
+    appositive = _APPOSITIVE_MODAL_PATH_RE.match(text)
+    if appositive and has_human_actor_role_signal(appositive.group("role")):
+        return (
+            appositive.group("role").strip(" ."),
+            base_action_clause(appositive.group("action"), force_leading_finite=True).strip(" ."),
+        )
     actor, action = actor_led_action_parts(text)
     if actor and action:
         words = text.split()

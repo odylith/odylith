@@ -70,6 +70,7 @@ def governed_readback_findings(
     *,
     release_selector: str = "",
     release_workstream_ids: Sequence[str] = (),
+    expected_registry_components: int = 0,
 ) -> tuple[tuple[str, str], ...]:
     """Return dimension/message pairs for persisted governance proof gaps."""
 
@@ -77,7 +78,12 @@ def governed_readback_findings(
     findings.extend(_release_findings(readback, release_selector=release_selector, workstream_ids=release_workstream_ids))
     findings.extend(_unexpected_program_findings(readback))
     findings.extend(_compass_findings(readback))
-    findings.extend(_surface_payload_findings(readback))
+    findings.extend(
+        _surface_payload_findings(
+            readback,
+            expected_registry_components=max(0, int(expected_registry_components)),
+        )
+    )
     return tuple(dict.fromkeys(findings))
 
 
@@ -187,7 +193,11 @@ def _compass_findings(readback: GovernedReadback) -> list[tuple[str, str]]:
     return [("operator_usefulness", "persisted Compass readback has no valid source or runtime record")]
 
 
-def _surface_payload_findings(readback: GovernedReadback) -> list[tuple[str, str]]:
+def _surface_payload_findings(
+    readback: GovernedReadback,
+    *,
+    expected_registry_components: int = 0,
+) -> list[tuple[str, str]]:
     findings: list[tuple[str, str]] = []
     payloads = readback.surface_payloads
     for surface in SURFACE_PAYLOAD_GLOBALS:
@@ -195,8 +205,16 @@ def _surface_payload_findings(readback: GovernedReadback) -> list[tuple[str, str
             findings.append(("browser_surface_proof", f"{surface} surface payload readback is missing or invalid"))
     if "radar" in payloads and len(_mapping_rows(payloads["radar"].get("entries"))) < 4:
         findings.append(("governance_depth", "Radar surface payload exposes fewer than four workstreams"))
-    if "registry" in payloads and len(_mapping_rows(payloads["registry"].get("components"))) < 3:
-        findings.append(("architect", "Registry surface payload exposes fewer than three components"))
+    if "registry" in payloads:
+        observed_components = len(_mapping_rows(payloads["registry"].get("components")))
+        if expected_registry_components and observed_components != expected_registry_components:
+            findings.append(
+                (
+                    "architect",
+                    "Registry surface payload does not match the accepted component set: "
+                    f"expected {expected_registry_components}, found {observed_components}",
+                )
+            )
     if "atlas" in payloads and len(_mapping_rows(payloads["atlas"].get("diagrams"))) < 4:
         findings.append(("architect", "Atlas surface payload exposes fewer than four diagrams"))
     if "compass" in payloads:

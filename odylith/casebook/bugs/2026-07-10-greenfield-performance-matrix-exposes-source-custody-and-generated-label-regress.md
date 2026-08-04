@@ -54,6 +54,12 @@
 
 - Follow-Up Verification (2026-08-02): Six binding tests, nineteen casing and title tests, eight focused rendered-copy tests, the exact SunLedger journey, the exact quantum journey, three later performance journeys, and the two-cycle multi-actor idempotency journey pass. Full source validation, rebuilt distribution, and clean installed proof remain open.
 
+- Follow-Up Failure Mechanisms (2026-08-04): A new general evidence ranker could let long create instructions, `request says` framing, word-sense metadata, state-taxonomy commentary, and product enablement wrappers outscore the actual user workflow. Direct-path canonicalization could also compress a complete multi-sentence path to its first action, which then produced repeated downstream Project and Radar copy.
+
+- Follow-Up Solution (2026-08-04): Raw create instructions and hard non-path evidence are now ineligible for ranking. Only bounded workflow, product-enablement, and source-payload clauses may compete. Specialized workflow parsers retain precedence, direct canonicalization is accepted only when it preserves ranked step count, non-path EDIT sections cannot replace first-path custody, and explicit named-role evidence supports unseen actors without expanding a domain-role vocabulary.
+
+- Follow-Up Verification (2026-08-04): The high-variance prompt-source module passed 44 tests; sparse compile and commit-only coverage passed 10 tests; typed transaction authority passed 62 tests; the product-intent envelope passed 28 tests; and the focused anti-clipping, anti-repetition, clarification, EDIT, and dynamic Registry pack passed 25 tests. The first 18 CLI tests also passed before the run was intentionally stopped to integrate adversarial findings. Full CLI, clean installed, browser, and fresh holdout proof remain open.
+
 - Prevention: Keep exact high-variance source and label fixtures in the performance gate, reject actorless status prose from concise-path completion, classify terminal proof loops as supporting evidence, and require generated source plus visible-surface scans, not only returned payload checks.
 
 - Agent Guardrails: Do not delete evidence blindly, patch rendered files, add domain-specific word lists, or weaken banned-copy assertions. Repair classification and projection owners.

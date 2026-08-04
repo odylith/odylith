@@ -7,7 +7,7 @@ import re
 from typing import Any
 
 from greenfield_matrix_types import GreenfieldMatrixResult
-from greenfield_matrix_clarification import focused_first_path_question
+from greenfield_matrix_clarification import focused_material_question
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
@@ -256,6 +256,7 @@ def _clarification_invariant_issues(
     no_write = _mapping(evidence.get("no_write"))
     receipt = _mapping(evidence.get("preconfirm_dry_run"))
     required_fields = clarification.get("required_fields")
+    expected_fields = list(case.get("expected_question_fields") or ["first_path"])
     before_record_count = no_write.get("before_record_count")
     after_record_count = no_write.get("after_record_count")
     issues: list[str] = []
@@ -263,10 +264,10 @@ def _clarification_invariant_issues(
         issues.append(f"metamorphic group {group} case {case_id} lost its clarification expectation")
     if str(clarification.get("mode") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
         issues.append(f"metamorphic group {group} case {case_id} did not return the required clarification mode")
-    if not focused_first_path_question(clarification.get("question")):
-        issues.append(f"metamorphic group {group} case {case_id} did not ask the focused first-path question")
-    if required_fields != ["first_path"]:
-        issues.append(f"metamorphic group {group} case {case_id} did not require only first_path")
+    if not focused_material_question(clarification.get("question"), required_fields=expected_fields):
+        issues.append(f"metamorphic group {group} case {case_id} did not ask its focused material question")
+    if required_fields != expected_fields:
+        issues.append(f"metamorphic group {group} case {case_id} changed its expected material fields")
     if clarification.get("returncode") != 0:
         issues.append(f"metamorphic group {group} case {case_id} did not complete clarification cleanly")
     if no_write.get("changed_records") != []:

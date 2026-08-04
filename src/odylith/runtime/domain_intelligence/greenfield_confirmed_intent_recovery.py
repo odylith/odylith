@@ -449,6 +449,8 @@ def _usable_first_path_source(
     if len(model.steps) >= 2:
         if (
             preserve_one_line
+            or _preserve_complete_source_sequence(text)
+            or _preserve_explicit_actor_action_chain(text)
             or _preserve_one_line_capability_source(text)
             or _preserve_one_line_action_source(text)
             or _preserve_one_line_sequence_source(text)
@@ -461,6 +463,49 @@ def _usable_first_path_source(
         return text
     return ""
 
+
+def _preserve_complete_source_sequence(value: str) -> bool:
+    """Keep a short, source-grounded multi-sentence path intact."""
+
+    text = _clean(value).strip(" .")
+    rows = [row.strip(" .") for row in re.split(r"(?<=[.!?])\s+", text) if row.strip(" .")]
+    if not 2 <= len(rows) <= 3:
+        return False
+    if not has_human_actor_signal(text):
+        return False
+    if re.search(
+        r"\b(?:must\s+not|may\s+not|cannot|can't|do\s+not|never|proof\s+boundary|"
+        r"out\s+of\s+scope|unrelated)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+    return all(first_path_has_action_signal(row) for row in rows)
+
+
+def _preserve_explicit_actor_action_chain(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    actor_match = re.match(
+        r"^[A-Z][A-Za-z0-9'/-]*(?:,\s+(?:a|an|the)\s+(?P<appositive_role>[^,]{2,80}),|"
+        r"\s+is\s+(?:a|an|the)\s+(?P<copular_role>[^:]{2,100}):)",
+        text,
+    )
+    role = ""
+    if actor_match:
+        role = str(actor_match.group("appositive_role") or actor_match.group("copular_role") or "").strip()
+    if (
+        not text
+        or not actor_match
+        or not has_human_actor_role_signal(role)
+        or len(first_path_model(text).steps) < 2
+    ):
+        return False
+    return not re.search(
+        r"\b(?:must\s+not|may\s+not|cannot|can't|do\s+not|never|proof\s+boundary|"
+        r"out\s+of\s+scope|unrelated)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
 
 def _path_starts_with_non_human_workflow_subject(value: str) -> bool:
     text = _clean(value).strip(" .")
@@ -503,6 +548,19 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
         count=1,
         flags=re.IGNORECASE,
     ).strip(" .")
+    if action == path:
+        name = next(
+            (
+                word.strip(".,:;")
+                for word in reversed(actor_text.split())
+                if word[:1].isupper()
+            ),
+            "",
+        )
+        if name:
+            named_action = re.search(rf"\b{re.escape(name)}\s+(?P<action>.+)$", path)
+            if named_action:
+                action = named_action.group("action").strip(" .")
     action = _strip_relative_action_prefix(action)
     if not action:
         return ""
@@ -678,6 +736,8 @@ def _embedded_first_path_clause(value: str, *, actor: str, force_actor_modal: bo
     text = _clean(value).strip(" .")
     if not text:
         return ""
+    if _preserve_complete_source_sequence(text) or _preserve_explicit_actor_action_chain(text):
+        return _sentence_case(text)
     relative_action = _relative_actor_action(text)
     if relative_action:
         action = _recovered_action_clause(relative_action)

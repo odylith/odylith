@@ -39,6 +39,7 @@ class GreenfieldMatrixCase:
     input_style_declared: bool = False
     metamorphic_group: str = ""
     metamorphic_transform: str = ""
+    expected_question_fields: tuple[str, ...] = ()
 
     @property
     def slug(self) -> str:
@@ -68,6 +69,9 @@ def case_evidence(case: GreenfieldMatrixCase) -> dict[str, object]:
     confirmed_intent = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
     if confirmed_intent:
         evidence["confirmed_intent_sha256"] = hashlib.sha256(confirmed_intent.encode("utf-8")).hexdigest()
+    expected_question_fields = tuple(getattr(case, "expected_question_fields", ()) or ())
+    if expected_question_fields:
+        evidence["expected_question_fields"] = list(expected_question_fields)
     return evidence
 
 

@@ -151,7 +151,7 @@ def completion_issues(
         issues.append(f"commit-only create exited with code {create_returncode}")
     if create_seconds >= PRECONFIRM_BUDGET_SECONDS:
         issues.append(f"commit-only create exceeded {PRECONFIRM_BUDGET_SECONDS:.0f}s: {create_seconds:.3f}s")
-    minimums = required_count_minimums()
+    minimums = required_count_minimums(counts)
     for label, value in _count_values(counts).items():
         if value < minimums[label]:
             issues.append(f"{label} incomplete: expected at least {minimums[label]}, found {value}")
@@ -170,10 +170,14 @@ def command_excerpt(value: str, limit: int = 4000) -> str:
     return f"{text[:limit].rstrip()}...[truncated]"
 
 
-def required_count_minimums() -> dict[str, int]:
+def required_count_minimums(counts: GreenfieldArtifactCounts | None = None) -> dict[str, int]:
+    expected_registry_components = max(
+        1,
+        int(getattr(counts, "expected_registry_components", 0) or 0),
+    )
     return {
         "Radar workstreams": 4,
-        "Registry component specs": 3,
+        "Registry component specs": expected_registry_components,
         "Atlas Mermaid sources": 4,
         "Compass records": 1,
         "release records": 1,
@@ -346,7 +350,8 @@ def _quality_lenses(
             _lens_passed(manifest_lenses, "architect")
             and _lens_passed(package_lenses, "architect")
             and not evidence_blocks_dimension(evidence_findings, "architect")
-            and counts.registry_component_specs >= 3
+            and counts.registry_component_specs
+            == max(1, counts.expected_registry_components or counts.registry_component_specs)
             and counts.atlas_mermaid_sources >= 4
             and counts.trace_nodes >= 12
             and counts.trace_workstreams >= 4
@@ -355,7 +360,8 @@ def _quality_lenses(
             _lens_passed(manifest_lenses, "engineer")
             and _lens_passed(package_lenses, "engineer")
             and not evidence_blocks_dimension(evidence_findings, "engineer")
-            and counts.registry_component_specs >= 3
+            and counts.registry_component_specs
+            == max(1, counts.expected_registry_components or counts.registry_component_specs)
             and counts.release_records >= 1
             and create_returncode == 0
             and write_committed(manifest)
@@ -432,7 +438,7 @@ def _quality_scores(
 def _completion_score(*, manifest: Mapping[str, Any], counts: GreenfieldArtifactCounts, create_returncode: int) -> int:
     if create_returncode != 0 or not write_committed(manifest):
         return 0
-    ratio = _count_floor_ratio(counts, required_count_minimums())
+    ratio = _count_floor_ratio(counts, required_count_minimums(counts))
     return 10 if ratio >= 1.0 else int(ratio * 8)
 
 
@@ -466,7 +472,7 @@ def _copy_semantic_clarity_score(
 
 
 def _governance_depth_score(counts: GreenfieldArtifactCounts) -> int:
-    ratio = _count_floor_ratio(counts, required_count_minimums())
+    ratio = _count_floor_ratio(counts, required_count_minimums(counts))
     return 10 if ratio >= 1.0 else int(ratio * 10)
 
 

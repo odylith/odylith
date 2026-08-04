@@ -999,7 +999,10 @@ def _run_expected_clarification_case(
         write_audit_error=audit_evidence.error,
     )
     payload = execution.payload
-    issues = clarification_contract_issues(execution)
+    issues = clarification_contract_issues(
+        execution,
+        expected_fields=tuple(getattr(case, "expected_question_fields", ()) or ()),
+    )
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     quality = clarification_quality_verdict(issues)
@@ -1422,7 +1425,7 @@ def _run_rescue_smoke_case(
             manifest=_as_mapping(payload.get("commit_manifest")),
             package=package,
             counts=counts,
-            count_minimums=required_count_minimums(),
+            count_minimums=required_count_minimums(counts),
             count_key=count_key,
             write_transaction_issues=write_transaction_custody_issues,
             as_mapping=_as_mapping,
@@ -1484,7 +1487,7 @@ def _run_natural_rescue_case(
             manifest=manifest,
             package=package,
             counts=counts,
-            count_minimums=required_count_minimums(),
+            count_minimums=required_count_minimums(counts),
             count_key=count_key,
             write_transaction_issues=write_transaction_custody_issues,
             as_mapping=_as_mapping,
@@ -1654,9 +1657,18 @@ def collect_artifact_counts(
 ) -> GreenfieldArtifactCounts:
     trace = _read_json_mapping(repo_root / "odylith/radar/traceability-graph.v1.json")
     rendered_text = _generated_text(repo_root=repo_root, package=package)
+    proposal = _as_mapping(getattr(package, "proposal", None))
+    expected_registry_components = len(
+        [
+            row
+            for row in _mapping_rows(proposal.get("components"))
+            if str(row.get("status") or "active").strip().casefold() not in {"disabled", "removed"}
+        ]
+    )
     return GreenfieldArtifactCounts(
         radar_workstreams=len(_as_mapping(package.backlog_result.get("idea_files"))),
         registry_component_specs=len(_as_mapping(package.rendered_component_specs)),
+        expected_registry_components=expected_registry_components,
         atlas_mermaid_sources=len(_as_mapping(package.rendered_atlas_sources)),
         compass_records=compass_record_count(package.governed_readback),
         release_records=release_record_count(package.governed_readback),
