@@ -1885,6 +1885,26 @@
   reviewer found no blocking correctness, overfitting, gate-weakening, or
   clipping/repetition concern. Installed dist and full matrix proof remain
   required before closure.
+  The next clean installed matrix advanced through the repaired package-supply
+  case and the first eleven maintained domains at hard 10/10, including the
+  film-archive Project clipping and repetition regression. It then stopped
+  `sparse disclosure confirmation` before confirmation because `Reports
+  Workflow Support Service` and `Review Workflow Support` still had fewer than
+  four component-local terms. The new mechanism was earlier than context
+  backfill: canonical first-path projection mapped source actions `receives
+  reports` and `coordinates review` to generic `Workflow Support` boundaries,
+  while component artifact extraction stripped action morphology without
+  preserving an owned action boundary. The repair now classifies receive as
+  Intake and coordinate as Coordination and retains the actor-action-object
+  clause in the system responsibility before component rendering. Artifact
+  extraction remains anchored to direct owned clauses so subordinate and
+  outside-boundary prose cannot inflate specificity credit. It does not lower the
+  four-term gate, add disclosure-domain vocabulary, patch rendered Markdown, or
+  move the stop after confirmation. Source proof passes 15 canonical-meaning
+  regressions, 77 component and sparse-intent tests, 50 Project and headless
+  browser tests, and 131 anti-slop regressions. A rebuilt installed dist and the
+  complete maintained matrix from case one remain required before release
+  closure.
 
 - Related Incidents/Bugs: CB-208
 
@@ -1905,6 +1925,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_non_goals.py
 - src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py
 - src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py
+- src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py
 - src/odylith/runtime/governance/sync_component_spec_requirements.py
 - src/odylith/runtime/governance/component_registry_intelligence.py
 - scripts/release/publish_release_assets.py

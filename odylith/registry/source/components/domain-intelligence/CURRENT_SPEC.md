@@ -29,6 +29,9 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_terms.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`
 - **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py`, `src/odylith/runtime/project_intelligence/greenfield.py`, plus 2 more
@@ -44,12 +47,22 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_managed_mutation_boundary.py`, `src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py`, `tests/unit/runtime/test_greenfield_managed_mutation_boundary.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md`, `src/odylith/runtime/domain_intelligence/greenfield_generation_store.py`, `src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-04: Preserved sparse first-path action ownership in Greenfield component boundaries before pre-confirm rendering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
+  Canonical component projection now classifies source actions `receive` and
+  `coordinate` as Intake and Coordination responsibilities instead of generic
+  Workflow Support. The actor-action-object clause remains visible in the
+  responsibility, while artifact extraction remains anchored to direct owned
+  clauses so subordinate and outside-boundary prose cannot earn specificity
+  credit. The
+  four-component-local-term floor, unfinished-prose checks, sibling-overlap
+  checks, and post-confirm commit-only boundary are unchanged. Source proof
+  passes 15 canonical-meaning regressions, 77 component and sparse-intent
+  tests, 50 Project and headless browser tests, and 131 anti-slop regressions.
+  Installed release-matrix proof remains pending.
 
 - 2026-08-04: Bounded Greenfield component context backfill to component-owned meaning before pre-confirm rendering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
   Concrete component descriptions no longer import the whole first path merely

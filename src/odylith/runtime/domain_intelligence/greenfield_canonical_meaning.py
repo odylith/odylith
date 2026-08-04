@@ -27,12 +27,13 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 _ACTION_RESPONSIBILITIES = (
-    (frozenset({"add", "attach", "capture", "collect", "create", "enter", "intake", "open", "register", "submit", "upload"}), "Intake"),
+    (frozenset({"add", "attach", "capture", "collect", "create", "enter", "intake", "open", "receive", "register", "submit", "upload"}), "Intake"),
     (frozenset({"assign"}), "Assignment"),
     (frozenset({"approve"}), "Approval"),
     (frozenset({"calculate", "compute"}), "Calculation"),
     (frozenset({"choose", "select"}), "Selection"),
     (frozenset({"cluster", "group", "organize"}), "Organization"),
+    (frozenset({"coordinate"}), "Coordination"),
     (frozenset({"decompose"}), "Decomposition"),
     (frozenset({"deliver", "display", "publish", "release", "return", "see", "show", "surface"}), "Delivery"),
     (frozenset({"draft"}), "Drafting"),
@@ -528,9 +529,10 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
     responsibilities = _responsibility_labels(action, step=action)
     actor_ref = _actor_key(actor) or "user"
     if "Intake" in responsibilities:
+        actor_action = _human_actor_action(action, actor_ref=actor_ref)
         return (
-            f"{title_case_text(f'{action_object} Intake')} — captures input and required context provided by the {actor_ref}, "
-            "then exposes validation or blocked state"
+            f"{title_case_text(f'{action_object} Intake')} — records when the {actor_ref} {actor_action} and keeps "
+            f"{action_object.casefold()} intake status, blockers, evidence, and handoff context visible"
         )
     if "Delivery" in responsibilities:
         return (
@@ -554,6 +556,12 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
         return (
             f"{title_case_text(f'{action_object} Recordkeeping')} — records when the {actor_ref} {actor_action} and "
             "keeps status, correction history, blockers, and handoff context visible"
+        )
+    if "Coordination" in responsibilities:
+        actor_action = _human_actor_action(action, actor_ref=actor_ref)
+        return (
+            f"{title_case_text(f'{action_object} Coordination')} — records when the {actor_ref} {actor_action} and "
+            "keeps coordination status, blockers, evidence, and handoff context visible"
         )
     if "Validation" in responsibilities:
         return (

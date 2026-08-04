@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
+from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
@@ -73,7 +74,6 @@ def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns(
     assert "technician open" not in rendered
     assert "service visit" in rendered
     assert not generated_semantic_slop_issues(contract)
-
     evidence_contract = derive_component_semantic_contract(
         {
             "label": "Evidence Annotation and Extraction Service",
@@ -107,6 +107,16 @@ def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns(
     assert "extracted evidence into assessment" not in evidence_rendered
     assert "extracted evidence" in evidence_rendered
     assert not generated_semantic_slop_issues(evidence_contract)
+
+
+def test_action_object_artifacts_require_a_direct_owned_action_clause() -> None:
+    assert action_object_artifact_phrases("captures extracted fields") == ("extracted field capture",)
+    assert action_object_artifact_phrases(
+        "The service keeps context from teams that capture findings outside the product."
+    ) == ()
+    assert action_object_artifact_phrases(
+        "This boundary is valid when a reviewer validates a packet after approval."
+    ) == ()
 
 
 def test_protected_hyphen_surface_does_not_lowercase_a_generated_component_title() -> None:

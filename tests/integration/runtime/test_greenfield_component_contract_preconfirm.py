@@ -73,3 +73,36 @@ def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) 
     ).casefold()
     for sibling_fact in ("provenance", "waiver", "manager", "readiness", "shipment"):
         assert sibling_fact not in intake_io
+
+
+def test_sparse_action_components_keep_source_backed_local_meaning(tmp_path) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    prompt = (
+        "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "
+        "coordinates review, records evidence custody, decides embargo status, and publishes first release "
+        "readiness proof without personalized notification delivery."
+    )
+    candidate = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=greenfield_proposals.intent_title(prompt),
+    )
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        confirmed_intent=candidate,
+        require_completion_ready=False,
+    )
+    specs = differentiation._render_component_specs(proposal)
+
+    assert rendered_component_spec_quality_issues(
+        specs,
+        project_title=differentiation._project_title(proposal),
+    ) == []
+    assert any(name.startswith("Reports Intake") for name in specs)
+    assert any(name.startswith("Review Coordination") for name in specs)
+    rendered = "\n".join(specs.values()).casefold()
+    assert "receives reports" in rendered
+    assert "coordinates review" in rendered
+    assert "review coordination" in rendered

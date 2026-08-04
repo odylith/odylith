@@ -20,7 +20,7 @@ def test_human_actions_keep_domain_state_without_transferring_ownership_to_produ
 
     rendered = "\n".join(rows).casefold()
     assert "applications intake" in rendered
-    assert "input and required context provided by the permit clerks" in rendered
+    assert "the permit clerks intake applications" in rendered
     assert "zoning attachments validation performed by the permit clerks" in rendered
     assert "routing of reviewer decisions performed by the permit clerks" in rendered
     assert "the product validates" not in rendered
@@ -174,10 +174,26 @@ def test_explicit_decision_and_signoff_get_a_distinct_review_boundary() -> None:
         human_actors=("Council: coordinates the first path",),
     )
 
-    assert rows[0].startswith("Submitted Reports Workflow Support —")
+    assert rows[0].startswith("Submitted Reports Coordination —")
     assert "coordinates submitted reports, affected-party review" in rows[0]
     assert all(not row.startswith("Submitted Reports Delivery —") for row in rows)
     assert any(row.startswith("Decision and Signoff Review —") for row in rows)
+
+
+def test_receive_and_coordinate_actions_keep_distinct_operational_boundaries() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Disclosure Council Workspace",
+        first_path=(
+            "A council receives reports, coordinates review, records evidence custody, decides embargo status, "
+            "and publishes release readiness proof."
+        ),
+        state_object="The primary state object is a report.",
+        visible_result="release readiness proof",
+        human_actors=("Council: coordinates the first path",),
+    )
+
+    assert rows[0].startswith("Reports Intake —")
+    assert rows[1].startswith("Review Coordination —")
 
 
 def test_durable_on_qualifiers_remain_part_of_the_state_object() -> None:
