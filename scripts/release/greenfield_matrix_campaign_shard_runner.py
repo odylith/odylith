@@ -934,7 +934,7 @@ def _tier_case_file_preflight_failure(
                 stop_reason="case-file-invalid",
             )
     release_shards = tuple(shard for shard in shards if shard.proof_tier == "release")
-    if release_shards:
+    if release_shards and not _is_complete_semantic_release(release_shards):
         audit_file = release_shards[0].release_audit_file
         if audit_file is None:
             return _release_corpus_preflight_failure(
@@ -995,6 +995,24 @@ def _tier_case_file_preflight_failure(
                 detail="invalid greenfield release corpus: " + "; ".join(evaluation.issues),
             )
     return None
+
+
+def _is_complete_semantic_release(shards: Sequence[CampaignShard]) -> bool:
+    """Keep semantic holdout proof distinct from audited source-corpus proof."""
+
+    if len(shards) != 1:
+        return False
+    shard = shards[0]
+    revision = str(shard.implementation_revision or "").strip().casefold()
+    return bool(
+        shard.semantic_annotations_file is not None
+        and shard.case_file == shard.semantic_annotations_file
+        and shard.evaluation_split_manifest is not None
+        and shard.final_holdout_run_ledger is not None
+        and shard.release_input_snapshot_root is not None
+        and len(revision) == 40
+        and all(character in "0123456789abcdef" for character in revision)
+    )
 
 
 def _release_corpus_preflight_failure(

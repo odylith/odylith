@@ -8,6 +8,7 @@ from tests.greenfield_matrix_campaign_test_support import command_arg
 from tests.greenfield_matrix_campaign_test_support import matrix_campaign_runner_module
 from tests.greenfield_matrix_campaign_test_support import write_case_file
 from tests.greenfield_matrix_campaign_test_support import write_payload
+from tests.greenfield_matrix_campaign_test_support import write_semantic_release_fixture
 
 
 def test_matrix_command_separates_discovery_and_release_policy(tmp_path: Path) -> None:
@@ -135,6 +136,125 @@ def test_campaign_never_promotes_release_without_an_audited_source_corpus(tmp_pa
     assert [tier["tier"] for tier in payload["tiers"]] == ["volume-discovery", "release-proof"]
     assert [command_arg(command, "--proof-tier") for command in calls] == ["discovery"]
     assert payload["tiers"][-1]["stop_reason"].startswith("tier-release-corpus-invalid:")
+
+
+def test_semantic_release_shard_does_not_require_a_source_corpus_audit(tmp_path: Path) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_semantic_release_scope")
+    shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
+    holdout = tmp_path / "final-holdout.v1.json"
+    write_case_file(holdout, name="semantic holdout", case_id="semantic-holdout", stressors=())
+    shard = module.CampaignShard(
+        tier="release-proof",
+        case_file=holdout,
+        proof_tier="release",
+        install_mode="full",
+        include_browser_proof=True,
+        include_rescue_smoke=True,
+        include_natural_rescue_proof=True,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+        release_input_snapshot_root=tmp_path / "sealed-release-inputs",
+        semantic_annotations_file=holdout,
+        evaluation_split_manifest=tmp_path / "evaluation-splits.v1.json",
+        final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
+        implementation_revision="a" * 40,
+    )
+
+    failure = shard_runner._tier_case_file_preflight_failure(  # noqa: SLF001
+        shards=(shard,),
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        temp_parent=tmp_path / "tmp",
+    )
+
+    assert failure is None
+
+
+def test_partial_semantic_release_contract_still_requires_a_source_corpus_audit(tmp_path: Path) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_partial_semantic_release_scope")
+    shard_runner = sys.modules["greenfield_matrix_campaign_shard_runner"]
+    holdout = tmp_path / "final-holdout.v1.json"
+    write_case_file(holdout, name="partial semantic holdout", case_id="partial-semantic-holdout", stressors=())
+    shard = module.CampaignShard(
+        tier="release-proof",
+        case_file=holdout,
+        proof_tier="release",
+        install_mode="full",
+        include_browser_proof=True,
+        include_rescue_smoke=True,
+        include_natural_rescue_proof=True,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+        release_input_snapshot_root=tmp_path / "sealed-release-inputs",
+        semantic_annotations_file=holdout,
+        evaluation_split_manifest=tmp_path / "evaluation-splits.v1.json",
+        final_holdout_run_ledger=None,
+        implementation_revision="a" * 40,
+    )
+
+    failure = shard_runner._tier_case_file_preflight_failure(  # noqa: SLF001
+        shards=(shard,),
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        temp_parent=tmp_path / "tmp",
+    )
+
+    assert failure is not None
+    assert failure.payload_status == "release-corpus-invalid"
+    assert "release proof requires --release-audit-file" in failure.stderr_excerpt
+
+
+def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_sealed_semantic_release_scope")
+    repo_root = tmp_path / "repo"
+    holdout, manifest = write_semantic_release_fixture(repo_root=repo_root, temp_root=tmp_path)
+    commands: list[list[str]] = []
+
+    def fake_run(**kwargs):  # noqa: ANN001
+        command = kwargs["command"]
+        commands.append(command)
+        write_payload(Path(command_arg(command, "--output-json")), status="passed")
+        return subprocess.CompletedProcess(command, 0, "passed shard", ""), ""
+
+    release_input_manifest = module._release_proof_input_manifest  # noqa: SLF001
+    monkeypatch.setattr(module, "REPO_ROOT", repo_root)
+    monkeypatch.setattr(
+        module,
+        "_release_proof_input_manifest",
+        lambda **kwargs: release_input_manifest(**kwargs, repo_root=repo_root),
+    )
+    monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
+
+    payload = module.run_campaign(
+        dist_dir=tmp_path / "dist",
+        version="0.1.15",
+        temp_parent=tmp_path / "tmp",
+        output_dir=tmp_path / "out",
+        telemetry_dir=tmp_path / "telemetry",
+        release_case_files=(holdout,),
+        semantic_annotations_file=holdout,
+        evaluation_split_manifest=manifest,
+        final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
+        implementation_revision="a" * 40,
+        require_release_readiness=True,
+    )
+
+    assert payload["status"] == "release-ready"
+    assert payload["release_readiness_status"] == "proven"
+    assert len(commands) == 1
+    assert "--release-audit-file" not in commands[0]
+    assert command_arg(commands[0], "--semantic-annotations-file") == command_arg(
+        commands[0], "--case-file"
+    )
+    sealed_root = Path(command_arg(commands[0], "--sealed-release-input-root"))
+    assert not sealed_root.exists()
 
 
 def test_campaign_rejects_individually_inadequate_release_case_files_before_union(
