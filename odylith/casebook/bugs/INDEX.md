@@ -6,6 +6,8 @@ Last updated (UTC): 2026-08-04
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-309 | 2026-08-04 | Synthetic review floor overrides terminal choice visible result | P1 | domain-intelligence | FixedPendingRelease | [2026-08-04-synthetic-review-floor-overrides-terminal-choice-visible-result.md](2026-08-04-synthetic-review-floor-overrides-terminal-choice-visible-result.md) |
+| CB-310 | 2026-08-04 | Post confirm provenance inventory omits deterministic environment helper | P2 | domain-intelligence | FixedPendingRelease | [2026-08-04-post-confirm-provenance-inventory-omits-deterministic-environment-helper.md](2026-08-04-post-confirm-provenance-inventory-omits-deterministic-environment-helper.md) |
 | CB-308 | 2026-08-04 | Canonical validation loses trustworthy proof after long process state accumulati | P1 | odylith | Open | [2026-08-04-canonical-validation-loses-trustworthy-proof-after-long-process-state-accumulati.md](2026-08-04-canonical-validation-loses-trustworthy-proof-after-long-process-state-accumulati.md) |
 | CB-307 | 2026-08-03 | Automated greenfield create opened committed dashboard in operator browser | P2 | domain-intelligence | Open | [2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md](2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md) |
 | CB-303 | 2026-08-02 | Greenfield project surfaces repeated and clipped canonical meaning | P1 | domain-intelligence-greenfield | FixedPendingRelease | [2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md](2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md) |

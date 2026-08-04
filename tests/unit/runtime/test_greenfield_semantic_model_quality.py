@@ -4,7 +4,9 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence import greenfield_confirmed_completion_text_model as completion_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import FirstPathContract
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import FirstPathEvent
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import _first_path_contract_claim
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import _reconciled_visible_result
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -67,6 +69,36 @@ def test_semantic_model_preserves_conditional_visible_outcome() -> None:
 
     assert first_path_outcome_phrase(first_path) == "whether the vessel can sail"
     assert model.first_path_contract.visible_result == "whether the vessel can sail"
+
+
+def test_semantic_model_accepts_finite_choice_actions_before_synthetic_review_floor() -> None:
+    broad_result = "compared roof options before selecting an installation plan"
+    for action, event_text in (
+        ("chooses", "A resident chooses an installation plan"),
+        ("selects", "A resident selects an installation plan"),
+    ):
+        events = (
+            FirstPathEvent(1, "Resident", action, "installation plan", event_text, True, False, event_text),
+            FirstPathEvent(
+                2,
+                "Resident",
+                "review",
+                "installation plan",
+                f"Review evidence for {broad_result}",
+                True,
+                False,
+                f"Review evidence for {broad_result}",
+            ),
+        )
+
+        assert (
+            _reconciled_visible_result(
+                broad_result,
+                model_visible="Selected installation plan",
+                events=events,
+            )
+            == "Selected installation plan"
+        )
 
 
 def test_first_path_outcome_does_not_concatenate_title_cased_actor_and_action() -> None:

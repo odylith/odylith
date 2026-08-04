@@ -81,6 +81,9 @@ _SEMANTIC_MODEL_TERM_STOPWORDS = {
 }
 _ACTION_VERB_PATTERN = action_verb_pattern()
 _NOUN_LIKE_ACTION_TOKENS = frozenset({"record", "report", "surface", "view"})
+_TERMINAL_CHOICE_ACTIONS = frozenset(
+    {"choose", "chooses", "choosing", "chosen", "select", "selects", "selecting", "selected"}
+)
 
 
 @dataclass(frozen=True)
@@ -342,6 +345,23 @@ def _reconciled_visible_result(
     current = _clean(visible_result)
     terminal = next((event for event in reversed(events) if event.visible_result), None)
     if terminal is None:
+        return current
+    if _is_synthetic_visible_result_event(terminal.text, current):
+        parsed_visible = _clean(model_visible)
+        matched_event = (
+            next(
+                (
+                    event
+                    for event in events
+                    if event.index != terminal.index and _accepted_result_matches_step(event.text, parsed_visible)
+                ),
+                None,
+            )
+            if parsed_visible
+            else None
+        )
+        if parsed_visible and matched_event and _clean(matched_event.action).casefold() in _TERMINAL_CHOICE_ACTIONS:
+            return parsed_visible
         return current
     terminal_visible = visible_result_object(terminal.text)
     terminal_result = (

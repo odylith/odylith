@@ -439,6 +439,7 @@ def test_temporal_choice_tail_expands_into_reviewable_first_path_events() -> Non
     assert len(events) == 3
     assert semantic["first_path_contract"]["visible_result"] == "Selected installation plan"
     assert events[-1]["text"] == "Review evidence for selected installation plan"
+    assert events[-1]["text"] == "Review evidence for selected installation plan"
 
     flowchart = first_path_flowchart_mermaid(
         label="Residential Solar Planning Tool",

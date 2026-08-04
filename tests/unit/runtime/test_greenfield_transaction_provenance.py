@@ -149,6 +149,7 @@ def test_compiler_identity_fingerprints_only_postconfirm_runtime() -> None:
     assert "runtime/domain_intelligence/greenfield_compiled_write.py" in paths
     assert "runtime/domain_intelligence/greenfield_repository_write_set.py" in paths
     assert "runtime/domain_intelligence/greenfield_commit_journal.py" in paths
+    assert "runtime/common/environment.py" in paths
     assert "cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_proposals_cli.py" in paths
     assert "runtime/domain_intelligence/greenfield_transaction.py" in paths
@@ -199,6 +200,7 @@ def test_postconfirm_receipt_covers_executed_runtime(tmp_path: Path) -> None:
         source_root / "runtime/domain_intelligence/greenfield_create_cli.py",
         source_root / "runtime/domain_intelligence/greenfield_create_contract.py",
         source_root / "runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
+        source_root / "runtime/common/environment.py",
         source_root / "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
         source_root / "runtime/domain_intelligence/greenfield_proposals_cli.py",
         source_root / "runtime/surfaces/greenfield_host_confirmation.py",

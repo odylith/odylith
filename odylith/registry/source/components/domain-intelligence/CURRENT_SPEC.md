@@ -51,6 +51,17 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-04: Closed two canonical-validation gaps in pre-confirm visible-result custody and post-confirm source provenance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-309`, `CB-310`; Diagram: D-043)
+  A synthetic three-event proof-floor row can no longer replace a source-derived
+  terminal choice with a broad action-history phrase: reconciliation promotes
+  the parsed result only when a prior real event entails it and owns a typed
+  choose/select action. Conditional visible outcomes remain unchanged. The
+  post-confirm compiler identity now explicitly fingerprints the deterministic
+  environment helper used by the completion handoff, while the lower-level
+  commit and CLI traces retain exact, distinct executed-source sets. Focused
+  proof passed 131 slop regressions, 38 semantic/provenance tests, and 10
+  cross-domain confirmed-body tests. A clean canonical rerun remains required.
+
 - 2026-08-03: Closed the remaining source-level Project repetition and sentence-integrity gaps with typed semantic slots and full rendered-state proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Product Story cards now carry an exact label-to-slot identity from view-model
   generation through HTML and installed release proof. Package judgment rejects
@@ -1673,6 +1684,14 @@ This section captures synchronized requirement and contract signals derived from
   Length-limited projections must choose complete clauses rather than append
   punctuation to prefixes, and terminal determiner/modifier phrases remain
   clipped even when a period is present.
+- `greenfield_semantic_model.py` owns visible-result reconciliation against
+  typed first-path events. Synthetic proof-floor events remain subordinate to
+  source-derived outcomes; they may promote a parsed terminal choice only when
+  a prior real event entails it and owns a choose/select action.
+- `greenfield_commit_transaction.py` owns the exact post-confirm runtime-source
+  inventory included in compiler identity. Lower-level commit and CLI traces
+  must each equal their explicit executed subset; new imports may not enter the
+  confirmed path through wildcard or implicit provenance.
 - `greenfield_repository_write_set.py` owns the exact pre-confirm repository
   mutation: approved managed paths, before/after tree fingerprints, file bytes,
   modes, file deletions, empty-directory creation/deletion, symlink refusal,
