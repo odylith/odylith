@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import acti
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_CARD_SLOTS
+from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_LABEL_BY_CASEFOLD
 from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_SLOT_BY_LABEL
 
 
@@ -127,12 +128,13 @@ def _project_story_role_issues(cards: Sequence[Mapping[str, Any]]) -> list[str]:
     label_counts: dict[str, int] = {}
     slot_owners: dict[str, str] = {}
     for row in cards:
-        label = normalize_string(row.get("label"))
+        rendered_label = normalize_string(row.get("label"))
+        label = PRODUCT_STORY_LABEL_BY_CASEFOLD.get(rendered_label.casefold(), "")
         expected_slot = PRODUCT_STORY_SLOT_BY_LABEL.get(label)
         if not expected_slot:
             issues.append(
                 "greenfield Project Product Story card has an unexpected semantic label: "
-                f"`{label or 'unlabeled card'}`"
+                f"`{rendered_label or 'unlabeled card'}`"
             )
             continue
         label_counts[label] = label_counts.get(label, 0) + 1

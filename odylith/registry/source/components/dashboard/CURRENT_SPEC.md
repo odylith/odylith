@@ -115,7 +115,10 @@ each child surface into the shell renderer.
   fully readable at desktop and mobile widths.
 - `src/odylith/runtime/artifact_quality/greenfield_project_judgment.py`
   Shared Project Story slot-custody and lexical repetition judgment used before
-  confirmation and by installed browser release proof.
+  confirmation and by installed browser release proof. The five fixed display
+  labels are recognized case-insensitively because browser `innerText` includes
+  CSS case transformation; typed `data-semantic-slot` ownership and label-to-slot
+  matching remain mandatory.
 - `scripts/release/greenfield_browser_surface_proof.py`
   Installed generated-surface proof for rendered semantic-slot identity and
   Product Story distinctness.
@@ -403,6 +406,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-08-04: Corrected installed Project browser proof so intentional CSS uppercase labels retain their canonical five-card identity while unknown, missing, mismatched, and reused semantic slots still fail. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-08-03: Bound each Project Product Story card to a distinct typed semantic slot, reused the same judgment in pre-confirm and installed browser proof, and expanded Playwright coverage to accepted, blank, and degraded desktop/mobile states with no overflow, line clamp, or hidden text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-06-30: Added release-proof custody for generated shell payload readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-046)
   Greenfield release proof now treats generated shell payload globals as

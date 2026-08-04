@@ -171,3 +171,61 @@ def test_project_state_assertion_rejects_wrong_semantic_story_slot() -> None:
         "`Product Boundary` uses `first_path` instead of `product_boundary`"
         in issues
     )
+
+
+def test_project_state_assertion_accepts_css_transformed_story_labels() -> None:
+    module = _module()
+
+    issues = module._project_state_assertion_issues(
+        payload_origin="accepted greenfield project",
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        rendered_story_body_count=5,
+        distinct_story_body_count=5,
+        clipped_text_count=0,
+        story_rows=[
+            {"label": "USER PROBLEM", "semantic_slot": "user_problem", "body": "A reviewer needs a decision."},
+            {"label": "FIRST PATH", "semantic_slot": "first_path", "body": "A reviewer submits one packet."},
+            {
+                "label": "PRODUCT BOUNDARY",
+                "semantic_slot": "product_boundary",
+                "body": "The product owns packet review but not the external archive.",
+            },
+            {
+                "label": "OWNED CAPABILITIES",
+                "semantic_slot": "owned_capabilities",
+                "body": "The product validates, records, and displays the decision.",
+            },
+            {"label": "PROOF", "semantic_slot": "proof", "body": "A receipt proves the reviewed result."},
+        ],
+    )
+
+    assert issues == ()
+
+
+def test_project_state_assertion_rejects_confusable_uppercase_story_label() -> None:
+    module = _module()
+
+    issues = module._project_state_assertion_issues(
+        payload_origin="accepted greenfield project",
+        payload_prompt_count=5,
+        empty_payload_prompts=0,
+        rendered_prompt_count=5,
+        has_prompt_grid=True,
+        has_blank_state=False,
+        has_implementation_prompts=True,
+        max_prompt_overflow=0,
+        pane_overflow=0,
+        story_rows=[
+            {"label": "PROOFS", "semantic_slot": "proof", "body": "A receipt proves the reviewed result."}
+        ],
+    )
+
+    assert "greenfield Project Product Story card has an unexpected semantic label: `PROOFS`" in issues
+    assert "greenfield Project Product Story is missing its `Proof` card" in issues
