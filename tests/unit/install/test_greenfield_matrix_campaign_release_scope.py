@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 from tests.greenfield_matrix_campaign_test_support import command_arg
 from tests.greenfield_matrix_campaign_test_support import matrix_campaign_runner_module
@@ -215,6 +218,18 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
     module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_sealed_semantic_release_scope")
     repo_root = tmp_path / "repo"
     holdout, manifest = write_semantic_release_fixture(repo_root=repo_root, temp_root=tmp_path)
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "build-provenance.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "odylith-release-provenance.v1",
+                "source_tree": {"head": "a" * 40, "dirty": False},
+                "workflow": {"sha": "a" * 40},
+            }
+        ),
+        encoding="utf-8",
+    )
     commands: list[list[str]] = []
 
     def fake_run(**kwargs):  # noqa: ANN001
@@ -233,7 +248,7 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
     monkeypatch.setattr(module, "_run_command_with_progress", fake_run)
 
     payload = module.run_campaign(
-        dist_dir=tmp_path / "dist",
+        dist_dir=dist_dir,
         version="0.1.15",
         temp_parent=tmp_path / "tmp",
         output_dir=tmp_path / "out",
@@ -248,6 +263,14 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
 
     assert payload["status"] == "release-ready"
     assert payload["release_readiness_status"] == "proven"
+    assert {
+        "kind": "distribution-build-provenance",
+        "implementation_revision": "a" * 40,
+    }.items() <= next(
+        reference
+        for reference in payload["release_proof_inputs"]
+        if reference["kind"] == "distribution-build-provenance"
+    ).items()
     assert len(commands) == 1
     assert "--release-audit-file" not in commands[0]
     assert command_arg(commands[0], "--semantic-annotations-file") == command_arg(
@@ -255,6 +278,82 @@ def test_campaign_runs_a_sealed_semantic_release_without_a_source_corpus_audit(
     )
     sealed_root = Path(command_arg(commands[0], "--sealed-release-input-root"))
     assert not sealed_root.exists()
+
+
+def test_semantic_release_rejects_revision_not_bound_to_distribution_provenance(tmp_path: Path) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_semantic_revision_scope")
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "build-provenance.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "odylith-release-provenance.v1",
+                "source_tree": {"head": "a" * 40, "dirty": False},
+                "workflow": {"sha": "a" * 40},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="implementation revision does not match distribution build provenance"):
+        module.run_campaign(
+            dist_dir=dist_dir,
+            version="0.1.15",
+            temp_parent=tmp_path / "tmp",
+            output_dir=tmp_path / "out",
+            telemetry_dir=tmp_path / "telemetry",
+            semantic_annotations_file=tmp_path / "final-holdout.v1.json",
+            final_holdout_run_ledger=tmp_path / "final-holdout-run.v1.json",
+            implementation_revision="b" * 40,
+        )
+
+
+@pytest.mark.parametrize(
+    ("provenance_text", "message"),
+    (
+        (None, "safe distribution build provenance"),
+        ("not-json\n", "distribution build provenance is unreadable"),
+        ("{}\n", "supported distribution build provenance"),
+    ),
+)
+def test_semantic_release_requires_supported_distribution_provenance(
+    tmp_path: Path,
+    provenance_text: str | None,
+    message: str,
+) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_semantic_provenance_scope")
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    if provenance_text is not None:
+        (dist_dir / "build-provenance.v1.json").write_text(provenance_text, encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match=message):
+        module.verify_distribution_provenance(
+            provenance_path=dist_dir / "build-provenance.v1.json",
+            implementation_revision="a" * 40,
+        )
+
+
+def test_semantic_release_rejects_dirty_distribution_source_provenance(tmp_path: Path) -> None:
+    module = matrix_campaign_runner_module("greenfield_matrix_campaign_runner_dirty_semantic_provenance_scope")
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    (dist_dir / "build-provenance.v1.json").write_text(
+        json.dumps(
+            {
+                "version": "odylith-release-provenance.v1",
+                "source_tree": {"head": "a" * 40, "dirty": True},
+                "workflow": {"sha": "a" * 40},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="clean distribution source provenance"):
+        module.verify_distribution_provenance(
+            provenance_path=dist_dir / "build-provenance.v1.json",
+            implementation_revision="a" * 40,
+        )
 
 
 def test_campaign_rejects_individually_inadequate_release_case_files_before_union(

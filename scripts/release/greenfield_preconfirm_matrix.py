@@ -49,6 +49,7 @@ from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  
 from greenfield_evaluation_contract import validate_atomic_annotations  # noqa: E402
 from greenfield_final_holdout_guard import claim_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
+from greenfield_distribution_provenance import verify_distribution_provenance  # noqa: E402
 from greenfield_matrix_campaign import MatrixCampaignConfig  # noqa: E402
 from greenfield_matrix_campaign import MatrixTelemetryWriter  # noqa: E402
 from greenfield_matrix_campaign import campaign_phase_from_value  # noqa: E402
@@ -2146,6 +2147,10 @@ def _final_holdout_run_from_args(
     if ledger_path.exists() or ledger_path.is_symlink():
         raise RuntimeError("final holdout run ledger already exists; the holdout cannot be rerun")
     sealed_root = Path(sealed_input_root).expanduser().resolve()
+    verify_distribution_provenance(
+        provenance_path=sealed_root / "private/build-provenance.v1.json",
+        implementation_revision=revision,
+    )
     try:
         ledger_path.relative_to(sealed_root)
     except ValueError:
@@ -2329,11 +2334,16 @@ def _execute_matrix_campaign(
         and isinstance(provenance_summary.get("approved_audit_bindings"), Mapping)
         else {}
     )
+    require_recovery_release_binding = (
+        campaign_config.proof_tier == "release"
+        and not str(getattr(args, "semantic_annotations_file", "") or "").strip()
+    )
     recovery_case = (
         select_recovery_case(
             planned_cases,
             proof_tier=campaign_config.proof_tier,
             approved_audit_bindings=approved_audit_bindings,
+            require_release_binding=require_recovery_release_binding,
         )
         if bool(args.include_commit_recovery_proof)
         else None
@@ -2371,10 +2381,7 @@ def _execute_matrix_campaign(
                 version=str(args.version),
                 temp_parent=temp_parent,
                 recovery_case=recovery_case,
-                require_release_binding=(
-                    campaign_config.proof_tier == "release"
-                    and not str(getattr(args, "semantic_annotations_file", "") or "").strip()
-                ),
+                require_release_binding=require_recovery_release_binding,
                 release_audit_binding=(
                     approved_audit_bindings.get(recovery_case.case_id)
                     if recovery_case is not None

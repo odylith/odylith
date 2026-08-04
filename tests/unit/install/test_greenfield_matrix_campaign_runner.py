@@ -927,6 +927,17 @@ def test_semantic_release_inputs_are_sealed_and_forwarded_as_one_holdout(tmp_pat
         repo_root=repo_root,
         temp_root=tmp_path,
     )
+    provenance_path = tmp_path / "build-provenance.v1.json"
+    provenance_path.write_text(
+        json.dumps(
+            {
+                "version": "odylith-release-provenance.v1",
+                "source_tree": {"head": "a" * 40, "dirty": False},
+                "workflow": {"sha": "a" * 40},
+            }
+        ),
+        encoding="utf-8",
+    )
 
     snapshot = module._seal_release_proof_inputs(  # noqa: SLF001
         case_files=(holdout_path,),
@@ -935,10 +946,18 @@ def test_semantic_release_inputs_are_sealed_and_forwarded_as_one_holdout(tmp_pat
         evaluation_split_manifest=manifest_path,
         repo_root=repo_root,
         temp_parent=tmp_path / "snapshots",
+        distribution_provenance_file=provenance_path,
     )
 
     assert snapshot is not None
     assert snapshot.case_files == (snapshot.semantic_annotations_file,)
+    assert (snapshot.root / "private/build-provenance.v1.json").read_bytes() == provenance_path.read_bytes()
+    assert {reference["kind"] for reference in snapshot.input_references} == {
+        "semantic-annotations-file",
+        "evaluation-split-manifest",
+        "evaluation-tracked-corpus",
+        "distribution-build-provenance",
+    }
     shard = module._release_tier(  # noqa: SLF001
         "release-proof",
         snapshot.case_files,

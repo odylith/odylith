@@ -74,13 +74,18 @@ def select_recovery_case(
     *,
     proof_tier: str,
     approved_audit_bindings: Mapping[str, Mapping[str, Any]] | None = None,
+    require_release_binding: bool | None = None,
 ) -> GreenfieldMatrixCase:
     """Choose one deterministic committed case for every recovery phase."""
 
     committed_cases = tuple(case for case in cases if case_expectation(case) == DEFAULT_CASE_EXPECTATION)
     if not committed_cases:
         raise RuntimeError("installed commit recovery proof requires a transaction_committed campaign case")
-    release_required = str(proof_tier or "").strip().casefold() == "release"
+    release_required = (
+        str(proof_tier or "").strip().casefold() == "release"
+        if require_release_binding is None
+        else bool(require_release_binding)
+    )
     audit_bindings = approved_audit_bindings if isinstance(approved_audit_bindings, Mapping) else {}
     if release_required and not audit_bindings:
         raise RuntimeError("release commit recovery proof requires an approved audit binding")

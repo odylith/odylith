@@ -621,6 +621,9 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:start -->
 - **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-04-final-holdout-ledger-revision-is-not-bound-to-distribution-provenance.md`, `odylith/casebook/bugs/2026-08-04-semantic-release-recovery-selection-requires-source-audit-binding.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
+- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-04-semantic-holdout-release-preflight-requires-unrelated-source-audit.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_campaign_release_scope.py`
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
@@ -631,8 +634,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`, `tests/unit/runtime/test_greenfield_generated_prose_shape.py`
 - **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with 4 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
-- **2026-07-31 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 <!-- registry-requirements:end -->
 
 ## Feature History

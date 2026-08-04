@@ -479,6 +479,11 @@ def test_recovery_case_selection_ignores_clarification_cases_and_rejects_unprove
     ) == committed_case
     with pytest.raises(RuntimeError, match="approved audit binding"):
         module.select_recovery_case((committed_case,), proof_tier="release")
+    assert module.select_recovery_case(
+        (clarification_case, committed_case),
+        proof_tier="release",
+        require_release_binding=False,
+    ) == committed_case
 
 
 def test_release_recovery_selection_requires_an_edited_source_provenanced_case() -> None:
@@ -609,6 +614,119 @@ def test_release_campaign_forwards_the_evaluated_audit_binding_to_commit_recover
     assert captured["require_release_binding"] is True
     assert captured["release_audit_binding"] == binding
     assert payload["commit_recovery_proof"]["recovery_case"]["binding_scope"] == "release-confirmed-intent-v1"
+
+
+def test_semantic_release_campaign_uses_sealed_case_binding_for_commit_recovery(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    module = _module()
+    recovery_case = module.GreenfieldMatrixCase(
+        name="semantic recovery case",
+        prompt="Operator records one semantic recovery receipt.",
+        required_terms=("semantic", "recovery"),
+        case_id="semantic-recovery-case",
+    )
+    captured: dict[str, object] = {}
+    args = module.argparse.Namespace(
+        dist_dir=str(tmp_path / "dist"),
+        version="0.1.15",
+        include_browser_proof=True,
+        install_mode="fresh",
+        allow_partial_stressor_coverage=False,
+        include_commit_recovery_proof=True,
+        include_rescue_smoke=False,
+        include_natural_rescue_proof=False,
+        json_output=True,
+        attempt_ledger_jsonl=None,
+        semantic_annotations_file=str(tmp_path / "final-holdout.v1.json"),
+        evaluation_split_manifest=str(tmp_path / "evaluation-splits.v1.json"),
+    )
+    config = module.MatrixCampaignConfig(
+        phase=module.campaign_phase_from_value("gate"),
+        proof_tier=module.proof_tier_from_value("release"),
+        telemetry_jsonl=None,
+        stop_after_failures=0,
+        stop_after_cluster_failures=0,
+        required_stressors=(),
+    )
+    lease = type(
+        "Lease",
+        (),
+        {
+            "temp_namespace": tmp_path,
+            "to_dict": lambda self: {"temporary_namespace": str(tmp_path)},
+        },
+    )()
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "browser_proof_summary", lambda *_args, **_kwargs: {"status": "passed"})
+    monkeypatch.setattr(module, "_platform_leakage_proof_summary", lambda _results: {"status": "passed"})
+    monkeypatch.setattr(module, "temp_cleanup_proof", lambda _path: {"status": "passed"})
+    monkeypatch.setattr(module, "_semantic_release_report", lambda **_kwargs: {"status": "passed"})
+
+    def fake_commit_recovery(**kwargs):  # noqa: ANN001
+        captured.update(kwargs)
+        return module.GreenfieldInstalledCommitRecoveryProof(
+            status="passed",
+            issues=(),
+            recovery_case={"binding_scope": "campaign-case-v1"},
+        )
+
+    monkeypatch.setattr(module, "run_installed_commit_recovery_proof", fake_commit_recovery)
+
+    exit_code = module._execute_matrix_campaign(  # noqa: SLF001
+        args=args,
+        selected_cases=(recovery_case,),
+        planned_cases=(recovery_case,),
+        release_audits=(),
+        campaign_config=config,
+        corpus_provenance={"status": "passed"},
+        output_path=None,
+        lease=lease,
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert captured["recovery_case"] is recovery_case
+    assert captured["require_release_binding"] is False
+    assert captured["release_audit_binding"] is None
+    assert payload["commit_recovery_proof"]["recovery_case"]["binding_scope"] == "campaign-case-v1"
+
+
+def test_final_holdout_child_rechecks_sealed_distribution_provenance_before_claim(tmp_path: Path) -> None:
+    module = _module()
+    sealed_root = tmp_path / "sealed-inputs"
+    provenance = sealed_root / "private/build-provenance.v1.json"
+    provenance.parent.mkdir(parents=True)
+    provenance.write_text(
+        json.dumps(
+            {
+                "version": "odylith-release-provenance.v1",
+                "source_tree": {"head": "a" * 40, "dirty": False},
+                "workflow": {"sha": "a" * 40},
+            }
+        ),
+        encoding="utf-8",
+    )
+    ledger = tmp_path / "final-holdout-run.v1.json"
+    args = module.argparse.Namespace(
+        proof_tier="release",
+        final_holdout_run_ledger=str(ledger),
+        implementation_revision="b" * 40,
+        output_json=str(tmp_path / "result.json"),
+        semantic_annotations_file=str(sealed_root / "private/final-holdout.v1.json"),
+        evaluation_split_manifest=str(sealed_root / "evaluation-splits.v1.json"),
+    )
+
+    with pytest.raises(RuntimeError, match="implementation revision does not match distribution build provenance"):
+        module._final_holdout_run_from_args(args, sealed_input_root=str(sealed_root))  # noqa: SLF001
+    assert not ledger.exists()
+
+    args.implementation_revision = "a" * 40
+    holdout_run = module._final_holdout_run_from_args(args, sealed_input_root=str(sealed_root))  # noqa: SLF001
+
+    assert holdout_run is not None
+    assert holdout_run.implementation_revision == "a" * 40
+    assert not ledger.exists()
 
 
 def test_temp_cleanup_proof_finds_leftover_files_and_symlinks(tmp_path: Path) -> None:
