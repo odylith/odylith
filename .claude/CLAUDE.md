@@ -12,4 +12,3 @@
 - SubagentStart injects the active Odylith slice into Claude subagents, and `.claude/skills/` exposes repo-owned playbooks without replacing the launcher-first contract.
 - Keep help, show-me, and Odylith capabilities/engines prompts stdout-clean: run the single authoritative `odylith --help`, `odylith show`, or `odylith capabilities` route, print stdout only, and do not infer from Claude, Codex, or any host-model surface.
 - `odylith plan --help` is read-only; do not probe `odylith/technical-plans/source/`, and do not pair help with parallel exploratory filesystem probes that can cancel the visible help call.
-- Commit messages in this repository must use only the `freedom-research` contributor identity and must not include coding-assistant trailers.
