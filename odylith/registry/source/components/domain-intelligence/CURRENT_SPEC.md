@@ -69,10 +69,14 @@ This section captures synchronized requirement and contract signals derived from
   compile-and-commit tests, 28 intent-envelope tests, 62 transaction-authority
   tests, and the 25-test anti-clipping, anti-repetition, clarification, EDIT,
   and dynamic Registry pack. The subsequent focused materiality and reservation
-  compile pack passed 19 tests. The full CLI run passed its first 36 cases before
-  exposing `CB-319`; the repaired 24-case tail passed, and one uninterrupted
-  60-case rerun remains required. Clean installed, browser, and fresh holdout
-  proof remain release gates.
+  compile pack passed 19 tests, and the uninterrupted CLI suite passed 60 tests.
+  A clean locally built distribution then passed all 14 installed discovery
+  cases at 10/10, both rescue lanes, desktop and mobile Project browser proof,
+  invalid-route and empty-filter recovery, and installed crash, retry, conflict,
+  fsync rollback, and readback recovery with zero issues. The browser gate checks
+  all five distinct Product Story slots, visible-text clipping, prompt-card and
+  pane overflow, and semantic slot identity. Fresh untouched holdout proof
+  remains the release gate; the synthetic discovery score is not a release claim.
 
 - 2026-08-04: Preserved sparse first-path action ownership in Greenfield component boundaries before pre-confirm rendering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
   Canonical component projection now classifies source actions `receive` and

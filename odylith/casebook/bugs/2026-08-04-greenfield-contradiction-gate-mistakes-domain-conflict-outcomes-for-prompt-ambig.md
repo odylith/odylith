@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward fix the materiality predicate and add domain-conflict regression coverage
 
-- Verification: The focused materiality and exact reservation compile pack passes 19/19. The complete 60-case Greenfield CLI path suite remains the release checkpoint.
+- Verification: The focused materiality and exact reservation compile pack passes 19/19, the uninterrupted Greenfield CLI path suite passes 60/60, and the installed 14-case discovery matrix passes every standard, rescue, browser, and commit-recovery check.
 
 - Prevention: Keep domain outcome terms separate from evidence-relation predicates
 

@@ -11,7 +11,7 @@
     "explicit_event_count": 533,
     "mapped_workstream_evidence_count": 441,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 269,
+    "spec_history_event_count": 270,
     "status": "forensic_coverage_present",
     "timeline_event_count": 533
   },
@@ -18060,7 +18060,7 @@
     "runbooks": []
   },
   "version": "v1",
-  "what_it_is": "Provider-free domain-intelligence runtime that turns greenfield consumer intent into confirmation-gated governance proposals with domain-intelligent Radar workstreams, program waves, release plan, planned Registry components, draft Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, parseable JSON output, and final surface refresh.",
+  "what_it_is": "Provider-free runtime that turns untrusted Greenfield evidence into typed product facts and a confirmation-gated project package with Radar workstreams, Registry components, Atlas topology, assumptions, risks, validation obligations, deterministic Tribunal gating, parseable JSON output, and final surface refresh.",
   "why_tracked": "Owns the consumer-lane boundary between missing source evidence and useful greenfield guidance, so every supported host routes broad project intents through one low-latency Odylith runtime path instead of refusing or inventing source-backed truth.",
   "workstreams": [
     "B-141",
