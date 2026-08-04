@@ -177,21 +177,16 @@ def needs_context_backfill(
     description_phrases: Sequence[str],
     context_required_phrases: Sequence[str],
 ) -> bool:
-    if not _clean(description):
-        return True
-    broad_detail = re.compile(
-        r"\b(?:central\s+object|details?|facts?|context|data|payload|information)\b",
-        flags=re.IGNORECASE,
-    )
-    if broad_detail.search(_clean(description)) or any(broad_detail.search(_clean(phrase)) for phrase in description_phrases):
+    description_text = _clean(description)
+    if not description_text:
         return True
     generated_boundary = re.compile(
         r"\b(?:required\s+inputs|blocked-case\s+evidence|handoff\s+boundaries|confirmed\s+first\s+path)\b",
         flags=re.IGNORECASE,
     )
-    if generated_boundary.search(_clean(description)):
+    if generated_boundary.search(description_text):
         return True
-    local_terms = set(_content_terms(description))
+    local_terms = set(_content_terms(description_text))
     context_text = " ".join(context_required_phrases)
     if local_terms & {"measurement", "metric", "metrics", "value", "unit"} and re.search(
         r"\b(?:baseline|follow-up|followup|measurement|metric|value|unit|source)\b",
@@ -199,8 +194,25 @@ def needs_context_backfill(
         flags=re.IGNORECASE,
     ):
         return True
-    if description_phrases and len(local_terms) >= 5:
+    underspecified_detail = re.compile(
+        r"\b(?:central\s+object|details?|facts?|data|payload|information)\b",
+        flags=re.IGNORECASE,
+    )
+    if underspecified_detail.search(description_text) or any(
+        underspecified_detail.search(_clean(phrase)) for phrase in description_phrases
+    ):
+        return True
+    has_material_local_detail = (
+        len(description_phrases) >= 2
+        and len(local_terms) >= 5
+        and any(_has_visible_artifact_carrier(phrase) for phrase in description_phrases)
+    )
+    if has_material_local_detail:
         return False
+    if re.search(r"\bcontext\b", description_text, flags=re.IGNORECASE) or any(
+        re.search(r"\bcontext\b", _clean(phrase), flags=re.IGNORECASE) for phrase in description_phrases
+    ):
+        return True
     if any(_has_visible_artifact_carrier(phrase) for phrase in description_phrases):
         return False
     return bool(len(description_phrases) <= 3 and context_required_phrases)

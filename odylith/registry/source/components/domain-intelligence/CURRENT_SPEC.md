@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-03
+Last updated: 2026-08-04
 
 
 ## Overview
@@ -29,6 +29,9 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`, plus 1 more
 - **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md`, `src/odylith/runtime/common/environment.py`, `src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py`, `tests/conftest.py`
@@ -44,12 +47,24 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_transaction.py`
-- **2026-08-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-01-greenfield-accepts-wrong-domain-material-facts-without-source-entailment.md`, `src/odylith/runtime/domain_intelligence/greenfield_product_intent_envelope.py`, `src/odylith/runtime/domain_intelligence/greenfield_typed_source_spans.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-04: Bounded Greenfield component context backfill to component-owned meaning before pre-confirm rendering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
+  Concrete component descriptions no longer import the whole first path merely
+  because they mention handoff context. Sparse descriptions, generated boundary
+  scaffolding, measurement semantics, and underspecified details, facts, data,
+  payload, or information still receive bounded context backfill. This keeps
+  sibling responsibilities out of component IO contracts while preserving
+  accepted first-path fields that clarify a broad local description. The
+  four-term component-local quality floor remains unchanged and still blocks
+  under-specific contracts before confirmation. Source proof passed 49 focused
+  component tests, 68 Project clipping/repetition/browser-accounting tests, and
+  105 widened confirmed-intent/general-artifact tests; platform-domain leakage
+  passed across 87 distinctive fixture terms. Independent adversarial review
+  found no blocking correctness or fixture-overfitting issue. Installed release
+  proof remains pending.
 
 - 2026-08-04: Closed two canonical-validation gaps in pre-confirm visible-result custody and post-confirm source provenance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-309`, `CB-310`; Diagram: D-043)
   A synthetic three-event proof-floor row can no longer replace a source-derived

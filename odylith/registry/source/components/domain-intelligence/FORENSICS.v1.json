@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 528,
-    "mapped_workstream_evidence_count": 436,
+    "explicit_event_count": 529,
+    "mapped_workstream_evidence_count": 437,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 267,
+    "spec_history_event_count": 268,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 528
+    "timeline_event_count": 529
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,45 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
+        "tests/integration/runtime/test_greenfield_component_contract_preconfirm.py",
+        "tests/unit/runtime/test_greenfield_component_context_backfill.py"
+      ],
+      "confidence": "high",
+      "event_index": 1135,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 verifiable artifact references.",
+      "ts_iso": "2026-08-04T05:27:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 4,
       "artifacts": [

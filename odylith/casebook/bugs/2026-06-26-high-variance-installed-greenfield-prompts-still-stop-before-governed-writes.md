@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: FixedPendingRelease
+- Status: Open
 
 - Created: 2026-06-26
 
@@ -1847,6 +1847,44 @@
   also corrected the assumptions rescue ledger so ArtifactPlanIR.assumptions
   repair explains accepted-assumption and proof-boundary custody instead of
   incorrectly describing a Registry component-contract repair.
+  Installed release-matrix learning on 2026-08-03 reopened this bug against
+  dist `odylith-local-release-0.1.15-5a0860aed`. The first six maintained cases
+  passed installed proposal, commit-only create, browser quality, Project
+  semantic-slot differentiation, clipping, and repetition checks. Case seven,
+  `package supply chain exception desk`, stopped before confirmation because
+  the rendered `Vulnerable Dependency Reports Workflow Support Service`
+  contract contained fewer than four component-local terms. A fresh
+  source-local disposable-repo replay reproduced the same pre-confirm finding,
+  proving this is compiler behavior rather than packaging drift. The failure
+  is a component differentiation defect: a generated contract can remain too
+  interchangeable after bounded internal repair even though the source intent
+  contains distinct actor, action, state, dependency, and proof facts. Do not
+  weaken the four-term gate, add package-domain vocabulary, patch rendered
+  Markdown, or move the failure after confirmation. Inspect the typed component
+  axis and repair-target convergence, preserve source-grounded local facts in
+  the contract before rendering, and rerun the exact case plus the complete
+  installed matrix before returning this record to `FixedPendingRelease`.
+  Source repair learning on 2026-08-04: the failed contract was not empty. A
+  generated component description already carried concrete local action,
+  artifact, status, blocker, evidence, and handoff facts, but the generic word
+  `context` forced whole-path backfill. Sibling responsibilities then entered
+  the intake contract, making its otherwise valid local terms appear shared,
+  and deterministic repair rebuilt the same rejected contract on every pass.
+  Domain Intelligence now keeps context backfill for sparse descriptions,
+  generated boundary scaffolding, measurement semantics, and underspecified
+  details, facts, data, payload, or information. A description with multiple
+  concrete local phrases, at least five local terms, and an artifact carrier is
+  no longer backfilled solely because it mentions context. The four-term gate,
+  renderers, and post-confirm path are unchanged. The exact source-local replay
+  now clears all component-spec findings and keeps provenance, waiver, manager,
+  readiness, and shipment facts out of the intake component IO contract.
+  Focused component proof passed 49 tests; Project clipping, repetition, and
+  browser-accounting proof passed 68 tests; the widened confirmed-intent and
+  general-artifact suite passed 105 tests in 1145.66s; and platform-domain
+  leakage passed across 87 distinctive fixture terms. An independent bounded
+  reviewer found no blocking correctness, overfitting, gate-weakening, or
+  clipping/repetition concern. Installed dist and full matrix proof remain
+  required before closure.
 
 - Related Incidents/Bugs: CB-208
 
@@ -1866,9 +1904,12 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_path_role.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_non_goals.py
 - src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py
+- src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py
 - src/odylith/runtime/governance/sync_component_spec_requirements.py
 - src/odylith/runtime/governance/component_registry_intelligence.py
 - scripts/release/publish_release_assets.py
+- tests/unit/runtime/test_greenfield_component_context_backfill.py
+- tests/integration/runtime/test_greenfield_component_contract_preconfirm.py
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
 - tests/unit/runtime/test_greenfield_project_brief_rendering.py
 - tests/integration/runtime/test_greenfield_hiit_preconfirm_quality.py
