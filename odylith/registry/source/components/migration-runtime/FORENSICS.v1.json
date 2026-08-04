@@ -47,6 +47,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "migration-runtime",

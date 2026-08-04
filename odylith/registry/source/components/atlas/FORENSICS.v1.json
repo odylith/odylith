@@ -150,6 +150,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -519,6 +520,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -556,6 +558,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "migration-runtime",
@@ -595,6 +598,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -738,6 +742,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -1810,6 +1815,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -2545,6 +2551,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -3323,6 +3330,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -3906,6 +3914,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -3942,6 +3951,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -3980,6 +3990,7 @@
         "atlas",
         "casebook",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -4090,6 +4101,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -4130,6 +4142,7 @@
         "atlas",
         "benchmark",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -4169,6 +4182,7 @@
         "atlas",
         "benchmark",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -4470,6 +4484,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -4505,6 +4520,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -4892,6 +4908,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -5146,6 +5163,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -5220,6 +5238,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -5370,6 +5389,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -5655,6 +5675,7 @@
         "atlas",
         "casebook",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -6033,6 +6054,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -6107,6 +6129,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -7638,6 +7661,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -7712,6 +7736,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -7749,6 +7774,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -7787,6 +7813,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8105,6 +8132,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8143,6 +8171,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8181,6 +8210,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8221,6 +8251,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8581,6 +8612,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8617,6 +8649,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8723,6 +8756,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8797,6 +8831,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -8833,6 +8868,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -9439,6 +9475,7 @@
         "atlas",
         "casebook",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -9476,6 +9513,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -9513,6 +9551,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -9551,6 +9590,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -10142,6 +10182,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
@@ -10790,6 +10831,7 @@
       "mapped_components": [
         "atlas",
         "compass",
+        "dashboard",
         "domain-intelligence",
         "governance-intervention-engine",
         "odylith",
