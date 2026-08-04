@@ -22,6 +22,24 @@ BROWSER_SURFACE_EXPECTATIONS = (
 )
 
 
+def browser_runtime_preflight_issues() -> tuple[str, ...]:
+    """Verify that the exact proof interpreter can launch Chromium."""
+
+    try:
+        from playwright.sync_api import Error as PlaywrightError  # type: ignore[import-not-found]
+        from playwright.sync_api import sync_playwright  # type: ignore[import-not-found]
+    except ImportError as exc:  # pragma: no cover - environment-dependent release proof
+        return (f"Playwright is unavailable for browser surface proof: {type(exc).__name__}: {exc}",)
+
+    try:
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=True)
+            browser.close()
+    except PlaywrightError as exc:
+        return (f"browser surface proof failed to launch Chromium during preflight: {exc}",)
+    return ()
+
+
 def browser_surface_proof_issues(*, repo_root: Path, timeout_ms: int = 15000) -> tuple[str, ...]:
     """Return browser-level generated-surface state issues for a generated repo."""
 

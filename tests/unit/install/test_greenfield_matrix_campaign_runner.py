@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from threading import Event
 
 import pytest
 
@@ -853,6 +854,61 @@ def test_discovery_passed_payload_requires_zero_failed_cases_and_clusters() -> N
         campaign={"failed_case_count": 0, "failure_clusters": []},
         proof_tier="release",
     )
+
+
+def test_tier_interrupt_signals_active_shard_before_executor_waits(tmp_path: Path, monkeypatch) -> None:
+    module = _shard_runner_module()
+    shard = module.CampaignShard(
+        tier="release-proof",
+        case_file=tmp_path / "cases.json",
+        proof_tier="release",
+        install_mode="full",
+        include_browser_proof=True,
+        include_rescue_smoke=True,
+        include_natural_rescue_proof=True,
+        stop_after_failures=1,
+        stop_after_cluster_failures=1,
+        require_high_variance_stressors=False,
+        required_stressors=(),
+    )
+    _write_case_file(shard.case_file, name="interrupt case", stressors=())
+    started = Event()
+    stop_observed = Event()
+
+    def interrupted_wait(*args, **kwargs):  # noqa: ANN002, ANN003
+        assert started.wait(timeout=2)
+        raise KeyboardInterrupt
+
+    def stopped_command(**kwargs):  # noqa: ANN003
+        started.set()
+        assert kwargs["stop_event"].wait(timeout=2)
+        stop_observed.set()
+        return subprocess.CompletedProcess(kwargs["command"], 130, "", "interrupted"), "interrupted"
+
+    monkeypatch.setattr(module, "_tier_case_file_preflight_failure", lambda **kwargs: None)
+    monkeypatch.setattr(module, "_missing_tier_required_stressors", lambda shards: ())
+    monkeypatch.setattr(module, "wait", interrupted_wait)
+    progress = module.CampaignProgressWriter(
+        jsonl_path=tmp_path / "progress.jsonl",
+        snapshot_path=tmp_path / "progress.json",
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        module.run_tier(
+            shards=(shard,),
+            dist_dir=tmp_path / "dist",
+            version="0.1.15",
+            temp_parent=tmp_path / "tmp",
+            output_dir=tmp_path / "out",
+            telemetry_dir=tmp_path / "telemetry",
+            max_workers=1,
+            stop_after_failures=1,
+            stop_after_cluster_failures=1,
+            progress=progress,
+            command_runner=stopped_command,
+        )
+
+    assert stop_observed.is_set()
 
 
 def test_campaign_can_require_release_readiness_for_release_claims(tmp_path: Path, monkeypatch) -> None:

@@ -491,6 +491,11 @@ governed subsystem.
   invalid-query recovery, and Casebook empty/filter fallback, must provision
   Playwright Chromium through the maintained proof wrapper, and must fail
   closed if Playwright or Chromium remains unavailable in the proof environment.
+  The exact matrix interpreter must import Playwright and launch Chromium before
+  a one-shot semantic holdout ledger is claimed. Campaign interruption must set
+  the shared shard stop signal, terminate the active process group, remove its
+  temporary project root, and terminalize a claimed holdout as `interrupted`;
+  no child process or reusable `claimed` ledger may survive cancellation.
   The matrix must include rescue smoke by default when post-confirm repair behavior
   changes. That smoke must
   run the packaged CLI in `--repair-tier auto`, inject one exact-token internal

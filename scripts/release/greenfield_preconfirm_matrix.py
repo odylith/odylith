@@ -26,7 +26,11 @@ from greenfield_rescue_smoke import PRECONFIRM_RESCUE_BUDGET_SECONDS  # noqa: E4
 from greenfield_rescue_smoke import installed_auto_rescue_env  # noqa: E402
 from greenfield_rescue_smoke import rescue_cli_issues  # noqa: E402
 from greenfield_browser_proof_summary import browser_proof_summary  # noqa: E402
-from greenfield_browser_surface_proof import BROWSER_SURFACE_PROOF_SCOPE, browser_surface_proof_issues  # noqa: E402
+from greenfield_browser_surface_proof import (  # noqa: E402
+    BROWSER_SURFACE_PROOF_SCOPE,
+    browser_runtime_preflight_issues,
+    browser_surface_proof_issues,
+)
 from greenfield_surface_health import INDEX_SHELL_TAB_CONTRACTS  # noqa: E402
 from greenfield_surface_health import REQUIRED_RENDERED_SURFACES  # noqa: E402
 from greenfield_surface_health import atlas_rendered_asset_count  # noqa: E402
@@ -272,6 +276,7 @@ def run_matrix(
         cases=selected_cases,
         required_stressors=campaign_config.required_stressors,
         temp_parent=Path(temp_parent),
+        include_browser_proof=include_browser_proof,
         enforce_required_stressors=not allow_partial_stressor_coverage,
     )
     if preflight_results:
@@ -487,6 +492,7 @@ def _matrix_preflight_results(
     cases: Sequence[GreenfieldMatrixCase],
     required_stressors: Sequence[str],
     temp_parent: Path,
+    include_browser_proof: bool = False,
     enforce_required_stressors: bool = True,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     failures = matrix_preflight_failures(
@@ -496,10 +502,11 @@ def _matrix_preflight_results(
         required_stressors=required_stressors,
         enforce_required_stressors=enforce_required_stressors,
     )
-    if not failures:
+    browser_issues = browser_runtime_preflight_issues() if include_browser_proof else ()
+    if not failures and not browser_issues:
         return ()
     preflight_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-preflight-{uuid.uuid4().hex[:8]}"
-    return tuple(
+    results = [
         _failed_case(
             failure.case,
             preflight_root,
@@ -508,7 +515,18 @@ def _matrix_preflight_results(
             failure.detail,
         )
         for failure in failures
-    )
+    ]
+    if browser_issues:
+        results.append(
+            _failed_case(
+                cases[0],
+                preflight_root,
+                "preflight_failed",
+                1,
+                "; ".join(browser_issues),
+            )
+        )
+    return tuple(results)
 
 
 def _preflight_failure_error(results: Sequence[GreenfieldMatrixResult]) -> str:

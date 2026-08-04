@@ -1272,7 +1272,7 @@ def test_explicit_clarification_expectation_rejects_reply_instruction_inside_que
     )
 
     assert result.status == "failed"
-    assert "clarification payload must contain the focused first-path question" in result.quality.issues
+    assert "clarification payload must ask one focused question about the expected material fields" in result.quality.issues
 
 
 def test_explicit_clarification_expectation_rejects_persisted_write_attempt(monkeypatch, tmp_path: Path) -> None:
@@ -2155,6 +2155,41 @@ def test_matrix_preflight_failure_flushes_structured_incremental_telemetry(tmp_p
     assert events[:2] == ["run_started", "preflight_failed"]
     assert "case_completed" in events
     assert "required terms are not grounded" in results[0].failure_detail
+
+
+def test_browser_runtime_preflight_fails_before_final_holdout_claim(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    _write(dist / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    claimed = False
+
+    def claim() -> None:
+        nonlocal claimed
+        claimed = True
+
+    monkeypatch.setattr(
+        module,
+        "browser_runtime_preflight_issues",
+        lambda: ("Playwright is unavailable for browser surface proof: ModuleNotFoundError",),
+    )
+
+    results = module.run_matrix(
+        dist_dir=dist,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(module.default_cases()[0],),
+        include_browser_proof=True,
+        telemetry_jsonl=tmp_path / "matrix.jsonl",
+        incremental_output_json=tmp_path / "matrix.json",
+        proof_tier="discovery",
+        before_product_execution=claim,
+    )
+
+    assert claimed is False
+    assert len(results) == 1
+    assert results[0].status == "preflight_failed"
+    assert "Playwright is unavailable" in results[0].failure_detail
 
 
 def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> None:

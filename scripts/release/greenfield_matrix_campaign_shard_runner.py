@@ -213,54 +213,60 @@ def run_tier(
         },
     )
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        while pending or running:
-            while pending and not stop_reason and len(running) < max_workers:
-                shard = pending.pop(0)
-                future = executor.submit(
-                    _run_shard,
-                    shard=shard,
-                    dist_dir=dist_dir,
-                    version=version,
-                    temp_parent=temp_parent,
-                    output_dir=output_dir,
-                    telemetry_dir=telemetry_dir,
-                    stop_event=stop_event,
-                    progress=progress,
-                    command_runner=command_runner,
-                    telemetry_forwarder=telemetry_forwarder,
-                    temp_parent_cleaner=temp_parent_cleaner,
-                )
-                running.add(future)
-            if not running:
-                break
-            done, running = wait(running, return_when=FIRST_COMPLETED)
-            for future in done:
-                result = future.result()
-                results.append(result)
-                if result.stop_reason and not stop_reason:
-                    stop_reason = result.stop_reason
-                    stop_event.set()
-                failed_case_count += _failed_case_count_increment(result)
-                for cluster in result.failure_clusters:
-                    name = str(cluster.get("cluster") or "").strip()
-                    if name:
-                        cluster_counts[name] += int(cluster.get("count") or 1)
-                if stop_after_failures and failed_case_count >= stop_after_failures and not stop_reason:
-                    stop_reason = f"failure-threshold:{stop_after_failures}:shard:{result.name}"
-                    stop_event.set()
-                failed_case_count, cluster_counts = _merge_live_tier_failure_snapshot(
-                    progress=progress,
-                    tier=shards[0].tier,
-                    failed_case_count=failed_case_count,
-                    cluster_counts=cluster_counts,
-                )
-                if stop_after_cluster_failures and not stop_reason:
-                    cluster, count = first_cluster_at_threshold(cluster_counts, stop_after_cluster_failures)
-                    if cluster:
-                        stop_reason = f"cluster-threshold:{cluster}:{count}"
+        try:
+            while pending or running:
+                while pending and not stop_reason and len(running) < max_workers:
+                    shard = pending.pop(0)
+                    future = executor.submit(
+                        _run_shard,
+                        shard=shard,
+                        dist_dir=dist_dir,
+                        version=version,
+                        temp_parent=temp_parent,
+                        output_dir=output_dir,
+                        telemetry_dir=telemetry_dir,
+                        stop_event=stop_event,
+                        progress=progress,
+                        command_runner=command_runner,
+                        telemetry_forwarder=telemetry_forwarder,
+                        temp_parent_cleaner=temp_parent_cleaner,
+                    )
+                    running.add(future)
+                if not running:
+                    break
+                done, running = wait(running, return_when=FIRST_COMPLETED)
+                for future in done:
+                    result = future.result()
+                    results.append(result)
+                    if result.stop_reason and not stop_reason:
+                        stop_reason = result.stop_reason
                         stop_event.set()
-            if stop_reason:
-                pending.clear()
+                    failed_case_count += _failed_case_count_increment(result)
+                    for cluster in result.failure_clusters:
+                        name = str(cluster.get("cluster") or "").strip()
+                        if name:
+                            cluster_counts[name] += int(cluster.get("count") or 1)
+                    if stop_after_failures and failed_case_count >= stop_after_failures and not stop_reason:
+                        stop_reason = f"failure-threshold:{stop_after_failures}:shard:{result.name}"
+                        stop_event.set()
+                    failed_case_count, cluster_counts = _merge_live_tier_failure_snapshot(
+                        progress=progress,
+                        tier=shards[0].tier,
+                        failed_case_count=failed_case_count,
+                        cluster_counts=cluster_counts,
+                    )
+                    if stop_after_cluster_failures and not stop_reason:
+                        cluster, count = first_cluster_at_threshold(cluster_counts, stop_after_cluster_failures)
+                        if cluster:
+                            stop_reason = f"cluster-threshold:{cluster}:{count}"
+                            stop_event.set()
+                if stop_reason:
+                    pending.clear()
+        except (Exception, KeyboardInterrupt, SystemExit):
+            stop_event.set()
+            for future in running:
+                future.cancel()
+            raise
     failed_case_count, cluster_counts = _merge_live_tier_failure_snapshot(
         progress=progress,
         tier=shards[0].tier,
