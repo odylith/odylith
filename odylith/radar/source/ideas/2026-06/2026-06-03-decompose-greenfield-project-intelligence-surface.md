@@ -121,9 +121,9 @@ The project tab should keep showing the same accepted project lane, direction ch
 - No migration impact recorded yet.
 
 ## Test Strategy
-- `.venv/bin/python -m pytest -q tests/unit/runtime/test_project_intelligence.py` (`32 passed`).
-- `.venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_general_artifact_quality.py tests/unit/runtime/test_greenfield_component_spec_quality.py tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py tests/unit/runtime/test_greenfield_confirmed_repair.py tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`67 passed`).
-- `.venv/bin/python -m pytest -q tests/integration/runtime/test_project_tab_browser.py` (`2 passed`).
+- `python -m pytest -q tests/unit/runtime/test_project_intelligence.py` (`32 passed`).
+- `python -m pytest -q tests/unit/runtime/test_greenfield_general_artifact_quality.py tests/unit/runtime/test_greenfield_component_spec_quality.py tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py tests/unit/runtime/test_greenfield_confirmed_repair.py tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`67 passed`).
+- `python -m pytest -q tests/integration/runtime/test_project_tab_browser.py` (`2 passed`).
 
 ## Open Questions
 - Whether a follow-up slice should split `greenfield_project_text.py` further once additional project-tab copy changes accumulate.

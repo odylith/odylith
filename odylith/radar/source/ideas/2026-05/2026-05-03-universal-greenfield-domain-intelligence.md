@@ -355,7 +355,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   to `B-003` and `D-002,D-003,D-004`, Scenario Replay Harness to `B-004` and
   `D-005`; host-authored components without component-level diagram refs no
   longer inherit system-context/program-wave diagrams. Proof:
-  `.venv/bin/python -m pytest tests/unit/runtime/test_greenfield_proposals.py
+  `python -m pytest tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
 - 2026-05-08 project-first UX deepening made proposal text render a fuller
@@ -364,12 +364,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   per-layer project reality, project design board rows, host-independent
   "customize by saying" examples, and apply/create closeouts that label the
   child workstream as a future implementation lane after gates instead of an
-  immediate coding instruction. Proof: `.venv/bin/python -m pytest
+  immediate coding instruction. Proof: `python -m pytest
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` (`58 passed`);
-  `.venv/bin/python -m py_compile` passed for the touched greenfield UX modules and
+  `python -m py_compile` passed for the touched greenfield UX modules and
   release smoke script.
 - 2026-05-08 traceability writer hardening fixed the remaining applied-Radar
   sludge discovered by fresh external-domain temp-repo proof: structured risks,
@@ -379,12 +379,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   longer split into lowercase fragments. Proof: source-local `greenfield
   propose` produced 270-line project-first text with 24 project-intelligence
   layers, source-local apply wrote all four external-domain Radar workstreams with no
-  shallow-fragment hits, `.venv/bin/python -m pytest
+  shallow-fragment hits, `python -m pytest
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` passed (`58 passed`), and
-  `.venv/bin/python -m py_compile` passed for the touched greenfield modules.
+  `python -m py_compile` passed for the touched greenfield modules.
 - 2026-05-08 Atlas UX deepening made the default greenfield diagram suite
   act like an architecture review board instead of a box-and-arrow sketch.
   Canonical diagram rows now carry `review_focus`, `operator_question`, and
@@ -394,12 +394,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   directly inside the diagrams. Proof: source-local `greenfield propose` for
   an external-domain fixture rendered 290 lines with per-diagram summary/review/
   question/gate guidance, canonical JSON carried five annotated Atlas rows, and
-  `.venv/bin/python -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
+  `python -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`) plus
-  `.venv/bin/python -m py_compile` for the touched proposal rendering/scaffold modules.
+  `python -m py_compile` for the touched proposal rendering/scaffold modules.
 - 2026-05-08 greenfield anti-slop hardening removed the residual applied-Radar
   weak spots found by a fresh external-domain audit: proposal-level risks are now
   domain-specific structured records with class, severity, trigger,
@@ -408,7 +408,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   validated; malformed generated ownership prose such as `owns Own ...` is
   rejected; parent workstreams use program-level ontology instead of repeating
   child implementation nouns; proposal and applied Radar risk rendering preserve
-  the structured risk fields. Proof: `.venv/bin/python -m pytest
+  the structured risk fields. Proof: `python -m pytest
   tests/unit/runtime/test_greenfield_atlas_contract.py
   tests/unit/runtime/test_greenfield_host_routing.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
@@ -558,15 +558,15 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   instead of keeping local utility forks. The parent dropped from 1,374 to 846
   lines, the new actor owner is 449 lines, and a source-level regression test
   pins the actor phase outside the parent. Proof:
-  `.venv/bin/python -m py_compile
+  `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py`;
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py
   tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`21
-  passed`); `.venv/bin/python -m pytest -q
+  passed`); `python -m pytest -q
   tests/unit/runtime/test_greenfield_confirmed_intent.py` (`26 passed`); and
   the widened greenfield artifact bundle with confirmed-intent coverage (`93
   passed`).
@@ -786,17 +786,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   labels, runtime JSON, or project dashboard copy can be written. The
   requester/reviewer case keeps post-result reviewer follow-up out of the
   requester first-slice prose while multi-actor pre-result workflows remain
-  intact. Proof: `.venv/bin/python -m pytest -q
+  intact. Proof: `python -m pytest -q
   tests/unit/runtime/test_greenfield_general_artifact_quality.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py
   tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
   tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py
   tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed
-  (`67 passed`); `.venv/bin/python -m pytest -q
+  (`67 passed`); `python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed
   (`1 passed`) with a stricter historical confirmed-create timing snapshot and semantic
-  slop checks enabled; `.venv/bin/python -m pytest -q
+  slop checks enabled; `python -m pytest -q
   tests/integration/runtime/test_project_tab_browser.py` passed (`2 passed`);
   an ad hoc temp-repo create measurement completed in 11.67 seconds with six
   diagrams, no missing assets, and no slop hits.
@@ -806,14 +806,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `greenfield_confirmed_prewrite_gate.py`. The parent completion orchestrator
   now delegates those checks and stays below the source-size hard threshold
   (`greenfield_confirmed_completion.py`: 1294 to 1192 lines), recording a stricter historical confirmed-create timing snapshot while reducing hot-path ownership
-  pressure. Proof: `.venv/bin/python -m py_compile
+  pressure. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py`
-  passed; `.venv/bin/python -m pytest -q
+  passed; `python -m pytest -q
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed`);
   the broader greenfield artifact-quality bundle passed 94 tests before the
   browser sandbox blocked Chromium launch; rerunning
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` with browser
   permissions passed (`1 passed in 9.81s`).
 - 2026-06-03 confirmed-intent parser decomposition moved internal-system row
@@ -824,10 +824,10 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   section parsing, preamble derivation, and validation
   (`greenfield_confirmed_intent.py`: 1535 to 880 lines), while
   `test_greenfield_confirmed_intent.py` pins the system-row owner and the
-  parent line-count ceiling. Proof: `.venv/bin/python -m py_compile
+  parent line-count ceiling. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py`
-  passed; `.venv/bin/python -m pytest -q
+  passed; `python -m pytest -q
   tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed`);
   the broader greenfield artifact-quality bundle passed (`95 passed in
   205.10s`).
@@ -839,17 +839,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   preview checks, and formatted failure reporting separate from drift-token
   ownership (`greenfield_preconfirm_completion.py`: 1214 to 853 lines), while
   `test_greenfield_general_artifact_quality.py` pins the dedicated owner and
-  parent line-count ceiling. Proof: `.venv/bin/python -m py_compile
+  parent line-count ceiling. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
-  passed in 154.23s`); `.venv/bin/python -m pytest -q
+  passed in 154.23s`); `python -m pytest -q
   tests/unit/runtime/test_greenfield_prewrite_transaction.py` passed (`22
   passed in 108.95s`); the broader greenfield artifact-quality bundle passed
   (`118 passed in 311.35s`); and the escalated Chromium-capable run of
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 14.83s`).
 - 2026-06-03 post-confirm semantic-alignment decomposition moved semantic model
@@ -861,17 +861,17 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   package completion parent now stays below the soft source-size limit
   (`greenfield_preconfirm_completion.py`: 853 to 691 lines), and
   `test_greenfield_general_artifact_quality.py` pins the alignment, drift, and
-  row-helper ownership boundaries. Proof: `.venv/bin/python -m py_compile
+  row-helper ownership boundaries. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_preconfirm_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_drift.py
   src/odylith/runtime/domain_intelligence/greenfield_preconfirm_semantic_alignment.py
   src/odylith/runtime/domain_intelligence/greenfield_preconfirm_rows.py
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
   passed in 170.88s`); the broader greenfield artifact-quality bundle passed
   (`118 passed in 334.66s`); and the escalated Chromium-capable run of
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.96s`).
 - 2026-06-03 confirmed-intent validation decomposition moved field-threshold
@@ -881,15 +881,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   stays focused on file loading, JSON/Markdown normalization, section parsing,
   and preamble derivation (`greenfield_confirmed_intent.py`: 880 to 671
   lines), while `test_greenfield_confirmed_intent.py` pins validation ownership
-  and the parser soft-limit ceiling. Proof: `.venv/bin/python -m py_compile
+  and the parser soft-limit ceiling. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py
   tests/unit/runtime/test_greenfield_confirmed_intent.py` passed;
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed in
   41.27s`); the broader greenfield artifact-quality bundle passed (`118 passed
   in 349.90s`); and the escalated Chromium-capable run of `PYTHONPATH=src
-  .venv/bin/python -m pytest -q
+  python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.79s`).
 - 2026-06-03 confirmed-completion quality decomposition moved generic text
@@ -900,15 +900,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `_text_needs_repair`, `_sequence_needs_repair`, and `_has_bad_tail` helpers
   (`greenfield_confirmed_completion.py`: 1192 to 1068 lines), while
   `test_greenfield_confirmed_repair.py` pins the owner split. Proof:
-  `.venv/bin/python -m py_compile
+  `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed;
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed in
   10.66s`); the broader greenfield artifact-quality bundle passed (`118 passed
   in 332.17s`); and the escalated Chromium-capable run of `PYTHONPATH=src
-  .venv/bin/python -m pytest -q
+  python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.54s`).
 - 2026-06-03 confirmed-completion text-model decomposition moved confirmed-create
@@ -920,14 +920,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   interfaces/dependencies/validation, and dropped below the 800-line soft limit
   (`greenfield_confirmed_completion.py`: 1068 to 793 lines), while
   `test_greenfield_confirmed_repair.py` pins the text-model owner split. Proof:
-  `.venv/bin/python -m py_compile
+  `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed;
-  `.venv/bin/python -m pytest -q
+  `python -m pytest -q
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed in
   9.95s`); the broader greenfield artifact-quality bundle passed (`118 passed
-  in 310.95s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  in 310.95s`); and `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 10.08s`).
 - 2026-06-03 confirmed-component helper cleanup removed the duplicate
@@ -936,10 +936,10 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   800-line soft limit (`808` to `792` lines), and
   `test_greenfield_component_spec_quality.py` pins the single title helper,
   absence of the dead clause helper, and soft-limit ceiling. Proof:
-  `.venv/bin/python -m py_compile
+  `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py` passed; focused
-  component proof passed with `.venv/bin/python -m pytest -q
+  component proof passed with `python -m pytest -q
   tests/unit/runtime/test_greenfield_component_spec_quality.py
   tests/unit/runtime/test_greenfield_confirmed_surfaces.py::test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical`
   (`9 passed in 0.34s`).
@@ -951,7 +951,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   stays focused on program/release/backlog record assembly
   (`greenfield_confirmed_backlog.py`: 911 to 503 lines), while
   `test_greenfield_artifact_language_quality.py` pins the text-model owner and
-  parent soft-limit ceiling. Proof: `.venv/bin/python -m py_compile
+  parent soft-limit ceiling. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py
@@ -959,7 +959,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed;
   focused artifact-language/component proof passed (`15 passed in 3.04s`);
   the broader greenfield artifact-quality bundle passed (`120 passed in
-  311.68s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  311.68s`); and `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 10.09s`).
 - 2026-06-03 confirmed-Atlas diagram text-model decomposition moved component
@@ -971,14 +971,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   text-model owner and parent soft-limit ceiling. The same pass repaired a
   stale confirmed-surface assertion so the test expects the current imperative
   action label `Tap Record` instead of the older third-person label. Proof:
-  `.venv/bin/python -m py_compile
+  `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py
   tests/unit/runtime/test_greenfield_confirmed_diagrams.py
   tests/unit/runtime/test_greenfield_confirmed_surfaces.py` passed; focused
   diagram/surface proof passed (`6 passed in 5.80s`); the broader greenfield
   artifact-quality bundle passed (`126 passed in 388.79s`); and
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 14.50s`).
 - 2026-06-03 component contract profile decomposition moved the document-context
@@ -988,14 +988,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   parent now selects the profile and owns the generic fallback contract without
   carrying specialized profile grammar (`greenfield_component_contract.py`: 952
   to 603 lines), while `test_greenfield_component_spec_quality.py` pins the
-  profile owner and parent soft-limit ceiling. Proof: `.venv/bin/python -m
+  profile owner and parent soft-limit ceiling. Proof: `python -m
   py_compile
   src/odylith/runtime/domain_intelligence/greenfield_component_contract.py
   src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py` passed; focused
   component spec and semantic contract proof passed (`10 passed in 0.40s`); the
   broader greenfield artifact-quality bundle passed (`127 passed in 403.37s`);
-  and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  and `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 13.49s`).
 - 2026-06-03 component semantic-context decomposition moved context-derived
@@ -1005,13 +1005,13 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   focuses on assembling component-local Registry contracts from accepted product
   facts (`greenfield_component_semantic_contract.py`: 863 to 627 lines), while
   `test_greenfield_component_semantic_contract_quality.py` pins the context
-  owner and parent soft-limit ceiling. Proof: `.venv/bin/python -m py_compile
+  owner and parent soft-limit ceiling. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py
   src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py
   tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
   passed; focused component semantic/spec proof passed (`11 passed in 0.41s`);
   the broader greenfield artifact-quality bundle passed (`128 passed in
-  345.24s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  345.24s`); and `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.45s`).
 - 2026-06-03 component contract target decomposition moved rendered-spec issue
@@ -1022,7 +1022,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`greenfield_component_contract_differentiation.py`: 837 to 772 lines), while
   `test_greenfield_component_spec_quality.py` pins the target owner, parent
   soft-limit ceiling, and concrete issue-to-row mapping. Proof:
-  `.venv/bin/python -m py_compile
+  `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py
   src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py
   src/odylith/runtime/domain_intelligence/greenfield_proposals.py
@@ -1032,7 +1032,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_confirmed_repair.py` passed; focused
   component/prewrite proof passed (`15 passed in 14.63s`); the broader
   greenfield artifact-quality bundle passed (`129 passed in 332.92s`); and
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.39s`).
 - 2026-06-03 apply-prewrite Registry/Atlas decomposition moved first-release
@@ -1044,7 +1044,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   accepted-project/Compass preview, and path remapping without carrying
   Registry/Atlas rendering policy (`greenfield_apply_prewrite.py`: 1034 to 459
   lines), while `test_greenfield_prewrite_transaction.py` pins the component
-  and diagram owners outside the parent. Proof: `.venv/bin/python -m
+  and diagram owners outside the parent. Proof: `python -m
   py_compile
   src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
   src/odylith/runtime/domain_intelligence/greenfield_apply_components.py
@@ -1055,7 +1055,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_proposals.py` passed; focused prewrite
   proof passed (`25 passed in 124.26s`); the broader greenfield
   artifact-quality bundle passed (`130 passed in 333.90s`); and
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 10.93s`).
 - 2026-06-03 final apply governed-write decomposition moved Radar file writes,
@@ -1071,7 +1071,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   a post-confirm semantic alignment edge: blank component `release_scope` now
   means active unless explicitly deferred/out of scope, matching the semantic
   model builder and Registry writer, and apply-time semantic repair can refresh
-  stale semantic models before the gate runs. Proof: `.venv/bin/python -m
+  stale semantic models before the gate runs. Proof: `python -m
   py_compile
   src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
   src/odylith/runtime/domain_intelligence/greenfield_apply_write.py
@@ -1082,7 +1082,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
   focused final-apply proof passed (`68 passed in 141.47s`); the broader
   greenfield artifact-quality bundle passed (`130 passed in 331.45s`); and
-  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  `PYTHONPATH=src python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.41s`).
 - 2026-06-03 first-path clause-renderer decomposition moved generated
@@ -1093,7 +1093,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   owns first-path parsing and model extraction only (`1054` to `358` lines),
   while the clause owner is `734` lines and the type owner is `27` lines.
   `test_greenfield_preconfirm_slop_regressions.py::test_first_path_clause_rendering_stays_in_dedicated_owner`
-  pins the owner boundary. Proof: `.venv/bin/python -m py_compile
+  pins the owner boundary. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py
   src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py
   src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py
@@ -1112,7 +1112,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   backlog/component/diagram traceability, domain security posture, and visible
   Tribunal actors (`972` to `522` lines), while the substance owner is `466`
   lines. `test_greenfield_general_artifact_quality.py::test_greenfield_tribunal_substance_gate_stays_in_dedicated_owner`
-  pins the owner boundary. Proof: `.venv/bin/python -m py_compile
+  pins the owner boundary. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/proposal_tribunal.py
   src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py
   tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
@@ -1128,7 +1128,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   posture, title repair, and first-path/proof wording (`846` to `646` lines),
   while the system-completion owner is `228` lines.
   `test_greenfield_confirmed_intent.py::test_confirmed_intent_system_completion_stays_in_dedicated_owner`
-  pins the owner boundary. Proof: `.venv/bin/python -m py_compile
+  pins the owner boundary. Proof: `python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py
   tests/unit/runtime/test_greenfield_confirmed_intent.py` passed; focused
@@ -2643,10 +2643,10 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   and 120 seconds only for explicit premium/deep repair or CI simulation.
 - Run focused unit tests for domain intelligence, host routing, component
   authoring, CLI dispatch, show capabilities, and Compass transaction filtering
-  with the repo-local interpreter, for example `.venv/bin/python -m pytest -q
+  with the active Python interpreter, for example `python -m pytest -q
   tests/unit/runtime/test_greenfield_preconfirm_slop_regressions.py
   tests/unit/runtime/test_greenfield_component_spec_quality.py`.
-- For confirmed-create speed and artifact quality, run `.venv/bin/python -m
+- For confirmed-create speed and artifact quality, run `python -m
   pytest -q tests/integration/runtime/test_greenfield_create_performance.py`;
   it must prove the standard post-confirm path stays under 60 seconds and
   rejects generated semantic slop in the create payload. Add the dedicated

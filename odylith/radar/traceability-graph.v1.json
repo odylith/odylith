@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "b3fd8e0d3279ae444563ded31d1268306da9fd84a711d3fd40390246a54c14d7",
+    "digest": "da4cea905f16553d19d304ddee02325c5b93c118a93f6babd8a49a700b455068",
     "file_count": 317,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -11217,7 +11217,6 @@
       "workstreams": [
         "B-001",
         "B-058",
-        "B-142",
         "B-006",
         "B-002",
         "B-005",
@@ -11269,7 +11268,6 @@
         "D-004",
         "D-005",
         "D-006",
-        "D-043",
         "D-036",
         "D-040",
         "D-002",
@@ -11299,7 +11297,8 @@
         "D-029",
         "D-030",
         "D-031",
-        "D-039"
+        "D-039",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -20693,11 +20692,6 @@
     },
     {
       "source": "B-142",
-      "target": "component:dashboard",
-      "edge_type": "component_linkage"
-    },
-    {
-      "source": "B-142",
       "target": "component:domain-intelligence",
       "edge_type": "component_linkage"
     },
@@ -24947,7 +24941,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1715,
+      "structural_edge_count": 1714,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -24966,11 +24960,11 @@
     "execution_program_count": 5,
     "execution_wave_count": 30,
     "node_count": 354,
-    "edge_count": 1820,
+    "edge_count": 1819,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-04 04:28:00Z"
+  "generated_utc": "2026-08-04 10:13:39Z"
 }
