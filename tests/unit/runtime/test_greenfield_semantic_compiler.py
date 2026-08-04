@@ -57,6 +57,18 @@ def test_semantic_compiler_accepts_release_readiness_as_first_path_result() -> N
     assert candidate.text == "Release readiness for shared cultural records"
 
 
+def test_semantic_compiler_keeps_deferred_scope_out_of_the_visible_result() -> None:
+    first_path = (
+        "Curators ingest donated reels, track contributor agreements, flag disputed footage, preserve review "
+        "evidence, and publish screening readiness without claiming automated legal clearance."
+    )
+
+    candidate = select_visible_result_candidate(first_path)
+
+    assert candidate.source_path == "first_path.visible_result"
+    assert candidate.text == "published screening readiness"
+
+
 def test_semantic_compiler_preserves_state_update_visible_result() -> None:
     first_path = (
         "A regional coordinator opens the dashboard, sees an area where signal growth and capacity pressure "

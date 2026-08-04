@@ -29,6 +29,9 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py`, `src/odylith/runtime/project_intelligence/greenfield.py`, plus 2 more
 - **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`, plus 1 more
@@ -44,9 +47,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-bare-greenfield-confirmation-could-commit-a-newer-unreviewed-pending-transaction.md`, `src/odylith/runtime/domain_intelligence/greenfield_generation_store.py`, `src/odylith/runtime/domain_intelligence/greenfield_pending_transaction_store.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_transaction.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -2834,6 +2834,19 @@ This section captures synchronized requirement and contract signals derived from
   proof passed the actor-label, semantic-compiler, live-simulation,
   project-dashboard, and general-artifact-quality packs; release proof still
   requires a fresh installable dist and installed variance run.
+- Project visible-result custody correction: the clean installed matrix passed
+  nine cases at hard 10/10, then stopped before confirmation when one generated
+  Project Boundary reused a path-shaped project outcome instead of the typed
+  visible result. Domain Intelligence now separates terminal `without claiming`
+  and `without including` limits from the positive visible-result fact while
+  preserving those limits as explicit non-goals. The Project projection consumes
+  `SemanticModelIR.first_path_contract.visible_result`; it may not fall back to a
+  full proof path while that typed fact exists. The exact source-local case now
+  compiles a passed, verified 99-write transaction, and 339 focused and
+  cross-domain tests pass. The repetition gate was not weakened. Clean installed
+  matrix proof must restart from case one before release readiness is restored.
+  (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug:
+  `CB-303`)
 - Campaign case-file preflight update: Tiered matrix campaigns must validate
   existing selected shard case files before launching worker processes. If an
   existing case file has invalid source-grounding metadata, the campaign emits a

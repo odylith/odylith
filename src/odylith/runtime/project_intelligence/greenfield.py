@@ -59,6 +59,8 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     intent = dict_value(proposal.get("intent"))
     project = dict_value(proposal.get("project_intelligence"))
     project_brief = dict_value(proposal.get("project_brief"))
+    semantic_model = dict_value(proposal.get("semantic_model"))
+    first_path_contract = dict_value(semantic_model.get("first_path_contract"))
     release_plan = dict_value(proposal.get("release_plan"))
     observed = dict_value(proposal.get("observed_source"))
     backlog = [dict(row) for row in list_value(proposal.get("backlog")) if isinstance(row, Mapping)]
@@ -130,6 +132,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         components=components,
         diagrams=diagrams,
         actors=actors,
+        visible_result=sentence(first_path_contract.get("visible_result")),
     )
     risk_classes = _risk_items(risk_source) or _risk_classes(risks)
     source_launch = (

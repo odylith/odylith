@@ -45,6 +45,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_types import Firs
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import strip_release_scope_limit_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_surfaces import projection_text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_surfaces import semantic_projection_values
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -371,6 +372,7 @@ def _product_result_from_visible_outcome(value: Any) -> str:
     candidate = _resolve_result_anaphora(candidate)
     candidate = nominal_visible_result_object(candidate) or candidate
     candidate = normalize_visible_result_language(candidate) or candidate
+    candidate = strip_release_scope_limit_text(candidate) or candidate
     return lowercase_leading_article(candidate).strip(" .")
 
 

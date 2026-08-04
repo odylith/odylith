@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 761,
-    "mapped_workstream_evidence_count": 538,
+    "explicit_event_count": 762,
+    "mapped_workstream_evidence_count": 539,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 761
+    "timeline_event_count": 762
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,48 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 6,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py",
+        "src/odylith/runtime/project_intelligence/greenfield.py",
+        "src/odylith/runtime/project_intelligence/product_story.py",
+        "src/odylith/runtime/project_intelligence/product_story_cards.py"
+      ],
+      "confidence": "high",
+      "event_index": 1136,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 verifiable artifact references.",
+      "ts_iso": "2026-08-04T06:24:50-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 5,
       "artifacts": [

@@ -5,7 +5,7 @@
   benchmark proof, and release-gate indicators may surface when useful, but
   passing checks should stay quiet and no dashboard claim should imply shipped
   behavior before pinned dogfood and benchmark proof exist.
-Last updated: 2026-08-03
+Last updated: 2026-08-04
 
 
 ## Purpose
@@ -390,6 +390,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py`, `src/odylith/runtime/project_intelligence/greenfield.py`, plus 2 more
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
@@ -401,11 +404,10 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
 - **2026-07-31 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_proposals_cli.py`
-- **2026-07-19 · Implementation:** Implementation evidence linked this component to governed work with 1 verifiable artifact reference.
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-08-04: Bound Product Boundary to the typed Greenfield visible result instead of a path-shaped project-brief outcome, and kept terminal deferred scope in Product Boundary rather than repeating it in First Path. The exact installed-matrix failure now yields five complete, semantically distinct cards in source-local proof; clean installed proof remains pending. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-08-04: Corrected installed Project browser proof so intentional CSS uppercase labels retain their canonical five-card identity while unknown, missing, mismatched, and reused semantic slots still fail. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-08-03: Bound each Project Product Story card to a distinct typed semantic slot, reused the same judgment in pre-confirm and installed browser proof, and expanded Playwright coverage to accepted, blank, and degraded desktop/mobile states with no overflow, line clamp, or hidden text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
 - 2026-06-30: Added release-proof custody for generated shell payload readback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-046)

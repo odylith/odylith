@@ -5,6 +5,7 @@ import json
 import re
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.greenfield_project_judgment import project_story_semantic_issues
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
 from odylith.runtime.project_intelligence.greenfield_job_cards import _jobs
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
@@ -994,6 +995,69 @@ def test_greenfield_product_story_cards_explain_outcome_not_labels_or_fragments(
     assert "Rules Engine" not in encoded
     assert "automatic approval" in cards["Product Boundary"].casefold()
     assert "accepted or needs-information result" in cards["Proof"]
+
+
+def test_greenfield_project_story_uses_typed_visible_result_instead_of_path_shaped_brief_outcome(
+    tmp_path: Path,
+) -> None:
+    first_path = (
+        "Curators ingest donated reels, track contributor agreements, flag disputed footage, preserve review "
+        "evidence, and publish screening readiness without claiming automated legal clearance."
+    )
+    proposal = {
+        "schema_version": "odylith.greenfield.proposal.v1",
+        "mode": "greenfield_apply_ready",
+        "intent": {
+            "title": "Independent Film Archive Rights-clearance Workspace",
+            "product_story": (
+                "Independent Film Archive Rights-clearance Workspace helps curators review donated reels and "
+                "publish screening readiness."
+            ),
+            "problem": "Curators need a dependable way to review donated reels and trust the screening result.",
+            "state_object": "The primary state object is a donated reel.",
+            "first_path": first_path,
+            "proof_boundary": f"Release 0.0.1 succeeds when {first_path}",
+            "non_goals": ["Do not claim automated legal clearance."],
+            "internal_systems": [
+                "Donated Reels Workflow Support",
+                "Contributor Agreements Recordkeeping",
+                "Disputed Footage Workflow Support",
+                "Evidence Recordkeeping",
+            ],
+        },
+        "semantic_model": {
+            "first_path_contract": {"visible_result": "published screening readiness"},
+        },
+        "project_brief": {
+            "project_outcome": f"Release 0.0.1 succeeds when {first_path}",
+        },
+        "project_intelligence": {
+            "intent": [
+                "Project objective: Curators need a dependable way to review donated reels and trust the result.",
+                "Non-goals: Do not claim automated legal clearance.",
+            ],
+        },
+        "release_plan": {"selector": "0.0.1"},
+        "_accepted_project": {"status": "accepted"},
+        "components": [],
+        "backlog": [],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={"greenfield_proposal": proposal},
+    )
+    rows = payload["product_story"]["release_contract"]
+    cards = {str(row["label"]): str(row["body"]) for row in rows}
+
+    assert project_story_semantic_issues(rows) == []
+    assert "Release 0.0.1 succeeds when" not in cards["Product Boundary"]
+    assert cards["Product Boundary"].count("published screening readiness") == 1
+    assert cards["Product Boundary"].count("automated legal clearance") == 1
+    assert "automated legal clearance" not in cards["First Path"]
+    assert cards["First Path"] != cards["Product Boundary"]
+    assert all(body.endswith((".", "!", "?")) for body in cards.values())
 
 
 def test_greenfield_product_story_participants_preserve_accepted_reviewer_labels() -> None:

@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import strip_release_scope_limit_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.product_story_contract import PRODUCT_STORY_CARD_SLOTS
 from odylith.runtime.project_intelligence.utils import display_text, sentence, strings
@@ -373,6 +374,7 @@ def _story_step(value: str) -> str:
     text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
     text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
     text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
+    text = strip_release_scope_limit_text(text) or text
     text = _normalize_embedded_action_verbs(text)
     if re.fullmatch(r"(?:they|the\s+user|user|the\s+actor|actor)\s+submits?", text, flags=re.IGNORECASE):
         return ""

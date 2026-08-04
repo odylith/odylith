@@ -43,6 +43,7 @@ def build_greenfield_product_story(
     components: Sequence[Mapping[str, Any]],
     diagrams: Sequence[Mapping[str, Any]],
     actors: Sequence[tuple[str, str, str]],
+    visible_result: str = "",
 ) -> dict[str, Any]:
     """Build proposal-origin story prose from the accepted project graph."""
 
@@ -56,7 +57,8 @@ def build_greenfield_product_story(
         or _brief_story_line(brief.get("purpose"))
     )
     outcome = (
-        project_intent_line(project, "user or stakeholder outcome")
+        _brief_story_line(visible_result)
+        or project_intent_line(project, "user or stakeholder outcome")
         or _brief_story_line(brief.get("operator_value"))
         or _brief_story_line(brief.get("project_outcome"))
     )
