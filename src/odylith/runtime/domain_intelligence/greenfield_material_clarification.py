@@ -63,12 +63,31 @@ _HIGH_CONSEQUENCE_RE = re.compile(
     r"public|private|consent|diagnos|certif)\b",
     flags=re.IGNORECASE,
 )
+_FIRST_APPROVAL_OPTIONS_RE = re.compile(
+    r"\beither\b[^.!?]{1,180}\bor\b[^.!?]{1,180}\b(?:may|can|should|will)?\s*"
+    r"own\s+the\s+first\s+approval\b",
+    flags=re.IGNORECASE,
+)
+_CHOICE_CHANGES_FIRST_PATH_RE = re.compile(
+    r"\b(?:the\s+)?choice\s+changes?\b[^.!?]{0,100}\b(?:initial|first)\s+path\b",
+    flags=re.IGNORECASE,
+)
+_PROOF_RECORD_RE = re.compile(r"\bproof\s+record\b", flags=re.IGNORECASE)
 
 
 def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> MaterialClarification | None:
     """Return a field-specific clarification for an explicit material contradiction."""
 
     evidence = "\n".join(value for value in (prompt, edit_evidence) if str(value or "").strip())
+    if (
+        _FIRST_APPROVAL_OPTIONS_RE.search(evidence)
+        and _CHOICE_CHANGES_FIRST_PATH_RE.search(evidence)
+        and _PROOF_RECORD_RE.search(evidence)
+    ):
+        return MaterialClarification(
+            question="Who should own the first approval, initial path, and proof record?",
+            required_fields=("first_approval_actor", "first_path", "proof_record_owner"),
+        )
     if not _has_explicit_material_conflict(evidence):
         return None
     if _AUDIENCE_RE.search(evidence):

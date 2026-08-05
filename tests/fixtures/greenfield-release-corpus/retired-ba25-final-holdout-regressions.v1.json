@@ -1,0 +1,175 @@
+{
+  "version": "odylith.greenfield.retired-holdout-regression.v1",
+  "disclosed": true,
+  "source_revision": "ba25fbd9e0dd71fa55e52c97c747b0c0052a10d1",
+  "cases": [
+    {
+      "case_id": "ba25-final-01-cerulean-loom",
+      "name": "cerulean loom calibration",
+      "prompt": "Domain label: cerulean loom calibration. Create a greenfield product for weighbridge technicians who need to calibrate loom batches in LatticeGauge. The product must retain traceable calibration receipts and generate a signed spool ledger. Model fiber-tension readings, record the dependency on release a calibration batch only after a technician signs the receipt, and keep the safety boundary that it must not expose operator annotations outside the calibration cell. The first path is fixed: the first calibration path is the signed batch receipt.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-02-nightjar-archive",
+      "name": "nightjar archive accession",
+      "prompt": "Domain label: nightjar archive accession. Create a greenfield product for oral-history custodians who need to accession recordings in EchoVault. The product must preserve chain-of-custody labels and generate an accession manifest. Model cylinder condition states, record the dependency on require a custodian approval before a recording becomes discoverable, and keep the safety boundary that it must not publish unredacted donor notes. The first path is fixed: the first path begins with custody intake.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-03-morrow-quay",
+      "name": "morrow quay ballast ledger",
+      "prompt": "Domain label: morrow quay ballast ledger. Create a greenfield product for harbor ballast officers who need to reconcile ballast transfers in QuayMark. The product must keep vessel and berth identifiers distinct and generate a reconciled transfer docket. Model berth-load states, record the dependency on block a transfer until the berth officer confirms the load window, and keep the safety boundary that it must not overwrite the original transfer docket. The first path is fixed: the first path begins with the berth confirmation.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-04-opal-skein",
+      "name": "opal skein dye lot",
+      "prompt": "Domain label: opal skein dye lot. Create a greenfield product for natural-dye chemists who need to track dye lot experiments in Chromaticum. The product must preserve batch temperature and pH evidence and generate a dye lot certificate. Model reaction-stage states, record the dependency on permit a lot to advance only when the lab steward records the instrument run, and keep the safety boundary that it must not merge lots with different pH histories. The first path is fixed: the first path begins with instrument capture.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-05-brindle-orbit",
+      "name": "brindle orbit antenna window",
+      "prompt": "Domain label: brindle orbit antenna window. Create a greenfield product for radio astronomers who need to schedule antenna windows in SkySieve. The product must retain calibration and weather assumptions and generate a window readiness docket. Model observation-window states, record the dependency on require a scheduler and instrument lead to agree before a window is committed, and keep the safety boundary that it must not infer a target from a missing ephemeris. The first path is fixed: the first path begins with ephemeris review.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-06-velvet-cairn",
+      "name": "velvet cairn seed vault",
+      "prompt": "Domain label: velvet cairn seed vault. Create a greenfield product for seed-vault curators who need to manage seed-vault accessions in Germline. The product must record germination and humidity readings and generate an accession custody card. Model envelope condition states, record the dependency on make a curator approval precede any drawer movement, and keep the safety boundary that it must not disclose donor provenance outside the vault team. Either seed-vault curators or the vault curator may own the first approval, and the choice changes the initial path and proof record.",
+      "expectation": "clarification_required",
+      "expected_question_fields": ["first_approval_actor", "first_path", "proof_record_owner"]
+    },
+    {
+      "case_id": "ba25-final-07-quartz-marrow",
+      "name": "quartz marrow imaging queue",
+      "prompt": "Domain label: quartz marrow imaging queue. Create a greenfield product for osteology imaging leads who need to triage specimen imaging in VoxelHarbor. The product must separate clinical notes from research labels and generate an imaging readiness packet. Model scan-quality states, record the dependency on require a quality lead to accept the scan protocol before imaging starts, and keep the safety boundary that it must not substitute a specimen identity from a similar case. The first path is fixed: the first path begins with protocol acceptance.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-08-saffron-helix",
+      "name": "saffron helix fermentation run",
+      "prompt": "Domain label: saffron helix fermentation run. Create a greenfield product for fermentation stewards who need to coordinate fermentation runs in CultureWeave. The product must retain temperature, vessel, and inoculum evidence and generate a run release note. Model vessel-stage states, record the dependency on hold a run until the steward verifies the inoculum lot, and keep the safety boundary that it must not backfill a missing sensor interval as measured data. The first path is fixed: the first path begins with inoculum verification.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-09-umber-trestle",
+      "name": "umber trestle rail inspection",
+      "prompt": "Domain label: umber trestle rail inspection. Create a greenfield product for heritage rail inspectors who need to plan bridge inspections in SpanLedger. The product must preserve span photographs and defect locations and generate a span clearance memo. Model inspection-status states, record the dependency on require the inspection chief to approve the access window before a field visit, and keep the safety boundary that it must not mark a span safe from an unverified photograph. The first path is fixed: the first path begins with access-window approval.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-10-lilac-fathom",
+      "name": "lilac fathom tide sampler",
+      "prompt": "Domain label: lilac fathom tide sampler. Create a greenfield product for estuary sampling crews who need to coordinate tide sampling in BrineClock. The product must keep sample time, tide stage, and bottle seal linked and generate a transect custody sheet. Model sample-seal states, record the dependency on require tide-stage confirmation before a bottle is accepted, and keep the safety boundary that it must not interpolate a missing seal event. The first path is fixed: the first path begins with tide-stage confirmation.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-11-cinder-choir",
+      "name": "cinder choir pipe organ registry",
+      "prompt": "Domain label: cinder choir pipe organ registry. Brief // domain: organ conservation // actor: organ conservators // system: HarmonicRegister // objective: record organ conservation work. Acceptance: keep voicing changes linked to bench notes; output: an intervention register; state model: pipe-condition states; dependency: require registrar approval before an intervention is added to the public history. Safety boundary: must not erase superseded voicing notes. First path: the first path begins with bench-note intake. The first path is fixed: the first path begins with bench-note intake.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-12-indigo-runnel",
+      "name": "indigo runnel watershed permit",
+      "prompt": "Domain label: indigo runnel watershed permit. Brief // domain: water permitting // actor: watershed permit clerks // system: FlowWarden // objective: review diversion permits. Acceptance: preserve basin, intake, and season boundaries; output: a permit readiness brief; state model: permit-stage states; dependency: require basin review before a diversion request reaches the hearing queue. Safety boundary: must not treat an unverified intake as an approved diversion. First path: the first path begins with basin-boundary review. Either watershed permit clerks or the permit clerk may own the first approval, and the choice changes the initial path and proof record.",
+      "expectation": "clarification_required",
+      "expected_question_fields": ["first_approval_actor", "first_path", "proof_record_owner"]
+    },
+    {
+      "case_id": "ba25-final-13-mosaic-thermocline",
+      "name": "mosaic thermocline buoy watch",
+      "prompt": "Domain label: mosaic thermocline buoy watch. Brief // domain: ocean instrumentation // actor: oceanographic watch officers // system: PelagicPulse // objective: monitor buoy alert runs. Acceptance: retain sensor serials and calibration epochs; output: an alert disposition log; state model: buoy-health states; dependency: require an instrument specialist to validate an alert before escalation. Safety boundary: must not collapse a stale reading into a live alert. First path: the first path begins with serial and epoch verification. The first path is fixed: the first path begins with serial and epoch verification.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-14-pollen-ward",
+      "name": "pollen ward conservatory docket",
+      "prompt": "Domain label: pollen ward conservatory docket. Brief // domain: plant quarantine // actor: conservatory horticulturists // system: GlassWard // objective: manage plant quarantine dockets. Acceptance: preserve accession, isolate, and transfer records; output: a transfer clearance card; state model: quarantine-stage states; dependency: require isolate-room confirmation before a tray can move. Safety boundary: must not release a tray when its isolate history is incomplete. First path: the first path begins with isolate-room confirmation. The first path is fixed: the first path begins with isolate-room confirmation.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-15-russet-axiom",
+      "name": "russet axiom observatory log",
+      "prompt": "Domain label: russet axiom observatory log. Brief // domain: precision timekeeping // actor: timekeeping observatory staff // system: EpochNook // objective: maintain clock-offset observations. Acceptance: keep reference clock and local reading separate; output: an offset review sheet; state model: observation-confidence states; dependency: require reference-clock comparison before publishing an offset. Safety boundary: must not round an offset before the proof record is stored. First path: the first path begins with reference-clock comparison. The first path is fixed: the first path begins with reference-clock comparison.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-16-silver-mantle",
+      "name": "silver mantle textile census",
+      "prompt": "Domain label: silver mantle textile census. Evidence B says the textile registrar owns a census accession entry and the state vocabulary is record-confidence states. Evidence A says Source seed: silver mantle textile census uses ThreadIndex to curate textile census records for woven-panel records; preserve weave structure and display restrictions. Implementation request: create the product so museum textile registrars can curate textile census records; it must preserve weave structure and display restrictions; it depends on require registrar review before a panel receives a display label; proof boundary: must not expose restricted donor correspondence. The first path is fixed: the first path begins with weave-structure review.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-17-cobalt-wisp",
+      "name": "cobalt wisp glacier marker",
+      "prompt": "Domain label: cobalt wisp glacier marker. Evidence B says the field coordinator owns a marker visit packet and the state vocabulary is marker-status states. Evidence A says Source seed: cobalt wisp glacier marker uses CryoTrace to track glacier marker visits for stakes and melt markers; retain coordinate precision and visit conditions. Implementation request: create the product so glaciology field coordinators can track glacier marker visits; it must retain coordinate precision and visit conditions; it depends on require coordinate-quality review before a visit is accepted; proof boundary: must not invent a coordinate when the field device has no fix. The first path is fixed: the first path begins with coordinate-quality review.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-18-reed-vellum",
+      "name": "reed vellum manuscript folio",
+      "prompt": "Domain label: reed vellum manuscript folio. Evidence B says the manuscript conservator owns a treatment decision record and the state vocabulary is folio-treatment states. Evidence A says Source seed: reed vellum manuscript folio uses FolioMesh to manage folio conservation work for ink-transfer folios; preserve folio order and treatment reversibility. Implementation request: create the product so manuscript conservators can manage folio conservation work; it must preserve folio order and treatment reversibility; it depends on require a conservator signoff before a treatment decision is archived; proof boundary: must not merge folio notes across different codices. Either manuscript conservators or the manuscript conservator may own the first approval, and the choice changes the initial path and proof record.",
+      "expectation": "clarification_required",
+      "expected_question_fields": ["first_approval_actor", "first_path", "proof_record_owner"]
+    },
+    {
+      "case_id": "ba25-final-19-basalt-lilt",
+      "name": "basalt lilt kiln trial",
+      "prompt": "Domain label: basalt lilt kiln trial. Evidence B says the firing specialist owns a trial comparison sheet and the state vocabulary is kiln-run states. Evidence A says Source seed: basalt lilt kiln trial uses FiringAtlas to compare kiln trial results for kiln atmosphere trials; retain atmosphere, ramp, and soak evidence. Implementation request: create the product so ceramic firing specialists can compare kiln trial results; it must retain atmosphere, ramp, and soak evidence; it depends on require atmosphere logs before a trial can enter comparison; proof boundary: must not claim a firing result from an incomplete soak log. The first path is fixed: the first path begins with atmosphere-log review.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-20-ochre-tangent",
+      "name": "ochre tangent map folio",
+      "prompt": "Domain label: ochre tangent map folio. Evidence B says the cartographic archivist owns a folio description card and the state vocabulary is description-review states. Evidence A says Source seed: ochre tangent map folio uses MapLoom to describe cartographic folios for hand-inked survey folios; preserve scale, revision, and place-name uncertainty. Implementation request: create the product so cartographic archivists can describe cartographic folios; it must preserve scale, revision, and place-name uncertainty; it depends on require a second archivist to approve a description before release; proof boundary: must not normalize uncertain place names into modern claims. The first path is fixed: the first path begins with scale-and-revision review.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-21-frosted-cicada",
+      "name": "frosted cicada acoustic transect",
+      "prompt": "Domain label: frosted cicada acoustic transect. Build a greenfield product for bioacoustic field teams to catalog acoustic transects in ChirpArray. It must retain microphone settings and habitat conditions, produce a transect evidence bundle, track recording-quality states, depend on require a lead review before a call segment is classified, and must not classify a segment when habitat metadata is absent. The first path is fixed: the first path begins with microphone-setting verification.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-22-teal-moraine",
+      "name": "teal moraine mineral assay",
+      "prompt": "Domain label: teal moraine mineral assay. Build a greenfield product for mineral assay custodians to manage mineral assay batches in StrataBench. It must preserve sample splits and instrument calibration, produce an assay release certificate, track assay-review states, depend on require split registration before an assay can be released, and must not merge results from unregistered sample splits. The first path is fixed: the first path begins with split registration.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-23-plum-orchard",
+      "name": "plum orchard graft ledger",
+      "prompt": "Domain label: plum orchard graft ledger. Build a greenfield product for heritage orchard stewards to maintain graft-line records in RootScript. It must preserve scion source and orchard-row evidence, produce a graft-line custody card, track graft-status states, depend on require source-tree confirmation before a graft line is propagated, and must not label an unverified scion as heritage stock. The first path is fixed: the first path begins with source-tree confirmation.",
+      "expectation": "transaction_committed",
+      "expected_question_fields": []
+    },
+    {
+      "case_id": "ba25-final-24-marigold-vault",
+      "name": "marigold vault mineral drawer",
+      "prompt": "Domain label: marigold vault mineral drawer. Build a greenfield product for geological collection stewards to coordinate mineral drawer requests in CabinetNine. It must preserve cabinet, drawer, and specimen identifiers, produce a drawer movement docket, track movement-approval states, depend on require cabinet location verification before a drawer movement is approved, and must not infer a specimen identifier from drawer position alone. Either geological collection stewards or the collection steward may own the first approval, and the choice changes the initial path and proof record.",
+      "expectation": "clarification_required",
+      "expected_question_fields": ["first_approval_actor", "first_path", "proof_record_owner"]
+    }
+  ]
+}

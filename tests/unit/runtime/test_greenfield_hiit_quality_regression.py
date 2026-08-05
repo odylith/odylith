@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import ArtifactQualityUnit
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -87,6 +89,16 @@ def test_generated_copy_quality_checks_large_apostrophe_heavy_text_linearly() ->
         "unbalanced quoted text" in issue
         for issue in generated_public_copy_issues("large unfinished quote", f"{text} 'unfinished")
     )
+
+
+def test_generated_copy_quality_ignores_internal_object_representations() -> None:
+    @dataclass(frozen=True)
+    class InternalDraft:
+        body: str
+
+    payload = {"draft": InternalDraft(body="A user's accepted record remains visible.")}
+
+    assert generated_public_copy_issues("internal draft", payload) == ()
 
 
 def test_generated_copy_quality_does_not_splice_mermaid_label_headers_into_payload_text() -> None:

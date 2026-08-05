@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -16,14 +17,69 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materializatio
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     materialize_prompt_intent_hypothesis,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
+    explicit_product_title_evidence,
+)
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
+_RETIRED_HOLDOUT_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json"
+)
+_RETIRED_HOLDOUT = json.loads(_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
+_RETIRED_HOLDOUT_CASES = tuple(_RETIRED_HOLDOUT["cases"])
+
+
 @pytest.fixture(autouse=True)
 def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     stub_preconfirm_surface_refresh(monkeypatch)
+
+
+def test_failed_final_holdout_is_marked_disclosed_and_retired() -> None:
+    assert _RETIRED_HOLDOUT["version"] == "odylith.greenfield.retired-holdout-regression.v1"
+    assert _RETIRED_HOLDOUT["disclosed"] is True
+    assert len(_RETIRED_HOLDOUT_CASES) == 24
+
+
+@pytest.mark.parametrize(
+    "case",
+    _RETIRED_HOLDOUT_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_retired_holdout_preserves_outcome_and_no_write_contract(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    expectation = str(case["expectation"])
+    if expectation == "clarification_required":
+        with pytest.raises(GreenfieldClarificationRequired) as error:
+            materialize_prompt_intent_hypothesis(
+                prompt=str(case["prompt"]),
+                repo_root=tmp_path,
+                fallback_title=str(case["name"]),
+            )
+        assert error.value.required_fields == tuple(case["expected_question_fields"])
+        assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+        return
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    first_path = str(intent["first_path"])
+    assert first_path.endswith(".")
+    assert "can the first" not in first_path.casefold()
+    findings = generated_public_copy_findings(
+        "retired holdout intent",
+        {key: value for key, value in intent.items() if key not in {"prompt", "_product_intent_authority"}},
+    )
+    categories = {finding.category for finding in findings}
+    assert "adjacent_duplicate_word" not in categories
+    assert "clipped_public_copy" not in categories
 
 
 @pytest.mark.parametrize(
@@ -195,6 +251,168 @@ def test_domain_conflict_outcome_does_not_invent_a_material_contradiction(tmp_pa
     assert "auditable ready-to-run reservation" in first_path
 
 
+def test_inline_labeled_evidence_compiles_one_complete_path(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: lantern archive intake. Brief // domain: archival conservation // "
+        "actor: collection registrars // system: CatalogBridge // objective: record conservation work. "
+        "Acceptance: keep condition changes linked to bench notes; output: an intervention register; "
+        "state model: condition states; dependency: require curator approval before public history changes. "
+        "Safety boundary: must not erase superseded notes. First path: the first path begins with "
+        "condition-note intake. The first path is fixed."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Archive Intake",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert str(intent["title"]).startswith("Lantern Archive Intake")
+    assert "collection registrars" in first_path
+    assert "condition-note intake" in first_path
+    assert "record conservation work" in first_path
+    assert "intervention register" in first_path
+    assert intent["internal_systems"]
+
+
+def test_product_for_actor_request_uses_action_start_and_visible_result(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: meadow acoustics catalog. Build a greenfield product for field recording teams to "
+        "catalog acoustic transects in EchoGrid. It must retain microphone settings and habitat conditions, "
+        "produce a transect evidence bundle, and track recording-quality states. Lead review is required before "
+        "classification, and the product must not classify a segment when habitat metadata is absent. "
+        "The first path is fixed: it begins with microphone-setting verification."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Acoustics Catalog",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert str(intent["title"]).startswith("Meadow Acoustics Catalog")
+    assert "field recording teams" in first_path
+    assert "catalog acoustic transects" in first_path
+    assert "microphone-setting verification" in first_path
+    assert "transect evidence bundle" in first_path
+
+
+def test_explicit_unfamiliar_actor_role_does_not_trigger_clarification(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: oral archive accession. Create a product for oral-history custodians who need to accession "
+        "recordings in EchoVault. The product must preserve custody labels and generate an accession manifest. "
+        "The first path is fixed: it begins with custody intake."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Archive Accession",
+    )
+
+    assert "oral-history custodians" in str(intent["first_path"]).casefold()
+
+
+def test_explicit_system_actor_still_requires_a_human_owner(tmp_path: Path) -> None:
+    prompt = (
+        "Create a product for the routing service to route intake records and return a delivery receipt in RouteGrid."
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Routing Intake",
+        )
+
+    assert error.value.required_fields == ("human_actors", "first_path")
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_nominal_path_result_is_rendered_as_an_action_not_raw_meta_prose(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: textile calibration. Create a product for calibration technicians who need to calibrate "
+        "woven batches in GaugeDesk. The product must generate a signed spool ledger. "
+        "The first path is fixed: the first calibration path is the signed batch receipt."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Textile Calibration",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert "can the first" not in first_path
+    assert "calibrate woven batches" in first_path
+    assert "signed batch receipt" in first_path
+    assert "signed spool ledger" in first_path
+
+
+def test_implementation_request_outranks_research_evidence_prose(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: woven panel census. Evidence B says the registrar owns a census decision and uses "
+        "record-confidence states. Evidence A says source notes use ThreadIndex for historical panel records. "
+        "Implementation request: create the product so museum registrars can curate textile census records; "
+        "output: a reviewed panel record; proof boundary: do not expose restricted donor correspondence. "
+        "The first path is fixed: it begins with weave-structure review."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Panel Census",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert "museum registrars" in first_path
+    assert "curate textile census records" in first_path
+    assert "weave-structure review" in first_path
+    assert "panel record" in first_path
+    assert "evidence b says" not in first_path
+
+
+def test_research_evidence_can_supply_the_visible_result_without_leaking_its_wrapper(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: ceramic trial comparison. Evidence B says the firing specialist owns a trial comparison "
+        "sheet and the state vocabulary is kiln-run states. Evidence A describes historical trial records. "
+        "Implementation request: create the product so ceramic firing specialists can compare kiln trial results; "
+        "proof boundary: do not claim a result from an incomplete log. The first path is fixed: it begins with "
+        "atmosphere-log review."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Trial Comparison",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert "trial comparison sheet" in first_path
+    assert "evidence b says" not in first_path
+
+
+def test_first_approval_ownership_ambiguity_is_focused_and_write_free(tmp_path: Path) -> None:
+    prompt = (
+        "Build a collection intake product for archive stewards to record accession decisions and receive a "
+        "custody card. Either archive stewards or the lead curator may own the first approval, and the choice "
+        "changes the initial path and proof record."
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Collection Intake",
+        )
+
+    assert error.value.required_fields == ("first_approval_actor", "first_path", "proof_record_owner")
+    assert "first approval" in str(error.value).casefold()
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
 @pytest.mark.parametrize(
     "edit_evidence",
     (
@@ -219,6 +437,126 @@ def test_vague_edit_directives_require_a_concrete_correction(
         )
 
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize(
+    "negative_boundary",
+    (
+        "It must not generate a public certificate before supervisor approval.",
+        "It is forbidden to generate a public certificate before supervisor approval.",
+    ),
+)
+def test_negated_output_is_not_promoted_into_the_first_path(
+    tmp_path: Path,
+    negative_boundary: str,
+) -> None:
+    prompt = (
+        "Create a product for permit clerks to review filings and see an approval queue in Civic Desk. "
+        f"{negative_boundary}"
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Permit Review",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert "approval queue" in first_path
+    assert "public certificate" not in first_path
+
+
+@pytest.mark.parametrize("actor", ("EchoGrid sensors", "dock cameras", "warehouse robots"))
+def test_explicit_non_human_actor_requires_a_write_free_clarification(
+    tmp_path: Path,
+    actor: str,
+) -> None:
+    prompt = (
+        f"Create a product for {actor} to monitor samples, verify seal states, and generate a packet "
+        "in AtlasBay."
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Sample Monitoring",
+        )
+
+    assert error.value.required_fields == ("human_actors", "first_path")
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_explicit_who_grammar_preserves_an_unfamiliar_human_role(tmp_path: Path) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=(
+            "Create a product for harbor tallykeepers who need to record one berth count and see a signed tally "
+            "in Quay Desk."
+        ),
+        repo_root=tmp_path,
+        fallback_title="Harbor Tally",
+    )
+
+    assert "harbor tallykeepers" in str(intent["first_path"]).casefold()
+
+
+@pytest.mark.parametrize("subject", ("These", "Those", "Records", "Outputs", "Evidence"))
+def test_capitalized_sentence_subject_is_not_product_title(subject: str) -> None:
+    assert explicit_product_title_evidence(f"{subject} must remain reviewable.") == ""
+
+
+@pytest.mark.parametrize("subject", ("These", "Those", "Records", "Outputs", "Evidence"))
+def test_actor_led_prompt_uses_the_supplied_title_instead_of_a_path_fragment(
+    tmp_path: Path,
+    subject: str,
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=(
+            "Archivists record one accession and see a custody receipt. "
+            f"{subject} must remain reviewable."
+        ),
+        repo_root=tmp_path,
+        fallback_title="Archive Demo",
+    )
+
+    assert str(intent["title"]).casefold().startswith("archive demo")
+    assert subject.casefold() not in str(intent["title"]).casefold()
+
+
+def test_explicit_single_word_product_name_is_preserved(tmp_path: Path) -> None:
+    prompt = (
+        "Niko, a booking coordinator, uses Lumen to reserve one room and sees a reservation receipt."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Fallback Product",
+    )
+
+    assert explicit_product_title_evidence(prompt) == "Lumen"
+    assert str(intent["title"]).startswith("Lumen")
+
+
+def test_generic_using_clause_is_not_promoted_to_a_product_name() -> None:
+    assert explicit_product_title_evidence("Using Evidence from interviews, map the approval path.") == ""
+
+
+def test_visible_output_already_in_the_action_chain_is_not_repeated(tmp_path: Path) -> None:
+    prompt = (
+        "Create a product for dispatch coordinators to monitor samples, verify seal states, and generate a "
+        "packet in AtlasBay."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Sample Dispatch",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert first_path.count("packet") == 1
+    assert "generate a packet and receive a packet" not in first_path
 
 
 @pytest.mark.parametrize(
@@ -269,7 +607,7 @@ def test_additive_edit_rebuild_preserves_path_and_boundary(
 
 
 @pytest.mark.parametrize(
-    ("prompt", "external_source"),
+    ("prompt", "external_source", "expected_title"),
     (
         (
             (
@@ -278,6 +616,7 @@ def test_additive_edit_rebuild_preserves_path_and_boundary(
                 "from the Grove Roster. Keep inspection notes visible only to the packing shed."
             ),
             "grove roster",
+            "Orchard Bin Ledger",
         ),
         (
             (
@@ -286,6 +625,7 @@ def test_additive_edit_rebuild_preserves_path_and_boundary(
                 "must never diagnose an animal, prescribe feed, or state that an enclosure is healthy."
             ),
             "roost index",
+            "Perch Note",
         ),
     ),
 )
@@ -293,12 +633,14 @@ def test_project_and_radar_copy_is_complete_and_nonrepetitive(
     tmp_path: Path,
     prompt: str,
     external_source: str,
+    expected_title: str,
 ) -> None:
     intent = materialize_prompt_intent_hypothesis(
         prompt=prompt,
         repo_root=tmp_path,
         fallback_title="Complete Copy Product",
     )
+    assert str(intent["title"]).startswith(expected_title)
     proposal = build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=prompt,

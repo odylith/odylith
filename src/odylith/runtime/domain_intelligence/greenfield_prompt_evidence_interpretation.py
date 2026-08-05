@@ -10,7 +10,14 @@ from typing import Any, Mapping
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    contains_requirement_control_clause,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_evidence_requirement
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    is_release_visible_result_statement,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
@@ -24,13 +31,45 @@ class StructuredPromptFacts:
     first_path: str = ""
 
 
-_TITLE_FIELDS = ("product", "product name", "title")
+_TITLE_FIELDS = ("product", "product name", "title", "domain label")
 _ACTOR_FIELDS = ("actor", "operator", "user", "first user")
-_PATH_FIELDS = ("first complete path", "first path", "path", "workflow")
+_PATH_FIELDS = (
+    "first complete path",
+    "first path",
+    "first path is fixed",
+    "the first path is fixed",
+    "path",
+    "workflow",
+)
 _ROLE_FIELDS = ("role", "operator role", "user role")
+_ACTION_FIELDS = ("objective", "action", "task", "user task")
+_OUTPUT_FIELDS = ("visible result", "output", "result")
+_INLINE_FIELD_NAMES = tuple(
+    sorted(
+        {
+            *_TITLE_FIELDS,
+            *_ACTOR_FIELDS,
+            *_PATH_FIELDS,
+            *_ROLE_FIELDS,
+            *_ACTION_FIELDS,
+            *_OUTPUT_FIELDS,
+            "acceptance",
+            "dependency",
+            "domain",
+            "proof boundary",
+            "safety boundary",
+            "state",
+            "state model",
+            "system",
+        },
+        key=len,
+        reverse=True,
+    )
+)
 _HARD_NON_PATH_RE = re.compile(
     r"\b(?:out\s+of\s+scope|unrelated|proof(?:\s+boundary)?|prove|success\s+means|"
     r"demonstrate|must\s+not|may\s+not|cannot|can't|do\s+not|never|boundary|"
+    r"distinctive\s+project\s+vocabulary|"
     r"(?:the\s+)?(?:request|prompt|source)\s+(?:says|states|mentions|describes)|"
     r"comes?\s+from|suppl(?:y|ies|ied)\s+by?|provid(?:e|es|ed)\s+by?|"
     r"read\s+from|imports?\b|visible\s+only|staff\s+paste)\b",
@@ -45,6 +84,38 @@ _SEQUENCE_RE = re.compile(r"(?:->|\b(?:first|then|after|before|next|finally)\b|;
 _LABELED_PREFIX_RE = re.compile(r"^[A-Za-z][A-Za-z0-9 _/-]{1,60}:\s*")
 _TITLE_TOKEN = r"[A-Z][A-Za-z0-9'/-]*"
 _TITLE_PHRASE = rf"{_TITLE_TOKEN}(?:\s+{_TITLE_TOKEN}){{0,4}}"
+_TITLE_REFERENCE_WORDS = frozenset({"a", "an", "it", "that", "the", "these", "this", "those"})
+_PRODUCT_TITLE_TERMINALS = frozenset(
+    {
+        "app",
+        "application",
+        "archive",
+        "board",
+        "catalog",
+        "console",
+        "desk",
+        "engine",
+        "gate",
+        "hub",
+        "ledger",
+        "manager",
+        "notebook",
+        "note",
+        "package",
+        "platform",
+        "portal",
+        "product",
+        "record",
+        "register",
+        "registry",
+        "service",
+        "system",
+        "tool",
+        "tracker",
+        "vault",
+        "workspace",
+    }
+)
 _PRODUCT_IDENTITY_DECLARATION_RE = re.compile(rf"^(?:{_TITLE_PHRASE})\s+is\s+for\b")
 _CREATE_REQUEST_WRAPPER_RE = re.compile(
     r"^(?:build|create|design|draft|generate|make|prepare|propose)\b",
@@ -86,6 +157,56 @@ _FOR_ROLE_PERSON_RE = re.compile(
     r"(?P<name>[A-Z][A-Za-z0-9'/-]*)\b",
 )
 _INVALID_ROLE_TRAILING_RE = re.compile(r"\b(?:at|for|from|in|on|to|with|within)$", flags=re.IGNORECASE)
+_INLINE_FIELD_RE = re.compile(
+    r"(?:^|[\n.;]|//)\s*(?P<key>" + "|".join(re.escape(field) for field in _INLINE_FIELD_NAMES) + r")\s*:\s*",
+    flags=re.IGNORECASE,
+)
+_PRODUCT_FOR_ACTOR_RE = re.compile(
+    r"\b(?:build|create|design|make)\s+(?:a\s+|the\s+)?(?:greenfield\s+)?"
+    r"(?:app|application|platform|product|service|system|tool|workspace)\s+for\s+"
+    r"(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,90}?)\s+"
+    r"(?:(?P<human_connector>who\s+needs?\s+to)|to)\s+"
+    r"(?P<action>[a-z][^.!?;]{2,180}?)\s+in\s+"
+    r"(?P<system>[A-Z][A-Za-z0-9'/-]*(?:\s+[A-Z][A-Za-z0-9'/-]*){0,4})\b",
+    flags=re.IGNORECASE,
+)
+_IMPLEMENTATION_REQUEST_RE = re.compile(
+    r"\bimplementation\s+request\s*:\s*(?:build|create|design|make)\s+"
+    r"(?:a\s+|the\s+)?(?:app|application|platform|product|service|system|tool|workspace)\s+so\s+"
+    r"(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,90}?)\s+can\s+"
+    r"(?P<action>[a-z][^.!?;]{2,180})",
+    flags=re.IGNORECASE,
+)
+_VISIBLE_OUTPUT_ACTION_RE = re.compile(
+    r"\b(?:produce|produces|generate|generates|return|returns|show|shows|display|displays|provide|provides)\s+"
+    r"(?P<output>(?:a|an|the)\s+[^,;.!?]{1,100})",
+    flags=re.IGNORECASE,
+)
+_NEGATED_OUTPUT_SCOPE_RE = re.compile(
+    r"(?:\b(?:not|never|cannot|can't|won't|shouldn't|mustn't)\b|"
+    r"\b(?:forbidden|prohibited|barred|disallowed)\s+to\b|"
+    r"\bnot\s+(?:allowed|permitted)\s+to\b)[^,;.!?]*$",
+    flags=re.IGNORECASE,
+)
+_EVIDENCE_OWNED_OUTPUT_RE = re.compile(
+    r"\bevidence\s+[A-Za-z0-9_-]+\s+says\s+(?:the\s+)?[^.!?]{1,100}?\s+owns\s+"
+    r"(?P<output>(?:a|an|the)\s+[^.!?;]{1,100}?)"
+    r"(?=\s+and\s+the\s+state\s+vocabulary\b|[.!?;])",
+    flags=re.IGNORECASE,
+)
+_PATH_START_RE = re.compile(
+    r"^(?:(?:the\s+)?first\s+path|it)?\s*(?:is\s+fixed\s*)?(?::\s*)?"
+    r"begins?\s+with\s+(?P<start>.+)$",
+    flags=re.IGNORECASE,
+)
+_PATH_NOMINAL_RESULT_RE = re.compile(
+    r"^(?:the\s+)?first(?:\s+[A-Za-z0-9'-]+){0,3}\s+path\s+is\s+(?P<result>.+)$",
+    flags=re.IGNORECASE,
+)
+_DOMAIN_LABEL_RE = re.compile(
+    r"(?:^|[\n.!?]\s+)domain\s+label\s*:\s*(?P<title>[^.!?;/]+)",
+    flags=re.IGNORECASE,
+)
 
 
 def structured_prompt_facts(value: str) -> StructuredPromptFacts:
@@ -94,16 +215,25 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
     text = str(value or "").strip()
     if not text:
         return StructuredPromptFacts()
-    mapping = _json_mapping(text) or _markdown_field_mapping(text)
+    mapping = dict(_json_mapping(text))
     if not mapping:
-        return StructuredPromptFacts()
-    title = _first_field(mapping, _TITLE_FIELDS)
-    actor = _first_field(mapping, _ACTOR_FIELDS)
+        mapping.update(_markdown_field_mapping(text))
+        mapping.update(_inline_field_mapping(text))
+    natural_actor, natural_action = _natural_actor_action(text)
+    title = _explicit_domain_label(text) or _first_field(mapping, _TITLE_FIELDS)
+    actor = _first_field(mapping, _ACTOR_FIELDS) or natural_actor
     role = _first_field(mapping, _ROLE_FIELDS)
     if role and actor and role.casefold() not in actor.casefold():
         actor = f"{role} {actor}"
     path_value = _first_raw_field(mapping, _PATH_FIELDS)
-    first_path = _structured_path(actor=actor, value=path_value)
+    action_value = _first_raw_field(mapping, _ACTION_FIELDS) or natural_action
+    output_value = _first_raw_field(mapping, _OUTPUT_FIELDS) or _natural_visible_output(text)
+    first_path = _complete_structured_path(
+        actor=actor,
+        path_value=path_value,
+        action_value=action_value,
+        output_value=output_value,
+    )
     return StructuredPromptFacts(title=title, actor=actor, first_path=first_path)
 
 
@@ -126,9 +256,14 @@ def ranked_first_path_evidence(value: str) -> str:
             candidates.append((_path_score(granted_path) + 4, -index, granted_path))
         for evidence_clause in _embedded_evidence_clauses(row):
             candidates.append((_path_score(evidence_clause) + 2, -index, evidence_clause))
-        if index + 1 < len(rows) and not _hard_non_path(row) and not _hard_non_path(rows[index + 1]):
-            combined = f"{row}. {rows[index + 1]}"
-            candidates.append((_path_score(combined), -index, combined))
+        if index + 1 < len(rows) and not _hard_non_path(row):
+            release_result = _release_visible_result_action(rows[index + 1])
+            if release_result:
+                combined = f"{row}, and {release_result}"
+                candidates.append((_path_score(combined), -index, combined))
+            elif not _hard_non_path(rows[index + 1]):
+                combined = f"{row}. {rows[index + 1]}"
+                candidates.append((_path_score(combined), -index, combined))
     score, _position, candidate = max(candidates, default=(0, 0, ""))
     return candidate if score >= 12 else ""
 
@@ -147,23 +282,41 @@ def explicit_product_title_evidence(value: str) -> str:
                 rf"\b(?P<connector>uses?|using|in)\s+(?P<article>the\s+)?(?P<title>{_TITLE_PHRASE})\b"
             ),
             8,
+            True,
+        ),
+        (
+            re.compile(
+                rf"(?:^|[.!?]\s+|:\s+)(?P<title>{_TITLE_PHRASE})\s+is\s+for\b"
+            ),
+            8,
+            False,
         ),
         (
             re.compile(
                 rf"(?:^|[.!?]\s+|:\s+)(?P<title>{_TITLE_PHRASE})\s+"
-                r"(?:must|may|cannot|can't|is\s+for|reads?|imports?)\b"
+                r"(?:must|may|cannot|can't|reads?|imports?)\b"
             ),
             6,
+            True,
         ),
     )
-    for pattern, structural_score in patterns:
+    for pattern, structural_score, require_product_shape in patterns:
         for match in pattern.finditer(text):
             title = match.group("title").strip(" .")
             words = title.split()
-            if not words or len(words) > 5:
+            connector = match.groupdict().get("connector", "").casefold()
+            if (
+                not words
+                or len(words) > 5
+                or not _credible_explicit_title(
+                    title,
+                    require_product_shape=require_product_shape,
+                    allow_single_word_proper_name=connector in {"use", "uses"},
+                )
+            ):
                 continue
             if (
-                match.groupdict().get("connector", "").casefold() == "in"
+                connector == "in"
                 and len(words) == 1
                 and not match.groupdict().get("article")
             ):
@@ -171,6 +324,26 @@ def explicit_product_title_evidence(value: str) -> str:
             score = structural_score + min(len(words), 4) + text.casefold().count(title.casefold())
             candidates.append((score, title))
     return max(candidates, default=(0, ""))[1]
+
+
+def explicit_actor_has_human_grammar(value: str) -> bool:
+    """Return whether prompt syntax explicitly marks the recovered actor as a person."""
+
+    text = clean_markdown_text(str(value or ""))
+    product_match = _PRODUCT_FOR_ACTOR_RE.search(text)
+    if product_match and product_match.group("human_connector"):
+        return True
+    return any(
+        pattern.search(text)
+        for pattern in (
+            _APPOSITIVE_ACTOR_RE,
+            _ROLE_NAMED_PERSON_RE,
+            _ROLE_COMMA_PERSON_RE,
+            _PERSON_ROLE_RE,
+            _FOR_ROLE_PERSON_RE,
+            _NAMED_ROLE_RE,
+        )
+    )
 
 
 def explicit_actor_evidence(value: str) -> str:
@@ -236,6 +409,19 @@ def _markdown_field_mapping(value: str) -> dict[str, Any]:
     return fields
 
 
+def _inline_field_mapping(value: str) -> dict[str, Any]:
+    """Recover known labels when compact evidence places several fields on one line."""
+
+    matches = list(_INLINE_FIELD_RE.finditer(value))
+    fields: dict[str, Any] = {}
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(value)
+        field_value = value[match.end() : end].strip(" /\n\t.;")
+        if field_value:
+            fields[_field_key(match.group("key"))] = field_value
+    return fields
+
+
 def _field_key(value: object) -> str:
     return " ".join(str(value or "").casefold().replace("_", " ").split())
 
@@ -269,6 +455,132 @@ def _structured_path(*, actor: str, value: Any) -> str:
         action_chain = action_chain[:1].lower() + action_chain[1:]
         return f"{subject} can {action_chain}".strip(" .")
     return action_chain.strip(" .")
+
+
+def _complete_structured_path(
+    *,
+    actor: str,
+    path_value: Any,
+    action_value: Any,
+    output_value: Any,
+) -> str:
+    path = _clean(path_value).strip(" .")
+    action = _clean(action_value).strip(" .")
+    output = _clean(output_value).strip(" .")
+    if not (actor or path or action):
+        return ""
+    start = _path_start_action(path)
+    path_result = _path_nominal_result(path)
+    if path and not start and not action and not output:
+        return _structured_path(actor=actor, value=path_value)
+    actions: list[str] = []
+    if start:
+        actions.append(start)
+    elif path and not path_result:
+        actions.append(path)
+    if action and all(action.casefold() not in item.casefold() for item in actions):
+        actions.append(action)
+    path_result_action = _visible_output_action(path_result)
+    if path_result_action:
+        actions.append(path_result_action)
+    output_action = _visible_output_action(output)
+    if (
+        output_action
+        and not _output_already_present(output, actions)
+    ):
+        actions.append(output_action)
+    return _structured_path(actor=actor, value=actions)
+
+
+def _path_start_action(value: str) -> str:
+    match = _PATH_START_RE.match(_clean(value).strip(" ."))
+    if not match:
+        return ""
+    start = match.group("start").strip(" .")
+    if not start:
+        return ""
+    return f"complete {start}"
+
+
+def _path_nominal_result(value: str) -> str:
+    match = _PATH_NOMINAL_RESULT_RE.match(_clean(value).strip(" ."))
+    return match.group("result").strip(" .") if match else ""
+
+
+def _visible_output_action(value: str) -> str:
+    output = _clean(value).strip(" .")
+    if not output or _NEGATED_OUTPUT_SCOPE_RE.search(output):
+        return ""
+    if re.match(r"^(?:produce|generate|return|show|display|provide|receive|get)\b", output, re.IGNORECASE):
+        return output
+    return f"receive {output}"
+
+
+def _output_already_present(output: str, actions: list[str]) -> bool:
+    candidates = {output.casefold()}
+    without_system_context = re.sub(
+        r"\s+in\s+[A-Z][A-Za-z0-9'/-]*(?:\s+[A-Z][A-Za-z0-9'/-]*){0,4}$",
+        "",
+        output,
+    ).casefold()
+    if without_system_context:
+        candidates.add(without_system_context)
+    return any(candidate in action.casefold() for candidate in candidates for action in actions)
+
+
+def _natural_actor_action(value: str) -> tuple[str, str]:
+    for pattern in (_IMPLEMENTATION_REQUEST_RE, _PRODUCT_FOR_ACTOR_RE):
+        match = pattern.search(clean_markdown_text(value))
+        if match:
+            return match.group("actor").strip(" ,"), match.group("action").strip(" ,")
+    return "", ""
+
+
+def _natural_visible_output(value: str) -> str:
+    text = clean_markdown_text(value)
+    for match in _VISIBLE_OUTPUT_ACTION_RE.finditer(text):
+        clause_start = max(
+            text.rfind(boundary, 0, match.start())
+            for boundary in (".", "!", "?", ";", "\n")
+        )
+        scope = text[clause_start + 1 : match.start()]
+        contrast = tuple(re.finditer(r"\b(?:but|however|instead)\b", scope, flags=re.IGNORECASE))
+        if contrast:
+            scope = scope[contrast[-1].end() :]
+        if _NEGATED_OUTPUT_SCOPE_RE.search(scope):
+            continue
+        return match.group("output").strip(" ,")
+    evidence_match = _EVIDENCE_OWNED_OUTPUT_RE.search(text)
+    return evidence_match.group("output").strip(" ,") if evidence_match else ""
+
+
+def _explicit_domain_label(value: str) -> str:
+    match = _DOMAIN_LABEL_RE.search(clean_markdown_text(value))
+    return match.group("title").strip(" ,") if match else ""
+
+
+def _credible_explicit_title(
+    value: str,
+    *,
+    require_product_shape: bool,
+    allow_single_word_proper_name: bool = False,
+) -> bool:
+    words = value.split()
+    if not words or value.casefold() in _TITLE_REFERENCE_WORDS:
+        return False
+    if allow_single_word_proper_name and len(words) == 1:
+        return True
+    if not require_product_shape:
+        return not (len(words) == 1 and words[0].casefold() in _PRODUCT_TITLE_TERMINALS)
+    terminal = words[-1].casefold()
+    branded = any(
+        any(char.isupper() for char in word[1:])
+        or any(char.isdigit() for char in word)
+        or "-" in word
+        or (len(word) > 1 and word.isupper())
+        for word in words
+    )
+    return terminal in _PRODUCT_TITLE_TERMINALS or branded
 
 
 def _structured_actor_subject(value: str) -> str:
@@ -375,11 +687,22 @@ def _path_score(value: str) -> int:
     return score
 
 
+def _release_visible_result_action(value: str) -> str:
+    if not is_release_visible_result_statement(value):
+        return ""
+    match = re.search(r"\bshow\s+(?P<result>(?:a|an|one)\s+.+)$", _clean(value), flags=re.IGNORECASE)
+    return f"show {match.group('result').strip(' .')}" if match else ""
+
+
 def _hard_non_path(value: str) -> bool:
+    if is_release_visible_result_statement(value):
+        return False
     return bool(
         _HARD_NON_PATH_RE.search(value)
         or _PRODUCT_IDENTITY_DECLARATION_RE.search(_clean(value))
         or _CREATE_REQUEST_WRAPPER_RE.search(_clean(value))
+        or is_release_evidence_requirement(value)
+        or contains_requirement_control_clause(value)
         or contains_word_sense_metadata_clause(value)
     )
 
@@ -390,6 +713,7 @@ def _clean(value: object) -> str:
 
 __all__ = [
     "StructuredPromptFacts",
+    "explicit_actor_has_human_grammar",
     "explicit_actor_evidence",
     "explicit_product_title_evidence",
     "ranked_first_path_evidence",

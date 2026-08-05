@@ -132,6 +132,16 @@ def test_release_gate_title_does_not_capture_evidence_requirements_as_path() -> 
     assert "approve only bounded release evidence" in source.first_path.casefold()
 
 
+def test_singular_release_visible_result_completes_the_first_path() -> None:
+    source = prompt_intent_source(
+        "Archivists review one accession and approve its condition record. "
+        "The first release must show a custody receipt."
+    )
+
+    assert "approve its condition record" in source.first_path.casefold()
+    assert "show a custody receipt" in source.first_path.casefold()
+
+
 def test_visible_confirmation_carries_typed_evidence_requirements() -> None:
     confirmation = build_product_intent_confirmation(
         prompt=_CRYOGENIC_REQUIREMENT_PROMPT,

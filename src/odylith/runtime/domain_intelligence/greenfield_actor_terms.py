@@ -63,6 +63,7 @@ CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
         "client",
         "clerk",
         "contact",
+        "conservator",
         "coordinator",
         "counselor",
         "crew",
@@ -99,6 +100,7 @@ CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
         "volunteer",
     }
 )
+_HUMAN_ROLE_SUFFIXES = ("ian", "ist", "keeper", "ographer", "ologist", "worker")
 
 GENERIC_ACTOR_LABELS = (
     "implementation owner",
@@ -149,6 +151,7 @@ _NON_HUMAN_ACTOR_CONTEXT_TERMS = frozenset(
         "controller",
         "dashboard",
         "database",
+        "device",
         "engine",
         "model",
         "pipeline",
@@ -159,6 +162,7 @@ _NON_HUMAN_ACTOR_CONTEXT_TERMS = frozenset(
         "report",
         "router",
         "service",
+        "sensor",
         "system",
         "tool",
         "tracker",
@@ -206,12 +210,14 @@ def has_human_actor_role_signal(value: str) -> bool:
     terminal = tokens[-1][:-1] if tokens[-1].endswith("s") else tokens[-1]
     if terminal in CONFIRMED_ACTOR_ROLE_TERMS or terminal in _HUMAN_PROFESSIONAL_ROLE_TERMS:
         return True
-    if set(tokens) & _NON_HUMAN_ACTOR_CONTEXT_TERMS:
-        return False
     for token in tokens:
         singular = token[:-1] if token.endswith("s") else token
         if singular in CONFIRMED_ACTOR_ROLE_TERMS or singular in _HUMAN_PROFESSIONAL_ROLE_TERMS:
             return True
+    if tokens[-1].endswith("s") and terminal.endswith(_HUMAN_ROLE_SUFFIXES):
+        return True
+    if set(tokens) & _NON_HUMAN_ACTOR_CONTEXT_TERMS:
+        return False
     for index, token in enumerate(tokens[1:], start=1):
         if token == "assistant" and tokens[index - 1] not in _AUTOMATED_ASSISTANT_MODIFIERS:
             return True
@@ -354,7 +360,8 @@ def has_non_human_actor_signal(value: str) -> bool:
     """Return whether a subject names a product or automated system actor."""
 
     tokens = set(re.findall(r"[a-z]+", str(value or "").casefold()))
-    return bool(tokens & _NON_HUMAN_ACTOR_CONTEXT_TERMS) or is_automated_actor(value)
+    normalized = tokens | {token[:-1] for token in tokens if token.endswith("s")}
+    return bool(normalized & _NON_HUMAN_ACTOR_CONTEXT_TERMS) or is_automated_actor(value)
 
 
 def is_actor_obligation_noun_phrase(value: str) -> bool:

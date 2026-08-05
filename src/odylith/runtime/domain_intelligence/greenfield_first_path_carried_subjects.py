@@ -46,17 +46,36 @@ def carried_subject_prefix(value: str) -> str:
     subject = leading_subject_prefix(value)
     if subject:
         return subject
+    modal = re.match(
+        r"^(?P<subject>[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,5}?)\s+"
+        r"(?:can|could|may|might|must|should|will|would|needs?\s+to|has\s+to|have\s+to)\s+"
+        r"(?P<action>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if modal and MATERIAL_ACTION_RE.match(modal.group("action")):
+        candidate = modal.group("subject").strip()
+        candidate_terms = {
+            term.casefold().strip(".,:;")
+            for term in candidate.split()
+            if term.strip(".,:;")
+        }
+        if not candidate_terms & _SUBJECT_PREFIX_BOUNDARY_WORDS:
+            return candidate
     pronoun = re.match(r"^(?P<subject>they|we|he|she|it)\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
     if pronoun and MATERIAL_ACTION_RE.match(pronoun.group("tail")):
         raw_subject = pronoun.group("subject").casefold()
         return raw_subject[:1].upper() + raw_subject[1:]
     if MATERIAL_ACTION_RE.match(text):
         return ""
+    candidates: list[str] = []
     for action in MATERIAL_ACTION_RE.finditer(text):
         prefix = text[: action.start()].strip(" .,;:")
         subject = _actor_subject_prefix_candidate(prefix, full_text=text)
         if subject:
-            return subject
+            candidates.append(subject)
+    if candidates:
+        return max(candidates, key=lambda candidate: len(label_terms(candidate)))
     actor_action = re.match(
         rf"^(?P<subject>(?:(?:a|an|the|one|this|that|each|another)\s+)?"
         rf"[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){{1,5}}?)\s+"

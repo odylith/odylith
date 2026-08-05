@@ -5,6 +5,7 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_actor_obligation_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import omit_actor_from_material_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_automated_actor
@@ -57,9 +58,29 @@ def test_specific_human_actors_remain_material_action_context(actor: str) -> Non
     assert not omit_actor_from_material_action(actor)
 
 
-@pytest.mark.parametrize("actor", ("Permit clerks", "Extension publishers", "Lab operators"))
+@pytest.mark.parametrize(
+    "actor",
+    (
+        "Permit clerks",
+        "Extension publishers",
+        "Lab operators",
+        "Organ conservators",
+        "Conservatory horticulturists",
+        "Ceramic firing specialists",
+        "Cartographic archivists",
+    ),
+)
 def test_human_actor_signal_recognizes_domain_role_labels(actor: str) -> None:
     assert has_human_actor_signal(actor)
+
+
+def test_human_role_outranks_a_technical_modifier() -> None:
+    assert has_human_actor_signal("service coordinator Rae")
+
+
+@pytest.mark.parametrize("actor", ("EchoGrid sensors", "inspection devices", "routing services"))
+def test_non_human_actor_signal_normalizes_plural_system_labels(actor: str) -> None:
+    assert has_non_human_actor_signal(actor)
 
 
 def test_human_actor_signal_rejects_short_connective_suffixes() -> None:

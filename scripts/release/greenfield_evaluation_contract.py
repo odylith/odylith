@@ -14,6 +14,7 @@ from greenfield_matrix_case_file import load_case_file
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
+from greenfield_matrix_leakage import term_present
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
@@ -176,6 +177,7 @@ def evaluate_frozen_evaluation_contract(
                     f"final holdout model profiles do not cover {dimension} `{value}`: "
                     + ", ".join(missing)
                 )
+    issues.extend(final_holdout_term_contract_issues(holdout_cases))
     issues.extend(
         cross_split_leakage_issues(
             tracked_cases=tracked_cases,
@@ -213,6 +215,41 @@ def evaluate_frozen_evaluation_contract(
         "frozen_floors": dict(_mapping(manifest.get("frozen_floors"))),
         "profiles": dict(profiles),
     }
+
+
+def final_holdout_term_contract_issues(
+    cases: Sequence[GreenfieldMatrixCase],
+) -> tuple[str, ...]:
+    """Reject an oracle that both requires and forbids the same generated term."""
+
+    issues: list[str] = []
+    for case in cases:
+        required = {
+            normalized
+            for term in case.required_terms
+            if (normalized := _canonical(str(term)))
+        }
+        forbidden = {
+            normalized
+            for term in case.leakage_terms
+            if (normalized := _canonical(str(term)))
+        }
+        for required_term in sorted(required):
+            for forbidden_term in sorted(forbidden):
+                if not (
+                    term_present(required_term, forbidden_term)
+                    or term_present(forbidden_term, required_term)
+                ):
+                    continue
+                if required_term == forbidden_term:
+                    overlap = f"`{required_term}`"
+                else:
+                    overlap = f"overlapping terms `{required_term}` and `{forbidden_term}`"
+                issues.append(
+                    f"final holdout case `{_case_id(case)}` both requires and forbids "
+                    f"{overlap}; required_terms and leakage_terms must be disjoint"
+                )
+    return tuple(issues)
 
 
 def assign_tracked_splits(
@@ -567,5 +604,6 @@ __all__ = [
     "assign_tracked_splits",
     "cross_split_leakage_issues",
     "evaluate_frozen_evaluation_contract",
+    "final_holdout_term_contract_issues",
     "validate_atomic_annotations",
 ]

@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
     internal_system_rows_from_recovered_title,
 )
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import canonical_first_path_actor_reference
@@ -57,6 +58,12 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     incomplete_path_clarification,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
+    explicit_actor_has_human_grammar,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
+    explicit_actor_evidence,
 )
 
 
@@ -144,8 +151,11 @@ def materialize_prompt_intent_hypothesis(
             clarification.question,
             required_fields=clarification.required_fields,
         )
+    hypothesis = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
+    if not prompt_intent_source(prompt).title:
+        hypothesis["title"] = fallback_title
     baseline = normalize_confirmed_intent(
-        intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True),
+        hypothesis,
         prompt=prompt,
         fallback_title=fallback_title,
         allow_prompt_validation_recovery=False,
@@ -301,6 +311,24 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
         if first_path_model(edited_first_path).material_action:
             evidence = edit_evidence
     source = prompt_intent_source(evidence)
+    explicit_actor = explicit_actor_evidence(evidence)
+    explicit_human_grammar = explicit_actor_has_human_grammar(evidence)
+    if (
+        explicit_actor
+        and has_non_human_actor_signal(explicit_actor)
+        and not has_human_actor_signal(explicit_actor)
+    ):
+        return True
+    if explicit_actor and not (
+        has_human_actor_signal(explicit_actor) or explicit_human_grammar
+    ):
+        return True
+    if (
+        source.actor
+        and has_non_human_actor_signal(source.actor)
+        and not has_human_actor_signal(source.actor)
+    ):
+        return True
     model = first_path_model(source.first_path)
     if not model.material_action or not (
         len(model.steps) >= 2 or _EXPLICIT_VISIBLE_OUTCOME_RE.search(evidence)
@@ -313,8 +341,14 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     # no actor, a detailed operating chain is sufficient for the compiler to
     # make and display a bounded first-user assumption instead of interrupting
     # an otherwise usable onboarding flow.
-    if source.actor and is_automated_actor(source.actor):
-        return True
+    if (
+        source.actor
+        and explicit_actor
+        and source.actor.casefold() == explicit_actor.casefold()
+        and (has_human_actor_signal(explicit_actor) or explicit_human_grammar)
+        and not is_automated_actor(explicit_actor)
+    ):
+        return False
     if source.actor and has_human_actor_signal(source.actor):
         return False
     if has_human_actor_signal(evidence):
@@ -387,7 +421,15 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
     path = first_path_model(path_source)
     if _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence):
         return True
-    return len(path.steps) >= 2 or _has_explicit_single_step_actor_action(path_source)
+    return bool(
+        len(path.steps) >= 2
+        or _has_explicit_single_step_actor_action(path_source)
+        or (
+            explicit_actor_has_human_grammar(evidence)
+            and path.material_action
+            and _EXPLICIT_VISIBLE_OUTCOME_RE.search(evidence)
+        )
+    )
 
 
 def _has_explicit_single_step_actor_action(path_source: str) -> bool:

@@ -150,6 +150,22 @@ def test_first_path_steps_preserve_plural_actor_can_base_form() -> None:
     assert not [phrase for step in steps for phrase in modal_base_form_drift_phrases(step)]
 
 
+def test_modal_actor_with_action_homonym_keeps_its_complete_subject() -> None:
+    path = (
+        "Oceanographic watch officers can verify sensor epochs, monitor buoy alert runs, "
+        "and receive an alert disposition log."
+    )
+
+    model = first_path_model(path)
+
+    assert model.steps == (
+        "Oceanographic watch officers can verify sensor epochs",
+        "Oceanographic watch officers monitor buoy alert runs",
+        "Oceanographic watch officers receive an alert disposition log",
+    )
+    assert "oceanographic monitors" not in " ".join(model.steps).casefold()
+
+
 def test_first_path_steps_do_not_absorb_unknown_action_into_plural_actor_subject() -> None:
     steps = first_path_steps(
         "Multiple teams bring requests, review supporting facts, decide what is ready, "

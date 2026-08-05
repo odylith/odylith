@@ -79,6 +79,11 @@ _FIRST_RELEASE_BOUNDARY_RE = re.compile(
     r"\b(?:the\s+)?first\s+release(?:\s+boundary)?\s*(?:(?:is|includes?|covers?)\s+|:\s*)(?P<items>[^.!?]+)",
     flags=re.IGNORECASE,
 )
+_RELEASE_SINGULAR_VISIBLE_RESULT_RE = re.compile(
+    r"^(?:(?:the|this)\s+)?(?:first|initial)\s+(?:release|version)\s+"
+    r"(?:must|should|needs?\s+to|has\s+to)\s+show\s+(?:a|an|one)\s+[A-Za-z]",
+    flags=re.IGNORECASE,
+)
 _FIRST_RELEASE_EXCLUSION_TAIL_RE = re.compile(
     r"\s*(?:;\s*|,?\s+(?:while|but|with)\s+|,?\s+and\s+(?!(?:a|an|the|one)\b))[^.!?]*"
     r"\b(?:exclude(?:s|d|ing)?|(?:does|do|did)\s+not\s+include|not\s+(?:include(?:d)?|part)|"
@@ -337,15 +342,24 @@ def is_release_evidence_requirement(value: str) -> bool:
     """Return whether a release clause names evidence to preserve, not path behavior."""
 
     text = _clean(value).strip(" .")
-    return bool(
-        re.match(
-            r"^(?:(?:the|this)\s+)?(?:first|initial)\s+(?:release|version)\s+"
-            r"(?:must|should|needs?\s+to|has\s+to)\s+"
-            r"(?:capture|include|keep|name|preserve|record|show)\b",
-            text,
-            flags=re.IGNORECASE,
-        )
+    if is_release_visible_result_statement(text):
+        return False
+    match = re.match(
+        r"^(?:(?:the|this)\s+)?(?:first|initial)\s+(?:release|version)\s+"
+        r"(?:must|should|needs?\s+to|has\s+to)\s+"
+        r"(?P<verb>capture|include|keep|name|preserve|record|show)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
     )
+    if not match:
+        return False
+    return True
+
+
+def is_release_visible_result_statement(value: str) -> bool:
+    """Return whether release wording supplies one concrete user-visible result."""
+
+    return bool(_RELEASE_SINGULAR_VISIBLE_RESULT_RE.match(_clean(value).strip(" .")))
 
 
 def is_operator_review_lens_step(value: str) -> bool:

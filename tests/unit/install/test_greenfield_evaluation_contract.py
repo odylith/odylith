@@ -14,6 +14,7 @@ if str(SCRIPTS_ROOT) not in sys.path:
 from greenfield_evaluation_contract import assign_tracked_splits
 from greenfield_evaluation_contract import cross_split_leakage_issues
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract
+from greenfield_evaluation_contract import final_holdout_term_contract_issues
 from greenfield_evaluation_contract import validate_atomic_annotations
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
@@ -30,7 +31,7 @@ def _case(case_id: str, prompt: str, *, group: str = "") -> GreenfieldMatrixCase
         name=case_id,
         prompt=prompt,
         required_terms=(prompt.split()[0],),
-        leakage_terms=(prompt.split()[0],),
+        leakage_terms=(prompt.split()[-1].rstrip("."),),
         metamorphic_group=group,
         metamorphic_transform="variant" if group else "",
     )
@@ -183,6 +184,40 @@ def test_cross_split_leakage_rejects_renamed_near_duplicate() -> None:
     assert "near-duplicate prompt leakage" in issues[0]
 
 
+def test_final_holdout_rejects_terms_that_are_both_required_and_forbidden() -> None:
+    case = GreenfieldMatrixCase(
+        case_id="holdout-1",
+        name="holdout one",
+        prompt="Archive Operator records one review receipt from SourceCipher.",
+        required_terms=("Archive", "review receipt"),
+        leakage_terms=("archive", "SourceCipher"),
+    )
+
+    issues = final_holdout_term_contract_issues((case,))
+
+    assert issues == (
+        "final holdout case `holdout-1` both requires and forbids `archive`; "
+        "required_terms and leakage_terms must be disjoint",
+    )
+
+
+def test_final_holdout_rejects_required_and_forbidden_term_containment() -> None:
+    case = GreenfieldMatrixCase(
+        case_id="holdout-1",
+        name="holdout one",
+        prompt="Archive Operator records one review receipt.",
+        required_terms=("archive ledger",),
+        leakage_terms=("archive",),
+    )
+
+    issues = final_holdout_term_contract_issues((case,))
+
+    assert issues == (
+        "final holdout case `holdout-1` both requires and forbids overlapping terms "
+        "`archive ledger` and `archive`; required_terms and leakage_terms must be disjoint",
+    )
+
+
 def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     corpus_path = repo_root / "tests/fixtures/corpus.json"
@@ -215,7 +250,7 @@ def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_p
                 "name": case.name,
                 "prompt": case.prompt,
                 "required_terms": [case.prompt.split()[0]],
-                "leakage_terms": [case.prompt.split()[0]],
+                "leakage_terms": [case.prompt.split()[-1].rstrip(".")],
             }
             for case in holdout_cases
         ],

@@ -55,6 +55,8 @@ def _append_raw_text_values_for_key(units: list[ArtifactQualityUnit], value: Any
         for nested in value:
             _append_raw_text_values_for_key(units, nested, key=key)
         return
+    if not isinstance(value, (str, int, float, bool)):
+        return
     text = clean_text(value)
     if text and not structural_copy_value(key=key, value=text):
         units.append(_scalar_unit(text=text, key=key))
@@ -81,6 +83,8 @@ def _append_text_quality_units_for_key(units: list[ArtifactQualityUnit], value: 
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         for nested in value:
             _append_text_quality_units_for_key(units, nested, key=key)
+        return
+    if not isinstance(value, (str, int, float, bool)):
         return
     if structural_copy_value(key=key, value=clean_text(value)):
         return

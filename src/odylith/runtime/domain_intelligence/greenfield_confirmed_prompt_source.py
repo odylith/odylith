@@ -296,8 +296,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         or product_focus_after_command_sentence(product_text)
         or product_focus_after_need_sentence(product_text)
         or contextual_product_title(product_text)
-        or _project_title_source_from_words(words, start=start, command_led=command_led)
-        or _direct_path_title_source(direct_first_path, actor=direct_actor),
+        or _project_title_source_from_words(words, start=start, command_led=command_led),
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
@@ -494,7 +493,7 @@ def _explicit_human_actor_action(value: str) -> tuple[str, str, str]:
 
 
 def _is_release_boundary_statement(value: str) -> bool:
-    return bool(
+    return is_release_evidence_requirement(value) or bool(
         re.match(
             r"^(?:the\s+)?first\s+release\s+(?:boundary|scope)\b",
             clean_markdown_text(value).strip(),
@@ -569,26 +568,6 @@ def _base_direct_gerund(value: str) -> str:
     if stem.endswith(("at", "it", "iz", "os", "v")):
         return f"{stem}e"
     return stem
-
-
-def _direct_path_title_source(value: str, *, actor: str) -> str:
-    """Name the product object in a direct actor-led first path."""
-
-    words = request_words(value)
-    actor_words = request_words(actor)
-    index = len(actor_words)
-    if index < len(words) and word_key(words[index]) in {"can", "must", "need", "needs", "to", "will"}:
-        index += 1
-    title_words: list[str] = []
-    for word in words[index + 1 :]:
-        if word_key(word) in {"after", "before", "between", "through", "with"}:
-            break
-        title_words.append(word.strip(".,:;"))
-    while title_words and word_key(title_words[0]) in {"a", "an", "the", "one"}:
-        title_words.pop(0)
-    if 2 <= len(title_words) <= 7:
-        return " ".join(title_words).strip(" .")
-    return ""
 
 
 def _request_content_start(words: list[str]) -> tuple[int, bool]:

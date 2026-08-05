@@ -54,3 +54,7 @@
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py
 - scripts/release/greenfield_semantic_release_score.py
+
+- Final Holdout Follow-Up (2026-08-05): The disclosed ba25 holdout exposed four ownership ambiguities that explicitly offered two first-approval owners and stated that the choice changed the initial path and proof record. The materiality gate now classifies that ownership decision before actor/path recovery and returns one focused question with `first_approval_actor`, `first_path`, and `proof_record_owner`. All four retired cases clarify with no `.odylith/runtime/greenfield` directory, candidate, or pending transaction written. Clean installed proof remains required before release closure.
+
+- Actor Integrity Follow-Up (2026-08-05): Adversarial review found that a complete multi-step path could let explicit system actors such as sensors, cameras, or robots bypass clarification, while a real `service coordinator` could be rejected because the technical modifier outranked the role. Explicit unfamiliar actors now require a positive human role signal or person-marking grammar such as `who needs to`; profession morphology preserves conservators, horticulturists, specialists, archivists, and similar roles without treating arbitrary nouns as people. Machine cases return the focused `human_actors` and `first_path` question before any runtime write; vague EDIT evidence against an already complete human path continues to request only the missing correction.
