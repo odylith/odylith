@@ -582,7 +582,55 @@ def test_quality_lens_requires_non_empty_external_boundary() -> None:
     checks = {check["name"]: check for check in report["lenses"]["architect"]["checks"]}
 
     assert checks["system_boundary"]["status"] == "failed"
-    assert "0 external system boundary row(s)" in checks["system_boundary"]["evidence"]
+    assert "0 of 0 external system boundary row(s) rendered" in checks["system_boundary"]["evidence"]
+
+
+def test_quality_lens_requires_each_accepted_external_boundary_in_rendered_artifacts() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "state_object": "A room request",
+                    "internal_systems": ["Room Request Register", "Availability Review Board"],
+                    "external_systems": ["Hall Calendar"],
+                }
+            },
+            "intent": {"state_object": "A room request", "external_systems": ["Hall Calendar"]},
+            "components": [
+                {"component_id": "room-request-register", "label": "Room Request Register"},
+                {"component_id": "availability-review-board", "label": "Availability Review Board"},
+            ],
+            "diagrams": [{"slug": "one"}, {"slug": "two"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={"one": "flowchart TD\nA-->B\n", "two": "flowchart TD\nA-->B\n"},
+        rendered_component_specs={},
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    missing = build_greenfield_quality_lens_report(package)
+    missing_check = {row["name"]: row for row in missing["lenses"]["architect"]["checks"]}["system_boundary"]
+    assert missing_check["status"] == "failed"
+
+    package.backlog_result = {"idea_files": ["Hall Calendar is an external dependency."]}
+    non_architectural = build_greenfield_quality_lens_report(package)
+    non_architectural_check = {
+        row["name"]: row for row in non_architectural["lenses"]["architect"]["checks"]
+    }["system_boundary"]
+    assert non_architectural_check["status"] == "failed"
+
+    package.rendered_atlas_sources["one"] = 'flowchart TD\nH["Hall Calendar"]-->A\n'
+    covered = build_greenfield_quality_lens_report(package)
+    covered_check = {row["name"]: row for row in covered["lenses"]["architect"]["checks"]}["system_boundary"]
+    assert covered_check["status"] == "passed"
 
 
 def test_quality_lens_requires_explicit_prewrite_safety_evidence() -> None:

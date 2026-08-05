@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import re
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -108,6 +109,80 @@ _BOUNDARY_STOPWORDS = frozenset(
         "user",
     }
 )
+_STRUCTURED_SOURCE_KEYS = frozenset(
+    {
+        "data_source",
+        "data_sources",
+        "external_system",
+        "external_systems",
+        "source",
+        "sources",
+        "upstream_system",
+        "upstream_systems",
+    }
+)
+_SOURCE_LABEL_CARRIERS = _SOURCE_CARRIERS | frozenset(
+    {
+        "archive",
+        "calendar",
+        "catalog",
+        "database",
+        "directory",
+        "gazette",
+        "index",
+        "map",
+        "provider",
+        "registry",
+        "repository",
+        "roster",
+        "service",
+        "shelf",
+        "system",
+    }
+)
+_NON_SYSTEM_SOURCE_LABELS = frozenset(
+    {
+        "customer",
+        "customers",
+        "database",
+        "interview",
+        "interviews",
+        "notes",
+        "operator",
+        "operators",
+        "people",
+        "product",
+        "requirements",
+        "service",
+        "source",
+        "staff",
+        "system",
+        "team",
+        "teams",
+        "tool",
+        "user",
+        "users",
+    }
+)
+_TRAILING_SOURCE_ACTION_RE = re.compile(
+    r"\s+\band\s+(?:can(?:not|'t)?|cannot|displays?|is|are|shows?|shown|uses?|used|was|were)\b.*$",
+    flags=re.IGNORECASE,
+)
+_FROM_SOURCE_RE = re.compile(
+    r"\b(?:come|comes|came|read|reads|loaded|loads|imported|imports|retrieved|retrieves|"
+    r"sourced|sources|provided|provides|supplied|supplies)\s+from\s+(?:the\s+)?(?P<source>[^,.;!?\n]+)",
+    flags=re.IGNORECASE,
+)
+_ACTION_FROM_SOURCE_RE = re.compile(
+    r"\b(?:imports?|loads?|reads?|retrieves?|sources?)\b[^,.;!?\n]{1,100}?\bfrom\s+"
+    r"(?:the\s+)?(?P<source>[^,.;!?\n]+)",
+    flags=re.IGNORECASE,
+)
+_SUPPLIER_RE = re.compile(
+    r"^(?:the\s+)?(?P<source>[A-Za-z0-9][A-Za-z0-9&'/_-]*(?:\s+[A-Za-z0-9][A-Za-z0-9&'/_-]*){0,7})"
+    r"\s+(?:feeds|provides|publishes|supplies)\b",
+    flags=re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -145,6 +220,72 @@ def completed_external_boundary_rows(intent: Mapping[str, Any]) -> tuple[list[st
     external_rows = [fact.row for fact in facts if fact.confidence == "source"]
     ambiguity_rows = [fact.ambiguity for fact in facts if fact.confidence == "ambiguous"]
     return list(unique_text(external_rows))[:4], list(unique_text(ambiguity_rows))[:4]
+
+
+def source_boundary_rows_from_evidence(value: Any) -> list[str]:
+    """Extract named external sources without copying surrounding prompt prose."""
+
+    rows, is_structured = _structured_source_rows(value)
+    text = clean_text(value)
+    if text and not is_structured:
+        rows.extend(match.group("source") for match in _FROM_SOURCE_RE.finditer(text))
+        rows.extend(match.group("source") for match in _ACTION_FROM_SOURCE_RE.finditer(text))
+        for sentence in re.split(r"[.;!?]+", text):
+            match = _SUPPLIER_RE.match(clean_text(sentence))
+            if match:
+                rows.append(match.group("source"))
+    normalized = [_source_label(row) for row in rows]
+    return list(unique_text(row for row in normalized if row))[:8]
+
+
+def _structured_source_rows(value: Any) -> tuple[list[str], bool]:
+    if not isinstance(value, str):
+        return [], False
+    text = value.strip()
+    if not text.startswith(("{", "[")):
+        return [], False
+    try:
+        payload = json.loads(text)
+    except (TypeError, ValueError):
+        return [], False
+    rows: list[str] = []
+    _collect_structured_source_rows(payload, rows)
+    return rows, True
+
+
+def _collect_structured_source_rows(value: Any, rows: list[str], *, key: str = "") -> None:
+    if isinstance(value, Mapping):
+        for item_key, item in value.items():
+            _collect_structured_source_rows(item, rows, key=str(item_key).casefold())
+        return
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            _collect_structured_source_rows(item, rows, key=key)
+        return
+    if key in _STRUCTURED_SOURCE_KEYS:
+        text = clean_text(value)
+        if text:
+            rows.append(text)
+
+
+def _source_label(value: Any) -> str:
+    text = clean_text(value).strip(" .,:;\"'")
+    text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
+    text = _TRAILING_SOURCE_ACTION_RE.sub("", text).strip(" .,:;\"'")
+    text = re.split(r"\s+\b(?:although|before|but|unless|while)\b\s+", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    words = text.split()
+    if not words or len(words) > 12:
+        return ""
+    lowered = {word.casefold().strip(".,;:()[]{}") for word in words}
+    if lowered <= _NON_SYSTEM_SOURCE_LABELS:
+        return ""
+    if not (
+        lowered & _SOURCE_LABEL_CARRIERS
+        or any(word.isupper() and len(word) >= 2 for word in words)
+        or any(word[:1].isupper() for word in words)
+    ):
+        return ""
+    return " ".join(words)
 
 
 def external_boundary_facts(first_path: Any) -> list[ExternalBoundaryFact]:
@@ -234,4 +375,5 @@ __all__ = [
     "ExternalBoundaryFact",
     "completed_external_boundary_rows",
     "external_boundary_facts",
+    "source_boundary_rows_from_evidence",
 ]

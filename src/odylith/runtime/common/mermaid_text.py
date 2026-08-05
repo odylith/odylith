@@ -6,6 +6,8 @@ import re
 from typing import Sequence
 
 from odylith.runtime.common import display_text
+from odylith.runtime.common.prose_tail import strip_clipped_terminal_fragment
+from odylith.runtime.common.prose_tail import strip_incomplete_public_tail
 
 _FIRST_CONTENT_RE = re.compile(r"^\s*(?!%%)(\S+)", re.MULTILINE)
 _PARTICIPANT_RE = re.compile(r"^(\s*participant\s+\S+\s+as\s+)(.+?)\s*$", re.IGNORECASE)
@@ -374,14 +376,26 @@ def _trim_text(value: str, *, limit: int) -> str:
     clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    return _strip_dangling_tail(clipped)
+    return _repair_clipped_tail(clipped)
 
 
 def _append_ellipsis(value: str, *, width: int) -> str:
     text = value.rstrip(" …")
     if len(text) >= width:
         text = text[: max(1, width - 1)].rstrip(" ,;:")
-    return _strip_dangling_tail(text)
+    return _repair_clipped_tail(text)
+
+
+def _repair_clipped_tail(value: str) -> str:
+    text = clean_mermaid_text(value).rstrip(" ,;:.")
+    while True:
+        repaired = strip_clipped_terminal_fragment(text)
+        repaired = _strip_dangling_tail(repaired)
+        repaired = strip_incomplete_public_tail(repaired)
+        repaired = _strip_dangling_tail(repaired)
+        if repaired == text:
+            return repaired
+        text = repaired
 
 
 def _strip_dangling_tail(value: str) -> str:

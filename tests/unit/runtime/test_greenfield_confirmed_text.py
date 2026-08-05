@@ -581,6 +581,14 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
         'baseline trends, capability markers, and clear "what changed" insight',
         limit=52,
     )
+    assert wrap_mermaid_label(
+        "A reviewer selects an object code and the saved result includes the chosen destination",
+        limit=70,
+    ).replace("<br/>", " ").endswith("the saved result")
+    assert wrap_mermaid_label(
+        "A reviewer opens the saved result and sees what remains",
+        limit=80,
+    ).replace("<br/>", " ").endswith("sees what remains")
     assert clip_text_at_word_boundary("IdentifierWithoutSpaces", limit=10) == "Identifier"
 
     for caller in touched_callers:

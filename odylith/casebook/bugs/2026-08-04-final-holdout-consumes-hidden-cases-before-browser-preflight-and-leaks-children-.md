@@ -1,6 +1,6 @@
 - Bug ID: CB-321
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-08-04
 
@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix the harness; do not weaken browser proof or reuse the consumed holdout.
 
-- Verification: Regression proves missing Playwright fails before ledger creation and product execution; SIGINT integration proves no child survives and ledger terminalizes interrupted; normal release campaign still passes.
+- Verification: Missing-Playwright regression fails before ledger creation and product execution; SIGINT integration proves no child survives and the ledger terminalizes interrupted. Exact-revision run `7f03f7cf8` then passed browser launch preflight, executed all 24 claimed cases, terminalized the ledger as failed from product-quality results, and left no campaign child processes. Product failures remain governed by their owning Casebook records and do not reopen this harness-lifecycle defect.
 
 - Prevention: Order environment and dependency checks before disclosure/claim and centralize terminal cleanup around the one-shot guard.
 
@@ -57,6 +57,10 @@
 - Monitoring Updates: Emit explicit preflight_failed versus product_failed campaign status and descendant cleanup counts.
 
 - Version/Build: 0.1.15 candidate at 76ed69c95d6fe09c0c67b0e0031be949a9eefd55
+
+- Fixed: 2026-08-04
+
+- Fixed In: pending 0.1.15
 
 - Config/Flags: proof-tier=release, include-browser-proof=true, require-release-readiness=true
 

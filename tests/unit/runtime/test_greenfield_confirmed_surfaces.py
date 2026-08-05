@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
 from odylith.runtime.domain_intelligence import greenfield_confirmed_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
 
@@ -532,6 +533,30 @@ def test_mermaid_label_wrapping_carries_dangling_connector_to_next_line() -> Non
         not part.casefold().endswith((" on", " the", " with"))
         for part in anchored.split("<br/>")
     )
+
+
+def test_mermaid_label_clipping_removes_incomplete_terminal_actions() -> None:
+    source = "The workspace records the selected object code and the final summary includes its review destination"
+
+    wrapped = mermaid_text.wrap_mermaid_label(source, width=30, max_lines=4, limit=76)
+    visible = wrapped.replace("<br/>", " ")
+
+    assert visible.endswith("the final summary")
+    assert not generated_public_copy_issues("Atlas Mermaid", f'flowchart LR A["{wrapped}"]')
+    assert mermaid_text.wrap_mermaid_label("The final summary includes more", limit=29) == "The final summary"
+
+
+def test_flow_label_preserves_valid_noun_final_copy_without_clipping() -> None:
+    source = "The workspace tracks every patient sample return"
+
+    assert flow_label(source, width=80, max_lines=4, limit=120) == source
+    wrapped = mermaid_text.wrap_mermaid_label(
+        "The workspace tracks every patient sample return notice",
+        width=24,
+        max_lines=4,
+        limit=51,
+    )
+    assert "sample return" in wrapped.replace("<br/>", " ")
 
 
 def test_mermaid_quality_extracts_visible_labels_from_compact_flowchart_source() -> None:

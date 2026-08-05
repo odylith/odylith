@@ -11,6 +11,11 @@ from collections.abc import Sequence
 from functools import lru_cache
 import re
 
+from odylith.runtime.common.prose_tail import DEFAULT_DANGLING_TAIL_WORDS
+from odylith.runtime.common.prose_tail import has_clipped_terminal_modifier
+from odylith.runtime.common.prose_tail import strip_clipped_terminal_fragment
+from odylith.runtime.common.prose_tail import strip_dangling_word_tail
+
 
 _ACTION_MODAL_WORDS = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
 _INFINITIVE_TO_FINITE = {
@@ -327,63 +332,6 @@ _GERUND_NO_DOUBLE_FINAL_CONSONANT = frozenset(
         "visit",
     }
 )
-DEFAULT_DANGLING_TAIL_WORDS = frozenset(
-    {
-        "a",
-        "an",
-        "and",
-        "as",
-        "at",
-        "before",
-        "by",
-        "for",
-        "from",
-        "in",
-        "into",
-        "of",
-        "or",
-        "so",
-        "the",
-        "to",
-        "until",
-        "with",
-    }
-)
-TERMINAL_MODIFIER_WORDS = frozenset(
-    {
-        "accepted",
-        "actionable",
-        "bad",
-        "blocked",
-        "clear",
-        "complete",
-        "concrete",
-        "corrected",
-        "daily",
-        "expected",
-        "failed",
-        "final",
-        "first",
-        "incomplete",
-        "invalid",
-        "missing",
-        "appropriate",
-        "configured",
-        "relevant",
-        "required",
-        "reviewable",
-        "runnable",
-        "specific",
-        "supported",
-        "trusted",
-        "valid",
-        "validated",
-        "visible",
-    }
-)
-TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
-TERMINAL_FINAL_STATE_WORDS = frozenset({"case", "decision", "match", "record", "result", "review", "score", "status"})
-
 def strip_trailing_subject_modal(value: str) -> str:
     """Remove a modal that subject extraction absorbed before an action."""
 
@@ -405,62 +353,6 @@ def strip_leading_action_modal(value: str) -> str:
         count=1,
         flags=re.IGNORECASE,
     ).strip(" .")
-
-
-def strip_dangling_word_tail(
-    value: str,
-    *,
-    dangling_words: set[str] | frozenset[str] | tuple[str, ...] | list[str],
-    rstrip_chars: str = " ,;:.",
-) -> str:
-    """Trim incomplete connector tails after word-boundary clipping."""
-
-    words = str(value or "").rstrip(rstrip_chars).split()
-    dangling = {str(word or "").casefold().strip(".,;:") for word in dangling_words}
-    dangling.discard("")
-    while words and words[-1].casefold().strip(".,;:") in dangling:
-        words.pop()
-    return " ".join(words).rstrip(rstrip_chars)
-
-
-def strip_clipped_terminal_fragment(value: str, *, rstrip_chars: str = " ,;:.") -> str:
-    """Trim clipped article/modifier tails while preserving valid state phrases."""
-
-    text = str(value or "").rstrip(rstrip_chars)
-    while True:
-        words = text.split()
-        if len(words) >= 2:
-            previous = words[-2].casefold().strip(".,;:'")
-            tail = words[-1].casefold().strip(".,;:'")
-            if previous in TERMINAL_MODIFIER_PRECEDERS and tail in TERMINAL_MODIFIER_WORDS:
-                text = " ".join(words[:-2]).rstrip(rstrip_chars)
-                continue
-        if words and words[-1].casefold().strip(".,;:'") == "final" and not _allows_terminal_final(words):
-            text = " ".join(words[:-1]).rstrip(rstrip_chars)
-            continue
-        return text
-
-
-def has_clipped_terminal_modifier(tokens: Sequence[str]) -> bool:
-    """Return true when a determiner ends with a modifier but no owned noun."""
-
-    if len(tokens) < 2:
-        return False
-    tail = str(tokens[-1]).casefold().strip(".,;:'")
-    previous = str(tokens[-2]).casefold().strip(".,;:'")
-    return tail in TERMINAL_MODIFIER_WORDS and previous in TERMINAL_MODIFIER_PRECEDERS
-
-
-def _allows_terminal_final(words: list[str]) -> bool:
-    lowered = [word.casefold().strip(".,;:'") for word in words if word.strip(".,;:'")]
-    if len(lowered) < 2 or lowered[-1] != "final":
-        return False
-    previous = lowered[-2]
-    if previous in TERMINAL_FINAL_STATE_WORDS:
-        return True
-    if previous in {"is", "becomes", "became"} and any(token in TERMINAL_FINAL_STATE_WORDS for token in lowered[:-2]):
-        return True
-    return any(token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"} for token in lowered[:-1])
 
 
 def looks_like_finite_action(value: str) -> bool:

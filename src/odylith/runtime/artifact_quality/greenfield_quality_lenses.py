@@ -198,9 +198,10 @@ def build_greenfield_quality_lens_report(package: Any) -> dict[str, Any]:
     proposal = _as_mapping(getattr(package, "proposal", None))
     semantic = _as_mapping(proposal.get("semantic_model"))
     rendered_text = _rendered_text(package)
+    architecture_text = _architecture_rendered_text(package)
     lens_checks = {
         "product_manager": _product_manager_checks(package, proposal, semantic),
-        "architect": _architect_checks(package, proposal, semantic),
+        "architect": _architect_checks(package, proposal, semantic, architecture_text),
         "engineer": _engineer_checks(package, proposal),
         "domain_expert": _domain_expert_checks(package, proposal, semantic, rendered_text),
     }
@@ -312,6 +313,7 @@ def _architect_checks(
     package: Any,
     proposal: Mapping[str, Any],
     semantic: Mapping[str, Any],
+    architecture_text: str,
 ) -> list[dict[str, str]]:
     intent = _as_mapping(proposal.get("intent"))
     domain = _as_mapping(semantic.get("domain_ontology"))
@@ -327,7 +329,10 @@ def _architect_checks(
     external_systems = _rows_or_text_values(domain.get("external_systems")) or _rows_or_text_values(
         intent.get("external_systems")
     )
-    external_boundary_known = bool(external_systems)
+    covered_external_systems = [
+        row for row in external_systems if _external_system_has_rendered_coverage(row, rendered_text=architecture_text)
+    ]
+    external_boundary_known = bool(external_systems) and len(covered_external_systems) == len(external_systems)
     state_object = normalize_string(intent.get("state_object")) or normalize_string(domain.get("state_object"))
     component_topology_complete = _component_topology_covers_internal_systems(
         internal_systems,
@@ -355,8 +360,8 @@ def _architect_checks(
         _check(
             external_boundary_known,
             "system_boundary",
-            f"{len(external_systems)} external system boundary row(s)",
-            "quality lens architect missing explicit external system boundary",
+            f"{len(covered_external_systems)} of {len(external_systems)} external system boundary row(s) rendered",
+            "quality lens architect missing accepted external system boundary in rendered artifacts",
         ),
     ]
 
@@ -559,6 +564,17 @@ def _system_has_component_coverage(system: str, *, component_texts: Sequence[str
     return False
 
 
+def _external_system_has_rendered_coverage(system: str, *, rendered_text: str) -> bool:
+    system_label = normalize_string(system)
+    for separator in (" - ", " \u2014 ", ": "):
+        system_label = system_label.split(separator, 1)[0]
+    system_terms = _topology_terms(system_label)
+    if not system_terms:
+        return False
+    rendered_terms = _topology_terms(rendered_text)
+    return len(system_terms & rendered_terms) >= min(2, len(system_terms))
+
+
 def _topology_terms(value: str) -> set[str]:
     return set(
         ordered_terms(
@@ -605,6 +621,18 @@ def _rendered_text(package: Any) -> str:
                 getattr(package, "backlog_result", None),
                 getattr(package, "release_target_result", None),
                 getattr(package, "release_assignment_result", None),
+            ]
+        )
+    )
+
+
+def _architecture_rendered_text(package: Any) -> str:
+    return "\n".join(
+        text_values(
+            [
+                getattr(package, "rendered_component_specs", None),
+                getattr(package, "rendered_atlas_sources", None),
+                getattr(package, "component_registry_preview", None),
             ]
         )
     )

@@ -51,6 +51,21 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-04: Preserved named external-source custody and complete compact copy before Greenfield confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-255`, `CB-258`, `CB-303`; Diagram: D-043)
+  Operator-evidence hypotheses now retain explicit named source relations before
+  prompt compaction, while later typed normalization does not let raw prompt
+  prose override explicit structured boundaries. Source inference rejects generic actor,
+  interview, requirement, and dependency prose and accepts named providers or
+  source carriers without domain-specific dictionaries. The architect tribunal
+  requires every accepted external dependency on Atlas, Registry, or component
+  architecture output; incidental Radar or release prose cannot satisfy the
+  boundary. Shared Mermaid compaction repairs incomplete action tails only when
+  clipping actually occurs and preserves complete noun endings. Typed Project
+  story slots, uniqueness judgment, and accepted, blank, and degraded browser
+  geometry remain independent gates. Focused semantic and public-copy proof
+  passed 75 tests, and desktop/mobile Project browser proof passed 12 tests.
+  Clean installed distribution and fresh independent holdout proof remain open.
+
 - 2026-08-04: Made narrative evidence ranking subordinate to typed and specialized workflow ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bugs: `CB-227`, `CB-315`, `CB-316`, `CB-317`, `CB-318`, `CB-319`; Diagram: D-043)
   Raw create instructions, source-reporting wrappers, word-sense metadata, and
   material control prose cannot become first-path truth. Bounded workflow and

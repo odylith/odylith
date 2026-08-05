@@ -27,7 +27,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.parametrize(
-    ("name", "prompt", "required_path_terms", "excluded_path_terms"),
+    ("name", "prompt", "required_path_terms", "excluded_path_terms", "expected_external_terms"),
     (
         (
             "reordered orchard evidence",
@@ -40,6 +40,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
             ),
             ("records a returned crate", "daily return tally"),
             ("fence paint", "grove roster supplies"),
+            ("grove roster",),
         ),
         (
             "quiet room evidence",
@@ -50,6 +51,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
             ),
             ("marks the slot held", "shows the room and time"),
             ("room availability is read",),
+            ("hall calendar",),
         ),
         (
             "tool loan JSON",
@@ -60,6 +62,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
             ),
             ("scan tool tag", "show return due date"),
             ('{"operator"',),
+            ("tool shelf index",),
         ),
         (
             "marina evidence",
@@ -70,6 +73,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
             ),
             ("entering a vessel tag", "berth map displays"),
             ("tide ledger supplies",),
+            ("tide ledger",),
         ),
         (
             "museum evidence",
@@ -79,6 +83,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
                 "Shelf. Gallery Slip must not authenticate provenance, appraise value, or publish a label."
             ),
             ("awaiting review", "curator queue number"),
+            ("collection shelf",),
             ("collection shelf",),
         ),
         (
@@ -90,6 +95,7 @@ def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
             ),
             ("calibrate a sensor", "variance report"),
             ("anechoic archive", "certify"),
+            ("anechoic archive",),
         ),
     ),
 )
@@ -99,6 +105,7 @@ def test_ranked_evidence_compiles_the_complete_path_without_false_clarification(
     prompt: str,
     required_path_terms: tuple[str, ...],
     excluded_path_terms: tuple[str, ...],
+    expected_external_terms: tuple[str, ...],
 ) -> None:
     intent = materialize_prompt_intent_hypothesis(
         prompt=prompt,
@@ -107,8 +114,10 @@ def test_ranked_evidence_compiles_the_complete_path_without_false_clarification(
     )
 
     first_path = str(intent["first_path"]).casefold()
+    external_systems = " ".join(str(row) for row in intent["external_systems"]).casefold()
     assert all(term in first_path for term in required_path_terms)
     assert all(term not in first_path for term in excluded_path_terms)
+    assert all(term in external_systems for term in expected_external_terms)
     if name == "unseen acoustic workflow vocabulary":
         assert intent["title"] == "Fathom Console"
 
@@ -260,21 +269,31 @@ def test_additive_edit_rebuild_preserves_path_and_boundary(
 
 
 @pytest.mark.parametrize(
-    "prompt",
+    ("prompt", "external_source"),
     (
         (
-            "Mara, a packing-shed clerk, records each returned crate in the Orchard Bin Ledger. She selects the "
-            "orchard lot, marks the crate inspected, and sees a daily return tally. The ledger imports lot names "
-            "from the Grove Roster. Keep inspection notes visible only to the packing shed."
+            (
+                "Mara, a packing-shed clerk, records each returned crate in the Orchard Bin Ledger. She selects the "
+                "orchard lot, marks the crate inspected, and sees a daily return tally. The ledger imports lot names "
+                "from the Grove Roster. Keep inspection notes visible only to the packing shed."
+            ),
+            "grove roster",
         ),
         (
-            "Tomas, an aviary volunteer, logs a feeder refill in Perch Note. Tomas selects an enclosure, records the "
-            "feeder refilled state, and receives a shift summary. Enclosure names come from Roost Index. Perch Note "
-            "must never diagnose an animal, prescribe feed, or state that an enclosure is healthy."
+            (
+                "Tomas, an aviary volunteer, logs a feeder refill in Perch Note. Tomas selects an enclosure, records the "
+                "feeder refilled state, and receives a shift summary. Enclosure names come from Roost Index. Perch Note "
+                "must never diagnose an animal, prescribe feed, or state that an enclosure is healthy."
+            ),
+            "roost index",
         ),
     ),
 )
-def test_project_and_radar_copy_is_complete_and_nonrepetitive(tmp_path: Path, prompt: str) -> None:
+def test_project_and_radar_copy_is_complete_and_nonrepetitive(
+    tmp_path: Path,
+    prompt: str,
+    external_source: str,
+) -> None:
     intent = materialize_prompt_intent_hypothesis(
         prompt=prompt,
         repo_root=tmp_path,
@@ -298,9 +317,18 @@ def test_project_and_radar_copy_is_complete_and_nonrepetitive(tmp_path: Path, pr
     )
     package = prewrite.package
     package_issues = greenfield_rendered_package_quality_issues(package)
+    rendered = "\n".join(
+        [
+            *package.backlog_result["idea_files"].values(),
+            *package.rendered_component_specs.values(),
+            *package.rendered_atlas_sources.values(),
+            package.project_brief_record_text,
+        ]
+    ).casefold()
     copy_debt = ("adjacent duplicate", "clipped", "repeats noncanonical", "semantically repetitive")
 
     assert not [issue for issue in package_issues if any(term in issue for term in copy_debt)]
+    assert external_source in rendered
     for scope, value in (
         ("project dashboard preview", package.project_dashboard_preview),
         ("prewrite Radar package", package.backlog_result),

@@ -11,6 +11,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality_units import raw_te
 from odylith.runtime.artifact_quality.generated_copy_quality_units import text_quality_units
 from odylith.runtime.common.prose_grammar import action_token_form
 from odylith.runtime.common.prose_grammar import coordinated_action_form_after_connector
+from odylith.runtime.common.prose_tail import has_incomplete_public_tail
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import ACTOR_ROLE_NOUNS
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import gerund_actor_role_finite_action_splice
@@ -408,21 +409,7 @@ def _has_adjacent_duplicate_word(tokens: tuple[_WordToken, ...]) -> bool:
 
 
 def _has_clipped_terminal_public_copy(tokens: tuple[str, ...]) -> bool:
-    if len(tokens) < 5:
-        return False
-    if tokens[-1] in {"remain", "remains"} and any(token in {"what", "which"} for token in tokens[-8:-1]):
-        return False
-    return tokens[-1] in {
-        "include",
-        "includes",
-        "keep",
-        "keeps",
-        "remain",
-        "remains",
-        "return",
-        "returns",
-        "with",
-    }
+    return has_incomplete_public_tail(tokens)
 
 
 def _has_awkward_visible_result_action(tokens: tuple[_WordToken, ...]) -> bool:

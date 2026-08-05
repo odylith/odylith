@@ -61,6 +61,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import proof_boundary_with_first_release_requirements
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_rows_from_evidence
 
 _ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
 _NON_HUMAN_ACTOR_TERMS = frozenset(
@@ -379,7 +380,7 @@ def confirmation_from_operator_intent(
         "state_object": state,
         "first_path": first_path.rstrip(".") + ".",
         "human_actors": tuple(actor_rows),
-        "external_systems": (),
+        "external_systems": tuple(source_boundary_rows_from_evidence(raw_source)),
         "internal_systems": internal_systems,
         "problem": problem,
         "opportunity": f"Prove the smallest complete {title.lower()} path before broader automation expands.",

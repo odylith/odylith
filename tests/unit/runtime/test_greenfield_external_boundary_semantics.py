@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import intent_hypothesis_from_operator_evidence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import external_boundary_facts
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_rows_from_evidence
 
 
 _FIRST_PATH = (
@@ -71,3 +75,68 @@ def test_confirmed_completion_preserves_external_boundary_into_semantic_model() 
     assert any("Road closure feeds" in row for row in external_rows)
     assert any("medical transport constraints" in row.casefold() for row in completed["ambiguities"])
     assert ontology["external_systems"] == external_rows
+
+
+@pytest.mark.parametrize(
+    ("evidence", "expected"),
+    (
+        ("Room availability is read from the Hall Calendar.", "Hall Calendar"),
+        ("Object codes come from Collection Shelf.", "Collection Shelf"),
+        ("Tide Ledger supplies berth assignments; the product cannot edit it.", "Tide Ledger"),
+        ("Stripe provides the accepted payment status.", "Stripe"),
+        ("Customer Billing System supplies the account balance.", "Customer Billing System"),
+        ('{"path":["scan tag","show due date"],"source":"Tool Shelf Index"}', "Tool Shelf Index"),
+    ),
+)
+def test_source_boundary_rows_preserve_named_sources_across_evidence_shapes(evidence: str, expected: str) -> None:
+    assert expected in source_boundary_rows_from_evidence(evidence)
+
+
+def test_operator_evidence_hypothesis_preserves_named_prompt_source() -> None:
+    evidence = (
+        "Build a room request workspace. A coordinator records one room request and sees the held time. "
+        "Room availability is read from the Hall Calendar."
+    )
+
+    hypothesis = intent_hypothesis_from_operator_evidence(evidence, prefer_product_title=True)
+
+    assert hypothesis["external_systems"] == ("Hall Calendar",)
+
+
+def test_prompt_prose_does_not_override_an_empty_structured_external_boundary() -> None:
+    intent = _intent()
+    intent.update(
+        {
+            "prompt": (
+                "A coordinator records one room request and sees the held time. Room availability is read from "
+                "the Hall Calendar."
+            ),
+            "first_path": "A coordinator records one room request and sees the held time.",
+            "external_systems": [],
+        }
+    )
+
+    completed = complete_confirmed_intent(intent)
+
+    assert completed["external_systems"] == []
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        "Perch Note returns a shift summary.",
+        "The product provides a daily summary.",
+        "The service supplies a daily summary.",
+        "The system provides a daily summary.",
+        "Requirements come from customer interviews.",
+        '{"dependencies":["barcode scanner","wifi"]}',
+    ),
+)
+def test_source_boundary_rows_reject_false_external_dependencies(evidence: str) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == []
+
+
+def test_source_boundary_rows_trim_trailing_product_action() -> None:
+    evidence = "Room availability is read from Hall Calendar and shown to the coordinator."
+
+    assert source_boundary_rows_from_evidence(evidence) == ["Hall Calendar"]
