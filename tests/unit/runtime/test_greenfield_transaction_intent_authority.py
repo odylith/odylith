@@ -315,7 +315,9 @@ def test_prompt_only_materialization_preserves_concrete_first_path_claim_custody
     require_product_intent_authority(authority)
     first_path = authority["material_fields"]["first_path"]
     assert first_path["custody_state"] == "accepted_fact"
-    assert first_path["product_claim_span_ids"] == ["first_path:1"]
+    assert first_path["product_claim_span_ids"]
+    assert first_path["source_span_ids"] == first_path["product_claim_span_ids"]
+    assert all(ref["classification"] == "product_claim" for ref in first_path["source_span_refs"])
 
 
 def test_prompt_materialization_persists_operational_constraints_through_preview_round_trip(
@@ -467,7 +469,7 @@ One authorized request produces an export package or blocked decision with its a
     ),
 )
 def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_path: Path, prompt: str) -> None:
-    with pytest.raises(ValueError, match="first complete task the product should help a person finish"):
+    with pytest.raises(GreenfieldClarificationRequired) as error:
         materialize_prompt_intent_hypothesis(
             prompt=prompt,
             repo_root=tmp_path,
@@ -480,6 +482,9 @@ def test_thin_prompt_asks_one_first_path_question_without_staging_artifacts(tmp_
             ),
         )
 
+    assert error.value.question.count("?") == 1
+    assert "complete task" in error.value.question.casefold()
+    assert error.value.required_fields in {("first_path",), ("human_actors", "first_path")}
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
 
@@ -941,7 +946,7 @@ def test_plain_language_edit_rebuilds_the_typed_candidate_without_a_schema_promp
     )
 
     assert edited["first_path"] == (
-        "Shelter coordinators can complete the first placement handoff, then register displaced residents, match "
+        "Shelter coordinators can complete the first placement handoff, then register displaced residents; then match "
         "household needs to shelter capacity; then preserve consent evidence; then publish a daily placement readiness result."
     )
     assert edited["human_actors"] == [

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.install.fs import atomic_write_text
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -864,11 +865,28 @@ def _baseline_first_path_actions(baseline: Mapping[str, Any]) -> list[str]:
     first_path = str(baseline.get("first_path") or "").strip()
     if not first_path:
         return []
+    actor = _baseline_actor_label(baseline)
     return [
         action
         for step in split_action_pieces(first_path)
-        if (action := action_chain_fragment(step))
+        if (action := _baseline_step_action(step, actor=actor))
     ]
+
+
+def _baseline_step_action(value: str, *, actor: str) -> str:
+    text = str(value or "").strip(" .")
+    if actor:
+        actor_action = re.match(
+            rf"^(?:a|an|the)?\s*{re.escape(actor)}\s+"
+            r"(?:(?:can|could|may|might|must|should|will|would)\s+)?(?P<action>.+)$",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if actor_action:
+            action = base_action_clause(actor_action.group("action")).strip(" .")
+            if action and MATERIAL_ACTION_RE.match(action):
+                return action
+    return action_chain_fragment(text)
 
 
 def _baseline_actor_label(baseline: Mapping[str, Any]) -> str:
