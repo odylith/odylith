@@ -51,6 +51,19 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-06: Bound accepted Greenfield facts to atom-level evidence custody before confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-323`; Diagram: D-043)
+  Product Intent authority v4 seals atomic actors, actions, states, outputs,
+  constraints, dependencies, assumptions, ambiguities, and non-goals with
+  polarity, exact source references, canonical projection links, and an
+  aggregate hash. Runtime validation recomputes those bindings, while release
+  scoring independently reconstructs scored evidence and rejects forged source
+  or projection custody. Transaction evidence also recomputes the complete
+  transaction body hash. Verified legacy envelopes rebuild before confirmation;
+  hash-bound stale authorities require a new proposal. This checkpoint proves
+  custody integrity, not final semantic quality: canonical extraction repair,
+  retired-corpus replay, rebuilt distribution, and fresh holdout proof remain
+  open.
+
 - 2026-08-04: Preserved named external-source custody and complete compact copy before Greenfield confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-255`, `CB-258`, `CB-303`; Diagram: D-043)
   Operator-evidence hypotheses now retain explicit named source relations before
   prompt compaction, while later typed normalization does not let raw prompt

@@ -2652,6 +2652,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   a newly authored blind holdout. Do not tune production behavior to the retired
   domains or weaken the release floors.
 
+- 2026-08-06 atomic-custody checkpoint implemented the first bounded repair for
+  CB-323. The Product Intent authority now seals atom-level actors, actions,
+  states, outputs, constraints, dependencies, assumptions, ambiguities, and
+  non-goals with polarity, exact source references, canonical projection links,
+  and an aggregate hash. Runtime validation recomputes atom identity,
+  projection values, source hashes, polarity, and ordered entailment. The
+  release scorer independently reconstructs evidence units and rejects forged
+  custody; the matrix receipt independently recomputes the transaction body
+  hash; and verified v3 envelopes migrate only before confirmation. The scorer
+  also excludes Research Notes and source-metadata clauses from independent
+  accepted-fact proof. Focused source proof passes 111 tests with the
+  pre-existing clarification-expectation family explicitly excluded. This is
+  not semantic-quality closure: retired
+  corpus diagnosis still finds prompt-to-canonical-intent loss in 13 of 14
+  commit cases, so the next bounded slice must repair domain-neutral action,
+  constraint, dependency, actor, and state extraction before replay, dist, and
+  fresh holdout proof.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

@@ -1,6 +1,6 @@
 - Bug ID: CB-323
 
-- Status: Open
+- Status: InProgress
 
 - Created: 2026-08-06
 
@@ -38,13 +38,13 @@
 
 - Invariant Violated: Every accepted material fact must carry a valid source span, semantic entailment, polarity, custody state, and projection trace before confirmation
 
-- Root Cause: Field-level material custody covers only product_story, state_object, first_path, proof_boundary, and human_actors; atomic categories have no sealed provenance ledger, while the scorer requires accepted_fact custody per atom
+- Root Cause: Field-level material custody covers only product_story, state_object, first_path, proof_boundary, and human_actors; atomic categories had no sealed provenance ledger. The release scorer also trusted transaction-provided custody structure without independently rebinding projection paths, source hashes, and entailment to the scored evidence.
 
 - Solution: Seal one domain-neutral atomic fact ledger with category, polarity, normalized value, source-span IDs, custody, and projection links; score the same ledger and preserve bounded_interpretation only for actual inference
 
 - Rollback/Forward Fix: Forward fix only; no post-confirm semantic repair and no weakening of custody floors
 
-- Verification: Replay the retired 24-case corpus with 100 percent directly entailed atomic custody, critical-constraint and explicit-system recall; then run a fresh blind holdout against a rebuilt exact dist
+- Verification: The source-local atom ledger, current and legacy envelope migration, authority sealing, scorer-forgery rejection, supporting-evidence exclusion, and transaction-body tamper tests pass in a focused 111-test suite with 13 independently documented legacy expectation cases deselected. A broader run reached 177 passes before seven stale clarification assertions failed; the same targeted family failed 7 of 8 at untouched commit 8be346928, proving it predates this slice. Retired-corpus diagnosis still exposes canonical extraction loss in 13 of 14 commit cases, so CB-323 remains P0 and in progress until extraction is repaired, the retired corpus passes the release floors, and a fresh blind holdout passes against a rebuilt exact dist.
 
 - Prevention: Exercise real production semantic snapshots in scorer tests and reject 0-of-0 or synthetic accepted-fact fixtures as release proof
 
@@ -66,4 +66,7 @@
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_sealed_product_intent_authority.py
 - src/odylith/runtime/domain_intelligence/greenfield_product_intent_envelope.py
+- src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
+- scripts/release/greenfield_matrix_transaction_evidence.py
 - scripts/release/greenfield_semantic_release_score.py

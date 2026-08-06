@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
 import sys
+
+import pytest
 
 from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
 
@@ -15,6 +18,8 @@ from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_types import GreenfieldQualityVerdict
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_evidence
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 
 
 FLOORS = {
@@ -27,6 +32,7 @@ FLOORS = {
     "overall_case_success": 0.95,
     "worst_slice_success": 0.8,
 }
+PROMPT = "Operator submits one signed permit to the Registry API and reviews the accepted permit receipt."
 
 
 def test_semantic_release_passes_grounded_commit_and_material_clarification() -> None:
@@ -86,9 +92,8 @@ def test_semantic_release_does_not_pass_required_zero_of_zero_metric() -> None:
 
 def test_semantic_release_rejects_right_words_in_the_wrong_field() -> None:
     case = _case("wrong-field", expectation="transaction_committed", input_style="direct_request")
-    result = _commit_result(case, external_systems=[])
+    result = _commit_result(case, external_systems=[], registry_as_assumption=True)
     snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
-    snapshot["facts"]["assumptions"] = ["Registry API"]
     snapshot["material_custody"]["assumptions"] = {
         "custody_state": "accepted_fact",
         "entailment_relationship": "direct_product_claim",
@@ -104,6 +109,126 @@ def test_semantic_release_rejects_right_words_in_the_wrong_field() -> None:
     assert report["passed"] is False
     assert report["p0_findings"] == [
         {"case_id": "wrong-field", "category": "explicit_system_missing"}
+    ]
+    assert report["metrics"]["accepted_fact_custody"]["numerator"] == 4
+    assert report["metrics"]["accepted_fact_custody"]["denominator"] == 5
+
+
+def test_semantic_release_does_not_treat_field_custody_as_atomic_proof() -> None:
+    case = _case("field-only", expectation="transaction_committed", input_style="direct_request")
+    result = _commit_result(case)
+    result.evidence["preconfirm_dry_run"]["semantic_snapshot"]["atomic_facts"] = []
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={"field-only": _commit_annotation()},
+        results=(result,),
+        floors=FLOORS,
+    )
+
+    assert report["passed"] is False
+    assert report["metrics"]["accepted_fact_custody"]["rate"] == 0.0
+    assert report["p0_findings"] == [
+        {"case_id": "field-only", "category": "atomic_custody_invalid"}
+    ]
+
+
+@pytest.mark.parametrize("damage", ("projection", "source_ref"))
+def test_semantic_release_rejects_hash_matched_forged_atomic_custody(damage: str) -> None:
+    case = _case("forged-atomic", expectation="transaction_committed", input_style="direct_request")
+    result = _commit_result(case)
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    atoms = snapshot["atomic_facts"]
+    index = next(index for index, atom in enumerate(atoms) if "dependencies" in atom["categories"])
+    atom = atoms[index]
+    if damage == "projection":
+        atoms[index] = {
+            **atom,
+            "projection_links": [
+                {
+                    **atom["projection_links"][0],
+                    "path": "/external_systems/999",
+                    "value_sha256": "0" * 64,
+                }
+            ],
+        }
+    else:
+        atoms[index] = {
+            **atom,
+            "source_span_refs": [{**atom["source_span_refs"][0], "text_sha256": "0" * 64}],
+        }
+    snapshot["atomic_custody_sha256"] = atomic_fact_ledger_hash(atoms)
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={"forged-atomic": _commit_annotation()},
+        results=(result,),
+        floors=FLOORS,
+    )
+
+    assert report["passed"] is False
+    assert report["p0_findings"] == [
+        {"case_id": "forged-atomic", "category": "atomic_custody_invalid"}
+    ]
+
+
+@pytest.mark.parametrize(
+    "supporting_evidence",
+    (
+        "## Research Notes\nArchive API supports long-term storage.",
+        "Source evidence: Archive API supports long-term storage.",
+    ),
+)
+def test_semantic_release_rejects_forged_custody_from_supporting_evidence(
+    supporting_evidence: str,
+) -> None:
+    prompt = f"{PROMPT}\n\n{supporting_evidence}"
+    case = replace(
+        _case("supporting-forgery", expectation="transaction_committed", input_style="direct_request"),
+        prompt=prompt,
+    )
+    result = _commit_result(case, external_systems=["Archive API - optional research integration."])
+    snapshot = result.evidence["preconfirm_dry_run"]["semantic_snapshot"]
+    atoms = snapshot["atomic_facts"]
+    index = next(index for index, atom in enumerate(atoms) if atom["normalized_value"] == "Archive API")
+    atom = atoms[index]
+    supporting_text = "Archive API supports long-term storage"
+    atoms[index] = {
+        **atom,
+        "custody_state": "accepted_fact",
+        "entailment_relationship": "ordered_source_entailment",
+        "source_span_ids": ["forged:supporting"],
+        "source_span_refs": [
+            {
+                "span_id": "forged:supporting",
+                "classification": "supporting_evidence",
+                "text_sha256": hashlib.sha256(supporting_text.encode("utf-8")).hexdigest(),
+            }
+        ],
+    }
+    snapshot["atomic_custody_sha256"] = atomic_fact_ledger_hash(atoms)
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={
+            "supporting-forgery": {
+                **_commit_annotation(),
+                "dependencies": [
+                    {
+                        "value": "Archive API",
+                        "expected_custody": "accepted_fact",
+                    }
+                ],
+                "explicit_systems": ["Archive API"],
+            }
+        },
+        results=(result,),
+        floors=FLOORS,
+    )
+
+    assert report["passed"] is False
+    assert report["p0_findings"] == [
+        {"case_id": "supporting-forgery", "category": "atomic_custody_invalid"}
     ]
 
 
@@ -166,7 +291,7 @@ def _case(case_id: str, *, expectation: str, input_style: str) -> GreenfieldMatr
     return GreenfieldMatrixCase(
         case_id=case_id,
         name=case_id,
-        prompt="Operator submits one signed permit to the Registry API and reviews the accepted permit receipt.",
+        prompt=PROMPT,
         required_terms=("permit",),
         expectation=expectation,
         input_style=input_style,
@@ -225,15 +350,18 @@ def _commit_result(
     case: GreenfieldMatrixCase,
     *,
     external_systems: list[str] | None = None,
+    registry_as_assumption: bool = False,
 ) -> GreenfieldMatrixResult:
     facts = {
         "product_story": "Permit Review helps an operator review one accepted permit.",
-        "state_object": "A permit record tracks the signed permit and accepted state.",
-        "first_path": "An operator submits one signed permit and reviews the permit receipt.",
+        "state_object": "The primary state object is an accepted permit.",
+        "first_path": PROMPT,
         "proof_boundary": "The first release proves one signed accepted permit.",
         "human_actors": ["Operator: submits and reviews the permit."],
         "external_systems": ["Registry API: accepts the signed permit."] if external_systems is None else external_systems,
     }
+    if registry_as_assumption:
+        facts["assumptions"] = ["Registry API"]
     custody = {
         key: {"custody_state": "accepted_fact", "entailment_relationship": "direct_product_claim"}
         for key in (
@@ -245,6 +373,13 @@ def _commit_result(
             "external_systems",
         )
     }
+    envelope = build_product_intent_envelope(
+        facts,
+        source_text=f"# Operator prompt evidence\n\n{case.prompt}",
+        source_path="operator-prompt.txt",
+        source_format="operator_prompt",
+    )
+    atomic_facts = envelope["custody_ledger"]["atomic_facts"]
     return GreenfieldMatrixResult(
         name=case.name,
         status="passed",
@@ -254,7 +389,12 @@ def _commit_result(
         evidence={
             "case": case_evidence(case),
             "preconfirm_dry_run": {
-                "semantic_snapshot": {"facts": facts, "material_custody": custody},
+                "semantic_snapshot": {
+                    "facts": facts,
+                    "material_custody": custody,
+                    "atomic_facts": atomic_facts,
+                    "atomic_custody_sha256": atomic_fact_ledger_hash(atomic_facts),
+                },
             },
         },
     )

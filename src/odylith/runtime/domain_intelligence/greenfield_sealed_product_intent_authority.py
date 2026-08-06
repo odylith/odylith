@@ -8,15 +8,24 @@ import hmac
 import json
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    ATOMIC_FACT_LEDGER_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    atomic_fact_ledger_hash,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    require_atomic_fact_ledger,
+)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     require_supported_greenfield_operating_envelope,
 )
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v3"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v3"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v2"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v4"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v4"
+PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v3"
 MATERIAL_FACT_KEYS = (
     "product_story",
     "state_object",
@@ -69,16 +78,26 @@ def require_product_intent_authority_structure(authority: Mapping[str, Any]) -> 
     if not isinstance(material_fields, Mapping):
         raise ValueError("ProductCreateTransaction sealed Product Intent authority is malformed")
     _require_material_custody(authority, material_fields)
+    atomic_facts = authority.get("atomic_facts")
+    require_atomic_fact_ledger(atomic_facts)
 
     expected_material_custody_sha256 = product_intent_material_custody_hash(material_fields)
     if not _matches_sha256(authority.get("material_custody_sha256"), expected_material_custody_sha256):
         raise ValueError("ProductCreateTransaction sealed Product Intent authority custody hash mismatch")
+    expected_atomic_custody_sha256 = atomic_fact_ledger_hash(atomic_facts)
+    if not _matches_sha256(authority.get("atomic_custody_sha256"), expected_atomic_custody_sha256):
+        raise ValueError("ProductCreateTransaction sealed Product Intent authority atomic custody hash mismatch")
     expected_snapshot_sha256 = product_intent_authority_snapshot_hash(authority)
     if not _matches_sha256(authority.get("authority_snapshot_sha256"), expected_snapshot_sha256):
         raise ValueError("ProductCreateTransaction sealed Product Intent authority snapshot hash mismatch")
 
 
 def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
+    if authority.get("version") != PRODUCT_INTENT_AUTHORITY_VERSION:
+        raise ValueError(
+            "ProductCreateTransaction sealed Product Intent authority uses an unsupported version; "
+            "rebuild the proposal before confirmation"
+        )
     expected = {
         "version": PRODUCT_INTENT_AUTHORITY_VERSION,
         "origin": "verified_typed_envelope",
@@ -89,6 +108,8 @@ def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
         "markdown_authority": "ingest_only",
     }
     if any(authority.get(key) != value for key, value in expected.items()):
+        raise ValueError("ProductCreateTransaction sealed Product Intent authority is invalid")
+    if authority.get("atomic_ledger_version") != ATOMIC_FACT_LEDGER_VERSION:
         raise ValueError("ProductCreateTransaction sealed Product Intent authority is invalid")
     for key in (
         "structured_intent_path",
@@ -162,6 +183,9 @@ def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:
         "operating_envelope": authority.get("operating_envelope"),
         "material_fields": authority.get("material_fields"),
         "material_custody_sha256": authority.get("material_custody_sha256"),
+        "atomic_ledger_version": authority.get("atomic_ledger_version"),
+        "atomic_facts": authority.get("atomic_facts"),
+        "atomic_custody_sha256": authority.get("atomic_custody_sha256"),
     }
 
 

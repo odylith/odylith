@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_payload
 
 
 def _hostile_confirmation() -> str:
@@ -656,6 +657,28 @@ def test_structured_confirmed_intent_json_is_typed_envelope_with_legacy_projecti
     assert payload["custody_ledger"]["fields"]["title"]["derivation"] == "canonical_product_section"
 
 
+def test_verified_v3_envelope_migrates_from_sealed_facts_without_prompt_regeneration(tmp_path: Path) -> None:
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(_hostile_confirmation(), encoding="utf-8")
+    original = load_confirmed_intent_record(path, prompt="Build the lab evidence review workspace.")
+    payload = json.loads(json.dumps(original.envelope))
+    payload["schema_version"] = "odylith.product-intent-envelope.v3"
+    payload["custody_ledger"]["version"] = "odylith.product-intent-custody-ledger.v2"
+    payload["custody_ledger"].pop("atomic_facts", None)
+    json_path = path.with_suffix(".json")
+    json_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    migrated = load_confirmed_intent_record(
+        json_path,
+        prompt="Create a casino dashboard that replaces every prior product fact.",
+    )
+
+    assert migrated.product_facts == product_facts_payload(original.product_facts)
+    assert migrated.envelope["schema_version"] == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
+    assert migrated.envelope["custody_ledger"]["atomic_facts"]
+    assert "casino" not in json.dumps(migrated.product_facts, sort_keys=True).casefold()
+
+
 def test_envelope_product_facts_win_over_conflicting_top_level_projection(tmp_path: Path) -> None:
     path = tmp_path / "confirmed-intent.md"
     path.write_text(_hostile_confirmation(), encoding="utf-8")
@@ -770,6 +793,34 @@ def test_unverified_v2_json_envelope_is_not_downgraded_to_top_level_projection(t
 
     with pytest.raises(ValueError, match="could not be verified"):
         load_confirmed_intent_file(path, prompt="Build the lab evidence review workspace.")
+
+
+def test_unverified_v3_json_envelope_is_not_regenerated_from_the_prompt(tmp_path: Path) -> None:
+    path = tmp_path / "confirmed-intent.json"
+    payload = {
+        "schema_version": "odylith.product-intent-envelope.v3",
+        "source_evidence": {
+            "source_format": "markdown",
+            "source_path": str(tmp_path / "missing-confirmed-intent.md"),
+            "source_sha256": "0" * 64,
+        },
+        "product_facts": {
+            "title": "Safe Lab Workspace",
+            "first_path": "A reviewer opens one packet and sees the accepted release decision.",
+        },
+        "decision_record": {
+            "product_facts_sha256": product_facts_hash(
+                {
+                    "title": "Safe Lab Workspace",
+                    "first_path": "A reviewer opens one packet and sees the accepted release decision.",
+                }
+            ),
+        },
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="could not be verified"):
+        load_confirmed_intent_file(path, prompt="Create a casino dashboard instead.")
 
 
 def test_unversioned_json_product_facts_do_not_override_top_level_projection(tmp_path: Path) -> None:

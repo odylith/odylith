@@ -38,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_snapshot_hash,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from tests.unit.runtime.greenfield_proposal_fixtures import compiled_greenfield_package_fixture
 
@@ -137,7 +138,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v3"
+    assert persisted["version"] == "odylith.product-intent-authority.v4"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -149,6 +150,9 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     assert persisted["source_format"] == "markdown"
     assert persisted["materiality_status"] == "passed"
     assert persisted["material_custody_sha256"]
+    assert persisted["atomic_ledger_version"] == "odylith.product-intent-atomic-facts.v1"
+    assert persisted["atomic_facts"]
+    assert persisted["atomic_custody_sha256"] == atomic_fact_ledger_hash(persisted["atomic_facts"])
     assert persisted["operating_envelope"]["status"] == "supported"
     assert persisted["authority_snapshot_sha256"] == product_intent_authority_snapshot_hash(persisted)
     assert persisted["material_fields"]["first_path"]["custody_state"] == "accepted_fact"
@@ -166,6 +170,14 @@ def test_product_create_transaction_rejects_missing_intent_authority_payload(tmp
 
     with pytest.raises(ValueError, match="Product Intent authority"):
         product_create_transaction_from_dict(payload)
+
+
+def test_product_create_transaction_rejects_v3_authority_with_rebuild_instruction(tmp_path: Path) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    legacy = {**authority, "version": "odylith.product-intent-authority.v3"}
+
+    with pytest.raises(ValueError, match="unsupported version; rebuild the proposal before confirmation"):
+        _transaction(tmp_path, authority=legacy)
 
 
 def test_product_create_transaction_rejects_blocked_materiality_authority(tmp_path: Path) -> None:
@@ -199,6 +211,20 @@ def test_product_create_transaction_rejects_inferred_material_custody(tmp_path: 
     mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
 
     with pytest.raises(ValueError, match="unresolved material custody"):
+        _transaction(tmp_path, authority=mutated)
+
+
+def test_product_create_transaction_rejects_tampered_atomic_fact_custody(tmp_path: Path) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    atomic_facts = [dict(row) for row in authority["atomic_facts"]]
+    atomic_facts[0] = {**atomic_facts[0], "normalized_value": "unbound replacement claim"}
+    mutated = {
+        **authority,
+        "atomic_facts": atomic_facts,
+    }
+    mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
+
+    with pytest.raises(ValueError, match="invalid atom id"):
         _transaction(tmp_path, authority=mutated)
 
 

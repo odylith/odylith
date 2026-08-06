@@ -102,7 +102,16 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     build_product_intent_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    is_legacy_product_intent_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     is_product_intent_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_from_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    product_facts_from_legacy_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_hash,
@@ -213,12 +222,18 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
         verified_markdown = _verified_markdown_source_for_json(source, payload)
         if verified_markdown:
             markdown_path, markdown_text = verified_markdown
-            intent = parse_confirmed_intent_text(
-                markdown_text,
-                prompt=prompt,
-                fallback_title=fallback_title,
-                _allow_prompt_validation_recovery=False,
+            intent = (
+                product_facts_from_envelope(payload, source_text=markdown_text)
+                if is_product_intent_envelope(payload)
+                else product_facts_from_legacy_envelope(payload, source_text=markdown_text)
             )
+            if intent is None:
+                intent = parse_confirmed_intent_text(
+                    markdown_text,
+                    prompt="",
+                    fallback_title=fallback_title,
+                    _allow_prompt_validation_recovery=False,
+                )
             envelope = build_product_intent_envelope(
                 intent,
                 source_text=markdown_text,
@@ -226,7 +241,7 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
                 source_format="markdown",
             )
             return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
-        if is_product_intent_envelope(payload):
+        if is_product_intent_envelope(payload) or is_legacy_product_intent_envelope(payload):
             raise ValueError(
                 "confirmed intent JSON envelope could not be verified against its recorded Markdown source"
             )
@@ -443,7 +458,10 @@ def _is_preconfirm_staging_path(source: Path) -> bool:
 
 
 def _verified_markdown_source_for_json(source: Path, payload: object) -> tuple[Path, str] | None:
-    if not is_product_intent_envelope(payload) or not isinstance(payload, Mapping):
+    if not (
+        isinstance(payload, Mapping)
+        and (is_product_intent_envelope(payload) or is_legacy_product_intent_envelope(payload))
+    ):
         return None
     evidence = payload.get("source_evidence")
     if not isinstance(evidence, Mapping):

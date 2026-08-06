@@ -4,8 +4,13 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
+import hashlib
 import re
 from typing import Any
+
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import ATOMIC_CATEGORY_FIELDS
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import require_atomic_fact_ledger
 
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_types import GreenfieldMatrixResult
@@ -43,17 +48,41 @@ _STOPWORDS = frozenset(
     }
 )
 _VALID_MATERIAL_CUSTODY = frozenset({"accepted_fact", "bounded_interpretation"})
-_CATEGORY_FACT_FIELDS = {
-    "actors": ("human_actors", "customer"),
-    "actions": ("first_path", "component_responsibilities"),
-    "states": ("state_object", "first_path"),
-    "outputs": ("first_path", "success_metrics", "proof_boundary", "product_story"),
-    "constraints": ("operational_constraints", "proof_boundary", "non_goals"),
-    "dependencies": ("external_systems", "internal_systems", "component_responsibilities"),
-    "assumptions": ("assumptions",),
-    "ambiguities": ("ambiguities",),
-    "non_goals": ("non_goals",),
-}
+_INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS = frozenset(
+    {
+        "ambiguities",
+        "assumptions",
+        "component responsibilities",
+        "customer",
+        "external systems",
+        "first complete path",
+        "first path",
+        "human actors",
+        "internal product systems",
+        "internal systems",
+        "non goals",
+        "non-goals",
+        "open questions",
+        "operational constraints",
+        "operator edit evidence",
+        "operator prompt evidence",
+        "opportunity",
+        "problem",
+        "product name",
+        "product story",
+        "product view",
+        "proof boundary",
+        "state",
+        "state object",
+        "success metrics",
+        "title",
+    }
+)
+_SOURCE_METADATA_LABEL_RE = re.compile(
+    r"\b(?:source\s+evidence|source\s+repository|repository\s+description)\s*(?::|-)\s*",
+    flags=re.IGNORECASE,
+)
+_SOURCE_METADATA_BOUNDARY_PUNCTUATION = (".", "!", "?", "-", ";", ":", ",")
 
 
 def evaluate_semantic_release(
@@ -253,15 +282,20 @@ def _score_case(
         metric_counts["unnecessary_question_rate"][1] += 1
         if observed == "clarify":
             metric_counts["unnecessary_question_rate"][0] += 1
-        _score_commit_semantics(
-            case_id=case_id,
-            annotation=annotation,
-            snapshot=snapshot,
-            facts=facts,
-            metric_counts=metric_counts,
-            failed_dimensions=failed_dimensions,
-            p0=p0,
-        )
+        if snapshot:
+            _score_commit_semantics(
+                case_id=case_id,
+                annotation=annotation,
+                snapshot=snapshot,
+                facts=facts,
+                prompt_text=str(getattr(case, "prompt", "") or "").strip(),
+                confirmed_intent_markdown=str(
+                    getattr(case, "confirmed_intent_markdown", "") or ""
+                ).strip(),
+                metric_counts=metric_counts,
+                failed_dimensions=failed_dimensions,
+                p0=p0,
+            )
     elif expected == "clarify":
         metric_counts["material_question_recall"][1] += 1
         expected_fields = set(_strings(annotation.get("expected_question_fields")))
@@ -288,11 +322,22 @@ def _score_commit_semantics(
     annotation: Mapping[str, Any],
     snapshot: Mapping[str, Any],
     facts: Mapping[str, Any],
+    prompt_text: str,
+    confirmed_intent_markdown: str,
     metric_counts: Mapping[str, list[int]],
     failed_dimensions: list[str],
     p0: list[dict[str, str]],
 ) -> None:
-    material_custody = _mapping(snapshot.get("material_custody"))
+    atomic_facts = _validated_atomic_facts(
+        snapshot,
+        facts=facts,
+        prompt_text=prompt_text,
+        confirmed_intent_markdown=confirmed_intent_markdown,
+    )
+    if atomic_facts is None:
+        atomic_facts = ()
+        failed_dimensions.append("atomic_custody_invalid")
+        p0.append(_p0(case_id, "atomic_custody_invalid"))
     for category in _atomic_categories():
         for item in _items(annotation.get(category)):
             if str(item.get("expected_custody") or "") != "accepted_fact":
@@ -303,7 +348,7 @@ def _score_commit_semantics(
                 value=item.get("value"),
                 expected_custody="accepted_fact",
                 facts=facts,
-                material_custody=material_custody,
+                atomic_facts=atomic_facts,
             ):
                 metric_counts["accepted_fact_custody"][0] += 1
             else:
@@ -547,15 +592,154 @@ def _claim_has_custody(
     value: Any,
     expected_custody: str,
     facts: Mapping[str, Any],
-    material_custody: Mapping[str, Any],
+    atomic_facts: Sequence[Mapping[str, Any]],
 ) -> bool:
-    for field in _CATEGORY_FACT_FIELDS.get(category, ()):
-        if not _claim_recalled(value, _flatten_text(facts.get(field))):
+    allowed_fields = set(ATOMIC_CATEGORY_FIELDS.get(category, ()))
+    for atom in atomic_facts:
+        if category not in _strings(atom.get("categories")):
             continue
-        custody_state = str(_mapping(material_custody.get(field)).get("custody_state") or "")
-        if custody_state == expected_custody and custody_state in _VALID_MATERIAL_CUSTODY:
-            return True
+        custody_state = str(atom.get("custody_state") or "")
+        if custody_state != expected_custody or custody_state not in _VALID_MATERIAL_CUSTODY:
+            continue
+        if not _claim_recalled(value, str(atom.get("normalized_value") or "")):
+            continue
+        for link in _items(atom.get("projection_links")):
+            field = str(link.get("field") or "")
+            if field in allowed_fields and _claim_recalled(value, _flatten_text(facts.get(field))):
+                return True
     return False
+
+
+def _validated_atomic_facts(
+    snapshot: Mapping[str, Any],
+    *,
+    facts: Mapping[str, Any],
+    prompt_text: str,
+    confirmed_intent_markdown: str,
+) -> tuple[Mapping[str, Any], ...] | None:
+    value = snapshot.get("atomic_facts")
+    try:
+        require_atomic_fact_ledger(value, facts=facts)
+    except ValueError:
+        return None
+    rows = _items(value)
+    if str(snapshot.get("atomic_custody_sha256") or "") != atomic_fact_ledger_hash(rows):
+        return None
+    source_units = _independent_source_units(
+        prompt_text=prompt_text,
+        confirmed_intent_markdown=confirmed_intent_markdown,
+    )
+    source_by_hash = {
+        _sha256_text(unit): unit
+        for unit in source_units
+    }
+    for atom in rows:
+        if atom.get("custody_state") != "accepted_fact":
+            continue
+        claim = str(atom.get("normalized_value") or "")
+        refs = _items(atom.get("source_span_refs"))
+        if not refs or not any(
+            (source := source_by_hash.get(str(ref.get("text_sha256") or ""))) is not None
+            and _ordered_source_entailment(source=source, claim=claim)
+            for ref in refs
+        ):
+            return None
+    return rows
+
+
+def _independent_source_units(
+    *,
+    prompt_text: str,
+    confirmed_intent_markdown: str,
+) -> tuple[str, ...]:
+    texts = (
+        _independent_product_evidence_text(prompt_text),
+        _independent_product_evidence_text(confirmed_intent_markdown),
+    )
+    units: list[str] = []
+    for text in texts:
+        for line in text.splitlines():
+            cleaned_line = " ".join(line.strip().split()).strip()
+            if not cleaned_line or cleaned_line.startswith(("```", "<!--")):
+                continue
+            units.append(cleaned_line)
+            for sentence in re.split(r"(?<=[.!?])\s+|;\s*", cleaned_line):
+                sentence = sentence.strip(" .;:")
+                if not sentence:
+                    continue
+                units.append(sentence)
+                units.extend(
+                    clause
+                    for row in re.split(r"[,:]\s*", sentence)
+                    if (clause := " ".join(row.strip().split()).strip(" .;:"))
+                )
+    return tuple(dict.fromkeys(units))
+
+
+def _independent_product_evidence_text(value: str) -> str:
+    rows: list[str] = []
+    source = str(value or "")
+    has_markdown_heading = any(_independent_heading_key(row) for row in source.splitlines())
+    collecting = not has_markdown_heading
+    for row in source.splitlines():
+        heading = _independent_heading_key(row)
+        if heading:
+            collecting = heading in _INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS
+            continue
+        if collecting:
+            rows.append(row)
+    text = "\n".join(rows).strip()
+    for label in _SOURCE_METADATA_LABEL_RE.finditer(text):
+        prefix = text[: label.start()]
+        if not prefix or prefix.rstrip().endswith(_SOURCE_METADATA_BOUNDARY_PUNCTUATION):
+            return prefix.rstrip(" \t-;:,")
+    return text
+
+
+def _independent_heading_key(value: str) -> str:
+    match = re.match(r"^\s{0,3}#{1,6}\s+(?P<label>.+?)\s*$", str(value or ""))
+    if not match:
+        return ""
+    return " ".join(match.group("label").strip().rstrip(":").casefold().split())
+
+
+def _ordered_source_entailment(*, source: str, claim: str) -> bool:
+    source_tokens = _semantic_sequence(source)
+    claim_tokens = _semantic_sequence(claim)
+    if not claim_tokens or len(claim_tokens) > len(source_tokens):
+        return False
+    size = len(claim_tokens)
+    return any(source_tokens[index : index + size] == claim_tokens for index in range(len(source_tokens) - size + 1))
+
+
+def _semantic_sequence(value: Any) -> tuple[str, ...]:
+    return tuple(
+        _stem_token(token)
+        for token in _TOKEN_RE.findall(str(value or "").casefold())
+        if token not in _STOPWORDS
+    )
+
+
+def _stem_token(value: str) -> str:
+    if len(value) > 5 and value.endswith("ies"):
+        return value[:-3] + "y"
+    if len(value) > 5 and value.endswith("ing"):
+        stem = value[:-3]
+        return stem[:-1] if len(stem) > 3 and stem[-1:] == stem[-2:-1] else stem
+    if len(value) > 4 and value.endswith("ed"):
+        stem = value[:-2]
+        return stem[:-1] if len(stem) > 3 and stem[-1:] == stem[-2:-1] else stem
+    if len(value) > 4 and value.endswith("es") and value[:-2].endswith(("ch", "o", "s", "sh", "x", "z")):
+        value = value[:-2]
+    elif len(value) > 3 and value.endswith("s") and not value.endswith("ss"):
+        value = value[:-1]
+    if len(value) > 5 and value.endswith("e"):
+        return value[:-1]
+    return value
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def _claim_recalled(expected: Any, observed: str) -> bool:

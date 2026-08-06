@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-08-02
+Updated: 2026-08-06
 
 Backlog: B-142
 
@@ -170,6 +170,30 @@ above.
   transactions with visible CONFIRM, EDIT, and REJECT; the semiconductor replay
   retained all five source responsibilities and passed both pre-confirm quality
   and validation.
+
+## Atomic Custody Checkpoint (2026-08-06)
+
+- The sealed Product Intent authority now carries an atom-level evidence ledger
+  for actors, actions, states, outputs, constraints, dependencies, assumptions,
+  ambiguities, and non-goals. Each atom binds polarity and normalized value to
+  exact eligible evidence spans and canonical projection paths; runtime
+  validation recomputes those bindings before authority use.
+- Release scoring does not trust the runtime ledger by itself. It independently
+  reconstructs source units from the scored prompt and confirmed intent,
+  verifies projection values and the aggregate ledger hash, and assigns a P0
+  when accepted custody cannot be reproduced. Matrix dry-run evidence likewise
+  recomputes the complete transaction body hash instead of trusting a locally
+  rewritten transaction and sidecar pair.
+- Current and verified legacy envelopes rebuild the v4 authority before
+  confirmation. A stale v3 authority already bound into a pending transaction
+  is rejected with a rebuild instruction rather than being silently migrated
+  after the operator reviewed its hash.
+- Focused proof passes 111 tests with 13 cases from one pre-existing
+  clarification-expectation family explicitly excluded. Retired-corpus
+  diagnosis remains red: canonical prompt materialization loses at least one
+  required term in 13 of 14 commit cases. The next phase repairs that upstream
+  meaning loss; it must not weaken atom custody or teach the scorer to accept
+  generated adjacency as evidence.
 
 ## Related Bugs
 

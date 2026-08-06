@@ -25,9 +25,9 @@ TRANSACTION_FILE = f".odylith/runtime/greenfield/pending/{HASH}/product-create-t
 
 
 def test_commit_precompiled_transaction_validates_receipt_before_invoking_create(tmp_path: Path) -> None:
-    _write_transaction(tmp_path, transaction_hash=HASH)
+    _transaction_path, transaction_hash = _write_transaction(tmp_path)
     calls: list[tuple[str, ...]] = []
-    proposed = _proposal(HASH)
+    proposed = _proposal(transaction_hash)
 
     execution = commit_precompiled_transaction(
         repo_root=tmp_path,
@@ -37,21 +37,23 @@ def test_commit_precompiled_transaction_validates_receipt_before_invoking_create
     )
 
     assert execution.dry_run_receipt["status"] == "compiled"
-    assert execution.dry_run_receipt["transaction_hash"] == HASH
+    assert execution.dry_run_receipt["transaction_hash"] == transaction_hash
     assert execution.dry_run_receipt["semantic_snapshot"]["facts"]["first_path"] == (
         "An operator records one decision and reviews the accepted receipt."
     )
+    assert execution.dry_run_receipt["semantic_snapshot"]["atomic_facts"][0]["normalized_value"] == "Operator"
+    assert execution.dry_run_receipt["semantic_snapshot"]["atomic_custody_sha256"] == "d" * 64
     assert len(execution.dry_run_receipt["semantic_snapshot_sha256"]) == 64
     assert calls and calls[0][1:3] == ("greenfield", "create")
 
 
 def test_commit_precompiled_transaction_rejects_mismatched_receipt_without_create(tmp_path: Path) -> None:
-    _write_transaction(tmp_path, transaction_hash=HASH, receipt_hash="b" * 64)
+    _transaction_path, transaction_hash = _write_transaction(tmp_path, receipt_hash="b" * 64)
     calls: list[tuple[str, ...]] = []
 
     execution = commit_precompiled_transaction(
         repo_root=tmp_path,
-        proposed=_proposal(HASH),
+        proposed=_proposal(transaction_hash),
         invoke_create=lambda command: calls.append(tuple(command)),
     )
 
@@ -97,7 +99,7 @@ def test_commit_precompiled_transaction_does_not_invoke_create_without_compiled_
     tmp_path: Path,
     missing: str,
 ) -> None:
-    transaction_path = _write_transaction(tmp_path, transaction_hash=HASH)
+    transaction_path, transaction_hash = _write_transaction(tmp_path)
     target = transaction_path if missing == "transaction" else transaction_path.with_name(
         transaction_path.name + ".compiler-receipt.v1.json"
     )
@@ -106,12 +108,42 @@ def test_commit_precompiled_transaction_does_not_invoke_create_without_compiled_
 
     execution = commit_precompiled_transaction(
         repo_root=tmp_path,
-        proposed=_proposal(HASH),
+        proposed=_proposal(transaction_hash),
         invoke_create=lambda command: calls.append(tuple(command)),
     )
 
     assert execution.create.returncode == 2
     assert "receipt is unavailable" in execution.create.stdout
+    assert not calls
+
+
+def test_commit_precompiled_transaction_rejects_tampered_body_with_matching_local_receipt(tmp_path: Path) -> None:
+    transaction_path, transaction_hash = _write_transaction(tmp_path)
+    transaction = json.loads(transaction_path.read_text(encoding="utf-8"))
+    transaction["proposal"]["intent"]["first_path"] = "A forged path replaces the compiled path."
+    encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
+    transaction_path.write_bytes(encoded)
+    receipt_path = transaction_path.with_name(transaction_path.name + ".compiler-receipt.v1.json")
+    receipt_path.write_text(
+        json.dumps(
+            {
+                "transaction_hash": transaction_hash,
+                "transaction_file_sha256": hashlib.sha256(encoded).hexdigest(),
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    calls: list[tuple[str, ...]] = []
+
+    execution = commit_precompiled_transaction(
+        repo_root=tmp_path,
+        proposed=_proposal(transaction_hash),
+        invoke_create=lambda command: calls.append(tuple(command)),
+    )
+
+    assert execution.create.returncode == 2
+    assert "transaction body does not match" in execution.create.stdout
     assert not calls
 
 
@@ -236,12 +268,10 @@ def _proposal_payload(transaction_hash: str) -> dict[str, object]:
 def _write_transaction(
     repo_root: Path,
     *,
-    transaction_hash: str,
     receipt_hash: str | None = None,
-) -> Path:
+) -> tuple[Path, str]:
     path = repo_root / TRANSACTION_FILE
     transaction = {
-        "transaction_hash": transaction_hash,
         "quality_manifest": {"status": "passed", "validation_status": "passed"},
         "proposal": {
             "intent": {
@@ -255,6 +285,26 @@ def _write_transaction(
         },
         "intent_authority": {
             "product_facts_sha256": "c" * 64,
+            "atomic_custody_sha256": "d" * 64,
+            "atomic_facts": [
+                {
+                    "atom_id": "AF-operator",
+                    "categories": ["actors"],
+                    "normalized_value": "Operator",
+                    "polarity": "affirmed",
+                    "custody_state": "accepted_fact",
+                    "entailment_relationship": "ordered_source_entailment",
+                    "source_span_ids": ["human_actors:1"],
+                    "source_span_refs": [],
+                    "projection_links": [
+                        {
+                            "field": "human_actors",
+                            "path": "/human_actors/0",
+                            "value_sha256": "e" * 64,
+                        }
+                    ],
+                }
+            ],
             "material_fields": {
                 "first_path": {
                     "custody_state": "accepted_fact",
@@ -263,6 +313,10 @@ def _write_transaction(
             },
         },
     }
+    transaction_hash = hashlib.sha256(
+        json.dumps(transaction, ensure_ascii=True, separators=(",", ":"), sort_keys=True).encode("ascii")
+    ).hexdigest()
+    transaction["transaction_hash"] = transaction_hash
     encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(encoded)
@@ -276,4 +330,4 @@ def _write_transaction(
         ),
         encoding="utf-8",
     )
-    return path
+    return path, transaction_hash

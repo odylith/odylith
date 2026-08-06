@@ -10,6 +10,21 @@ from pathlib import Path
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    ATOMIC_FACT_LEDGER_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    append_atomic_source_spans,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    atomic_fact_ledger_hash,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    build_atomic_fact_ledger,
+)
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
+    require_atomic_fact_ledger,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     confirmed_intent_sections,
 )
@@ -66,6 +81,9 @@ from odylith.runtime.domain_intelligence.greenfield_typed_source_spans import (
 
 
 PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
+LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS = frozenset(
+    {"odylith.product-intent-envelope.v3"}
+)
 
 PRODUCT_FACT_KEYS = (
     "title",
@@ -107,13 +125,22 @@ LIST_FACT_KEYS = frozenset(
 
 
 def is_product_intent_envelope(value: object) -> bool:
-    """Return true when a JSON object carries the v2 product-intent envelope."""
+    """Return true when a JSON object carries the current product-intent envelope."""
 
     return isinstance(value, Mapping) and str(value.get("schema_version") or "") == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
 
 
+def is_legacy_product_intent_envelope(value: object) -> bool:
+    """Return true for a supported legacy envelope that requires pre-confirm migration."""
+
+    return bool(
+        isinstance(value, Mapping)
+        and str(value.get("schema_version") or "") in LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS
+    )
+
+
 def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict[str, Any] | None:
-    """Extract canonical product facts from a source-verified v2 envelope."""
+    """Extract canonical product facts from a source-verified envelope."""
 
     if not is_product_intent_envelope(value):
         return None
@@ -131,8 +158,42 @@ def product_facts_from_envelope(value: object, *, source_text: str = "") -> dict
         expected_hash = _envelope_product_facts_hash(value)
         if expected_hash and expected_hash != product_facts_hash(payload):
             return None
+        custody_ledger = value.get("custody_ledger")
+        source_evidence = value.get("source_evidence")
+        if not isinstance(custody_ledger, Mapping) or not isinstance(source_evidence, Mapping):
+            return None
+        source_spans = source_evidence.get("spans")
+        if not isinstance(source_spans, Sequence) or isinstance(source_spans, (str, bytes, bytearray)):
+            return None
+        try:
+            require_atomic_fact_ledger(
+                custody_ledger.get("atomic_facts"),
+                source_spans=source_spans,
+                facts=payload,
+            )
+        except ValueError:
+            return None
         return payload
     return None
+
+
+def product_facts_from_legacy_envelope(value: object, *, source_text: str = "") -> dict[str, Any] | None:
+    """Recover hash-bound legacy facts for a current pre-confirm envelope rebuild."""
+
+    if not is_legacy_product_intent_envelope(value) or not isinstance(value, Mapping) or not source_text:
+        return None
+    expected_source_hash = _envelope_source_hash(value)
+    actual_source_hash = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
+    if not expected_source_hash or expected_source_hash != actual_source_hash:
+        return None
+    facts = value.get("product_facts")
+    if not isinstance(facts, Mapping):
+        return None
+    payload = product_facts_payload(facts)
+    expected_facts_hash = _envelope_product_facts_hash(value)
+    if not expected_facts_hash or expected_facts_hash != product_facts_hash(payload):
+        return None
+    return payload
 
 
 def product_facts_hash(intent: Mapping[str, Any]) -> str:
@@ -223,6 +284,7 @@ def build_product_intent_envelope(
         source_format=source_format,
         typed_source_formats=TYPED_SOURCE_FORMATS,
     )
+    append_atomic_source_spans(spans)
     _add_span_digests(spans)
     evidence_span_ids = _evidence_span_ids(spans)
     fields = _field_custody(
@@ -233,6 +295,7 @@ def build_product_intent_envelope(
         spans=spans,
         source_format=source_format,
     )
+    atomic_facts = build_atomic_fact_ledger(facts=facts, spans=spans)
     ignored = [span for span in spans if span.get("classification") == "ignored_instruction"]
     supporting = [span for span in spans if span.get("classification") == "supporting_evidence"]
     source_sha256 = hashlib.sha256(str(source_text or "").encode("utf-8")).hexdigest() if source_text else ""
@@ -247,6 +310,7 @@ def build_product_intent_envelope(
         "custody_ledger": {
             "version": PRODUCT_INTENT_LEDGER_VERSION,
             "fields": fields,
+            "atomic_facts": atomic_facts,
             "ignored_instructions": ignored,
             "supporting_evidence": supporting,
         },
@@ -280,6 +344,14 @@ def product_intent_authority_from_envelope(
     decision_record = envelope.get("decision_record") if isinstance(envelope.get("decision_record"), Mapping) else {}
     materiality_gate = envelope.get("materiality_gate") if isinstance(envelope.get("materiality_gate"), Mapping) else {}
     fields = custody_ledger.get("fields") if isinstance(custody_ledger.get("fields"), Mapping) else {}
+    atomic_facts = custody_ledger.get("atomic_facts")
+    if not isinstance(atomic_facts, Sequence) or isinstance(atomic_facts, (str, bytes, bytearray)):
+        atomic_facts = []
+    facts = envelope.get("product_facts") if isinstance(envelope.get("product_facts"), Mapping) else {}
+    source_spans = source_evidence.get("spans")
+    if not isinstance(source_spans, Sequence) or isinstance(source_spans, (str, bytes, bytearray)):
+        raise ValueError("confirmed Product Intent atomic source custody is malformed")
+    require_atomic_fact_ledger(atomic_facts, source_spans=source_spans, facts=facts)
     operating_envelope = (
         envelope.get("operating_envelope") if isinstance(envelope.get("operating_envelope"), Mapping) else {}
     )
@@ -315,6 +387,9 @@ def product_intent_authority_from_envelope(
         "operating_envelope": copy.deepcopy(dict(operating_envelope)),
         "material_fields": material_fields,
         "material_custody_sha256": material_custody_sha256,
+        "atomic_ledger_version": ATOMIC_FACT_LEDGER_VERSION,
+        "atomic_facts": copy.deepcopy(list(atomic_facts)),
+        "atomic_custody_sha256": atomic_fact_ledger_hash(atomic_facts),
     }
     authority["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(authority)
     return authority
@@ -771,6 +846,7 @@ def _has_fact_value(value: Any) -> bool:
 
 
 __all__ = [
+    "LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS",
     "PRODUCT_FACT_KEYS",
     "PRODUCT_FACTS_HASH_KEY",
     "PRODUCT_INTENT_AUTHORITY_KEY",
@@ -778,12 +854,14 @@ __all__ = [
     "PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION",
     "PRODUCT_INTENT_LEDGER_VERSION",
     "build_product_intent_envelope",
+    "is_legacy_product_intent_envelope",
     "is_product_intent_envelope",
     "product_intent_authority_from_envelope",
     "product_intent_authority_from_intent",
     "product_intent_authority_from_mapping",
     "product_intent_authority_snapshot_hash",
     "product_facts_from_envelope",
+    "product_facts_from_legacy_envelope",
     "product_facts_payload",
     "rebind_authoritative_product_facts",
     "require_product_intent_authority",

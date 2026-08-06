@@ -272,8 +272,18 @@ def _sealed_dry_run_receipt(
         }
     )
     issues: list[str] = []
-    if str(transaction.get("transaction_hash") or "").strip() != transaction_hash:
+    declared_transaction_hash = str(transaction.get("transaction_hash") or "").strip()
+    body_transaction_hash = _sha256_json(
+        {
+            key: value
+            for key, value in transaction.items()
+            if key != "transaction_hash"
+        }
+    )
+    if declared_transaction_hash != transaction_hash:
         issues.append("transaction file hash does not match the propose response")
+    if declared_transaction_hash != body_transaction_hash:
+        issues.append("transaction body does not match its declared transaction hash")
     if str(compiler_receipt.get("transaction_hash") or "").strip() != transaction_hash:
         issues.append("compiler receipt hash does not match the propose response")
     if str(compiler_receipt.get("transaction_file_sha256") or "").strip() != transaction_file_sha256:
@@ -306,6 +316,7 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
         return {}
     authority = _mapping(transaction.get("intent_authority"))
     material_fields = _mapping(authority.get("material_fields"))
+    atomic_facts = [dict(row) for row in authority.get("atomic_facts", ()) if isinstance(row, Mapping)]
     custody = {
         key: {
             "custody_state": str(_mapping(value).get("custody_state") or "").strip(),
@@ -317,6 +328,8 @@ def _semantic_snapshot(transaction: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "facts": facts,
         "material_custody": custody,
+        "atomic_facts": atomic_facts,
+        "atomic_custody_sha256": str(authority.get("atomic_custody_sha256") or "").strip(),
         "product_facts_sha256": str(authority.get("product_facts_sha256") or "").strip(),
     }
 
