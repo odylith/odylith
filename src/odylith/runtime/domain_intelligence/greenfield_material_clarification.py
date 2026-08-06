@@ -73,6 +73,27 @@ _CHOICE_CHANGES_FIRST_PATH_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _PROOF_RECORD_RE = re.compile(r"\bproof\s+record\b", flags=re.IGNORECASE)
+_EXPLICIT_MISSING_INFORMATION_RE = re.compile(
+    r"\b(?:does\s+not|doesn't|did\s+not)\s+(?:identify|name|specify|state|provide|resolve)\b|"
+    r"\bomits?\b|\bleaves?\b[^.!?]{0,48}\b(?:undefined|unspecified|unresolved)\b",
+    flags=re.IGNORECASE,
+)
+_DECISION_AUTHORITY_RE = re.compile(
+    r"\b(?:who\s+(?:has|holds|may\s+exercise)|who\s+may\s+approve|"
+    r"(?:legal|decision|approval|policy|rule|process)\s+authority|"
+    r"(?:qualification\s+rule|policy|process|decision|approval)\s+owner|approver)\b",
+    flags=re.IGNORECASE,
+)
+_GOVERNING_DECISION_RULE_RE = re.compile(
+    r"\b(?:policy|standard|jurisdiction|protocol|rule|legal\s+basis|"
+    r"appeal\s+(?:route|process|path))\b",
+    flags=re.IGNORECASE,
+)
+_MATERIAL_DECISION_RE = re.compile(
+    r"\b(?:approv(?:e|es|al)|authoriz(?:e|es|ation)|decid(?:e|es|ing|ision)|"
+    r"governs?|eligib(?:le|ility)|allocation|appeal|jurisdiction|triage)\b",
+    flags=re.IGNORECASE,
+)
 
 
 def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> MaterialClarification | None:
@@ -88,6 +109,9 @@ def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> 
             question="Who should own the first approval, initial path, and proof record?",
             required_fields=("first_approval_actor", "first_path", "proof_record_owner"),
         )
+    authority_gap = _explicit_authority_gap(evidence)
+    if authority_gap:
+        return authority_gap
     if not _has_explicit_material_conflict(evidence):
         return None
     if _AUDIENCE_RE.search(evidence):
@@ -114,6 +138,39 @@ def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> 
         question="Which visible result should the first complete path produce?",
         required_fields=("visible_result",),
     )
+
+
+def _explicit_authority_gap(evidence: str) -> MaterialClarification | None:
+    """Classify an explicitly declared missing decision boundary."""
+
+    missing_sentences = tuple(
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", evidence)
+        if _EXPLICIT_MISSING_INFORMATION_RE.search(sentence)
+    )
+    if not missing_sentences:
+        return None
+    fields: list[str] = []
+    for sentence in missing_sentences:
+        if not _MATERIAL_DECISION_RE.search(sentence):
+            continue
+        if _DECISION_AUTHORITY_RE.search(sentence):
+            fields.append("decision_authority")
+        if _GOVERNING_DECISION_RULE_RE.search(sentence):
+            fields.append("governing_decision_rule")
+    required_fields = tuple(dict.fromkeys(fields))
+    if not required_fields:
+        return None
+    if required_fields == ("decision_authority",):
+        question = "Who has authority to make the unresolved decision?"
+    elif required_fields == ("governing_decision_rule",):
+        question = "What rule, standard, jurisdiction, or appeal route governs the unresolved decision?"
+    else:
+        question = (
+            "Who has authority to make the unresolved decision, and what rule, standard, jurisdiction, "
+            "or appeal route governs it?"
+        )
+    return MaterialClarification(question=question, required_fields=required_fields)
 
 
 def _has_explicit_material_conflict(value: str) -> bool:

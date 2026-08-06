@@ -56,6 +56,22 @@ def test_repository_write_set_applies_exact_staged_tree(tmp_path: Path) -> None:
     ).read_text(encoding="utf-8") == "new\n"
 
 
+def test_repository_write_set_reports_changed_after_image_root(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    stage = tmp_path / "stage"
+    _write(source / "odylith/radar/source/keep.md", "before\n")
+    _stage_from_source(source, stage)
+    _write(stage / "odylith/radar/source/keep.md", "after\n")
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=source,
+        staged_root=stage,
+    )
+    write_set["after_fingerprints"]["odylith/radar"] = "0" * 64
+
+    with pytest.raises(ValueError, match=r"after-image fingerprint mismatch for odylith/radar"):
+        greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set)
+
+
 def test_repository_write_set_removes_sealed_empty_directories(tmp_path: Path) -> None:
     source = tmp_path / "source"
     stage = tmp_path / "stage"

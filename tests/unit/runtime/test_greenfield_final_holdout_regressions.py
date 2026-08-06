@@ -31,6 +31,14 @@ _RETIRED_HOLDOUT_PATH = (
 )
 _RETIRED_HOLDOUT = json.loads(_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
 _RETIRED_HOLDOUT_CASES = tuple(_RETIRED_HOLDOUT["cases"])
+_AA51_RETIRED_HOLDOUT_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "fixtures/greenfield-release-corpus/retired-aa51-final-holdout-regressions.v1.json"
+)
+_AA51_RETIRED_HOLDOUT = json.loads(_AA51_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
+_AA51_AUTHORITY_CASES = tuple(
+    case for case in _AA51_RETIRED_HOLDOUT["cases"] if case["expectation"] == "clarification_required"
+)
 
 
 @pytest.fixture(autouse=True)
@@ -411,6 +419,38 @@ def test_first_approval_ownership_ambiguity_is_focused_and_write_free(tmp_path: 
     assert error.value.required_fields == ("first_approval_actor", "first_path", "proof_record_owner")
     assert "first approval" in str(error.value).casefold()
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize("case", _AA51_AUTHORITY_CASES, ids=lambda case: str(case["case_id"]))
+def test_explicit_missing_decision_authority_is_focused_and_write_free(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=str(case["prompt"]),
+            repo_root=tmp_path,
+            fallback_title=str(case["name"]),
+        )
+
+    assert error.value.required_fields == ("decision_authority", "governing_decision_rule")
+    assert "authority" in str(error.value).casefold()
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_optional_owner_filter_omission_does_not_force_clarification(tmp_path: Path) -> None:
+    prompt = (
+        "Create a workspace where support coordinators review a customer request, assign a case owner, and see "
+        "a resolution summary. The first release omits optional owner filters."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Support Resolution",
+    )
+
+    assert "resolution summary" in str(intent["first_path"]).casefold()
 
 
 @pytest.mark.parametrize(

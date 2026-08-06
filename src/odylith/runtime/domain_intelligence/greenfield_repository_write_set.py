@@ -573,7 +573,11 @@ def _require_after_image(payload: Mapping[str, Any]) -> dict[str, Mapping[str, A
     expected = _fingerprint_mapping(payload.get("after_fingerprints"), label="after")
     actual = _after_image_fingerprints(directories=set(directory_paths), files=file_map)
     if actual != expected:
-        raise ValueError("ProductCreateTransaction repository after-image does not match its fingerprints")
+        changed = sorted(path for path in set(expected) | set(actual) if expected.get(path) != actual.get(path))
+        detail = ", ".join(changed) or "unknown managed path"
+        raise ValueError(
+            "ProductCreateTransaction repository after-image fingerprint mismatch for " + detail
+        )
     return file_map
 
 
