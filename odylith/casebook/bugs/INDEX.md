@@ -1,11 +1,12 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-04
+Last updated (UTC): 2026-08-06
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-323 | 2026-08-06 | Greenfield sealed intent cannot prove atomic accepted fact custody | P0 | domain-intelligence | Open | [2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md](2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md) |
 | CB-309 | 2026-08-04 | Synthetic review floor overrides terminal choice visible result | P1 | domain-intelligence | FixedPendingRelease | [2026-08-04-synthetic-review-floor-overrides-terminal-choice-visible-result.md](2026-08-04-synthetic-review-floor-overrides-terminal-choice-visible-result.md) |
 | CB-313 | 2026-08-04 | Semantic release recovery selection requires source audit binding | P1 | greenfield-governance | Open | [2026-08-04-semantic-release-recovery-selection-requires-source-audit-binding.md](2026-08-04-semantic-release-recovery-selection-requires-source-audit-binding.md) |
 | CB-312 | 2026-08-04 | Semantic holdout release preflight requires unrelated source audit | P1 | greenfield-governance | Open | [2026-08-04-semantic-holdout-release-preflight-requires-unrelated-source-audit.md](2026-08-04-semantic-holdout-release-preflight-requires-unrelated-source-audit.md) |

@@ -2636,6 +2636,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   hash-bound transaction with visible CONFIRM, EDIT, and REJECT choices; installed,
   cross-host, browser-state, and one-shot frozen-holdout proof remain open.
 
+- 2026-08-06 independent one-shot release holdout failed against exact dist from
+  `aa51e5cf92da4daa79fd3aa40944d49a0211eb75`. Only `4/24` package cases passed;
+  semantic release scored `0/24`, accepted-fact custody `0/136`, critical
+  constraint recall `2/21`, explicit-system recall `2/7`, material-question
+  recall `0/3`, and first-path comprehension `22/108`. The result does not show
+  a governed post-confirm failure: three material-authority cases staged
+  pre-confirm runtime records instead of clarifying, one transaction was safely
+  rejected before publish on an after-image fingerprint mismatch, and recovery
+  proof stopped in pre-confirm duplicate-copy validation. Shared grammar,
+  clipping, duplicate, Radar, Atlas, and term-custody failures blocked the rest.
+  The corpus is disclosed and retired to regression. B-142 remains open for an
+  atom-level evidence-custody ledger, authority-aware write-free clarification,
+  shared copy-composition repair, exact failed-corpus replay, rebuilt dist, and
+  a newly authored blind holdout. Do not tune production behavior to the retired
+  domains or weaken the release floors.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

@@ -1,6 +1,6 @@
 - Bug ID: CB-315
 
-- Status: FixedPendingRelease
+- Status: InProgress
 
 - Created: 2026-08-04
 
@@ -58,3 +58,5 @@
 - Final Holdout Follow-Up (2026-08-05): The disclosed ba25 holdout exposed four ownership ambiguities that explicitly offered two first-approval owners and stated that the choice changed the initial path and proof record. The materiality gate now classifies that ownership decision before actor/path recovery and returns one focused question with `first_approval_actor`, `first_path`, and `proof_record_owner`. All four retired cases clarify with no `.odylith/runtime/greenfield` directory, candidate, or pending transaction written. Clean installed proof remains required before release closure.
 
 - Actor Integrity Follow-Up (2026-08-05): Adversarial review found that a complete multi-step path could let explicit system actors such as sensors, cameras, or robots bypass clarification, while a real `service coordinator` could be rejected because the technical modifier outranked the role. Explicit unfamiliar actors now require a positive human role signal or person-marking grammar such as `who needs to`; profession morphology preserves conservators, horticulturists, specialists, archivists, and similar roles without treating arbitrary nouns as people. Machine cases return the focused `human_actors` and `first_path` question before any runtime write; vague EDIT evidence against an already complete human path continues to request only the missing correction.
+
+- Independent Final Holdout Reopen (2026-08-06): All three authority-omission cases in the new exact-dist one-shot holdout failed the clarification no-write contract. Instead of returning one focused question, each compiled and persisted seven `.odylith/runtime/greenfield` staging records, including candidate evidence and a pending ProductCreateTransaction. No governed `odylith/` records were written and no post-confirm publish occurred. The missed fields were allocation policy ownership and triage standard, alert approval ownership and evacuation jurisdiction, and credentialing rule ownership and appeal process. The current contradiction and generic missing-field detectors do not represent these authority-specific omissions before candidate persistence. Release closure now requires a domain-neutral typed authority/materiality boundary that returns clarification before any candidate, subprocess, or pending-transaction write.

@@ -1,0 +1,4284 @@
+{
+  "version": "odylith.greenfield.retired-holdout-regression.v1",
+  "claim_class": "blinded-independent-synthetic-holdout",
+  "provenance": {
+    "authored_on": "2026-08-05",
+    "author_role": "independent Greenfield release-holdout corpus author",
+    "evidence_class": "independently-authored-synthetic-release-holdout",
+    "external_user_evidence": false,
+    "prior_corpus_or_output_tuning": false,
+    "purpose": "one-shot semantic release holdout"
+  },
+  "coverage": {
+    "case_count": 24,
+    "compile_success_case_count": 21,
+    "focused_write_free_clarification_case_count": 3,
+    "required_slices": [
+      "terse",
+      "narrative",
+      "requirement-led",
+      "negative-non-goal",
+      "approval-safety-ownership",
+      "named-product",
+      "unnamed-product",
+      "human-actor",
+      "nonhuman-actor",
+      "release-result-distinction",
+      "long-first-path"
+    ],
+    "structurally_enriched_case_count": 8,
+    "structurally_enriched_case_ids": [
+      "ih-04-inverter-v2",
+      "ih-05-tide-gauge",
+      "ih-06-veterinary",
+      "ih-12-rescue",
+      "ih-15-orbit",
+      "ih-22-allocation-authority",
+      "ih-23-evacuation-command",
+      "ih-24-discipline-record"
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "ih-01-broodstock",
+      "name": "HarborKite broodstock trace desk",
+      "prompt": "HarborKite helps Mara, the hatchery technician, register broodstock arrivals, log water-quality checks, quarantine exposed tanks, and issue a release-ready cohort certificate; it must not authorize fish sales.",
+      "required_terms": [
+        "broodstock arrivals",
+        "water-quality checks",
+        "cohort certificate"
+      ],
+      "leakage_terms": [
+        "fish sales"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "named-product",
+        "aquaculture",
+        "safety-boundary"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-01-broodstock",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-01-broodstock",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "f063a0534f2b6b1f9bc7d93fb825c1ea9aec1a84ea3a81509122a5442a28bdb9"
+      },
+      "semantic_expectations": {
+        "expected_title": "HarborKite broodstock trace desk",
+        "expected_actors": [
+          "Mara, the hatchery technician"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "broodstock arrivals",
+          "water-quality checks",
+          "cohort certificate"
+        ],
+        "forbidden_leakage_terms": [
+          "fish sales"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Mara, the hatchery technician",
+            "register broodstock arrivals",
+            "quarantine exposed tanks",
+            "issue a release-ready cohort certificate"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-02-detours",
+      "name": "Civic detour accessibility board",
+      "prompt": "A municipal mobility coordinator needs a board to reconcile curb-obstruction reports, verify accessible detours, notify route stewards, and publish a signed detour notice; it must not retain facial recognition data.",
+      "required_terms": [
+        "curb-obstruction reports",
+        "accessible detours",
+        "detour notice"
+      ],
+      "leakage_terms": [
+        "facial recognition data"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "unnamed-product",
+        "accessibility",
+        "approval-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-02-detours",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-02-detours",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "0519d54ee352fd397e0d09e7aa21cea71fc76bd4a91f1a2cc1338aa16dc056f3"
+      },
+      "semantic_expectations": {
+        "expected_title": "Civic detour accessibility board",
+        "expected_actors": [
+          "municipal mobility coordinator"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "curb-obstruction reports",
+          "accessible detours",
+          "detour notice"
+        ],
+        "forbidden_leakage_terms": [
+          "facial recognition data"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "municipal mobility coordinator",
+            "reconcile curb-obstruction reports",
+            "verify accessible detours",
+            "publish a signed detour notice"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-03-dialysis",
+      "name": "PulseWay transport continuity console",
+      "prompt": "PulseWay lets Rina, the dialysis transport dispatcher, match missed pickups to treatment windows, contact backup drivers, document patient consent, and produce a continuity handoff; it must not alter patient booking dates.",
+      "required_terms": [
+        "treatment windows",
+        "backup drivers",
+        "continuity handoff"
+      ],
+      "leakage_terms": [
+        "alter patient booking dates"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "named-product",
+        "healthcare",
+        "safety-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-03-dialysis",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-03-dialysis",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "9da4577d8f174f0fed89f2ca9d686a942ce40a869ae433efdbe1c0fb72aaa108"
+      },
+      "semantic_expectations": {
+        "expected_title": "PulseWay transport continuity console",
+        "expected_actors": [
+          "Rina, the dialysis transport dispatcher"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "treatment windows",
+          "backup drivers",
+          "continuity handoff"
+        ],
+        "forbidden_leakage_terms": [
+          "alter patient booking dates"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Rina, the dialysis transport dispatcher",
+            "match missed pickups to treatment windows",
+            "document patient consent",
+            "produce a continuity handoff"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-04-inverter-v2",
+      "name": "HelioLatch inverter recall ledger",
+      "prompt": "HelioLatch enables Devon, the manufacturer quality manager, to receive inverter serial alerts from the HelioNet service ledger while Sora, a licensed electrician, attaches field photographs and an isolation finding. Devon routes an inspection request. If HelioNet marks a unit eligible while Sora marks it isolated, the isolation finding wins: the unit enters blocked-review state; otherwise it enters disposition-ready state. The normal path assembles a recall disposition packet, while the exception path requests manufacturer engineer approval. It must not activate field equipment remotely.",
+      "required_terms": [
+        "inverter serial alerts",
+        "isolation finding",
+        "recall disposition packet",
+        "manufacturer engineer approval"
+      ],
+      "leakage_terms": [
+        "activate field equipment remotely"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "named-product",
+        "energy",
+        "release-result-distinction"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-04-inverter-v2",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-04-inverter-v2",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "46603adeb4d15fe3f56df54f5ba5a686f8cc683660e5e9a439659e7c49103998"
+      },
+      "semantic_expectations": {
+        "expected_title": "HelioLatch inverter recall ledger",
+        "expected_actors": [
+          "Devon, the manufacturer quality manager",
+          "Sora, a licensed electrician"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "inverter serial alerts",
+          "isolation finding",
+          "recall disposition packet",
+          "manufacturer engineer approval"
+        ],
+        "forbidden_leakage_terms": [
+          "activate field equipment remotely"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Devon, the manufacturer quality manager",
+            "Sora, a licensed electrician",
+            "routes an inspection request",
+            "attaches field photographs",
+            "blocked-review state",
+            "disposition-ready state",
+            "recall disposition packet",
+            "manufacturer engineer approval",
+            "HelioNet service ledger"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-05-tide-gauge",
+      "name": "Autonomous tide-gauge maintenance planner",
+      "prompt": "An autonomous tide gauge sends pressure drift through the HarborSense telemetry gateway. Elian, the harbor engineer, reviews calibration history, and Mira, the harbor master, approves the service launch. A confirmed drift enters calibration-review state; a safe weather window moves it to launch-approved state. The routine path schedules a service launch and records replacement parts, while the storm-advisory path defers work and issues a maintenance readiness report. It must not dispatch a vessel without Mira's approval.",
+      "required_terms": [
+        "pressure drift",
+        "calibration-review state",
+        "maintenance readiness report"
+      ],
+      "leakage_terms": [
+        "dispatch a vessel without Mira's approval"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "thin_request",
+      "tags": [
+        "unnamed-product",
+        "nonhuman-actor",
+        "maritime"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-05-tide-gauge",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-05-tide-gauge",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "a33e63b7a2ff749eeb2db25a8e0557e34f0f493cef90032498580ebac66db107"
+      },
+      "semantic_expectations": {
+        "expected_title": "Autonomous tide-gauge maintenance planner",
+        "expected_actors": [
+          "Elian, the harbor engineer",
+          "Mira, the harbor master"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "pressure drift",
+          "calibration-review state",
+          "maintenance readiness report"
+        ],
+        "forbidden_leakage_terms": [
+          "dispatch a vessel without Mira's approval"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "autonomous tide gauge",
+            "Elian, the harbor engineer",
+            "Mira, the harbor master",
+            "reviews calibration history",
+            "approves the service launch",
+            "calibration-review state",
+            "launch-approved state",
+            "records replacement parts",
+            "maintenance readiness report",
+            "HarborSense telemetry gateway"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-06-veterinary",
+      "name": "BarnSignal livestock outbreak ledger",
+      "prompt": "BarnSignal gives Noor, the veterinary field officer, an outbreak path. A farmer submits a fever report through the HerdWatch portal, and Lio, the specimen courier, collects labeled specimens for the regional laboratory. Noor moves the herd from suspected-exposure state to clearance-pending state after laboratory receipt. The normal path issues herd isolation guidance and regulator notification; the missing-chain-of-custody path routes recollection before a clearance recommendation. It must not certify an animal for slaughter.",
+      "required_terms": [
+        "labeled specimens",
+        "herd isolation guidance",
+        "clearance recommendation"
+      ],
+      "leakage_terms": [
+        "certify an animal for slaughter"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "named-product",
+        "veterinary",
+        "long-first-path",
+        "narrative"
+      ],
+      "stressors": [
+        "long-first-path",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-06-veterinary",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-06-veterinary",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "d4a524554aa2dc4778f42f7a059f47847c6a98c012ad5c7e01a8379dc44f8580"
+      },
+      "semantic_expectations": {
+        "expected_title": "BarnSignal livestock outbreak ledger",
+        "expected_actors": [
+          "Noor, the veterinary field officer",
+          "A farmer",
+          "Lio, the specimen courier"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "labeled specimens",
+          "herd isolation guidance",
+          "clearance recommendation"
+        ],
+        "forbidden_leakage_terms": [
+          "certify an animal for slaughter"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Noor, the veterinary field officer",
+            "A farmer",
+            "Lio, the specimen courier",
+            "submits a fever report",
+            "collects labeled specimens",
+            "suspected-exposure state",
+            "clearance-pending state",
+            "regulator notification",
+            "clearance recommendation",
+            "HerdWatch portal",
+            "regional laboratory"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-07-interpreter",
+      "name": "Court interpreter availability exchange",
+      "prompt": "A court language-access supervisor needs an exchange where clerks post hearing language needs, interpreters disclose conflicts, judges approve substitutions, and staff generate a confirmed assignment sheet; it must not record courtroom testimony.",
+      "required_terms": [
+        "hearing language needs",
+        "disclose conflicts",
+        "confirmed assignment sheet"
+      ],
+      "leakage_terms": [
+        "record courtroom testimony"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "unnamed-product",
+        "justice",
+        "approval-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-07-interpreter",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-07-interpreter",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "b4a2c9dd683518e6084386ed8bff86adb46c38ffb8cf61e29fa2251f8d1fde17"
+      },
+      "semantic_expectations": {
+        "expected_title": "Court interpreter availability exchange",
+        "expected_actors": [
+          "court language-access supervisor"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "hearing language needs",
+          "disclose conflicts",
+          "confirmed assignment sheet"
+        ],
+        "forbidden_leakage_terms": [
+          "record courtroom testimony"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "court language-access supervisor",
+            "post hearing language needs",
+            "judges approve substitutions",
+            "generate a confirmed assignment sheet"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-08-carbon",
+      "name": "Mangrove carbon fieldbook",
+      "prompt": "A coastal restoration cooperative wants a fieldbook for Inez, the survey lead, to pair plot measurements with drone imagery, flag disputed boundaries, collect landholder approvals, and publish a verification-ready carbon packet; it must not issue tradeable credits.",
+      "required_terms": [
+        "plot measurements",
+        "landholder approvals",
+        "verification-ready carbon packet"
+      ],
+      "leakage_terms": [
+        "issue tradeable credits"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "unnamed-product",
+        "climate",
+        "result-not-release"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-08-carbon",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-08-carbon",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "33525cc88b7e0bd66e4ec06dbc9354776f99cbde96df82764640bb415a6abb61"
+      },
+      "semantic_expectations": {
+        "expected_title": "Mangrove carbon fieldbook",
+        "expected_actors": [
+          "Inez, the survey lead"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "plot measurements",
+          "landholder approvals",
+          "verification-ready carbon packet"
+        ],
+        "forbidden_leakage_terms": [
+          "issue tradeable credits"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Inez, the survey lead",
+            "pair plot measurements with drone imagery",
+            "flag disputed boundaries",
+            "publish a verification-ready carbon packet"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-09-genealogy",
+      "name": "CedarBox cultural archive request desk",
+      "prompt": "CedarBox lets Aroha, the archive steward, receive family-history requests, match access rules to collection records, obtain elder approval, prepare a redacted viewing bundle, and log the decision; it must not publish sacred recordings.",
+      "required_terms": [
+        "family-history requests",
+        "elder approval",
+        "redacted viewing bundle"
+      ],
+      "leakage_terms": [
+        "publish sacred recordings"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "named-product",
+        "cultural-heritage",
+        "approval-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-09-genealogy",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-09-genealogy",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "edd0d14419906b91e9379d9769d482a6f098e3634e7b244930bb51de92b3aa8e"
+      },
+      "semantic_expectations": {
+        "expected_title": "CedarBox cultural archive request desk",
+        "expected_actors": [
+          "Aroha, the archive steward"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "family-history requests",
+          "elder approval",
+          "redacted viewing bundle"
+        ],
+        "forbidden_leakage_terms": [
+          "publish sacred recordings"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Aroha, the archive steward",
+            "receive family-history requests",
+            "obtain elder approval",
+            "prepare a redacted viewing bundle"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-10-rail",
+      "name": "Freight crossing defect triage",
+      "prompt": "Triage gate-sensor faults. A rail crossing inspector assigns a repair crew and produces a reopen recommendation. It must not return a crossing to traffic automatically.",
+      "required_terms": [
+        "gate-sensor faults",
+        "repair crew",
+        "reopen recommendation"
+      ],
+      "leakage_terms": [
+        "return a crossing to traffic automatically"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "thin_request",
+      "tags": [
+        "unnamed-product",
+        "rail",
+        "safety-ownership",
+        "terse"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-10-rail",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-10-rail",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "e13722841318ea1bfe81d8b02dd701af41f3c066e5c27e266af340e005733844"
+      },
+      "semantic_expectations": {
+        "expected_title": "Freight crossing defect triage",
+        "expected_actors": [
+          "rail crossing inspector"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "gate-sensor faults",
+          "repair crew",
+          "reopen recommendation"
+        ],
+        "forbidden_leakage_terms": [
+          "return a crossing to traffic automatically"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "rail crossing inspector",
+            "Triage gate-sensor faults",
+            "assigns a repair crew",
+            "produces a reopen recommendation"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-11-repatriation",
+      "name": "Museum loan condition register",
+      "prompt": "A museum registrar needs a register to document inbound loan conditions, compare humidity readings, request conservator review, obtain lender approval, and create a return readiness summary; it must not transfer ownership.",
+      "required_terms": [
+        "inbound loan conditions",
+        "conservator review",
+        "return readiness summary"
+      ],
+      "leakage_terms": [
+        "transfer ownership"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "unnamed-product",
+        "museum",
+        "approval-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-11-repatriation",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-11-repatriation",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "fc5fd0b3df0b9a0e1d70fd5b3163c8e7ff0421ecff929a3adf183043da2c8d37"
+      },
+      "semantic_expectations": {
+        "expected_title": "Museum loan condition register",
+        "expected_actors": [
+          "museum registrar"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "inbound loan conditions",
+          "conservator review",
+          "return readiness summary"
+        ],
+        "forbidden_leakage_terms": [
+          "transfer ownership"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "museum registrar",
+            "document inbound loan conditions",
+            "obtain lender approval",
+            "create a return readiness summary"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-12-rescue",
+      "name": "ShaftSafe mine rescue staging board",
+      "prompt": "ShaftSafe guides Mateo, the mine rescue coordinator, using the DeepAir telemetry feed. The ventilation officer confirms gas readings, and the incident commander verifies the entrant roster and gives command approval. A stale reading keeps the mission in entry-prohibited state; verified ventilation and equipment allocation move it to deployment-ready state. If DeepAir reports safe air while the ventilation officer marks a sensor stale, the officer finding wins. The normal path produces a deployment briefing, while the stale-sensor path requests a fresh reading. It must not initiate underground entry without incident-command approval.",
+      "required_terms": [
+        "entrant roster",
+        "deployment-ready state",
+        "deployment briefing",
+        "fresh reading"
+      ],
+      "leakage_terms": [
+        "initiate underground entry"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "named-product",
+        "industrial-safety",
+        "long-first-path"
+      ],
+      "stressors": [
+        "long-first-path",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-12-rescue",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-12-rescue",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "3199509e44481eb87ec194627c11a02b1e6aa0e6b629ce4fd24141d1b7ded230"
+      },
+      "semantic_expectations": {
+        "expected_title": "ShaftSafe mine rescue staging board",
+        "expected_actors": [
+          "Mateo, the mine rescue coordinator",
+          "ventilation officer",
+          "incident commander"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "entrant roster",
+          "deployment-ready state",
+          "deployment briefing",
+          "fresh reading"
+        ],
+        "forbidden_leakage_terms": [
+          "initiate underground entry"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Mateo, the mine rescue coordinator",
+            "ventilation officer",
+            "incident commander",
+            "confirms gas readings",
+            "verifies the entrant roster",
+            "entry-prohibited state",
+            "deployment-ready state",
+            "deployment briefing",
+            "fresh reading",
+            "DeepAir telemetry feed"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-13-cold-chain",
+      "name": "Vaccine cold-chain exception review",
+      "prompt": "A regional immunization depot needs review for Leila, the cold-chain lead, to inspect temperature excursions, preserve logger evidence, request pharmacist disposition, notify destination clinics, and publish a usable-stock decision record; it must not modify patient histories.",
+      "required_terms": [
+        "temperature excursions",
+        "logger evidence",
+        "usable-stock decision record"
+      ],
+      "leakage_terms": [
+        "modify patient histories"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "unnamed-product",
+        "public-health",
+        "approval-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-13-cold-chain",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-13-cold-chain",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "c7e0aa9d0f5e29710bc5fbca6cee0ce9175afe96a4ecd496cc2d6d1b2b0c1f9f"
+      },
+      "semantic_expectations": {
+        "expected_title": "Vaccine cold-chain exception review",
+        "expected_actors": [
+          "Leila, the cold-chain lead"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "temperature excursions",
+          "logger evidence",
+          "usable-stock decision record"
+        ],
+        "forbidden_leakage_terms": [
+          "modify patient histories"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Leila, the cold-chain lead",
+            "inspect temperature excursions",
+            "request pharmacist disposition",
+            "publish a usable-stock decision record"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-14-floodgate",
+      "name": "DeltaGate floodgate inspection log",
+      "prompt": "DeltaGate lets Samir, the levee operator, receive sensor anomalies, inspect gate photographs, compare tide forecasts, request engineering review, and prepare an operation recommendation; it must not move a floodgate without the duty engineer.",
+      "required_terms": [
+        "sensor anomalies",
+        "tide forecasts",
+        "operation recommendation"
+      ],
+      "leakage_terms": [
+        "move a floodgate"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "named-product",
+        "water-infrastructure",
+        "safety-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-14-floodgate",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-14-floodgate",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "9c62532bde53b85427e63d878f4105acc26e1bff26831284f194bfe873a618d4"
+      },
+      "semantic_expectations": {
+        "expected_title": "DeltaGate floodgate inspection log",
+        "expected_actors": [
+          "Samir, the levee operator"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "sensor anomalies",
+          "tide forecasts",
+          "operation recommendation"
+        ],
+        "forbidden_leakage_terms": [
+          "move a floodgate"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Samir, the levee operator",
+            "receive sensor anomalies",
+            "request engineering review",
+            "prepare an operation recommendation"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-15-orbit",
+      "name": "Orbital conjunction review room",
+      "prompt": "The SkyTrace tracking service flags a conjunction and places it in screening state. An orbital flight director asks a trajectory analyst to compare covariance data and a spacecraft owner to submit maneuver windows. Agreement moves the case to coordination-ready state and produces a coordination decision. If the owner window crosses a SkyTrace no-go corridor, the conflict path enters coordination-hold state and issues a hold notice instead. It must not command a spacecraft.",
+      "required_terms": [
+        "covariance data",
+        "coordination-ready state",
+        "coordination decision",
+        "hold notice"
+      ],
+      "leakage_terms": [
+        "command a spacecraft"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "thin_request",
+      "tags": [
+        "unnamed-product",
+        "spaceflight",
+        "nonhuman-system"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-15-orbit",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-15-orbit",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "cbe750e2ba4a5e79d5f0209022251114f79ae7e82a0bae186d07b501dacb14c2"
+      },
+      "semantic_expectations": {
+        "expected_title": "Orbital conjunction review room",
+        "expected_actors": [
+          "orbital flight director",
+          "trajectory analyst",
+          "spacecraft owner"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "covariance data",
+          "coordination-ready state",
+          "coordination decision",
+          "hold notice"
+        ],
+        "forbidden_leakage_terms": [
+          "command a spacecraft"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "SkyTrace tracking service",
+            "orbital flight director",
+            "trajectory analyst",
+            "spacecraft owner",
+            "compare covariance data",
+            "submit maneuver windows",
+            "screening state",
+            "coordination-ready state",
+            "coordination-hold state",
+            "coordination decision",
+            "hold notice",
+            "SkyTrace tracking service"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-16-royalty",
+      "name": "ScoreMint session royalty ledger",
+      "prompt": "ScoreMint helps Priya, the label operations analyst, ingest session sheets, match performer identifiers, flag split conflicts, obtain producer approval, and issue a payment-ready statement; it must not distribute royalty funds.",
+      "required_terms": [
+        "session sheets",
+        "split conflicts",
+        "payment-ready statement"
+      ],
+      "leakage_terms": [
+        "distribute royalty funds"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "named-product",
+        "music-rights",
+        "result-not-release"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-16-royalty",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-16-royalty",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "81bca944119eb7b2f91a4e2a06fe75d5fdffaf72e98f5993e16c485451dc11ec"
+      },
+      "semantic_expectations": {
+        "expected_title": "ScoreMint session royalty ledger",
+        "expected_actors": [
+          "Priya, the label operations analyst"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "session sheets",
+          "split conflicts",
+          "payment-ready statement"
+        ],
+        "forbidden_leakage_terms": [
+          "distribute royalty funds"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Priya, the label operations analyst",
+            "ingest session sheets",
+            "obtain producer approval",
+            "issue a payment-ready statement"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-17-food-bank",
+      "name": "Neighborhood pantry allocation desk",
+      "prompt": "A pantry coordinator needs a desk to reconcile delivery manifests, check refrigeration capacity, prioritize partner requests, record pickup confirmation, and prepare a daily allocation board; it must not score households by immigration status.",
+      "required_terms": [
+        "delivery manifests",
+        "refrigeration capacity",
+        "daily allocation board"
+      ],
+      "leakage_terms": [
+        "score households by immigration status"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "unnamed-product",
+        "food-security",
+        "negative-non-goal"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-17-food-bank",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-17-food-bank",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "75253986f7e85d635cb4930d28d377cc3dfb56d1c099918ccaee1dca96c90dd3"
+      },
+      "semantic_expectations": {
+        "expected_title": "Neighborhood pantry allocation desk",
+        "expected_actors": [
+          "pantry coordinator"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "delivery manifests",
+          "refrigeration capacity",
+          "daily allocation board"
+        ],
+        "forbidden_leakage_terms": [
+          "score households by immigration status"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "pantry coordinator",
+            "reconcile delivery manifests",
+            "prioritize partner requests",
+            "prepare a daily allocation board"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-18-archaeology",
+      "name": "StrataMark field permit binder",
+      "prompt": "StrataMark supports Jun, the excavation permit officer, from a survey-grid submission through sacred-site screening, landowner consultation, permit-condition review, fieldwork authorization, and a compliance handoff; it must not authorize excavation before the statutory review closes.",
+      "required_terms": [
+        "survey-grid submission",
+        "landowner consultation",
+        "compliance handoff"
+      ],
+      "leakage_terms": [
+        "authorize excavation before the statutory review closes"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "named-product",
+        "archaeology",
+        "long-first-path"
+      ],
+      "stressors": [
+        "long-first-path",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-18-archaeology",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-18-archaeology",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "76216221dbc9461ccdfce580061b25dcd3e17deb7c81da811a4448a682099850"
+      },
+      "semantic_expectations": {
+        "expected_title": "StrataMark field permit binder",
+        "expected_actors": [
+          "Jun, the excavation permit officer"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "survey-grid submission",
+          "landowner consultation",
+          "compliance handoff"
+        ],
+        "forbidden_leakage_terms": [
+          "authorize excavation before the statutory review closes"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "Jun, the excavation permit officer",
+            "survey-grid submission",
+            "permit-condition review",
+            "a compliance handoff"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-19-newsroom",
+      "name": "Correction traceability register",
+      "prompt": "A newsroom standards editor needs a register to receive correction requests, preserve source comparisons, assign fact-check review, obtain editor approval, and publish a correction-status entry; it must not rewrite archived articles silently.",
+      "required_terms": [
+        "correction requests",
+        "fact-check review",
+        "correction-status entry"
+      ],
+      "leakage_terms": [
+        "rewrite archived articles silently"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "unnamed-product",
+        "journalism",
+        "approval-ownership"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-19-newsroom",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-19-newsroom",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "6a68192d15ba8df86da8ee9f3b55c57d4f7b5e43cf0a1f7402065e31eba165fd"
+      },
+      "semantic_expectations": {
+        "expected_title": "Correction traceability register",
+        "expected_actors": [
+          "newsroom standards editor"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "correction requests",
+          "fact-check review",
+          "correction-status entry"
+        ],
+        "forbidden_leakage_terms": [
+          "rewrite archived articles silently"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "newsroom standards editor",
+            "receive correction requests",
+            "obtain editor approval",
+            "publish a correction-status entry"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-20-lab",
+      "name": "Glasswing radiation sample custody",
+      "prompt": "Glasswing lets the laboratory radiation safety officer log sealed-source transfers, verify dosimeter readings, assign storage inspections, reconcile disposal manifests, and prepare an audit-ready custody record; it must not approve radiation work permits.",
+      "required_terms": [
+        "sealed-source transfers",
+        "dosimeter readings",
+        "audit-ready custody record"
+      ],
+      "leakage_terms": [
+        "approve radiation work permits"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "thin_request",
+      "tags": [
+        "named-product",
+        "laboratory-safety",
+        "negative-non-goal"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-20-lab",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-20-lab",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "e2d6130eb62df78936e18efac51598719061bdf0274d39d13b504a45ff0a926b"
+      },
+      "semantic_expectations": {
+        "expected_title": "Glasswing radiation sample custody",
+        "expected_actors": [
+          "laboratory radiation safety officer"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "sealed-source transfers",
+          "dosimeter readings",
+          "audit-ready custody record"
+        ],
+        "forbidden_leakage_terms": [
+          "approve radiation work permits"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "laboratory radiation safety officer",
+            "log sealed-source transfers",
+            "assign storage inspections",
+            "prepare an audit-ready custody record"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-21-repair",
+      "name": "Wind turbine blade repair readiness",
+      "prompt": "Requirements: a renewable-operations planner tracks blade inspection images, compares weather windows, confirms rope-team credentials, captures site-owner approval, and issues a work-package release recommendation; it must not dispatch a crew in unsafe wind.",
+      "required_terms": [
+        "blade inspection images",
+        "rope-team credentials",
+        "work-package release recommendation"
+      ],
+      "leakage_terms": [
+        "dispatch a crew in unsafe wind"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "unnamed-product",
+        "renewable-energy",
+        "release-result-distinction",
+        "requirement-led"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "release-boundary"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-21-repair",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-21-repair",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "7d3040df0fd78c75736365a7c93ba0a60429b924d453c614bd57d7ea917b8db2"
+      },
+      "semantic_expectations": {
+        "expected_title": "Wind turbine blade repair readiness",
+        "expected_actors": [
+          "renewable-operations planner"
+        ],
+        "expected_outcome": "commit",
+        "required_terms": [
+          "blade inspection images",
+          "rope-team credentials",
+          "work-package release recommendation"
+        ],
+        "forbidden_leakage_terms": [
+          "dispatch a crew in unsafe wind"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actor, action, state, and output without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "renewable-operations planner",
+            "tracks blade inspection images",
+            "captures site-owner approval",
+            "issues a work-package release recommendation"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-22-allocation-authority",
+      "name": "Scarce-dose allocation governance",
+      "prompt": "Design a workspace for a regional pharmacy network during a toxic exposure incident. A hospital pharmacist submits scarce antidote requests through the PoisonLedger incident registry, a clinical toxicologist verifies antidote compatibility, and a regional medical director reviews the proposed allocation. Requests can enter evidence-ready state or policy-hold state. The routine path ranks complete requests; the pediatric-contraindication path routes clinical review. However, the prompt does not identify who has legal authority to approve the allocation policy or what clinical triage standard governs ranking. It must not issue dispensing orders.",
+      "required_terms": [
+        "scarce antidote requests",
+        "legal authority",
+        "clinical triage standard"
+      ],
+      "leakage_terms": [
+        "issue dispensing orders"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "tags": [
+        "clarification",
+        "healthcare",
+        "material-authority"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "material-ambiguity"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-22-allocation-authority",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-22-allocation-authority",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "e4691416a70dadd55de8915cba4050021a006feb7a4d4a3992a5354c7963562a"
+      },
+      "semantic_expectations": {
+        "expected_title": "Scarce-dose allocation governance",
+        "expected_actors": [
+          "regional pharmacy network",
+          "hospital pharmacist",
+          "clinical toxicologist",
+          "regional medical director"
+        ],
+        "expected_outcome": "clarify",
+        "required_terms": [
+          "scarce antidote requests",
+          "legal authority",
+          "clinical triage standard"
+        ],
+        "forbidden_leakage_terms": [
+          "issue dispensing orders"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "regional pharmacy network",
+            "hospital pharmacist",
+            "clinical toxicologist",
+            "regional medical director",
+            "submits scarce antidote requests",
+            "verifies antidote compatibility",
+            "evidence-ready state",
+            "policy-hold state",
+            "proposed allocation",
+            "clinical review",
+            "PoisonLedger incident registry"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-23-evacuation-command",
+      "name": "Wildfire drone dispatch authority",
+      "prompt": "Plan a wildfire reconnaissance drone service. The drone sends fire-line changes to the county alert gateway, an air-operations analyst verifies the detection, and a duty dispatcher drafts a public alert. Evidence moves from sensor-detected state to human-verified state. The routine path proposes the alert to an incident commander; the cross-border path requires a jurisdiction decision. But the prompt does not name the incident commander who may approve an alert or the jurisdiction whose evacuation protocol applies. It must not transmit a public alert before both authorities are identified.",
+      "required_terms": [
+        "fire-line changes",
+        "human-verified state",
+        "evacuation protocol"
+      ],
+      "leakage_terms": [
+        "transmit a public alert"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "pasted_brief",
+      "tags": [
+        "clarification",
+        "emergency-management",
+        "material-authority",
+        "nonhuman-actor"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "material-ambiguity"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-23-evacuation-command",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-23-evacuation-command",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "441e68b5590d8821a1ce783bc7e4b757200d12c09fe70bcec3e3594dcf435402"
+      },
+      "semantic_expectations": {
+        "expected_title": "Wildfire drone dispatch authority",
+        "expected_actors": [
+          "air-operations analyst",
+          "duty dispatcher"
+        ],
+        "expected_outcome": "clarify",
+        "required_terms": [
+          "fire-line changes",
+          "human-verified state",
+          "evacuation protocol"
+        ],
+        "forbidden_leakage_terms": [
+          "transmit a public alert"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "wildfire reconnaissance drone service",
+            "air-operations analyst",
+            "duty dispatcher",
+            "sends fire-line changes",
+            "verifies the detection",
+            "sensor-detected state",
+            "human-verified state",
+            "public alert",
+            "jurisdiction decision",
+            "county alert gateway"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "ih-24-discipline-record",
+      "name": "Maritime pilot assessment eligibility",
+      "prompt": "Create a tool for a harbor pilots guild and the CoastExam vendor to determine whether trainee pilots may sit for a navigation assessment. The PortCredential registry supplies sea-time records. A guild assessor marks evidence-complete state, while the vendor marks scheduling-ready state. The standard path forwards an eligible packet; the disputed path pauses for appeal. But the prompt omits the qualification rule owner and the appeal route that governs a disputed eligibility decision. It must not schedule an assessment until both authorities are identified.",
+      "required_terms": [
+        "sea-time records",
+        "qualification rule owner",
+        "appeal route"
+      ],
+      "leakage_terms": [
+        "schedule an assessment"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "clarification",
+        "maritime-credentialing",
+        "material-policy"
+      ],
+      "stressors": [
+        "semantic-holdout",
+        "material-ambiguity"
+      ],
+      "provenance": {
+        "corpus_tier": "independent_synthetic_release_holdout",
+        "schema_version": "odylith.greenfield.matrix.case-provenance.v2",
+        "source_id": "independent-author-20260805:ih-24-discipline-record",
+        "source_uri": "urn:odylith:independent-synthetic-release-holdout:20260805:ih-24-discipline-record",
+        "source_family": "independently-authored-synthetic-release-holdout",
+        "derivation_method": "independent one-shot manual authorship; no external user evidence; no prior corpus or output tuning",
+        "derivation_author": "independent Greenfield release-holdout corpus author",
+        "license_or_consent": "independently authored synthetic material; no external source or user evidence used",
+        "derived_prompt_sha256": "2cacbae566e904247f82ac83ca8e5218b65394b0ac9842dce7930d09662035a7"
+      },
+      "semantic_expectations": {
+        "expected_title": "Maritime pilot assessment eligibility",
+        "expected_actors": [
+          "harbor pilots guild",
+          "CoastExam vendor",
+          "guild assessor"
+        ],
+        "expected_outcome": "clarify",
+        "required_terms": [
+          "sea-time records",
+          "qualification rule owner",
+          "appeal route"
+        ],
+        "forbidden_leakage_terms": [
+          "schedule an assessment"
+        ],
+        "sentence_quality": {
+          "expectation": "Title and first-path statements are complete, concrete sentences that preserve the named actors, actions, states, paths, dependencies, and outputs without fragmenting or inventing authority.",
+          "supporting_prompt_evidence": [
+            "harbor pilots guild",
+            "CoastExam vendor",
+            "guild assessor",
+            "determine whether trainee pilots may sit for a navigation assessment",
+            "marks evidence-complete state",
+            "evidence-complete state",
+            "scheduling-ready state",
+            "eligible packet",
+            "appeal route",
+            "PortCredential registry"
+          ]
+        }
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "case_id": "ih-01-broodstock",
+      "prompt_sha256": "f063a0534f2b6b1f9bc7d93fb825c1ea9aec1a84ea3a81509122a5442a28bdb9",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Mara, the hatchery technician",
+          "source_quote": "Mara, the hatchery technician",
+          "source_start": 17,
+          "source_end": 46,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "register broodstock arrivals",
+          "source_quote": "register broodstock arrivals",
+          "source_start": 48,
+          "source_end": 76,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "quarantine exposed tanks",
+          "source_quote": "quarantine exposed tanks",
+          "source_start": 104,
+          "source_end": 128,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "issue a release-ready cohort certificate",
+          "source_quote": "issue a release-ready cohort certificate",
+          "source_start": 134,
+          "source_end": 174,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not authorize fish sales",
+          "source_quote": "must not authorize fish sales",
+          "source_start": 179,
+          "source_end": 208,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not authorize fish sales"
+      ],
+      "complexity": {
+        "evidence_bytes": 209,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-02-detours",
+      "prompt_sha256": "0519d54ee352fd397e0d09e7aa21cea71fc76bd4a91f1a2cc1338aa16dc056f3",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "municipal mobility coordinator",
+          "source_quote": "municipal mobility coordinator",
+          "source_start": 2,
+          "source_end": 32,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "reconcile curb-obstruction reports",
+          "source_quote": "reconcile curb-obstruction reports",
+          "source_start": 50,
+          "source_end": 84,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "verify accessible detours",
+          "source_quote": "verify accessible detours",
+          "source_start": 86,
+          "source_end": 111,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "publish a signed detour notice",
+          "source_quote": "publish a signed detour notice",
+          "source_start": 140,
+          "source_end": 170,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not retain facial recognition data",
+          "source_quote": "must not retain facial recognition data",
+          "source_start": 175,
+          "source_end": 214,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not retain facial recognition data"
+      ],
+      "complexity": {
+        "evidence_bytes": 215,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-03-dialysis",
+      "prompt_sha256": "9da4577d8f174f0fed89f2ca9d686a942ce40a869ae433efdbe1c0fb72aaa108",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Rina, the dialysis transport dispatcher",
+          "source_quote": "Rina, the dialysis transport dispatcher",
+          "source_start": 14,
+          "source_end": 53,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "match missed pickups to treatment windows",
+          "source_quote": "match missed pickups to treatment windows",
+          "source_start": 55,
+          "source_end": 96,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "document patient consent",
+          "source_quote": "document patient consent",
+          "source_start": 122,
+          "source_end": 146,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "produce a continuity handoff",
+          "source_quote": "produce a continuity handoff",
+          "source_start": 152,
+          "source_end": 180,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not alter patient booking dates",
+          "source_quote": "must not alter patient booking dates",
+          "source_start": 185,
+          "source_end": 221,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not alter patient booking dates"
+      ],
+      "complexity": {
+        "evidence_bytes": 222,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-04-inverter-v2",
+      "prompt_sha256": "46603adeb4d15fe3f56df54f5ba5a686f8cc683660e5e9a439659e7c49103998",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "HelioNet service ledger"
+      ],
+      "critical_constraints": [
+        "must not activate field equipment remotely"
+      ],
+      "complexity": {
+        "evidence_bytes": 594,
+        "documents": 1,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 1,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "Devon, the manufacturer quality manager",
+          "source_quote": "Devon, the manufacturer quality manager",
+          "source_start": 19,
+          "source_end": 58,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "Sora, a licensed electrician",
+          "source_quote": "Sora, a licensed electrician",
+          "source_start": 133,
+          "source_end": 161,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "routes an inspection request",
+          "source_quote": "routes an inspection request",
+          "source_start": 222,
+          "source_end": 250,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "attaches field photographs",
+          "source_quote": "attaches field photographs",
+          "source_start": 163,
+          "source_end": 189,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "blocked-review state",
+          "source_quote": "blocked-review state",
+          "source_start": 360,
+          "source_end": 380,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "disposition-ready state",
+          "source_quote": "disposition-ready state",
+          "source_start": 402,
+          "source_end": 425,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "recall disposition packet",
+          "source_quote": "recall disposition packet",
+          "source_start": 455,
+          "source_end": 480,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "manufacturer engineer approval",
+          "source_quote": "manufacturer engineer approval",
+          "source_start": 516,
+          "source_end": 546,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "HelioNet service ledger",
+          "source_quote": "HelioNet service ledger",
+          "source_start": 103,
+          "source_end": 126,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not activate field equipment remotely",
+          "source_quote": "must not activate field equipment remotely",
+          "source_start": 551,
+          "source_end": 593,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "ih-05-tide-gauge",
+      "prompt_sha256": "a33e63b7a2ff749eeb2db25a8e0557e34f0f493cef90032498580ebac66db107",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "autonomous tide gauge",
+        "HarborSense telemetry gateway"
+      ],
+      "critical_constraints": [
+        "must not dispatch a vessel without Mira's approval"
+      ],
+      "complexity": {
+        "evidence_bytes": 526,
+        "documents": 1,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "Elian, the harbor engineer",
+          "source_quote": "Elian, the harbor engineer",
+          "source_start": 89,
+          "source_end": 115,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "Mira, the harbor master",
+          "source_quote": "Mira, the harbor master",
+          "source_start": 150,
+          "source_end": 173,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "reviews calibration history",
+          "source_quote": "reviews calibration history",
+          "source_start": 117,
+          "source_end": 144,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "approves the service launch",
+          "source_quote": "approves the service launch",
+          "source_start": 175,
+          "source_end": 202,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "calibration-review state",
+          "source_quote": "calibration-review state",
+          "source_start": 229,
+          "source_end": 253,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "launch-approved state",
+          "source_quote": "launch-approved state",
+          "source_start": 289,
+          "source_end": 310,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "records replacement parts",
+          "source_quote": "records replacement parts",
+          "source_start": 360,
+          "source_end": 385,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "maintenance readiness report",
+          "source_quote": "maintenance readiness report",
+          "source_start": 442,
+          "source_end": 470,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "autonomous tide gauge",
+          "source_quote": "autonomous tide gauge",
+          "source_start": 3,
+          "source_end": 24,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        },
+        {
+          "id": "dependencies-2",
+          "value": "HarborSense telemetry gateway",
+          "source_quote": "HarborSense telemetry gateway",
+          "source_start": 58,
+          "source_end": 87,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not dispatch a vessel without Mira's approval",
+          "source_quote": "must not dispatch a vessel without Mira's approval",
+          "source_start": 475,
+          "source_end": 525,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "ih-06-veterinary",
+      "prompt_sha256": "d4a524554aa2dc4778f42f7a059f47847c6a98c012ad5c7e01a8379dc44f8580",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "HerdWatch portal",
+        "regional laboratory"
+      ],
+      "critical_constraints": [
+        "must not certify an animal for slaughter"
+      ],
+      "complexity": {
+        "evidence_bytes": 531,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "Noor, the veterinary field officer",
+          "source_quote": "Noor, the veterinary field officer",
+          "source_start": 17,
+          "source_end": 51,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "A farmer",
+          "source_quote": "A farmer",
+          "source_start": 71,
+          "source_end": 79,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-3",
+          "value": "Lio, the specimen courier",
+          "source_quote": "Lio, the specimen courier",
+          "source_start": 137,
+          "source_end": 162,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "submits a fever report",
+          "source_quote": "submits a fever report",
+          "source_start": 80,
+          "source_end": 102,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "collects labeled specimens",
+          "source_quote": "collects labeled specimens",
+          "source_start": 164,
+          "source_end": 190,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "suspected-exposure state",
+          "source_quote": "suspected-exposure state",
+          "source_start": 245,
+          "source_end": 269,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "clearance-pending state",
+          "source_quote": "clearance-pending state",
+          "source_start": 273,
+          "source_end": 296,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "regulator notification",
+          "source_quote": "regulator notification",
+          "source_start": 374,
+          "source_end": 396,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "clearance recommendation",
+          "source_quote": "clearance recommendation",
+          "source_start": 461,
+          "source_end": 485,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "HerdWatch portal",
+          "source_quote": "HerdWatch portal",
+          "source_start": 115,
+          "source_end": 131,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        },
+        {
+          "id": "dependencies-2",
+          "value": "regional laboratory",
+          "source_quote": "regional laboratory",
+          "source_start": 199,
+          "source_end": 218,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not certify an animal for slaughter",
+          "source_quote": "must not certify an animal for slaughter",
+          "source_start": 490,
+          "source_end": 530,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "ih-07-interpreter",
+      "prompt_sha256": "b4a2c9dd683518e6084386ed8bff86adb46c38ffb8cf61e29fa2251f8d1fde17",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "court language-access supervisor",
+          "source_quote": "court language-access supervisor",
+          "source_start": 2,
+          "source_end": 34,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "post hearing language needs",
+          "source_quote": "post hearing language needs",
+          "source_start": 66,
+          "source_end": 93,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "judges approve substitutions",
+          "source_quote": "judges approve substitutions",
+          "source_start": 128,
+          "source_end": 156,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "generate a confirmed assignment sheet",
+          "source_quote": "generate a confirmed assignment sheet",
+          "source_start": 168,
+          "source_end": 205,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not record courtroom testimony",
+          "source_quote": "must not record courtroom testimony",
+          "source_start": 210,
+          "source_end": 245,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not record courtroom testimony"
+      ],
+      "complexity": {
+        "evidence_bytes": 246,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-08-carbon",
+      "prompt_sha256": "33525cc88b7e0bd66e4ec06dbc9354776f99cbde96df82764640bb415a6abb61",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Inez, the survey lead",
+          "source_quote": "Inez, the survey lead",
+          "source_start": 56,
+          "source_end": 77,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "pair plot measurements with drone imagery",
+          "source_quote": "pair plot measurements with drone imagery",
+          "source_start": 82,
+          "source_end": 123,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "flag disputed boundaries",
+          "source_quote": "flag disputed boundaries",
+          "source_start": 125,
+          "source_end": 149,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "publish a verification-ready carbon packet",
+          "source_quote": "publish a verification-ready carbon packet",
+          "source_start": 185,
+          "source_end": 227,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not issue tradeable credits",
+          "source_quote": "must not issue tradeable credits",
+          "source_start": 232,
+          "source_end": 264,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not issue tradeable credits"
+      ],
+      "complexity": {
+        "evidence_bytes": 265,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-09-genealogy",
+      "prompt_sha256": "edd0d14419906b91e9379d9769d482a6f098e3634e7b244930bb51de92b3aa8e",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Aroha, the archive steward",
+          "source_quote": "Aroha, the archive steward",
+          "source_start": 14,
+          "source_end": 40,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "receive family-history requests",
+          "source_quote": "receive family-history requests",
+          "source_start": 42,
+          "source_end": 73,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "obtain elder approval",
+          "source_quote": "obtain elder approval",
+          "source_start": 117,
+          "source_end": 138,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "prepare a redacted viewing bundle",
+          "source_quote": "prepare a redacted viewing bundle",
+          "source_start": 140,
+          "source_end": 173,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not publish sacred recordings",
+          "source_quote": "must not publish sacred recordings",
+          "source_start": 200,
+          "source_end": 234,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not publish sacred recordings"
+      ],
+      "complexity": {
+        "evidence_bytes": 235,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-10-rail",
+      "prompt_sha256": "e13722841318ea1bfe81d8b02dd701af41f3c066e5c27e266af340e005733844",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "rail crossing inspector",
+          "source_quote": "rail crossing inspector",
+          "source_start": 29,
+          "source_end": 52,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "Triage gate-sensor faults",
+          "source_quote": "Triage gate-sensor faults",
+          "source_start": 0,
+          "source_end": 25,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "assigns a repair crew",
+          "source_quote": "assigns a repair crew",
+          "source_start": 53,
+          "source_end": 74,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "produces a reopen recommendation",
+          "source_quote": "produces a reopen recommendation",
+          "source_start": 79,
+          "source_end": 111,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not return a crossing to traffic automatically",
+          "source_quote": "must not return a crossing to traffic automatically",
+          "source_start": 116,
+          "source_end": 167,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not return a crossing to traffic automatically"
+      ],
+      "complexity": {
+        "evidence_bytes": 168,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-11-repatriation",
+      "prompt_sha256": "fc5fd0b3df0b9a0e1d70fd5b3163c8e7ff0421ecff929a3adf183043da2c8d37",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "museum registrar",
+          "source_quote": "museum registrar",
+          "source_start": 2,
+          "source_end": 18,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "document inbound loan conditions",
+          "source_quote": "document inbound loan conditions",
+          "source_start": 39,
+          "source_end": 71,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "obtain lender approval",
+          "source_quote": "obtain lender approval",
+          "source_start": 128,
+          "source_end": 150,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "create a return readiness summary",
+          "source_quote": "create a return readiness summary",
+          "source_start": 156,
+          "source_end": 189,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not transfer ownership",
+          "source_quote": "must not transfer ownership",
+          "source_start": 194,
+          "source_end": 221,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not transfer ownership"
+      ],
+      "complexity": {
+        "evidence_bytes": 222,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-12-rescue",
+      "prompt_sha256": "3199509e44481eb87ec194627c11a02b1e6aa0e6b629ce4fd24141d1b7ded230",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "DeepAir telemetry feed"
+      ],
+      "critical_constraints": [
+        "must not initiate underground entry without incident-command approval"
+      ],
+      "complexity": {
+        "evidence_bytes": 640,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 1,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "Mateo, the mine rescue coordinator",
+          "source_quote": "Mateo, the mine rescue coordinator",
+          "source_start": 17,
+          "source_end": 51,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "ventilation officer",
+          "source_quote": "ventilation officer",
+          "source_start": 91,
+          "source_end": 110,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-3",
+          "value": "incident commander",
+          "source_quote": "incident commander",
+          "source_start": 142,
+          "source_end": 160,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "confirms gas readings",
+          "source_quote": "confirms gas readings",
+          "source_start": 111,
+          "source_end": 132,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "verifies the entrant roster",
+          "source_quote": "verifies the entrant roster",
+          "source_start": 161,
+          "source_end": 188,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "entry-prohibited state",
+          "source_quote": "entry-prohibited state",
+          "source_start": 254,
+          "source_end": 276,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "deployment-ready state",
+          "source_quote": "deployment-ready state",
+          "source_start": 335,
+          "source_end": 357,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "deployment briefing",
+          "source_quote": "deployment briefing",
+          "source_start": 492,
+          "source_end": 511,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "fresh reading",
+          "source_quote": "fresh reading",
+          "source_start": 552,
+          "source_end": 565,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "DeepAir telemetry feed",
+          "source_quote": "DeepAir telemetry feed",
+          "source_start": 63,
+          "source_end": 85,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not initiate underground entry without incident-command approval",
+          "source_quote": "must not initiate underground entry without incident-command approval",
+          "source_start": 570,
+          "source_end": 639,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "ih-13-cold-chain",
+      "prompt_sha256": "c7e0aa9d0f5e29710bc5fbca6cee0ce9175afe96a4ecd496cc2d6d1b2b0c1f9f",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Leila, the cold-chain lead",
+          "source_quote": "Leila, the cold-chain lead",
+          "source_start": 47,
+          "source_end": 73,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "inspect temperature excursions",
+          "source_quote": "inspect temperature excursions",
+          "source_start": 78,
+          "source_end": 108,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "request pharmacist disposition",
+          "source_quote": "request pharmacist disposition",
+          "source_start": 136,
+          "source_end": 166,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "publish a usable-stock decision record",
+          "source_quote": "publish a usable-stock decision record",
+          "source_start": 200,
+          "source_end": 238,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not modify patient histories",
+          "source_quote": "must not modify patient histories",
+          "source_start": 243,
+          "source_end": 276,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not modify patient histories"
+      ],
+      "complexity": {
+        "evidence_bytes": 277,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-14-floodgate",
+      "prompt_sha256": "9c62532bde53b85427e63d878f4105acc26e1bff26831284f194bfe873a618d4",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Samir, the levee operator",
+          "source_quote": "Samir, the levee operator",
+          "source_start": 15,
+          "source_end": 40,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "receive sensor anomalies",
+          "source_quote": "receive sensor anomalies",
+          "source_start": 42,
+          "source_end": 66,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "request engineering review",
+          "source_quote": "request engineering review",
+          "source_start": 118,
+          "source_end": 144,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "prepare an operation recommendation",
+          "source_quote": "prepare an operation recommendation",
+          "source_start": 150,
+          "source_end": 185,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not move a floodgate without the duty engineer",
+          "source_quote": "must not move a floodgate without the duty engineer",
+          "source_start": 190,
+          "source_end": 241,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not move a floodgate without the duty engineer"
+      ],
+      "complexity": {
+        "evidence_bytes": 242,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-15-orbit",
+      "prompt_sha256": "cbe750e2ba4a5e79d5f0209022251114f79ae7e82a0bae186d07b501dacb14c2",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "SkyTrace tracking service"
+      ],
+      "critical_constraints": [
+        "must not command a spacecraft"
+      ],
+      "complexity": {
+        "evidence_bytes": 477,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "orbital flight director",
+          "source_quote": "orbital flight director",
+          "source_start": 87,
+          "source_end": 110,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "trajectory analyst",
+          "source_quote": "trajectory analyst",
+          "source_start": 118,
+          "source_end": 136,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-3",
+          "value": "spacecraft owner",
+          "source_quote": "spacecraft owner",
+          "source_start": 170,
+          "source_end": 186,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "compare covariance data",
+          "source_quote": "compare covariance data",
+          "source_start": 140,
+          "source_end": 163,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "submit maneuver windows",
+          "source_quote": "submit maneuver windows",
+          "source_start": 190,
+          "source_end": 213,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "screening state",
+          "source_quote": "screening state",
+          "source_start": 67,
+          "source_end": 82,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "coordination-ready state",
+          "source_quote": "coordination-ready state",
+          "source_start": 243,
+          "source_end": 267,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-3",
+          "value": "coordination-hold state",
+          "source_quote": "coordination-hold state",
+          "source_start": 386,
+          "source_end": 409,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "coordination decision",
+          "source_quote": "coordination decision",
+          "source_start": 283,
+          "source_end": 304,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "hold notice",
+          "source_quote": "hold notice",
+          "source_start": 423,
+          "source_end": 434,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "SkyTrace tracking service",
+          "source_quote": "SkyTrace tracking service",
+          "source_start": 4,
+          "source_end": 29,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not command a spacecraft",
+          "source_quote": "must not command a spacecraft",
+          "source_start": 447,
+          "source_end": 476,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "ih-16-royalty",
+      "prompt_sha256": "81bca944119eb7b2f91a4e2a06fe75d5fdffaf72e98f5993e16c485451dc11ec",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Priya, the label operations analyst",
+          "source_quote": "Priya, the label operations analyst",
+          "source_start": 16,
+          "source_end": 51,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "ingest session sheets",
+          "source_quote": "ingest session sheets",
+          "source_start": 53,
+          "source_end": 74,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "obtain producer approval",
+          "source_quote": "obtain producer approval",
+          "source_start": 127,
+          "source_end": 151,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "issue a payment-ready statement",
+          "source_quote": "issue a payment-ready statement",
+          "source_start": 157,
+          "source_end": 188,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not distribute royalty funds",
+          "source_quote": "must not distribute royalty funds",
+          "source_start": 193,
+          "source_end": 226,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not distribute royalty funds"
+      ],
+      "complexity": {
+        "evidence_bytes": 227,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-17-food-bank",
+      "prompt_sha256": "75253986f7e85d635cb4930d28d377cc3dfb56d1c099918ccaee1dca96c90dd3",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "pantry coordinator",
+          "source_quote": "pantry coordinator",
+          "source_start": 2,
+          "source_end": 20,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "reconcile delivery manifests",
+          "source_quote": "reconcile delivery manifests",
+          "source_start": 37,
+          "source_end": 65,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "prioritize partner requests",
+          "source_quote": "prioritize partner requests",
+          "source_start": 97,
+          "source_end": 124,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "prepare a daily allocation board",
+          "source_quote": "prepare a daily allocation board",
+          "source_start": 158,
+          "source_end": 190,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not score households by immigration status",
+          "source_quote": "must not score households by immigration status",
+          "source_start": 195,
+          "source_end": 242,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not score households by immigration status"
+      ],
+      "complexity": {
+        "evidence_bytes": 243,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-18-archaeology",
+      "prompt_sha256": "76216221dbc9461ccdfce580061b25dcd3e17deb7c81da811a4448a682099850",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "Jun, the excavation permit officer",
+          "source_quote": "Jun, the excavation permit officer",
+          "source_start": 20,
+          "source_end": 54,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "survey-grid submission",
+          "source_quote": "survey-grid submission",
+          "source_start": 63,
+          "source_end": 85,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "permit-condition review",
+          "source_quote": "permit-condition review",
+          "source_start": 141,
+          "source_end": 164,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "a compliance handoff",
+          "source_quote": "a compliance handoff",
+          "source_start": 195,
+          "source_end": 215,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not authorize excavation before the statutory review closes",
+          "source_quote": "must not authorize excavation before the statutory review closes",
+          "source_start": 220,
+          "source_end": 284,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not authorize excavation before the statutory review closes"
+      ],
+      "complexity": {
+        "evidence_bytes": 285,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-19-newsroom",
+      "prompt_sha256": "6a68192d15ba8df86da8ee9f3b55c57d4f7b5e43cf0a1f7402065e31eba165fd",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "newsroom standards editor",
+          "source_quote": "newsroom standards editor",
+          "source_start": 2,
+          "source_end": 27,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "receive correction requests",
+          "source_quote": "receive correction requests",
+          "source_start": 48,
+          "source_end": 75,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "obtain editor approval",
+          "source_quote": "obtain editor approval",
+          "source_start": 132,
+          "source_end": 154,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "publish a correction-status entry",
+          "source_quote": "publish a correction-status entry",
+          "source_start": 160,
+          "source_end": 193,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not rewrite archived articles silently",
+          "source_quote": "must not rewrite archived articles silently",
+          "source_start": 198,
+          "source_end": 241,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not rewrite archived articles silently"
+      ],
+      "complexity": {
+        "evidence_bytes": 242,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-20-lab",
+      "prompt_sha256": "e2d6130eb62df78936e18efac51598719061bdf0274d39d13b504a45ff0a926b",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "laboratory radiation safety officer",
+          "source_quote": "laboratory radiation safety officer",
+          "source_start": 19,
+          "source_end": 54,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "log sealed-source transfers",
+          "source_quote": "log sealed-source transfers",
+          "source_start": 55,
+          "source_end": 82,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "assign storage inspections",
+          "source_quote": "assign storage inspections",
+          "source_start": 111,
+          "source_end": 137,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "prepare an audit-ready custody record",
+          "source_quote": "prepare an audit-ready custody record",
+          "source_start": 173,
+          "source_end": 210,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not approve radiation work permits",
+          "source_quote": "must not approve radiation work permits",
+          "source_start": 215,
+          "source_end": 254,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not approve radiation work permits"
+      ],
+      "complexity": {
+        "evidence_bytes": 255,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-21-repair",
+      "prompt_sha256": "7d3040df0fd78c75736365a7c93ba0a60429b924d453c614bd57d7ea917b8db2",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "actors": [
+        {
+          "id": "actor-1",
+          "value": "renewable-operations planner",
+          "source_quote": "renewable-operations planner",
+          "source_start": 16,
+          "source_end": 44,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "action-1",
+          "value": "tracks blade inspection images",
+          "source_quote": "tracks blade inspection images",
+          "source_start": 45,
+          "source_end": 75,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "state-1",
+          "value": "captures site-owner approval",
+          "source_quote": "captures site-owner approval",
+          "source_start": 135,
+          "source_end": 163,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output-1",
+          "value": "issues a work-package release recommendation",
+          "source_quote": "issues a work-package release recommendation",
+          "source_start": 169,
+          "source_end": 213,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non-goal-1",
+          "value": "must not dispatch a crew in unsafe wind",
+          "source_quote": "must not dispatch a crew in unsafe wind",
+          "source_start": 218,
+          "source_end": 257,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "must not dispatch a crew in unsafe wind"
+      ],
+      "complexity": {
+        "evidence_bytes": 258,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      }
+    },
+    {
+      "case_id": "ih-22-allocation-authority",
+      "prompt_sha256": "e4691416a70dadd55de8915cba4050021a006feb7a4d4a3992a5354c7963562a",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "allocation_policy_owner",
+        "clinical_triage_standard"
+      ],
+      "explicit_systems": [
+        "PoisonLedger incident registry"
+      ],
+      "critical_constraints": [
+        "must not issue dispensing orders"
+      ],
+      "complexity": {
+        "evidence_bytes": 651,
+        "documents": 1,
+        "actors": 4,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 2,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "regional pharmacy network",
+          "source_quote": "regional pharmacy network",
+          "source_start": 25,
+          "source_end": 50,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "hospital pharmacist",
+          "source_quote": "hospital pharmacist",
+          "source_start": 87,
+          "source_end": 106,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-3",
+          "value": "clinical toxicologist",
+          "source_quote": "clinical toxicologist",
+          "source_start": 186,
+          "source_end": 207,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-4",
+          "value": "regional medical director",
+          "source_quote": "regional medical director",
+          "source_start": 247,
+          "source_end": 272,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "submits scarce antidote requests",
+          "source_quote": "submits scarce antidote requests",
+          "source_start": 107,
+          "source_end": 139,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "verifies antidote compatibility",
+          "source_quote": "verifies antidote compatibility",
+          "source_start": 208,
+          "source_end": 239,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "evidence-ready state",
+          "source_quote": "evidence-ready state",
+          "source_start": 325,
+          "source_end": 345,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "policy-hold state",
+          "source_quote": "policy-hold state",
+          "source_start": 349,
+          "source_end": 366,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "proposed allocation",
+          "source_quote": "proposed allocation",
+          "source_start": 285,
+          "source_end": 304,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "clinical review",
+          "source_quote": "clinical review",
+          "source_start": 453,
+          "source_end": 468,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "PoisonLedger incident registry",
+          "source_quote": "PoisonLedger incident registry",
+          "source_start": 152,
+          "source_end": 182,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "value": "who has legal authority to approve the allocation policy",
+          "source_quote": "who has legal authority to approve the allocation policy",
+          "source_start": 508,
+          "source_end": 564,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "ambiguities"
+        },
+        {
+          "id": "ambiguities-2",
+          "value": "what clinical triage standard governs ranking",
+          "source_quote": "what clinical triage standard governs ranking",
+          "source_start": 568,
+          "source_end": 613,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "ambiguities"
+        }
+      ],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not issue dispensing orders",
+          "source_quote": "must not issue dispensing orders",
+          "source_start": 618,
+          "source_end": 650,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "id": "material-questions-1",
+          "value": "who has legal authority to approve the allocation policy",
+          "source_quote": "who has legal authority to approve the allocation policy",
+          "source_start": 508,
+          "source_end": 564,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "material_questions"
+        },
+        {
+          "id": "material-questions-2",
+          "value": "what clinical triage standard governs ranking",
+          "source_quote": "what clinical triage standard governs ranking",
+          "source_start": 568,
+          "source_end": 613,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "material_questions"
+        }
+      ]
+    },
+    {
+      "case_id": "ih-23-evacuation-command",
+      "prompt_sha256": "441e68b5590d8821a1ce783bc7e4b757200d12c09fe70bcec3e3594dcf435402",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "alert_approval_owner",
+        "evacuation_jurisdiction"
+      ],
+      "explicit_systems": [
+        "wildfire reconnaissance drone service",
+        "county alert gateway"
+      ],
+      "critical_constraints": [
+        "must not transmit a public alert before both authorities are identified"
+      ],
+      "complexity": {
+        "evidence_bytes": 596,
+        "documents": 1,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 2,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "air-operations analyst",
+          "source_quote": "air-operations analyst",
+          "source_start": 112,
+          "source_end": 134,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "duty dispatcher",
+          "source_quote": "duty dispatcher",
+          "source_start": 165,
+          "source_end": 180,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "sends fire-line changes",
+          "source_quote": "sends fire-line changes",
+          "source_start": 56,
+          "source_end": 79,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "verifies the detection",
+          "source_quote": "verifies the detection",
+          "source_start": 135,
+          "source_end": 157,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "sensor-detected state",
+          "source_quote": "sensor-detected state",
+          "source_start": 224,
+          "source_end": 245,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "human-verified state",
+          "source_quote": "human-verified state",
+          "source_start": 249,
+          "source_end": 269,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "public alert",
+          "source_quote": "public alert",
+          "source_start": 190,
+          "source_end": 202,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        },
+        {
+          "id": "outputs-2",
+          "value": "jurisdiction decision",
+          "source_quote": "jurisdiction decision",
+          "source_start": 366,
+          "source_end": 387,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "wildfire reconnaissance drone service",
+          "source_quote": "wildfire reconnaissance drone service",
+          "source_start": 7,
+          "source_end": 44,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        },
+        {
+          "id": "dependencies-2",
+          "value": "county alert gateway",
+          "source_quote": "county alert gateway",
+          "source_start": 87,
+          "source_end": 107,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "value": "incident commander who may approve an alert",
+          "source_quote": "incident commander who may approve an alert",
+          "source_start": 422,
+          "source_end": 465,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "ambiguities"
+        },
+        {
+          "id": "ambiguities-2",
+          "value": "jurisdiction whose evacuation protocol applies",
+          "source_quote": "jurisdiction whose evacuation protocol applies",
+          "source_start": 473,
+          "source_end": 519,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "ambiguities"
+        }
+      ],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not transmit a public alert before both authorities are identified",
+          "source_quote": "must not transmit a public alert before both authorities are identified",
+          "source_start": 524,
+          "source_end": 595,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "id": "material-questions-1",
+          "value": "incident commander who may approve an alert",
+          "source_quote": "incident commander who may approve an alert",
+          "source_start": 422,
+          "source_end": 465,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "material_questions"
+        },
+        {
+          "id": "material-questions-2",
+          "value": "jurisdiction whose evacuation protocol applies",
+          "source_quote": "jurisdiction whose evacuation protocol applies",
+          "source_start": 473,
+          "source_end": 519,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "material_questions"
+        }
+      ]
+    },
+    {
+      "case_id": "ih-24-discipline-record",
+      "prompt_sha256": "2cacbae566e904247f82ac83ca8e5218b65394b0ac9842dce7930d09662035a7",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "qualification_rule_owner",
+        "appeal_route"
+      ],
+      "explicit_systems": [
+        "PortCredential registry"
+      ],
+      "critical_constraints": [
+        "must not schedule an assessment until both authorities are identified"
+      ],
+      "complexity": {
+        "evidence_bytes": 562,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 2,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "id": "actors-1",
+          "value": "harbor pilots guild",
+          "source_quote": "harbor pilots guild",
+          "source_start": 20,
+          "source_end": 39,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-2",
+          "value": "CoastExam vendor",
+          "source_quote": "CoastExam vendor",
+          "source_start": 48,
+          "source_end": 64,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        },
+        {
+          "id": "actors-3",
+          "value": "guild assessor",
+          "source_quote": "guild assessor",
+          "source_start": 195,
+          "source_end": 209,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actors"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "value": "determine whether trainee pilots may sit for a navigation assessment",
+          "source_quote": "determine whether trainee pilots may sit for a navigation assessment",
+          "source_start": 68,
+          "source_end": 136,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        },
+        {
+          "id": "actions-2",
+          "value": "marks evidence-complete state",
+          "source_quote": "marks evidence-complete state",
+          "source_start": 210,
+          "source_end": 239,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "actions"
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "value": "evidence-complete state",
+          "source_quote": "evidence-complete state",
+          "source_start": 216,
+          "source_end": 239,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        },
+        {
+          "id": "states-2",
+          "value": "scheduling-ready state",
+          "source_quote": "scheduling-ready state",
+          "source_start": 264,
+          "source_end": 286,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "states"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "value": "eligible packet",
+          "source_quote": "eligible packet",
+          "source_start": 318,
+          "source_end": 333,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "outputs"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "value": "PortCredential registry",
+          "source_quote": "PortCredential registry",
+          "source_start": 142,
+          "source_end": 165,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "dependencies"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "value": "qualification rule owner",
+          "source_quote": "qualification rule owner",
+          "source_start": 397,
+          "source_end": 421,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "ambiguities"
+        },
+        {
+          "id": "ambiguities-2",
+          "value": "appeal route that governs a disputed eligibility decision",
+          "source_quote": "appeal route that governs a disputed eligibility decision",
+          "source_start": 430,
+          "source_end": 487,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "ambiguities"
+        }
+      ],
+      "non_goals": [
+        {
+          "id": "non-goals-1",
+          "value": "must not schedule an assessment until both authorities are identified",
+          "source_quote": "must not schedule an assessment until both authorities are identified",
+          "source_start": 492,
+          "source_end": 561,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "category": "non_goals",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "id": "material-questions-1",
+          "value": "qualification rule owner",
+          "source_quote": "qualification rule owner",
+          "source_start": 397,
+          "source_end": 421,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "material_questions"
+        },
+        {
+          "id": "material-questions-2",
+          "value": "appeal route that governs a disputed eligibility decision",
+          "source_quote": "appeal route that governs a disputed eligibility decision",
+          "source_start": 430,
+          "source_end": 487,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "category": "material_questions"
+        }
+      ]
+    }
+  ],
+  "disclosed": true,
+  "source_revision": "aa51e5cf92da4daa79fd3aa40944d49a0211eb75",
+  "original_holdout_sha256": "2b4543c2016acb4713da5aff963c92452c17ad82f7f853e21afc087d8a6a4aa0",
+  "terminal_result_sha256": "b5fec40503b9fdb2e834c069b4d7a641888f346e0c93231b41eeb2764ce3f754",
+  "terminal_status": "failed",
+  "release_case_passed_count": 4,
+  "release_case_failed_count": 20,
+  "retired_reason": "Disclosed one-shot holdout failed exact-distribution semantic release proof and is regression-only."
+}
