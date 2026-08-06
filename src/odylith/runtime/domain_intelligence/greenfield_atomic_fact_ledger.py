@@ -107,7 +107,9 @@ _STOPWORDS = frozenset(
     }
 )
 _PROHIBITED_RE = re.compile(
-    r"\b(?:must\s+not|do\s+not|does\s+not|never|without|forbidden|prohibited)\b",
+    r"\b(?:must\s+not|do\s+not|does\s+not|never|without)\b|"
+    r"\b(?:is|are)\s+(?:forbidden|prohibited)\b|"
+    r"(?<!-)\b(?:forbidden|prohibited)\s+(?:from|to)\b",
     flags=re.IGNORECASE,
 )
 _REQUIRED_RE = re.compile(r"\b(?:must|required|requires?|shall)\b", flags=re.IGNORECASE)
@@ -458,10 +460,21 @@ def _projection_atoms(*, field: str, value: Any) -> tuple[tuple[str, str], ...]:
         if field == "first_path":
             model = first_path_model(item)
             steps = list(model.steps) or [item]
+            seen_values: set[str] = set()
             for step_index, step in enumerate(steps):
                 subject = carried_subject_prefix(step)
                 action = step[len(subject) :].strip() if subject and step.startswith(subject) else step
                 rows.append((f"{path}/steps/{step_index}", action))
+                seen_values.add(_normalized_token_text(action))
+            sentence_keys = {_normalized_token_text(unit) for unit in _sentence_units(item)}
+            for unit_index, unit in enumerate(_source_atomic_units(item, source_section_key="first_path")):
+                unit_key = _normalized_token_text(unit)
+                if not unit_key or unit_key in seen_values:
+                    continue
+                if unit_key not in sentence_keys and not first_path_model(unit).material_action:
+                    continue
+                rows.append((f"{path}/source_units/{unit_index}", unit))
+                seen_values.add(unit_key)
             continue
         units = _sentence_units(item)
         rows.extend((f"{path}/units/{unit_index}", unit) for unit_index, unit in enumerate(units))
@@ -505,15 +518,14 @@ def _source_atomic_units(value: str, *, source_section_key: str) -> list[str]:
         return sentences
     units: list[str] = []
     for clause in sentences:
+        units.append(clause)
         if _polarity(clause) == "prohibited":
-            units.append(clause)
             continue
-        units.extend(
-            unit
-            for row in re.split(r"[,:]\s*", clause)
-            if (unit := clean_markdown_text(row).strip(" .;:"))
-        )
-    return units
+        for row in re.split(r"[,:]\s*", clause):
+            unit = clean_markdown_text(row).strip(" .;:")
+            if unit and unit != clause:
+                units.append(unit)
+    return list(dict.fromkeys(units))
 
 
 def _is_entailment_source(span: Mapping[str, Any]) -> bool:

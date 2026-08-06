@@ -195,6 +195,33 @@ above.
   meaning loss; it must not weaken atom custody or teach the scorer to accept
   generated adjacency as evidence.
 
+## Canonical Custody Replay Checkpoint (2026-08-06)
+
+- The disclosed 21-case commit corpus now preserves every annotated actor,
+  action, state, output, dependency, and non-goal through canonical prompt
+  materialization and accepts every annotation in Product Intent authority v4.
+  Full source sentences remain custody evidence while bounded canonical
+  projections drive artifacts; supporting research and host instructions remain
+  ineligible for product truth.
+- Shared grammar and projection ownership now preserve complete coordinated
+  workflows, source-order appositive actors, explicit transition objects,
+  visible release results, named source carriers, and prohibitions. Component
+  labels derive from the leading owned action instead of scanning a whole noun
+  list for a later verb-shaped token. This prevents terms such as `baseline
+  routes` and `operator notes` from becoming fabricated Routing or Operator
+  records.
+- EDIT clarification trusts a concrete human actor already present in the
+  edited First Complete Path, so the user is not asked to repeat the same role
+  in a separate Human Actors section. Material automated-actor uncertainty
+  remains fail-closed. Coordinated actor paths remain one complete sentence
+  rather than repeating the actor before every action.
+- Fresh proof passes the 44-test corpus custody matrix, all 120 recovery,
+  materiality, and requirement-boundary tests with no exclusions, and all 40
+  atomic-ledger and Product Intent envelope tests. Remaining gates are the
+  deterministic transaction/recovery laws, normal/empty/degraded browser
+  matrix, rebuilt exact distribution, installed replay, and a newly authored
+  untouched holdout.
+
 ## Related Bugs
 
 - [CB-207](../../../casebook/bugs/2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md)

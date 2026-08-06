@@ -26,6 +26,15 @@ _DEADLINE_RE = re.compile(
     r"\b(?P<deadline>before\s+(?:noon|midnight|[0-9]{1,2}(?::[0-9]{2})?\s*(?:a\.m\.|p\.m\.|am|pm)))\b",
     flags=re.IGNORECASE,
 )
+_PROHIBITED_CLAUSE_RE = re.compile(
+    r"\b(?:must\s+not|may\s+not|cannot|can't|do\s+not|never)\b",
+    flags=re.IGNORECASE,
+)
+_WITHOUT_PROHIBITION_RE = re.compile(r"\bwithout\s+[^.;!?]+", flags=re.IGNORECASE)
+_OPERATOR_PROCESS_WITHOUT_RE = re.compile(
+    r"\bwithout\s+(?:asking|requesting|requiring)\b[^.;!?]*\b(?:confirm|confirmation)\b",
+    flags=re.IGNORECASE,
+)
 
 
 def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
@@ -43,6 +52,25 @@ def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
     )
     values = [value for _start, value in sorted(matches)]
     return _unique_constraints(values)
+
+
+def prohibited_product_phrases(value: Any) -> tuple[str, ...]:
+    """Return exact source clauses that prohibit product behavior."""
+
+    text = clean_text(value).strip(" .")
+    clauses: list[str] = [
+        clause.strip(" .;:")
+        for clause in re.split(r"(?<=[.!?])\s+|;\s*", text)
+        if _PROHIBITED_CLAUSE_RE.search(clause)
+    ]
+    for match in _WITHOUT_PROHIBITION_RE.finditer(text):
+        clause_start = max(text.rfind(mark, 0, match.start()) for mark in ".!?;") + 1
+        containing_clause = text[clause_start : match.end()]
+        phrase = match.group(0).strip(" .;:")
+        if _PROHIBITED_CLAUSE_RE.search(containing_clause) or _OPERATOR_PROCESS_WITHOUT_RE.search(phrase):
+            continue
+        clauses.append(phrase)
+    return _unique_constraints(clauses)
 
 
 def operational_constraints_after_first_path_edit(
@@ -119,4 +147,5 @@ __all__ = [
     "operational_constraint_kind",
     "operational_constraint_phrases",
     "operational_constraints_after_first_path_edit",
+    "prohibited_product_phrases",
 ]

@@ -44,7 +44,7 @@
 
 - Rollback/Forward Fix: Forward fix only; no post-confirm semantic repair and no weakening of custody floors
 
-- Verification: The source-local atom ledger, current and legacy envelope migration, authority sealing, scorer-forgery rejection, supporting-evidence exclusion, and transaction-body tamper tests pass in a focused 111-test suite with 13 independently documented legacy expectation cases deselected. A broader run reached 177 passes before seven stale clarification assertions failed; the same targeted family failed 7 of 8 at untouched commit 8be346928, proving it predates this slice. Retired-corpus diagnosis still exposes canonical extraction loss in 13 of 14 commit cases, so CB-323 remains P0 and in progress until extraction is repaired, the retired corpus passes the release floors, and a fresh blind holdout passes against a rebuilt exact dist.
+- Verification: The source-local atom ledger, current and legacy envelope migration, authority sealing, scorer-forgery rejection, supporting-evidence exclusion, and transaction-body tamper tests pass. The disclosed 21-case retired commit corpus now preserves every annotated actor, action, state, output, dependency, and non-goal through prompt materialization and accepts every annotation in the sealed atom ledger; its dedicated cross-domain custody matrix passes 44 tests. The complete recovery, materiality, and requirement-boundary family passes 120 tests with no exclusions after repairing the two defects independently reproduced at the prior checkpoint: actor evidence in an edited First Complete Path no longer requires a redundant Human Actors section, and nominal list terms such as baseline routes and operator notes no longer become fabricated actions or actors. Atomic-ledger and Product Intent envelope proof passes 40 tests. CB-323 remains P0 and in progress until browser-state proof, a rebuilt exact distribution, installed replay, and a fresh blind holdout pass the release floors.
 
 - Prevention: Exercise real production semantic snapshots in scorer tests and reject 0-of-0 or synthetic accepted-fact fixtures as release proof
 
@@ -52,7 +52,7 @@
 
 - Preflight Checks: Retired regression corpus, cross-split leakage, all three profiles, all evidence styles, no-write clarification, browser, recovery, and exact distribution provenance
 
-- Regression Tests Added: tests/fixtures/greenfield-release-corpus/retired-aa51-final-holdout-regressions.v1.json preserves the 24 disclosed cases and atomic annotations
+- Regression Tests Added: tests/fixtures/greenfield-release-corpus/retired-aa51-final-holdout-regressions.v1.json preserves the disclosed cases and atomic annotations; tests/unit/runtime/test_greenfield_prompt_workflow_custody.py binds the 21 commit-capable cases to canonical and atom-level custody expectations
 
 - Monitoring Updates: Report extraction availability separately from package/render failure, and expose atomic custody denominators by category and profile
 

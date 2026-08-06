@@ -103,6 +103,15 @@ def test_operator_evidence_hypothesis_preserves_named_prompt_source() -> None:
     assert hypothesis["external_systems"] == ("Hall Calendar",)
 
 
+def test_source_boundary_rejects_product_relative_clause_with_input_carrier() -> None:
+    evidence = (
+        "Create a proposal for an open source security embargo room that receives vulnerability reports, "
+        "coordinates maintainer triage, and shows advisory readiness."
+    )
+
+    assert source_boundary_rows_from_evidence(evidence) == []
+
+
 def test_prompt_prose_does_not_override_an_empty_structured_external_boundary() -> None:
     intent = _intent()
     intent.update(

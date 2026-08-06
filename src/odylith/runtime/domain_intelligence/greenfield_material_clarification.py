@@ -53,6 +53,13 @@ _VISIBLE_RE = re.compile(
     r"return|returns|get|gets)\b",
     flags=re.IGNORECASE,
 )
+_TERMINAL_DELIVERABLE_RE = re.compile(
+    r"(?:,|\band\b|\bthen\b|\bfinally\b)\s+"
+    r"(?:publish(?:es)?|produc(?:e|es)|issu(?:e|es)|prepar(?:e|es)|generat(?:e|es)|"
+    r"export(?:s)?|sav(?:e|es)|record(?:s)?|creat(?:e|es)|return(?:s)?)\s+"
+    r"(?:an?|the|one|its|their|[A-Za-z0-9])\b[^.!?]{1,180}$",
+    flags=re.IGNORECASE,
+)
 _IDENTITY_SOURCE_RE = re.compile(r"\b(?:codes?|identifiers?|ids?|tags?|tokens?)\b", re.IGNORECASE)
 _STATE_ACTION_RE = re.compile(
     r"\b(?:check\s*in|checks\s*in|arriv(?:als?|e|es)|admi(?:t|ts|ssion)|present|attendance)\b",
@@ -210,7 +217,7 @@ def incomplete_path_clarification(*, prompt: str, edit_evidence: str = "") -> Ma
             required_fields=("first_path",),
         )
     fields: list[str] = []
-    if not _VISIBLE_RE.search(source.first_path):
+    if not has_explicit_visible_result(source.first_path):
         fields.append("visible_result")
     if len(model.steps) < 2 and _STATE_ACTION_RE.search(source.first_path):
         fields.append("state_transition")
@@ -241,4 +248,16 @@ def incomplete_path_clarification(*, prompt: str, edit_evidence: str = "") -> Ma
     )
 
 
-__all__ = ["MaterialClarification", "explicit_material_clarification", "incomplete_path_clarification"]
+def has_explicit_visible_result(first_path: str) -> bool:
+    """Recognize an observed result or a terminal deliverable after prior work."""
+
+    text = " ".join(str(first_path or "").split()).strip(" .")
+    return bool(text and (_VISIBLE_RE.search(text) or _TERMINAL_DELIVERABLE_RE.search(text)))
+
+
+__all__ = [
+    "MaterialClarification",
+    "explicit_material_clarification",
+    "has_explicit_visible_result",
+    "incomplete_path_clarification",
+]

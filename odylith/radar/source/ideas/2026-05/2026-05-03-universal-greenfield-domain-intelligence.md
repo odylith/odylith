@@ -2670,6 +2670,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   constraint, dependency, actor, and state extraction before replay, dist, and
   fresh holdout proof.
 
+- 2026-08-06 canonical-custody replay checkpoint closed the disclosed corpus
+  extraction loss without domain-specific production dictionaries. Prompt
+  materialization now preserves complete ordered workflow evidence, explicit
+  actors, transition state objects, visible outputs, named dependencies, and
+  prohibitions while keeping research and host instructions evidence-only.
+  Canonical paths retain source facts alongside bounded projections; component
+  naming derives from the leading owned action so later noun phrases cannot be
+  reinterpreted as verbs or generic actors. Edited First Complete Path sections
+  can establish their own human actor without requiring a redundant actor
+  section, and coordinated paths no longer repeat the same actor sentence by
+  sentence. The 21-case commit corpus preserves and seals every annotated fact
+  in a 44-test matrix; the full recovery, materiality, and requirement-boundary
+  family passes 120 tests with no exclusions; atomic-ledger and envelope proof
+  passes 40 tests. This is a stable source checkpoint, not release closure.
+  Browser-state proof, rebuilt exact dist, installed replay, recovery laws, and
+  a fresh untouched holdout remain mandatory.
+
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
   The active release contract is standard post-confirm under 60 seconds without

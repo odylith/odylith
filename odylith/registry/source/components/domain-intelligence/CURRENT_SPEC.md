@@ -51,6 +51,19 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-06: Preserved complete cross-domain Product Intent meaning before confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-323`; Diagram: D-043)
+  Prompt evidence now keeps complete ordered workflows, source actors,
+  transition objects, visible results, named dependencies, and non-goals in
+  atom-level custody without promoting research or host instructions into
+  product truth. Canonical artifact labels derive from the leading owned action
+  while the full source fact remains sealed, preventing noun/verb collisions,
+  fake generic actors, clipped paths, and repeated actor sentences. Edited
+  First Complete Path evidence can establish its human actor without a
+  redundant section. The disclosed 21-case corpus passes 44 custody tests, the
+  complete recovery/materiality boundary passes 120 tests, and authority v4
+  proof passes 40 tests. Browser, exact-dist, installed, recovery, and fresh
+  blind-holdout proof remain open.
+
 - 2026-08-06: Bound accepted Greenfield facts to atom-level evidence custody before confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-323`; Diagram: D-043)
   Product Intent authority v4 seals atomic actors, actions, states, outputs,
   constraints, dependencies, assumptions, ambiguities, and non-goals with

@@ -47,7 +47,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import prohibited_product_phrases
 from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import assumptions_with_reviewer_obligations
 from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import localize_direct_actor
 from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import proof_with_reviewer_obligations
@@ -74,20 +76,26 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "database",
         "data",
         "decision",
+        "depot",
         "device",
+        "drift",
         "engine",
         "executor",
+        "finding",
         "hardware",
+        "inspection",
         "ledger",
         "manager",
         "model",
         "monitor",
         "notebook",
         "platform",
+        "path",
         "policy",
         "product",
         "proof",
         "recommendation",
+        "reading",
         "record",
         "register",
         "report",
@@ -100,7 +108,9 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "summary",
         "system",
         "tool",
+        "unit",
         "view",
+        "window",
         "workbench",
         "workspace",
     }
@@ -152,6 +162,10 @@ _ACTOR_BOUNDARY_RE = re.compile(
     r",\s+(?=(?:(?:and|or|then)\s+)?(?:the|a|an)\s+\S+(?:\s+\S+){0,3}\s+"
     r"(?:is|are|can|must|will|should|[a-z]+s)\b)",
     flags=re.IGNORECASE,
+)
+_APPOSITIVE_PATH_ACTOR_RE = re.compile(
+    r"\b(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?P<article>a|an|the)\s+"
+    r"(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,70}?),\s+",
 )
 _MATERIAL_FRAGMENT_ACTION_WORDS = frozenset(
     {
@@ -243,7 +257,6 @@ def confirmation_from_operator_intent(
             prompt_source.command_led
             and prompt_source.title
             and prompt_source.actor
-            and not _actor_uses_where_workflow(prompt_source.actor, source=product_source)
         ),
         require_explicit_action=prompt_source.command_led,
     )
@@ -261,9 +274,18 @@ def confirmation_from_operator_intent(
         or _generic_first_path_source(title, source=generic_context_source)
     )
     reviewer_obligations = operator_review_lens_obligations(product_source)
-    direct_actor_row = _prompt_actor_row(prompt_source.actor, first_path_source)
+    recovered_path_is_metadata = contains_word_sense_metadata_clause(recovered_first_path_source)
+    actor_fact_source = (
+        recovered_first_path_source
+        if first_path_has_action_signal(recovered_first_path_source) and not recovered_path_is_metadata
+        else first_path_source
+    )
+    direct_actor_row = _prompt_actor_row(
+        "" if recovered_path_is_metadata else prompt_source.actor,
+        actor_fact_source,
+    )
     recovered_actor_rows = _human_actor_rows_from_first_path(
-        first_path_source,
+        actor_fact_source,
         title=title,
         include_fallback=not bool(direct_actor_row),
     )
@@ -282,6 +304,7 @@ def confirmation_from_operator_intent(
         )
         for row in actor_rows
     ]
+    actor_rows = _without_actor_label_fragments(actor_rows)
     lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
     direct_actor_label = _lead_actor_label([direct_actor_row])
     first_path_source = localize_direct_actor(
@@ -331,7 +354,11 @@ def confirmation_from_operator_intent(
         first_path_inline=first_path_inline,
         outcome_object=outcome_object,
     )
-    state = state_object_from_first_path(first_path, fallback=title)
+    state = state_object_from_first_path(
+        actor_fact_source or first_path,
+        fallback=title,
+        preferred_action=lead_action,
+    )
     proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
     if evaluation.story:
         story = evaluation.story
@@ -363,6 +390,7 @@ def confirmation_from_operator_intent(
     ambiguities = evaluation.ambiguities
     evidence_requirements = evidence_anchor_phrases(product_source)
     operational_constraints = operational_constraint_phrases(product_source)
+    non_goals = prohibited_product_phrases(product_source)
     internal_systems = tuple(
         evaluation.internal_systems
         or internal_system_rows_from_first_path(
@@ -391,6 +419,7 @@ def confirmation_from_operator_intent(
         "proof_boundary": proof,
         "evidence_requirements": tuple(evidence_requirements),
         "operational_constraints": tuple(operational_constraints),
+        "non_goals": tuple(non_goals),
     }
     if as_mapping:
         return hypothesis
@@ -470,7 +499,7 @@ def _preserve_complete_source_sequence(value: str) -> bool:
 
     text = _clean(value).strip(" .")
     rows = [row.strip(" .") for row in re.split(r"(?<=[.!?])\s+", text) if row.strip(" .")]
-    if not 2 <= len(rows) <= 3:
+    if not 2 <= len(rows) <= 8:
         return False
     if not has_human_actor_signal(text):
         return False
@@ -542,26 +571,7 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
     path = _clean(first_path).strip(" .")
     if not actor_text or not path:
         return ""
-    action = re.sub(
-        rf"^(?:(?:a|an|the)\s+)?{re.escape(actor_text)}\s+",
-        "",
-        path,
-        count=1,
-        flags=re.IGNORECASE,
-    ).strip(" .")
-    if action == path:
-        name = next(
-            (
-                word.strip(".,:;")
-                for word in reversed(actor_text.split())
-                if word[:1].isupper()
-            ),
-            "",
-        )
-        if name:
-            named_action = re.search(rf"\b{re.escape(name)}\s+(?P<action>.+)$", path)
-            if named_action:
-                action = named_action.group("action").strip(" .")
+    action = _source_action_after_actor(actor=actor_text, first_path=path)
     action = _strip_relative_action_prefix(action)
     if not action:
         return ""
@@ -574,6 +584,64 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
             or re.search(r"[.;]", action)
         ),
     )
+
+
+def _source_action_after_actor(*, actor: str, first_path: str) -> str:
+    matches = list(re.finditer(rf"\b{re.escape(actor)}\b", first_path, flags=re.IGNORECASE))
+    appositive = re.fullmatch(
+        r"(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?:a|an|the)\s+.+",
+        actor,
+        flags=re.IGNORECASE,
+    )
+    if appositive:
+        matches.extend(re.finditer(rf"\b{re.escape(appositive.group('name'))}\b", first_path, flags=re.IGNORECASE))
+        matches.sort(key=lambda item: item.start())
+    for match in matches:
+        action = first_path[match.end() :].strip(" ,.;:")
+        normalized = _normalized_actor_tail(action)
+        if normalized:
+            return normalized
+    return first_path
+
+
+def _normalized_actor_tail(value: str) -> str:
+    action = _clean(value).strip(" .")
+    if not action:
+        return ""
+    action = re.sub(r"^to\s+", "", action, count=1, flags=re.IGNORECASE)
+    action = re.sub(
+        r"^(?:can|could|may|might|must|should|will|would)\s+",
+        "",
+        action,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    need = re.match(
+        r"^(?:needs?|wants?)\s+(?P<article>a|an|the)\s+(?P<product>[^,.;!?]{1,100}?)\s+"
+        r"(?P<connector>to|where)\s+(?P<action>.+)$",
+        action,
+        flags=re.IGNORECASE,
+    )
+    if need:
+        if need.group("connector").casefold() == "to":
+            return need.group("action").strip(" .")
+        product = " ".join(need.group("product").split()).strip(" .")
+        return f"use {need.group('article').casefold()} {product} where {need.group('action').strip(' .')}"
+    action_words = _words(action)
+    action_head = action_words[0].casefold().strip(".,:;") if action_words else ""
+    if (
+        looks_like_action_clause(action)
+        or looks_like_base_action_token(action_head)
+        or looks_like_finite_action_token(action_head)
+    ):
+        return action
+    using = re.match(r"^using\s+(?P<object>.+)$", action, flags=re.IGNORECASE)
+    if using:
+        return f"use {using.group('object').strip(' .')}"
+    path = re.match(r"^from\s+(?P<path>.+)$", action, flags=re.IGNORECASE)
+    if path:
+        return f"process {path.group('path').strip(' .')}"
+    return ""
 
 
 def _prompt_actor_requires_modal(actor: str, first_path: str) -> bool:
@@ -885,8 +953,8 @@ def _human_actor_rows_from_first_path(
     title: str = "",
     include_fallback: bool = True,
 ) -> list[str]:
-    rows: list[str] = []
-    seen_labels: set[str] = set()
+    rows = _appositive_actor_rows_from_first_path(value)
+    seen_labels = {row.split(":", 1)[0].casefold() for row in rows}
     for clause in _first_path_actor_clauses(value):
         row = _human_actor_row_from_clause(
             clause,
@@ -910,6 +978,17 @@ def _human_actor_rows_from_first_path(
     return [f"{actor}: needs the product to {action} and keep the result visible and reviewable"]
 
 
+def _appositive_actor_rows_from_first_path(value: str) -> list[str]:
+    rows: list[str] = []
+    for match in _APPOSITIVE_PATH_ACTOR_RE.finditer(_clean(value)):
+        actor = f"{match.group('name')}, {match.group('article')} {match.group('role').strip()}"
+        action = _source_action_after_actor(actor=actor, first_path=value)
+        row = _human_actor_row(actor, action) if action and action != value else ""
+        if row:
+            rows.append(row)
+    return rows
+
+
 def _fallback_actor_label(title: str) -> str:
     label = _clean(title).strip(" .") or "Product"
     candidate = _title_without_terminal_container(label)
@@ -924,13 +1003,6 @@ def _actor_matches_product_focus(actor: str, *, title: str) -> bool:
     if title_words and title_words[-1] in _PRODUCT_CONTAINER_TERMS:
         title_words.pop()
     return bool(actor_words) and actor_words == title_words
-
-
-def _actor_uses_where_workflow(actor: str, *, source: str) -> bool:
-    value = _clean(actor).strip(" .")
-    if not value:
-        return False
-    return bool(re.search(rf"\bwhere\s+(?:the\s+)?{re.escape(value)}\b", source, flags=re.IGNORECASE))
 
 
 def _title_without_terminal_container(value: str) -> str:
@@ -1006,6 +1078,17 @@ def _human_actor_row_from_clause(
 ) -> str:
     if is_actor_obligation_noun_phrase(clause):
         return ""
+    delegated = re.search(
+        r"\b(?:asks?|directs?|requires?)\s+(?:a|an|the)\s+"
+        r"(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,70}?)\s+to\s+(?P<action>.+)$",
+        _clean(clause),
+        flags=re.IGNORECASE,
+    )
+    if delegated and _has_actor_action_signal(
+        _words(delegated.group("actor")),
+        _words(delegated.group("action")),
+    ):
+        return _human_actor_row(delegated.group("actor"), delegated.group("action"))
     relative = re.match(
         r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<action>.+)$",
         _clean(clause),
@@ -1335,7 +1418,7 @@ def _human_actor_row(actor: str, action: str, *, preserve_full_action: bool = Fa
         and terminal_actor_word not in _HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS
     ):
         return ""
-    actor_label = title_case_text(" ".join(actor_words))
+    actor_label = _source_preserving_actor_label(actor, actor_words=actor_words)
     action_source = (
         action
         if preserve_full_action and _coordinated_actor_boundary_index(action) < 0
@@ -1348,6 +1431,22 @@ def _human_actor_row(actor: str, action: str, *, preserve_full_action: bool = Fa
         return ""
     need_verb = _actor_verb(actor_label, singular="needs", plural="need")
     return f"{actor_label}: {need_verb} the product to {action_text} and keep the result visible and reviewable"
+
+
+def _source_preserving_actor_label(actor: str, *, actor_words: Sequence[str]) -> str:
+    source = _clean(actor).strip(" .")
+    appositive = re.fullmatch(
+        r"(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?P<article>a|an|the)\s+"
+        r"(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,80})",
+        source,
+        flags=re.IGNORECASE,
+    )
+    if appositive and not has_non_human_actor_signal(appositive.group("role")):
+        return (
+            f"{appositive.group('name')}, {appositive.group('article').casefold()} "
+            f"{appositive.group('role').casefold()}"
+        )
+    return title_case_text(" ".join(actor_words))
 
 
 def _base_actor_action_clause(value: str) -> str:
@@ -1477,6 +1576,19 @@ def _lead_actor_label(actor_rows: Sequence[str]) -> str:
     return ""
 
 
+def _without_actor_label_fragments(actor_rows: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    kept_terms: list[set[str]] = []
+    for row in actor_rows:
+        label = str(row).partition(":")[0].strip()
+        terms = {term.casefold() for term in label_terms(label) if term.casefold() not in _LEADING_ARTICLES}
+        if terms and any(terms <= existing or existing <= terms for existing in kept_terms):
+            continue
+        rows.append(str(row))
+        kept_terms.append(terms)
+    return rows
+
+
 def _lead_actor_action(actor_rows: Sequence[str]) -> str:
     for row in actor_rows:
         _label, _separator, body = str(row).partition(":")
@@ -1518,6 +1630,16 @@ def _looks_like_actor_subject(words: Sequence[str]) -> bool:
 
 
 def _has_actor_action_signal(actor_words: Sequence[str], action_words: Sequence[str]) -> bool:
+    actor = _strip_leading_articles(actor_words)
+    actor_tokens = {word.casefold().strip(".,:;") for word in actor}
+    if actor_tokens & {"for", "helps", "lets", "needs", "supports", "wants"}:
+        return False
+    terminal = actor[-1].casefold().strip(".,:;") if actor else ""
+    terminal = terminal[:-1] if terminal.endswith("s") else terminal
+    if terminal in _NON_HUMAN_ACTOR_TERMS and terminal not in _HUMAN_ACTOR_TERMS:
+        return False
+    if action_words and has_non_human_actor_signal(f"{' '.join(actor)} {action_words[0]}"):
+        return False
     return _looks_like_actor_subject(actor_words) or has_human_actor_action_context(
         " ".join(actor_words),
         " ".join(action_words),

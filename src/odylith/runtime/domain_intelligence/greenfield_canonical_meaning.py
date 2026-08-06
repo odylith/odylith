@@ -114,12 +114,21 @@ def product_handoff_first_path(*, actor: str, first_path: str) -> str:
     return ". ".join(row.rstrip(" .") for row in rows if row.strip(" .")).rstrip(" .") + "."
 
 
-def state_object_from_first_path(first_path: str, *, fallback: str) -> str:
+def state_object_from_first_path(
+    first_path: str,
+    *,
+    fallback: str,
+    preferred_action: str = "",
+) -> str:
     """Return the durable object changed by the first material action."""
 
     model = first_path_model(first_path)
-    action = _action_without_subject((model.steps[0] if model.steps else "") or model.material_action)
-    subject = _action_object(action)
+    action = _action_without_subject(
+        clean_text(preferred_action).strip(" .")
+        or (model.steps[0] if model.steps else "")
+        or model.material_action
+    )
+    subject = _state_transition_object(first_path) or _action_object(action)
     if _weak_state_object(subject):
         subject = ""
     if not subject:
@@ -131,6 +140,49 @@ def state_object_from_first_path(first_path: str, *, fallback: str) -> str:
         subject = f"{subject} record"
     subject = subject or clean_text(fallback).casefold() or "first-path item"
     return f"The primary state object is {indefinite_phrase(subject)}."
+
+
+def _state_transition_object(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    moved_object = re.search(
+        r"\b(?:moves?|moved)\s+(?P<object>(?:a|an|the)\s+[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4}?)\s+"
+        r"(?:from|into|to)\b[^.;]{0,100}\bstate\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if moved_object:
+        return moved_object.group("object").strip(" .")
+    kept_object = re.search(
+        r"\b(?:keeps?|kept)\s+(?P<object>(?:a|an|the)\s+[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4})\s+"
+        r"(?:in|within)\b[^.;]{0,100}\bstate\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if kept_object:
+        return kept_object.group("object").strip(" .")
+    entered = re.search(
+        r"(?:^|[:.;]\s+)(?P<object>(?:(?:a|an|the)\s+)?"
+        r"[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4}?)\s+"
+        r"(?:enters?|entered)\s+[^.;]{1,100}\bstate\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if entered:
+        return entered.group("object").strip(" .")
+    placed = re.search(
+        r"\b(?P<verb>[A-Za-z][A-Za-z'-]*)\s+(?P<object>(?:a|an|the)\s+[^,.;]{1,80}?)\s+"
+        r"and\s+places?\s+it\s+in\s+[^.;]{1,100}\bstate\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if placed and (
+        looks_like_base_action_token(base_action_verb(placed.group("verb")))
+        or looks_like_finite_action_token(placed.group("verb"))
+    ):
+        return placed.group("object").strip(" .")
+    return ""
 
 
 def canonical_state_object_is_meaningful(value: str) -> bool:
@@ -163,20 +215,22 @@ def internal_system_rows_from_first_path(
 
     source_path = clean_text(first_path).strip(" .")
     model = first_path_model(first_path)
-    source_human_subject = _matching_human_subject(source_path, human_actors=human_actors)
-    source_has_nominal_carry = bool(
-        source_human_subject
-        and any(
-            not _matching_human_subject(step, human_actors=human_actors)
-            and not _non_human_subject_prefix(step)
-            and not _starts_with_material_action(step)
-            for step in model.steps[1:]
-        )
-    )
+    source_subject_clause = model.steps[0] if model.steps else source_path
+    source_human_subject = _matching_human_subject(source_subject_clause, human_actors=human_actors)
+    nominal_carry_steps = {
+        clean_text(step).strip(" .").casefold()
+        for step in model.steps[1:]
+        if source_human_subject
+        and not _matching_human_subject(step, human_actors=human_actors)
+        and not _non_human_subject_prefix(step)
+        and not _starts_with_material_action(step)
+    }
+    source_has_nominal_carry = bool(nominal_carry_steps)
     steps = [
         owned_step
         for step in model.steps
         if clean_text(step).strip(" .")
+        and clean_text(step).strip(" .").casefold() not in nominal_carry_steps
         for owned_step in _ownership_steps(clean_text(step).strip(" ."), human_actors=human_actors)
     ]
     if not steps:
@@ -525,11 +579,13 @@ def _source_actor_mention_count(value: str, *, actor: str) -> int:
 
 
 def _human_supported_system_row(*, action: str, actor: str, state_label: str) -> str:
-    action_object = _compact_label(_action_object(action), fallback=state_label, max_words=4)
-    responsibilities = _responsibility_labels(action, step=action)
+    leading_action = clean_text(action).split(",", 1)[0].strip(" .")
+    owned_action = leading_action if _starts_with_material_action(leading_action) else action
+    action_object = _compact_label(_action_object(owned_action), fallback=state_label, max_words=4)
+    responsibilities = _responsibility_labels(owned_action, step=owned_action)
     actor_ref = _actor_key(actor) or "user"
     if "Intake" in responsibilities:
-        actor_action = _human_actor_action(action, actor_ref=actor_ref)
+        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
             f"{title_case_text(f'{action_object} Intake')} — records when the {actor_ref} {actor_action} and keeps "
             f"{action_object.casefold()} intake status, blockers, evidence, and handoff context visible"
@@ -546,19 +602,19 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
             "status, blockers, evidence, and handoff context visible"
         )
     if "Review" in responsibilities:
-        actor_action = _human_actor_action(action, actor_ref=actor_ref)
+        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
             f"{title_case_text(f'{action_object} Review Record')} — records when the {actor_ref} {actor_action} and "
             "keeps status, blockers, evidence, and handoff context visible"
         )
     if "Recordkeeping" in responsibilities:
-        actor_action = _human_actor_action(action, actor_ref=actor_ref)
+        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
             f"{title_case_text(f'{action_object} Recordkeeping')} — records when the {actor_ref} {actor_action} and "
             "keeps status, correction history, blockers, and handoff context visible"
         )
     if "Coordination" in responsibilities:
-        actor_action = _human_actor_action(action, actor_ref=actor_ref)
+        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
             f"{title_case_text(f'{action_object} Coordination')} — records when the {actor_ref} {actor_action} and "
             "keeps coordination status, blockers, evidence, and handoff context visible"

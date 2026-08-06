@@ -8,7 +8,10 @@ import re
 from typing import Any, Mapping
 
 from odylith.runtime.common.prose_grammar import action_verb_pattern
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
     contains_requirement_control_clause,
@@ -18,8 +21,12 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
     is_release_visible_result_statement,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
+    word_sense_content_clause_describes_comparison,
+)
 
 
 @dataclass(frozen=True)
@@ -130,9 +137,24 @@ _PRODUCT_GRANT_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _APPOSITIVE_ACTOR_RE = re.compile(
-    r"\b(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?:a|an|the)\s+"
+    r"\b(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?P<article>a|an|the)\s+"
     r"(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,70}?),\s+"
     r"(?P<action>[a-z][^.!?]{2,})",
+)
+_NAMED_PRODUCT_GRANT_RE = re.compile(
+    rf"(?:^|[.!?]\s+)(?P<title>{_TITLE_PHRASE})\s+"
+    r"(?:gives|guides|helps|lets|enables|supports)\b",
+)
+_LEADING_NEED_ACTOR_RE = re.compile(
+    r"(?:^|[.!?]\s+)(?:a|an|the)\s+"
+    r"(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,90}?)\s+"
+    r"(?:needs?|wants?)\s+(?:a|an|the)?\s*[^,.;!?]{1,100}?\s+(?:to|where|for)\b",
+    flags=re.IGNORECASE,
+)
+_NAMED_PRODUCT_HELPER_TAIL_RE = re.compile(
+    rf"(?:^|[.!?]\s+){_TITLE_PHRASE}\s+"
+    r"(?:gives|guides|helps|lets|enables|supports)\s+(?P<tail>[^.;!?]+)",
+    flags=re.IGNORECASE,
 )
 _NAMED_ROLE_RE = re.compile(
     r"\b(?:[Aa]|[Aa]n|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
@@ -238,7 +260,7 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
 
 
 def ranked_first_path_evidence(value: str) -> str:
-    """Return the strongest actor-action-outcome evidence, not the first plausible sentence."""
+    """Return the complete ordered workflow evidence, not one high-scoring sentence."""
 
     structured = structured_prompt_facts(value)
     if structured.first_path:
@@ -246,26 +268,84 @@ def ranked_first_path_evidence(value: str) -> str:
     rows = _narrative_rows(value)
     if not rows:
         return ""
+    ordered: list[str] = []
     candidates: list[tuple[int, int, str]] = []
     for index, row in enumerate(rows):
-        if not _hard_non_path(row):
-            candidates.append((_path_score(row), -index, row))
+        workflow_row = _workflow_row_projection(_workflow_claim_before_prohibition(row))
+        if workflow_row and not _hard_non_path(workflow_row):
+            score = _path_score(workflow_row)
+            candidates.append((score, -index, workflow_row))
+            if score >= 12 and _is_ordered_workflow_row(workflow_row):
+                ordered.append(workflow_row)
         for workflow in _embedded_workflow_clauses(row):
             candidates.append((_path_score(workflow) + 4, -index, workflow))
         for granted_path in _embedded_product_grant_clauses(row):
             candidates.append((_path_score(granted_path) + 4, -index, granted_path))
         for evidence_clause in _embedded_evidence_clauses(row):
             candidates.append((_path_score(evidence_clause) + 2, -index, evidence_clause))
-        if index + 1 < len(rows) and not _hard_non_path(row):
+        if index + 1 < len(rows) and workflow_row and not _hard_non_path(workflow_row):
             release_result = _release_visible_result_action(rows[index + 1])
             if release_result:
-                combined = f"{row}, and {release_result}"
+                combined = f"{workflow_row}, and {release_result}"
                 candidates.append((_path_score(combined), -index, combined))
             elif not _hard_non_path(rows[index + 1]):
-                combined = f"{row}. {rows[index + 1]}"
+                combined = f"{workflow_row}. {rows[index + 1]}"
                 candidates.append((_path_score(combined), -index, combined))
+    if ordered:
+        return ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
     score, _position, candidate = max(candidates, default=(0, 0, ""))
     return candidate if score >= 12 else ""
+
+
+def _workflow_row_projection(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text or re.match(r"^project\s+brief\s+for\b", text, flags=re.IGNORECASE):
+        return ""
+    grant = re.match(
+        r"^(?:the\s+)?first\s+release\s+should\s+give\s+(?:the\s+)?"
+        r"(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+a\s+complete\s+path\s+to\s+"
+        r"(?P<action>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if grant and has_human_actor_signal(grant.group("actor")):
+        action = re.sub(
+            r"\s+without\s+automating\s+[^.;!?]+$",
+            "",
+            grant.group("action"),
+            flags=re.IGNORECASE,
+        ).strip(" .")
+        return f"{grant.group('actor')} {action}"
+    prefix, separator, tail = text.partition(" where ")
+    if not separator:
+        match = re.search(r"\swhere\s", text, flags=re.IGNORECASE)
+        if match:
+            prefix, tail = text[: match.start()], text[match.end() :]
+            separator = " where "
+    prefix_words = prefix.casefold().split()
+    if separator and tail and (
+        re.match(r"^focus\s+on\s+(?:a\s+)?governed\s+workflow$", prefix, flags=re.IGNORECASE)
+        or _CREATE_REQUEST_WRAPPER_RE.match(prefix)
+        or (prefix_words and prefix_words[-1] in _PRODUCT_TITLE_TERMINALS)
+    ):
+        projected = re.sub(r"^the\s+", "", tail, flags=re.IGNORECASE).strip(" .")
+        return projected[:1].upper() + projected[1:] if re.match(r"^(?:a|an)\s+", projected) else projected
+    return text
+
+
+def _is_ordered_workflow_row(value: str) -> bool:
+    """Keep product events while excluding setup context and operator review instructions."""
+
+    text = _clean(value).strip(" .")
+    if not text or is_operator_review_lens_step(text):
+        return False
+    if re.match(
+        r"^(?:a|an|the)\s+.+?\s+needs?\s+(?:a|an|the)\s+product\s+for\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+    return not _hard_non_path(text)
 
 
 def explicit_product_title_evidence(value: str) -> str:
@@ -274,6 +354,15 @@ def explicit_product_title_evidence(value: str) -> str:
     structured = structured_prompt_facts(value)
     if structured.title:
         return structured.title
+    named_grant = _NAMED_PRODUCT_GRANT_RE.search(clean_markdown_text(str(value or "")))
+    if named_grant:
+        title = named_grant.group("title").strip(" .")
+        if _credible_explicit_title(
+            title,
+            require_product_shape=False,
+            allow_single_word_proper_name=True,
+        ):
+            return title
     candidates: list[tuple[int, str]] = []
     text = clean_markdown_text(str(value or ""))
     patterns = (
@@ -333,6 +422,11 @@ def explicit_actor_has_human_grammar(value: str) -> bool:
     product_match = _PRODUCT_FOR_ACTOR_RE.search(text)
     if product_match and product_match.group("human_connector"):
         return True
+    need_match = _LEADING_NEED_ACTOR_RE.search(text)
+    if need_match and _has_actor_label_signal(need_match.group("actor")):
+        return True
+    if _named_product_helper_actor(text):
+        return True
     return any(
         pattern.search(text)
         for pattern in (
@@ -373,8 +467,46 @@ def explicit_actor_evidence(value: str) -> str:
                 ).strip(" ,")
                 if _INVALID_ROLE_TRAILING_RE.search(role):
                     continue
+                if pattern is _APPOSITIVE_ACTOR_RE:
+                    return f"{match.group('name')}, {match.group('article')} {role}".strip()
                 return f"{role} {match.group('name')}".strip()
+        need_match = _LEADING_NEED_ACTOR_RE.search(source)
+        if need_match:
+            actor = need_match.group("actor").strip(" ,")
+            if _has_actor_label_signal(actor):
+                return actor
+        helper_actor = _named_product_helper_actor(source)
+        if helper_actor:
+            return helper_actor
     return ""
+
+
+def _named_product_helper_actor(value: str) -> str:
+    match = _NAMED_PRODUCT_HELPER_TAIL_RE.search(value)
+    if not match:
+        return ""
+    tail = match.group("tail").strip(" ,")
+    words = tuple(re.finditer(r"[A-Za-z0-9][A-Za-z0-9'/-]*", tail))
+    for action_index in range(1, min(9, len(words))):
+        actor = tail[: words[action_index].start()].strip(" ,")
+        actor = re.sub(r"^(?:a|an|the)\s+", "", actor, flags=re.IGNORECASE)
+        action = words[action_index].group(0)
+        if _has_actor_label_signal(actor) and re.fullmatch(
+            rf"(?:{_BASE_ACTION_PATTERN}|{_FINITE_ACTION_PATTERN})",
+            action,
+            flags=re.IGNORECASE,
+        ):
+            return actor
+    return ""
+
+
+def _has_actor_label_signal(value: str) -> bool:
+    words = re.findall(r"[A-Za-z][A-Za-z'/-]*", value)
+    return bool(
+        words
+        and not has_non_human_actor_signal(value)
+        and (has_human_actor_role_signal(value) or looks_actor_term(words[-1]))
+    )
 
 
 def _json_mapping(value: str) -> Mapping[str, Any]:
@@ -621,6 +753,26 @@ def _narrative_rows(value: str) -> list[str]:
     return rows
 
 
+def _workflow_claim_before_prohibition(value: str) -> str:
+    text = _clean(value).strip(" .")
+    starts = [
+        match.start()
+        for match in re.finditer(
+            r"(?:^|;\s*)(?:it|the\s+(?:app|application|platform|product|service|system|tool|workspace))?\s*"
+            r"(?:must\s+not|may\s+not|cannot|can't|do\s+not|never)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    ]
+    starts.extend(
+        match.start()
+        for match in re.finditer(r"\s+without\s+[^.;!?]+$", text, flags=re.IGNORECASE)
+    )
+    if not starts:
+        return text
+    return text[: min(starts)].rstrip(" ,.;:")
+
+
 def _embedded_workflow_clauses(value: str) -> tuple[str, ...]:
     clauses: list[str] = []
     for match in re.finditer(r"\bwhere\s+(?P<clause>.+)$", value, flags=re.IGNORECASE):
@@ -640,7 +792,7 @@ def _embedded_evidence_clauses(value: str) -> tuple[str, ...]:
     )
     clauses: list[str] = []
     for match in pattern.finditer(value):
-        clause = match.group("clause").strip(" .")
+        clause = _without_word_sense_comparison_tail(match.group("clause").strip(" ."))
         has_subject_action = bool(
             _VISIBLE_RESULT_RE.search(clause)
             or _APPOSITIVE_ACTOR_RE.search(clause)
@@ -650,6 +802,13 @@ def _embedded_evidence_clauses(value: str) -> tuple[str, ...]:
         if clause and has_subject_action and not _hard_non_path(clause):
             clauses.append(clause)
     return tuple(clauses)
+
+
+def _without_word_sense_comparison_tail(value: str) -> str:
+    tokens = re.findall(r"[A-Za-z0-9'-]+", value.casefold())
+    if not word_sense_content_clause_describes_comparison(tokens):
+        return value
+    return re.split(r"\s+(?:as\s+both|both\s+as)\b", value, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
 
 
 def _embedded_product_grant_clauses(value: str) -> tuple[str, ...]:

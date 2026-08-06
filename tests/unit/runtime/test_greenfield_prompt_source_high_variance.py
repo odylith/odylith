@@ -640,7 +640,7 @@ def test_prompt_source_prioritizes_where_workflow_over_expert_lens_sentence() ->
     outcome = first_path_outcome_phrase(source.first_path, fallback="")
 
     assert source.actor == "care coordination nurse"
-    assert source.first_path.startswith("care coordination nurse turn an ambiguous referral case")
+    assert source.first_path.startswith("care coordination nurse turns an ambiguous referral case")
     assert "record both as an action" not in source.first_path
     assert "as a governed object" not in source.first_path
     assert "action and as" not in outcome
@@ -677,7 +677,7 @@ def test_public_records_radio_and_privacy_prompts_keep_identity_out_of_quality_g
 
     assert public_source.title == "public records redaction"
     assert public_source.actor == "records officer"
-    assert public_source.first_path.startswith("records officer turn an ambiguous redaction request")
+    assert public_source.first_path.startswith("records officer turns an ambiguous redaction request")
     assert radio_source.title == "emergency radio channel plan"
     assert radio_source.actor == "public safety communications planner"
 
@@ -761,7 +761,7 @@ def test_prompt_source_rejects_action_bearing_multi_role_actor_label() -> None:
     source = prompt_intent_source(prompt)
 
     assert source.actor == "Human operators"
-    assert source.first_path.startswith("Human operators can assign investigation cases")
+    assert source.first_path.startswith("Human operators assign investigation cases")
     assert source.actor != "Human operators assign investigation cases"
     assert "assign investigation cases can be released" not in source.first_path
 
@@ -852,7 +852,7 @@ def test_prompt_source_strips_multi_role_review_lens_bundle_from_first_path() ->
         ]
     ) == ["Synthetic biology lead turns an ambiguous protein candidate into a review-ready record"]
     assert source.title == "protein design wetlab handoff"
-    assert source.first_path.startswith("synthetic biology lead turn an ambiguous protein candidate")
+    assert source.first_path.startswith("A synthetic biology lead turns an ambiguous protein candidate")
     assert "product manager must see" not in source.first_path.casefold()
     assert "domain expert must see" not in source.first_path.casefold()
     assert not any(

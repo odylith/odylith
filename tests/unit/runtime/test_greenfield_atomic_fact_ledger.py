@@ -113,6 +113,22 @@ def test_atomic_fact_ledger_does_not_reverse_source_polarity() -> None:
     assert publish_atom["custody_state"] == "bounded_interpretation"
 
 
+def test_atomic_fact_ledger_keeps_hyphenated_state_labels_affirmed() -> None:
+    source = "A stale reading keeps the mission in entry-prohibited state."
+    facts = {
+        **_FACTS,
+        "first_path": source,
+        "state_object": "The primary state object is the mission.",
+    }
+
+    atoms = _authority(facts=facts, source=source)["atomic_facts"]
+    state_atom = _atom(atoms, "entry-prohibited state")
+
+    assert state_atom["polarity"] == "affirmed"
+    assert "states" in state_atom["categories"]
+    assert state_atom["custody_state"] == "accepted_fact"
+
+
 def test_atomic_fact_ledger_preserves_complete_sentence_units_outside_first_path() -> None:
     story = "The workspace keeps source input, current state, blockers, handoffs, and proof evidence visible."
     non_goal = "Do not claim adjacent automation, live dependency behavior, or operational scale."

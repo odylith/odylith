@@ -992,11 +992,10 @@ def test_host_guidance_recovery_carries_actor_across_coordinated_action_clauses(
     rendered = json.dumps(proposal, sort_keys=True)
 
     assert intent["first_path"] == (
-        "Care coordinators inspect patient-generated trend evidence. "
-        "Care coordinators separate urgent review from routine coaching. "
-        "Care coordinators preserve consent-aware notes. "
-        "Care coordinators give clinicians a clear escalation packet for review."
+        "Care coordinators inspect patient-generated trend evidence, separate urgent review from routine coaching, "
+        "preserve consent-aware notes, and give clinicians a clear escalation packet for review."
     )
+    assert intent["first_path"].casefold().count("care coordinators") == 1
     assert intent["human_actors"] == [
         "Care Coordinators: need the product to inspect patient-generated trend evidence and keep the result visible and reviewable"
     ]
@@ -2225,6 +2224,11 @@ def test_confirmed_recovery_keeps_operator_notes_out_of_human_actors(tmp_path) -
     assert intent["human_actors"] == [
         "Safety Engineers: need the product to replay robot paths and keep the result visible and reviewable"
     ]
+    assert (
+        "sensor occlusion, baseline routes, and operator notes before releasing a safety result"
+        in intent["first_path"].casefold()
+    )
+    assert "Baseline routes" not in intent["first_path"]
     assert "Operator Notes:" not in rendered
     assert "Baseline:" not in rendered
     assert "generic actor label `Operator`" not in "\n".join(greenfield_quality_issues(completed))

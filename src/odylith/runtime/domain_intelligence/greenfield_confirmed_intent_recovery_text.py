@@ -131,7 +131,8 @@ def indefinite_phrase(value: str) -> str:
     if first in LEADING_ARTICLES:
         return text
     text = lower_article_body(text)
-    article = "an" if first[:1] in {"a", "e", "i", "o", "u"} else "a"
+    consonant_vowel_prefix = re.match(r"^(?:ewe|euro|one|uni(?:form|que|t|vers)|use|user)", first)
+    article = "an" if first[:1] in {"a", "e", "i", "o", "u"} and not consonant_vowel_prefix else "a"
     return f"{article} {text}"
 
 

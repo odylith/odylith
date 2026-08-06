@@ -59,6 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     incomplete_path_clarification,
 )
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    has_explicit_visible_result,
+)
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
     explicit_actor_has_human_grammar,
 )
@@ -69,10 +72,6 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretati
 
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
     r"\b(?:device|controller|sensor|monitor)\b[^.!?]{0,160}\bthat\s+[a-z]",
-    flags=re.IGNORECASE,
-)
-_EXPLICIT_VISIBLE_OUTCOME_RE = re.compile(
-    r"\b(?:see|sees|show|shows|receive|receives|view|views|display|displays)\b",
     flags=re.IGNORECASE,
 )
 _ACTOR_MODAL_SUFFIX_RE = re.compile(r"\b(?:can|could|should|must|will)$", flags=re.IGNORECASE)
@@ -296,6 +295,15 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     edited_first_path = _section_first_path_text(edit_sections)
     if edited_first_path and starts_with_automated_actor(edited_first_path):
         return True
+    edited_path_source = prompt_intent_source(edited_first_path) if edited_first_path else None
+    if (
+        edited_path_source
+        and edited_path_source.actor
+        and first_path_model(edited_first_path).material_action
+        and has_human_actor_signal(edited_path_source.actor)
+        and not is_automated_actor(edited_path_source.actor)
+    ):
+        return False
     edited_actor_rows = confirmed_text_values(edit_sections.get("human_actors"))
     if (
         edited_first_path
@@ -331,7 +339,7 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
         return True
     model = first_path_model(source.first_path)
     if not model.material_action or not (
-        len(model.steps) >= 2 or _EXPLICIT_VISIBLE_OUTCOME_RE.search(evidence)
+        len(model.steps) >= 2 or has_explicit_visible_result(source.first_path)
     ):
         return False
     if _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence):
@@ -427,7 +435,7 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
         or (
             explicit_actor_has_human_grammar(evidence)
             and path.material_action
-            and _EXPLICIT_VISIBLE_OUTCOME_RE.search(evidence)
+            and has_explicit_visible_result(path_source)
         )
     )
 

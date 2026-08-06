@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import direct_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
@@ -20,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import MAT
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_evidence_requirement
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_release_visible_result_statement
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -217,7 +219,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     )
     text = without_leading_explicit_intent_label(text)
     product_text = without_source_metadata_clauses(text)
-    ranked_first_path = ranked_first_path_evidence(original_intent)
+    ranked_first_path = ranked_first_path_evidence(product_text)
     explicit_actor = explicit_actor_evidence(original_intent)
     explicit_title = explicit_product_title_evidence(original_intent)
     operator_context = operator_context_from_product_text(product_text)
@@ -239,16 +241,19 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     context_actor, context_first_path = _for_role_actor_gerund_path(product_text)
     actor, actor_led_first_path = _actor_led_relative_clause(product_text)
     non_human_relative_first_path = _non_human_subject_relative_action(product_text)
+    ranked_rows = sentence_fragments(ranked_first_path)
+    complete_ranked_first_path = ranked_first_path if len(ranked_rows) > 1 else ""
     first_path_source = (
         explicit_first_path
         or structured_facts.first_path
+        or complete_ranked_first_path
         or grant_first_path
-        or workflow_first_path
         or multi_role_first_path
+        or ranked_first_path
+        or workflow_first_path
         or purpose_first_path
         or need_first_path
         or preferred_direct_first_path
-        or ranked_first_path
         or actor_led_first_path
         or context_first_path
         or non_human_relative_first_path
@@ -260,10 +265,10 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             candidate
             for candidate in (
                 grant_actor,
-                explicit_actor,
                 structured_facts.actor,
                 workflow_actor,
                 multi_role_actor,
+                explicit_actor,
                 purpose_actor,
                 need_actor,
                 actor,
@@ -416,6 +421,9 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             action = _strip_role_bound_review_requirement(action)
         if not actor or not action:
             continue
+        action_head = request_words(action)[:1]
+        if action_head and has_non_human_actor_signal(f"{actor} {action_head[0]}"):
+            continue
         if article:
             return actor, f"{article.capitalize()} {actor} {action}"
         canonical_action = base_action_clause(action, force_leading_finite=True).strip(" .") or action
@@ -529,6 +537,8 @@ def _multi_role_modal_first_path(value: str) -> tuple[str, str]:
         words = request_words(text)
         for modal_index, word in enumerate(words[1:], start=1):
             if word_key(word) not in _MULTI_ROLE_MODAL_TOKENS:
+                continue
+            if modal_index + 1 < len(words) and word_key(words[modal_index + 1]) == "not":
                 continue
             actor_words = words[:modal_index]
             if any(word_key(actor_word) in {"if", "that", "what", "when", "where", "whether", "which", "who"} for actor_word in actor_words):
@@ -697,7 +707,7 @@ def _workflow_where_actor_action(value: str) -> tuple[str, str]:
         if token != "where":
             continue
         tail_words = words[marker_index + 1 :]
-        for action_index in range(min(len(tail_words), 5), 0, -1):
+        for action_index in range(1, min(len(tail_words), 5) + 1):
             actor_words = tail_words[:action_index]
             action_words = tail_words[action_index:]
             actor_words, action_words = _trim_actor_action_split(actor_words, action_words)
@@ -721,8 +731,7 @@ def _workflow_where_actor_action(value: str) -> tuple[str, str]:
                 article = word_key(actor_words[0]) if word_key(actor_words[0]) in {"a", "an", "the"} else ""
                 actor = _strip_leading_actor_article(" ".join(actor_words))
                 subject = actor if recognized_actor else f"{article.capitalize()} {actor}".strip()
-                selected_action = action if recognized_actor else action_source
-                return actor, f"{subject} {selected_action}".strip(" .")
+                return actor, f"{subject} {action_source}".strip(" .")
     return "", ""
 
 
@@ -1295,6 +1304,13 @@ def _actor_purpose_tail(words: list[str]) -> list[str]:
 
 
 def _strip_release_proof_tail(value: str) -> str:
+    text = clean_markdown_text(value).strip(" .")
+    rows = sentence_fragments(text)
+    visible_rows = [row for row in rows if is_release_visible_result_statement(row)]
+    if visible_rows:
+        base = ". ".join(row for row in rows if row not in visible_rows).strip(" .")
+        preserved = [_release_visible_result_path_action(row) for row in visible_rows]
+        return ". ".join(row for row in (_strip_release_proof_tail(base) if base else "", *preserved) if row)
     words = request_words(value)
     if len(words) < 5:
         return strip_requirement_control_tail(strip_trailing_requirement_control_steps(clean_markdown_text(value).strip(" .")))
@@ -1310,6 +1326,15 @@ def _strip_release_proof_tail(value: str) -> str:
         if _release_proof_tail_starts(lowered[action_index:]):
             return strip_requirement_control_tail(strip_trailing_requirement_control_steps(" ".join(words[:index]).strip(" ,.;:")))
     return strip_requirement_control_tail(strip_trailing_requirement_control_steps(clean_markdown_text(value).strip(" .")))
+
+
+def _release_visible_result_path_action(value: str) -> str:
+    match = re.search(
+        r"\b(?P<action>(?:show|display|publish|produce|return)\s+.+)$",
+        clean_markdown_text(value).strip(" ."),
+        flags=re.IGNORECASE,
+    )
+    return match.group("action").strip(" .") if match else ""
 
 
 def _release_proof_tail_starts(words: list[str]) -> bool:

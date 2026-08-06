@@ -49,10 +49,16 @@ _SOURCE_CARRIERS = frozenset(
         "files",
         "form",
         "forms",
+        "gauge",
+        "gauges",
+        "gateway",
+        "gateways",
         "import",
         "imports",
         "ledger",
         "ledgers",
+        "laboratory",
+        "laboratories",
         "log",
         "logs",
         "message",
@@ -132,6 +138,8 @@ _SOURCE_LABEL_CARRIERS = _SOURCE_CARRIERS | frozenset(
         "index",
         "map",
         "provider",
+        "portal",
+        "portals",
         "registry",
         "repository",
         "roster",
@@ -174,13 +182,17 @@ _FROM_SOURCE_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _ACTION_FROM_SOURCE_RE = re.compile(
-    r"\b(?:imports?|loads?|reads?|retrieves?|sources?)\b[^,.;!?\n]{1,100}?\bfrom\s+"
+    r"\b(?:gets?|imports?|loads?|reads?|receives?|retrieves?|sources?)\b[^,.;!?\n]{1,100}?\bfrom\s+"
     r"(?:the\s+)?(?P<source>[^,.;!?\n]+)",
+    flags=re.IGNORECASE,
+)
+_CARRIER_PREPOSITION_RE = re.compile(
+    r"\b(?:for|through|using|via)\s+(?:(?:a|an|the)\s+)?(?P<source>[^,.;!?\n]+)",
     flags=re.IGNORECASE,
 )
 _SUPPLIER_RE = re.compile(
     r"^(?:the\s+)?(?P<source>[A-Za-z0-9][A-Za-z0-9&'/_-]*(?:\s+[A-Za-z0-9][A-Za-z0-9&'/_-]*){0,7})"
-    r"\s+(?:feeds|provides|publishes|supplies)\b",
+    r"\s+(?:feeds|flags|provides|publishes|reports|sends|supplies)\b",
     flags=re.IGNORECASE,
 )
 
@@ -230,12 +242,28 @@ def source_boundary_rows_from_evidence(value: Any) -> list[str]:
     if text and not is_structured:
         rows.extend(match.group("source") for match in _FROM_SOURCE_RE.finditer(text))
         rows.extend(match.group("source") for match in _ACTION_FROM_SOURCE_RE.finditer(text))
+        rows.extend(
+            source
+            for match in _CARRIER_PREPOSITION_RE.finditer(text)
+            if (source := _carrier_preposition_source(match.group("source")))
+        )
         for sentence in re.split(r"[.;!?]+", text):
-            match = _SUPPLIER_RE.match(clean_text(sentence))
+            sentence_text = clean_text(sentence)
+            if re.match(r"^(?:if|unless|when|while)\b", sentence_text, flags=re.IGNORECASE):
+                continue
+            match = _SUPPLIER_RE.match(sentence_text)
             if match:
                 rows.append(match.group("source"))
     normalized = [_source_label(row) for row in rows]
     return list(unique_text(row for row in normalized if row))[:8]
+
+
+def _carrier_preposition_source(value: str) -> str:
+    text = clean_text(value).strip(" .,:;\"'")
+    if re.search(r"\b(?:that|which|who|where)\b", text, flags=re.IGNORECASE):
+        return ""
+    terms = [term.casefold().strip(".,;:()[]{}") for term in text.split()]
+    return text if set(terms[-3:]) & _SOURCE_LABEL_CARRIERS else ""
 
 
 def _structured_source_rows(value: Any) -> tuple[list[str], bool]:
