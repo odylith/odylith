@@ -72,6 +72,61 @@ def test_semantic_release_makes_missing_explicit_system_a_p0() -> None:
     ]
 
 
+def test_semantic_release_scores_constraint_polarity_per_atomic_clause() -> None:
+    prompt = (
+        "Operator submits one signed permit to the Registry API and reviews the accepted permit receipt. "
+        "The first release must retain permit evidence for seven years and must not auto-approve permits."
+    )
+    case = replace(
+        _case("mixed-polarity", expectation="transaction_committed", input_style="direct_request"),
+        prompt=prompt,
+    )
+    annotation = _commit_annotation()
+    annotation["critical_constraints"] = ["retain permit evidence for seven years"]
+    result = _commit_result(
+        case,
+        facts_override={
+            "non_goals": [
+                "The first release must retain permit evidence for seven years and must not auto-approve permits."
+            ]
+        },
+    )
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={"mixed-polarity": annotation},
+        results=(result,),
+        floors=FLOORS,
+    )
+
+    assert report["p0_findings"] == []
+    assert report["metrics"]["critical_constraint_recall"]["rate"] == 1.0
+
+
+def test_semantic_release_recalls_accepted_constraint_from_atomic_first_path() -> None:
+    prompt = (
+        "Operator submits one signed permit to the Registry API and reviews the accepted permit receipt. "
+        "The first path must retain source versions."
+    )
+    case = replace(
+        _case("path-constraint", expectation="transaction_committed", input_style="direct_request"),
+        prompt=prompt,
+    )
+    annotation = _commit_annotation()
+    annotation["critical_constraints"] = ["retain source versions"]
+    result = _commit_result(case, facts_override={"first_path": prompt})
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={"path-constraint": annotation},
+        results=(result,),
+        floors=FLOORS,
+    )
+
+    assert report["p0_findings"] == []
+    assert report["metrics"]["critical_constraint_recall"]["rate"] == 1.0
+
+
 def test_semantic_release_does_not_pass_required_zero_of_zero_metric() -> None:
     case = _case("commit", expectation="transaction_committed", input_style="direct_request")
     annotation = _commit_annotation()
@@ -112,6 +167,27 @@ def test_semantic_release_rejects_right_words_in_the_wrong_field() -> None:
     ]
     assert report["metrics"]["accepted_fact_custody"]["numerator"] == 4
     assert report["metrics"]["accepted_fact_custody"]["denominator"] == 5
+
+
+def test_semantic_release_does_not_count_non_goal_as_dependency_recall() -> None:
+    case = _case("system-non-goal", expectation="transaction_committed", input_style="direct_request")
+    result = _commit_result(
+        case,
+        external_systems=[],
+        facts_override={"non_goals": ["Do not replace the Registry API."]},
+    )
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={"system-non-goal": _commit_annotation()},
+        results=(result,),
+        floors=FLOORS,
+    )
+
+    assert report["p0_findings"] == [
+        {"case_id": "system-non-goal", "category": "explicit_system_missing"}
+    ]
+    assert report["metrics"]["explicit_system_recall"]["rate"] == 0.0
 
 
 def test_semantic_release_does_not_treat_field_custody_as_atomic_proof() -> None:
@@ -351,6 +427,7 @@ def _commit_result(
     *,
     external_systems: list[str] | None = None,
     registry_as_assumption: bool = False,
+    facts_override: dict[str, object] | None = None,
 ) -> GreenfieldMatrixResult:
     facts = {
         "product_story": "Permit Review helps an operator review one accepted permit.",
@@ -362,6 +439,8 @@ def _commit_result(
     }
     if registry_as_assumption:
         facts["assumptions"] = ["Registry API"]
+    if facts_override:
+        facts.update(facts_override)
     custody = {
         key: {"custody_state": "accepted_fact", "entailment_relationship": "direct_product_claim"}
         for key in (

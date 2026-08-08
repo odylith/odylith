@@ -354,31 +354,25 @@ def _score_commit_semantics(
             else:
                 failed_dimensions.append("accepted_fact_custody")
 
-    constraint_text = _flatten_text(
-        {
-            "operational_constraints": facts.get("operational_constraints"),
-            "non_goals": facts.get("non_goals"),
-            "proof_boundary": facts.get("proof_boundary"),
-        }
-    )
+    constraint_claims = _atomic_claim_values(atomic_facts) or _fact_claim_values(facts)
     for value in _expected_values(annotation.get("critical_constraints")):
         metric_counts["critical_constraint_recall"][1] += 1
-        if _claim_recalled(value, constraint_text):
+        if _claim_recalled_in(value, constraint_claims):
             metric_counts["critical_constraint_recall"][0] += 1
         else:
             failed_dimensions.append("critical_constraint_recall")
             p0.append(_p0(case_id, "critical_constraint_missing"))
 
-    system_text = _flatten_text(
-        {
-            "external_systems": facts.get("external_systems"),
-            "internal_systems": facts.get("internal_systems"),
-            "dependencies": facts.get("component_responsibilities"),
-        }
+    system_claims = _atomic_claim_values(
+        atomic_facts,
+        categories=frozenset({"dependencies"}),
+    ) or _fact_claim_values(
+        facts,
+        fields=("external_systems", "internal_systems", "component_responsibilities"),
     )
     for value in _expected_values(annotation.get("explicit_systems")):
         metric_counts["explicit_system_recall"][1] += 1
-        if _claim_recalled(value, system_text):
+        if _claim_recalled_in(value, system_claims):
             metric_counts["explicit_system_recall"][0] += 1
         else:
             failed_dimensions.append("explicit_system_recall")
@@ -747,16 +741,89 @@ def _claim_recalled(expected: Any, observed: str) -> bool:
     if not expected_tokens:
         return False
     observed_tokens = _tokens(observed)
-    return expected_tokens <= observed_tokens and _negation_signature(expected) == _negation_signature(observed)
+    return expected_tokens <= observed_tokens and _is_negated(expected) == _is_negated(observed)
+
+
+def _claim_recalled_in(expected: Any, observed_claims: Sequence[str]) -> bool:
+    return any(
+        _claim_recalled(expected, unit)
+        for claim in observed_claims
+        for unit in _claim_units(claim)
+    )
+
+
+def _claim_units(value: Any) -> tuple[str, ...]:
+    text = " ".join(str(value or "").split()).strip(" .;:")
+    if not text:
+        return ()
+    units = [text]
+    for sentence in re.split(r"(?<=[.!?])\s+|;\s*", text):
+        sentence = sentence.strip(" .;:")
+        if not sentence:
+            continue
+        units.append(sentence)
+        units.extend(
+            clause
+            for part in re.split(r",\s*|\s+and\s+", sentence, flags=re.IGNORECASE)
+            if (clause := part.strip(" .;:"))
+        )
+    return tuple(dict.fromkeys(units))
+
+
+def _atomic_claim_values(
+    atomic_facts: Sequence[Mapping[str, Any]],
+    *,
+    categories: frozenset[str] = frozenset(),
+) -> tuple[str, ...]:
+    claims: list[str] = []
+    for atom in atomic_facts:
+        if str(atom.get("custody_state") or "") not in _VALID_MATERIAL_CUSTODY:
+            continue
+        atom_categories = set(_strings(atom.get("categories")))
+        if categories and not categories & atom_categories:
+            continue
+        claim = str(atom.get("normalized_value") or "").strip()
+        if claim:
+            claims.append(claim)
+    return tuple(dict.fromkeys(claims))
+
+
+def _fact_claim_values(
+    facts: Mapping[str, Any],
+    *,
+    fields: Sequence[str] = (),
+) -> tuple[str, ...]:
+    claims: list[str] = []
+    selected = fields or tuple(str(field) for field in facts)
+    for field in selected:
+        claims.extend(_value_claims(facts.get(field)))
+    return tuple(dict.fromkeys(claims))
+
+
+def _value_claims(value: Any) -> tuple[str, ...]:
+    if isinstance(value, Mapping):
+        return tuple(
+            claim
+            for child in value.values()
+            for claim in _value_claims(child)
+        )
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return tuple(
+            claim
+            for child in value
+            for claim in _value_claims(child)
+        )
+    claim = str(value or "").strip()
+    return (claim,) if claim else ()
 
 
 def _question_field_key(value: Any) -> str:
     return "_".join(_TOKEN_RE.findall(str(value or "").casefold()))
 
 
-def _negation_signature(value: Any) -> frozenset[str]:
+def _is_negated(value: Any) -> bool:
     tokens = set(_TOKEN_RE.findall(str(value or "").casefold()))
-    return frozenset(tokens & {"no", "not", "never", "without"})
+    return bool(tokens & {"no", "not", "never", "without"})
 
 
 def _tokens(value: Any) -> frozenset[str]:
