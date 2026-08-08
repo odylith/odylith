@@ -1,8 +1,8 @@
 {
   "version": "odylith.greenfield.evaluation-splits.v1",
-  "frozen_at_utc": "2026-08-02T09:51:10Z",
+  "frozen_at_utc": "2026-08-08T22:40:35Z",
   "claim_class": "semantic-baseline-frozen-before-final-release-execution",
-  "semantic_baseline_revision": "b524cd03e4ae91219f7735fb3c89996e4603a5c4",
+  "semantic_baseline_revision": "6fbad164338b8274b7e77c9667e9ba91c3fef3e0",
   "tracked_corpus": {
     "path": "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json",
     "sha256": "7e6259e23d275e905469f22428052ee5a6a6add5b91d0a3666bdfc68ffa77168",
@@ -20,9 +20,9 @@
     "reason": "This corpus predates the split freeze and is therefore development, regression, or private-validation evidence only."
   },
   "final_holdout": {
-    "path_hint": "/private/tmp/odylith-greenfield-final-holdout-v1.json",
-    "sha256": "3558ab3ffe23a285303b3dbdcca560cec31fb3eee261e0aa9bc610b9f04f5e2a",
-    "byte_size": 126834,
+    "path_hint": "/private/tmp/odylith-greenfield-final-holdout-20260808-v2.json",
+    "sha256": "bc8328d0c02ca1c85b9df2a24f95edb30d3be3dc5641128f554dbdcb55fbede4",
+    "byte_size": 96127,
     "case_count": 24,
     "annotation_count": 24,
     "claim_class": "blinded-independent-synthetic-holdout",
