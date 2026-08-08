@@ -41,12 +41,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     product_intent_authority_from_envelope,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_transaction_authority import (
-    finalize_repaired_product_intent as _finalize_repaired_product_intent,
-)
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_transaction_authority import (
-    merge_recompiled_quality_manifests as _merge_recompiled_quality_manifests,
-)
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -665,25 +659,6 @@ def compile_greenfield_create_transaction(
     if isinstance(package_proposal, Mapping):
         proposal = dict(package_proposal)
         proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
-    proposal, intent_authority, intent_was_restaged = _finalize_repaired_product_intent(
-        root=root,
-        proposal=proposal,
-        intent_authority=intent_authority,
-    )
-    if intent_was_restaged:
-        initial_quality_manifest = quality_manifest
-        proposal, tribunal, prewrite_build, quality_manifest = _build_repaired_prewrite_package(
-            root=root,
-            proposal=proposal,
-            release_selector=release_selector,
-            proposal_ready=proposal_ready,
-            repair_tier=repair_tier,
-        )
-        package_proposal = prewrite_build.package.proposal
-        if isinstance(package_proposal, Mapping):
-            proposal = dict(package_proposal)
-            proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
-        quality_manifest = _merge_recompiled_quality_manifests(initial_quality_manifest, quality_manifest)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector=release_selector,

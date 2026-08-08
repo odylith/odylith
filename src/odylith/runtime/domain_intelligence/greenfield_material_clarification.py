@@ -10,7 +10,9 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automa
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import is_noncompleting_action_head
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
 @dataclass(frozen=True)
@@ -21,28 +23,6 @@ class MaterialClarification:
     required_fields: tuple[str, ...]
 
 
-_EXPLICIT_CONTRADICTION_RE = re.compile(
-    r"\b(?:which\s+.+?\s+is\s+intended|ask\s+which)\b",
-    flags=re.IGNORECASE,
-)
-_DECLARED_CONTRADICTION_RE = re.compile(
-    r"\b(?:requirements?|evidence|instructions?|sources?|accounts?|descriptions?|claims?|"
-    r"statements?|notes?|sentences?|boundaries)\s+(?:are\s+)?(?:in\s+conflict|conflicts?|"
-    r"contradict(?:s|ory)?|mutually\s+exclusive)\b",
-    flags=re.IGNORECASE,
-)
-_UNRESOLVED_RE = re.compile(r"\bunresolved\b", flags=re.IGNORECASE)
-_OPPOSING_EVIDENCE_RE = re.compile(
-    r"\b(?:one\b[^.!?]{0,240}\banother|either\b[^.!?]{0,160}\bor|"
-    r"both\b[^.!?]{0,160}\band|must\b[^.!?]{0,160}\bmust\s+not|"
-    r"public\b[^.!?]{0,160}\bprivate|private\b[^.!?]{0,160}\bpublic)\b",
-    flags=re.IGNORECASE,
-)
-_AUDIENCE_RE = re.compile(
-    r"\b(?:audience|public|private|who\s+(?:may|can)\s+(?:see|view)|"
-    r"visible\s+only|display\s+is\s+for)\b",
-    flags=re.IGNORECASE,
-)
 _PROOF_RE = re.compile(
     r"\b(?:proof\s+boundar|claim|declare|diagnos|certif|safe\s+to|observation\s+record\s+only|"
     r"must\s+not\s+state|may\s+make)\b",
@@ -70,58 +50,63 @@ _HIGH_CONSEQUENCE_RE = re.compile(
     r"safety|legal|financial|public|private|consent|diagnos|certif)\b",
     flags=re.IGNORECASE,
 )
-_FIRST_APPROVAL_OPTIONS_RE = re.compile(
-    r"\beither\b[^.!?]{1,180}\bor\b[^.!?]{1,180}\b(?:may|can|should|will)?\s*"
-    r"own\s+the\s+first\s+approval\b",
-    flags=re.IGNORECASE,
+_UNKNOWN_SUBJECT_MARKERS = (
+    " are unresolved",
+    " is unresolved",
+    " are unknown",
+    " is unknown",
+    " are not specified",
+    " is not specified",
+    " are not provided",
+    " is not provided",
+    " disagree",
 )
-_CHOICE_CHANGES_FIRST_PATH_RE = re.compile(
-    r"\b(?:the\s+)?choice\s+changes?\b[^.!?]{0,100}\b(?:initial|first)\s+path\b",
-    flags=re.IGNORECASE,
-)
-_PROOF_RECORD_RE = re.compile(r"\bproof\s+record\b", flags=re.IGNORECASE)
-_EXPLICIT_MISSING_INFORMATION_RE = re.compile(
-    r"\b(?:does\s+not|doesn't|did\s+not)\s+(?:identify|name|specify|state|provide|resolve)\b|"
-    r"\bomits?\b|\bleaves?\b[^.!?]{0,48}\b(?:undefined|unspecified|unresolved)\b",
-    flags=re.IGNORECASE,
-)
-_DECISION_AUTHORITY_RE = re.compile(
-    r"\b(?:who\s+(?:has|holds|may\s+exercise)|who\s+may\s+approve|"
-    r"(?:legal|decision|approval|policy|rule|process)\s+authority|"
-    r"(?:qualification\s+rule|policy|process|decision|approval)\s+owner|approver)\b",
-    flags=re.IGNORECASE,
-)
-_GOVERNING_DECISION_RULE_RE = re.compile(
-    r"\b(?:policy|standard|jurisdiction|protocol|rule|legal\s+basis|"
-    r"appeal\s+(?:route|process|path))\b",
-    flags=re.IGNORECASE,
-)
-_MATERIAL_DECISION_RE = re.compile(
-    r"\b(?:approv(?:e|es|al)|authoriz(?:e|es|ation)|decid(?:e|es|ing|ision)|"
-    r"governs?|eligib(?:le|ility)|allocation|appeal|jurisdiction|triage)\b",
-    flags=re.IGNORECASE,
+_SUPPLY_MARKERS = (" are supplied", " is supplied", " are provided", " is provided")
+_FIELD_SPLIT_RE = re.compile(r"\s*(?:,|\band\b|\bor\b)\s*", flags=re.IGNORECASE)
+_FIELD_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_FIELD_PREFIXES = (
+    "pasted brief",
+    "research evidence",
+    "revision notes",
+    "pending confirmation",
 )
 
 
 def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> MaterialClarification | None:
-    """Return a field-specific clarification for an explicit material contradiction."""
+    """Return one source-grounded question for an explicitly unresolved decision."""
 
-    evidence = "\n".join(value for value in (prompt, edit_evidence) if str(value or "").strip())
+    evidence = clean_markdown_text(
+        "\n".join(value for value in (prompt, edit_evidence) if str(value or "").strip())
+    )
+    lowered = evidence.casefold()
     if (
-        _FIRST_APPROVAL_OPTIONS_RE.search(evidence)
-        and _CHOICE_CHANGES_FIRST_PATH_RE.search(evidence)
-        and _PROOF_RECORD_RE.search(evidence)
+        "either " in lowered
+        and " or " in lowered
+        and "own the first approval" in lowered
+        and "choice changes the initial path" in lowered
+        and "proof record" in lowered
     ):
         return MaterialClarification(
             question="Who should own the first approval, initial path, and proof record?",
             required_fields=("first_approval_actor", "first_path", "proof_record_owner"),
         )
-    authority_gap = _explicit_authority_gap(evidence)
+    authority_gap = _legacy_declared_authority_gap(lowered)
     if authority_gap:
         return authority_gap
-    if not _has_explicit_material_conflict(evidence):
+    fields = list(_declared_material_unknowns(evidence))
+    if _has_guardian_approval_gap(lowered):
+        fields.append("guardian_approval_rule")
+    if _has_location_disclosure_conflict(lowered):
+        fields.append("location_disclosure_policy")
+    fields = list(dict.fromkeys(fields))
+    if fields:
+        return MaterialClarification(
+            question=_material_unknown_question(fields),
+            required_fields=tuple(fields),
+        )
+    if not _has_explicit_material_conflict(lowered):
         return None
-    if _AUDIENCE_RE.search(evidence):
+    if any(term in lowered for term in ("audience", "public", "private", "visible only")):
         return MaterialClarification(
             question="Who should be allowed to see the product's visible result?",
             required_fields=("display_audience",),
@@ -131,12 +116,12 @@ def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> 
             question="What claim may the visible result make, and what claim must it avoid?",
             required_fields=("proof_boundary",),
         )
-    if re.search(r"\b(?:source|dependency)\b", evidence, flags=re.IGNORECASE):
+    if any(term in lowered for term in ("source", "dependency")):
         return MaterialClarification(
             question="Which source should supply the information used by the first complete path?",
             required_fields=("dependency_source",),
         )
-    if re.search(r"\b(?:state|status|transition)\b", evidence, flags=re.IGNORECASE):
+    if any(term in lowered for term in ("state", "status", "transition")):
         return MaterialClarification(
             question="Which state transition should the first complete path record?",
             required_fields=("state_transition",),
@@ -147,44 +132,176 @@ def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> 
     )
 
 
-def _explicit_authority_gap(evidence: str) -> MaterialClarification | None:
-    """Classify an explicitly declared missing decision boundary."""
+def material_clarification_for_fields(fields: tuple[str, ...]) -> MaterialClarification:
+    """Render the typed materiality gate as the same focused question contract."""
 
-    missing_sentences = tuple(
-        sentence.strip()
-        for sentence in re.split(r"(?<=[.!?])\s+", evidence)
-        if _EXPLICIT_MISSING_INFORMATION_RE.search(sentence)
+    required_fields = tuple(dict.fromkeys(str(field).strip() for field in fields if str(field).strip()))
+    return MaterialClarification(
+        question=_material_unknown_question(list(required_fields)),
+        required_fields=required_fields,
     )
-    if not missing_sentences:
+
+
+def _legacy_declared_authority_gap(lowered: str) -> MaterialClarification | None:
+    """Preserve the original authority contract while newer questions name source fields."""
+
+    if "the prompt does not" not in lowered and "the prompt omits" not in lowered:
         return None
-    fields: list[str] = []
-    for sentence in missing_sentences:
-        if not _MATERIAL_DECISION_RE.search(sentence):
-            continue
-        if _DECISION_AUTHORITY_RE.search(sentence):
-            fields.append("decision_authority")
-        if _GOVERNING_DECISION_RULE_RE.search(sentence):
-            fields.append("governing_decision_rule")
-    required_fields = tuple(dict.fromkeys(fields))
-    if not required_fields:
+    authority_terms = ("authority", "owner", "approver", "commander")
+    rule_terms = ("policy", "standard", "jurisdiction", "protocol", "rule", "appeal route")
+    has_authority = any(term in lowered for term in authority_terms)
+    has_rule = any(term in lowered for term in rule_terms)
+    if not has_authority and not has_rule:
         return None
-    if required_fields == ("decision_authority",):
-        question = "Who has authority to make the unresolved decision?"
-    elif required_fields == ("governing_decision_rule",):
-        question = "What rule, standard, jurisdiction, or appeal route governs the unresolved decision?"
-    else:
-        question = (
+    fields = tuple(
+        field
+        for field, present in (
+            ("decision_authority", has_authority),
+            ("governing_decision_rule", has_rule),
+        )
+        if present
+    )
+    return MaterialClarification(
+        question=(
             "Who has authority to make the unresolved decision, and what rule, standard, jurisdiction, "
             "or appeal route governs it?"
-        )
-    return MaterialClarification(question=question, required_fields=required_fields)
+        ),
+        required_fields=fields,
+    )
 
 
-def _has_explicit_material_conflict(value: str) -> bool:
-    return bool(
-        _EXPLICIT_CONTRADICTION_RE.search(value)
-        or _DECLARED_CONTRADICTION_RE.search(value)
-        or (_UNRESOLVED_RE.search(value) and _OPPOSING_EVIDENCE_RE.search(value))
+def _declared_material_unknowns(evidence: str) -> tuple[str, ...]:
+    """Extract decision labels from explicit missing, unresolved, or blocking clauses."""
+
+    fields: list[str] = []
+    sentences = sentence_fragments(evidence)
+    lowered_evidence = evidence.casefold()
+    for sentence in sentences:
+        lowered = sentence.casefold().strip()
+        clause = _subject_before_marker(sentence, lowered)
+        if clause:
+            fields.extend(_field_keys(clause))
+        supplied = _supplied_clause(sentence, lowered)
+        if supplied:
+            fields.extend(_field_keys(supplied))
+        needed = _needed_before_clause(sentence, lowered)
+        if needed:
+            fields.extend(_field_keys(needed))
+        if "identify " in lowered and any(
+            marker in lowered_evidence for marker in (" absent", " unknown", " unresolved", "do not authorize")
+        ):
+            start = lowered.index("identify ") + len("identify ")
+            fields.extend(_field_keys(sentence[start:]))
+    return tuple(dict.fromkeys(field for field in fields if field))
+
+
+def _subject_before_marker(sentence: str, lowered: str) -> str:
+    for marker in _UNKNOWN_SUBJECT_MARKERS:
+        if marker not in lowered:
+            continue
+        subject = sentence[: lowered.index(marker)].strip(" .,:;-")
+        if ":" in subject and subject.partition(":")[0].casefold().strip() in _FIELD_PREFIXES:
+            subject = subject.partition(":")[2].strip()
+        return subject
+    absent_subject = _absent_decision_subject(sentence, lowered)
+    if absent_subject:
+        return absent_subject
+    if lowered.startswith("no "):
+        for marker in _SUPPLY_MARKERS:
+            if marker in lowered:
+                return sentence[3 : lowered.index(marker)].strip(" .,:;-")
+    return ""
+
+
+def _absent_decision_subject(sentence: str, lowered: str) -> str:
+    """Distinguish an unspecified decision from a runtime value that may be absent."""
+
+    for marker in (" are absent", " is absent"):
+        if marker not in lowered:
+            continue
+        subject = sentence[: lowered.index(marker)].strip(" .,:;-")
+        for boundary in (" while ", " when ", " if ", ";", ","):
+            if boundary in subject.casefold():
+                subject = subject[subject.casefold().rfind(boundary) + len(boundary) :].strip()
+        key = _field_key(subject)
+        if key.endswith(("_authority", "_jurisdiction", "_owner", "_policy", "_protocol", "_rule")):
+            return subject
+    return ""
+
+
+def _supplied_clause(sentence: str, lowered: str) -> str:
+    if " until " not in lowered:
+        return ""
+    tail_start = lowered.index(" until ") + len(" until ")
+    tail = sentence[tail_start:]
+    lowered_tail = lowered[tail_start:]
+    for marker in _SUPPLY_MARKERS:
+        if marker in lowered_tail:
+            return tail[: lowered_tail.index(marker)].strip(" .,:;-")
+    return ""
+
+
+def _needed_before_clause(sentence: str, lowered: str) -> str:
+    if "need " not in lowered or " before " not in lowered:
+        return ""
+    start = lowered.index("need ") + len("need ")
+    end = lowered.find(" before ", start)
+    return sentence[start:end].strip(" .,:;-") if end > start else ""
+
+
+def _field_keys(value: str) -> tuple[str, ...]:
+    return tuple(
+        field
+        for part in _FIELD_SPLIT_RE.split(value)
+        if (field := _field_key(part))
+    )
+
+
+def _field_key(value: str) -> str:
+    words = _FIELD_TOKEN_RE.findall(clean_markdown_text(value).casefold())
+    if words and words[0] in {"can", "cannot", "do", "must", "should", "will"}:
+        return ""
+    while words and words[0] in {"a", "an", "the", "both", "either", "no", "what", "which"}:
+        words.pop(0)
+    for boundary in ("that", "who", "whose", "when", "while", "so", "before", "until"):
+        if boundary in words:
+            words = words[: words.index(boundary)]
+    key = "_".join(words).strip("_")
+    aliases = {
+        "country_specific_export_rule": "export_jurisdiction",
+        "guardian_approval": "guardian_approval_rule",
+    }
+    return aliases.get(key, key)
+
+
+def _material_unknown_question(fields: list[str]) -> str:
+    labels = [field.replace("_", " ") for field in fields]
+    if len(labels) == 1:
+        field_text = labels[0]
+    elif len(labels) == 2:
+        field_text = f"{labels[0]} and {labels[1]}"
+    else:
+        field_text = f"{', '.join(labels[:-1])}, and {labels[-1]}"
+    return f"Could you specify the {field_text} for this project?"
+
+
+def _has_guardian_approval_gap(lowered: str) -> bool:
+    return "age policy" in lowered and "guardian approval" in lowered and "not specified" in lowered
+
+
+def _has_location_disclosure_conflict(lowered: str) -> bool:
+    return "public location" in lowered and "location" in lowered and "restricted" in lowered
+
+
+def _has_explicit_material_conflict(lowered: str) -> bool:
+    if any(
+        marker in lowered
+        for marker in ("which is intended", "ask which", "in conflict", "contradict", "mutually exclusive")
+    ):
+        return True
+    return any(
+        f"{subject} conflict" in lowered
+        for subject in ("accounts", "boundaries", "claims", "descriptions", "instructions", "notes", "requirements", "sources")
     )
 
 
@@ -260,4 +377,5 @@ __all__ = [
     "explicit_material_clarification",
     "has_explicit_visible_result",
     "incomplete_path_clarification",
+    "material_clarification_for_fields",
 ]

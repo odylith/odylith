@@ -11,6 +11,7 @@ from odylith.runtime.artifact_quality.greenfield_project_judgment import project
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     GreenfieldClarificationRequired,
 )
@@ -39,6 +40,17 @@ _AA51_RETIRED_HOLDOUT = json.loads(_AA51_RETIRED_HOLDOUT_PATH.read_text(encoding
 _AA51_AUTHORITY_CASES = tuple(
     case for case in _AA51_RETIRED_HOLDOUT["cases"] if case["expectation"] == "clarification_required"
 )
+_87E277_RETIRED_HOLDOUT_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "fixtures/greenfield-release-corpus/retired-87e277-final-holdout-regressions.v1.json"
+)
+_87E277_RETIRED_HOLDOUT = json.loads(_87E277_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
+_87E277_ANNOTATIONS = {
+    str(annotation["case_id"]): annotation for annotation in _87E277_RETIRED_HOLDOUT["annotations"]
+}
+_87E277_CLARIFICATION_CASES = tuple(
+    case for case in _87E277_RETIRED_HOLDOUT["cases"] if case["expectation"] == "clarification_required"
+)
 
 
 @pytest.fixture(autouse=True)
@@ -50,6 +62,71 @@ def test_failed_final_holdout_is_marked_disclosed_and_retired() -> None:
     assert _RETIRED_HOLDOUT["version"] == "odylith.greenfield.retired-holdout-regression.v1"
     assert _RETIRED_HOLDOUT["disclosed"] is True
     assert len(_RETIRED_HOLDOUT_CASES) == 24
+
+
+def test_87e277_failed_holdout_is_marked_disclosed_and_retired() -> None:
+    assert _87E277_RETIRED_HOLDOUT["version"] == "odylith.greenfield.retired-holdout-regression.v1"
+    assert _87E277_RETIRED_HOLDOUT["disclosed"] is True
+    assert len(_87E277_RETIRED_HOLDOUT["cases"]) == 24
+    assert len(_87E277_RETIRED_HOLDOUT["annotations"]) == 24
+
+
+@pytest.mark.parametrize(
+    "case",
+    _87E277_CLARIFICATION_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_87e277_material_unknowns_are_specific_and_write_free(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    annotation = _87E277_ANNOTATIONS[str(case["case_id"])]
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=str(case["prompt"]),
+            repo_root=tmp_path,
+            fallback_title=str(case["name"]),
+        )
+
+    expected_fields = {str(field).replace(" ", "_") for field in annotation["expected_question_fields"]}
+    assert set(error.value.required_fields) == expected_fields
+    assert str(error.value).endswith("?")
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_typed_materiality_gate_blocks_before_candidate_staging(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = greenfield_product_intent_envelope.build_product_intent_envelope
+
+    def blocked_envelope(*args: object, **kwargs: object) -> dict[str, object]:
+        envelope = original(*args, **kwargs)
+        envelope["materiality_gate"] = {
+            "status": "clarification_required",
+            "blocked_fields": ["proof_boundary"],
+            "clarification_policy": "block_only_material_unknowns",
+        }
+        return envelope
+
+    monkeypatch.setattr(
+        greenfield_product_intent_envelope,
+        "build_product_intent_envelope",
+        blocked_envelope,
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=(
+                "Mara reviews one returned crate, records its orchard lot, marks it inspected, "
+                "and sees the daily return tally."
+            ),
+            repo_root=tmp_path,
+            fallback_title="Orchard Returns",
+        )
+
+    assert error.value.required_fields == ("proof_boundary",)
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
 
 @pytest.mark.parametrize(

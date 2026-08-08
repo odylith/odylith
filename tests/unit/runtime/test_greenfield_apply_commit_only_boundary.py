@@ -121,11 +121,6 @@ def test_create_confirm_cli_commits_transaction_without_post_confirm_generation(
     )
     monkeypatch.setattr(
         greenfield_prompt_intent_materialization,
-        "materialize_prompt_confirmed_intent",
-        forbidden,
-    )
-    monkeypatch.setattr(
-        greenfield_prompt_intent_materialization,
         "materialize_prompt_intent_hypothesis",
         forbidden,
     )

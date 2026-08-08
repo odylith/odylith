@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -11,14 +11,70 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import PREC
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_typed_candidate_intent_files
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    product_intent_authority_from_envelope,
-)
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 
 
 _RUNTIME_RELATIVE = Path(".odylith/runtime/greenfield")
+
+
+@dataclass(frozen=True)
+class CandidateIntentStagePaths:
+    """All mutable files owned by one pre-confirm candidate stage."""
+
+    markdown: Path
+    structured: Path
+    evidence_markdown: Path
+    evidence_ledger: Path
+    operator_prompt: Path
+    operator_edit: Path
+
+
+def candidate_intent_stage_paths(repo_root: Path) -> CandidateIntentStagePaths:
+    root = Path(repo_root).expanduser().resolve()
+    runtime = root / _RUNTIME_RELATIVE
+    markdown = runtime / "candidate-intent.md"
+    return CandidateIntentStagePaths(
+        markdown=markdown,
+        structured=markdown.with_suffix(".json"),
+        evidence_markdown=runtime / "candidate-evidence.md",
+        evidence_ledger=runtime / "candidate-evidence.v1.json",
+        operator_prompt=runtime / "operator-prompt.txt",
+        operator_edit=runtime / "edit-evidence.md",
+    )
+
+
+def stage_candidate_intent(
+    *,
+    repo_root: Path,
+    intent: Mapping[str, Any],
+    envelope: Mapping[str, Any],
+    authority: Mapping[str, Any],
+    prompt: str,
+    edit_evidence: str,
+    evidence_source: str,
+) -> dict[str, Any]:
+    """Persist one already validated candidate and its evidence ledger."""
+
+    require_product_intent_authority(authority)
+    paths = candidate_intent_stage_paths(repo_root)
+    atomic_write_text(
+        paths.markdown,
+        f"{PRECONFIRM_STAGING_MARKER}\n{render_candidate_intent_markdown(intent)}",
+        encoding="utf-8",
+    )
+    atomic_write_text(paths.operator_prompt, prompt.strip() + "\n", encoding="utf-8")
+    if edit_evidence:
+        atomic_write_text(paths.operator_edit, edit_evidence.strip() + "\n", encoding="utf-8")
+    atomic_write_text(paths.evidence_markdown, evidence_source, encoding="utf-8")
+    write_typed_candidate_intent_files(
+        paths.markdown,
+        intent,
+        envelope=envelope,
+        evidence_path=paths.evidence_ledger,
+    )
+    candidate = dict(intent)
+    candidate[PRODUCT_INTENT_AUTHORITY_KEY] = dict(authority)
+    return candidate
 
 
 def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
@@ -70,87 +126,14 @@ def render_candidate_intent_markdown(intent: Mapping[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def restage_compiled_candidate_intent(
-    *,
-    repo_root: Path,
-    intent: Mapping[str, Any],
-    previous_authority: Mapping[str, Any],
-) -> dict[str, Any]:
-    """Seal the final pre-confirm facts and keep their staged custody view aligned."""
-
-    root = Path(repo_root).expanduser().resolve()
-    authority = dict(previous_authority)
-    require_product_intent_authority(authority)
-    source_path = _authority_source_path(root=root, authority=authority)
-    try:
-        source_text = source_path.read_text(encoding="utf-8")
-    except OSError as error:
-        raise RuntimeError("pre-confirm candidate evidence is unavailable; rebuild the transaction") from error
-    staged_intent = dict(intent)
-    envelope = build_product_intent_envelope(
-        staged_intent,
-        source_text=source_text,
-        source_path=source_path.relative_to(root),
-        source_format=str(authority.get("source_format") or "operator_prompt"),
-    )
-    evidence_sources = _existing_evidence_sources(root=root)
-    if evidence_sources:
-        envelope["source_evidence"]["evidence_sources"] = evidence_sources
-    runtime = root / _RUNTIME_RELATIVE
-    candidate_path = runtime / "candidate-intent.md"
-    atomic_write_text(
-        candidate_path,
-        f"{PRECONFIRM_STAGING_MARKER}\n{render_candidate_intent_markdown(staged_intent)}",
-        encoding="utf-8",
-    )
-    structured_path, _ = write_typed_candidate_intent_files(
-        candidate_path,
-        staged_intent,
-        envelope=envelope,
-        evidence_path=runtime / "candidate-evidence.v1.json",
-    )
-    final_authority = product_intent_authority_from_envelope(
-        envelope,
-        structured_intent_path=structured_path.relative_to(root),
-        markdown_source_path=source_path.relative_to(root),
-    )
-    require_product_intent_authority(final_authority)
-    staged_intent[PRODUCT_INTENT_AUTHORITY_KEY] = final_authority
-    return staged_intent
-
-
-def _authority_source_path(*, root: Path, authority: Mapping[str, Any]) -> Path:
-    raw_path = str(authority.get("markdown_source_path") or "").strip()
-    if not raw_path:
-        raise ValueError("pre-confirm candidate authority is missing its evidence path")
-    source_path = (root / raw_path).resolve()
-    try:
-        source_path.relative_to(root)
-    except ValueError as error:
-        raise ValueError("pre-confirm candidate evidence path escapes the repository") from error
-    return source_path
-
-
-def _existing_evidence_sources(*, root: Path) -> list[dict[str, str]]:
-    path = root / _RUNTIME_RELATIVE / "candidate-evidence.v1.json"
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return []
-    source_evidence = payload.get("source_evidence") if isinstance(payload, Mapping) else {}
-    rows = source_evidence.get("evidence_sources") if isinstance(source_evidence, Mapping) else []
-    return [
-        {"source_id": str(row.get("source_id") or "").strip(), "source_path": str(row.get("source_path") or "").strip()}
-        for row in rows
-        if isinstance(row, Mapping)
-        and str(row.get("source_id") or "").strip()
-        and str(row.get("source_path") or "").strip()
-    ]
-
-
 def _bullet_lines(value: Any, *, empty_text: str) -> list[str]:
     rows = confirmed_text_values(value)
     return [f"- {row}" for row in rows] if rows else [f"- {empty_text}"]
 
 
-__all__ = ["render_candidate_intent_markdown", "restage_compiled_candidate_intent"]
+__all__ = [
+    "CandidateIntentStagePaths",
+    "candidate_intent_stage_paths",
+    "render_candidate_intent_markdown",
+    "stage_candidate_intent",
+]

@@ -58,3 +58,20 @@ def test_greenfield_tail_cleanup_has_no_regex_word_towers() -> None:
     assert "an|and|as|at|because|by|for|from" not in mermaid
     assert "accepted|actionable|an|and|as|at|because" not in sequence_labels
     assert "a|an|and|as|at|because|before|by|can" not in semantic_model
+
+
+def test_greenfield_materiality_has_one_prewrite_owner() -> None:
+    materialization = _source(
+        "src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py"
+    )
+    staging = _source(
+        "src/odylith/runtime/domain_intelligence/greenfield_candidate_intent_stage.py"
+    )
+
+    assert not (
+        _ROOT
+        / "src/odylith/runtime/domain_intelligence/greenfield_preconfirm_transaction_authority.py"
+    ).exists()
+    assert "materialize_prompt_confirmed_intent" not in materialization
+    assert "restage_compiled_candidate_intent" not in staging
+    assert "stage_candidate_intent(" in materialization

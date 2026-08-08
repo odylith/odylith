@@ -25,7 +25,9 @@
     "byte_size": 96127,
     "case_count": 24,
     "annotation_count": 24,
-    "claim_class": "blinded-independent-synthetic-holdout",
+    "claim_class": "disclosed-failed-holdout-regression",
+    "disclosure_status": "disclosed_failed_retired",
+    "retired_fixture": "tests/fixtures/greenfield-release-corpus/retired-87e277-final-holdout-regressions.v1.json",
     "disclosure_policy": "Run once after floors and implementation are frozen. A disclosed failure retires this holdout into regression and requires a new blinded holdout.",
     "annotation_review": {
       "independent_reviewed": true,

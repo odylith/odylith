@@ -23,7 +23,6 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRE
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_QUALITY_MANIFEST_VERSION
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     GreenfieldClarificationRequired,
-    materialize_prompt_confirmed_intent,
     materialize_prompt_intent_hypothesis,
     render_product_intent_preview,
 )
@@ -299,12 +298,12 @@ def test_product_create_transaction_rejects_markdown_material_fact_without_produ
         ),
     ),
 )
-def test_prompt_only_materialization_preserves_concrete_first_path_claim_custody(
+def test_prompt_hypothesis_preserves_concrete_first_path_atomic_custody(
     tmp_path: Path,
     prompt: str,
     fallback_title: str,
 ) -> None:
-    intent = materialize_prompt_confirmed_intent(
+    intent = materialize_prompt_intent_hypothesis(
         prompt=prompt,
         repo_root=tmp_path,
         fallback_title=fallback_title,
@@ -313,14 +312,13 @@ def test_prompt_only_materialization_preserves_concrete_first_path_claim_custody
     authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
 
     require_product_intent_authority(authority)
-    first_path = authority["material_fields"]["first_path"]
-    assert first_path["custody_state"] == "accepted_fact"
-    assert first_path["product_claim_span_ids"]
-    assert first_path["source_span_ids"] == first_path["product_claim_span_ids"]
-    assert all(ref["classification"] == "product_claim" for ref in first_path["source_span_refs"])
+    action_atoms = [atom for atom in authority["atomic_facts"] if "actions" in atom["categories"]]
+    assert action_atoms
+    assert all(atom["custody_state"] == "accepted_fact" for atom in action_atoms)
+    assert all(atom["source_span_refs"] for atom in action_atoms)
 
 
-def test_prompt_materialization_persists_operational_constraints_through_preview_round_trip(
+def test_prompt_hypothesis_persists_operational_constraints_through_preview_round_trip(
     tmp_path: Path,
 ) -> None:
     prompt = (
@@ -329,17 +327,17 @@ def test_prompt_materialization_persists_operational_constraints_through_preview
         "handoff receipt."
     )
 
-    intent = materialize_prompt_confirmed_intent(
+    intent = materialize_prompt_intent_hypothesis(
         prompt=prompt,
         repo_root=tmp_path,
         fallback_title="Berth Turnaround Control",
     )
-    path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
-    persisted = load_confirmed_intent_record(path, prompt=prompt, fallback_title="Berth Turnaround Control")
+    path = tmp_path / ".odylith" / "runtime" / "greenfield" / "candidate-intent.md"
+    persisted = json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))["product_facts"]
     markdown = path.read_text(encoding="utf-8")
 
     assert "Pier 7" in intent["operational_constraints"]
-    assert "Pier 7" in persisted.product_facts["operational_constraints"]
+    assert "Pier 7" in persisted["operational_constraints"]
     assert "## Operational constraints\n- Pier 7" in markdown
     assert markdown.index("## Operational constraints") < markdown.index("## Human actors")
 
@@ -360,13 +358,8 @@ def test_product_intent_preview_lists_operational_constraints_before_human_actor
 
 def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_authority(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(
-        greenfield_prompt_intent_materialization,
-        "parse_confirmed_intent_text",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("Markdown parsing is forbidden")),
-    )
+    assert not hasattr(greenfield_prompt_intent_materialization, "parse_confirmed_intent_text")
     intent = materialize_prompt_intent_hypothesis(
         prompt=(
             "Build a lab evidence review workspace where research coordinators record submitted sample context, "
@@ -542,62 +535,6 @@ def test_explicit_human_context_overrides_a_nonhuman_parser_actor(tmp_path: Path
         "emissions evidence, tariff exceptions, and operator signoff before publishing a daily berth plan and keep "
         "the result visible and reviewable"
     ]
-
-
-def test_preconfirm_finalization_reseals_repaired_typed_facts(tmp_path: Path) -> None:
-    candidate = materialize_prompt_intent_hypothesis(
-        prompt=(
-            "Create a greenfield proposal for a semiconductor reliability lab custody platform that receives wafer "
-            "lot samples, records chamber exposure conditions, preserves chain-of-custody evidence, tracks failed "
-            "stress runs, and prepares release readiness proof for engineering review."
-        ),
-        repo_root=tmp_path,
-        fallback_title="Semiconductor Reliability Lab Custody Platform",
-    )
-    repaired = dict(candidate)
-    repaired["external_systems"] = ["Engineering review ledger: records the approved release-readiness decision."]
-
-    proposal, authority, restaged = greenfield_proposals._finalize_repaired_product_intent(
-        root=tmp_path,
-        proposal={"intent": repaired},
-        intent_authority=candidate[PRODUCT_INTENT_AUTHORITY_KEY],
-    )
-
-    assert restaged is True
-    assert product_facts_hash(proposal["intent"]) == authority[PRODUCT_FACTS_HASH_KEY]
-    staged = json.loads((tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").read_text(encoding="utf-8"))
-    assert staged["decision_record"][PRODUCT_FACTS_HASH_KEY] == authority[PRODUCT_FACTS_HASH_KEY]
-
-
-def test_final_recompile_preserves_preconfirm_rescue_evidence() -> None:
-    initial = {
-        "pass_records": [{"pass_index": 0}],
-        "repaired_issue_codes": ["structured_rescue_semantic_patch"],
-        "rescue_activated": True,
-        "repair_tier": "rescue",
-        "budget_seconds": 90,
-        "max_passes": 3,
-        "elapsed_seconds": 4.2,
-        "last_repair_patchset_request": {"operations": [{"issue_code": "structured_rescue_semantic_patch"}]},
-    }
-    final = {
-        "pass_records": [{"pass_index": 0}],
-        "repaired_issue_codes": [],
-        "rescue_activated": False,
-        "repair_tier": "standard",
-        "budget_seconds": 60,
-        "max_passes": 2,
-        "elapsed_seconds": 1.1,
-    }
-
-    merged = greenfield_proposals._merge_recompiled_quality_manifests(initial, final)
-
-    assert merged["passes"] == 2
-    assert merged["repaired_issue_codes"] == ["structured_rescue_semantic_patch"]
-    assert merged["rescue_activated"] is True
-    assert merged["repair_tier"] == "rescue"
-    assert merged["budget_seconds"] == 90
-    assert merged["last_repair_patchset_request"] == initial["last_repair_patchset_request"]
 
 
 def test_edit_with_an_automated_first_path_actor_requires_a_human_actor(tmp_path: Path) -> None:

@@ -298,8 +298,8 @@ def _score_case(
             )
     elif expected == "clarify":
         metric_counts["material_question_recall"][1] += 1
-        expected_fields = set(_strings(annotation.get("expected_question_fields")))
-        observed_fields = set(_strings(clarification.get("required_fields")))
+        expected_fields = {_question_field_key(value) for value in _strings(annotation.get("expected_question_fields"))}
+        observed_fields = {_question_field_key(value) for value in _strings(clarification.get("required_fields"))}
         question_recalled = observed == "clarify" and (not expected_fields or expected_fields <= observed_fields)
         if question_recalled:
             metric_counts["material_question_recall"][0] += 1
@@ -748,6 +748,10 @@ def _claim_recalled(expected: Any, observed: str) -> bool:
         return False
     observed_tokens = _tokens(observed)
     return expected_tokens <= observed_tokens and _negation_signature(expected) == _negation_signature(observed)
+
+
+def _question_field_key(value: Any) -> str:
+    return "_".join(_TOKEN_RE.findall(str(value or "").casefold()))
 
 
 def _negation_signature(value: Any) -> frozenset[str]:

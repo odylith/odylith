@@ -6,15 +6,12 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.prose_grammar import base_action_clause
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_record
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import PRECONFIRM_STAGING_MARKER
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
-from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_typed_candidate_intent_files
+from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import candidate_intent_stage_paths
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import render_candidate_intent_markdown
+from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import stage_candidate_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
     intent_hypothesis_from_operator_evidence,
 )
@@ -62,6 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
     incomplete_path_clarification,
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    material_clarification_for_fields,
+)
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     has_explicit_visible_result,
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
@@ -94,36 +94,6 @@ _ANAPHORIC_FIRST_PATH_ACTOR_RE = re.compile(
     r"(?:it|this|that|the\s+(?:first\s+)?(?:path|workflow|release))\.?$",
     flags=re.IGNORECASE,
 )
-
-
-def materialize_prompt_confirmed_intent(
-    *,
-    prompt: str,
-    repo_root: Path,
-    fallback_title: str,
-) -> dict[str, Any]:
-    """Persist prompt-only intent as Markdown plus typed JSON before transaction compile."""
-
-    if not prompt or prompt == "new project":
-        raise prompt_only_material_decision_error()
-    try:
-        intent = parse_confirmed_intent_text(prompt, prompt=prompt, fallback_title=fallback_title)
-    except ValueError as exc:
-        raise prompt_only_material_decision_error() from exc
-    root = Path(repo_root).expanduser().resolve()
-    path = root / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
-    atomic_write_text(path, render_candidate_intent_markdown(intent), encoding="utf-8")
-    record = load_confirmed_intent_record(path, prompt=prompt, fallback_title=fallback_title)
-    structured_path = write_structured_confirmed_intent_file(path, record.product_facts, envelope=record.envelope)
-    authority = product_intent_authority_from_envelope(
-        record.envelope,
-        structured_intent_path=structured_path.relative_to(root),
-        markdown_source_path=path.relative_to(root),
-    )
-    require_product_intent_authority(authority)
-    accepted = dict(record.product_facts)
-    accepted[PRODUCT_INTENT_AUTHORITY_KEY] = authority
-    return accepted
 
 
 def materialize_prompt_intent_hypothesis(
@@ -205,48 +175,46 @@ def materialize_prompt_intent_hypothesis(
                 actor_rows=canonical_actor_rows,
                 fallback=f"{domain_label(str(intent.get('title') or fallback_title), '').casefold()} user",
             )
-    path = root / ".odylith" / "runtime" / "greenfield" / "candidate-intent.md"
-    atomic_write_text(
-        path,
-        f"{PRECONFIRM_STAGING_MARKER}\n{render_candidate_intent_markdown(intent)}",
-        encoding="utf-8",
-    )
-    evidence_path = root / ".odylith" / "runtime" / "greenfield" / "candidate-evidence.md"
-    prompt_evidence_path = root / ".odylith" / "runtime" / "greenfield" / "operator-prompt.txt"
-    atomic_write_text(prompt_evidence_path, prompt.strip() + "\n", encoding="utf-8")
-    if raw_edit:
-        edit_evidence_path = root / ".odylith" / "runtime" / "greenfield" / "edit-evidence.md"
-        atomic_write_text(edit_evidence_path, raw_edit + "\n", encoding="utf-8")
-    atomic_write_text(evidence_path, evidence_source, encoding="utf-8")
+    paths = candidate_intent_stage_paths(root)
     from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
 
     envelope = build_product_intent_envelope(
         intent,
         source_text=evidence_source,
-        source_path=evidence_path.relative_to(root),
+        source_path=paths.evidence_markdown.relative_to(root),
         source_format="operator_prompt_with_edit_evidence" if raw_edit else "operator_prompt",
     )
     envelope["source_evidence"]["evidence_sources"] = [
-        {"source_id": "operator_prompt", "source_path": str(prompt_evidence_path.relative_to(root))},
+        {"source_id": "operator_prompt", "source_path": str(paths.operator_prompt.relative_to(root))},
         *(
-            [{"source_id": "operator_edit", "source_path": str(edit_evidence_path.relative_to(root))}]
+            [{"source_id": "operator_edit", "source_path": str(paths.operator_edit.relative_to(root))}]
             if raw_edit
             else []
         ),
     ]
-    structured_path, _evidence_ledger_path = write_typed_candidate_intent_files(
-        path,
-        intent,
-        envelope=envelope,
-        evidence_path=root / ".odylith" / "runtime" / "greenfield" / "candidate-evidence.v1.json",
-    )
+    materiality_gate = envelope.get("materiality_gate")
+    if isinstance(materiality_gate, Mapping) and materiality_gate.get("status") != "passed":
+        blocked = tuple(str(field) for field in materiality_gate.get("blocked_fields", ()) if str(field))
+        clarification = material_clarification_for_fields(blocked)
+        raise GreenfieldClarificationRequired(
+            clarification.question,
+            required_fields=clarification.required_fields,
+        )
     authority = product_intent_authority_from_envelope(
         envelope,
-        structured_intent_path=structured_path.relative_to(root),
-        markdown_source_path=evidence_path.relative_to(root),
+        structured_intent_path=paths.structured.relative_to(root),
+        markdown_source_path=paths.evidence_markdown.relative_to(root),
     )
     require_product_intent_authority(authority)
-    candidate = dict(intent)
+    candidate = stage_candidate_intent(
+        repo_root=root,
+        intent=intent,
+        envelope=envelope,
+        authority=authority,
+        prompt=prompt,
+        edit_evidence=raw_edit,
+        evidence_source=evidence_source,
+    )
     # Prompt and edit text remain inspectable evidence for the current proposal,
     # but never enter persisted product facts or the authority hash.
     candidate["prompt"] = evidence_source
@@ -1031,7 +999,6 @@ def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
 
 __all__ = [
     "combined_prompt_evidence_source",
-    "materialize_prompt_confirmed_intent",
     "materialize_prompt_intent_hypothesis",
     "prompt_only_material_decision_error",
     "render_product_intent_preview",
