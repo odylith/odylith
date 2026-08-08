@@ -14,7 +14,16 @@ from odylith.runtime.project_intelligence.participants import participant_body
 from odylith.runtime.project_intelligence.participants import participant_key
 from odylith.runtime.project_intelligence.participants import participant_title
 from odylith.runtime.project_intelligence.participants import participant_title_and_body
-from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sanitize_actor_body, sentence, short, strings
+from odylith.runtime.project_intelligence.utils import (
+    dict_value,
+    display_text,
+    list_value,
+    repeat_key,
+    sanitize_actor_body,
+    sentence,
+    short,
+    strings,
+)
 
 
 def _accepted_validation_gate(accepted: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -383,7 +392,7 @@ def _should_replace_actor_body(*, title: str, existing_body: str, candidate_body
 
 
 def _is_default_actor_body(*, title: str, body: str) -> bool:
-    return _repeat_key(body) == _repeat_key(_default_actor_body(title))
+    return repeat_key(body) == repeat_key(_default_actor_body(title))
 
 
 def _looks_generated_actor_context(value: str) -> bool:
@@ -416,25 +425,6 @@ def _actor_display_parts(*, title: object, body: object) -> tuple[str, str]:
 def _actor_dedupe_key(value: str) -> str:
     key = participant_key(value)
     return key or sentence(value).casefold().strip(" .")
-
-
-def _dedupe_text(values: Sequence[str]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = sentence(value)
-        key = " ".join(text.casefold().split())
-        if not text or key in seen:
-            continue
-        seen.add(key)
-        result.append(text)
-    return result
-
-
-def _repeat_key(value: object) -> str:
-    text = sentence(value).casefold()
-    text = re.sub(r"[^a-z0-9]+", " ", text)
-    return " ".join(text.split())
 
 
 def _proposal_actor_responsibility_map(proposal: Mapping[str, Any]) -> dict[str, str]:

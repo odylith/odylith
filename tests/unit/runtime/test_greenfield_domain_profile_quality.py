@@ -27,6 +27,7 @@ CONFIRMED_PRODUCT_INTENTS = [
     "draft a greenfield proposal for a municipal permit review workspace",
 ]
 
+@pytest.mark.greenfield_lifecycle
 @pytest.mark.parametrize("prompt", CONFIRMED_PRODUCT_INTENTS)
 def test_confirmed_greenfield_proposal_is_apply_ready_without_domain_profiles(tmp_path: Path, prompt: str) -> None:
     request = greenfield_proposals.build_greenfield_proposal(
@@ -50,6 +51,7 @@ def test_confirmed_greenfield_proposal_is_apply_ready_without_domain_profiles(tm
     assert "Operator Workspace" not in json.dumps(request)
 
 
+@pytest.mark.greenfield_lifecycle
 @pytest.mark.parametrize("prompt", PRODUCT_INTENTS)
 def test_product_intent_preview_stages_one_rail_transaction_without_governed_records(
     tmp_path: Path, capsys, prompt: str
@@ -88,6 +90,7 @@ def test_product_intent_preview_stages_one_rail_transaction_without_governed_rec
     assert "Evidence owner" not in output
 
 
+@pytest.mark.greenfield_lifecycle
 def test_greenfield_title_strips_operator_directives(tmp_path: Path) -> None:
     request = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -103,6 +106,7 @@ def test_greenfield_title_strips_operator_directives(tmp_path: Path) -> None:
     assert "Do Not Write" not in request["intent"]["title"]
 
 
+@pytest.mark.greenfield_lifecycle
 def test_edit_evidence_returns_hash_bound_transaction(tmp_path: Path, capsys) -> None:
     evidence_path = _write_confirmed_intent(tmp_path)
     rc = greenfield_proposals.main(
@@ -240,6 +244,35 @@ def test_quality_gate_allows_domain_specific_actor_names_but_rejects_placeholder
         {"id": "ASM-001", "statement": "Safety reviewer handles release exceptions for hazardous runs."}
     ]
     assert not any("generic actor label `Reviewer`" in issue for issue in greenfield_quality_issues(domain_specific))
+
+
+def test_quality_gate_does_not_treat_sealed_intent_custody_as_public_copy() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["product_intent_authority"] = {
+        "atomic_facts": [
+            {
+                "field": "first_path",
+                "normalized_value": "Reviewer decisions remain attached to the accepted permit packet.",
+                "source_text": "route reviewer decisions",
+            },
+            {
+                "field": "human_actors",
+                "normalized_value": "Operator opens one site record.",
+                "source_text": "an operator opens one site record",
+            },
+        ]
+    }
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert not any("product_intent_authority" in issue for issue in issues)
+    assert not any("generic actor label" in issue for issue in issues)
+
+    proposal["assumptions"] = [
+        {"id": "ASM-001", "statement": "Reviewer decisions remain attached to the accepted permit packet."}
+    ]
+    public_issues = greenfield_quality_issues(proposal)
+    assert any("generic actor label `Reviewer`" in issue for issue in public_issues)
 
 
 def test_quality_gate_meaningful_terms_use_shared_domain_index() -> None:

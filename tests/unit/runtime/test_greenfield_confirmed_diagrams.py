@@ -297,6 +297,18 @@ def test_brief_proof_boundary_does_not_clip_terminal_product_show_clause() -> No
     assert "records required information" in brief
 
 
+def test_brief_proof_boundary_removes_a_clipped_terminal_action_chain() -> None:
+    proof = (
+        "Shelter coordinators can register displaced residents; then match household needs to shelter capacity; "
+        "then preserve consent evidence; then publish a daily placement readiness result."
+    )
+
+    brief = brief_proof_boundary(proof)
+
+    assert brief.endswith("preserve consent evidence")
+    assert not brief.endswith(("publish", "then"))
+
+
 def test_component_boundary_wraps_long_deferred_component_identity() -> None:
     rows = confirmed_diagrams(
         label="Evidence Review Workspace",

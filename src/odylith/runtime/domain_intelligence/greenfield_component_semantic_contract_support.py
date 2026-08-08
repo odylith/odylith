@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import clean
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
+from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
@@ -25,6 +26,7 @@ _PROFILE_SUPPLEMENT_NOISE_TERMS = frozenset(
         "history",
         "local",
         "metadata",
+        "recordkeeping",
         "state",
         "states",
         "status",
@@ -261,7 +263,7 @@ def result_like_phrase(value: str) -> str:
     best_score = 0
     best = ""
     for part in _clean(value).split(","):
-        text = _dedupe_adjacent_words(_clean_artifact_phrase(part))
+        text = dedupe_adjacent_words(_clean_artifact_phrase(part))
         if not text or _status_only_artifact_fragment(text):
             continue
         terms = set(_content_terms(text))
@@ -356,18 +358,6 @@ def _sentence_clause(value: str) -> str:
     if not text:
         return "local proof obligation remains reviewable."
     return f"{text.rstrip('.')}."
-
-
-def _dedupe_adjacent_words(value: str) -> str:
-    words = _clean(value).split()
-    result: list[str] = []
-    for word in words:
-        current = word.casefold().strip(".,;:")
-        previous = result[-1].casefold().strip(".,;:") if result else ""
-        if current and current == previous:
-            continue
-        result.append(word)
-    return " ".join(result).strip(" .,;")
 
 
 def _clean(value: Any) -> str:

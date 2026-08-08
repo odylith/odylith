@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import normalize_contract
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import produced_outputs_text
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     GreenfieldPreconfirmRepairContext,
 )
@@ -21,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets impor
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets import (
     semantic_patch_target_for_operation,
 )
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.reasoning import tribunal_patch_planner
@@ -418,14 +421,14 @@ def _component_contract_output_patch_value(proposal: Mapping[str, Any], target_p
     row = components[index]
     if not isinstance(row, Mapping):
         return ""
-    base = _component_source_sentence(row) or normalize_string(projection_repair_target_value(proposal, target_path))
-    text = normalize_string(base).strip(" .")
-    if not text:
-        return ""
-    suffix = "blocked-state detail, reviewer explanation, next-step context, and handoff context"
-    if suffix.casefold() in text.casefold():
-        return text
-    return f"{text}, {suffix}"
+    current = normalize_string(projection_repair_target_value(proposal, target_path))
+    for candidate in (_component_source_sentence(row), current):
+        normalized = normalize_contract({"produced_outputs": candidate})
+        output = normalize_string(normalized.get("produced_outputs")).strip(" .")
+        if output:
+            completed = produced_outputs_text(output)
+            return clean_artifact_sentence(completed)
+    return ""
 
 
 def _component_source_sentence(row: Mapping[str, Any]) -> str:

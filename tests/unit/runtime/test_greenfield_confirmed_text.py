@@ -581,10 +581,12 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
         'baseline trends, capability markers, and clear "what changed" insight',
         limit=52,
     )
-    assert wrap_mermaid_label(
+    clipped_label = wrap_mermaid_label(
         "A reviewer selects an object code and the saved result includes the chosen destination",
         limit=70,
-    ).replace("<br/>", " ").endswith("the saved result")
+    ).replace("<br/>", " ")
+    assert clipped_label == "A reviewer selects an object code"
+    assert not clipped_label.endswith(("and", "it", "includes"))
     assert wrap_mermaid_label(
         "A reviewer opens the saved result and sees what remains",
         limit=80,
@@ -603,6 +605,18 @@ def test_confirmed_tail_repair_strips_clipped_terminal_fragments() -> None:
         "Collect denial reasons, reviewer notes"
     )
     assert strip_dangling_tail("The review status is final") == "The review status is final"
+    assert strip_dangling_tail("The clerk reviews the packet and sees") == "The clerk reviews the packet"
+    assert strip_dangling_tail("The clerk sees what remains") == "The clerk sees what remains"
+
+
+def test_sentence_text_repairs_chained_tail_exposed_by_word_boundary_clipping() -> None:
+    value = (
+        "The release proof must show one shelter coordinator can review household placement requests, "
+        "match one household to an available shelter placement, preserve consent evidence, and produce "
+        "a daily placement readiness report."
+    )
+
+    assert sentence_text(value, limit=200).endswith("preserve consent evidence.")
 
 
 def test_first_path_phrase_clipping_strips_incomplete_terminal_modifier_fragments() -> None:

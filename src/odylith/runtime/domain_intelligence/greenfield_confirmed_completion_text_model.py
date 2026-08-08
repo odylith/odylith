@@ -131,34 +131,6 @@ def action_phrase(proposal: Mapping[str, Any]) -> str:
     return _base_user_action_phrase(action) or "complete the first product action"
 
 
-def _first_system_material_action_after_human_setup(value: str) -> str:
-    view = first_path_semantic_view(first_path_model(value))
-    saw_human_setup = False
-    for step in view.steps:
-        if step.is_trivial_start or step.is_dash_detail or step.is_system_generated or step.is_visible_result:
-            continue
-        actor = step.actor_signature.casefold()
-        if actor and not _system_action_actor(actor):
-            saw_human_setup = True
-            continue
-        if not actor and _human_setup_without_signature(step.text):
-            saw_human_setup = True
-            continue
-        if saw_human_setup and step.is_material_action and step.fragment:
-            return step.fragment
-    return ""
-
-
-def _system_action_actor(value: str) -> bool:
-    terms = set(re.findall(r"[a-z][a-z0-9'-]*", str(value or "").casefold()))
-    return bool(terms & {"app", "application", "controller", "engine", "product", "service", "system", "workspace"})
-
-
-def _human_setup_without_signature(value: str) -> bool:
-    text = _clean(value).casefold().strip(" .")
-    return bool(re.match(r"^(?:home\s+cook)\s+(?:picks?|chooses?|selects?)\b", text))
-
-
 def _base_user_action_phrase(value: str) -> str:
     text = _clean(value).strip(" .")
     if not text:

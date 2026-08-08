@@ -13,13 +13,16 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.common.prose_tail import strip_dangling_word_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_deferred_focus
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import semantic_words
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail as strip_confirmed_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import balance_label
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as wrapped_flow_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -342,9 +345,9 @@ def escape_label(value: str) -> str:
 def trim(value: str, limit: int) -> str:
     text = compact_text(value)
     if len(text) <= limit:
-        return _balance_label(_strip_dangling_tail(text))
+        return balance_label(_strip_dangling_tail(text))
     clipped = clip_text_at_word_boundary(text, limit=limit)
-    return _balance_label(_strip_dangling_tail(clipped))
+    return balance_label(_strip_dangling_tail(clipped))
 
 
 def compact_text(value: str) -> str:
@@ -714,32 +717,19 @@ def _role_or_short_label(value: str) -> str:
     return re.sub(r"\s+", " ", text).strip(" ,.;:-")
 
 
-def _balance_label(value: str) -> str:
-    text = compact_text(value).strip(" ,;:.")
-    if text.count("(") > text.count(")"):
-        text = text.rsplit("(", 1)[0].rstrip(" ,;:.")
-    if text.count("[") > text.count("]"):
-        text = text.rsplit("[", 1)[0].rstrip(" ,;:.")
-    return text
-
-
 def _strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.-")
     while True:
-        text = re.sub(r"(?:,\s*)?(?:the\s+)?product\s+(?:show|shows)$", "", text, flags=re.IGNORECASE).rstrip(
-            " ,;:.-"
-        )
+        previous = text
+        words = text.split()
+        tail = [word.casefold().strip(" ,;:.-") for word in words[-2:]]
+        if tail in (["product", "show"], ["product", "shows"]):
+            text = " ".join(words[:-2]).rstrip(" ,;:.-")
+        text = strip_confirmed_dangling_tail(text)
         text = _strip_clipped_terminal_action(text)
-        cleaned = re.sub(
-            r"\b(?:a|accepted|actionable|an|and|as|at|because|blocking|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|its|key|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",
-            "",
-            text,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:.-")
-        cleaned = _strip_clipped_terminal_action(cleaned)
-        if cleaned == text:
-            return cleaned
-        text = cleaned
+        text = strip_dangling_word_tail(text, dangling_words=("then",), rstrip_chars=" ,;:.-")
+        if text == previous:
+            return text
 
 
 def _strip_clipped_terminal_action(value: str) -> str:

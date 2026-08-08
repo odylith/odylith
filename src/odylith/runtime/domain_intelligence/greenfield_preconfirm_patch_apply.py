@@ -180,27 +180,6 @@ def _target_layer(operation: Mapping[str, Any]) -> str:
     return normalize_token(operation.get("target_layer"))
 
 
-def _is_first_path_semantic_operation(operation: Mapping[str, Any]) -> bool:
-    if _target_layer(operation) not in _MODEL_PATCH_LAYERS:
-        return False
-    if normalize_token(operation.get("operation_kind")) == "semantic_first_path":
-        return True
-    return _has_legacy_structured_first_path_target(operation)
-
-
-def _has_legacy_structured_first_path_target(operation: Mapping[str, Any]) -> bool:
-    target_path = str(operation.get("target_path") or "").strip()
-    semantic_node = str(operation.get("semantic_node_id") or "").strip()
-    return target_path in {
-        "semantic_model.first_path_contract",
-        "semantic_model.first_path_contract.raw_path",
-        "proposal.semantic_model.first_path_contract",
-    } or semantic_node in {
-        "SemanticModelIR.first_path_contract",
-        "SemanticModelIR.first_path_contract.raw_path",
-    }
-
-
 def _append_patch_application_ledger(
     proposal: dict[str, Any],
     *,

@@ -77,3 +77,8 @@ dependencies = [
   "requests==2.33.0",
   "sigstore>=3.6,<4.0",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+  "greenfield_lifecycle: exercises the full Greenfield compiler or commit lifecycle and belongs in checkpoint proof",
+]

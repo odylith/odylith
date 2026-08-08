@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import conte
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
+from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
@@ -113,24 +114,8 @@ def _state_focus(value: str) -> str:
 
 
 def produced_outputs_text(output_focus: str) -> str:
-    text = _dedupe_adjacent_words(_clean(output_focus).rstrip(" ."))
-    lowered = text.casefold()
-    suffixes = []
-    if "blocked-state" not in lowered and "blocker" not in lowered:
-        suffixes.append("blocked-state detail")
-    if "rationale" not in lowered and "explanation" not in lowered:
-        suffixes.append("reviewer explanation")
-    if "next-step context" not in lowered:
-        suffixes.append("next-step context")
-    if "handoff" not in lowered:
-        suffixes.append("handoff context")
-    if not suffixes:
-        return contract_list_text(text)
-    if len(suffixes) == 1:
-        suffix_text = suffixes[0]
-    else:
-        suffix_text = f"{', '.join(suffixes[:-1])}, and {suffixes[-1]}"
-    return contract_list_text(text, suffix_text)
+    text = dedupe_adjacent_words(_clean(output_focus).rstrip(" ."))
+    return ", ".join(_contract_text_items(text))
 
 
 def accepted_inputs_text(input_focus: str) -> str:
@@ -298,7 +283,7 @@ def _contract_text_items(value: str) -> list[str]:
             _preserved_contract_text_item(raw)
             or _preserved_relation_phrase(raw)
             or _action_clause_artifact_noun(raw)
-            or _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
+            or dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
         )
         if component_shell_artifact(phrase):
             continue
@@ -321,6 +306,8 @@ def _preserved_contract_text_item(value: str) -> str:
     if re.fullmatch(r"candidate\s+ranked\s+(?:alternatives?|candidates?|options?)(?:\s+set)?", text):
         return text
     words = text.split()
+    if "or" in words and "blocked" in words:
+        return text
     if len(words) >= 2 and words[0] in {"active", "candidate", "current", "selected"}:
         return text
     plural_material = {
@@ -358,6 +345,14 @@ def _drop_marked_detail_subsets(values: Sequence[str]) -> list[str]:
             terms < other_terms for other_value, other_terms in identities if other_value != value
         ):
             continue
+        if "recordkeeping" in terms:
+            material_terms = terms - {"recordkeeping"}
+            if material_terms and any(
+                material_terms <= other_terms
+                for other_value, other_terms in identities
+                if other_value != value and "recordkeeping" not in other_terms
+            ):
+                continue
         result.append(value)
     return result
 
@@ -654,7 +649,7 @@ def component_kind_echo_safe_phrase(*, label: str, phrase: str) -> str:
 def _proof_focus(*, critical: str, output_focus: str, object_list: str) -> str:
     preferred = _proof_result_phrase(output_focus) or _proof_result_phrase(object_list)
     for candidate in (preferred, critical, output_focus, object_list):
-        text = _dedupe_adjacent_words(clean_artifact_phrase(_clean(candidate)))
+        text = dedupe_adjacent_words(clean_artifact_phrase(_clean(candidate)))
         text = _action_clause_artifact_noun(text) or text
         if not text:
             continue
@@ -673,7 +668,7 @@ def _proof_result_phrase(value: str) -> str:
     best_score = 0
     best = ""
     for part in _clean(value).split(","):
-        text = _dedupe_adjacent_words(clean_artifact_phrase(part))
+        text = dedupe_adjacent_words(clean_artifact_phrase(part))
         if not text:
             continue
         if _awkward_result_action_modifier(text):
@@ -711,18 +706,6 @@ def _awkward_result_action_modifier(value: str) -> bool:
         if any(looks_like_base_action_token(word) for word in left):
             return True
     return False
-
-
-def _dedupe_adjacent_words(value: str) -> str:
-    words = _clean(value).split()
-    result: list[str] = []
-    for word in words:
-        current = word.casefold().strip(".,;:")
-        previous = result[-1].casefold().strip(".,;:") if result else ""
-        if current and current == previous:
-            continue
-        result.append(word)
-    return " ".join(result).strip(" .,;")
 
 
 def _clean_boundary_clause(value: str) -> str:

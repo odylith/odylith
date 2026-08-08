@@ -6,6 +6,7 @@ from collections.abc import Sequence
 import re
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_tail import strip_incomplete_public_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
@@ -496,7 +497,7 @@ def _drop_secondary_ranking_claims(value: str) -> str:
 
 
 def _trim_incomplete_terminal_phrase(value: str) -> str:
-    text = _compact_text(value).strip(" .,;:")
+    text = strip_incomplete_public_tail(_compact_text(value)).strip(" .,;:")
     words = text.split()
     while words:
         tail = words[-1].casefold().strip(".,;:'")

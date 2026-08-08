@@ -9,6 +9,8 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import strip_clipped_terminal_fragment as _strip_clipped_terminal_fragment
+from odylith.runtime.common.prose_tail import strip_dangling_word_tail
+from odylith.runtime.common.prose_tail import strip_incomplete_public_tail
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import has_terminal_deferral_predicate
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -608,17 +610,22 @@ def short_summary(value: str, *, limit: int = 280) -> str:
 def strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
-        text = re.sub(r"(?:^|(?<=[.!?])\s+)It\s+should$", "", text, flags=re.IGNORECASE).rstrip(" ,;:.")
+        previous = text
+        lowered = text.casefold()
+        if lowered == "it should":
+            text = ""
+        elif lowered.endswith(" it should"):
+            prefix = text[: -len(" it should")].rstrip()
+            if prefix.endswith((".", "!", "?")):
+                text = prefix.rstrip(" ,;:.")
+        text = strip_incomplete_public_tail(text)
         text = _strip_clipped_terminal_fragment(text)
-        cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|the|to|when|while|with|without)$",
-            "",
+        text = strip_dangling_word_tail(
             text,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:.")
-        if cleaned == text:
-            return cleaned
-        text = cleaned
+            dangling_words=CONFIRMED_DANGLING_WORDS - {"final", "until"},
+        )
+        if text == previous:
+            return text
 
 
 def problem_text(*, label: str, problem: str, product_story: str, first_path: str) -> str:

@@ -86,6 +86,7 @@ COMPONENT_CONTRACT_QUALITY_PATH = (
 )
 COMPONENT_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
 COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
+COMPONENT_OUTPUTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py"
 ACTOR_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py"
 COMPONENT_TERM_WINDOWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
 COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
@@ -523,10 +524,12 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
     term_index_source = COMPONENT_TERM_INDEX_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
+    outputs_source = COMPONENT_OUTPUTS_PATH.read_text(encoding="utf-8")
     actor_terms_source = ACTOR_TERMS_PATH.read_text(encoding="utf-8")
     term_windows_source = COMPONENT_TERM_WINDOWS_PATH.read_text(encoding="utf-8")
 
     assert len(terms_source.splitlines()) < 800
+    assert len(outputs_source.splitlines()) < 120
     assert len(term_windows_source.splitlines()) < 800
     assert len(differentiation_source.splitlines()) < 800
     assert len(fields_source.splitlines()) < 800
@@ -548,6 +551,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def localize_generic_actor_label" in actor_terms_source
     assert "def visible_words" in text_source
     assert "def looks_action_form" in terms_source
+    assert "def produced_output_artifact_phrases" in outputs_source
+    assert "re." not in outputs_source
     assert "def _looks_actorish_term" not in terms_source
     assert "greenfield_actor_terms import looks_actor_term" in terms_source
     assert "greenfield_actor_terms import generic_actor_label_prefix" in fields_source
@@ -693,6 +698,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert not status_only_artifact_fragment("blocked-state update")
     assert status_only_artifact_fragment("gate story name result")
     assert contract_list_text("ranked status windows, blocked update") == "status windows"
+    assert contract_list_text("result status, status recordkeeping") == "result status"
     assert contract_focus(
         object_list="Primary user request status",
         action_terms=("record",),
@@ -1349,6 +1355,43 @@ def test_component_contract_artifact_slots_nominalize_validation_action_clauses(
         )
         == "validated successful completion evidence state, correction marker, and replayable change evidence"
     )
+
+
+def test_component_contract_nominalizes_action_rich_produced_output_descriptions() -> None:
+    normalized = normalize_contract(
+        {
+            "produced_outputs": (
+                "applies consent and retention rules, produces export package state or blocked deletion decision, "
+                "and hands evidence to audit, blocked-state detail, reviewer explanation, next-step context, "
+                "and handoff context"
+            )
+        }
+    )
+
+    outputs = normalized["produced_outputs"].casefold()
+    assert "applies consent" not in outputs
+    assert "produces export" not in outputs
+    assert "hands evidence" not in outputs
+    assert "export package state or blocked deletion decision" in outputs
+    assert "blocked-state detail" in outputs
+
+
+def test_component_contract_extracts_output_artifacts_without_actor_or_action_debris() -> None:
+    shown = normalize_contract({"produced_outputs": "shows the user the current status"})
+    validated = normalize_contract({"produced_outputs": "validates approved packet"})
+    process_only = normalize_contract({"produced_outputs": "routes approved packet"})
+    capitalized_shown = normalize_contract({"produced_outputs": "Shows the user the current status"})
+    capitalized_validated = normalize_contract({"produced_outputs": "Validates approved packet"})
+    export_action = normalize_contract({"produced_outputs": "Export a package"})
+    export_noun = normalize_contract({"produced_outputs": "Export package state"})
+
+    assert shown["produced_outputs"] == "Current status."
+    assert validated["produced_outputs"] == "Approved packet validation."
+    assert process_only["produced_outputs"] == ""
+    assert capitalized_shown["produced_outputs"] == "Current status."
+    assert capitalized_validated["produced_outputs"] == "Approved packet validation."
+    assert export_action["produced_outputs"] == "Package."
+    assert export_noun["produced_outputs"] == "Export package state."
 
 
 def test_component_specs_suppress_generated_contract_boilerplate_as_accepted_intent() -> None:

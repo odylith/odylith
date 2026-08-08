@@ -395,9 +395,12 @@ def test_rescue_patchset_uses_deterministic_component_contract_source_patch(
     proposal = {
         "components": [
             {
-                "component_id": "review-workspace",
-                "source_system_description": "shows reviewed results with confidence and downloadable evidence",
-                "component_contract": {"produced_outputs": "Reviewed results to flags"},
+                "component_id": "export-deletion-decision",
+                "source_system_description": (
+                    "applies consent and retention rules, produces export package state or blocked deletion decision, "
+                    "and hands evidence to audit"
+                ),
+                "component_contract": {"produced_outputs": "Export package state or blocked deletion decision."},
             }
         ]
     }
@@ -412,16 +415,32 @@ def test_rescue_patchset_uses_deterministic_component_contract_source_patch(
     operation = enriched.patchset_request["operations"][0]
     assert operation["replacement_fact"] == {
         "path": "components[0].component_contract.produced_outputs",
-        "value": (
-            "shows reviewed results with confidence and downloadable evidence, "
-            "blocked-state detail, reviewer explanation, next-step context, and handoff context"
-        ),
+        "value": "Export package state or blocked deletion decision.",
     }
     assert "tribunal_patch_plan" not in enriched.patchset_request
     assert operation["confidence"] == 0.86
     assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
         "component contract output repaired from the localized component source fact"
     )
+
+
+def test_component_contract_source_patch_does_not_invent_generic_outputs() -> None:
+    proposal = {
+        "components": [
+            {
+                "component_id": "packet-router",
+                "source_system_description": "routes approved packet",
+                "component_contract": {"produced_outputs": ""},
+            }
+        ]
+    }
+
+    value = greenfield_preconfirm_rescue_planner._component_contract_output_patch_value(
+        proposal,
+        "components[0].component_contract.produced_outputs",
+    )
+
+    assert value == ""
 
 
 def test_rescue_patchset_uses_deterministic_assumptions_source_patch(

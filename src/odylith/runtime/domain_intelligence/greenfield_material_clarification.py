@@ -66,8 +66,8 @@ _STATE_ACTION_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _HIGH_CONSEQUENCE_RE = re.compile(
-    r"\b(?:child|children|youth|minor|patient|medical|health|safety|legal|financial|"
-    r"public|private|consent|diagnos|certif)\b",
+    r"\b(?:child|children|youth|minor|clinical|medical|health|therapy|treatment|infusion|"
+    r"safety|legal|financial|public|private|consent|diagnos|certif)\b",
     flags=re.IGNORECASE,
 )
 _FIRST_APPROVAL_OPTIONS_RE = re.compile(

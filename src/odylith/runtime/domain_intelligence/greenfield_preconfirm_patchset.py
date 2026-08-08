@@ -183,10 +183,6 @@ def _target_layer(
     return ""
 
 
-def _artifact_plan_projection_target(finding: GreenfieldReviewFinding) -> bool:
-    return _source_address(finding) is not None
-
-
 def _source_address(finding: GreenfieldReviewFinding) -> ProjectionSourceAddress | None:
     return artifact_plan_source_address_for_path(
         finding.target_path,

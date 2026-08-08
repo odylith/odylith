@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import (
     internal_system_rows_from_recovered_title,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_title
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import is_automated_actor
@@ -151,9 +152,12 @@ def materialize_prompt_intent_hypothesis(
             clarification.question,
             required_fields=clarification.required_fields,
         )
+    source = prompt_intent_source(prompt)
     hypothesis = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
-    if not prompt_intent_source(prompt).title:
-        hypothesis["title"] = fallback_title
+    if not source.title:
+        outcome_title = recovered_title(first_path_model(source.first_path).visible_outcome)
+        recovered_fallback = outcome_title if outcome_title != "Recovered Product Workspace" else fallback_title
+        hypothesis = _retitle_recompiled_intent(hypothesis, title=recovered_fallback)
     baseline = normalize_confirmed_intent(
         hypothesis,
         prompt=prompt,
@@ -322,6 +326,12 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     source = prompt_intent_source(evidence)
     explicit_actor = explicit_actor_evidence(evidence)
     explicit_human_grammar = explicit_actor_has_human_grammar(evidence)
+    if starts_with_automated_actor(prompt) and not (
+        explicit_actor
+        and (has_human_actor_signal(explicit_actor) or explicit_human_grammar)
+        and not is_automated_actor(explicit_actor)
+    ):
+        return True
     if (
         explicit_actor
         and has_non_human_actor_signal(explicit_actor)

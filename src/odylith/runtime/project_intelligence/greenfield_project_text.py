@@ -18,7 +18,16 @@ from odylith.runtime.project_intelligence.greenfield_sources import _labeled_tex
 from odylith.runtime.project_intelligence.product_story import project_intent_line
 from odylith.runtime.project_intelligence.product_story import summarize_first_path
 from odylith.runtime.project_intelligence.product_story import summarize_proof
-from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings, tidy_fragment
+from odylith.runtime.project_intelligence.utils import (
+    dict_value,
+    display_text,
+    list_value,
+    repeat_key,
+    sentence,
+    short,
+    strings,
+    tidy_fragment,
+)
 
 def _project_intro(*, title: str, intent: Mapping[str, Any], project: Mapping[str, Any]) -> str:
     candidates = [
@@ -407,16 +416,6 @@ def _desired_capability(*, project: Mapping[str, Any], project_brief: Mapping[st
     return "The user can see the relevant object, current state, supporting evidence, and next decision in one place."
 
 
-def _desired_risk(*, risks: Sequence[str], project: Mapping[str, Any]) -> str:
-    risk = _risk_without_embedded_path(risks[0]) if risks else ""
-    if risk:
-        return f"The system reduces this domain risk first: {risk.rstrip('.')}."
-    failure = project_intent_line(project, "what breaks if it fails")
-    if failure:
-        return f"The system reduces the failure mode where {failure[0].lower() + failure[1:] if failure else failure}."
-    return "The system reduces the risk that product claims drift away from their source, time, owner, and evidence."
-
-
 def _desired_proof(*, validation: Sequence[str], first_path: str, release: str) -> str:
     evidence = _proof_answer_body(validation=validation, first_path=first_path).rstrip(".")
     release_label = sentence(release, "the first release")
@@ -626,8 +625,8 @@ def _proof_answer_body(*, validation: Sequence[str], first_path: str) -> str:
 
 
 def _looks_path_echo(value: object, *, first_path: str) -> bool:
-    text = _repeat_key(sentence(value))
-    path = _repeat_key(summarize_first_path(first_path) or sentence(first_path))
+    text = repeat_key(sentence(value))
+    path = repeat_key(summarize_first_path(first_path) or sentence(first_path))
     if not text:
         return False
     return (
@@ -635,12 +634,6 @@ def _looks_path_echo(value: object, *, first_path: str) -> bool:
         or "first complete path" in text
         or bool(path and (path in text or text in path))
     )
-
-
-def _repeat_key(value: object) -> str:
-    text = sentence(value).casefold()
-    text = re.sub(r"[^a-z0-9]+", " ", text)
-    return " ".join(text.split())
 
 
 def _scenario_body(*, project: Mapping[str, Any], first_path: str, validation: Sequence[str]) -> str:

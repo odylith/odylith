@@ -45,6 +45,14 @@ def display_text(value: object, fallback: str = "") -> str:
     return sentence(token, fallback)
 
 
+def repeat_key(value: object) -> str:
+    """Return a punctuation-insensitive key for Project copy comparisons."""
+
+    text = sentence(value).casefold()
+    normalized = "".join(char if char.isascii() and char.isalnum() else " " for char in text)
+    return " ".join(normalized.split())
+
+
 def sanitize_actor_body(value: object) -> str:
     """Remove full-sentence first-path splices from actor descriptions."""
 

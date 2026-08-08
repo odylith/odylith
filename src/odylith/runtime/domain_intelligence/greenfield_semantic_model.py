@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
+from odylith.runtime.common.prose_tail import strip_dangling_word_tail
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
 from odylith.runtime.domain_intelligence.greenfield_component_terms import object_clause_focus
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
@@ -83,6 +84,12 @@ _ACTION_VERB_PATTERN = action_verb_pattern()
 _NOUN_LIKE_ACTION_TOKENS = frozenset({"record", "report", "surface", "view"})
 _TERMINAL_CHOICE_ACTIONS = frozenset(
     {"choose", "chooses", "choosing", "chosen", "select", "selects", "selecting", "selected"}
+)
+_DANGLING_SEMANTIC_WORDS = frozenset(
+    (
+        "a an and as at because before by can for from if in into must of on or should the through to until when while "
+        "with without"
+    ).split()
 )
 
 
@@ -760,12 +767,10 @@ def _clip_clause(value: str, limit: int) -> str:
 def _strip_dangling_tail(value: str) -> str:
     text = _clean(value).rstrip(" ,;:.")
     while True:
-        cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|before|by|can|for|from|if|in|into|must|of|on|or|should|the|through|to|until|when|while|with|without)$",
-            "",
+        cleaned = strip_dangling_word_tail(
             text,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:.")
+            dangling_words=_DANGLING_SEMANTIC_WORDS,
+        )
         if cleaned == text:
             return cleaned
         text = cleaned

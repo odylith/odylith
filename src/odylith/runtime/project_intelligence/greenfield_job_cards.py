@@ -8,14 +8,13 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
-from odylith.runtime.project_intelligence.greenfield_participant_cards import _repeat_key
 from odylith.runtime.project_intelligence.greenfield_project_text import _capitalize_first
 from odylith.runtime.project_intelligence.greenfield_project_text import _looks_path_echo
 from odylith.runtime.project_intelligence.job_cards import job_card_summary
 from odylith.runtime.project_intelligence.job_cards import job_status_label
 from odylith.runtime.project_intelligence.job_cards import low_information_job_body
 from odylith.runtime.project_intelligence.product_story import summarize_first_path
-from odylith.runtime.project_intelligence.utils import complete_text, dict_value, list_value, sentence
+from odylith.runtime.project_intelligence.utils import complete_text, dict_value, list_value, repeat_key, sentence
 
 def _jobs(
     *,
@@ -32,9 +31,9 @@ def _jobs(
     for index, item in enumerate(backlog[:6]):
         title = sentence(item.get("title"), "Proposed product slice")
         body = _job_body_text(item=item, title=title, first_path=first_path, component_summaries=component_summaries)
-        if _looks_path_echo(body, first_path=first_path) or _repeat_key(body) in seen_body_keys:
+        if _looks_path_echo(body, first_path=first_path) or repeat_key(body) in seen_body_keys:
             body = _job_fallback_body(title)
-        seen_body_keys.add(_repeat_key(body))
+        seen_body_keys.add(repeat_key(body))
         status = job_status_label(item.get("evidence_tier"))
         rows.append(
             (
@@ -193,12 +192,12 @@ def _component_summary_map(components: Sequence[Mapping[str, Any]]) -> dict[str,
         label = sentence(component.get("label") or component.get("name") or component.get("component_id"))
         body = _component_summary(component)
         if label and body:
-            rows[_repeat_key(label)] = body
+            rows[repeat_key(label)] = body
     return rows
 
 
 def _matched_component_summary(*, title: str, component_summaries: Mapping[str, str]) -> str:
-    title_key = _repeat_key(title)
+    title_key = repeat_key(title)
     for label_key, body in component_summaries.items():
         if label_key and label_key in title_key:
             return body

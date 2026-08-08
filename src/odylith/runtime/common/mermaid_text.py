@@ -6,7 +6,9 @@ import re
 from typing import Sequence
 
 from odylith.runtime.common import display_text
+from odylith.runtime.common.prose_tail import DEFAULT_DANGLING_TAIL_WORDS
 from odylith.runtime.common.prose_tail import strip_clipped_terminal_fragment
+from odylith.runtime.common.prose_tail import strip_dangling_word_tail
 from odylith.runtime.common.prose_tail import strip_incomplete_public_tail
 
 _FIRST_CONTENT_RE = re.compile(r"^\s*(?!%%)(\S+)", re.MULTILINE)
@@ -34,6 +36,9 @@ _LABEL_HEADER_TEXTS = frozenset(
         "visible result",
     }
 )
+_MERMAID_DANGLING_TAIL_WORDS = (
+    DEFAULT_DANGLING_TAIL_WORDS | {"because", "if", "on", "when", "while", "without"}
+) - {"before", "so", "until"}
 _DANGLING_LINE_TAILS = frozenset(
     {
         "a",
@@ -390,26 +395,12 @@ def _repair_clipped_tail(value: str) -> str:
     text = clean_mermaid_text(value).rstrip(" ,;:.")
     while True:
         repaired = strip_clipped_terminal_fragment(text)
-        repaired = _strip_dangling_tail(repaired)
-        repaired = strip_incomplete_public_tail(repaired)
-        repaired = _strip_dangling_tail(repaired)
+        repaired = strip_dangling_word_tail(repaired, dangling_words=_MERMAID_DANGLING_TAIL_WORDS)
+        repaired = strip_incomplete_public_tail(repaired, preserve_subject=True)
+        repaired = strip_dangling_word_tail(repaired, dangling_words=_MERMAID_DANGLING_TAIL_WORDS)
         if repaired == text:
-            return repaired
+            return _strip_unbalanced_quote_tail(repaired)
         text = repaired
-
-
-def _strip_dangling_tail(value: str) -> str:
-    text = clean_mermaid_text(value).rstrip(" ,;:.")
-    while True:
-        cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|the|to|when|while|with|without)$",
-            "",
-            text,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:.")
-        if cleaned == text:
-            return _strip_unbalanced_quote_tail(cleaned)
-        text = cleaned
 
 
 def _strip_unbalanced_quote_tail(value: str) -> str:

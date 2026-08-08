@@ -62,7 +62,59 @@ TERMINAL_MODIFIER_WORDS = frozenset(
 TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
 TERMINAL_FINAL_STATE_WORDS = frozenset({"case", "decision", "match", "record", "result", "review", "score", "status"})
 INCOMPLETE_PUBLIC_TAIL_WORDS = frozenset(
-    {"include", "includes", "keep", "keeps", "remain", "remains", "with"}
+    {
+        "display",
+        "displays",
+        "include",
+        "includes",
+        "keep",
+        "keeps",
+        "produce",
+        "produces",
+        "provide",
+        "provides",
+        "publish",
+        "publishes",
+        "receive",
+        "receives",
+        "remain",
+        "remains",
+        "return",
+        "returns",
+        "see",
+        "sees",
+        "show",
+        "shows",
+        "with",
+    }
+)
+_CLAUSE_COORDINATORS = frozenset({"and", "but", "or", "then"})
+_CLAUSE_BOUNDARY_PUNCTUATION = (".", "!", "?", ";", ",")
+_BASE_FORM_INCOMPLETE_TAIL_WORDS = frozenset(
+    {"display", "include", "keep", "produce", "provide", "publish", "receive", "remain", "return", "see", "show"}
+)
+_BASE_FORM_ACTION_PRECEDERS = frozenset(
+    {
+        "and",
+        "but",
+        "can",
+        "could",
+        "he",
+        "it",
+        "may",
+        "might",
+        "must",
+        "or",
+        "she",
+        "should",
+        "then",
+        "they",
+        "to",
+        "we",
+        "will",
+        "would",
+        "you",
+    }
 )
 
 
@@ -114,24 +166,49 @@ def has_incomplete_public_tail(tokens: Sequence[str]) -> bool:
     """Return true when bounded copy ends on an action that still needs its object."""
 
     lowered = tuple(str(token or "").casefold().strip(".,;:'") for token in tokens)
-    if len(lowered) < 3:
+    if len(lowered) < 2:
         return False
+    if len(lowered) == 2:
+        return lowered[0] not in {"a", "an", "the"} and _tail_needs_object(lowered)
     if lowered[-1] in {"include", "includes", "keeps", "with"}:
         return True
     if len(lowered) < 5:
         return False
-    if lowered[-1] in {"remain", "remains"} and any(token in {"what", "which"} for token in lowered[-8:-1]):
+    if lowered[-1] in INCOMPLETE_PUBLIC_TAIL_WORDS and any(
+        token in {"what", "which"} for token in lowered[-8:-1]
+    ):
         return False
-    return lowered[-1] in INCOMPLETE_PUBLIC_TAIL_WORDS
+    return _tail_needs_object(lowered)
 
 
-def strip_incomplete_public_tail(value: str, *, rstrip_chars: str = " ,;:.") -> str:
+def strip_incomplete_public_tail(
+    value: str,
+    *,
+    preserve_subject: bool = False,
+    rstrip_chars: str = " ,;:.",
+) -> str:
     """Remove an incomplete public-copy tail at a known clipping boundary."""
 
     text = str(value or "").rstrip(rstrip_chars)
     while _clipped_tail_needs_object(text.split()):
-        text = " ".join(text.split()[:-1]).rstrip(rstrip_chars)
+        tokens = text.split()
+        clause_start = _incomplete_clause_start(tokens)
+        if clause_start is None:
+            clause_start = len(tokens) - 1 if preserve_subject else 0
+        text = " ".join(tokens[:clause_start]).rstrip(rstrip_chars)
     return text
+
+
+def _incomplete_clause_start(tokens: Sequence[str]) -> int | None:
+    """Return the start of the trailing clause whose final verb lost its object."""
+
+    for index in range(len(tokens) - 2, -1, -1):
+        token = str(tokens[index] or "")
+        if token.casefold().strip(".,;:'") in _CLAUSE_COORDINATORS:
+            return index
+        if token.endswith(_CLAUSE_BOUNDARY_PUNCTUATION):
+            return index + 1
+    return None
 
 
 def _clipped_tail_needs_object(tokens: Sequence[str]) -> bool:
@@ -140,7 +217,16 @@ def _clipped_tail_needs_object(tokens: Sequence[str]) -> bool:
         return False
     if lowered[-1] in {"remain", "remains"} and any(token in {"what", "which"} for token in lowered[-8:-1]):
         return False
-    return lowered[-1] in INCOMPLETE_PUBLIC_TAIL_WORDS
+    return _tail_needs_object(lowered)
+
+
+def _tail_needs_object(tokens: Sequence[str]) -> bool:
+    tail = tokens[-1] if tokens else ""
+    if tail not in INCOMPLETE_PUBLIC_TAIL_WORDS:
+        return False
+    if tail not in _BASE_FORM_INCOMPLETE_TAIL_WORDS:
+        return True
+    return len(tokens) >= 2 and tokens[-2] in _BASE_FORM_ACTION_PRECEDERS
 
 
 def _allows_terminal_final(words: list[str]) -> bool:

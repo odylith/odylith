@@ -140,6 +140,7 @@ _EXCLUDED_PUBLIC_KEYS = {
     "mode",
     "observed_source",
     "priority",
+    "product_intent_authority",
     "provider_calls",
     "artifact_derivation",
     "atlas_scaffold_logs",

@@ -556,24 +556,6 @@ def _generated_or_weak(value: Any) -> bool:
     return word_count(text) < 6
 
 
-def _generated_sequence(value: Any) -> bool:
-    rows = [str(item).strip() for item in (value if isinstance(value, list) else [value]) if str(item).strip()]
-    if not rows:
-        return True
-    joined = " ".join(_plain_text(row).casefold() for row in rows)
-    generic_markers = (
-        "responsibility and keeps it tied",
-        "assigned state, command, evidence",
-        "first implementation plan must name",
-        "command, query, or event contract",
-        "valid transition, invalid input rejection",
-        "normal path, blocked path",
-        "accepted input, produced state",
-        "state, behavior, evidence, or access",
-    )
-    return any(marker in joined for marker in generic_markers)
-
-
 def _unique_component_id(component_id: str, existing: list[dict[str, Any]], index: int) -> str:
     used = {str(row.get("component_id", "")) for row in existing}
     candidate = component_id

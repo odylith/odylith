@@ -317,6 +317,18 @@ def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:
     )
 
 
+def test_proof_claim_summary_removes_a_clipped_output_verb_and_connector() -> None:
+    proof_boundary = (
+        "Release succeeds when staff register requests, match needs to capacity, track accessibility constraints, "
+        "preserve consent evidence, and produce"
+    )
+
+    summary = proof_claim_summary(proof_boundary, limit=300)
+
+    assert summary.endswith("preserve consent evidence")
+    assert not summary.endswith((" and", " produce"))
+
+
 def test_ranking_basis_does_not_repeat_a_secondary_visible_result_sentence() -> None:
     lines = rationale_lines(
         label="Permit Review Workspace",

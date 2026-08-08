@@ -69,7 +69,7 @@ def test_quality_lens_repair_declares_every_reviewer_check() -> None:
     assert {quality_lens_repair_owner(check) for check in QUALITY_LENS_GATE_ONLY_CHECKS} == {"prewrite_gate"}
 
 
-def test_apply_semantic_input_records_deferred_external_boundary_when_missing() -> None:
+def test_apply_semantic_input_keeps_deferred_external_boundary_out_of_product_truth() -> None:
     compiler_input = greenfield_apply_semantic_input(
         {
             "intent": {
@@ -88,8 +88,7 @@ def test_apply_semantic_input_records_deferred_external_boundary_when_missing() 
         }
     )
 
-    assert compiler_input.external_systems
-    assert "No live external system is accepted" in compiler_input.external_systems[0]
+    assert compiler_input.external_systems == ()
     assert dict(compiler_input.source_paths)["external_systems"] == "semantic_inference.deferred_external_boundary"
 
 
@@ -544,7 +543,7 @@ def test_domain_expert_lens_accepts_short_high_risk_assumption_when_all_terms_re
     assert checks["high_risk_assumptions"]["status"] == "passed"
 
 
-def test_quality_lens_requires_non_empty_external_boundary() -> None:
+def test_quality_lens_accepts_an_explicitly_empty_external_boundary() -> None:
     package = SimpleNamespace(
         proposal={
             "semantic_model": {
@@ -581,8 +580,29 @@ def test_quality_lens_requires_non_empty_external_boundary() -> None:
     report = build_greenfield_quality_lens_report(package)
     checks = {check["name"]: check for check in report["lenses"]["architect"]["checks"]}
 
-    assert checks["system_boundary"]["status"] == "failed"
-    assert "0 of 0 external system boundary row(s) rendered" in checks["system_boundary"]["evidence"]
+    assert checks["system_boundary"]["status"] == "not_applicable"
+    assert checks["system_boundary"]["evidence"] == (
+        "no external system boundary was accepted for the first release"
+    )
+
+    package.proposal["semantic_model"]["domain_ontology"]["external_systems"] = [
+        "No live external system is accepted for the first release - manual input supplies the evidence."
+    ]
+    deferred = build_greenfield_quality_lens_report(package)
+    deferred_check = {
+        check["name"]: check for check in deferred["lenses"]["architect"]["checks"]
+    }["system_boundary"]
+    assert deferred_check["status"] == "failed"
+    assert deferred_check["evidence"] == "0 of 1 external system boundary row(s) rendered"
+
+    del package.proposal["semantic_model"]["domain_ontology"]["external_systems"]
+    del package.proposal["intent"]["external_systems"]
+    omitted = build_greenfield_quality_lens_report(package)
+    omitted_check = {check["name"]: check for check in omitted["lenses"]["architect"]["checks"]}[
+        "system_boundary"
+    ]
+    assert omitted_check["status"] == "failed"
+    assert omitted_check["evidence"] == "accepted intent does not declare an external system boundary"
 
 
 def test_quality_lens_requires_each_accepted_external_boundary_in_rendered_artifacts() -> None:

@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import relation_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
 
@@ -107,6 +108,69 @@ def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns(
     assert "extracted evidence into assessment" not in evidence_rendered
     assert "extracted evidence" in evidence_rendered
     assert not generated_semantic_slop_issues(evidence_contract)
+
+
+def test_component_contract_keeps_relation_extraction_inside_one_action_clause() -> None:
+    assert relation_phrases("Service routes approved packet to audit queue.") == (
+        "approved packet to audit queue",
+    )
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Export and Deletion Decision Service",
+            "source_system_description": (
+                "applies consent and retention rules, produces export package state or blocked deletion decision, "
+                "and hands evidence to audit"
+            ),
+        },
+        proposal={
+            "intent": {
+                "title": "Privacy Request Lifecycle Console",
+                "first_path": (
+                    "A privacy coordinator verifies authority, selects export or deletion, checks retention rules, "
+                    "produces an allowed package or blocked decision, and reviews the audit event."
+                ),
+                "state_object": "A privacy request lifecycle record",
+            }
+        },
+        sibling={"label": "Lifecycle Audit and Review View"},
+        previous_label="Protected Record Reference Store",
+        next_label="Lifecycle Audit and Review View",
+        state_label="Privacy Request Lifecycle Record",
+    ).fields
+    rendered = json.dumps(contract, sort_keys=True).casefold()
+
+    assert "produces export package" not in rendered
+    assert "hands evidence to audit" not in rendered
+    assert "export package state or blocked deletion decision" in rendered
+    assert not generated_semantic_slop_issues(contract)
+
+
+def test_component_contract_does_not_promote_subordinate_actor_actions_to_owned_state() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Result Status Recordkeeping Service",
+            "source_system_description": (
+                "records when the representative user records the current status and keeps status, "
+                "correction history, blockers, and visible handoff context"
+            ),
+        },
+        proposal={
+            "intent": {
+                "title": "Permit Review Workspace",
+                "first_path": (
+                    "A representative user reviews permit details, records the current status, "
+                    "and sees a permit review result."
+                ),
+            }
+        },
+        sibling=None,
+        previous_label="Permit Review Record",
+        next_label="",
+        state_label="Permit Review Record",
+    ).fields
+
+    assert "representative records the current status" not in contract["owned_state"].casefold()
+    assert "result status" in contract["owned_state"].casefold()
 
 
 def test_action_object_artifacts_require_a_direct_owned_action_clause() -> None:

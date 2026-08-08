@@ -6,12 +6,20 @@ import re
 
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_tail import strip_dangling_word_tail
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
 _BASE_ACTION_VERB_PATTERN = action_base_verb_pattern()
 _LEADING_LABEL_ARTICLES = frozenset({"a", "an", "the"})
+_DANGLING_LABEL_WORDS = frozenset(
+    (
+        "a accepted actionable an and as at because by can capturing clear comparing complete concrete daily final "
+        "first for from if in into lets must of on one or receiving reviewable safety should specific that the "
+        "through tied to trusted until visible warning when while with without alongside"
+    ).split()
+)
 
 
 def flow_label(value: str, *, width: int, max_lines: int, limit: int) -> str:
@@ -120,12 +128,10 @@ def strip_dangling_tail(value: str) -> str:
         text = strip_clipped_terminal_action(text)
         if re.search(r"\b(?:readiness|result|state|record|status)\s+reviewable$", text, flags=re.IGNORECASE):
             return text
-        cleaned = re.sub(
-            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|through|tied|to|trusted|until|visible|warning|when|while|with|without|alongside)$",
-            "",
+        cleaned = strip_dangling_word_tail(
             text,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:.")
+            dangling_words=_DANGLING_LABEL_WORDS,
+        )
         cleaned = strip_clipped_terminal_action(cleaned)
         if cleaned == text:
             return cleaned

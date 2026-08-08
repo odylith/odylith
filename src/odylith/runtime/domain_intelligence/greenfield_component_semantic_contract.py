@@ -47,6 +47,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     strip_action as _strip_action,
     trim_phrase as _trim_phrase,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_outputs import (
+    produced_output_artifact_phrases as _produced_output_artifact_phrases,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
     literal_label_terms as _literal_label_terms,
 )
@@ -84,14 +87,18 @@ def derive_component_semantic_contract(
     action_terms = semantic_context.action_terms(" ".join(text for text in (label, description) if text)) or semantic_context.action_terms(local_text)
     relation_phrases = semantic_context.relation_phrases(description)
     protected_description_phrases = semantic_context.description_compound_phrases(description)
+    output_description_phrases = _produced_output_artifact_phrases(description)
     description_phrases = _clean_artifact_phrases(
         [
             *_object_phrases(clauses, fallback=label),
             *_action_object_artifact_phrases(description),
+            *output_description_phrases,
             *_descriptor_anchor_phrases(label, description),
         ]
     )
-    description_phrases = unique_text([*relation_phrases, *protected_description_phrases, *description_phrases])
+    description_phrases = unique_text(
+        [*relation_phrases, *output_description_phrases, *protected_description_phrases, *description_phrases]
+    )
     label_terms = _content_terms(label)
     description_terms = _content_terms(description)
     context_terms = contract_support.context_contract_terms(
@@ -173,7 +180,7 @@ def derive_component_semantic_contract(
     )
     summary_phrases = _preserve_summary_phrases(
         summary_phrases,
-        [*protected_description_phrases, *context_identity_phrases],
+        [*output_description_phrases, *protected_description_phrases, *context_identity_phrases],
         label_terms=label_terms,
         description_terms=description_terms,
         limit=10,

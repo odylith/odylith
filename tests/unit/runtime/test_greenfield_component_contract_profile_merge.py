@@ -20,6 +20,15 @@ def test_profile_supplements_do_not_drop_late_semantic_contract_fragments() -> N
     assert "missing document blockers" in merged
 
 
+def test_profile_supplements_do_not_reintroduce_generic_recordkeeping_shells() -> None:
+    merged = contract_support.semantic_field_with_profile_supplements(
+        "result status",
+        "status recordkeeping",
+    )
+
+    assert merged == "result status"
+
+
 def test_profile_obligation_guard_ignores_proof_floor_boilerplate_for_generic_evidence_rows() -> None:
     assert not contract_support.material_profile_obligations_survive(
         label="Evidence Intake Service",

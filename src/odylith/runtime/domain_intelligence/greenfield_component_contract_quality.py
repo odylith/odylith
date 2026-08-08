@@ -7,11 +7,13 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common.prose_tail import has_incomplete_public_tail
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_texts
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
+from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
@@ -188,9 +190,13 @@ def normalize_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     for key in CONTRACT_KEYS:
         raw = value.get(key)
         if key == "local_proof":
-            normalized[key] = [_sentence(_normalize_contract_artifact_actions(item)) for item in text_values(raw) if _clean(item)]
+            normalized[key] = [
+                _sentence(_normalize_contract_artifact_actions(item, field=key))
+                for item in text_values(raw)
+                if _clean(item)
+            ]
         else:
-            normalized[key] = _sentence(_normalize_contract_artifact_actions(raw))
+            normalized[key] = _sentence(_normalize_contract_artifact_actions(raw, field=key))
     return normalized
 
 
@@ -200,10 +206,12 @@ def contract_is_complete(value: Mapping[str, Any]) -> bool:
     return all(text_values(value.get(key)) for key in CONTRACT_KEYS)
 
 
-def _normalize_contract_artifact_actions(value: Any) -> str:
+def _normalize_contract_artifact_actions(value: Any, *, field: str = "") -> str:
     text = _clean(value)
     if not text:
         return ""
+    if field == "produced_outputs":
+        text = _normalize_produced_output_artifacts(text)
     text = re.sub(
         r"\b(?:cover|covers|covered|check|checks|checked|prove|proves|proved|validate|validates|validated)\s+"
         r"(?P<object>[a-z0-9][a-z0-9 '-]{2,100}\s+evidence)\b",
@@ -219,6 +227,10 @@ def _normalize_contract_artifact_actions(value: Any) -> str:
         flags=re.IGNORECASE,
     )
     return _clean(text)
+
+
+def _normalize_produced_output_artifacts(value: str) -> str:
+    return ", ".join(produced_output_artifact_phrases(value, preserve_unclassified=True))
 
 
 def component_contract_issues(proposal: Mapping[str, Any]) -> list[str]:
@@ -600,8 +612,9 @@ def _has_dangling_tail(value: str) -> bool:
     text = _clean(value)
     if len(text.split()) < 6:
         return False
-    tail = text.rstrip(".;:, ").split()[-1].casefold()
-    return tail in _DANGLING_WORDS
+    words = text.rstrip(".;:, ").split()
+    tail = words[-1].casefold()
+    return tail in _DANGLING_WORDS or has_incomplete_public_tail(words)
 
 
 def _clean(value: Any) -> str:

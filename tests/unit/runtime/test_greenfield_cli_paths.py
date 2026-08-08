@@ -306,8 +306,33 @@ def test_greenfield_propose_clarifies_a_nonhuman_single_step_actor(tmp_path, cap
 
     assert rc == 0
     assert payload["mode"] == "clarification_required"
-    assert payload["clarification"]["required_fields"] == ["first_path"]
+    assert payload["clarification"]["required_fields"] == ["human_actors", "first_path"]
+    assert payload["clarification"]["question"].count("?") == 1
+    assert "complete task" in payload["clarification"]["question"].casefold()
     assert not (tmp_path / ".odylith/runtime/greenfield/product-create-transaction.v1.json").exists()
+
+
+def test_greenfield_propose_accepts_a_concrete_human_owner_in_an_automated_flow(tmp_path, capsys) -> None:
+    rc = greenfield_proposals.main(
+        [
+            "propose",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            (
+                "An AI assistant helps a permit clerk review one permit packet, record the current status, "
+                "and see a permit review result."
+            ),
+            "--format",
+            "json",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert payload["mode"] == "product_create_transaction"
+    assert payload["intent_hypothesis"]["human_actors"][0].casefold().startswith("permit clerk:")
 
 
 def test_greenfield_propose_clarifies_an_action_rich_prompt_without_a_human_actor(tmp_path, capsys) -> None:
@@ -663,8 +688,8 @@ def test_greenfield_propose_cli_returns_typed_clarification_without_staging(tmp_
     assert payload == {
         "mode": "clarification_required",
         "clarification": {
-            "question": "Who uses the product first, what complete task should that person finish, and what result should they see?",
-            "required_fields": ["human_actors", "first_path"],
+            "question": "For the first complete task, what result should the user see, and what proof or safety boundary should apply?",
+            "required_fields": ["visible_result", "proof_boundary"],
         },
     }
     assert not transaction_path.exists()

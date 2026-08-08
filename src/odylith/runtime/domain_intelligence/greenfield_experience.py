@@ -11,7 +11,6 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
@@ -29,23 +28,6 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
     first_release_boundary_summary,
 )
 
-_HANDOFF_MATCH_STOPWORDS = frozenset(
-    {
-        "adapter",
-        "build",
-        "component",
-        "first",
-        "handoffs",
-        "implement",
-        "path",
-        "proof",
-        "review",
-        "service",
-        "state",
-        "surface",
-        "system",
-    }
-)
 _PREVIEW_TERMINAL_MODIFIERS = frozenset(
     {
         "accepted",
@@ -491,26 +473,6 @@ def _short_contract_text(value: Any, *, limit: int = 180) -> str:
         strip_edges=" .",
         dangling_words=_PREVIEW_DANGLING_WORDS,
     ).strip(" ,;:")
-
-
-def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> bool:
-    title_terms = set(
-        ordered_terms(
-            title,
-            minimum=4,
-            stopwords=_HANDOFF_MATCH_STOPWORDS,
-        )
-    )
-    label_terms = set(
-        ordered_terms(
-            str(row.get("label", "") or row.get("component_id", "")),
-            minimum=4,
-            stopwords=_HANDOFF_MATCH_STOPWORDS,
-        )
-    )
-    if not title_terms or not label_terms:
-        return False
-    return len(title_terms & label_terms) >= min(2, len(label_terms))
 
 
 def _validation_items(*, row: Mapping[str, Any]) -> tuple[str, ...]:

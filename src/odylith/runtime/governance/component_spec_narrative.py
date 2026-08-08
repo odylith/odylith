@@ -284,7 +284,7 @@ def _opening_narrative(
         body = f"It keeps {output_focus} connected to the context that produced it, instead of receiving raw upstream details it should not own."
     elif role == "read_model":
         lead = f"{label} is the component that makes accepted product state understandable to a person."
-        body = f"It should present {focus} from trusted inputs rather than becoming the owner of the source records it displays."
+        body = f"It should present {focus} from trusted inputs without taking ownership of those source records."
     elif role == "evidence":
         lead = f"{label} preserves the proof that makes the first release reviewable."
         body = _evidence_opening_body(label=label, focus=focus, output_focus=output_focus)

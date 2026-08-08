@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
@@ -111,24 +112,34 @@ def context_object_phrases(
 
 
 def relation_phrases(value: str) -> list[str]:
-    """Preserve compact "thing to thing" phrases before clause splitting."""
+    """Preserve a compact relation only within one parsed action clause."""
 
     rows: list[str] = []
     text = _clean(value)
     if not text:
         return rows
-    action_pattern = _action_forms_pattern()
-    for clause in re.split(r"[.;]", text):
-        segment = _trim_phrase(re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", clause, flags=re.I))
-        if not segment:
+    parsed_clauses = clauses(text)
+    for index, clause in enumerate(parsed_clauses):
+        words = clause.split()
+        action_index = next(
+            (offset for offset, word in enumerate(words[:4]) if looks_like_finite_action_token(word)),
+            None,
+        )
+        if action_index is None:
             continue
-        action_match = re.search(rf"\b(?:{action_pattern})\s+(?P<body>.+\bto\s+.+)$", segment, flags=re.I)
-        body = action_match.group("body") if action_match else segment
-        body = _trim_phrase(normalize_relative_clause_artifacts(body) or body)
-        if not re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", body, flags=re.I):
+        body_words = words[action_index + 1 :]
+        if len(body_words) < 4:
             continue
-        words = body.split()
-        if 4 <= len(words) <= 18 and len(_content_terms(body)) >= 4:
+        lowered = [word.casefold().strip(".,;:") for word in body_words]
+        if "to" not in lowered:
+            continue
+        to_index = lowered.index("to")
+        if to_index < 1 or to_index >= len(body_words) - 1:
+            continue
+        body = _trim_phrase(" ".join(body_words))
+        if index + 1 < len(parsed_clauses) and parsed_clauses[index + 1].casefold().startswith("related "):
+            body = f"{body} and {parsed_clauses[index + 1]}"
+        if 4 <= len(body_words) <= 14 and len(_content_terms(body)) >= 3:
             rows.append(body.casefold())
     return unique_text(rows)
 
@@ -366,6 +377,9 @@ def _preserved_compound_phrase(value: str) -> str:
         return ""
     text = re.sub(r"^(?:a|an|the|and|or)\s+", "", text, flags=re.IGNORECASE).strip(" .,;:")
     text = re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?|validates?|verifies?)\s+", "", text, flags=re.IGNORECASE)
+    first_word = text.split(maxsplit=1)[0].casefold()
+    if first_word in {"how", "that", "when", "where", "whether", "which", "who"}:
+        return ""
     text = _transfer_object_phrase(text) or text
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
     if not text:

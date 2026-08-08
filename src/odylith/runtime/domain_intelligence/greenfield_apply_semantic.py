@@ -172,13 +172,7 @@ def _external_system_rows(*, intent: Mapping[str, Any], first_path: str) -> tupl
     inferred_rows, _ambiguities = completed_external_boundary_rows({**dict(intent), "first_path": first_path})
     if inferred_rows:
         return tuple(inferred_rows), "semantic_inference.first_path_external_boundary"
-    return (
-        (
-            "No live external system is accepted for the first release - manual or fixture-backed input supplies "
-            "the accepted first-path evidence before product state changes.",
-        ),
-        "semantic_inference.deferred_external_boundary",
-    )
+    return (), "semantic_inference.deferred_external_boundary"
 
 
 def _first_path_text(

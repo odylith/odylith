@@ -31,6 +31,12 @@ make release-session-show
 make local-release-assets [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release-X.Y.Z]
   Build local installable release assets for maintainer smoke testing without dispatching a release.
 
+make greenfield-test-fast
+  Run deterministic Greenfield compiler, projection, quality-lens, and repair tests for local feedback.
+
+make greenfield-test-lifecycle
+  Run the slower propose/confirm/create, host-parity, and browser-handoff tests before a stable checkpoint.
+
 make greenfield-preconfirm-matrix [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release-X.Y.Z] [TEMP_PARENT=/tmp]
   Run the 10+ case installed Greenfield transaction matrix. It proves pre-confirm compilation and commit-only confirmation, with per-case generated browser surface state proof, installed CLI auto-rescue wiring smoke, host-planned structured rescue proof, and an installed SIGKILL/same-hash-retry/fsync-rollback proof. It will write greenfield-preconfirm-matrix.v1.json and fail closed on missing governed records, browser failures, recovery-proof failures, rescue-proof failures, or review-lens failures. Set GREENFIELD_MATRIX_CASE_FILE=/path/cases.json for an explicit fresh-variance case file. Set GREENFIELD_MATRIX_TELEMETRY_JSONL=/path/progress.jsonl, GREENFIELD_MATRIX_CAMPAIGN_PHASE=name, GREENFIELD_MATRIX_STOP_AFTER_FAILURES=N, GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES=N, GREENFIELD_MATRIX_REQUIRED_STRESSORS=a,b, or GREENFIELD_MATRIX_REQUIRE_HIGH_VARIANCE_STRESSORS=1 for discovery telemetry and stressor coverage. RESCUE_SMOKE=0, NATURAL_RESCUE_PROOF=0, BROWSER_PROOF=0, or COMMIT_RECOVERY_PROOF=0 skips that lane only for local debugging, automatically downgrades the run to discovery proof, and is not release proof.
 

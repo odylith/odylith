@@ -72,6 +72,35 @@ _RESULT_FOCUS_CONTAINER_TERMS = frozenset(
         "workspace",
     }
 )
+_TITLE_OUTCOME_ACTIONS = frozenset(
+    {
+        "accept",
+        "approve",
+        "capture",
+        "collect",
+        "complete",
+        "create",
+        "display",
+        "generate",
+        "issue",
+        "log",
+        "prepare",
+        "produce",
+        "publish",
+        "record",
+        "return",
+        "save",
+        "see",
+        "show",
+        "submit",
+        "surface",
+        "verify",
+    }
+)
+_TITLE_STATUS_MODIFIERS = frozenset(
+    {"accepted", "approved", "complete", "completed", "confirmed", "final", "ready", "validated", "verified"}
+)
+
 
 def clean_text(value: object) -> str:
     """Return a normalized text value suitable for recovery projections."""
@@ -272,28 +301,46 @@ def recovered_title(outcome: str) -> str:
 
 
 def _title_source_from_outcome(value: str) -> str:
-    text = clean_text(value).strip(" .")
-    text = re.sub(
-        r"^(?:a|an|the)?\s*[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
-        r"(?:(?:needs?|must)\s+to\s+|(?:is|are)\s+)(?:[A-Za-z]+ing\s+)?",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    ).strip(" .")
-    match = re.match(
-        r"^(?:accept|approve|capture|collect|complete|create|display|generate|issue|log|prepare|produce|publish|record|return|save|show|submit|surface|verify)\s+(?P<object>.+)$",
-        text,
-        flags=re.IGNORECASE,
+    title_words = words(clean_text(value).strip(" ."))
+    lowered = [word.casefold() for word in title_words]
+    for index, token in enumerate(lowered[:12]):
+        if token not in {"are", "is", "must", "need", "needs"}:
+            continue
+        start = index + 1
+        if token in {"must", "need", "needs"} and start < len(lowered) and lowered[start] == "to":
+            start += 1
+        if start < len(lowered) and lowered[start].endswith("ing"):
+            start += 1
+        title_words = title_words[start:]
+        lowered = lowered[start:]
+        break
+    action = lowered[0] if lowered else ""
+    if action in _TITLE_OUTCOME_ACTIONS or (action.endswith("s") and action[:-1] in _TITLE_OUTCOME_ACTIONS):
+        title_words = title_words[1:]
+    while title_words and title_words[0].casefold() in {*LEADING_ARTICLES, "one"}:
+        title_words = title_words[1:]
+    while len(title_words) > 1 and title_words[0].casefold() in _TITLE_STATUS_MODIFIERS:
+        title_words = title_words[1:]
+    boundary = next(
+        (
+            index
+            for index, word in enumerate(title_words)
+            if word.casefold() in {"after", "before", "between", "through"}
+        ),
+        len(title_words),
     )
-    if match:
-        text = re.sub(r"^(?:a|an|the|one)\s+", "", match.group("object").strip(" ."), flags=re.IGNORECASE)
-    if " with " in f" {text.casefold()} ":
-        parts = re.split(r"\s+with\s+", text, maxsplit=1, flags=re.IGNORECASE)
-        head = parts[0].strip(" .")
-        head_words = words(head)
-        if len(head_words) >= 3 and head_words[-1].casefold() in {"decision", "packet", "record", "report", "summary"}:
-            text = head
-    return re.split(r"\s+(?:between|after|before|through)\s+", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+    title_words = title_words[:boundary]
+    with_index = next(
+        (index for index, word in enumerate(title_words) if word.casefold() == "with"),
+        None,
+    )
+    if with_index is not None:
+        head = title_words[:with_index]
+        if len(head) >= 3 and head[-1].casefold() in {"decision", "packet", "record", "report", "summary"}:
+            title_words = head
+    if len(title_words) > 1 and title_words[-1].casefold() in {"outcome", "output", "result"}:
+        title_words = title_words[:-1]
+    return " ".join(title_words).strip(" .")
 
 
 def _has_product_container_title(value: str) -> bool:

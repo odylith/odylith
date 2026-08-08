@@ -326,13 +326,29 @@ def _architect_checks(
     internal_systems = _rows_or_text_values(domain.get("internal_systems")) or _rows_or_text_values(
         intent.get("internal_systems")
     )
+    external_boundary_declared = "external_systems" in domain or "external_systems" in intent
     external_systems = _rows_or_text_values(domain.get("external_systems")) or _rows_or_text_values(
         intent.get("external_systems")
     )
+    accepted_external_systems = external_systems
     covered_external_systems = [
-        row for row in external_systems if _external_system_has_rendered_coverage(row, rendered_text=architecture_text)
+        row
+        for row in accepted_external_systems
+        if _external_system_has_rendered_coverage(row, rendered_text=architecture_text)
     ]
-    external_boundary_known = bool(external_systems) and len(covered_external_systems) == len(external_systems)
+    external_boundary_applicable = not external_boundary_declared or bool(accepted_external_systems)
+    external_boundary_known = bool(accepted_external_systems) and len(covered_external_systems) == len(
+        accepted_external_systems
+    )
+    external_boundary_evidence = (
+        f"{len(covered_external_systems)} of {len(accepted_external_systems)} external system boundary row(s) rendered"
+        if accepted_external_systems
+        else (
+            "no external system boundary was accepted for the first release"
+            if external_boundary_declared
+            else "accepted intent does not declare an external system boundary"
+        )
+    )
     state_object = normalize_string(intent.get("state_object")) or normalize_string(domain.get("state_object"))
     component_topology_complete = _component_topology_covers_internal_systems(
         internal_systems,
@@ -360,8 +376,9 @@ def _architect_checks(
         _check(
             external_boundary_known,
             "system_boundary",
-            f"{len(covered_external_systems)} of {len(external_systems)} external system boundary row(s) rendered",
+            external_boundary_evidence,
             "quality lens architect missing accepted external system boundary in rendered artifacts",
+            applicable=external_boundary_applicable,
         ),
     ]
 

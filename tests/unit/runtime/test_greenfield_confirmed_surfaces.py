@@ -443,12 +443,14 @@ The first version is proven when a user can log entries over several days and th
         release_selector="0.0.1",
         confirmed_intent=confirmed_mapping_with_authority(intent),
     )
-    rendered = json.dumps(proposal, sort_keys=True)
+    public_proposal = {key: value for key, value in proposal.items() if key != "product_intent_authority"}
+    rendered = json.dumps(public_proposal, sort_keys=True)
     titles = [row["title"] for row in proposal["backlog"]]
     components = [row["label"] for row in proposal["components"]]
 
     assert "Person Managing Discomfort" in rendered
     assert "Coach or Clinician" not in rendered
+    assert "Coach or Clinician" in json.dumps(proposal["product_intent_authority"], sort_keys=True)
     assert "Pattern Relief User" not in rendered
     assert "Central Thing the Product" not in rendered
     assert "the optionally" not in rendered.casefold()
