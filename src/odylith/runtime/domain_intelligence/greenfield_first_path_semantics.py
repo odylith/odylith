@@ -118,7 +118,10 @@ def _first_path_steps(value: str) -> list[str]:
     text = _strip_first_path_frame(text)
     text = _strip_trailing_requirement_control_steps(text)
     text = _purpose_context.carry_semicolon_context_to_first_action(
-        text, split_action_pieces=_split_action_pieces, step_has_action_signal=_step_has_action_signal
+        text,
+        split_action_pieces=_split_action_pieces,
+        step_has_action_signal=_step_has_action_signal,
+        head_has_subject_action=_step_has_subject_action,
     )
     text = re.sub(r"\bthat\s+single\s+loop\s*[–—-]\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(
@@ -376,6 +379,11 @@ def _has_preferred_visible_result_action(value: str) -> bool:
             continue
         return True
     return False
+
+
+def _step_has_subject_action(value: str) -> bool:
+    actor, action = _actor_led_action_parts(value)
+    return bool(actor and action and action.casefold() != _clean(value).casefold() and _step_has_action_signal(action))
 
 def _nominal_material_outcome(value: str) -> str:
     text = _clean(value).strip(" .")

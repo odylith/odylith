@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materializatio
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
     explicit_product_title_evidence,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
@@ -108,6 +109,17 @@ _CF410_MISSING_SYSTEM_CASES = tuple(
     case
     for case in _CF410_RETIRED_HOLDOUT["cases"]
     if case["case_id"] in _CF410_MISSING_SYSTEM_CASE_IDS
+)
+_CF410_COLD_CHAIN_ACTOR_CASES = tuple(
+    case
+    for case in _CF410_RETIRED_HOLDOUT["cases"]
+    if case["case_id"] in {
+        "gfh-20260808-v3-04",
+        "gfh-20260808-v3-06",
+    }
+)
+_CF410_COLD_CHAIN_BRIEF = next(
+    case for case in _CF410_RETIRED_HOLDOUT["cases"] if case["case_id"] == "gfh-20260808-v3-05"
 )
 
 
@@ -217,6 +229,58 @@ def test_cf410_named_external_systems_retain_custody_without_entering_the_user_p
         if "dependencies" in atom["categories"] and atom["custody_state"] == "accepted_fact"
     }
     assert accepted_dependencies == {" ".join(system.casefold().split()) for system in expected_systems}
+
+
+@pytest.mark.parametrize(
+    "case",
+    _CF410_COLD_CHAIN_ACTOR_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_cf410_semicolon_actor_steps_preserve_phrasal_delivery_action(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    actor_labels = {str(row).split(":", 1)[0].casefold() for row in intent["human_actors"]}
+    steps = tuple(step.casefold() for step in first_path_model(str(intent["first_path"])).steps)
+
+    assert {"intake clerks", "nutrition leads", "dispatch drivers"} <= actor_labels
+    assert any(step.startswith("dispatch drivers hand out parcels") for step in steps)
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=str(case["prompt"]),
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    component_labels = {str(row["label"]).casefold() for row in proposal["components"]}
+
+    assert "parcels delivery service" in component_labels
+    assert all("hand out" not in label for label in component_labels)
+    assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
+
+
+def test_cf410_pasted_cold_chain_brief_does_not_false_block_phrasal_action(tmp_path: Path) -> None:
+    case = _CF410_COLD_CHAIN_BRIEF
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=str(case["prompt"]),
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+
+    assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
 
 
 @pytest.mark.parametrize(

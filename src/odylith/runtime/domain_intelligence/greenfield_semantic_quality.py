@@ -469,8 +469,6 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"dangling close-parenthesis token leaked at {location}")
         if re.search(r"\bmulti-user\s+roles\s+are\s*[.]?$", lowered):
             issues.append(f"clipped out-of-scope sentence leaked at {location}")
-        if re.search(r"\bhand\s+[a-z][a-z-]*(?:\s+[a-z][a-z-]*){0,4}\s+(?:identity|state|evidence|result|record)\b", lowered):
-            issues.append(f"handoff verb leaked as an artifact noun at {location}")
         if re.search(r"\buses\s+the\s+product\s+to\s+(?:a|an|the\s+)?[a-z][a-z '-]{0,80}\s+(?:adds|creates|makes|opens|picks|sees)\b", lowered):
             issues.append(f"actor/action splice leaked at {location}")
         if re.search(r"\badd\s+[^.;]{1,100}\band\s+picks\b", lowered) or re.search(

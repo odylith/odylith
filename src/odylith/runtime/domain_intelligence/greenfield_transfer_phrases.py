@@ -34,6 +34,10 @@ _FINITE_TRANSFER_ACTIONS = frozenset(
 )
 _FINITE_HAND_ACTIONS = frozenset({"handed", "handing", "hands"})
 _TRANSFER_RELATION_TERMS = frozenset({"for", "into", "onto", "through", "to", "toward", "towards", "with"})
+_TRANSFER_OBJECT_BOUNDARIES = _TRANSFER_RELATION_TERMS | frozenset(
+    {"after", "before", "during", "if", "once", "unless", "until", "when", "while"}
+)
+_HAND_ACTION_PARTICLES = frozenset({"off", "out", "over"})
 _LEADING_OBJECT_FILLERS = frozenset({"a", "an", "one", "the"})
 
 
@@ -51,7 +55,7 @@ def transfer_object_phrase(value: str) -> str:
         start += 1
     end = len(words)
     for index in range(start, len(words)):
-        if words[index] in _TRANSFER_RELATION_TERMS:
+        if words[index] in _TRANSFER_OBJECT_BOUNDARIES:
             end = index
             break
     object_words = words[start:end]
@@ -62,10 +66,12 @@ def transfer_object_phrase(value: str) -> str:
 
 def _transfer_object_start(words: list[str]) -> int:
     first = words[0]
+    if first == "hand" and len(words) > 1 and words[1] in _HAND_ACTION_PARTICLES:
+        return 2
+    if first in _FINITE_HAND_ACTIONS and len(words) > 1 and words[1] in _HAND_ACTION_PARTICLES:
+        return 2
     if first in _FINITE_HAND_ACTIONS:
         return 1
-    if first == "hand" and len(words) > 1 and words[1] == "off":
-        return 2
     if first == "hand" and any(word in _TRANSFER_RELATION_TERMS for word in words[2:]):
         return 1
     if first in _FINITE_TRANSFER_ACTIONS and any(word in _TRANSFER_RELATION_TERMS for word in words[2:]):

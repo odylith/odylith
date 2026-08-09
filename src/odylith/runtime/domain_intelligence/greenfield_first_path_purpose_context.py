@@ -13,6 +13,7 @@ def carry_semicolon_context_to_first_action(
     *,
     split_action_pieces: Callable[[str], Sequence[str]],
     step_has_action_signal: Callable[[str], bool],
+    head_has_subject_action: Callable[[str], bool],
 ) -> str:
     text = _clean(value).strip(" .")
     if ";" not in text:
@@ -22,6 +23,8 @@ def carry_semicolon_context_to_first_action(
         return text
     head_terms = set(label_terms(head))
     if not head_terms or len(head_terms) > 6:
+        return text
+    if head_has_subject_action(head):
         return text
     tail_pieces = tuple(split_action_pieces(tail))
     if not tail_pieces or not step_has_action_signal(tail_pieces[0]):

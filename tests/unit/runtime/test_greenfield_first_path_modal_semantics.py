@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
@@ -44,6 +45,14 @@ ROOT = Path(__file__).resolve().parents[3]
 PORT_OPERATIONS_PROMPT = json.loads(
     (ROOT / "tests/fixtures/greenfield-volume/logistics-infrastructure.v1.json").read_text(encoding="utf-8")
 )["cases"][0]["prompt"]
+
+
+def test_actor_role_context_resolves_action_homonym_compounds_without_global_role_expansion() -> None:
+    assert has_action_homonym_actor_role("dispatch drivers", "hand out parcels")
+    assert has_action_homonym_actor_role("support engineers", "investigate failures")
+    assert not has_action_homonym_actor_role("residents", "request beds")
+    assert not has_action_homonym_actor_role("purchase orders", "arrive for review")
+    assert not has_action_homonym_actor_role("workflow routers", "send records")
 
 
 def test_first_path_steps_drop_release_boundary_without_modal_drift() -> None:

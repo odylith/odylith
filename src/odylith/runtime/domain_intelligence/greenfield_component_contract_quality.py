@@ -74,10 +74,6 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("malformed ownership sentence", re.compile(r"\bit\s+owns\s+the\s+central\s+object\s+is\b", re.IGNORECASE)),
     ("duplicated evidence word", re.compile(r"\bevidence\s+evidence\b", re.IGNORECASE)),
     ("clipped out-of-scope sentence", re.compile(r"\bmulti-user\s+roles\s+are\s*[.]?$", re.IGNORECASE)),
-    (
-        "handoff verb leaked as artifact noun",
-        re.compile(r"\bhand\s+[a-z][a-z-]*(?:\s+[a-z][a-z-]*){0,4}\s+(?:identity|state|evidence|result|record)\b", re.IGNORECASE),
-    ),
     ("dangling close-parenthesis token", re.compile(r"\b[a-z][a-z-]*\b(?:metrics?|state|input|output|record|proof)[)](?:\s|[.,;:]|$)", re.IGNORECASE)),
     ("clipped later phrase", re.compile(r"\bas\s+a\s+later\s*[.]?$", re.IGNORECASE)),
     ("clipped stale transition", re.compile(r"\bvalid\s+transition\s+display,\s*stale\s*[.]?$", re.IGNORECASE)),

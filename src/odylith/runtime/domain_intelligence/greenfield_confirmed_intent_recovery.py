@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
@@ -1123,7 +1124,15 @@ def _human_actor_row_from_clause(
         if require_actor_signal and not _has_actor_action_signal(_words(gerund_actor), _words(gerund_action)):
             return ""
         return _human_actor_row(gerund_actor, gerund_action, preserve_full_action=True)
-    if _starts_with_action_without_actor(clause):
+    explicit_split = _explicit_actor_action_split(words)
+    homonym_actor_split = bool(
+        explicit_split
+        and has_action_homonym_actor_role(
+            " ".join(explicit_split[0]),
+            " ".join(explicit_split[1]),
+        )
+    )
+    if _starts_with_action_without_actor(clause) and not homonym_actor_split:
         return ""
     marker_index = _first_word_index(words, _MODAL_MARKERS)
     if marker_index > 0 and marker_index + 1 < len(words):
@@ -1143,7 +1152,6 @@ def _human_actor_row_from_clause(
         if _looks_like_material_actor_fragment(actor_words, _words(action)):
             return ""
         return _human_actor_row(" ".join(actor_words), action)
-    explicit_split = _explicit_actor_action_split(words)
     if explicit_split:
         actor_words, action_words = explicit_split
         actor = " ".join(actor_words)
@@ -1203,7 +1211,10 @@ def _explicit_actor_action_split(words: Sequence[str]) -> tuple[list[str], list[
         if has_human_actor_action_context(" ".join(actor_words), " ".join(action_words)):
             return actor_words, action_words
         actor = _strip_leading_articles(actor_words)
-        if not actor or not _looks_like_actor_subject(actor):
+        if not actor or not (
+            _looks_like_actor_subject(actor)
+            or has_action_homonym_actor_role(" ".join(actor), " ".join(action_words))
+        ):
             continue
         if not _looks_plural(actor[-1]) or not looks_like_base_action_token(action_words[0]):
             continue
@@ -1647,9 +1658,10 @@ def _has_actor_action_signal(actor_words: Sequence[str], action_words: Sequence[
         return False
     if action_words and has_non_human_actor_signal(f"{' '.join(actor)} {action_words[0]}"):
         return False
-    return _looks_like_actor_subject(actor_words) or has_human_actor_action_context(
-        " ".join(actor_words),
-        " ".join(action_words),
+    return (
+        _looks_like_actor_subject(actor_words)
+        or has_action_homonym_actor_role(" ".join(actor_words), " ".join(action_words))
+        or has_human_actor_action_context(" ".join(actor_words), " ".join(action_words))
     )
 
 

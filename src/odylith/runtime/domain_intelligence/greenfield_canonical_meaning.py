@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.common.prose_grammar import strip_leading_action_modal
 from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 from odylith.runtime.common.prose_grammar import third_person_action_verb
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
@@ -24,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase
 
 
 _ACTION_RESPONSIBILITIES = (
@@ -35,7 +37,7 @@ _ACTION_RESPONSIBILITIES = (
     (frozenset({"cluster", "group", "organize"}), "Organization"),
     (frozenset({"coordinate"}), "Coordination"),
     (frozenset({"decompose"}), "Decomposition"),
-    (frozenset({"deliver", "display", "publish", "release", "return", "see", "show", "surface"}), "Delivery"),
+    (frozenset({"deliver", "display", "hand", "publish", "release", "return", "see", "show", "surface"}), "Delivery"),
     (frozenset({"draft"}), "Drafting"),
     (frozenset({"generate", "produce"}), "Generation"),
     (frozenset({"match"}), "Matching"),
@@ -431,6 +433,9 @@ def _starts_with_material_action(value: str) -> bool:
 
 def _action_object(value: str) -> str:
     action = _action_without_subject(value)
+    carried_object = transfer_object_phrase(action)
+    if carried_object:
+        return carried_object
     words = action.split()
     if words:
         first = words[0].casefold().strip(".,;:")
@@ -516,10 +521,15 @@ def _responsibility_labels(action: str, *, step: str) -> list[str]:
 
 def _action_without_subject(value: str) -> str:
     text = clean_text(value).strip(" .")
+    words = text.split()
+    for index in range(1, min(5, len(words) - 1) + 1):
+        actor = " ".join(words[:index]).strip(" .")
+        action = " ".join(words[index:]).strip(" .")
+        if has_action_homonym_actor_role(actor, action):
+            return action
     stripped = clean_text(strip_action_subject(text)).strip(" .")
     if stripped and stripped.casefold() != text.casefold():
         return stripped
-    words = text.split()
     for index, word in enumerate(words):
         token = word.casefold().strip(".,;:")
         if looks_like_base_action_token(token) or looks_like_finite_action_token(token):

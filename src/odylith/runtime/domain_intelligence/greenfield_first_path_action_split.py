@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
@@ -392,9 +393,10 @@ def _actor_role_subject_action(value: str) -> bool:
         subject_words = subject.casefold().split()
         if subject_words and subject_words[-1] in {"a", "an", "the", "one"}:
             continue
-        if not has_actor_role_word(subject):
+        homonym_actor = has_action_homonym_actor_role(subject, action)
+        if not (has_actor_role_word(subject) or homonym_actor):
             continue
-        if not looks_like_actor_led_subject_prefix(subject, text):
+        if not (looks_like_actor_led_subject_prefix(subject, text) or homonym_actor):
             continue
         if not _MATERIAL_ACTION_RE.match(action):
             continue

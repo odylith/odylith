@@ -62,6 +62,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_s
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -683,6 +684,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("combines reference ranges") == "reference ranges"
     assert clean_artifact_phrase("hand extracted evidence into assessment") == "extracted evidence"
     assert clean_artifact_phrase("hand hygiene record") == "hand hygiene record"
+    assert transfer_object_phrase("hand out parcels after temperature checks") == "parcels"
+    assert transfer_object_phrase("hands out parcels after temperature checks") == "parcels"
     assert clean_artifact_phrase("home cook pick recipe") == ""
     assert clean_artifact_phrase("runs step sequence until") == "step sequence"
     assert clean_artifact_phrase("sequence until cooking reach") == ""
