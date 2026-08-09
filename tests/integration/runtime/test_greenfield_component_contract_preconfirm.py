@@ -121,6 +121,21 @@ def test_sparse_action_components_keep_source_backed_local_meaning(tmp_path) -> 
     assert "coordinates review" in rendered
     assert "review coordination" in rendered
 
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="",
+        proposal_ready=True,
+    )
+
+    assert transaction.verified is True
+    assert transaction.quality_manifest["status"] == "passed"
+    story_rows = transaction.prewrite_package.project_dashboard_preview["product_story"]["release_contract"]
+    cards = {str(row["label"]): str(row["body"]) for row in story_rows}
+    assert "personalized notification delivery" in cards["Product Boundary"].casefold()
+    for label in ("First Path", "Owned Capabilities", "Proof"):
+        assert "personalized notification delivery" not in cards[label].casefold()
+
 
 def test_open_source_embargo_compiles_a_clean_preconfirm_transaction(tmp_path) -> None:
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)

@@ -192,7 +192,7 @@ def _user_problem_card(ctx: _StoryCardContext) -> str:
 
 
 def _first_path_card(ctx: _StoryCardContext) -> str:
-    path = _clean_first_path(ctx.first_path)
+    path = _without_owned_exclusion(_clean_first_path(ctx.first_path), ctx.non_goals)
     outcome = _outcome_phrase(ctx)
     if path and _mentions_outcome(path, outcome):
         return _limit_card(_ensure_period(_upper_first(path)), limit=560)
@@ -647,7 +647,8 @@ def _outcome_phrase(ctx: _StoryCardContext) -> str:
     for value in (ctx.outcome, _outcome_from_text(ctx.story), _outcome_from_text(ctx.first_path), ctx.state_object):
         text = _product_sentence(value).rstrip(".")
         if text:
-            return _outcome_as_noun(_limit_card(text, limit=180).rstrip("."))
+            outcome = _outcome_as_noun(_limit_card(text, limit=180).rstrip("."))
+            return _without_owned_exclusion(outcome, ctx.non_goals)
     return "a clear result that the next participant can understand"
 
 
@@ -763,7 +764,26 @@ def _clean_boundary_exclusion(value: str) -> str:
     text = _clean(text).strip(" .")
     if not text or any(re.search(pattern, text, re.IGNORECASE) for pattern in _GENERIC_CARD_PATTERNS):
         return ""
+    folded = text.casefold()
+    for prefix in ("without claiming ", "without including ", "without ", "no "):
+        if folded.startswith(prefix):
+            text = text[len(prefix) :].strip(" .")
+            break
     return _lower_first(text)
+
+
+def _without_owned_exclusion(value: str, non_goals: str) -> str:
+    text = _clean(value).strip(" .")
+    exclusion = _clean_boundary_exclusion(non_goals)
+    if not text or not exclusion:
+        return text
+    folded = text.casefold()
+    for prefix in (" without claiming ", " without including ", " without "):
+        suffix = f"{prefix}{exclusion}"
+        if folded.endswith(suffix.casefold()):
+            positive = text[: -len(suffix)].strip(" .,:;")
+            return positive or text
+    return text
 
 
 def _proof_exclusion(value: Any) -> str:

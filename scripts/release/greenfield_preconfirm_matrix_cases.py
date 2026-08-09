@@ -210,6 +210,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             leakage_terms=("assay drift", "prediction model", "assay drift prediction"),
             stressors=("scientific-casing", "domain-depth-obligations", "registry-contract-pressure", "latency-pressure"),
             expectation=CLARIFICATION_REQUIRED_EXPECTATION,
+            expected_question_fields=("first_path",),
         ),
         GreenfieldMatrixCase(
             name="sparse disclosure confirmation",

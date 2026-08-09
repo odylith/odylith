@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.greenfield_project_judgment import project_story_semantic_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import program_problem
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_release_basis
@@ -128,6 +129,50 @@ def test_greenfield_story_cards_keep_action_grammar_and_visible_outcome() -> Non
     assert "adds one asset and manually logs a few usage entries" in cards["First Path"]
     assert "current health readout with one grounded suggestion" in cards["First Path"]
     assert "multi-asset automation" in cards["Product Boundary"].casefold()
+
+
+def test_greenfield_story_cards_assign_an_accepted_exclusion_only_to_product_boundary() -> None:
+    rows = build_greenfield_story_cards(
+        title="Disclosure Review Workspace",
+        intent={
+            "product_story": "A review council needs one evidence path from report intake through release readiness.",
+            "state_object": "A disclosure report tracks review, evidence custody, embargo status, and readiness.",
+            "non_goals": ["Without personalized notification delivery."],
+            "internal_systems": [
+                "Report Intake — receives disclosure reports",
+                "Evidence Custody — records review evidence",
+                "Embargo Review — records readiness decisions",
+            ],
+        },
+        project={},
+        objective="",
+        outcome="publish release readiness proof without personalized notification delivery",
+        first_path=(
+            "Council members receive reports, coordinate review, record evidence custody, decide embargo status, "
+            "and publish release readiness proof without personalized notification delivery."
+        ),
+        actors=(("primary", "Council members", "Review disclosure evidence."),),
+        validation=(),
+    )
+    cards = {row["label"]: row["body"] for row in rows}
+
+    assert "personalized notification delivery" in cards["Product Boundary"].casefold()
+    for label in ("First Path", "Owned Capabilities", "Proof"):
+        assert "personalized notification delivery" not in cards[label].casefold()
+    assert project_story_semantic_issues(rows) == []
+
+    offline_rows = build_greenfield_story_cards(
+        title="Field Status Workspace",
+        intent={"non_goals": ["No bulk data export."]},
+        project={},
+        objective="",
+        outcome="a current status view that works without internet",
+        first_path="A field lead records an inspection and sees a current status view that works without internet.",
+        actors=(("primary", "Field lead", "Records inspections."),),
+        validation=(),
+    )
+    offline_cards = {row["label"]: row["body"] for row in offline_rows}
+    assert "works without internet" in offline_cards["Proof"].casefold()
 
 
 def test_greenfield_story_cards_do_not_reuse_a_path_shaped_problem() -> None:
