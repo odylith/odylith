@@ -1,8 +1,8 @@
 {
   "version": "odylith.greenfield.evaluation-splits.v1",
-  "frozen_at_utc": "2026-08-08T22:40:35Z",
+  "frozen_at_utc": "2026-08-09T14:53:22Z",
   "claim_class": "semantic-baseline-frozen-before-final-release-execution",
-  "semantic_baseline_revision": "6fbad164338b8274b7e77c9667e9ba91c3fef3e0",
+  "semantic_baseline_revision": "1c54cb3403d482bdb72559aae5f9a52185cc242e",
   "tracked_corpus": {
     "path": "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json",
     "sha256": "7e6259e23d275e905469f22428052ee5a6a6add5b91d0a3666bdfc68ffa77168",
@@ -20,20 +20,22 @@
     "reason": "This corpus predates the split freeze and is therefore development, regression, or private-validation evidence only."
   },
   "final_holdout": {
-    "path_hint": "/private/tmp/odylith-greenfield-final-holdout-20260808-v2.json",
-    "sha256": "bc8328d0c02ca1c85b9df2a24f95edb30d3be3dc5641128f554dbdcb55fbede4",
-    "byte_size": 96127,
+    "path_hint": "/private/tmp/odylith-greenfield-final-holdout-20260809-v1.json",
+    "sha256": "d48f7180bfd129a02609ac17289b1cf3233eeeba1f313a7aac16564e2a1a5a7e",
+    "byte_size": 153939,
     "case_count": 24,
     "annotation_count": 24,
     "claim_class": "disclosed-failed-holdout-regression",
     "disclosure_status": "disclosed_failed_retired",
-    "retired_fixture": "tests/fixtures/greenfield-release-corpus/retired-87e277-final-holdout-regressions.v1.json",
+    "retired_fixture": "tests/fixtures/greenfield-release-corpus/retired-1c54-final-holdout-regressions.v1.json",
     "disclosure_policy": "Run once after floors and implementation are frozen. A disclosed failure retires this holdout into regression and requires a new blinded holdout.",
     "annotation_review": {
       "independent_reviewed": true,
       "disagreements_adjudicated": true,
       "annotation_contract_issues": 0,
-      "product_executions": 0
+      "product_executions": 1,
+      "reviewed_content_sha256": "0025b1111a08aad1e71064ac3032899465db3d73e97238ac0aa8c5e97c20cb09",
+      "release_result_sha256": "8c6286bb28ccfa7c490d259861499ed8979863b20da4e9ccb6ded41156a6da90"
     }
   },
   "profiles": {

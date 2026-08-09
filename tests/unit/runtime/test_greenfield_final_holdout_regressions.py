@@ -121,6 +121,11 @@ _CF410_COLD_CHAIN_ACTOR_CASES = tuple(
 _CF410_COLD_CHAIN_BRIEF = next(
     case for case in _CF410_RETIRED_HOLDOUT["cases"] if case["case_id"] == "gfh-20260808-v3-05"
 )
+_1C54_RETIRED_HOLDOUT_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "fixtures/greenfield-release-corpus/retired-1c54-final-holdout-regressions.v1.json"
+)
+_1C54_RETIRED_HOLDOUT = json.loads(_1C54_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
 
 
 def _material_field_key(value: object) -> str:
@@ -153,6 +158,20 @@ def test_cf410_failed_holdout_is_marked_disclosed_and_retired() -> None:
     )
     assert len(_CF410_RETIRED_HOLDOUT["cases"]) == 24
     assert len(_CF410_RETIRED_HOLDOUT["annotations"]) == 24
+
+
+def test_1c54_failed_holdout_is_marked_disclosed_and_retired() -> None:
+    assert _1C54_RETIRED_HOLDOUT["version"] == "odylith.greenfield.retired-holdout-regression.v1"
+    assert _1C54_RETIRED_HOLDOUT["disclosed"] is True
+    assert _1C54_RETIRED_HOLDOUT["retired_from"] == {
+        "product_revision": "1c54cb3403d482bdb72559aae5f9a52185cc242e",
+        "holdout_sha256": "d48f7180bfd129a02609ac17289b1cf3233eeeba1f313a7aac16564e2a1a5a7e",
+        "evaluation_manifest_sha256": "c1efaaf96b12e14c5c81387bd189797fafb1616f40e08680c5d82481d99df09c",
+        "result_sha256": "8c6286bb28ccfa7c490d259861499ed8979863b20da4e9ccb6ded41156a6da90",
+        "evaluated_on": "2026-08-09",
+    }
+    assert len(_1C54_RETIRED_HOLDOUT["cases"]) == 24
+    assert len(_1C54_RETIRED_HOLDOUT["annotations"]) == 24
 
 
 @pytest.mark.parametrize(
