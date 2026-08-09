@@ -72,6 +72,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretati
     explicit_actor_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import product_intent_source_text
 
 
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
@@ -438,9 +439,10 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
 def _has_grounded_human_action_evidence(evidence: str) -> bool:
     """Trust an explicit human action clause even when another clause wins prompt ranking."""
 
+    product_evidence = product_intent_source_text(evidence)
     return any(
         _has_explicit_single_step_actor_action(clause)
-        for sentence in sentence_fragments(evidence)
+        for sentence in sentence_fragments(product_evidence)
         for clause in sentence.split(";")
         if clause.strip()
     )

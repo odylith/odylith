@@ -712,6 +712,7 @@ def test_source_metadata_only_requires_a_first_path_question(label: str, tmp_pat
             repo_root=tmp_path,
             fallback_title="",
         )
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
 
 @pytest.mark.parametrize(
