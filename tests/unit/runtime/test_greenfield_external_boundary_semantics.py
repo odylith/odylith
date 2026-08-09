@@ -85,11 +85,16 @@ def test_confirmed_completion_preserves_external_boundary_into_semantic_model() 
         ("Tide Ledger supplies berth assignments; the product cannot edit it.", "Tide Ledger"),
         ("Stripe provides the accepted payment status.", "Stripe"),
         ("Customer Billing System supplies the account balance.", "Customer Billing System"),
+        ("The first path depends on the mapping gateway.", "mapping gateway"),
+        ("It relies on the mapping gateway.", "mapping gateway"),
+        ("Route stewards read the forecast service before review.", "forecast service"),
+        ("Reviewers cross-reference the seismic registry with every bore log.", "seismic registry"),
+        ("A courier collects labeled specimens for the regional laboratory.", "regional laboratory"),
         ('{"path":["scan tag","show due date"],"source":"Tool Shelf Index"}', "Tool Shelf Index"),
     ),
 )
 def test_source_boundary_rows_preserve_named_sources_across_evidence_shapes(evidence: str, expected: str) -> None:
-    assert expected in source_boundary_rows_from_evidence(evidence)
+    assert source_boundary_rows_from_evidence(evidence) == [expected]
 
 
 def test_operator_evidence_hypothesis_preserves_named_prompt_source() -> None:
@@ -149,3 +154,65 @@ def test_source_boundary_rows_trim_trailing_product_action() -> None:
     evidence = "Room availability is read from Hall Calendar and shown to the coordinator."
 
     assert source_boundary_rows_from_evidence(evidence) == ["Hall Calendar"]
+
+
+def test_source_boundary_rows_isolate_supplier_after_prior_action() -> None:
+    evidence = "A coordinator checks a request and the Mapping Gateway supplies site context."
+
+    assert source_boundary_rows_from_evidence(evidence) == ["Mapping Gateway"]
+
+
+def test_source_boundary_rows_isolate_supplier_after_modal_action() -> None:
+    evidence = "A coordinator can check a request and Mapping Gateway supplies site context."
+
+    assert source_boundary_rows_from_evidence(evidence) == ["Mapping Gateway"]
+
+
+def test_source_boundary_rows_exclude_the_known_product_title() -> None:
+    evidence = (
+        "Orchard Bin Ledger gives Mara a return path. "
+        "Mara records a returned crate using Orchard Bin Ledger. "
+        "The Grove Roster supplies lot names."
+    )
+
+    assert source_boundary_rows_from_evidence(evidence) == ["Orchard Bin Ledger", "Grove Roster"]
+    assert source_boundary_rows_from_evidence(
+        evidence,
+        excluded_labels=("Orchard Bin Ledger",),
+    ) == ["Grove Roster"]
+
+
+def test_operator_evidence_does_not_classify_its_product_as_external() -> None:
+    evidence = (
+        "Orchard Bin Ledger gives Mara a return path. "
+        "Mara records a returned crate using Orchard Bin Ledger. "
+        "The Grove Roster supplies lot names."
+    )
+
+    hypothesis = intent_hypothesis_from_operator_evidence(evidence, prefer_product_title=True)
+
+    assert hypothesis["external_systems"] == ("Grove Roster",)
+
+
+@pytest.mark.parametrize("connector", ("because", "if", "that", "when"))
+def test_source_boundary_rows_stop_before_conditional_or_relative_tail(connector: str) -> None:
+    evidence = f"The release depends on the mapping gateway {connector} weather changes."
+
+    assert source_boundary_rows_from_evidence(evidence) == ["mapping gateway"]
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        "Reviewers check the Permit Receipt before approval.",
+        "A coordinator routes the request through Alice.",
+    ),
+)
+def test_source_boundary_rows_reject_capitalized_non_system_objects(evidence: str) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == []
+
+
+def test_source_boundary_rows_preserve_device_carriers() -> None:
+    assert source_boundary_rows_from_evidence("Operators query the shoreline sensor.") == [
+        "shoreline sensor"
+    ]

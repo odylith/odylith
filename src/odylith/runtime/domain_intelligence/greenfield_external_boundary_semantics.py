@@ -8,6 +8,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_token_form
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
@@ -172,29 +173,40 @@ _NON_SYSTEM_SOURCE_LABELS = frozenset(
         "users",
     }
 )
-_TRAILING_SOURCE_ACTION_RE = re.compile(
-    r"\s+\band\s+(?:can(?:not|'t)?|cannot|displays?|is|are|shows?|shown|uses?|used|was|were)\b.*$",
-    flags=re.IGNORECASE,
+_LEXEME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9&'/_-]*")
+_FROM_ACTIONS = frozenset(
+    "came come comes get gets import imported imports load loaded loads provide provided provides read reads "
+    "receive receives retrieve retrieved retrieves source sourced sources supplied supplies".split()
 )
-_FROM_SOURCE_RE = re.compile(
-    r"\b(?:come|comes|came|read|reads|loaded|loads|imported|imports|retrieved|retrieves|"
-    r"sourced|sources|provided|provides|supplied|supplies)\s+from\s+(?:the\s+)?(?P<source>[^,.;!?\n]+)",
-    flags=re.IGNORECASE,
+_SUPPLIER_ACTIONS = frozenset("feeds flags provides publishes reports sends supplies".split())
+_DIRECT_SOURCE_ACTIONS = frozenset(
+    "check checking checks consult consults cross-reference cross-references ingest ingesting ingests query queries "
+    "read reads reference references".split()
 )
-_ACTION_FROM_SOURCE_RE = re.compile(
-    r"\b(?:gets?|imports?|loads?|reads?|receives?|retrieves?|sources?)\b[^,.;!?\n]{1,100}?\bfrom\s+"
-    r"(?:the\s+)?(?P<source>[^,.;!?\n]+)",
-    flags=re.IGNORECASE,
+_DEPENDENCY_ACTIONS = frozenset({"depend", "depends", "rely", "relies"})
+_COMPARISON_ACTIONS = frozenset(
+    "check checking checks compare compares comparing correlate correlates correlating cross-reference "
+    "cross-references match matches matching".split()
 )
-_CARRIER_PREPOSITION_RE = re.compile(
-    r"\b(?:for|through|using|via)\s+(?:(?:a|an|the)\s+)?(?P<source>[^,.;!?\n]+)",
-    flags=re.IGNORECASE,
+_CO_VARIATION_ACTIONS = frozenset({"change", "changes", "changing", "vary", "varies", "varying"})
+_RECIPIENT_ACTIONS = frozenset(
+    "collect collects collecting deliver delivers delivering route routes routing send sends sending submit submits "
+    "submitting upload uploads uploading".split()
 )
-_SUPPLIER_RE = re.compile(
-    r"^(?:the\s+)?(?P<source>[A-Za-z0-9][A-Za-z0-9&'/_-]*(?:\s+[A-Za-z0-9][A-Za-z0-9&'/_-]*){0,7})"
-    r"\s+(?:feeds|flags|provides|publishes|reports|sends|supplies)\b",
-    flags=re.IGNORECASE,
+_SOURCE_PREPOSITIONS = frozenset({"through", "using", "via"})
+_SOURCE_PREPOSITION_ACTIONS = {
+    "against": _COMPARISON_ACTIONS,
+    "for": _RECIPIENT_ACTIONS,
+    "from": _FROM_ACTIONS,
+    "on": _DEPENDENCY_ACTIONS,
+    "to": _RECIPIENT_ACTIONS,
+    "with": _COMPARISON_ACTIONS | _CO_VARIATION_ACTIONS,
+}
+_ARTIFACT_SOURCE_CARRIERS = frozenset(
+    "dataset datasets document documents file files form forms import imports log logs message messages record records "
+    "report reports source sources submission submissions transcript transcripts upload uploads".split()
 )
+_DIRECT_BOUNDARY_CARRIERS = _SOURCE_LABEL_CARRIERS - _ARTIFACT_SOURCE_CARRIERS
 
 
 @dataclass(frozen=True)
@@ -234,36 +246,85 @@ def completed_external_boundary_rows(intent: Mapping[str, Any]) -> tuple[list[st
     return list(unique_text(external_rows))[:4], list(unique_text(ambiguity_rows))[:4]
 
 
-def source_boundary_rows_from_evidence(value: Any) -> list[str]:
+def source_boundary_rows_from_evidence(
+    value: Any,
+    *,
+    excluded_labels: Sequence[str] = (),
+) -> list[str]:
     """Extract named external sources without copying surrounding prompt prose."""
 
     rows, is_structured = _structured_source_rows(value)
     text = clean_text(value)
     if text and not is_structured:
-        rows.extend(match.group("source") for match in _FROM_SOURCE_RE.finditer(text))
-        rows.extend(match.group("source") for match in _ACTION_FROM_SOURCE_RE.finditer(text))
-        rows.extend(
-            source
-            for match in _CARRIER_PREPOSITION_RE.finditer(text)
-            if (source := _carrier_preposition_source(match.group("source")))
-        )
-        for sentence in re.split(r"[.;!?]+", text):
-            sentence_text = clean_text(sentence)
-            if re.match(r"^(?:if|unless|when|while)\b", sentence_text, flags=re.IGNORECASE):
-                continue
-            match = _SUPPLIER_RE.match(sentence_text)
-            if match:
-                rows.append(match.group("source"))
+        rows.extend(_dependency_frame_sources(text))
+    excluded = {_boundary_key(label) for label in excluded_labels if _boundary_key(label)}
     normalized = [_source_label(row) for row in rows]
-    return list(unique_text(row for row in normalized if row))[:8]
+    return list(unique_text(row for row in normalized if row and _boundary_key(row) not in excluded))[:8]
 
 
-def _carrier_preposition_source(value: str) -> str:
-    text = clean_text(value).strip(" .,:;\"'")
-    if re.search(r"\b(?:that|which|who|where)\b", text, flags=re.IGNORECASE):
-        return ""
-    terms = [term.casefold().strip(".,;:()[]{}") for term in text.split()]
-    return text if set(terms[-3:]) & _SOURCE_LABEL_CARRIERS else ""
+def _dependency_frame_sources(value: str) -> list[str]:
+    rows: list[str] = []
+    for clause in re.split(r"[,.;:!?\n]+", clean_text(value)):
+        tokens = _LEXEME_RE.findall(clause)
+        lowered = [token.casefold() for token in tokens]
+        if not tokens or lowered[0] in {"if", "unless", "when", "while"}:
+            continue
+        for index, token in enumerate(lowered):
+            if token in _SUPPLIER_ACTIONS:
+                rows.append(_source_subject(tokens[:index]))
+            if token in _SOURCE_PREPOSITIONS:
+                candidate = _source_object(tokens, start=index + 1)
+                if _system_boundary_candidate(candidate):
+                    rows.append(candidate)
+            prior_actions = set(lowered[max(0, index - 8) : index])
+            required_actions = _SOURCE_PREPOSITION_ACTIONS.get(token, frozenset())
+            if required_actions and prior_actions & required_actions:
+                candidate = _source_object(tokens, start=index + 1)
+                if token not in {"against", "with"} or _system_boundary_candidate(candidate):
+                    rows.append(candidate)
+            if token in _DIRECT_SOURCE_ACTIONS and (index + 1 >= len(tokens) or lowered[index + 1] != "from"):
+                candidate = _source_object(tokens, start=index + 1, stop_at_source_relation=True)
+                if _system_boundary_candidate(candidate):
+                    rows.append(candidate)
+    return [row for row in rows if row]
+
+
+def _source_subject(tokens: Sequence[str]) -> str:
+    start = 0
+    for index, token in enumerate(tokens):
+        if token.casefold() in {"and", "but", "then"} and any(
+            action_token_form(prior) for prior in tokens[:index]
+        ):
+            start = index + 1
+    while start < len(tokens) and tokens[start].casefold() in {"a", "an", "and", "but", "the", "then"}:
+        start += 1
+    return " ".join(tokens[start:])
+
+
+def _source_object(
+    tokens: Sequence[str],
+    *,
+    start: int,
+    stop_at_source_relation: bool = False,
+) -> str:
+    while start < len(tokens) and tokens[start].casefold() in {"a", "an", "the"}:
+        start += 1
+    selected = list(tokens[start:])
+    if stop_at_source_relation:
+        for index, token in enumerate(selected):
+            if token.casefold() in _SOURCE_PREPOSITION_ACTIONS or token.casefold() in _SOURCE_PREPOSITIONS:
+                selected = selected[:index]
+                break
+    for index, token in enumerate(selected):
+        if token.casefold() in {"and", "but", "then"} and any(
+            action_token_form(following) for following in selected[index + 1 :]
+        ):
+            selected = selected[:index]
+            break
+    carrier_indexes = [
+        index for index, token in enumerate(selected) if token.casefold() in _DIRECT_BOUNDARY_CARRIERS
+    ]
+    return " ".join(selected[: carrier_indexes[-1] + 1]) if carrier_indexes else " ".join(selected)
 
 
 def _structured_source_rows(value: Any) -> tuple[list[str], bool]:
@@ -299,8 +360,6 @@ def _collect_structured_source_rows(value: Any, rows: list[str], *, key: str = "
 def _source_label(value: Any) -> str:
     text = clean_text(value).strip(" .,:;\"'")
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
-    text = _TRAILING_SOURCE_ACTION_RE.sub("", text).strip(" .,:;\"'")
-    text = re.split(r"\s+\b(?:although|before|but|unless|while)\b\s+", text, maxsplit=1, flags=re.IGNORECASE)[0]
     words = text.split()
     if not words or len(words) > 12:
         return ""
@@ -314,6 +373,14 @@ def _source_label(value: Any) -> str:
     ):
         return ""
     return " ".join(words)
+
+
+def _boundary_key(value: Any) -> str:
+    return " ".join(_LEXEME_RE.findall(clean_text(value).casefold()))
+
+
+def _system_boundary_candidate(value: Any) -> bool:
+    return bool({word.casefold() for word in _LEXEME_RE.findall(clean_text(value))} & _DIRECT_BOUNDARY_CARRIERS)
 
 
 def external_boundary_facts(first_path: Any) -> list[ExternalBoundaryFact]:

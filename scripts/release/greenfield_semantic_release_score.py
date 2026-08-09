@@ -9,6 +9,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import ATOMIC_CATEGORY_FIELDS
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_claim_units
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_fact_ledger_hash
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import require_atomic_fact_ledger
 
@@ -748,26 +749,8 @@ def _claim_recalled_in(expected: Any, observed_claims: Sequence[str]) -> bool:
     return any(
         _claim_recalled(expected, unit)
         for claim in observed_claims
-        for unit in _claim_units(claim)
+        for unit in atomic_claim_units(claim)
     )
-
-
-def _claim_units(value: Any) -> tuple[str, ...]:
-    text = " ".join(str(value or "").split()).strip(" .;:")
-    if not text:
-        return ()
-    units = [text]
-    for sentence in re.split(r"(?<=[.!?])\s+|;\s*", text):
-        sentence = sentence.strip(" .;:")
-        if not sentence:
-            continue
-        units.append(sentence)
-        units.extend(
-            clause
-            for part in re.split(r",\s*|\s+and\s+", sentence, flags=re.IGNORECASE)
-            if (clause := part.strip(" .;:"))
-        )
-    return tuple(dict.fromkeys(units))
 
 
 def _atomic_claim_values(

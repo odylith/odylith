@@ -113,6 +113,29 @@ def test_atomic_fact_ledger_does_not_reverse_source_polarity() -> None:
     assert publish_atom["custody_state"] == "bounded_interpretation"
 
 
+def test_atomic_fact_ledger_binds_positive_dependency_beside_a_prohibition() -> None:
+    source = (
+        "The first release must retain evidence for seven years, must not auto-approve requests, "
+        "and depends on the Registry API."
+    )
+    facts = {
+        **_FACTS,
+        "external_systems": ["Registry API"],
+        "non_goals": ["must not auto-approve requests"],
+    }
+
+    atoms = _authority(facts=facts, source=source)["atomic_facts"]
+
+    dependency = next(
+        atom
+        for atom in atoms
+        if atom["normalized_value"] == "Registry API" and "dependencies" in atom["categories"]
+    )
+    assert dependency["polarity"] == "affirmed"
+    assert dependency["custody_state"] == "accepted_fact"
+    assert dependency["source_span_ids"]
+
+
 def test_atomic_fact_ledger_keeps_hyphenated_state_labels_affirmed() -> None:
     source = "A stale reading keeps the mission in entry-prohibited state."
     facts = {

@@ -506,6 +506,20 @@ def _sentence_units(value: str) -> list[str]:
     ]
 
 
+def atomic_claim_units(value: Any) -> tuple[str, ...]:
+    """Return sentence and local clause units for polarity-aware custody."""
+
+    units: list[str] = []
+    for sentence in _sentence_units(str(value or "")):
+        units.append(sentence)
+        units.extend(
+            unit
+            for part in re.split(r"[,:]\s*|\s+\band\b\s+", sentence, flags=re.IGNORECASE)
+            if (unit := clean_markdown_text(part).strip(" .;:")) and unit != sentence
+        )
+    return tuple(dict.fromkeys(units))
+
+
 def _source_atomic_units(value: str, *, source_section_key: str) -> list[str]:
     is_operator_evidence = (
         source_section_key.endswith("operator_prompt_evidence")
@@ -516,16 +530,7 @@ def _source_atomic_units(value: str, *, source_section_key: str) -> list[str]:
     sentences = _sentence_units(source_text)
     if not split_action_clauses:
         return sentences
-    units: list[str] = []
-    for clause in sentences:
-        units.append(clause)
-        if _polarity(clause) == "prohibited":
-            continue
-        for row in re.split(r"[,:]\s*", clause):
-            unit = clean_markdown_text(row).strip(" .;:")
-            if unit and unit != clause:
-                units.append(unit)
-    return list(dict.fromkeys(units))
+    return list(dict.fromkeys(unit for sentence in sentences for unit in atomic_claim_units(sentence)))
 
 
 def _is_entailment_source(span: Mapping[str, Any]) -> bool:
@@ -606,6 +611,7 @@ __all__ = [
     "ATOMIC_FACT_LEDGER_VERSION",
     "ATOMIC_PROJECTION_FIELDS",
     "append_atomic_source_spans",
+    "atomic_claim_units",
     "atomic_fact_ledger_hash",
     "build_atomic_fact_ledger",
     "require_atomic_fact_ledger",

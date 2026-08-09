@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
+    intent_hypothesis_from_operator_evidence,
+)
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     GreenfieldClarificationRequired,
 )
@@ -50,6 +53,22 @@ _87E277_ANNOTATIONS = {
 }
 _87E277_CLARIFICATION_CASES = tuple(
     case for case in _87E277_RETIRED_HOLDOUT["cases"] if case["expectation"] == "clarification_required"
+)
+_87E277_EXTERNAL_SYSTEM_CASES = tuple(
+    case
+    for case in _87E277_RETIRED_HOLDOUT["cases"]
+    if case["expectation"] == "transaction_committed"
+    and _87E277_ANNOTATIONS[str(case["case_id"])]["explicit_systems"]
+)
+_87E277_SEALED_SYSTEM_CASES = tuple(
+    case
+    for case in _87E277_EXTERNAL_SYSTEM_CASES
+    if case["case_id"] in {
+        "gfh-20260808-v2-01",
+        "gfh-20260808-v2-02",
+        "gfh-20260808-v2-14",
+        "gfh-20260808-v2-20",
+    }
 )
 
 
@@ -92,6 +111,54 @@ def test_87e277_material_unknowns_are_specific_and_write_free(
     assert set(error.value.required_fields) == expected_fields
     assert str(error.value).endswith("?")
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _87E277_EXTERNAL_SYSTEM_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_87e277_explicit_dependencies_enter_typed_intent_hypothesis(
+    case: dict[str, object],
+) -> None:
+    intent = intent_hypothesis_from_operator_evidence(
+        str(case["prompt"]),
+        prefer_product_title=True,
+    )
+
+    external_systems = sorted(" ".join(str(row).casefold().split()) for row in intent["external_systems"])
+    expected = sorted(
+        " ".join(str(system).casefold().split())
+        for system in _87E277_ANNOTATIONS[str(case["case_id"])]["explicit_systems"]
+    )
+    assert external_systems == expected
+
+
+@pytest.mark.parametrize(
+    "case",
+    _87E277_SEALED_SYSTEM_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_87e277_explicit_dependencies_are_sealed_as_accepted_facts(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    expected = {
+        " ".join(str(system).casefold().split())
+        for system in _87E277_ANNOTATIONS[str(case["case_id"])]["explicit_systems"]
+    }
+    accepted_dependencies = {
+        " ".join(str(atom["normalized_value"]).casefold().split())
+        for atom in intent["product_intent_authority"]["atomic_facts"]
+        if "dependencies" in atom["categories"] and atom["custody_state"] == "accepted_fact"
+    }
+
+    assert accepted_dependencies == expected
 
 
 def test_typed_materiality_gate_blocks_before_candidate_staging(

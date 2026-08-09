@@ -75,3 +75,25 @@ def test_greenfield_materiality_has_one_prewrite_owner() -> None:
     assert "materialize_prompt_confirmed_intent" not in materialization
     assert "restage_compiled_candidate_intent" not in staging
     assert "stage_candidate_intent(" in materialization
+
+
+def test_greenfield_dependency_and_atomic_clause_parsing_have_one_owner() -> None:
+    boundaries = _source(
+        "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py"
+    )
+    ledger = _source(
+        "src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py"
+    )
+    scorer = _source("scripts/release/greenfield_semantic_release_score.py")
+
+    for stale_regex_owner in (
+        "_FROM_SOURCE_RE",
+        "_ACTION_FROM_SOURCE_RE",
+        "_CARRIER_PREPOSITION_RE",
+        "_SUPPLIER_RE",
+    ):
+        assert stale_regex_owner not in boundaries
+    assert "def _dependency_frame_sources" in boundaries
+    assert "def atomic_claim_units" in ledger
+    assert "def _claim_units" not in scorer
+    assert "atomic_claim_units(claim)" in scorer
