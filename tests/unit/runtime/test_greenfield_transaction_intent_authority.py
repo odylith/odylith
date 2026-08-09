@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import pr
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import product_create_transaction_to_dict
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_verified
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import require_product_create_transaction_intent_authority
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_proposals import compile_greenfield_create_transaction
 from odylith.runtime.domain_intelligence.greenfield_proposals import load_confirmed_intent_args
@@ -387,7 +388,10 @@ def test_prompt_intent_hypothesis_stages_typed_candidate_without_markdown_author
     assert str(tmp_path) not in json.dumps(evidence_ledger, sort_keys=True)
 
 
-def test_compiled_transaction_restages_product_facts_after_preconfirm_repairs(tmp_path: Path) -> None:
+def test_compiled_transaction_restages_product_facts_after_preconfirm_repairs(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     prompt = (
         "Create a flood shelter intake system that helps city staff register displaced residents, match household needs "
         "to shelter capacity, preserve consent evidence, and publish a daily placement readiness result."
@@ -413,7 +417,63 @@ def test_compiled_transaction_restages_product_facts_after_preconfirm_repairs(tm
     )
 
     assert candidate["first_path"].startswith("City staff can")
-    assert product_facts_hash(transaction.proposal["intent"]) == transaction.intent_authority[PRODUCT_FACTS_HASH_KEY]
+    assert (
+        product_facts_hash(transaction.proposal["intent"])
+        == transaction.intent_authority[PRODUCT_FACTS_HASH_KEY]
+    )
+    assert transaction.prewrite_package.proposal["intent"] == transaction.proposal["intent"]
+    assert (
+        product_facts_hash(transaction.prewrite_package.proposal["intent"])
+        == transaction.intent_authority[PRODUCT_FACTS_HASH_KEY]
+    )
+
+    drifted_proposal = json.loads(json.dumps(transaction.proposal))
+    drifted_proposal["intent"]["human_actors"] = [
+        "CITY STAFF: altered after the accepted intent was sealed"
+    ]
+    drifted_package = replace(transaction.prewrite_package, proposal=drifted_proposal)
+    drifted_build = greenfield_apply_prewrite.GreenfieldPrewriteBuild(
+        package=drifted_package,
+        backlog_result=transaction.backlog_result,
+    )
+    drifted_tribunal = greenfield_proposals.run_greenfield_tribunal(
+        drifted_proposal,
+        release_selector="0.0.1",
+    )
+    monkeypatch.setattr(
+        greenfield_proposals,
+        "_build_repaired_prewrite_package",
+        lambda **_kwargs: (
+            drifted_proposal,
+            drifted_tribunal,
+            drifted_build,
+            transaction.quality_manifest,
+        ),
+    )
+
+    rebound = compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+    )
+
+    assert rebound.proposal["intent"] == proposal["intent"]
+    assert rebound.prewrite_package.proposal["intent"] == proposal["intent"]
+
+
+def test_confirmed_proposal_preserves_exact_sealed_role_casing(tmp_path: Path) -> None:
+    _path, facts, authority = _recorded_authority(tmp_path)
+    confirmed_intent = {**facts, PRODUCT_INTENT_AUTHORITY_KEY: authority}
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Build the lab evidence review workspace.",
+        confirmed_intent=confirmed_intent,
+        require_completion_ready=False,
+    )
+
+    assert proposal["intent"]["human_actors"] == facts["human_actors"]
+    assert product_facts_hash(proposal["intent"]) == authority[PRODUCT_FACTS_HASH_KEY]
 
 
 def test_complete_edit_evidence_does_not_trigger_a_spurious_actor_clarification(tmp_path: Path) -> None:

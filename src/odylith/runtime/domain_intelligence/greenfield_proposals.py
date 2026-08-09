@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -37,8 +38,13 @@ from odylith.runtime.domain_intelligence.greenfield_create_transaction import re
 from odylith.runtime.domain_intelligence.greenfield_create_transaction import write_compiled_product_create_transaction_file
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_intent_authority_from_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    rebind_authoritative_product_facts,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
@@ -371,6 +377,12 @@ def build_greenfield_proposal(
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
     proposal = complete_greenfield_semantic_apply_payload(proposal, release_selector=release_selector)
     proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
+    proposal_intent = proposal.get("intent")
+    if isinstance(proposal_intent, Mapping):
+        proposal["intent"] = rebind_authoritative_product_facts(
+            proposal_intent,
+            authoritative_intent=confirmed_intent,
+        )
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
@@ -647,6 +659,15 @@ def compile_greenfield_create_transaction(
         raise ValueError("ProductCreateTransaction is missing confirmed Product Intent authority")
     intent_authority = dict(intent_authority)
     require_product_intent_authority(intent_authority)
+    authoritative_intent = proposal.get("intent")
+    if not isinstance(authoritative_intent, Mapping):
+        raise ValueError("ProductCreateTransaction proposal is missing typed Product Intent")
+    authority_facts_hash = str(intent_authority.get(PRODUCT_FACTS_HASH_KEY, "")).strip()
+    if product_facts_hash(authoritative_intent) != authority_facts_hash:
+        raise ValueError(
+            "ProductCreateTransaction proposal facts do not match its sealed Product Intent authority; "
+            "rebuild the transaction before showing CONFIRM"
+        )
     require_distinct_supplied_diagram_sources(proposal.get("diagrams"))
     proposal, tribunal, prewrite_build, quality_manifest = _build_repaired_prewrite_package(
         root=root,
@@ -658,7 +679,20 @@ def compile_greenfield_create_transaction(
     package_proposal = prewrite_build.package.proposal
     if isinstance(package_proposal, Mapping):
         proposal = dict(package_proposal)
+        proposal["intent"] = rebind_authoritative_product_facts(
+            proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {},
+            authoritative_intent=authoritative_intent,
+        )
         proposal[PRODUCT_INTENT_AUTHORITY_KEY] = intent_authority
+        tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
+        raise_for_failed_greenfield_tribunal(tribunal)
+        rebound_package = replace(
+            prewrite_build.package,
+            proposal=proposal,
+            tribunal_preview=tribunal.to_dict(),
+        )
+        assert_greenfield_package_ready(rebound_package)
+        prewrite_build = replace(prewrite_build, package=rebound_package)
     transaction = build_product_create_transaction(
         proposal=proposal,
         release_selector=release_selector,

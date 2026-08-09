@@ -330,6 +330,31 @@ def test_system_subject_carries_across_stream_and_following_actions() -> None:
     assert not any(step.startswith("Streams ") for step in steps)
 
 
+def test_delegated_human_action_does_not_steal_the_system_subject() -> None:
+    steps = first_path_steps(
+        "The product ranks alternatives, lets the traveler choose an option, "
+        "and stores the comparison evidence."
+    )
+
+    assert steps == (
+        "The product ranks alternatives",
+        "Let the traveler choose an option",
+        "The product stores the comparison evidence",
+    )
+
+
+def test_action_shaped_actor_role_still_owns_follow_on_actions() -> None:
+    steps = first_path_steps(
+        "Support engineers investigate failures, record findings, and publish proof."
+    )
+
+    assert steps == (
+        "Support engineers investigate failures",
+        "Support engineers record findings",
+        "Support engineers publish proof",
+    )
+
+
 def test_leading_purpose_context_is_preserved_on_first_action_step() -> None:
     steps = first_path_steps(
         "lead service-line abatement; intake household records, prioritize vulnerable sites, "

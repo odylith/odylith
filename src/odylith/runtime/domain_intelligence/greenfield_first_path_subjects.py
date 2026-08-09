@@ -291,10 +291,12 @@ def _looks_like_actor_prefix(value: str) -> bool:
 
 def _has_unowned_action_tail(value: str) -> bool:
     words = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
-    if words and looks_like_action_clause(f"{words[0]} placeholder") and not any(
-        looks_like_actor_role_term(word) for word in words[1:]
-    ):
-        return True
+    if words and looks_like_action_clause(f"{words[0]} placeholder"):
+        role_terms = words[1:]
+        if (len(words) > 1 and words[1] in {"a", "an", "the"}) or not any(
+            looks_like_actor_role_term(word) for word in role_terms
+        ):
+            return True
     for index in range(1, len(words)):
         token = words[index]
         if looks_like_actor_role_term(token):
