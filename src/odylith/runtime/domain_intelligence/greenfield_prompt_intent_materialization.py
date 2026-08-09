@@ -167,7 +167,7 @@ def materialize_prompt_intent_hypothesis(
         intent["human_actors"] = canonical_actor_rows
         source_first_path = prompt_intent_source(prompt).first_path if not raw_edit else ""
         if source_first_path and len(first_path_model(source_first_path).steps) >= 2:
-            intent["first_path"] = source_first_path.rstrip(" .") + "."
+            intent["first_path"] = _sentence_start(source_first_path).rstrip(" .") + "."
         else:
             intent["first_path"] = canonical_first_path_actor_reference(
                 project_label=domain_label(str(intent.get("title") or fallback_title), ""),

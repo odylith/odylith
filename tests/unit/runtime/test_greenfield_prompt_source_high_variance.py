@@ -587,7 +587,13 @@ def test_operational_constraints_keep_site_identifiers_separate_from_evidence() 
         "Keep carrier manifests as evidence."
     )
 
-    assert operational_constraint_phrases(prompt) == ("morning vessel call", "Pier 7", "Terminal A", "Room 12")
+    assert operational_constraint_phrases(prompt) == (
+        "morning vessel call",
+        "Pier 7",
+        "Terminal A",
+        "Room 12",
+        "Keep carrier manifests as evidence",
+    )
     assert operational_constraint_phrases("The owner reviews the vessel call on Pier 7 for Terminal A.") == (
         "Pier 7",
         "Terminal A",
@@ -597,6 +603,36 @@ def test_operational_constraints_keep_site_identifiers_separate_from_evidence() 
         "before noon",
     )
     assert "Pier 7" not in evidence_anchor_phrases(prompt)
+
+
+def test_operational_constraints_capture_positive_policy_without_absorbing_evidence() -> None:
+    prompt = (
+        "A vendor coordinator publishes an opening roster. Retain waitlist order. "
+        "The first release must preserve source versions. Keep carrier manifests as evidence."
+    )
+
+    assert operational_constraint_phrases(prompt) == (
+        "Retain waitlist order",
+        "The first release must preserve source versions",
+        "Keep carrier manifests as evidence",
+    )
+    assert prompt_intent_source(prompt).first_path == "A vendor coordinator publishes an opening roster"
+
+
+def test_policy_classifier_keeps_complete_paths_and_atomizes_compound_obligations() -> None:
+    valid_path = "Create a workflow tool where keep the shift log updated and show the open queue."
+    actor_policy = "A vendor coordinator publishes an opening roster. A vendor coordinator must retain waitlist order."
+    compound_policy = "The first release must preserve source versions and retain waitlist order."
+
+    assert prompt_intent_source(valid_path).first_path == "keep the shift log updated and show the open queue"
+    assert "must retain waitlist order" not in prompt_intent_source(actor_policy).first_path.casefold()
+    assert operational_constraint_phrases(actor_policy) == (
+        "A vendor coordinator must retain waitlist order",
+    )
+    assert operational_constraint_phrases(compound_policy) == (
+        "The first release must preserve source versions",
+        "retain waitlist order",
+    )
 
 
 def test_operational_constraints_are_editable_and_rendered_in_host_independent_fallback() -> None:

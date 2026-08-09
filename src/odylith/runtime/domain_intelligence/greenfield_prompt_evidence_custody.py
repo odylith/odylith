@@ -224,6 +224,11 @@ def looks_like_trailing_operator_instruction(value: str) -> bool:
     control_text = " ".join(words)
     if normalized.startswith(("do not ", "don't ", "make sure ", "ensure ")):
         return True
+    if (
+        "post-confirm" in words
+        and {"create", "finish", "governance", "artifact", "artifacts"}.intersection(words)
+    ):
+        return True
     if command not in REQUEST_COMMAND_WORDS | {"run", "execute", "install", "commit", "push", "edit", "reject"}:
         return False
     control_terms = {

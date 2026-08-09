@@ -5,6 +5,18 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import atomic_claim_units
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
+    contains_word_sense_metadata_clause,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import is_source_metadata_clause
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    looks_like_trailing_operator_instruction,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
@@ -35,10 +47,16 @@ _OPERATOR_PROCESS_WITHOUT_RE = re.compile(
     r"\bwithout\s+(?:asking|requesting|requiring)\b[^.;!?]*\b(?:confirm|confirmation)\b",
     flags=re.IGNORECASE,
 )
+_DIRECT_OBLIGATION_ACTIONS = frozenset({"keep", "preserve", "retain"})
+_OBLIGATION_MODALS = frozenset({"must", "required", "requires", "shall"})
+_NEGATIVE_OBLIGATION_WORDS = frozenset(
+    {"can't", "cannot", "forbidden", "never", "not", "prohibited", "without"}
+)
+_WORD_PUNCTUATION = str.maketrans({character: " " for character in ",.;:!?()[]{}\""})
 
 
 def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
-    """Return concrete site and time constraints that must remain visible in the first release."""
+    """Return source-stated obligations, sites, and times for the first release."""
 
     text = clean_text(value).strip(" .")
     matches = [
@@ -50,8 +68,33 @@ def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
     matches.extend(
         (match.start(), match.group("deadline")) for match in _DEADLINE_RE.finditer(text)
     )
+    matches.extend(
+        (max(0, text.casefold().find(constraint.casefold())), constraint)
+        for constraint in _positive_source_obligations(text)
+    )
     values = [value for _start, value in sorted(matches)]
     return _unique_constraints(values)
+
+
+def is_source_obligation_clause(value: Any) -> bool:
+    """Return whether a clause states policy rather than a user-path event."""
+
+    words = _constraint_words(clean_text(value).strip(" ."))
+    if not words or set(words) & _NEGATIVE_OBLIGATION_WORDS:
+        return False
+    if words[0] in _DIRECT_OBLIGATION_ACTIONS:
+        return True
+    modal_index = next(
+        (index for index, word in enumerate(words) if word in _OBLIGATION_MODALS),
+        -1,
+    )
+    if modal_index < 0:
+        return False
+    subject = " ".join(words[:modal_index])
+    modal_action = words[modal_index + 1] if modal_index + 1 < len(words) else ""
+    if modal_action in _DIRECT_OBLIGATION_ACTIONS:
+        return True
+    return not subject or not has_human_actor_signal(subject)
 
 
 def prohibited_product_phrases(value: Any) -> tuple[str, ...]:
@@ -129,6 +172,53 @@ def _constraint_values(value: Any) -> list[str]:
     return [clean_text(row).strip(" .") for row in rows if clean_text(row).strip(" .")]
 
 
+def _positive_source_obligations(value: str) -> tuple[str, ...]:
+    obligations: list[str] = []
+    for sentence in sentence_fragments(value):
+        text = clean_text(sentence).strip(" .")
+        if _is_non_product_control_sentence(text):
+            continue
+        units = atomic_claim_units(text)
+        children = units[1:]
+        child_obligations = tuple(unit for unit in children if is_source_obligation_clause(unit))
+        child_path_actions = tuple(
+            unit
+            for unit in children
+            if unit not in child_obligations and _is_path_action(unit)
+        )
+        if (
+            is_source_obligation_clause(text)
+            and len(child_obligations) <= 1
+            and not child_path_actions
+        ):
+            obligations.append(text)
+        else:
+            obligations.extend(child_obligations)
+    return _unique_constraints(obligations)
+
+
+def _constraint_words(value: str) -> tuple[str, ...]:
+    return tuple(
+        word.strip("'")
+        for word in value.casefold().translate(_WORD_PUNCTUATION).split()
+        if word.strip("'")
+    )
+
+
+def _is_path_action(value: str) -> bool:
+    model = first_path_model(value)
+    return bool(model.material_action or model.visible_outcome)
+
+
+def _is_non_product_control_sentence(value: str) -> bool:
+    return bool(
+        is_source_metadata_clause(value)
+        or contains_word_sense_metadata_clause(value)
+        or is_operator_review_lens_step(value)
+        or looks_like_trailing_operator_instruction(value)
+    )
+
+
 def _unique_constraints(values: list[str]) -> tuple[str, ...]:
     rows: list[str] = []
     seen: set[str] = set()
@@ -147,5 +237,6 @@ __all__ = [
     "operational_constraint_kind",
     "operational_constraint_phrases",
     "operational_constraints_after_first_path_edit",
+    "is_source_obligation_clause",
     "prohibited_product_phrases",
 ]

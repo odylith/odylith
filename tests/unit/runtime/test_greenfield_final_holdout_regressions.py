@@ -869,3 +869,39 @@ def test_project_and_radar_copy_is_complete_and_nonrepetitive(
     assert len(bodies) == len(set(body.casefold() for body in bodies))
     assert all(body.endswith((".", "?", "!")) for body in bodies)
     assert all(not body.casefold().endswith(("such as.", "plus.")) for body in bodies)
+
+
+def test_source_obligation_is_not_miscompiled_as_the_last_user_path_event(tmp_path: Path) -> None:
+    prompt = (
+        "Create a market stall desk. A vendor coordinator checks applications, consults the weather feed, "
+        "assigns an allocation receipt, and publishes an opening roster. Retain waitlist order. "
+        "Do not rank vendors by neighborhood or income."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Market Stall Desk",
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    first_path = str(intent["first_path"]).casefold()
+    constraints = [str(value).casefold() for value in intent["operational_constraints"]]
+    accepted_constraints = {
+        str(atom["normalized_value"]).casefold()
+        for atom in intent["product_intent_authority"]["atomic_facts"]
+        if "constraints" in atom["categories"] and atom["custody_state"] == "accepted_fact"
+    }
+    sequence = next(row for row in proposal["diagrams"] if row["title"] == "First Path Sequence")
+
+    assert "publishes an opening roster" in first_path
+    assert "retain waitlist order" not in first_path
+    assert "retain waitlist order" in constraints
+    assert "retain waitlist order" in accepted_constraints
+    assert "opening roster" in str(sequence["mermaid_source"]).casefold()
+    assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
