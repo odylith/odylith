@@ -1,0 +1,4343 @@
+{
+  "version": "odylith.greenfield.retired-holdout-regression.v1",
+  "disclosed": true,
+  "retired_from": {
+    "product_revision": "cf41046a9e4c9832d0352d455d70323290be9544",
+    "holdout_sha256": "2713e5b4cbd0abe0c7cc1e517c063c29ca3cdd029c2db5de764ecc8c03c9cfb5",
+    "evaluated_on": "2026-08-08"
+  },
+  "retirement_reason": "The one-shot release proof disclosed product and evaluation-harness failures; all cases are now regression evidence and cannot support an independent release claim.",
+  "claim_class": "blinded-independent-synthetic-holdout",
+  "provenance": {
+    "authoring_mode": "independent_synthetic",
+    "disclosure_status": "sealed_external",
+    "operating_envelope": "greenfield-evaluation-contract-v1",
+    "independently_authored": true,
+    "authoring_timing": "after implementation freeze and before first execution",
+    "implementation_execution_status": "not_executed",
+    "source_inputs": [
+      "tests/fixtures/greenfield-release-corpus/evaluation-splits.v1.json",
+      "/private/tmp/odylith-greenfield-final-holdout-20260808-v2.json"
+    ],
+    "case_content_reused_from_prior_holdout": false
+  },
+  "coverage": {
+    "declared_evidence_styles": [
+      "direct_request",
+      "edited_confirmation",
+      "pasted_brief",
+      "research_evidence",
+      "thin_request"
+    ],
+    "declared_host_profiles": [
+      "codex-deterministic-confirmation-v1",
+      "claude-deterministic-confirmation-v1",
+      "generic-proposal-only-v1"
+    ],
+    "declared_model_profiles": [
+      "provider-free-standard-v1",
+      "bounded-reasoning-standard-v1",
+      "lower-capability-safe-v1"
+    ],
+    "declared_complexity_dimensions": [
+      "evidence_bytes",
+      "documents",
+      "actors",
+      "state_objects",
+      "paths",
+      "external_systems",
+      "contradictions",
+      "ambiguities",
+      "safety_boundaries"
+    ],
+    "declared_domain_count_floor": 8,
+    "declared_clarification_case_floor": 6,
+    "declared_external_dependency_case_floor": 6,
+    "declared_metamorphic_group_floor": 4
+  },
+  "cases": [
+    {
+      "case_id": "gfh-20260808-v3-01",
+      "name": "wetland restoration register",
+      "prompt": "Create a wetland restoration register. Volunteer surveyors log transect visits; ecologists approve planting zones; grant officers release reimbursements after photo evidence is accepted. Retain water-quality readings for five years, do not rank volunteer teams, and use the watershed gauge service for basin readings.",
+      "required_terms": [
+        "wetland restoration register",
+        "transect visits",
+        "planting zones"
+      ],
+      "leakage_terms": [
+        "watershed gauge service",
+        "water-quality readings"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:wetland-restoration"
+      ],
+      "stressors": [
+        "external-dependency",
+        "multi-actor",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "metamorphic_group": "mg01",
+      "metamorphic_transform": "baseline"
+    },
+    {
+      "case_id": "gfh-20260808-v3-02",
+      "name": "wetland operations brief",
+      "prompt": "PASTED FIELD BRIEF\nProgram: wetland restoration register. Ecologists approve planting zones after volunteer surveyors log transect visits; grant officers release reimbursements only when photo evidence is accepted. The watershed gauge service supplies basin readings. Keep water-quality readings for five years. Do not rank volunteer teams.\nRequest: turn this brief into a proposal.",
+      "required_terms": [
+        "wetland restoration register",
+        "planting zones",
+        "photo evidence"
+      ],
+      "leakage_terms": [
+        "watershed gauge service",
+        "basin readings"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:bounded-reasoning-standard-v1",
+        "domain:wetland-restoration"
+      ],
+      "stressors": [
+        "pasted-brief",
+        "reordering",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "metamorphic_group": "mg01",
+      "metamorphic_transform": "brief_reorder"
+    },
+    {
+      "case_id": "gfh-20260808-v3-03",
+      "name": "wetland confirmed scope",
+      "prompt": "## Confirmed wetland scope\nKeep the wetland restoration register. Ecologists approve planting zones, volunteer surveyors log transect visits, and grant officers release reimbursements after accepted photo evidence. Added: coordinators may correct transect labels. The watershed gauge service supplies basin readings. Retain water-quality readings for five years; do not rank volunteer teams.",
+      "required_terms": [
+        "wetland restoration register",
+        "transect labels",
+        "accepted photo evidence"
+      ],
+      "leakage_terms": [
+        "watershed gauge service",
+        "grant officers"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:wetland-restoration"
+      ],
+      "stressors": [
+        "edited-confirmation",
+        "added-action",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "metamorphic_group": "mg01",
+      "metamorphic_transform": "confirmed_addition"
+    },
+    {
+      "case_id": "gfh-20260808-v3-04",
+      "name": "cold-chain pantry ledger",
+      "prompt": "Design a cold-chain pantry ledger. Intake clerks record donated lots; nutrition leads verify allergen labels; dispatch drivers hand out parcels after temperature checks. Retain lot temperatures for 18 months, never infer an allergen, and ingest readings from the refrigeration telemetry API.",
+      "required_terms": [
+        "cold-chain pantry ledger",
+        "donated lots",
+        "allergen labels"
+      ],
+      "leakage_terms": [
+        "refrigeration telemetry API",
+        "temperature checks"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:bounded-reasoning-standard-v1",
+        "domain:food-distribution"
+      ],
+      "stressors": [
+        "external-dependency",
+        "multi-step",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "metamorphic_group": "mg02",
+      "metamorphic_transform": "baseline"
+    },
+    {
+      "case_id": "gfh-20260808-v3-05",
+      "name": "cold-chain evidence brief",
+      "prompt": "PASTED DISTRIBUTION BRIEF\nThe cold-chain pantry ledger receives donated lots from intake clerks. Nutrition leads verify allergen labels before dispatch drivers hand out parcels. Temperature checks are the release gate. The refrigeration telemetry API is the source for readings. Retain lot temperatures for 18 months and never infer an allergen.\nDeliverable: a proposal with the custody path and release record.",
+      "required_terms": [
+        "cold-chain pantry ledger",
+        "allergen labels",
+        "custody path"
+      ],
+      "leakage_terms": [
+        "refrigeration telemetry API",
+        "release gate"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:food-distribution"
+      ],
+      "stressors": [
+        "pasted-brief",
+        "safety-boundary",
+        "evidence-custody"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "metamorphic_group": "mg02",
+      "metamorphic_transform": "detailed_brief"
+    },
+    {
+      "case_id": "gfh-20260808-v3-06",
+      "name": "cold-chain approved revision",
+      "prompt": "## Approved pantry revision\nKeep the cold-chain pantry ledger. Intake clerks record donated lots, nutrition leads verify allergen labels, and dispatch drivers hand out parcels after temperature checks. Changed: add a quarantine queue for failed checks. The refrigeration telemetry API supplies readings. Retain lot temperatures for 18 months; never infer an allergen.",
+      "required_terms": [
+        "cold-chain pantry ledger",
+        "quarantine queue",
+        "failed checks"
+      ],
+      "leakage_terms": [
+        "refrigeration telemetry API",
+        "lot temperatures"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:food-distribution"
+      ],
+      "stressors": [
+        "edited-confirmation",
+        "new-state",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "metamorphic_group": "mg02",
+      "metamorphic_transform": "approved_addition"
+    },
+    {
+      "case_id": "gfh-20260808-v3-07",
+      "name": "community theater consent conflict",
+      "prompt": "## Revision log\nCreate a community theater production register for directors, stage managers, and venue stewards. Earlier guidance says any rehearsal may be recorded. The later note says recordings require performer consent, but it does not say whether consent must be written or who may grant it for minors. Preserve rehearsal schedules, but do not enable recording until the consent standard and minor-approval authority are supplied.",
+      "required_terms": [
+        "community theater production register",
+        "performer consent",
+        "minor-approval authority"
+      ],
+      "leakage_terms": [
+        "rehearsal schedules",
+        "venue stewards"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:performing-arts"
+      ],
+      "stressors": [
+        "contradiction",
+        "material-ambiguity",
+        "fail-closed",
+        "safety-boundary"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "edited_confirmation",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-08",
+      "name": "public housing repair intake",
+      "prompt": "Create a public-housing repair intake. Residents submit issues; triage coordinators route them; licensed contractors close jobs after inspection. Use the municipal work-order gateway, retain inspection photos for four years, do not expose resident contact details, and keep emergency dispatch outside the first release.",
+      "required_terms": [
+        "public-housing repair intake",
+        "triage coordinators",
+        "inspection"
+      ],
+      "leakage_terms": [
+        "municipal work-order gateway",
+        "emergency dispatch"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:housing-maintenance"
+      ],
+      "stressors": [
+        "external-dependency",
+        "multi-actor",
+        "privacy-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-09",
+      "name": "mobile clinic referral brief",
+      "prompt": "PASTED CLINIC BRIEF\nIntake nurses capture referral requests. Social workers verify eligibility. Partner pharmacies confirm pickup. The insurer directory and pharmacy status feed are required external sources. Preserve referral consent timestamps, never choose medication or dosage, and send unresolved referrals to a human review queue.\nRequest: propose the mobile-clinic referral ledger.",
+      "required_terms": [
+        "mobile-clinic referral ledger",
+        "referral consent timestamps",
+        "human review queue"
+      ],
+      "leakage_terms": [
+        "insurer directory",
+        "pharmacy status feed"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:mobile-health"
+      ],
+      "stressors": [
+        "pasted-brief",
+        "external-dependency",
+        "medical-safety",
+        "multi-step"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-10",
+      "name": "observatory scheduling board",
+      "prompt": "Create an observatory scheduling board. Astronomers propose targets, telescope operators approve windows, and weather officers cancel runs when the sky monitor fails. Use the cloud observatory scheduler and sky monitor feed, retain approval history, and do not automatically publish target coordinates.",
+      "required_terms": [
+        "observatory scheduling board",
+        "approve windows",
+        "approval history"
+      ],
+      "leakage_terms": [
+        "cloud observatory scheduler",
+        "sky monitor feed"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:astronomy"
+      ],
+      "stressors": [
+        "external-dependency",
+        "multi-step",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "metamorphic_group": "mg03",
+      "metamorphic_transform": "baseline"
+    },
+    {
+      "case_id": "gfh-20260808-v3-11",
+      "name": "observatory research brief",
+      "prompt": "RESEARCH NOTE: OBSERVATORY OPERATIONS\nAstronomers propose targets before telescope operators approve windows. Weather officers cancel a run when the sky monitor fails. The cloud observatory scheduler and sky monitor feed are required systems. Keep approval history and never publish target coordinates automatically.\nRequest: turn the note into an observatory scheduling proposal.",
+      "required_terms": [
+        "observatory scheduling proposal",
+        "propose targets",
+        "cancel a run"
+      ],
+      "leakage_terms": [
+        "cloud observatory scheduler",
+        "required systems"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:astronomy"
+      ],
+      "stressors": [
+        "research-evidence",
+        "reordered-path",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "metamorphic_group": "mg03",
+      "metamorphic_transform": "research_restatement"
+    },
+    {
+      "case_id": "gfh-20260808-v3-12",
+      "name": "archive access conflict",
+      "prompt": "ARCHIVE RESEARCH PACKET\nArchivists catalog oral-history recordings; transcribers attach drafts; rights officers approve release. The first consent form permits educational access, while a later family letter limits access to family researchers. The transcript service may be used, but the controlling rights policy and precedence rule are missing. Preserve original audio and do not publish any transcript until those are supplied.\nDeliverable: propose the archive workflow.",
+      "required_terms": [
+        "oral-history recordings",
+        "precedence rule",
+        "archive workflow"
+      ],
+      "leakage_terms": [
+        "transcript service",
+        "original audio"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:bounded-reasoning-standard-v1",
+        "domain:oral-history"
+      ],
+      "stressors": [
+        "research-evidence",
+        "contradiction",
+        "material-ambiguity",
+        "privacy-boundary"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-13",
+      "name": "ferry maintenance research",
+      "prompt": "RESEARCH EVIDENCE: FERRY OPERATIONS\nDeck crews log defects. Mechanics attach repair certificates. Harbor supervisors reopen vessels after supervisor signoff. Engine hours come from the ferry telemetry service. Retain original defect notes, do not authorize passenger service without supervisor signoff, and produce a weekly readiness report.\nRequest: create the ferry maintenance register.",
+      "required_terms": [
+        "ferry maintenance register",
+        "repair certificates",
+        "weekly readiness report"
+      ],
+      "leakage_terms": [
+        "ferry telemetry service",
+        "passenger service"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:maritime-maintenance"
+      ],
+      "stressors": [
+        "research-evidence",
+        "external-dependency",
+        "compliance-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "metamorphic_group": "mg04",
+      "metamorphic_transform": "baseline"
+    },
+    {
+      "case_id": "gfh-20260808-v3-14",
+      "name": "ferry maintenance handoff",
+      "prompt": "PASTED FERRY HANDOFF\nSequence: deck crews log defects; mechanics attach repair certificates; harbor supervisors reopen vessels only after supervisor signoff. Engine hours come from the ferry telemetry service. Keep original defect notes. Do not authorize passenger service without supervisor signoff. Output a weekly readiness report.\nRequest: restate the register plan.",
+      "required_terms": [
+        "ferry handoff",
+        "reopen vessels",
+        "readiness report"
+      ],
+      "leakage_terms": [
+        "ferry telemetry service",
+        "original defect notes"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:maritime-maintenance"
+      ],
+      "stressors": [
+        "pasted-brief",
+        "multi-step",
+        "compliance-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "metamorphic_group": "mg04",
+      "metamorphic_transform": "handoff_restate"
+    },
+    {
+      "case_id": "gfh-20260808-v3-15",
+      "name": "ferry approved amendment",
+      "prompt": "## Ferry register amendment\nKeep the ferry maintenance register. Deck crews log defects, mechanics attach repair certificates, and harbor supervisors reopen vessels after supervisor signoff. The ferry telemetry service supplies engine hours. Added: a mechanic escalation queue. Retain original defect notes and produce a weekly readiness report. Do not authorize passenger service without supervisor signoff.",
+      "required_terms": [
+        "ferry maintenance register",
+        "mechanic escalation queue",
+        "supervisor signoff"
+      ],
+      "leakage_terms": [
+        "ferry telemetry service",
+        "weekly readiness report"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:bounded-reasoning-standard-v1",
+        "domain:maritime-maintenance"
+      ],
+      "stressors": [
+        "edited-confirmation",
+        "added-state",
+        "compliance-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "metamorphic_group": "mg04",
+      "metamorphic_transform": "amendment"
+    },
+    {
+      "case_id": "gfh-20260808-v3-16",
+      "name": "coral nursery evidence",
+      "prompt": "RESEARCH EVIDENCE\nField protocol: nursery technicians tag coral fragments, marine biologists approve outplant sites, and boat crews record deployment coordinates. The NOAA-style sensor archive supplies salinity history. Preserve chain-of-custody photos for ten years, do not predict survival rates, and flag missing coordinates for human review.\nProposal request: create the coral nursery evidence register.",
+      "required_terms": [
+        "coral nursery evidence register",
+        "coral fragments",
+        "outplant sites"
+      ],
+      "leakage_terms": [
+        "NOAA-style sensor archive",
+        "salinity history"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:marine-conservation"
+      ],
+      "stressors": [
+        "research-evidence",
+        "external-dependency",
+        "safety-boundary",
+        "domain-casing"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-17",
+      "name": "community radio rights packet",
+      "prompt": "RESEARCH PACKET: COMMUNITY RADIO\nProducers submit episode metadata, editors verify music licenses, and archivists retain master files. The transcript vendor is an external system. Keep license evidence for seven years, do not publish an episode with an unresolved rights flag, and route uncertain matches to a rights reviewer. Request: propose a community-radio archive.",
+      "required_terms": [
+        "community-radio archive",
+        "music licenses",
+        "unresolved rights flag"
+      ],
+      "leakage_terms": [
+        "transcript vendor",
+        "master files"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:community-radio"
+      ],
+      "stressors": [
+        "research-evidence",
+        "external-dependency",
+        "rights-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-18",
+      "name": "museum access contradiction",
+      "prompt": "RESEARCH FILE: MUSEUM LOAN\nRegistrars inventory objects, conservators attach condition reports, and lenders approve display. A signed loan form allows public display, but a later insurer addendum says display is restricted to accredited researchers. The collections portal is available, yet the controlling restriction and document-precedence rule are unspecified. Preserve both source documents and do not publish a display schedule until the restriction is resolved.\nRequest: design the museum-loan register.",
+      "required_terms": [
+        "museum-loan register",
+        "condition reports",
+        "document-precedence rule"
+      ],
+      "leakage_terms": [
+        "collections portal",
+        "source documents"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:bounded-reasoning-standard-v1",
+        "domain:museum-loans"
+      ],
+      "stressors": [
+        "research-evidence",
+        "contradiction",
+        "material-ambiguity",
+        "compliance-boundary"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-19",
+      "name": "observatory restatement",
+      "prompt": "## Restated observatory plan\nWeather officers cancel runs when the sky monitor fails; astronomers propose targets; telescope operators approve windows. The cloud observatory scheduler and sky monitor feed support the board. Retain approval history. Automatic publication of target coordinates is prohibited.",
+      "required_terms": [
+        "observatory plan",
+        "cancel runs",
+        "approve windows"
+      ],
+      "leakage_terms": [
+        "cloud observatory scheduler",
+        "target coordinates"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:astronomy"
+      ],
+      "stressors": [
+        "edited-confirmation",
+        "reordering",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "metamorphic_group": "mg03",
+      "metamorphic_transform": "reordered_restatement"
+    },
+    {
+      "case_id": "gfh-20260808-v3-20",
+      "name": "river allocation queue",
+      "prompt": "Set up a river-basin water allocation request queue. Farmers submit seasonal requests, hydrologists review measurements, and basin administrators issue allocations. The meter exchange is an external dependency. The priority rule between household use and crop use is not provided, and the drought override authority is unspecified; do not issue an allocation until both are confirmed.",
+      "required_terms": [
+        "river-basin water allocation request queue",
+        "priority rule",
+        "drought override authority"
+      ],
+      "leakage_terms": [
+        "meter exchange",
+        "seasonal requests"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:water-allocation"
+      ],
+      "stressors": [
+        "material-ambiguity",
+        "external-dependency",
+        "compliance-boundary",
+        "multi-actor"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "direct_request",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-21",
+      "name": "festival vendor scheduler",
+      "prompt": "Create a neighborhood festival vendor scheduler. Vendors need booth assignments and payment status, but the allocation rule and cancellation authority are unspecified.",
+      "required_terms": [
+        "neighborhood festival vendor scheduler",
+        "booth assignments",
+        "payment status"
+      ],
+      "leakage_terms": [
+        "allocation rule",
+        "cancellation authority"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:community-events"
+      ],
+      "stressors": [
+        "thin-request",
+        "material-ambiguity"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "metamorphic_group": "mg05",
+      "metamorphic_transform": "thin_baseline"
+    },
+    {
+      "case_id": "gfh-20260808-v3-22",
+      "name": "climbing club contact records",
+      "prompt": "Track volunteer waivers and emergency contacts for a climbing club. Decide the retention period and who may access the contacts. Do not choose either policy without the club's direction.",
+      "required_terms": [
+        "volunteer waivers",
+        "emergency contacts",
+        "retention period"
+      ],
+      "leakage_terms": [
+        "who may access the contacts",
+        "club's direction"
+      ],
+      "tags": [
+        "host-profile:codex-deterministic-confirmation-v1",
+        "model-profile:bounded-reasoning-standard-v1",
+        "domain:climbing-safety"
+      ],
+      "stressors": [
+        "thin-request",
+        "material-ambiguity",
+        "privacy-boundary"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "metamorphic_group": "mg05",
+      "metamorphic_transform": "thin_restatement"
+    },
+    {
+      "case_id": "gfh-20260808-v3-23",
+      "name": "teaching lab sample handoff",
+      "prompt": "Build a lab-sample handoff tracker for a teaching lab. Teaching lab staff record sample IDs and custody transfers. The biosafety owner and spill-response procedure are not supplied; do not authorize hazardous handling until they are named.",
+      "required_terms": [
+        "lab-sample handoff tracker",
+        "sample IDs",
+        "spill-response procedure"
+      ],
+      "leakage_terms": [
+        "biosafety owner",
+        "hazardous handling"
+      ],
+      "tags": [
+        "host-profile:claude-deterministic-confirmation-v1",
+        "model-profile:lower-capability-safe-v1",
+        "domain:teaching-laboratory"
+      ],
+      "stressors": [
+        "thin-request",
+        "material-ambiguity",
+        "safety-boundary"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    },
+    {
+      "case_id": "gfh-20260808-v3-24",
+      "name": "cooperative apartment repair queue",
+      "prompt": "Make a repair queue for a cooperative apartment building: tenants report leaks, caretakers assign work, and inspectors close tickets after a visit. Keep the inspection date, do not dispatch emergency crews, and use no external service.",
+      "required_terms": [
+        "cooperative apartment building",
+        "report leaks",
+        "inspection date"
+      ],
+      "leakage_terms": [
+        "emergency crews",
+        "use no external service"
+      ],
+      "tags": [
+        "host-profile:generic-proposal-only-v1",
+        "model-profile:provider-free-standard-v1",
+        "domain:property-maintenance"
+      ],
+      "stressors": [
+        "thin-request",
+        "multi-actor",
+        "safety-boundary"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "thin_request",
+      "metamorphic_group": null,
+      "metamorphic_transform": null
+    }
+  ],
+  "annotations": [
+    {
+      "case_id": "gfh-20260808-v3-01",
+      "prompt_sha256": "1b0463d34756261e458b1ecd62f940893f2bfe4c0bf505bea3d49ade3ab854b8",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "watershed gauge service"
+      ],
+      "critical_constraints": [
+        "Retain water-quality readings for five years"
+      ],
+      "complexity": {
+        "evidence_bytes": 317,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Volunteer surveyors",
+          "source_quote": "Volunteer surveyors",
+          "source_start": 39,
+          "source_end": 58,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "ecologists",
+          "source_quote": "ecologists",
+          "source_start": 80,
+          "source_end": 90,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "grant officers",
+          "source_quote": "grant officers",
+          "source_start": 115,
+          "source_end": 129,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "log transect visits",
+          "source_quote": "log transect visits",
+          "source_start": 59,
+          "source_end": 78,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "approve planting zones",
+          "source_quote": "approve planting zones",
+          "source_start": 91,
+          "source_end": 113,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "release reimbursements",
+          "source_quote": "release reimbursements",
+          "source_start": 130,
+          "source_end": 152,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "photo evidence",
+          "source_quote": "photo evidence",
+          "source_start": 159,
+          "source_end": 173,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "wetland restoration register",
+          "source_quote": "wetland restoration register",
+          "source_start": 9,
+          "source_end": 37,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain water-quality readings for five years",
+          "source_quote": "Retain water-quality readings for five years",
+          "source_start": 187,
+          "source_end": 231,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "watershed gauge service",
+          "source_quote": "watershed gauge service",
+          "source_start": 274,
+          "source_end": 297,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not rank volunteer teams",
+          "source_quote": "do not rank volunteer teams",
+          "source_start": 233,
+          "source_end": 260,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-11",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-02",
+      "prompt_sha256": "a483cb755bdbce39dd2a83f2b3991748581726b53a3fd58f70b0591362bb00fa",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "watershed gauge service"
+      ],
+      "critical_constraints": [
+        "Keep water-quality readings for five years"
+      ],
+      "complexity": {
+        "evidence_bytes": 382,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Ecologists",
+          "source_quote": "Ecologists",
+          "source_start": 58,
+          "source_end": 68,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "volunteer surveyors",
+          "source_quote": "volunteer surveyors",
+          "source_start": 98,
+          "source_end": 117,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "grant officers",
+          "source_quote": "grant officers",
+          "source_start": 139,
+          "source_end": 153,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "approve planting zones",
+          "source_quote": "approve planting zones",
+          "source_start": 69,
+          "source_end": 91,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "log transect visits",
+          "source_quote": "log transect visits",
+          "source_start": 118,
+          "source_end": 137,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "release reimbursements",
+          "source_quote": "release reimbursements",
+          "source_start": 154,
+          "source_end": 176,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "photo evidence",
+          "source_quote": "photo evidence",
+          "source_start": 187,
+          "source_end": 201,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "wetland restoration register",
+          "source_quote": "wetland restoration register",
+          "source_start": 28,
+          "source_end": 56,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Keep water-quality readings for five years",
+          "source_quote": "Keep water-quality readings for five years",
+          "source_start": 268,
+          "source_end": 310,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "watershed gauge service",
+          "source_quote": "watershed gauge service",
+          "source_start": 219,
+          "source_end": 242,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "Do not rank volunteer teams",
+          "source_quote": "Do not rank volunteer teams",
+          "source_start": 312,
+          "source_end": 339,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-11",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-03",
+      "prompt_sha256": "9e4c0f650aeef7951263f68607b91d46dbbede7c62cc24110fc9df62636c2bc1",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "watershed gauge service"
+      ],
+      "critical_constraints": [
+        "Retain water-quality readings for five years"
+      ],
+      "complexity": {
+        "evidence_bytes": 391,
+        "documents": 1,
+        "actors": 4,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Ecologists",
+          "source_quote": "Ecologists",
+          "source_start": 66,
+          "source_end": 76,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "volunteer surveyors",
+          "source_quote": "volunteer surveyors",
+          "source_start": 101,
+          "source_end": 120,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "grant officers",
+          "source_quote": "grant officers",
+          "source_start": 146,
+          "source_end": 160,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        },
+        {
+          "value": "coordinators",
+          "source_quote": "coordinators",
+          "source_start": 222,
+          "source_end": 234,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-4"
+        }
+      ],
+      "actions": [
+        {
+          "value": "approve planting zones",
+          "source_quote": "approve planting zones",
+          "source_start": 77,
+          "source_end": 99,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "log transect visits",
+          "source_quote": "log transect visits",
+          "source_start": 121,
+          "source_end": 140,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        },
+        {
+          "value": "release reimbursements",
+          "source_quote": "release reimbursements",
+          "source_start": 161,
+          "source_end": 183,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-7"
+        },
+        {
+          "value": "correct transect labels",
+          "source_quote": "correct transect labels",
+          "source_start": 239,
+          "source_end": 262,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-8"
+        }
+      ],
+      "states": [
+        {
+          "value": "accepted photo evidence",
+          "source_quote": "accepted photo evidence",
+          "source_start": 190,
+          "source_end": 213,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-9"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "wetland restoration register",
+          "source_quote": "wetland restoration register",
+          "source_start": 36,
+          "source_end": 64,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-10"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain water-quality readings for five years",
+          "source_quote": "Retain water-quality readings for five years",
+          "source_start": 317,
+          "source_end": 361,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-11",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "watershed gauge service",
+          "source_quote": "watershed gauge service",
+          "source_start": 268,
+          "source_end": 291,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-12"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not rank volunteer teams",
+          "source_quote": "do not rank volunteer teams",
+          "source_start": 363,
+          "source_end": 390,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-13",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-04",
+      "prompt_sha256": "9758dab8c7a9a2fea2d272f94c292b7dbe1755a6b126857d9e91212134d6e1fe",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "refrigeration telemetry API"
+      ],
+      "critical_constraints": [
+        "Retain lot temperatures for 18 months"
+      ],
+      "complexity": {
+        "evidence_bytes": 291,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Intake clerks",
+          "source_quote": "Intake clerks",
+          "source_start": 35,
+          "source_end": 48,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "nutrition leads",
+          "source_quote": "nutrition leads",
+          "source_start": 70,
+          "source_end": 85,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "dispatch drivers",
+          "source_quote": "dispatch drivers",
+          "source_start": 110,
+          "source_end": 126,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "record donated lots",
+          "source_quote": "record donated lots",
+          "source_start": 49,
+          "source_end": 68,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "verify allergen labels",
+          "source_quote": "verify allergen labels",
+          "source_start": 86,
+          "source_end": 108,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "hand out parcels",
+          "source_quote": "hand out parcels",
+          "source_start": 127,
+          "source_end": 143,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "temperature checks",
+          "source_quote": "temperature checks",
+          "source_start": 150,
+          "source_end": 168,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "cold-chain pantry ledger",
+          "source_quote": "cold-chain pantry ledger",
+          "source_start": 9,
+          "source_end": 33,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain lot temperatures for 18 months",
+          "source_quote": "Retain lot temperatures for 18 months",
+          "source_start": 170,
+          "source_end": 207,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "refrigeration telemetry API",
+          "source_quote": "refrigeration telemetry API",
+          "source_start": 263,
+          "source_end": 290,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "never infer an allergen",
+          "source_quote": "never infer an allergen",
+          "source_start": 209,
+          "source_end": 232,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-11",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-05",
+      "prompt_sha256": "d5de5772e943dcaf4ee124a3f5290139b15b9c9bb71a2038efb22ee9321b6f12",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "refrigeration telemetry API"
+      ],
+      "critical_constraints": [
+        "Retain lot temperatures for 18 months"
+      ],
+      "complexity": {
+        "evidence_bytes": 411,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "intake clerks",
+          "source_quote": "intake clerks",
+          "source_start": 82,
+          "source_end": 95,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "Nutrition leads",
+          "source_quote": "Nutrition leads",
+          "source_start": 97,
+          "source_end": 112,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "dispatch drivers",
+          "source_quote": "dispatch drivers",
+          "source_start": 143,
+          "source_end": 159,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "receives donated lots",
+          "source_quote": "receives donated lots",
+          "source_start": 55,
+          "source_end": 76,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "verify allergen labels",
+          "source_quote": "verify allergen labels",
+          "source_start": 113,
+          "source_end": 135,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "hand out parcels",
+          "source_quote": "hand out parcels",
+          "source_start": 160,
+          "source_end": 176,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "Temperature checks",
+          "source_quote": "Temperature checks",
+          "source_start": 178,
+          "source_end": 196,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "custody path",
+          "source_quote": "custody path",
+          "source_start": 379,
+          "source_end": 391,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        },
+        {
+          "value": "release record",
+          "source_quote": "release record",
+          "source_start": 396,
+          "source_end": 410,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-9"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain lot temperatures for 18 months",
+          "source_quote": "Retain lot temperatures for 18 months",
+          "source_start": 279,
+          "source_end": 316,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-10",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "refrigeration telemetry API",
+          "source_quote": "refrigeration telemetry API",
+          "source_start": 223,
+          "source_end": 250,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-11"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "never infer an allergen",
+          "source_quote": "never infer an allergen",
+          "source_start": 321,
+          "source_end": 344,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-06",
+      "prompt_sha256": "799ab947a881a4e4d72af61794ec247573229c5b9c43435f9d8ade2a9b5452c6",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "refrigeration telemetry API"
+      ],
+      "critical_constraints": [
+        "Retain lot temperatures for 18 months"
+      ],
+      "complexity": {
+        "evidence_bytes": 367,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 2,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Intake clerks",
+          "source_quote": "Intake clerks",
+          "source_start": 63,
+          "source_end": 76,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "nutrition leads",
+          "source_quote": "nutrition leads",
+          "source_start": 98,
+          "source_end": 113,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "dispatch drivers",
+          "source_quote": "dispatch drivers",
+          "source_start": 142,
+          "source_end": 158,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "record donated lots",
+          "source_quote": "record donated lots",
+          "source_start": 77,
+          "source_end": 96,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "verify allergen labels",
+          "source_quote": "verify allergen labels",
+          "source_start": 114,
+          "source_end": 136,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "hand out parcels",
+          "source_quote": "hand out parcels",
+          "source_start": 159,
+          "source_end": 175,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        },
+        {
+          "value": "add a quarantine queue",
+          "source_quote": "add a quarantine queue",
+          "source_start": 211,
+          "source_end": 233,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-7"
+        }
+      ],
+      "states": [
+        {
+          "value": "temperature checks",
+          "source_quote": "temperature checks",
+          "source_start": 182,
+          "source_end": 200,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-8"
+        },
+        {
+          "value": "quarantine queue",
+          "source_quote": "quarantine queue",
+          "source_start": 217,
+          "source_end": 233,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-9"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "cold-chain pantry ledger",
+          "source_quote": "cold-chain pantry ledger",
+          "source_start": 37,
+          "source_end": 61,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-10"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain lot temperatures for 18 months",
+          "source_quote": "Retain lot temperatures for 18 months",
+          "source_start": 304,
+          "source_end": 341,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-11",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "refrigeration telemetry API",
+          "source_quote": "refrigeration telemetry API",
+          "source_start": 257,
+          "source_end": 284,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-12"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "never infer an allergen",
+          "source_quote": "never infer an allergen",
+          "source_start": 343,
+          "source_end": 366,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-13",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-07",
+      "prompt_sha256": "d2ea94f7d7a851e81307d1754170276deacba9819c618d57a8d1a9f7f9b35cf0",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "consent standard",
+        "minor-approval authority"
+      ],
+      "explicit_systems": [],
+      "critical_constraints": [],
+      "complexity": {
+        "evidence_bytes": 436,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 0,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "directors",
+          "source_quote": "directors",
+          "source_start": 67,
+          "source_end": 76,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "stage managers",
+          "source_quote": "stage managers",
+          "source_start": 78,
+          "source_end": 92,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "venue stewards",
+          "source_quote": "venue stewards",
+          "source_start": 98,
+          "source_end": 112,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "recorded",
+          "source_quote": "recorded",
+          "source_start": 157,
+          "source_end": 165,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "Preserve rehearsal schedules",
+          "source_quote": "Preserve rehearsal schedules",
+          "source_start": 309,
+          "source_end": 337,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        }
+      ],
+      "states": [
+        {
+          "value": "rehearsal schedules",
+          "source_quote": "rehearsal schedules",
+          "source_start": 318,
+          "source_end": 337,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-6"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "community theater production register",
+          "source_quote": "community theater production register",
+          "source_start": 25,
+          "source_end": 62,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-7"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "it does not say whether consent must be written or who may grant it for minors",
+          "source_quote": "it does not say whether consent must be written or who may grant it for minors",
+          "source_start": 229,
+          "source_end": 307,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-8"
+        }
+      ],
+      "non_goals": [
+        {
+          "value": "do not enable recording",
+          "source_quote": "do not enable recording",
+          "source_start": 343,
+          "source_end": 366,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-9",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "value": "consent standard",
+          "source_quote": "consent standard",
+          "source_start": 377,
+          "source_end": 393,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-10"
+        },
+        {
+          "value": "minor-approval authority",
+          "source_quote": "minor-approval authority",
+          "source_start": 398,
+          "source_end": 422,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-11"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-08",
+      "prompt_sha256": "fc9601e6ab5e4047c8a2db4e8ced180e92cc2b2c435ab0c4b0a3f20f828f5215",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "municipal work-order gateway"
+      ],
+      "critical_constraints": [
+        "retain inspection photos for four years"
+      ],
+      "complexity": {
+        "evidence_bytes": 319,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Residents",
+          "source_quote": "Residents",
+          "source_start": 39,
+          "source_end": 48,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "triage coordinators",
+          "source_quote": "triage coordinators",
+          "source_start": 64,
+          "source_end": 83,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "licensed contractors",
+          "source_quote": "licensed contractors",
+          "source_start": 96,
+          "source_end": 116,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "submit issues",
+          "source_quote": "submit issues",
+          "source_start": 49,
+          "source_end": 62,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "route them",
+          "source_quote": "route them",
+          "source_start": 84,
+          "source_end": 94,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "close jobs after inspection",
+          "source_quote": "close jobs after inspection",
+          "source_start": 117,
+          "source_end": 144,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "inspection photos",
+          "source_quote": "inspection photos",
+          "source_start": 191,
+          "source_end": 208,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "public-housing repair intake",
+          "source_quote": "public-housing repair intake",
+          "source_start": 9,
+          "source_end": 37,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "retain inspection photos for four years",
+          "source_quote": "retain inspection photos for four years",
+          "source_start": 184,
+          "source_end": 223,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        },
+        {
+          "value": "keep emergency dispatch outside the first release",
+          "source_quote": "keep emergency dispatch outside the first release",
+          "source_start": 269,
+          "source_end": 318,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-10",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "municipal work-order gateway",
+          "source_quote": "municipal work-order gateway",
+          "source_start": 154,
+          "source_end": 182,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not expose resident contact details",
+          "source_quote": "do not expose resident contact details",
+          "source_start": 225,
+          "source_end": 263,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-11",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-09",
+      "prompt_sha256": "0f45926e8189b61695ad513f1c790be661e1fe5f7897d72a372c4ffe5d046283",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "insurer directory",
+        "pharmacy status feed"
+      ],
+      "critical_constraints": [
+        "Preserve referral consent timestamps"
+      ],
+      "complexity": {
+        "evidence_bytes": 388,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 2,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Intake nurses",
+          "source_quote": "Intake nurses",
+          "source_start": 20,
+          "source_end": 33,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "Social workers",
+          "source_quote": "Social workers",
+          "source_start": 61,
+          "source_end": 75,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "Partner pharmacies",
+          "source_quote": "Partner pharmacies",
+          "source_start": 96,
+          "source_end": 114,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "capture referral requests",
+          "source_quote": "capture referral requests",
+          "source_start": 34,
+          "source_end": 59,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "verify eligibility",
+          "source_quote": "verify eligibility",
+          "source_start": 76,
+          "source_end": 94,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "confirm pickup",
+          "source_quote": "confirm pickup",
+          "source_start": 115,
+          "source_end": 129,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        },
+        {
+          "value": "send unresolved referrals to a human review queue",
+          "source_quote": "send unresolved referrals to a human review queue",
+          "source_start": 286,
+          "source_end": 335,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-7"
+        }
+      ],
+      "states": [
+        {
+          "value": "referral consent timestamps",
+          "source_quote": "referral consent timestamps",
+          "source_start": 218,
+          "source_end": 245,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-8"
+        },
+        {
+          "value": "unresolved referrals",
+          "source_quote": "unresolved referrals",
+          "source_start": 291,
+          "source_end": 311,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-9"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "mobile-clinic referral ledger",
+          "source_quote": "mobile-clinic referral ledger",
+          "source_start": 358,
+          "source_end": 387,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-10"
+        },
+        {
+          "value": "human review queue",
+          "source_quote": "human review queue",
+          "source_start": 317,
+          "source_end": 335,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-11"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Preserve referral consent timestamps",
+          "source_quote": "Preserve referral consent timestamps",
+          "source_start": 209,
+          "source_end": 245,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-12",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "insurer directory",
+          "source_quote": "insurer directory",
+          "source_start": 135,
+          "source_end": 152,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-13"
+        },
+        {
+          "value": "pharmacy status feed",
+          "source_quote": "pharmacy status feed",
+          "source_start": 157,
+          "source_end": 177,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-14"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "never choose medication or dosage",
+          "source_quote": "never choose medication or dosage",
+          "source_start": 247,
+          "source_end": 280,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-15",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-10",
+      "prompt_sha256": "603e711d7de993bfa845544045dff3892e04e9101082266ae59b1ad1d3791da6",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "cloud observatory scheduler",
+        "sky monitor feed"
+      ],
+      "critical_constraints": [
+        "retain approval history"
+      ],
+      "complexity": {
+        "evidence_bytes": 302,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Astronomers",
+          "source_quote": "Astronomers",
+          "source_start": 40,
+          "source_end": 51,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "telescope operators",
+          "source_quote": "telescope operators",
+          "source_start": 69,
+          "source_end": 88,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "weather officers",
+          "source_quote": "weather officers",
+          "source_start": 110,
+          "source_end": 126,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "propose targets",
+          "source_quote": "propose targets",
+          "source_start": 52,
+          "source_end": 67,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "approve windows",
+          "source_quote": "approve windows",
+          "source_start": 89,
+          "source_end": 104,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "cancel runs",
+          "source_quote": "cancel runs",
+          "source_start": 127,
+          "source_end": 138,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "approval history",
+          "source_quote": "approval history",
+          "source_start": 232,
+          "source_end": 248,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "observatory scheduling board",
+          "source_quote": "observatory scheduling board",
+          "source_start": 10,
+          "source_end": 38,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "retain approval history",
+          "source_quote": "retain approval history",
+          "source_start": 225,
+          "source_end": 248,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "cloud observatory scheduler",
+          "source_quote": "cloud observatory scheduler",
+          "source_start": 175,
+          "source_end": 202,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        },
+        {
+          "value": "sky monitor feed",
+          "source_quote": "sky monitor feed",
+          "source_start": 207,
+          "source_end": 223,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-11"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not automatically publish target coordinates",
+          "source_quote": "do not automatically publish target coordinates",
+          "source_start": 254,
+          "source_end": 301,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-11",
+      "prompt_sha256": "a379a0cf08231fe96e2936669cc9c525cb54bbb5040570d58cffbe9d9a79e263",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "cloud observatory scheduler",
+        "sky monitor feed"
+      ],
+      "critical_constraints": [
+        "Keep approval history"
+      ],
+      "complexity": {
+        "evidence_bytes": 380,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Astronomers",
+          "source_quote": "Astronomers",
+          "source_start": 38,
+          "source_end": 49,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "telescope operators",
+          "source_quote": "telescope operators",
+          "source_start": 73,
+          "source_end": 92,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "Weather officers",
+          "source_quote": "Weather officers",
+          "source_start": 110,
+          "source_end": 126,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "propose targets",
+          "source_quote": "propose targets",
+          "source_start": 50,
+          "source_end": 65,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "approve windows",
+          "source_quote": "approve windows",
+          "source_start": 93,
+          "source_end": 108,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "cancel a run",
+          "source_quote": "cancel a run",
+          "source_start": 127,
+          "source_end": 139,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "approval history",
+          "source_quote": "approval history",
+          "source_start": 248,
+          "source_end": 264,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "observatory scheduling proposal",
+          "source_quote": "observatory scheduling proposal",
+          "source_start": 348,
+          "source_end": 379,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Keep approval history",
+          "source_quote": "Keep approval history",
+          "source_start": 243,
+          "source_end": 264,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "cloud observatory scheduler",
+          "source_quote": "cloud observatory scheduler",
+          "source_start": 172,
+          "source_end": 199,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        },
+        {
+          "value": "sky monitor feed",
+          "source_quote": "sky monitor feed",
+          "source_start": 204,
+          "source_end": 220,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-11"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "never publish target coordinates automatically",
+          "source_quote": "never publish target coordinates automatically",
+          "source_start": 269,
+          "source_end": 315,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-12",
+      "prompt_sha256": "4ceb23e3d2282beb74c9ea2840310fe9c1d031919517979ed5f632b5b0d9d5dc",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "controlling rights policy",
+        "precedence rule"
+      ],
+      "explicit_systems": [
+        "transcript service"
+      ],
+      "critical_constraints": [
+        "Preserve original audio"
+      ],
+      "complexity": {
+        "evidence_bytes": 474,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Archivists",
+          "source_quote": "Archivists",
+          "source_start": 24,
+          "source_end": 34,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "transcribers",
+          "source_quote": "transcribers",
+          "source_start": 68,
+          "source_end": 80,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "rights officers",
+          "source_quote": "rights officers",
+          "source_start": 96,
+          "source_end": 111,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "catalog oral-history recordings",
+          "source_quote": "catalog oral-history recordings",
+          "source_start": 35,
+          "source_end": 66,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "attach drafts",
+          "source_quote": "attach drafts",
+          "source_start": 81,
+          "source_end": 94,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "approve release",
+          "source_quote": "approve release",
+          "source_start": 112,
+          "source_end": 127,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "original audio",
+          "source_quote": "original audio",
+          "source_start": 357,
+          "source_end": 371,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "archive workflow",
+          "source_quote": "archive workflow",
+          "source_start": 457,
+          "source_end": 473,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Preserve original audio",
+          "source_quote": "Preserve original audio",
+          "source_start": 348,
+          "source_end": 371,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "transcript service",
+          "source_quote": "transcript service",
+          "source_start": 249,
+          "source_end": 267,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "the controlling rights policy and precedence rule are missing",
+          "source_quote": "the controlling rights policy and precedence rule are missing",
+          "source_start": 285,
+          "source_end": 346,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-11"
+        }
+      ],
+      "non_goals": [
+        {
+          "value": "do not publish any transcript",
+          "source_quote": "do not publish any transcript",
+          "source_start": 376,
+          "source_end": 405,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "value": "controlling rights policy",
+          "source_quote": "controlling rights policy",
+          "source_start": 289,
+          "source_end": 314,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-13"
+        },
+        {
+          "value": "precedence rule",
+          "source_quote": "precedence rule",
+          "source_start": 319,
+          "source_end": 334,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-14"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-13",
+      "prompt_sha256": "36dd066df9973c5cbd05aa8eec5e2e1eaae324e4dffc78025abdf3924bbb902c",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "ferry telemetry service"
+      ],
+      "critical_constraints": [
+        "Retain original defect notes"
+      ],
+      "complexity": {
+        "evidence_bytes": 389,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Deck crews",
+          "source_quote": "Deck crews",
+          "source_start": 36,
+          "source_end": 46,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "Mechanics",
+          "source_quote": "Mechanics",
+          "source_start": 60,
+          "source_end": 69,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "Harbor supervisors",
+          "source_quote": "Harbor supervisors",
+          "source_start": 98,
+          "source_end": 116,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "log defects",
+          "source_quote": "log defects",
+          "source_start": 47,
+          "source_end": 58,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "attach repair certificates",
+          "source_quote": "attach repair certificates",
+          "source_start": 70,
+          "source_end": 96,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "reopen vessels after supervisor signoff",
+          "source_quote": "reopen vessels after supervisor signoff",
+          "source_start": 117,
+          "source_end": 156,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "repair certificates",
+          "source_quote": "repair certificates",
+          "source_start": 77,
+          "source_end": 96,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "ferry maintenance register",
+          "source_quote": "ferry maintenance register",
+          "source_start": 362,
+          "source_end": 388,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        },
+        {
+          "value": "weekly readiness report",
+          "source_quote": "weekly readiness report",
+          "source_start": 317,
+          "source_end": 340,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-9"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain original defect notes",
+          "source_quote": "Retain original defect notes",
+          "source_start": 210,
+          "source_end": 238,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-10",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "ferry telemetry service",
+          "source_quote": "ferry telemetry service",
+          "source_start": 185,
+          "source_end": 208,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-11"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not authorize passenger service without supervisor signoff",
+          "source_quote": "do not authorize passenger service without supervisor signoff",
+          "source_start": 240,
+          "source_end": 301,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-14",
+      "prompt_sha256": "2a8e0011032a831b56f77e3c8d48e0570e037707cad0e60d00dbf5001c78fd32",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "ferry telemetry service"
+      ],
+      "critical_constraints": [
+        "Keep original defect notes"
+      ],
+      "complexity": {
+        "evidence_bytes": 370,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "deck crews",
+          "source_quote": "deck crews",
+          "source_start": 31,
+          "source_end": 41,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "mechanics",
+          "source_quote": "mechanics",
+          "source_start": 55,
+          "source_end": 64,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "harbor supervisors",
+          "source_quote": "harbor supervisors",
+          "source_start": 93,
+          "source_end": 111,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "log defects",
+          "source_quote": "log defects",
+          "source_start": 42,
+          "source_end": 53,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "attach repair certificates",
+          "source_quote": "attach repair certificates",
+          "source_start": 65,
+          "source_end": 91,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "reopen vessels only after supervisor signoff",
+          "source_quote": "reopen vessels only after supervisor signoff",
+          "source_start": 112,
+          "source_end": 156,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "original defect notes",
+          "source_quote": "original defect notes",
+          "source_start": 215,
+          "source_end": 236,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "weekly readiness report",
+          "source_quote": "weekly readiness report",
+          "source_start": 310,
+          "source_end": 333,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Keep original defect notes",
+          "source_quote": "Keep original defect notes",
+          "source_start": 210,
+          "source_end": 236,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "ferry telemetry service",
+          "source_quote": "ferry telemetry service",
+          "source_start": 185,
+          "source_end": 208,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "Do not authorize passenger service without supervisor signoff",
+          "source_quote": "Do not authorize passenger service without supervisor signoff",
+          "source_start": 238,
+          "source_end": 299,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-11",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-15",
+      "prompt_sha256": "6d93972dda80c28a736cea8c6089ee08b519d5ff61ae63bab257792913c3b6b4",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "ferry telemetry service"
+      ],
+      "critical_constraints": [
+        "Retain original defect notes"
+      ],
+      "complexity": {
+        "evidence_bytes": 408,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 2,
+        "paths": 3,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Deck crews",
+          "source_quote": "Deck crews",
+          "source_start": 65,
+          "source_end": 75,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "mechanics",
+          "source_quote": "mechanics",
+          "source_start": 89,
+          "source_end": 98,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "harbor supervisors",
+          "source_quote": "harbor supervisors",
+          "source_start": 131,
+          "source_end": 149,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "log defects",
+          "source_quote": "log defects",
+          "source_start": 76,
+          "source_end": 87,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "attach repair certificates",
+          "source_quote": "attach repair certificates",
+          "source_start": 99,
+          "source_end": 125,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "reopen vessels after supervisor signoff",
+          "source_quote": "reopen vessels after supervisor signoff",
+          "source_start": 150,
+          "source_end": 189,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        },
+        {
+          "value": "mechanic escalation queue",
+          "source_quote": "mechanic escalation queue",
+          "source_start": 251,
+          "source_end": 276,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-7"
+        }
+      ],
+      "states": [
+        {
+          "value": "repair certificates",
+          "source_quote": "repair certificates",
+          "source_start": 106,
+          "source_end": 125,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-8"
+        },
+        {
+          "value": "mechanic escalation queue",
+          "source_quote": "mechanic escalation queue",
+          "source_start": 251,
+          "source_end": 276,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-9"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "ferry maintenance register",
+          "source_quote": "ferry maintenance register",
+          "source_start": 37,
+          "source_end": 63,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-10"
+        },
+        {
+          "value": "weekly readiness report",
+          "source_quote": "weekly readiness report",
+          "source_start": 321,
+          "source_end": 344,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-11"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain original defect notes",
+          "source_quote": "Retain original defect notes",
+          "source_start": 278,
+          "source_end": 306,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-12",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "ferry telemetry service",
+          "source_quote": "ferry telemetry service",
+          "source_start": 195,
+          "source_end": 218,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-13"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "Do not authorize passenger service without supervisor signoff",
+          "source_quote": "Do not authorize passenger service without supervisor signoff",
+          "source_start": 346,
+          "source_end": 407,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-14",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-16",
+      "prompt_sha256": "b6945fdb870f54b764f3147b5bb5646456b70d35047a29d5503d196491019bd6",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "NOAA-style sensor archive"
+      ],
+      "critical_constraints": [
+        "Preserve chain-of-custody photos for ten years"
+      ],
+      "complexity": {
+        "evidence_bytes": 407,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 2,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "nursery technicians",
+          "source_quote": "nursery technicians",
+          "source_start": 34,
+          "source_end": 53,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "marine biologists",
+          "source_quote": "marine biologists",
+          "source_start": 75,
+          "source_end": 92,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "boat crews",
+          "source_quote": "boat crews",
+          "source_start": 121,
+          "source_end": 131,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "tag coral fragments",
+          "source_quote": "tag coral fragments",
+          "source_start": 54,
+          "source_end": 73,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "approve outplant sites",
+          "source_quote": "approve outplant sites",
+          "source_start": 93,
+          "source_end": 115,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "record deployment coordinates",
+          "source_quote": "record deployment coordinates",
+          "source_start": 132,
+          "source_end": 161,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        },
+        {
+          "value": "flag missing coordinates for human review",
+          "source_quote": "flag missing coordinates for human review",
+          "source_start": 303,
+          "source_end": 344,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-7"
+        }
+      ],
+      "states": [
+        {
+          "value": "salinity history",
+          "source_quote": "salinity history",
+          "source_start": 202,
+          "source_end": 218,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-8"
+        },
+        {
+          "value": "deployment coordinates",
+          "source_quote": "deployment coordinates",
+          "source_start": 139,
+          "source_end": 161,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-9"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "coral nursery evidence register",
+          "source_quote": "coral nursery evidence register",
+          "source_start": 375,
+          "source_end": 406,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-10"
+        },
+        {
+          "value": "human review",
+          "source_quote": "human review",
+          "source_start": 332,
+          "source_end": 344,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-11"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Preserve chain-of-custody photos for ten years",
+          "source_quote": "Preserve chain-of-custody photos for ten years",
+          "source_start": 220,
+          "source_end": 266,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-12",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "NOAA-style sensor archive",
+          "source_quote": "NOAA-style sensor archive",
+          "source_start": 167,
+          "source_end": 192,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-13"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not predict survival rates",
+          "source_quote": "do not predict survival rates",
+          "source_start": 268,
+          "source_end": 297,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-14",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-17",
+      "prompt_sha256": "e1809f2d57bd9597c45cd1705211d006f54eec6ffc723e0fa259b7697f853d55",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "transcript vendor"
+      ],
+      "critical_constraints": [
+        "Keep license evidence for seven years"
+      ],
+      "complexity": {
+        "evidence_bytes": 370,
+        "documents": 2,
+        "actors": 4,
+        "state_objects": 2,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Producers",
+          "source_quote": "Producers",
+          "source_start": 33,
+          "source_end": 42,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "editors",
+          "source_quote": "editors",
+          "source_start": 68,
+          "source_end": 75,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "archivists",
+          "source_quote": "archivists",
+          "source_start": 103,
+          "source_end": 113,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        },
+        {
+          "value": "rights reviewer",
+          "source_quote": "rights reviewer",
+          "source_start": 310,
+          "source_end": 325,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-4"
+        }
+      ],
+      "actions": [
+        {
+          "value": "submit episode metadata",
+          "source_quote": "submit episode metadata",
+          "source_start": 43,
+          "source_end": 66,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "verify music licenses",
+          "source_quote": "verify music licenses",
+          "source_start": 76,
+          "source_end": 97,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        },
+        {
+          "value": "retain master files",
+          "source_quote": "retain master files",
+          "source_start": 114,
+          "source_end": 133,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-7"
+        },
+        {
+          "value": "route uncertain matches to a rights reviewer",
+          "source_quote": "route uncertain matches to a rights reviewer",
+          "source_start": 281,
+          "source_end": 325,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-8"
+        }
+      ],
+      "states": [
+        {
+          "value": "license evidence",
+          "source_quote": "license evidence",
+          "source_start": 185,
+          "source_end": 201,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-9"
+        },
+        {
+          "value": "unresolved rights flag",
+          "source_quote": "unresolved rights flag",
+          "source_start": 253,
+          "source_end": 275,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-10"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "community-radio archive",
+          "source_quote": "community-radio archive",
+          "source_start": 346,
+          "source_end": 369,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-11"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Keep license evidence for seven years",
+          "source_quote": "Keep license evidence for seven years",
+          "source_start": 180,
+          "source_end": 217,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-12",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "transcript vendor",
+          "source_quote": "transcript vendor",
+          "source_start": 139,
+          "source_end": 156,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-13"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not publish an episode with an unresolved rights flag",
+          "source_quote": "do not publish an episode with an unresolved rights flag",
+          "source_start": 219,
+          "source_end": 275,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-14",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-18",
+      "prompt_sha256": "2b2bc83d6bc0c3196d747ec90d46fb237c75a1a33042a0f467a1b2a2480c4efa",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "controlling restriction",
+        "document-precedence rule"
+      ],
+      "explicit_systems": [
+        "collections portal"
+      ],
+      "critical_constraints": [
+        "Preserve both source documents"
+      ],
+      "complexity": {
+        "evidence_bytes": 510,
+        "documents": 2,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Registrars",
+          "source_quote": "Registrars",
+          "source_start": 27,
+          "source_end": 37,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "conservators",
+          "source_quote": "conservators",
+          "source_start": 57,
+          "source_end": 69,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "lenders",
+          "source_quote": "lenders",
+          "source_start": 100,
+          "source_end": 107,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "inventory objects",
+          "source_quote": "inventory objects",
+          "source_start": 38,
+          "source_end": 55,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "attach condition reports",
+          "source_quote": "attach condition reports",
+          "source_start": 70,
+          "source_end": 94,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "approve display",
+          "source_quote": "approve display",
+          "source_start": 108,
+          "source_end": 123,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "source documents",
+          "source_quote": "source documents",
+          "source_start": 379,
+          "source_end": 395,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "museum-loan register",
+          "source_quote": "museum-loan register",
+          "source_start": 489,
+          "source_end": 509,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Preserve both source documents",
+          "source_quote": "Preserve both source documents",
+          "source_start": 365,
+          "source_end": 395,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "collections portal",
+          "source_quote": "collections portal",
+          "source_start": 254,
+          "source_end": 272,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "the controlling restriction and document-precedence rule are unspecified",
+          "source_quote": "the controlling restriction and document-precedence rule are unspecified",
+          "source_start": 291,
+          "source_end": 363,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-11"
+        }
+      ],
+      "non_goals": [
+        {
+          "value": "do not publish a display schedule",
+          "source_quote": "do not publish a display schedule",
+          "source_start": 400,
+          "source_end": 433,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "value": "controlling restriction",
+          "source_quote": "controlling restriction",
+          "source_start": 295,
+          "source_end": 318,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-13"
+        },
+        {
+          "value": "document-precedence rule",
+          "source_quote": "document-precedence rule",
+          "source_start": 323,
+          "source_end": 347,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-14"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-19",
+      "prompt_sha256": "e768fb0cdf7bb135e2fe5a3d76493b7c34a965ef1a92eb33f6b5711394b8fcb8",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [
+        "cloud observatory scheduler",
+        "sky monitor feed"
+      ],
+      "critical_constraints": [
+        "Retain approval history"
+      ],
+      "complexity": {
+        "evidence_bytes": 307,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Weather officers",
+          "source_quote": "Weather officers",
+          "source_start": 29,
+          "source_end": 45,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "astronomers",
+          "source_quote": "astronomers",
+          "source_start": 86,
+          "source_end": 97,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "telescope operators",
+          "source_quote": "telescope operators",
+          "source_start": 115,
+          "source_end": 134,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "cancel runs",
+          "source_quote": "cancel runs",
+          "source_start": 46,
+          "source_end": 57,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "propose targets",
+          "source_quote": "propose targets",
+          "source_start": 98,
+          "source_end": 113,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "approve windows",
+          "source_quote": "approve windows",
+          "source_start": 135,
+          "source_end": 150,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "approval history",
+          "source_quote": "approval history",
+          "source_start": 231,
+          "source_end": 247,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "observatory plan",
+          "source_quote": "observatory plan",
+          "source_start": 12,
+          "source_end": 28,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Retain approval history",
+          "source_quote": "Retain approval history",
+          "source_start": 224,
+          "source_end": 247,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "value": "cloud observatory scheduler",
+          "source_quote": "cloud observatory scheduler",
+          "source_start": 156,
+          "source_end": 183,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-10"
+        },
+        {
+          "value": "sky monitor feed",
+          "source_quote": "sky monitor feed",
+          "source_start": 188,
+          "source_end": 204,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-11"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "Automatic publication of target coordinates is prohibited",
+          "source_quote": "Automatic publication of target coordinates is prohibited",
+          "source_start": 249,
+          "source_end": 306,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfh-20260808-v3-20",
+      "prompt_sha256": "5c23390ea38c99c8a0ba3a296b78b29cb3a1f96c772b9a0c3cd62236c9d10446",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "priority rule between household use and crop use",
+        "drought override authority"
+      ],
+      "explicit_systems": [
+        "meter exchange"
+      ],
+      "critical_constraints": [],
+      "complexity": {
+        "evidence_bytes": 384,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 2,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Farmers",
+          "source_quote": "Farmers",
+          "source_start": 53,
+          "source_end": 60,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "hydrologists",
+          "source_quote": "hydrologists",
+          "source_start": 87,
+          "source_end": 99,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "basin administrators",
+          "source_quote": "basin administrators",
+          "source_start": 125,
+          "source_end": 145,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "submit seasonal requests",
+          "source_quote": "submit seasonal requests",
+          "source_start": 61,
+          "source_end": 85,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "review measurements",
+          "source_quote": "review measurements",
+          "source_start": 100,
+          "source_end": 119,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "issue allocations",
+          "source_quote": "issue allocations",
+          "source_start": 146,
+          "source_end": 163,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "seasonal requests",
+          "source_quote": "seasonal requests",
+          "source_start": 68,
+          "source_end": 85,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "river-basin water allocation request queue",
+          "source_quote": "river-basin water allocation request queue",
+          "source_start": 9,
+          "source_end": 51,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "value": "meter exchange",
+          "source_quote": "meter exchange",
+          "source_start": 169,
+          "source_end": 183,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "dependencies-9"
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "The priority rule between household use and crop use is not provided",
+          "source_quote": "The priority rule between household use and crop use is not provided",
+          "source_start": 211,
+          "source_end": 279,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-10"
+        },
+        {
+          "value": "the drought override authority is unspecified",
+          "source_quote": "the drought override authority is unspecified",
+          "source_start": 285,
+          "source_end": 330,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-11"
+        }
+      ],
+      "non_goals": [
+        {
+          "value": "do not issue an allocation",
+          "source_quote": "do not issue an allocation",
+          "source_start": 332,
+          "source_end": 358,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-12",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "value": "priority rule between household use and crop use",
+          "source_quote": "priority rule between household use and crop use",
+          "source_start": 215,
+          "source_end": 263,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-13"
+        },
+        {
+          "value": "drought override authority",
+          "source_quote": "drought override authority",
+          "source_start": 289,
+          "source_end": 315,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-14"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-21",
+      "prompt_sha256": "336bb52c4246b3f64653444bfebcb9a1ab57e25784a03f0cc64e05760d979665",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "allocation rule",
+        "cancellation authority"
+      ],
+      "explicit_systems": [],
+      "critical_constraints": [],
+      "complexity": {
+        "evidence_bytes": 167,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 0
+      },
+      "actors": [
+        {
+          "value": "Vendors",
+          "source_quote": "Vendors",
+          "source_start": 49,
+          "source_end": 56,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        }
+      ],
+      "actions": [
+        {
+          "value": "need booth assignments",
+          "source_quote": "need booth assignments",
+          "source_start": 57,
+          "source_end": 79,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-2"
+        }
+      ],
+      "states": [
+        {
+          "value": "payment status",
+          "source_quote": "payment status",
+          "source_start": 84,
+          "source_end": 98,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-3"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "neighborhood festival vendor scheduler",
+          "source_quote": "neighborhood festival vendor scheduler",
+          "source_start": 9,
+          "source_end": 47,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-4"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "the allocation rule and cancellation authority are unspecified",
+          "source_quote": "the allocation rule and cancellation authority are unspecified",
+          "source_start": 104,
+          "source_end": 166,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-5"
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "value": "allocation rule",
+          "source_quote": "allocation rule",
+          "source_start": 108,
+          "source_end": 123,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-6"
+        },
+        {
+          "value": "cancellation authority",
+          "source_quote": "cancellation authority",
+          "source_start": 128,
+          "source_end": 150,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-7"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-22",
+      "prompt_sha256": "48f26d520aa67b4c165fd8f3a9fff868238db8985ff1331c5377607a0f64997e",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "retention period",
+        "who may access the contacts"
+      ],
+      "explicit_systems": [],
+      "critical_constraints": [],
+      "complexity": {
+        "evidence_bytes": 186,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 2,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "volunteer",
+          "source_quote": "volunteer",
+          "source_start": 6,
+          "source_end": 15,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        }
+      ],
+      "actions": [
+        {
+          "value": "Track volunteer waivers and emergency contacts",
+          "source_quote": "Track volunteer waivers and emergency contacts",
+          "source_start": 0,
+          "source_end": 46,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-2"
+        }
+      ],
+      "states": [
+        {
+          "value": "volunteer waivers",
+          "source_quote": "volunteer waivers",
+          "source_start": 6,
+          "source_end": 23,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-3"
+        },
+        {
+          "value": "emergency contacts",
+          "source_quote": "emergency contacts",
+          "source_start": 28,
+          "source_end": 46,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-4"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "contacts",
+          "source_quote": "contacts",
+          "source_start": 38,
+          "source_end": 46,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-5"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "the retention period and who may access the contacts",
+          "source_quote": "the retention period and who may access the contacts",
+          "source_start": 75,
+          "source_end": 127,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-6"
+        }
+      ],
+      "non_goals": [
+        {
+          "value": "Do not choose either policy",
+          "source_quote": "Do not choose either policy",
+          "source_start": 129,
+          "source_end": 156,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-7",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "value": "retention period",
+          "source_quote": "retention period",
+          "source_start": 79,
+          "source_end": 95,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-8"
+        },
+        {
+          "value": "who may access the contacts",
+          "source_quote": "who may access the contacts",
+          "source_start": 100,
+          "source_end": 127,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-9"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-23",
+      "prompt_sha256": "8849d6681fd539669421bfcb7de21f01d593711e8efb1dd5c55eb29e097309dd",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "biosafety owner",
+        "spill-response procedure"
+      ],
+      "explicit_systems": [],
+      "critical_constraints": [],
+      "complexity": {
+        "evidence_bytes": 239,
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 2,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "Teaching lab staff",
+          "source_quote": "Teaching lab staff",
+          "source_start": 55,
+          "source_end": 73,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        }
+      ],
+      "actions": [
+        {
+          "value": "record sample IDs and custody transfers",
+          "source_quote": "record sample IDs and custody transfers",
+          "source_start": 74,
+          "source_end": 113,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-2"
+        }
+      ],
+      "states": [
+        {
+          "value": "sample IDs",
+          "source_quote": "sample IDs",
+          "source_start": 81,
+          "source_end": 91,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-3"
+        },
+        {
+          "value": "custody transfers",
+          "source_quote": "custody transfers",
+          "source_start": 96,
+          "source_end": 113,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-4"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "lab-sample handoff tracker",
+          "source_quote": "lab-sample handoff tracker",
+          "source_start": 8,
+          "source_end": 34,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-5"
+        }
+      ],
+      "constraints": [],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "value": "The biosafety owner and spill-response procedure are not supplied",
+          "source_quote": "The biosafety owner and spill-response procedure are not supplied",
+          "source_start": 115,
+          "source_end": 180,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "ambiguities-6"
+        }
+      ],
+      "non_goals": [
+        {
+          "value": "do not authorize hazardous handling",
+          "source_quote": "do not authorize hazardous handling",
+          "source_start": 182,
+          "source_end": 217,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-7",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": [
+        {
+          "value": "biosafety owner",
+          "source_quote": "biosafety owner",
+          "source_start": 119,
+          "source_end": 134,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-8"
+        },
+        {
+          "value": "spill-response procedure",
+          "source_quote": "spill-response procedure",
+          "source_start": 139,
+          "source_end": 163,
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "id": "material_questions-9"
+        }
+      ]
+    },
+    {
+      "case_id": "gfh-20260808-v3-24",
+      "prompt_sha256": "bbb0f3e132e975073b8c042d4162b92a076893f32fb06626b0b5e01f68eaaf3b",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "explicit_systems": [],
+      "critical_constraints": [
+        "Keep the inspection date"
+      ],
+      "complexity": {
+        "evidence_bytes": 235,
+        "documents": 1,
+        "actors": 3,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1
+      },
+      "actors": [
+        {
+          "value": "tenants",
+          "source_quote": "tenants",
+          "source_start": 58,
+          "source_end": 65,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-1"
+        },
+        {
+          "value": "caretakers",
+          "source_quote": "caretakers",
+          "source_start": 80,
+          "source_end": 90,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-2"
+        },
+        {
+          "value": "inspectors",
+          "source_quote": "inspectors",
+          "source_start": 108,
+          "source_end": 118,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actors-3"
+        }
+      ],
+      "actions": [
+        {
+          "value": "report leaks",
+          "source_quote": "report leaks",
+          "source_start": 66,
+          "source_end": 78,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-4"
+        },
+        {
+          "value": "assign work",
+          "source_quote": "assign work",
+          "source_start": 91,
+          "source_end": 102,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-5"
+        },
+        {
+          "value": "close tickets after a visit",
+          "source_quote": "close tickets after a visit",
+          "source_start": 119,
+          "source_end": 146,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "actions-6"
+        }
+      ],
+      "states": [
+        {
+          "value": "inspection date",
+          "source_quote": "inspection date",
+          "source_start": 157,
+          "source_end": 172,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "states-7"
+        }
+      ],
+      "outputs": [
+        {
+          "value": "repair queue",
+          "source_quote": "repair queue",
+          "source_start": 7,
+          "source_end": 19,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "outputs-8"
+        }
+      ],
+      "constraints": [
+        {
+          "value": "Keep the inspection date",
+          "source_quote": "Keep the inspection date",
+          "source_start": 148,
+          "source_end": 172,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "constraints-9",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "value": "do not dispatch emergency crews",
+          "source_quote": "do not dispatch emergency crews",
+          "source_start": 174,
+          "source_end": 205,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-10",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "value": "use no external service",
+          "source_quote": "use no external service",
+          "source_start": 211,
+          "source_end": 234,
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "id": "non_goals-11",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    }
+  ]
+}

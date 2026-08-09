@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 import pytest
 
@@ -70,6 +71,35 @@ _87E277_SEALED_SYSTEM_CASES = tuple(
         "gfh-20260808-v2-20",
     }
 )
+_CF410_RETIRED_HOLDOUT_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "fixtures/greenfield-release-corpus/retired-cf410-final-holdout-regressions.v1.json"
+)
+_CF410_RETIRED_HOLDOUT = json.loads(_CF410_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
+_CF410_ANNOTATIONS = {
+    str(annotation["case_id"]): annotation for annotation in _CF410_RETIRED_HOLDOUT["annotations"]
+}
+_CF410_CLARIFICATION_CASES = tuple(
+    case for case in _CF410_RETIRED_HOLDOUT["cases"] if case["expectation"] == "clarification_required"
+)
+_CF410_FALSE_CLARIFICATION_CASE_IDS = frozenset(
+    {
+        "gfh-20260808-v3-03",
+        "gfh-20260808-v3-05",
+        "gfh-20260808-v3-06",
+        "gfh-20260808-v3-15",
+        "gfh-20260808-v3-19",
+    }
+)
+_CF410_FALSE_CLARIFICATION_CASES = tuple(
+    case
+    for case in _CF410_RETIRED_HOLDOUT["cases"]
+    if case["case_id"] in _CF410_FALSE_CLARIFICATION_CASE_IDS
+)
+
+
+def _material_field_key(value: object) -> str:
+    return "_".join(re.findall(r"[a-z0-9]+", str(value).casefold()))
 
 
 @pytest.fixture(autouse=True)
@@ -88,6 +118,59 @@ def test_87e277_failed_holdout_is_marked_disclosed_and_retired() -> None:
     assert _87E277_RETIRED_HOLDOUT["disclosed"] is True
     assert len(_87E277_RETIRED_HOLDOUT["cases"]) == 24
     assert len(_87E277_RETIRED_HOLDOUT["annotations"]) == 24
+
+
+def test_cf410_failed_holdout_is_marked_disclosed_and_retired() -> None:
+    assert _CF410_RETIRED_HOLDOUT["version"] == "odylith.greenfield.retired-holdout-regression.v1"
+    assert _CF410_RETIRED_HOLDOUT["disclosed"] is True
+    assert _CF410_RETIRED_HOLDOUT["retired_from"]["holdout_sha256"] == (
+        "2713e5b4cbd0abe0c7cc1e517c063c29ca3cdd029c2db5de764ecc8c03c9cfb5"
+    )
+    assert len(_CF410_RETIRED_HOLDOUT["cases"]) == 24
+    assert len(_CF410_RETIRED_HOLDOUT["annotations"]) == 24
+
+
+@pytest.mark.parametrize(
+    "case",
+    _CF410_CLARIFICATION_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_cf410_material_questions_preserve_source_labels_and_write_nothing(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    annotation = _CF410_ANNOTATIONS[str(case["case_id"])]
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=str(case["prompt"]),
+            repo_root=tmp_path,
+            fallback_title=str(case["name"]),
+        )
+
+    expected_fields = tuple(_material_field_key(field) for field in annotation["expected_question_fields"])
+    assert error.value.required_fields == expected_fields
+    question = error.value.question.casefold()
+    assert all(str(field).casefold() in question for field in annotation["expected_question_fields"])
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _CF410_FALSE_CLARIFICATION_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_cf410_structured_evidence_reaches_candidate_materialization(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+
+    assert intent["product_intent_authority"]["materiality_status"] == "passed"
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
 
 
 @pytest.mark.parametrize(

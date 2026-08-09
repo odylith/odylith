@@ -55,21 +55,40 @@ _UNKNOWN_SUBJECT_MARKERS = (
     " is unresolved",
     " are unknown",
     " is unknown",
+    " are missing",
+    " is missing",
+    " are unspecified",
+    " is unspecified",
     " are not specified",
     " is not specified",
     " are not provided",
     " is not provided",
+    " are not supplied",
+    " is not supplied",
     " disagree",
 )
-_SUPPLY_MARKERS = (" are supplied", " is supplied", " are provided", " is provided")
-_FIELD_SPLIT_RE = re.compile(r"\s*(?:,|\band\b|\bor\b)\s*", flags=re.IGNORECASE)
+_SUPPLY_MARKERS = (
+    " are supplied",
+    " is supplied",
+    " are provided",
+    " is provided",
+    " are confirmed",
+    " is confirmed",
+    " are resolved",
+    " is resolved",
+    " are named",
+    " is named",
+)
 _FIELD_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_FIELD_CONJUNCTION_RE = re.compile(r",|\b(?:and|or)\b", flags=re.IGNORECASE)
 _FIELD_PREFIXES = (
     "pasted brief",
     "research evidence",
     "revision notes",
     "pending confirmation",
 )
+_DEFERRED_DECISION_COMMANDS = ("choose ", "clarify ", "decide ", "determine ", "specify ")
+_ANAPHORIC_FIELD_KEYS = frozenset({"both", "it", "them", "they", "those"})
 
 
 def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> MaterialClarification | None:
@@ -95,15 +114,11 @@ def explicit_material_clarification(*, prompt: str, edit_evidence: str = "") -> 
         return authority_gap
     fields = list(_declared_material_unknowns(evidence))
     if _has_guardian_approval_gap(lowered):
-        fields.append("guardian_approval_rule")
+        fields.append("guardian approval rule")
     if _has_location_disclosure_conflict(lowered):
-        fields.append("location_disclosure_policy")
-    fields = list(dict.fromkeys(fields))
+        fields.append("location disclosure policy")
     if fields:
-        return MaterialClarification(
-            question=_material_unknown_question(fields),
-            required_fields=tuple(fields),
-        )
+        return _clarification_from_source_labels(fields)
     if not _has_explicit_material_conflict(lowered):
         return None
     if any(term in lowered for term in ("audience", "public", "private", "visible only")):
@@ -171,62 +186,91 @@ def _legacy_declared_authority_gap(lowered: str) -> MaterialClarification | None
 
 
 def _declared_material_unknowns(evidence: str) -> tuple[str, ...]:
-    """Extract decision labels from explicit missing, unresolved, or blocking clauses."""
+    """Preserve decision labels from explicit missing, unresolved, or deferred clauses."""
 
     fields: list[str] = []
     sentences = sentence_fragments(evidence)
     lowered_evidence = evidence.casefold()
+    previous_sentence = ""
     for sentence in sentences:
         lowered = sentence.casefold().strip()
-        clause = _subject_before_marker(sentence, lowered)
-        if clause:
-            fields.extend(_field_keys(clause))
+        for subject in _gap_subjects(sentence):
+            fields.extend(_material_field_labels(subject))
         supplied = _supplied_clause(sentence, lowered)
         if supplied:
-            fields.extend(_field_keys(supplied))
+            fields.extend(_material_field_labels(supplied))
         needed = _needed_before_clause(sentence, lowered)
         if needed:
-            fields.extend(_field_keys(needed))
+            fields.extend(_material_field_labels(needed))
+        deferred = _deferred_decision_clause(sentence, previous_sentence=previous_sentence)
+        if deferred:
+            fields.extend(_material_field_labels(deferred))
         if "identify " in lowered and any(
             marker in lowered_evidence for marker in (" absent", " unknown", " unresolved", "do not authorize")
         ):
             start = lowered.index("identify ") + len("identify ")
-            fields.extend(_field_keys(sentence[start:]))
-    return tuple(dict.fromkeys(field for field in fields if field))
+            fields.extend(_material_field_labels(sentence[start:]))
+        previous_sentence = sentence
+    return _dedupe_material_labels(fields)
 
 
-def _subject_before_marker(sentence: str, lowered: str) -> str:
+def _gap_subjects(sentence: str) -> tuple[str, ...]:
+    """Return each grammatical subject governed by an explicit unknown predicate."""
+
+    lowered = sentence.casefold()
+    occurrences: list[tuple[int, str]] = []
     for marker in _UNKNOWN_SUBJECT_MARKERS:
-        if marker not in lowered:
+        start = 0
+        while (index := lowered.find(marker, start)) >= 0:
+            occurrences.append((index, marker))
+            start = index + len(marker)
+    subjects: list[str] = []
+    cursor = 0
+    for index, marker in sorted(occurrences):
+        if index < cursor:
             continue
-        subject = sentence[: lowered.index(marker)].strip(" .,:;-")
-        if ":" in subject and subject.partition(":")[0].casefold().strip() in _FIELD_PREFIXES:
-            subject = subject.partition(":")[2].strip()
-        return subject
-    absent_subject = _absent_decision_subject(sentence, lowered)
-    if absent_subject:
-        return absent_subject
-    if lowered.startswith("no "):
-        for marker in _SUPPLY_MARKERS:
-            if marker in lowered:
-                return sentence[3 : lowered.index(marker)].strip(" .,:;-")
-    return ""
-
-
-def _absent_decision_subject(sentence: str, lowered: str) -> str:
-    """Distinguish an unspecified decision from a runtime value that may be absent."""
-
+        subject = _decision_subject_tail(sentence[cursor:index])
+        if subject:
+            subjects.append(subject)
+        cursor = index + len(marker)
     for marker in (" are absent", " is absent"):
-        if marker not in lowered:
+        index = lowered.find(marker)
+        if index < 0:
             continue
-        subject = sentence[: lowered.index(marker)].strip(" .,:;-")
-        for boundary in (" while ", " when ", " if ", ";", ","):
-            if boundary in subject.casefold():
-                subject = subject[subject.casefold().rfind(boundary) + len(boundary) :].strip()
+        subject = _decision_subject_tail(sentence[:index])
         key = _field_key(subject)
         if key.endswith(("_authority", "_jurisdiction", "_owner", "_policy", "_protocol", "_rule")):
-            return subject
-    return ""
+            subjects.append(subject)
+    if lowered.startswith("no "):
+        for marker in _SUPPLY_MARKERS:
+            index = lowered.find(marker)
+            if index >= 0:
+                subject = _decision_subject_tail(sentence[3:index])
+                if subject:
+                    subjects.append(subject)
+                break
+    return tuple(dict.fromkeys(subjects))
+
+
+def _decision_subject_tail(value: str) -> str:
+    text = clean_markdown_text(value).strip(" .,:;-")
+    lowered = text.casefold()
+    boundaries = tuple(
+        index + len(boundary)
+        for boundary in (", but ", ", yet ", "; but ", "; yet ")
+        if (index := lowered.rfind(boundary)) >= 0
+    )
+    boundary_end = max(boundaries, default=0)
+    text = text[boundary_end:].strip(" .,:;-")
+    lowered = text.casefold()
+    for prefix in ("and ", "but ", "no ", "yet "):
+        if lowered.startswith(prefix):
+            text = text[len(prefix) :].strip()
+            lowered = text.casefold()
+            break
+    if ":" in text and text.partition(":")[0].casefold().strip() in _FIELD_PREFIXES:
+        text = text.partition(":")[2].strip()
+    return text
 
 
 def _supplied_clause(sentence: str, lowered: str) -> str:
@@ -237,7 +281,8 @@ def _supplied_clause(sentence: str, lowered: str) -> str:
     lowered_tail = lowered[tail_start:]
     for marker in _SUPPLY_MARKERS:
         if marker in lowered_tail:
-            return tail[: lowered_tail.index(marker)].strip(" .,:;-")
+            value = tail[: lowered_tail.index(marker)].strip(" .,:;-")
+            return "" if _field_key(value) in _ANAPHORIC_FIELD_KEYS else value
     return ""
 
 
@@ -249,24 +294,92 @@ def _needed_before_clause(sentence: str, lowered: str) -> str:
     return sentence[start:end].strip(" .,:;-") if end > start else ""
 
 
-def _field_keys(value: str) -> tuple[str, ...]:
-    return tuple(
-        field
-        for part in _FIELD_SPLIT_RE.split(value)
-        if (field := _field_key(part))
-    )
+def _deferred_decision_clause(sentence: str, *, previous_sentence: str) -> str:
+    lowered = sentence.casefold().strip()
+    if not lowered.startswith(("do not choose ", "don't choose ")) or " without " not in lowered:
+        return ""
+    previous = clean_markdown_text(previous_sentence).strip(" .")
+    previous_lowered = previous.casefold()
+    for command in _DEFERRED_DECISION_COMMANDS:
+        if previous_lowered.startswith(command):
+            return previous[len(command) :].strip(" .,:;-")
+    return ""
+
+
+def _material_field_labels(value: str) -> tuple[str, ...]:
+    text = _decision_subject_tail(value)
+    labels = tuple(_field_display_label(part) for part in _split_material_fields(text))
+    return tuple(label for label in labels if _field_key(label))
+
+
+def _dedupe_material_labels(labels: list[str]) -> tuple[str, ...]:
+    """Prefer the most specific source label when a later clause uses shorthand."""
+
+    kept: list[str] = []
+    for label in labels:
+        key = _field_key(label)
+        if not key:
+            continue
+        tokens = frozenset(key.split("_"))
+        existing_tokens = [frozenset(_field_key(item).split("_")) for item in kept]
+        if any(tokens <= item for item in existing_tokens):
+            continue
+        kept = [item for item, item_tokens in zip(kept, existing_tokens, strict=True) if not item_tokens < tokens]
+        kept.append(label)
+    return tuple(kept)
+
+
+def _split_material_fields(value: str) -> tuple[str, ...]:
+    text = clean_markdown_text(value).strip(" .,:;-")
+    if not text:
+        return ()
+    fields: list[str] = []
+    start = 0
+    lowered = text.casefold()
+    for match in _FIELD_CONJUNCTION_RE.finditer(text):
+        delimiter = match.group(0).casefold()
+        if delimiter == "and":
+            between = lowered.rfind("between ", start, match.start())
+            prior_and = lowered.rfind(" and ", start, match.start())
+            if between >= start and prior_and < between:
+                continue
+        left = text[start:match.start()].strip(" .,:;-")
+        right = text[match.end():].strip(" .,:;-")
+        if delimiter != "," and not _is_field_conjunction(left=left, right=right):
+            continue
+        if left:
+            fields.append(left)
+        start = match.end()
+    tail = text[start:].strip(" .,:;-")
+    if tail:
+        fields.append(tail)
+    return tuple(fields or (text,))
+
+
+def _is_field_conjunction(*, left: str, right: str) -> bool:
+    left_words = _FIELD_TOKEN_RE.findall(left.casefold())
+    right_words = _FIELD_TOKEN_RE.findall(right.casefold())
+    if not left_words or not right_words:
+        return False
+    if right_words[0] in {"what", "which", "who", "whose"}:
+        return True
+    return len(left_words) == len(right_words) == 1 or (len(left_words) >= 2 and len(right_words) >= 2)
+
+
+def _field_display_label(value: str) -> str:
+    words = clean_markdown_text(value).strip(" .,:;-").split()
+    while words and words[0].casefold() in {"a", "an", "the", "both", "either", "no", "what", "which"}:
+        words.pop(0)
+    return " ".join(words).strip()
 
 
 def _field_key(value: str) -> str:
-    words = _FIELD_TOKEN_RE.findall(clean_markdown_text(value).casefold())
+    words = _FIELD_TOKEN_RE.findall(_field_display_label(value).casefold())
     if words and words[0] in {"can", "cannot", "do", "must", "should", "will"}:
         return ""
-    while words and words[0] in {"a", "an", "the", "both", "either", "no", "what", "which"}:
-        words.pop(0)
-    for boundary in ("that", "who", "whose", "when", "while", "so", "before", "until"):
-        if boundary in words:
-            words = words[: words.index(boundary)]
     key = "_".join(words).strip("_")
+    if key in _ANAPHORIC_FIELD_KEYS:
+        return ""
     aliases = {
         "country_specific_export_rule": "export_jurisdiction",
         "guardian_approval": "guardian_approval_rule",
@@ -274,12 +387,24 @@ def _field_key(value: str) -> str:
     return aliases.get(key, key)
 
 
-def _material_unknown_question(fields: list[str]) -> str:
-    labels = [field.replace("_", " ") for field in fields]
+def _clarification_from_source_labels(labels: list[str]) -> MaterialClarification:
+    keyed_labels: dict[str, str] = {}
+    for label in labels:
+        field_id = _field_key(label)
+        if field_id:
+            keyed_labels.setdefault(field_id, _field_display_label(label))
+    return MaterialClarification(
+        question=_material_unknown_question(list(keyed_labels.values())),
+        required_fields=tuple(keyed_labels),
+    )
+
+
+def _material_unknown_question(labels: list[str]) -> str:
     if len(labels) == 1:
         field_text = labels[0]
     elif len(labels) == 2:
-        field_text = f"{labels[0]} and {labels[1]}"
+        separator = ", and " if " and " in labels[0].casefold() else " and "
+        field_text = f"{labels[0]}{separator}{labels[1]}"
     else:
         field_text = f"{', '.join(labels[:-1])}, and {labels[-1]}"
     return f"Could you specify the {field_text} for this project?"

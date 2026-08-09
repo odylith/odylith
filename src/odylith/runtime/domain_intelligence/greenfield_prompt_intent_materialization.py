@@ -71,6 +71,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretati
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
     explicit_actor_evidence,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
 
 
 _CONCRETE_DEVICE_BEHAVIOR_RE = re.compile(
@@ -303,6 +304,8 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     if edit_evidence.strip() and edited_first_path:
         if first_path_model(edited_first_path).material_action:
             evidence = edit_evidence
+    if _has_grounded_human_action_evidence(evidence):
+        return False
     source = prompt_intent_source(evidence)
     explicit_actor = explicit_actor_evidence(evidence)
     explicit_human_grammar = explicit_actor_has_human_grammar(evidence)
@@ -423,11 +426,23 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
     return bool(
         len(path.steps) >= 2
         or _has_explicit_single_step_actor_action(path_source)
+        or _has_grounded_human_action_evidence(evidence)
         or (
             explicit_actor_has_human_grammar(evidence)
             and path.material_action
             and has_explicit_visible_result(path_source)
         )
+    )
+
+
+def _has_grounded_human_action_evidence(evidence: str) -> bool:
+    """Trust an explicit human action clause even when another clause wins prompt ranking."""
+
+    return any(
+        _has_explicit_single_step_actor_action(clause)
+        for sentence in sentence_fragments(evidence)
+        for clause in sentence.split(";")
+        if clause.strip()
     )
 
 

@@ -83,6 +83,18 @@ def test_typed_clarification_accepts_the_expected_material_fields() -> None:
     ) == ()
 
 
+def test_typed_clarification_compares_field_ids_without_changing_display_labels() -> None:
+    execution = _clarification_execution(
+        question="Could you specify the consent standard and minor-approval authority for this project?",
+        required_fields=("consent_standard", "minor_approval_authority"),
+    )
+
+    assert clarification_contract_issues(
+        execution,
+        expected_fields=("consent standard", "minor-approval authority"),
+    ) == ()
+
+
 def test_typed_clarification_rejects_a_generic_question_for_the_wrong_field() -> None:
     execution = _clarification_execution(
         question="What is the first complete task the product should help a person finish, and what result should they see?",

@@ -80,7 +80,7 @@ def _case_from_row(
     expected_question_fields: tuple[str, ...] = (),
 ) -> GreenfieldMatrixCase:
     name = _required_text(row, "name", index=index, source=source)
-    prompt = _canonical_text(_required_text(row, "prompt", index=index, source=source))
+    prompt = _canonical_block_text(_required_block_text(row, "prompt", index=index, source=source))
     required_terms = _string_tuple(row.get("required_terms"))
     leakage_terms = _string_tuple(row.get("leakage_terms"))
     confirmed_intent = _canonical_block_text(_optional_block_text(row.get("confirmed_intent_markdown")))
@@ -195,6 +195,13 @@ def _required_text(row: Mapping[str, Any], field: str, *, index: int, source: Pa
     return value
 
 
+def _required_block_text(row: Mapping[str, Any], field: str, *, index: int, source: Path) -> str:
+    value = _optional_block_text(row.get(field))
+    if not value:
+        raise RuntimeError(f"{source} case {index} must define {field}")
+    return value
+
+
 def _optional_text(value: Any) -> str:
     return " ".join(str(value or "").strip().split())
 
@@ -226,7 +233,7 @@ def _canonical_text(value: Any) -> str:
 def canonical_case_text(value: Any) -> str:
     """Return the exact prompt normalization applied when a case file is loaded."""
 
-    return _canonical_text(value)
+    return _canonical_block_text(value)
 
 
 def _canonical_block_text(value: Any) -> str:

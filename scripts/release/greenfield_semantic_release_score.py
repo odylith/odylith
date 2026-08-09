@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import re
 
 from greenfield_matrix_statistics import wilson_interval
 from greenfield_matrix_types import GreenfieldMatrixResult
+from greenfield_matrix_clarification import question_field_key
 
 
 SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v1"
@@ -299,8 +300,8 @@ def _score_case(
             )
     elif expected == "clarify":
         metric_counts["material_question_recall"][1] += 1
-        expected_fields = {_question_field_key(value) for value in _strings(annotation.get("expected_question_fields"))}
-        observed_fields = {_question_field_key(value) for value in _strings(clarification.get("required_fields"))}
+        expected_fields = {question_field_key(value) for value in _strings(annotation.get("expected_question_fields"))}
+        observed_fields = {question_field_key(value) for value in _strings(clarification.get("required_fields"))}
         question_recalled = observed == "clarify" and (not expected_fields or expected_fields <= observed_fields)
         if question_recalled:
             metric_counts["material_question_recall"][0] += 1
@@ -798,10 +799,6 @@ def _value_claims(value: Any) -> tuple[str, ...]:
         )
     claim = str(value or "").strip()
     return (claim,) if claim else ()
-
-
-def _question_field_key(value: Any) -> str:
-    return "_".join(_TOKEN_RE.findall(str(value or "").casefold()))
 
 
 def _is_negated(value: Any) -> bool:

@@ -42,7 +42,7 @@
 
 - Solution: Use one annotation-driven typed clarification contract in runtime output, per-case scoring, and aggregate semantic scoring
 
-- Verification: The annotation-driven clarification scorer and runtime regressions passed the combined 25-test anti-clipping, clarification, EDIT, and Registry pack in 41.89 seconds. Thirteen thin-prompt authority cases also passed with one correctly scoped question and no staged artifacts. Clean installed release proof remains pending.
+- Verification: The annotation-driven clarification scorer and runtime regressions passed the combined 25-test anti-clipping, clarification, EDIT, and Registry pack in 41.89 seconds. Thirteen thin-prompt authority cases also passed with one correctly scoped question and no staged artifacts. The `cf41046a9` follow-up added display-label versus field-ID equivalence and multiline evidence-preservation regressions; the broader materiality, sealed-intent, evaluator, and retired-holdout pack passed 253 tests in 294.85 seconds. Clean installed release proof remains pending.
 
 - Prevention: Ban independent hardcoded clarification defaults in release scoring
 
@@ -54,3 +54,5 @@
 
 - Code References: - scripts/release/greenfield_matrix_clarification.py
 - scripts/release/greenfield_semantic_release_score.py
+
+- Fresh Blind Holdout Follow-Up (2026-08-08): The one-shot campaign exposed two additional evaluator defects. Case loading collapsed Markdown line boundaries and changed the evidence presented to the exact installed runtime, producing five false product clarifications. Per-case clarification scoring also compared user-facing source labels with snake_case field IDs literally while aggregate scoring canonicalized them. The case loader now preserves block structure and both scorers use one shared field-ID canonicalizer while retaining source labels in the visible question. The disclosed corpus is preserved as `retired-cf410-final-holdout-regressions.v1.json` and is not eligible for a new release claim.

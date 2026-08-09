@@ -6,6 +6,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 import hashlib
 from pathlib import Path
+import re
 import time
 from typing import Any
 
@@ -19,6 +20,7 @@ FOCUSED_FIRST_PATH_QUESTION = (
 )
 _NO_WRITE_ROOTS = (Path(".odylith/runtime/greenfield"), Path("odylith"))
 _STAGED_TRANSACTION_ROOT = Path(".odylith/runtime/greenfield/pending")
+_FIELD_TOKEN_RE = re.compile(r"[a-z0-9]+")
 
 
 @dataclass(frozen=True)
@@ -111,7 +113,9 @@ def clarification_contract_issues(
     )
     if not focused_material_question(clarification.get("question"), required_fields=required_fields):
         issues.append("clarification payload must ask one focused question about the expected material fields")
-    if observed_fields != required_fields:
+    if tuple(question_field_key(field) for field in observed_fields) != tuple(
+        question_field_key(field) for field in required_fields
+    ):
         issues.append(
             "clarification payload required_fields must match the expected material fields: "
             + ", ".join(required_fields)
@@ -184,6 +188,12 @@ def focused_material_question(value: Any, *, required_fields: Sequence[str]) -> 
     )
 
 
+def question_field_key(value: Any) -> str:
+    """Canonicalize one material field ID without changing its display label."""
+
+    return "_".join(_FIELD_TOKEN_RE.findall(str(value or "").casefold()))
+
+
 def _sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -200,5 +210,6 @@ __all__ = [
     "clarification_quality_verdict",
     "focused_material_question",
     "focused_first_path_question",
+    "question_field_key",
     "run_expected_clarification",
 ]

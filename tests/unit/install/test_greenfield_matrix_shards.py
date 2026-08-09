@@ -525,6 +525,39 @@ def test_load_case_file_rejects_required_term_hidden_inside_prefixed_token(tmp_p
         raise AssertionError("prefixed source token must not ground a shorter required term")
 
 
+def test_load_case_file_preserves_markdown_evidence_boundaries(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "cases.json"
+    prompt = (
+        "## Approved pantry revision\n"
+        "Keep the cold-chain pantry ledger.\n\n"
+        "Intake clerks record donated lots, nutrition leads verify allergen labels, "
+        "and dispatch drivers hand out parcels."
+    )
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "markdown-evidence",
+                        "name": "cold-chain pantry ledger",
+                        "prompt": prompt,
+                        "required_terms": ("cold-chain pantry ledger", "allergen labels"),
+                        "leakage_terms": ("dispatch drivers",),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    loaded = module.load_case_file(case_file)[0]
+
+    assert loaded.prompt == prompt
+    assert loaded.prompt.splitlines()[0] == "## Approved pantry revision"
+    assert loaded.prompt.splitlines()[1] == "Keep the cold-chain pantry ledger."
+
+
 def test_load_case_file_rejects_ungrounded_leakage_terms_before_simulation(tmp_path: Path) -> None:
     module = _module()
     case_file = tmp_path / "cases.json"
