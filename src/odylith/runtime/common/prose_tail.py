@@ -88,7 +88,7 @@ INCOMPLETE_PUBLIC_TAIL_WORDS = frozenset(
         "with",
     }
 )
-_CLAUSE_COORDINATORS = frozenset({"and", "but", "or", "then"})
+_CLAUSE_COORDINATORS = frozenset({"and", "but", "or", "then", "while"})
 _CLAUSE_BOUNDARY_PUNCTUATION = (".", "!", "?", ";", ",")
 _BASE_FORM_INCOMPLETE_TAIL_WORDS = frozenset(
     {"display", "include", "keep", "produce", "provide", "publish", "receive", "remain", "return", "see", "show"}
@@ -115,6 +115,9 @@ _BASE_FORM_ACTION_PRECEDERS = frozenset(
         "would",
         "you",
     }
+)
+_TERMINAL_NOUN_DETERMINERS = frozenset(
+    {"a", "an", "another", "any", "each", "every", "one", "the", "these", "this", "those"}
 )
 
 
@@ -170,6 +173,10 @@ def has_incomplete_public_tail(tokens: Sequence[str]) -> bool:
         return False
     if len(lowered) == 2:
         return lowered[0] not in {"a", "an", "the"} and _tail_needs_object(lowered)
+    if len(lowered) >= 5 and lowered[-1] in {"remain", "remains"}:
+        return not any(token in {"what", "which"} for token in lowered[-8:-1])
+    if len(lowered) >= 5 and lowered[-1] in {"return", "returns"}:
+        return _tail_needs_object(lowered) or not _terminal_tail_is_noun_phrase(lowered)
     if lowered[-1] in {"include", "includes", "keeps", "with"}:
         return True
     if len(lowered) < 5:
@@ -215,8 +222,10 @@ def _clipped_tail_needs_object(tokens: Sequence[str]) -> bool:
     lowered = tuple(str(token or "").casefold().strip(".,;:'") for token in tokens)
     if not lowered:
         return False
-    if lowered[-1] in {"remain", "remains"} and any(token in {"what", "which"} for token in lowered[-8:-1]):
-        return False
+    if len(lowered) >= 5 and lowered[-1] in {"remain", "remains"}:
+        return not any(token in {"what", "which"} for token in lowered[-8:-1])
+    if len(lowered) >= 5 and lowered[-1] in {"return", "returns"}:
+        return _tail_needs_object(lowered) or not _terminal_tail_is_noun_phrase(lowered)
     return _tail_needs_object(lowered)
 
 
@@ -227,6 +236,10 @@ def _tail_needs_object(tokens: Sequence[str]) -> bool:
     if tail not in _BASE_FORM_INCOMPLETE_TAIL_WORDS:
         return True
     return len(tokens) >= 2 and tokens[-2] in _BASE_FORM_ACTION_PRECEDERS
+
+
+def _terminal_tail_is_noun_phrase(tokens: Sequence[str]) -> bool:
+    return any(token in _TERMINAL_NOUN_DETERMINERS for token in tokens[-5:-1])
 
 
 def _allows_terminal_final(words: list[str]) -> bool:

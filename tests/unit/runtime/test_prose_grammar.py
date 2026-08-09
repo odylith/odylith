@@ -25,6 +25,16 @@ def test_clipped_transitive_tail_requires_an_object() -> None:
     assert has_incomplete_public_tail("The clerk records status and sees".split())
     assert strip_incomplete_public_tail("The clerk records status and sees") == "The clerk records status"
     assert not has_incomplete_public_tail("The clerk sees what remains".split())
+    assert not has_incomplete_public_tail("Questions remain".split())
+    clipped_boundary = "Release 0.0.1 proves one accepted coordination path while private details remain"
+    assert has_incomplete_public_tail(clipped_boundary.split())
+    assert strip_incomplete_public_tail(clipped_boundary) == (
+        "Release 0.0.1 proves one accepted coordination path"
+    )
+    assert has_incomplete_public_tail(
+        "Fixture includes required fields late-fee rule apartment resident drill return".split()
+    )
+    assert not has_incomplete_public_tail("The workspace tracks every patient sample return".split())
     for verb in ("displays", "provides", "shows"):
         clipped = f"The dashboard opens the record and it {verb}"
         assert has_incomplete_public_tail(clipped.split())
