@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import PRECONFIRM_STAGING_MARKER
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import candidate_intent_stage_paths
@@ -126,7 +127,10 @@ def materialize_prompt_intent_hypothesis(
     hypothesis = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
     if not source.title:
         outcome_title = recovered_title(first_path_model(source.first_path).visible_outcome)
-        recovered_fallback = outcome_title if outcome_title != "Recovered Product Workspace" else fallback_title
+        recovered_fallback = _preferred_implicit_title(
+            fallback_title=fallback_title,
+            outcome_title=outcome_title,
+        )
         hypothesis = _retitle_recompiled_intent(hypothesis, title=recovered_fallback)
     baseline = normalize_confirmed_intent(
         hypothesis,
@@ -220,6 +224,14 @@ def materialize_prompt_intent_hypothesis(
     candidate["prompt"] = evidence_source
     candidate[PRODUCT_INTENT_AUTHORITY_KEY] = authority
     return candidate
+
+
+def _preferred_implicit_title(*, fallback_title: str, outcome_title: str) -> str:
+    fallback = " ".join(str(fallback_title or "").split()).strip(" .")
+    words = fallback.split()
+    if 1 <= len(words) <= 8 and not looks_like_action_clause(fallback):
+        return fallback
+    return outcome_title if outcome_title != "Recovered Product Workspace" else fallback
 
 
 def render_product_intent_preview(intent: Mapping[str, Any]) -> str:
