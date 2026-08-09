@@ -51,6 +51,7 @@ _INFINITIVE_TO_FINITE = {
     "call": "calls",
     "capture": "captures",
     "catch": "catches",
+    "certify": "certifies",
     "check": "checks",
     "choose": "chooses",
     "classify": "classifies",

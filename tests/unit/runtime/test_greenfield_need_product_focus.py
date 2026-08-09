@@ -4,6 +4,7 @@ import json
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import command_product_title
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
@@ -55,6 +56,24 @@ def test_command_container_focus_does_not_overwrite_a_named_product() -> None:
 
     assert product_focus_after_command_sentence(prompt) == ""
     assert prompt_intent_source(prompt).title == "Extension Publisher Console"
+
+
+def test_command_title_preserves_a_bounded_domain_object_or_audience() -> None:
+    prompts = {
+        "Create a compact register for safety captains to certify flame-effect props.": "flame-effect props register",
+        "Create a provenance notebook for wetland-restoration nurseries.": (
+            "wetland-restoration nurseries provenance notebook"
+        ),
+        "Create a handoff register for school meal allergen coordinators.": (
+            "school meal allergen coordinators handoff register"
+        ),
+        "Make a stage-lift inspection log for venue rigging teams.": "stage-lift inspection log",
+        "Create an ACME Console for operators to manage submissions.": "ACME Console",
+    }
+
+    for prompt, expected in prompts.items():
+        assert command_product_title(prompt) == expected
+        assert prompt_intent_source(prompt).title == expected
 
 
 def test_command_container_recovers_a_use_for_title_without_completing_the_path() -> None:

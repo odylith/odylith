@@ -25,7 +25,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_path_step
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import is_external_dependency_clause
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import command_product_title
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
@@ -235,6 +237,8 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     operator_context = operator_context_from_product_text(product_text)
     words = request_words(product_text)
     start, command_led = _request_content_start(words)
+    command_focus = product_focus_after_command_sentence(product_text)
+    command_title = command_product_title(product_text)
     need_actor, need_action = need_product_actor_action(product_text)
     need_first_path = f"{need_actor} can {need_action}" if need_actor and need_action else ""
     grant_actor, grant_first_path = _path_grant_actor_action(product_text)
@@ -243,26 +247,51 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
     direct_actor, direct_first_path = _direct_actor_action_sentence(ranked_first_path or product_text)
     preferred_direct_first_path = direct_first_path
+    ranked_step_count = sum(
+        not is_contextual_path_step(step)
+        for step in first_path_model(ranked_first_path).steps
+    )
+    direct_step_count = sum(
+        not is_contextual_path_step(step)
+        for step in first_path_model(direct_first_path).steps
+    )
     if (
         ranked_first_path
-        and len(first_path_model(direct_first_path).steps) < len(first_path_model(ranked_first_path).steps)
+        and direct_step_count < ranked_step_count
     ):
         preferred_direct_first_path = ""
+    ranked_prefix, ranked_separator, _ = ranked_first_path.partition(",")
+    preferred_context_first_path = (
+        direct_first_path
+        if ranked_separator
+        and is_contextual_path_step(ranked_prefix)
+        and direct_step_count == ranked_step_count
+        else ""
+    )
     context_actor, context_first_path = _for_role_actor_gerund_path(product_text)
     actor, actor_led_first_path = _actor_led_relative_clause(product_text)
     non_human_relative_first_path = _non_human_subject_relative_action(product_text)
     ranked_rows = sentence_fragments(ranked_first_path)
-    complete_ranked_first_path = ranked_first_path if len(ranked_rows) > 1 else ""
+    complete_ranked_first_path = (
+        ranked_first_path
+        if len(ranked_rows) > 1
+        or (
+            structured_facts.path_needs_enrichment
+            and len(first_path_model(ranked_first_path).steps) > 1
+        )
+        else ""
+    )
     first_path_source = (
         explicit_first_path
-        or structured_facts.first_path
-        or complete_ranked_first_path
         or grant_first_path
         or multi_role_first_path
+        or need_first_path
+        or preferred_context_first_path
+        or complete_ranked_first_path
+        or structured_facts.first_path
         or ranked_first_path
         or workflow_first_path
         or purpose_first_path
-        or need_first_path
         or preferred_direct_first_path
         or actor_led_first_path
         or context_first_path
@@ -278,10 +307,10 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
                 structured_facts.actor,
                 workflow_actor,
                 multi_role_actor,
+                need_actor,
                 direct_actor,
                 explicit_actor,
                 purpose_actor,
-                need_actor,
                 actor,
                 context_actor,
             )
@@ -309,8 +338,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         title=structured_facts.title
         or _labeled_request_title(original_intent)
         or _confirmed_direction_title(original_intent)
+        or command_focus
+        or command_title
         or explicit_title
-        or ("" if has_structured_fields else product_focus_after_command_sentence(product_text))
         or ("" if has_structured_fields else product_focus_after_need_sentence(product_text))
         or ("" if has_structured_fields else contextual_product_title(product_text))
         or (
@@ -470,7 +500,7 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
 
     product_title = explicit_product_title_evidence(value).casefold()
     for sentence in sentence_fragments(value):
-        text = clean_markdown_text(sentence).strip(" .")
+        text = _without_leading_context_clause(clean_markdown_text(sentence).strip(" ."))
         if _is_release_boundary_statement(text) or is_non_path_evidence(text):
             continue
         explicit_actor, explicit_action, article = _explicit_human_actor_action(text)
@@ -510,6 +540,13 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             return actor, f"{actor} can {action}"
         return actor, f"{actor} {action}"
     return "", ""
+
+
+def _without_leading_context_clause(value: str) -> str:
+    prefix, separator, action = value.partition(",")
+    if separator and is_contextual_path_step(prefix):
+        return action.strip(" .")
+    return value
 
 
 def _leading_role_purpose_action_path(value: str) -> tuple[str, str]:
@@ -1562,8 +1599,15 @@ def _actor_recovery_needs_canonical_path(value: str, *, recovery_kind: str) -> b
 
     text = clean_markdown_text(value).strip(" .")
     return bool(
-        recovery_kind == "leading"
-        or re.search(r"\b(?:what|that|which|whether|who|when|where)\s+(?:can|could|must|should|will|would)\b", text, flags=re.IGNORECASE)
+        len(first_path_model(text).steps) == 1
+        and (
+            recovery_kind == "leading"
+            or re.search(
+                r"\b(?:what|that|which|whether|who|when|where)\s+(?:can|could|must|should|will|would)\b",
+                text,
+                flags=re.IGNORECASE,
+            )
+        )
     )
 
 

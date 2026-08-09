@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_h
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
     contains_requirement_control_clause,
 )
@@ -51,6 +52,7 @@ class StructuredPromptFacts:
     title: str = ""
     actor: str = ""
     first_path: str = ""
+    path_needs_enrichment: bool = False
 
 
 _TITLE_FIELDS = ("product", "product name", "title", "domain label")
@@ -267,18 +269,25 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
             action_value=action_value,
             output_value=output_value,
         )
-    return StructuredPromptFacts(title=title, actor=actor, first_path=first_path)
+    return StructuredPromptFacts(
+        title=title,
+        actor=actor,
+        first_path=first_path,
+        path_needs_enrichment=bool(
+            path_value and len(first_path_model(first_path).steps) <= 1
+        ),
+    )
 
 
 def ranked_first_path_evidence(value: str) -> str:
     """Return the complete ordered workflow evidence, not one high-scoring sentence."""
 
     structured = structured_prompt_facts(value)
-    if structured.first_path:
+    if structured.first_path and not structured.path_needs_enrichment:
         return structured.first_path
     rows = _narrative_rows(value)
     if not rows:
-        return ""
+        return structured.first_path
     ordered: list[str] = []
     candidates: list[tuple[int, int, str]] = []
     for index, row in enumerate(rows):
@@ -310,6 +319,15 @@ def ranked_first_path_evidence(value: str) -> str:
             elif not _hard_non_path(rows[index + 1]):
                 combined = f"{workflow_row}. {rows[index + 1]}"
                 candidates.append((_path_score(combined), -index, combined))
+    if structured.first_path:
+        anchor_terms = set(ordered_terms(structured.first_path, minimum=3, stopwords=("first", "path")))
+        richer_rows = [
+            row
+            for row in ordered
+            if len(first_path_model(row).steps) >= 2
+            and anchor_terms.intersection(ordered_terms(row, minimum=3))
+        ]
+        return max(richer_rows, key=_path_score) if richer_rows else structured.first_path
     if ordered:
         candidate = ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
         return _command_audience_path(value, candidate=candidate) or candidate

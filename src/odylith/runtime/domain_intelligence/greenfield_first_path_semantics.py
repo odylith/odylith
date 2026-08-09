@@ -66,6 +66,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results i
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
+_CONTEXTUAL_STEP_PREFIXES = frozenset(
+    {"after", "at", "before", "during", "in", "on", "when", "while"}
+)
 _PREFERRED_VISIBLE_RESULT_ACTION_RE = re.compile(
     r"\b(?:compare|compares|deliver|delivers|display|displays|find|finds|produce|produces|publish|publishes|"
     r"recompute|recomputes|report|reports|render|renders|return|returns|review|reviews|save|saves|see|sees|"
@@ -195,11 +198,26 @@ def _is_leading_context_fragment(value: str) -> bool:
     text = _clean(value).strip(" .")
     if not text:
         return False
-    if is_contextual_gerund_phrase(text):
+    if is_contextual_path_step(text):
         return True
     if _step_has_action_signal(text):
         return False
     return len(label_terms(text)) <= 6
+
+
+def is_contextual_path_step(value: str) -> bool:
+    """Return true when a short step only locates the following action."""
+
+    text = _clean(value).strip(" .")
+    words = text.split()
+    return bool(
+        is_contextual_gerund_phrase(text)
+        or (
+            words
+            and len(words) <= 4
+            and words[0].casefold() in _CONTEXTUAL_STEP_PREFIXES
+        )
+    )
 
 
 def is_contextual_gerund_phrase(value: str) -> bool:
@@ -528,5 +546,6 @@ __all__ = [
     "first_path_model",
     "first_path_steps",
     "is_contextual_gerund_phrase",
+    "is_contextual_path_step",
     "material_first_path_action",
 ]

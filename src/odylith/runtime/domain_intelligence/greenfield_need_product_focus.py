@@ -30,9 +30,36 @@ _ACTOR_ROLE_SUFFIXES = (
 _TITLE_STOP_WORDS = frozenset(
     {"after", "at", "before", "between", "by", "from", "in", "on", "through", "using", "when", "where", "while", "with"}
 )
-_REQUEST_CONTAINER_PATTERN = r"(?:app|application|product|service|system|tool)"
+_GENERIC_REQUEST_CONTAINERS = frozenset(
+    {"app", "application", "product", "service", "system", "tool"}
+)
+_TITLE_CONTAINER_WORDS = _GENERIC_REQUEST_CONTAINERS | frozenset(
+    {
+        "board",
+        "catalog",
+        "console",
+        "dashboard",
+        "desk",
+        "journal",
+        "ledger",
+        "log",
+        "logbook",
+        "manager",
+        "notebook",
+        "portal",
+        "register",
+        "registry",
+        "tracker",
+        "workspace",
+    }
+)
+_TITLE_WRAPPER_WORDS = frozenset({"compact", "greenfield", "new", "simple", "small"})
+_REQUEST_CONTAINER_PATTERN = "(?:" + "|".join(sorted(_GENERIC_REQUEST_CONTAINERS)) + ")"
 _REQUEST_CONTAINER_PHRASE_PATTERN = rf"(?:(?:greenfield|new|simple|small)\s+)?{_REQUEST_CONTAINER_PATTERN}"
-_REQUEST_COMMAND_PATTERN = r"(?:build|create|design|draft|develop|make|plan|propose)"
+_REQUEST_COMMAND_WORDS = frozenset(
+    {"build", "create", "design", "draft", "develop", "make", "plan", "propose"}
+)
+_REQUEST_COMMAND_PATTERN = "(?:" + "|".join(sorted(_REQUEST_COMMAND_WORDS)) + ")"
 
 
 def product_focus_after_command_sentence(value: str) -> str:
@@ -53,6 +80,40 @@ def product_focus_after_command_sentence(value: str) -> str:
         use_for_object = _use_for_object_focus(focus)
         if use_for_object:
             return use_for_object
+    return ""
+
+
+def command_product_title(value: str) -> str:
+    """Return the bounded product noun from an explicit create command."""
+
+    for sentence in _sentence_fragments(value):
+        words = _request_words(sentence)
+        if not words or _word_key(words[0]) not in _REQUEST_COMMAND_WORDS:
+            continue
+        words = [word.strip(".,:;") for word in words[1:] if word.strip(".,:;")]
+        if words and _word_key(words[0]) in {"a", "an", "the"}:
+            words.pop(0)
+        while words and _word_key(words[0]) in _TITLE_WRAPPER_WORDS:
+            words.pop(0)
+        for_index = next((index for index, word in enumerate(words) if _word_key(word) == "for"), len(words))
+        lead = words[:for_index]
+        if not lead or _word_key(lead[-1]) not in _TITLE_CONTAINER_WORDS:
+            continue
+        tail = words[for_index + 1 :] if for_index < len(words) else []
+        if any(len(word) > 1 and word.isupper() for word in lead[:-1]) or sum(
+            word[:1].isupper() for word in lead[:-1]
+        ) >= 2:
+            return " ".join(lead)
+        action_object = _action_object_focus(" ".join(tail), require_actor=False)
+        if action_object:
+            return (
+                action_object
+                if _word_key(lead[-1]) in _GENERIC_REQUEST_CONTAINERS
+                else f"{action_object} {lead[-1]}"
+            )
+        if tail and len(lead) <= 2 and len(tail) <= 5 and not looks_like_action_clause(" ".join(tail)):
+            return " ".join((*tail, *lead))
+        return " ".join(lead)
     return ""
 
 
@@ -112,10 +173,10 @@ def is_requester_product_framing(value: str) -> bool:
     )
 
 
-def _action_object_focus(value: str) -> str:
+def _action_object_focus(value: str, *, require_actor: bool = True) -> str:
     words = _request_words(value)
     for index, word in enumerate(words[:-2]):
-        if _word_key(word) != "to" or not _looks_like_prompt_actor(words[:index]):
+        if _word_key(word) != "to" or (require_actor and not _looks_like_prompt_actor(words[:index])):
             continue
         action = _word_key(words[index + 1])
         if is_noncompleting_action_head(action) or not MATERIAL_ACTION_RE.fullmatch(action):
@@ -201,6 +262,7 @@ def _word_key(value: str) -> str:
 
 
 __all__ = [
+    "command_product_title",
     "is_requester_product_framing",
     "need_product_actor_action",
     "product_focus_after_command_sentence",

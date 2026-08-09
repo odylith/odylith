@@ -1311,3 +1311,17 @@ def test_nested_human_constraint_does_not_turn_an_artifact_into_the_user() -> No
 
     assert source.actor == "Service operators"
     assert source.actor.casefold() != "bulletin"
+
+
+def test_short_first_path_hint_does_not_replace_a_complete_grounded_workflow() -> None:
+    prompt = (
+        "Create a safety register. "
+        "Captains record prop serials, stage managers request activation, and operators issue an activation card. "
+        "First path: catalog a prop."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.first_path == (
+        "Captains record prop serials, stage managers request activation, and operators issue an activation card"
+    )
