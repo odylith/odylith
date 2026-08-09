@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 import re
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -15,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confir
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import coordinated_subjects
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import declaration_subject_predicate
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -120,17 +120,19 @@ _BOUNDARY_STOPWORDS = frozenset(
         "user",
     }
 )
-_STRUCTURED_SOURCE_KEYS = frozenset(
-    {
-        "data_source",
-        "data_sources",
-        "external_system",
-        "external_systems",
-        "source",
-        "sources",
-        "upstream_system",
-        "upstream_systems",
-    }
+_EXTERNAL_FIELD_NAMES = (
+    "external system",
+    "external systems",
+    "upstream system",
+    "upstream systems",
+    "dependency",
+    "dependencies",
+    "data source",
+    "data sources",
+    "source",
+    "sources",
+    "system",
+    "systems",
 )
 _SOURCE_LABEL_CARRIERS = _SOURCE_CARRIERS | frozenset(
     {
@@ -147,6 +149,7 @@ _SOURCE_LABEL_CARRIERS = _SOURCE_CARRIERS | frozenset(
         "portals",
         "registry",
         "repository",
+        "relay",
         "roster",
         "service",
         "shelf",
@@ -257,9 +260,9 @@ def source_boundary_rows_from_evidence(
 ) -> list[str]:
     """Extract named external sources without copying surrounding prompt prose."""
 
-    rows, is_structured = _structured_source_rows(value)
+    rows = list(prompt_field_values(value, names=_EXTERNAL_FIELD_NAMES))
     text = clean_text(value)
-    if text and not is_structured:
+    if text and not text.lstrip().startswith(("{", "[")):
         rows.extend(_dependency_frame_sources(text))
     excluded = {_boundary_key(label) for label in excluded_labels if _boundary_key(label)}
     normalized = [_source_label(row) for row in rows]
@@ -323,6 +326,10 @@ def _dependency_frame_sources(value: str) -> list[str]:
             if token in _SOURCE_PREPOSITIONS:
                 candidate = _source_object(tokens, start=index + 1)
                 if _system_boundary_candidate(candidate):
+                    rows.append(candidate)
+            if token == "from":
+                candidate = _source_object(tokens, start=index + 1)
+                if _named_system_boundary_candidate(candidate):
                     rows.append(candidate)
             prior_actions = set(lowered[max(0, index - 8) : index])
             required_actions = _SOURCE_PREPOSITION_ACTIONS.get(token, frozenset())
@@ -406,36 +413,6 @@ def _source_object(
     return " ".join(selected[: carrier_indexes[-1] + 1]) if carrier_indexes else " ".join(selected)
 
 
-def _structured_source_rows(value: Any) -> tuple[list[str], bool]:
-    if not isinstance(value, str):
-        return [], False
-    text = value.strip()
-    if not text.startswith(("{", "[")):
-        return [], False
-    try:
-        payload = json.loads(text)
-    except (TypeError, ValueError):
-        return [], False
-    rows: list[str] = []
-    _collect_structured_source_rows(payload, rows)
-    return rows, True
-
-
-def _collect_structured_source_rows(value: Any, rows: list[str], *, key: str = "") -> None:
-    if isinstance(value, Mapping):
-        for item_key, item in value.items():
-            _collect_structured_source_rows(item, rows, key=str(item_key).casefold())
-        return
-    if isinstance(value, (list, tuple)):
-        for item in value:
-            _collect_structured_source_rows(item, rows, key=key)
-        return
-    if key in _STRUCTURED_SOURCE_KEYS:
-        text = clean_text(value)
-        if text:
-            rows.append(text)
-
-
 def _source_label(value: Any, *, explicit: bool = False) -> str:
     text = clean_text(value).strip(" .,:;\"'")
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
@@ -460,6 +437,18 @@ def _boundary_key(value: Any) -> str:
 
 def _system_boundary_candidate(value: Any) -> bool:
     return bool({word.casefold() for word in _LEXEME_RE.findall(clean_text(value))} & _DIRECT_BOUNDARY_CARRIERS)
+
+
+def _named_system_boundary_candidate(value: Any) -> bool:
+    label = _source_label(value)
+    if not label or has_human_actor_signal(label):
+        return False
+    words = _LEXEME_RE.findall(label)
+    return _system_boundary_candidate(label) or any(
+        word.isupper() or any(character.isupper() for character in word[1:])
+        for word in words
+        if len(word) >= 2
+    )
 
 
 def external_boundary_facts(first_path: Any) -> list[ExternalBoundaryFact]:

@@ -137,10 +137,34 @@ _1C54_FALSE_CLARIFICATION_CASES = tuple(
     for case in _1C54_RETIRED_HOLDOUT["cases"]
     if case["case_id"] in {"gfh-20260809-03", "gfh-20260809-10", "gfh-20260809-20"}
 )
+_1C54_CUSTODY_CASE_IDS = frozenset(
+    {
+        "gfh-20260809-05",
+        "gfh-20260809-08",
+        "gfh-20260809-12",
+        "gfh-20260809-13",
+        "gfh-20260809-15",
+        "gfh-20260809-16",
+        "gfh-20260809-17",
+        "gfh-20260809-19",
+        "gfh-20260809-22",
+        "gfh-20260809-23",
+    }
+)
+_1C54_CUSTODY_CASES = tuple(
+    case for case in _1C54_RETIRED_HOLDOUT["cases"] if case["case_id"] in _1C54_CUSTODY_CASE_IDS
+)
 
 
 def _material_field_key(value: object) -> str:
     return "_".join(re.findall(r"[a-z0-9]+", str(value).casefold()))
+
+
+def _contains_normalized(values: object, expected: object) -> bool:
+    rows = values if isinstance(values, (list, tuple)) else (values,)
+    haystack = " ".join(" ".join(str(row).casefold().split()) for row in rows)
+    needle = " ".join(str(expected).casefold().split())
+    return bool(needle and needle in haystack)
 
 
 @pytest.fixture(autouse=True)
@@ -226,6 +250,56 @@ def test_1c54_complete_distributed_paths_reach_candidate_materialization(
 
     assert intent["product_intent_authority"]["materiality_status"] == "passed"
     assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _1C54_CUSTODY_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_1c54_explicit_systems_and_critical_constraints_reach_sealed_fact_custody(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    annotation = _1C54_ANNOTATIONS[str(case["case_id"])]
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    accepted_facts = [
+        atom["normalized_value"]
+        for atom in intent["product_intent_authority"]["atomic_facts"]
+        if atom["custody_state"] == "accepted_fact"
+    ]
+    constraint_truth = [*intent["operational_constraints"], *intent["non_goals"]]
+
+    assert all(
+        _contains_normalized(intent["external_systems"], system)
+        for system in annotation["explicit_systems"]
+    )
+    assert all(
+        _contains_normalized(constraint_truth, constraint)
+        for constraint in annotation["critical_constraints"]
+    )
+    assert all(
+        _contains_normalized(accepted_facts, fact)
+        for fact in [*annotation["explicit_systems"], *annotation["critical_constraints"]]
+    )
+
+
+def test_1c54_compact_negative_field_does_not_absorb_the_evidence_envelope(tmp_path: Path) -> None:
+    case = next(case for case in _1C54_CUSTODY_CASES if case["case_id"] == "gfh-20260809-08")
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+
+    assert [row.rstrip(".") for row in intent["non_goals"]] == [
+        "never turn a missing trace into a normal reading"
+    ]
+    assert all("Brief // Product:" not in row for row in intent["non_goals"])
 
 
 @pytest.mark.parametrize(

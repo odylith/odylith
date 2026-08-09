@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 import re
 from typing import Any, Mapping
 
@@ -32,6 +31,8 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     without_confirmation_evidence_label,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_key
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
     word_sense_content_clause_describes_comparison,
@@ -48,7 +49,7 @@ class StructuredPromptFacts:
 
 
 _TITLE_FIELDS = ("product", "product name", "title", "domain label")
-_ACTOR_FIELDS = ("actor", "operator", "user", "first user")
+_ACTOR_FIELDS = ("actor", "actors", "operator", "user", "first user")
 _PATH_FIELDS = (
     "first complete path",
     "first path",
@@ -57,31 +58,9 @@ _PATH_FIELDS = (
     "path",
     "workflow",
 )
-_ROLE_FIELDS = ("role", "operator role", "user role")
+_ROLE_FIELDS = ("role", "roles", "operator role", "user role")
 _ACTION_FIELDS = ("objective", "action", "task", "user task")
 _OUTPUT_FIELDS = ("visible result", "output", "result")
-_INLINE_FIELD_NAMES = tuple(
-    sorted(
-        {
-            *_TITLE_FIELDS,
-            *_ACTOR_FIELDS,
-            *_PATH_FIELDS,
-            *_ROLE_FIELDS,
-            *_ACTION_FIELDS,
-            *_OUTPUT_FIELDS,
-            "acceptance",
-            "dependency",
-            "domain",
-            "proof boundary",
-            "safety boundary",
-            "state",
-            "state model",
-            "system",
-        },
-        key=len,
-        reverse=True,
-    )
-)
 _HARD_NON_PATH_RE = re.compile(
     r"\b(?:out\s+of\s+scope|unrelated|proof(?:\s+boundary)?|prove|success\s+means|"
     r"demonstrate|must\s+not|may\s+not|cannot|can't|do\s+not|never|boundary|"
@@ -189,10 +168,6 @@ _FOR_ROLE_PERSON_RE = re.compile(
     r"(?P<name>[A-Z][A-Za-z0-9'/-]*)\b",
 )
 _INVALID_ROLE_TRAILING_RE = re.compile(r"\b(?:at|for|from|in|on|to|with|within)$", flags=re.IGNORECASE)
-_INLINE_FIELD_RE = re.compile(
-    r"(?:^|[\n.;]|//)\s*(?P<key>" + "|".join(re.escape(field) for field in _INLINE_FIELD_NAMES) + r")\s*:\s*",
-    flags=re.IGNORECASE,
-)
 _PRODUCT_FOR_ACTOR_RE = re.compile(
     r"\b(?:build|create|design|make)\s+(?:a\s+|the\s+)?(?:greenfield\s+)?"
     r"(?:app|application|platform|product|service|system|tool|workspace)\s+for\s+"
@@ -247,10 +222,7 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
     text = str(value or "").strip()
     if not text:
         return StructuredPromptFacts()
-    mapping = dict(_json_mapping(text))
-    if not mapping:
-        mapping.update(_markdown_field_mapping(text))
-        mapping.update(_inline_field_mapping(text))
+    mapping = prompt_field_mapping(text)
     natural_actor, natural_action = _natural_actor_action(text)
     title = _explicit_domain_label(text) or _first_field(mapping, _TITLE_FIELDS)
     actor = _first_field(mapping, _ACTOR_FIELDS) or natural_actor
@@ -584,55 +556,6 @@ def _has_actor_label_signal(value: str) -> bool:
     )
 
 
-def _json_mapping(value: str) -> Mapping[str, Any]:
-    if not value.startswith("{"):
-        return {}
-    try:
-        payload = json.loads(value)
-    except (TypeError, ValueError, json.JSONDecodeError):
-        return {}
-    return payload if isinstance(payload, Mapping) else {}
-
-
-def _markdown_field_mapping(value: str) -> dict[str, Any]:
-    fields: dict[str, Any] = {}
-    for raw_row in value.splitlines():
-        row = raw_row.strip()
-        if not row:
-            continue
-        if row.startswith("|") and row.endswith("|"):
-            cells = [cell.strip() for cell in row.strip("|").split("|")]
-            if len(cells) >= 2 and not all(set(cell) <= {"-", ":", " "} for cell in cells):
-                key = _field_key(cells[0])
-                if key not in {"field", "key"}:
-                    fields[key] = cells[1]
-            continue
-        match = re.match(
-            r"^\s*(?:[-*]\s*)?(?:\*\*)?(?P<key>[A-Za-z][A-Za-z ]{1,40})(?:\*\*)?\s*:\s*(?P<value>.+)$",
-            raw_row,
-        )
-        if match:
-            fields[_field_key(match.group("key"))] = match.group("value").strip()
-    return fields
-
-
-def _inline_field_mapping(value: str) -> dict[str, Any]:
-    """Recover known labels when compact evidence places several fields on one line."""
-
-    matches = list(_INLINE_FIELD_RE.finditer(value))
-    fields: dict[str, Any] = {}
-    for index, match in enumerate(matches):
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(value)
-        field_value = value[match.end() : end].strip(" /\n\t.;")
-        if field_value:
-            fields[_field_key(match.group("key"))] = field_value
-    return fields
-
-
-def _field_key(value: object) -> str:
-    return " ".join(str(value or "").casefold().replace("_", " ").split())
-
-
 def _first_field(mapping: Mapping[str, Any], fields: tuple[str, ...]) -> str:
     value = _first_raw_field(mapping, fields)
     if isinstance(value, (list, tuple)):
@@ -641,7 +564,7 @@ def _first_field(mapping: Mapping[str, Any], fields: tuple[str, ...]) -> str:
 
 
 def _first_raw_field(mapping: Mapping[str, Any], fields: tuple[str, ...]) -> Any:
-    normalized = {_field_key(key): value for key, value in mapping.items()}
+    normalized = {prompt_field_key(key): value for key, value in mapping.items()}
     for field in fields:
         if field in normalized:
             return normalized[field]
@@ -837,7 +760,7 @@ def _narrative_rows(value: str) -> list[str]:
 
 def is_labeled_non_path_evidence(value: str) -> bool:
     label, separator, _body = str(value or "").partition(":")
-    return bool(separator and _field_key(label) in _NON_PATH_NARRATIVE_LABELS)
+    return bool(separator and prompt_field_key(label) in _NON_PATH_NARRATIVE_LABELS)
 
 
 def _without_confirmed_direction_title(value: str) -> str:

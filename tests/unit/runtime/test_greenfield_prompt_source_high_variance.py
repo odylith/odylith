@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery im
 )
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import prohibited_product_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
@@ -642,6 +643,37 @@ def test_policy_classifier_keeps_complete_paths_and_atomizes_compound_obligation
     assert operational_constraint_phrases(
         "Do not score neighborhoods in the first release; retain geotagged photos for seven years."
     ) == ("retain geotagged photos for seven years",)
+
+
+def test_operational_constraints_preserve_explicit_gate_and_noun_list_clauses() -> None:
+    prompt = (
+        "Brief // Rule: a reviewer approves the result after an operator uploads the reading // "
+        "First path: upload a reading. Store reagent lot and calibration time. "
+        "The notice needs a cleared analysis from AquaLedger."
+    )
+
+    assert operational_constraint_phrases(prompt) == (
+        "a reviewer approves the result after an operator uploads the reading",
+        "Store reagent lot and calibration time",
+        "The notice needs a cleared analysis from AquaLedger",
+    )
+
+
+def test_prohibited_constraints_preserve_the_complete_leading_no_clause() -> None:
+    assert prohibited_product_phrases(
+        "No release may proceed without reviewer approval."
+    ) == ("No release may proceed without reviewer approval",)
+
+
+def test_prohibited_constraints_isolate_compact_negative_fields() -> None:
+    prompt = (
+        "Brief // Product: trace review // System: GaugeMesh stream // "
+        "Non-goal: never turn a missing trace into a normal reading // First path: ingest a trace."
+    )
+
+    assert prohibited_product_phrases(prompt) == (
+        "never turn a missing trace into a normal reading",
+    )
 
 
 def test_restatement_keeps_product_title_and_dependency_out_of_user_path() -> None:

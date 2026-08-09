@@ -20,6 +20,8 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     without_confirmation_evidence_label,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_values
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
@@ -50,8 +52,10 @@ _OPERATOR_PROCESS_WITHOUT_RE = re.compile(
     r"\bwithout\s+(?:asking|requesting|requiring)\b[^.;!?]*\b(?:confirm|confirmation)\b",
     flags=re.IGNORECASE,
 )
-_DIRECT_OBLIGATION_ACTIONS = frozenset({"keep", "preserve", "retain"})
-_OBLIGATION_MODALS = frozenset({"must", "required", "requires", "shall"})
+_DIRECT_OBLIGATION_ACTIONS = frozenset({"keep", "preserve", "retain", "store"})
+_OBLIGATION_MODALS = frozenset({"depend", "depends", "must", "need", "needs", "required", "requires", "shall"})
+_LABELED_CONSTRAINT_FIELDS = ("constraint", "constraints", "gate", "rule")
+_LABELED_PROHIBITION_FIELDS = ("non-goal", "non-goals", "safety", "safety boundary")
 _NEGATIVE_OBLIGATION_WORDS = frozenset(
     {"can't", "cannot", "forbidden", "never", "not", "prohibited", "without"}
 )
@@ -74,6 +78,10 @@ def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
     matches.extend(
         (max(0, text.casefold().find(constraint.casefold())), constraint)
         for constraint in _positive_source_obligations(text)
+    )
+    matches.extend(
+        (max(0, text.casefold().find(constraint.casefold())), constraint)
+        for constraint in _labeled_constraint_phrases(value)
     )
     values = [value for _start, value in sorted(matches)]
     return _unique_constraints(values)
@@ -104,16 +112,24 @@ def prohibited_product_phrases(value: Any) -> tuple[str, ...]:
     """Return exact source clauses that prohibit product behavior."""
 
     text = clean_text(value).strip(" .")
-    clauses: list[str] = [
+    labeled_clauses = _labeled_prohibition_phrases(value)
+    clauses: list[str] = list(labeled_clauses)
+    clauses.extend(
         clause.strip(" .;:")
         for clause in re.split(r"(?<=[.!?])\s+|;\s*", text)
-        if _PROHIBITED_CLAUSE_RE.search(clause)
-    ]
+        if not (len(prompt_field_mapping(clause)) > 1 and "//" in clause)
+        and not prompt_field_values(clause, names=_LABELED_PROHIBITION_FIELDS)
+        and (_PROHIBITED_CLAUSE_RE.search(clause) or _leading_no_obligation(clause))
+    )
     for match in _WITHOUT_PROHIBITION_RE.finditer(text):
         clause_start = max(text.rfind(mark, 0, match.start()) for mark in ".!?;") + 1
         containing_clause = text[clause_start : match.end()]
         phrase = match.group(0).strip(" .;:")
-        if _PROHIBITED_CLAUSE_RE.search(containing_clause) or _OPERATOR_PROCESS_WITHOUT_RE.search(phrase):
+        if (
+            _PROHIBITED_CLAUSE_RE.search(containing_clause)
+            or _leading_no_obligation(containing_clause)
+            or _OPERATOR_PROCESS_WITHOUT_RE.search(phrase)
+        ):
             continue
         clauses.append(phrase)
     return _unique_constraints(clauses)
@@ -188,18 +204,39 @@ def _positive_source_obligations(value: str) -> tuple[str, ...]:
         child_path_actions = tuple(
             unit
             for unit in eligible_units
-            if unit not in child_obligations and _is_path_action(unit)
+            if unit not in child_obligations and _is_path_action(unit) and not _is_nominal_clause(unit)
         )
+        words = _constraint_words(text)
+        direct_obligation = bool(words and words[0] in _DIRECT_OBLIGATION_ACTIONS)
         if (
             is_source_obligation_clause(text)
-            and not _is_non_product_control_sentence(text)
             and len(child_obligations) <= 1
-            and not child_path_actions
+            and (direct_obligation or not child_path_actions)
         ):
             obligations.append(text)
         else:
             obligations.extend(child_obligations)
     return _unique_constraints(obligations)
+
+
+def _labeled_constraint_phrases(value: Any) -> tuple[str, ...]:
+    rows: list[str] = []
+    for field_value in prompt_field_values(value, names=_LABELED_CONSTRAINT_FIELDS):
+        for index, fragment in enumerate(sentence_fragments(field_value)):
+            if index == 0 or is_source_obligation_clause(fragment):
+                rows.append(fragment)
+    return tuple(rows)
+
+
+def _labeled_prohibition_phrases(value: Any) -> tuple[str, ...]:
+    rows: list[str] = []
+    for field_value in prompt_field_values(value, names=_LABELED_PROHIBITION_FIELDS):
+        rows.extend(
+            fragment
+            for fragment in sentence_fragments(field_value)
+            if _PROHIBITED_CLAUSE_RE.search(fragment) or _leading_no_obligation(fragment)
+        )
+    return tuple(rows)
 
 
 def _constraint_words(value: str) -> tuple[str, ...]:
@@ -208,6 +245,16 @@ def _constraint_words(value: str) -> tuple[str, ...]:
         for word in value.casefold().translate(_WORD_PUNCTUATION).split()
         if word.strip("'")
     )
+
+
+def _leading_no_obligation(value: str) -> bool:
+    words = _constraint_words(value)
+    return bool(words and words[0] == "no" and set(words) & {"can", "cannot", "may", "must", "shall"})
+
+
+def _is_nominal_clause(value: str) -> bool:
+    words = _constraint_words(value)
+    return bool(words and words[0] in {"a", "an", "the"})
 
 
 def _is_path_action(value: str) -> bool:

@@ -103,6 +103,42 @@ def test_source_boundary_rows_preserve_named_sources_across_evidence_shapes(evid
     ("evidence", "expected"),
     (
         (
+            "Brief // Product: flood review // System: GaugeMesh event stream // First path: ingest a trace.",
+            "GaugeMesh event stream",
+        ),
+        (
+            "Pasted request **Goal:** schedule a review. **System:** LuxLedger sensor bridge. "
+            "**First path:** upload one reading.",
+            "LuxLedger sensor bridge",
+        ),
+        (
+            "Approval requires an acknowledgment from EmberPermit.",
+            "EmberPermit",
+        ),
+    ),
+)
+def test_source_boundary_rows_share_typed_field_and_named_relation_custody(
+    evidence: str,
+    expected: str,
+) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == [expected]
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        '{"intent":{"external_systems":["Hall Calendar"]}}',
+        '[{"source":"Hall Calendar"}]',
+    ),
+)
+def test_source_boundary_rows_preserve_nested_and_list_json_fields(evidence: str) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == ["Hall Calendar"]
+
+
+@pytest.mark.parametrize(
+    ("evidence", "expected"),
+    (
+        (
             "Use the watershed gauge service for basin readings.",
             ["watershed gauge service"],
         ),
