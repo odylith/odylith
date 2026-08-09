@@ -9,6 +9,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_token_form
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
@@ -262,6 +263,30 @@ def source_boundary_rows_from_evidence(
     return list(unique_text(row for row in normalized if row and _boundary_key(row) not in excluded))[:8]
 
 
+def is_external_dependency_clause(value: Any) -> bool:
+    """Return whether one non-human clause states only an external dependency."""
+
+    text = clean_text(value).strip(" .")
+    tokens = _LEXEME_RE.findall(text)
+    lowered = [token.casefold() for token in tokens]
+    model = first_path_model(text)
+    if not tokens or len(model.steps) > 1:
+        return False
+    for index, token in enumerate(lowered[:-1]):
+        if token not in _DEPENDENCY_ACTIONS or lowered[index + 1] != "on":
+            continue
+        subject = " ".join(tokens[:index]).strip()
+        source = _source_object(tokens, start=index + 2)
+        prior_action = any(action_token_form(word) for word in tokens[:index])
+        purpose_action = any(
+            lowered[purpose_index] == "to" and action_token_form(tokens[purpose_index + 1])
+            for purpose_index in range(index + 2, len(tokens) - 1)
+        )
+        if subject and source and not prior_action and not purpose_action and not has_human_actor_signal(subject):
+            return True
+    return False
+
+
 def _dependency_frame_sources(value: str) -> list[str]:
     rows: list[str] = []
     for clause in re.split(r"[,.;:!?\n]+", clean_text(value)):
@@ -470,5 +495,6 @@ __all__ = [
     "ExternalBoundaryFact",
     "completed_external_boundary_rows",
     "external_boundary_facts",
+    "is_external_dependency_clause",
     "source_boundary_rows_from_evidence",
 ]

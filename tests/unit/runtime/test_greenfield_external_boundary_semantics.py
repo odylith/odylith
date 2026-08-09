@@ -6,7 +6,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import intent_hypothesis_from_operator_evidence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import external_boundary_facts
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import is_external_dependency_clause
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_rows_from_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import ranked_first_path_evidence
 
 
 _FIRST_PATH = (
@@ -95,6 +97,37 @@ def test_confirmed_completion_preserves_external_boundary_into_semantic_model() 
 )
 def test_source_boundary_rows_preserve_named_sources_across_evidence_shapes(evidence: str, expected: str) -> None:
     assert source_boundary_rows_from_evidence(evidence) == [expected]
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        "It relies on the mapping gateway.",
+        "The first path depends on the Hall Calendar.",
+        "Harbor Slate relies on Tide Ledger.",
+    ),
+)
+def test_external_dependency_clause_identifies_non_human_boundary_statements(evidence: str) -> None:
+    assert is_external_dependency_clause(evidence)
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        "A coordinator relies on the mapping gateway to review a site.",
+        "The archive relies on the Hall Calendar to prepare a receipt.",
+        "The product records a site and relies on the mapping gateway.",
+        "The product displays the accepted mapping result.",
+    ),
+)
+def test_external_dependency_clause_does_not_absorb_human_or_mixed_workflows(evidence: str) -> None:
+    assert not is_external_dependency_clause(evidence)
+
+
+def test_dependency_with_action_tail_remains_eligible_first_path_evidence() -> None:
+    evidence = "The archive relies on the Hall Calendar to prepare a receipt."
+
+    assert ranked_first_path_evidence(evidence) == evidence.rstrip(".")
 
 
 def test_operator_evidence_hypothesis_preserves_named_prompt_source() -> None:

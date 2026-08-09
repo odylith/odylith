@@ -633,6 +633,40 @@ def test_policy_classifier_keeps_complete_paths_and_atomizes_compound_obligation
         "The first release must preserve source versions",
         "retain waitlist order",
     )
+    assert operational_constraint_phrases(
+        "Retain geotagged photos for seven years; do not score neighborhoods in the first release."
+    ) == ("Retain geotagged photos for seven years",)
+    assert operational_constraint_phrases(
+        "Do not score neighborhoods in the first release; retain geotagged photos for seven years."
+    ) == ("retain geotagged photos for seven years",)
+
+
+def test_restatement_keeps_product_title_and_dependency_out_of_user_path() -> None:
+    prompt = (
+        "Plan the same tree-canopy ledger with this order of work: arborists verify species plans, "
+        "neighborhood stewards submit planting sites, then finance clerks release microgrants only after "
+        "inspection receipts. It relies on the mapping gateway. Retain geotagged photos for seven years; "
+        "do not score neighborhoods in the first release."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == "tree-canopy ledger"
+    assert source.first_path == (
+        "arborists verify species plans, neighborhood stewards submit planting sites, then finance clerks "
+        "release microgrants only after inspection receipts"
+    )
+    assert operational_constraint_phrases(prompt) == (
+        "Retain geotagged photos for seven years",
+    )
+
+
+def test_same_remains_part_of_a_real_product_title() -> None:
+    source = prompt_intent_source(
+        "Plan the Same Day Ledger where a coordinator records a request and sees a receipt."
+    )
+
+    assert source.title == "Same Day Ledger"
 
 
 def test_operational_constraints_are_editable_and_rendered_in_host_independent_fallback() -> None:

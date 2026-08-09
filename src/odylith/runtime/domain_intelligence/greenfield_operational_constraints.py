@@ -176,18 +176,20 @@ def _positive_source_obligations(value: str) -> tuple[str, ...]:
     obligations: list[str] = []
     for sentence in sentence_fragments(value):
         text = clean_text(sentence).strip(" .")
-        if _is_non_product_control_sentence(text):
+        if _is_non_product_context_sentence(text):
             continue
         units = atomic_claim_units(text)
-        children = units[1:]
-        child_obligations = tuple(unit for unit in children if is_source_obligation_clause(unit))
+        atomic_units = units[1:] if units and clean_text(units[0]) == text else units
+        eligible_units = tuple(unit for unit in atomic_units if not _is_non_product_control_sentence(unit))
+        child_obligations = tuple(unit for unit in eligible_units if is_source_obligation_clause(unit))
         child_path_actions = tuple(
             unit
-            for unit in children
+            for unit in eligible_units
             if unit not in child_obligations and _is_path_action(unit)
         )
         if (
             is_source_obligation_clause(text)
+            and not _is_non_product_control_sentence(text)
             and len(child_obligations) <= 1
             and not child_path_actions
         ):
@@ -212,10 +214,16 @@ def _is_path_action(value: str) -> bool:
 
 def _is_non_product_control_sentence(value: str) -> bool:
     return bool(
+        _is_non_product_context_sentence(value)
+        or looks_like_trailing_operator_instruction(value)
+    )
+
+
+def _is_non_product_context_sentence(value: str) -> bool:
+    return bool(
         is_source_metadata_clause(value)
         or contains_word_sense_metadata_clause(value)
         or is_operator_review_lens_step(value)
-        or looks_like_trailing_operator_instruction(value)
     )
 
 

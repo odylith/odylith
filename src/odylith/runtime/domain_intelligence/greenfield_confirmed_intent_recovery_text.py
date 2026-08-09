@@ -35,6 +35,7 @@ PRODUCT_CONTAINER_TERMS = frozenset(
         "executor",
         "hub",
         "journal",
+        "ledger",
         "logbook",
         "manager",
         "monitor",

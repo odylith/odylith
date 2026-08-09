@@ -905,3 +905,35 @@ def test_source_obligation_is_not_miscompiled_as_the_last_user_path_event(tmp_pa
     assert "retain waitlist order" in accepted_constraints
     assert "opening roster" in str(sequence["mermaid_source"]).casefold()
     assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
+
+
+def test_canopy_restatement_preserves_complete_source_meaning(tmp_path: Path) -> None:
+    case = next(
+        row for row in _87E277_RETIRED_HOLDOUT["cases"] if row["case_id"] == "gfh-20260808-v2-02"
+    )
+    prompt = str(case["prompt"])
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert intent["title"] == "Tree-canopy Ledger"
+    assert "mapping gateway" not in str(intent["first_path"]).casefold()
+    assert "retain geotagged photos for seven years" in {
+        str(value).casefold() for value in intent["operational_constraints"]
+    }
+    assert "do not score neighborhoods in the first release" in {
+        str(value).casefold().rstrip(" .") for value in intent["non_goals"]
+    }
+    assert all(str(term).casefold() in rendered for term in case["required_terms"])
+    assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed

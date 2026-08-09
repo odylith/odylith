@@ -146,7 +146,7 @@ _NON_HUMAN_SUBJECT_TERMINALS = frozenset(
         "workspace",
     }
 )
-_REQUEST_LEAD_CONNECTORS = ("where", "that", "who", "so", "for", "to")
+_REQUEST_LEAD_CONNECTORS = ("where", "that", "who", "so", "for", "to", "with")
 _MULTI_ROLE_MODAL_TOKENS = frozenset({"can", "could", "must", "should", "will"})
 _OBSERVATION_ONLY_ACTIONS = frozenset({"check", "inspect", "replay", "review", "see", "verify", "view"})
 _PATH_GRANT_PATH_MODIFIERS = frozenset(
@@ -659,8 +659,18 @@ def _project_title_before_sentence_boundary(words: list[str], *, start: int, com
 def _skip_proposal_wrapper(words: list[str], start: int) -> int:
     index = start
     saw_request_wrapper = False
-    while index < len(words) and words[index].casefold().strip(",:;") in {"greenfield", "new", "product-first"}:
+    while index < len(words) and words[index].casefold().strip(",:;") in {
+        "greenfield",
+        "new",
+        "product-first",
+    }:
         saw_request_wrapper = True
+        index += 1
+    if (
+        index < len(words)
+        and word_key(words[index]) == "same"
+        and _contains_token_sequence(words[index + 1 :], ("this", "order", "of", "work"))
+    ):
         index += 1
     if index < len(words) and words[index].casefold().strip(",:;") in {"proposal", "product"}:
         index += 1
@@ -684,6 +694,12 @@ def _skip_proposal_wrapper(words: list[str], start: int) -> int:
     if index < len(words) and words[index].casefold().strip(",:;") in {"a", "an", "the"}:
         index += 1
     return index
+
+
+def _contains_token_sequence(words: list[str], sequence: tuple[str, ...]) -> bool:
+    lowered = [word_key(word) for word in words]
+    width = len(sequence)
+    return any(tuple(lowered[index : index + width]) == sequence for index in range(len(lowered) - width + 1))
 
 
 def _tail_after_word(value: str, marker: str) -> str:

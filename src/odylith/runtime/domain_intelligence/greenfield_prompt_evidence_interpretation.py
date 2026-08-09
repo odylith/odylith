@@ -23,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
+    is_external_dependency_clause,
+)
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import is_source_obligation_clause
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
@@ -861,6 +864,7 @@ def _hard_non_path(value: str) -> bool:
         _HARD_NON_PATH_RE.search(value)
         or _PRODUCT_IDENTITY_DECLARATION_RE.search(_clean(value))
         or _CREATE_REQUEST_WRAPPER_RE.search(_clean(value))
+        or is_external_dependency_clause(value)
         or is_release_evidence_requirement(value)
         or _is_policy_only_obligation(value)
         or contains_requirement_control_clause(value)
