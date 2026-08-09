@@ -136,6 +136,59 @@ def test_atomic_fact_ledger_binds_positive_dependency_beside_a_prohibition() -> 
     assert dependency["source_span_ids"]
 
 
+def test_atomic_fact_ledger_binds_each_required_external_source_subject() -> None:
+    source = "The insurer directory and pharmacy status feed are required external sources."
+    facts = {
+        **_FACTS,
+        "external_systems": ["insurer directory", "pharmacy status feed"],
+    }
+
+    atoms = _authority(facts=facts, source=source)["atomic_facts"]
+
+    _assert_accepted(atoms, "insurer directory", category="dependencies", field="external_systems")
+    _assert_accepted(atoms, "pharmacy status feed", category="dependencies", field="external_systems")
+
+
+@pytest.mark.parametrize(
+    ("source", "systems"),
+    (
+        (
+            "The insurer directory or pharmacy status feed are required external sources.",
+            ("insurer directory", "pharmacy status feed"),
+        ),
+        (
+            "The insurer directory, pharmacy status feed, and transcript vendor are required external sources.",
+            ("insurer directory", "pharmacy status feed", "transcript vendor"),
+        ),
+    ),
+)
+def test_atomic_fact_ledger_binds_required_external_source_lists(
+    source: str,
+    systems: tuple[str, ...],
+) -> None:
+    facts = {**_FACTS, "external_systems": list(systems)}
+
+    atoms = _authority(facts=facts, source=source)["atomic_facts"]
+
+    for value in systems:
+        _assert_accepted(atoms, value, category="dependencies", field="external_systems")
+
+
+def test_atomic_fact_ledger_does_not_affirm_coordinated_prohibited_sources() -> None:
+    source = "The insurer directory, pharmacy status feed, and transcript vendor are prohibited external sources."
+    facts = {
+        **_FACTS,
+        "external_systems": ["insurer directory", "pharmacy status feed", "transcript vendor"],
+    }
+
+    atoms = _authority(facts=facts, source=source)["atomic_facts"]
+
+    for value in facts["external_systems"]:
+        atom = _atom(atoms, value)
+        assert atom["custody_state"] == "bounded_interpretation"
+        assert atom["source_span_ids"] == []
+
+
 def test_atomic_fact_ledger_keeps_hyphenated_state_labels_affirmed() -> None:
     source = "A stale reading keeps the mission in entry-prohibited state."
     facts = {

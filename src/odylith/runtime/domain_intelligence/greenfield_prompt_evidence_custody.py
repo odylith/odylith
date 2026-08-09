@@ -56,6 +56,9 @@ _SOURCE_EVIDENCE_SECTION_HEADINGS = frozenset(
     }
 )
 _MARKDOWN_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}(?:\s+|$)")
+_DECLARATION_COPULA_RE = re.compile(r"\b(?:is|are)\b", flags=re.IGNORECASE)
+_SUBJECT_CONJUNCTION_RE = re.compile(r"\s*(?:,|\band\b|\bor\b)\s*", flags=re.IGNORECASE)
+_CONFIRMATION_EVIDENCE_LABELS = frozenset({"changed", "keep"})
 
 
 def product_intent_source_text(value: str) -> str:
@@ -99,6 +102,53 @@ def operator_context_from_product_text(value: str) -> str:
             if context:
                 return context
     return ""
+
+
+def confirmed_direction_evidence_text(value: str) -> str:
+    """Return inline evidence carried by a compact Confirmed direction heading."""
+
+    prefix = "confirmed direction "
+    for raw_line in str(value or "").splitlines():
+        line = raw_line.strip()
+        while line.startswith("#"):
+            line = line[1:].lstrip()
+        if line.casefold().startswith(prefix):
+            return line[len(prefix) :].strip()
+    return ""
+
+
+def declaration_subject_predicate(value: str) -> tuple[str, str]:
+    """Split one bounded subject declaration at its first is/are predicate."""
+
+    text = clean_markdown_text(value).strip(" .")
+    match = _DECLARATION_COPULA_RE.search(text)
+    if not match:
+        return "", ""
+    return text[: match.start()].strip(" ,;:"), text[match.end() :].strip(" ,;:")
+
+
+def coordinated_subjects(value: str) -> tuple[str, ...]:
+    """Return subjects from a comma, and, or or Oxford-comma list."""
+
+    text = clean_markdown_text(value).strip(" ,;:")
+    if not text:
+        return ()
+    subjects = tuple(
+        part
+        for raw in _SUBJECT_CONJUNCTION_RE.split(text)
+        if (part := clean_markdown_text(raw).strip(" ,;:"))
+    )
+    return subjects or (text,)
+
+
+def without_confirmation_evidence_label(value: str) -> str:
+    """Remove a compact confirmation field label while preserving its evidence."""
+
+    text = clean_markdown_text(value).strip()
+    label, separator, evidence = text.partition(":")
+    if separator and label.strip().casefold() in _CONFIRMATION_EVIDENCE_LABELS:
+        return evidence.strip()
+    return text
 
 
 def sentence_fragments(value: str) -> list[str]:
@@ -276,6 +326,9 @@ def _source_metadata_labels(value: str) -> list[re.Match[str]]:
 
 __all__ = [
     "REQUEST_COMMAND_WORDS",
+    "coordinated_subjects",
+    "confirmed_direction_evidence_text",
+    "declaration_subject_predicate",
     "is_source_metadata_clause",
     "looks_like_trailing_operator_instruction",
     "markdown_section_text",
@@ -286,6 +339,7 @@ __all__ = [
     "strip_leading_contextual_gerund_sentence",
     "strip_trailing_operator_instruction_sentences",
     "without_leading_explicit_intent_label",
+    "without_confirmation_evidence_label",
     "without_source_metadata_clauses",
     "word_key",
 ]

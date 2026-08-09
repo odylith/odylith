@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.common.prose_grammar import ACTION_MODAL_WORDS
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
@@ -21,7 +22,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds im
 
 ACTOR_SIGNATURE_STOPWORDS = frozenset({"a", "an", "the", "one", "this", "that", "each", "another", "can"})
 PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
-MODAL_ACTOR_MARKERS = frozenset({"can", "could", "must", "should", "will", "would"})
+MODAL_ACTOR_MARKERS = ACTION_MODAL_WORDS
+_MODAL_ACTOR_PATTERN = "|".join(re.escape(marker) for marker in sorted(MODAL_ACTOR_MARKERS))
 SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whether", "which", "while"})
 SYSTEM_SUBJECT_TERMS = frozenset(
     "app application dashboard engine model os pipeline platform product service system tool view workspace".split()
@@ -175,7 +177,7 @@ def looks_like_actor_subject_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     if not text or not _looks_like_actor_prefix(text):
         return False
-    if re.search(r"\b(?:can|could|must|should|will|would)\s*$", text, flags=re.IGNORECASE):
+    if re.search(rf"\b(?:{_MODAL_ACTOR_PATTERN})\s*$", text, flags=re.IGNORECASE):
         return False
     if re.search(r"[,;]", text):
         return False
@@ -268,7 +270,7 @@ def _modal_actor_action_parts(value: str) -> tuple[str, str]:
     words = [word.strip(".,:;") for word in text.split() if word.strip(".,:;")]
     if len(words) < 3:
         return "", ""
-    for match in re.finditer(r"\b(?:can|could|must|should|will|would|needs?\s+to)\b", text, flags=re.IGNORECASE):
+    for match in re.finditer(rf"\b(?:{_MODAL_ACTOR_PATTERN}|needs?\s+to)\b", text, flags=re.IGNORECASE):
         actor = text[: match.start()].strip(" .")
         action = text[match.end() :].strip(" .")
         if _looks_like_actor_prefix(actor) and action and not _contains_subordinate_subject_marker(actor):

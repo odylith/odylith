@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    confirmed_direction_evidence_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -130,6 +133,10 @@ def _confirmed_intent_answer_row(question: str, line: str) -> str:
 
 def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[str, list[str]]) -> str:
     if _looks_like_operator_instruction_body(line):
+        return current
+    compact_direction = confirmed_direction_evidence_text(line)
+    if compact_direction:
+        sections.setdefault(current, []).append(compact_direction)
         return current
     prd_heading = _prd_section_heading_key(line)
     if prd_heading:

@@ -14,6 +14,12 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects 
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    coordinated_subjects,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    declaration_subject_predicate,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     without_source_metadata_clauses,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -512,12 +518,29 @@ def atomic_claim_units(value: Any) -> tuple[str, ...]:
     units: list[str] = []
     for sentence in _sentence_units(str(value or "")):
         units.append(sentence)
+        shared_predicate, subject_units = _coordinated_subject_units(sentence)
+        units.extend(subject_units)
+        if shared_predicate:
+            continue
         units.extend(
             unit
             for part in re.split(r"[,:]\s*|\s+\band\b\s+", sentence, flags=re.IGNORECASE)
             if (unit := clean_markdown_text(part).strip(" .;:")) and unit != sentence
         )
     return tuple(dict.fromkeys(units))
+
+
+def _coordinated_subject_units(value: str) -> tuple[bool, tuple[str, ...]]:
+    """Preserve each subject in an affirmed shared-predicate declaration."""
+
+    subject, predicate = declaration_subject_predicate(value)
+    subjects = coordinated_subjects(subject)
+    if len(subjects) < 2:
+        return False, ()
+    predicate_tokens = {token.casefold() for token in _TOKEN_RE.findall(predicate)}
+    if _polarity(value) == "prohibited" or predicate_tokens & {"forbidden", "not", "prohibited"}:
+        return True, ()
+    return True, subjects
 
 
 def _source_atomic_units(value: str, *, source_section_key: str) -> list[str]:

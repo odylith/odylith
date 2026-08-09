@@ -17,6 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
     looks_like_trailing_operator_instruction,
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    without_confirmation_evidence_label,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
@@ -175,7 +178,7 @@ def _constraint_values(value: Any) -> list[str]:
 def _positive_source_obligations(value: str) -> tuple[str, ...]:
     obligations: list[str] = []
     for sentence in sentence_fragments(value):
-        text = clean_text(sentence).strip(" .")
+        text = clean_text(without_confirmation_evidence_label(sentence)).strip(" .")
         if _is_non_product_context_sentence(text):
             continue
         units = atomic_claim_units(text)

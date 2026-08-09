@@ -9,9 +9,12 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_token_form
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import coordinated_subjects
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import declaration_subject_predicate
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -182,7 +185,7 @@ _FROM_ACTIONS = frozenset(
 _SUPPLIER_ACTIONS = frozenset("feeds flags provides publishes reports sends supplies".split())
 _DIRECT_SOURCE_ACTIONS = frozenset(
     "check checking checks consult consults cross-reference cross-references ingest ingesting ingests query queries "
-    "read reads reference references".split()
+    "read reads reference references use uses using".split()
 )
 _DEPENDENCY_ACTIONS = frozenset({"depend", "depends", "rely", "relies"})
 _COMPARISON_ACTIONS = frozenset(
@@ -272,6 +275,10 @@ def is_external_dependency_clause(value: Any) -> bool:
     model = first_path_model(text)
     if not tokens or len(model.steps) > 1:
         return False
+    if _declared_external_sources(text):
+        return True
+    if _external_supplier_only_clause(text):
+        return True
     for index, token in enumerate(lowered[:-1]):
         if token not in _DEPENDENCY_ACTIONS or lowered[index + 1] != "on":
             continue
@@ -287,9 +294,25 @@ def is_external_dependency_clause(value: Any) -> bool:
     return False
 
 
+def _external_supplier_only_clause(value: str) -> bool:
+    tokens = _LEXEME_RE.findall(value)
+    for index, token in enumerate(tokens):
+        if token.casefold() not in _SUPPLIER_ACTIONS:
+            continue
+        if any(action_token_form(following) for following in tokens[index + 1 :]):
+            continue
+        subject = _supplier_subject(tokens[:index])
+        if subject and not has_human_actor_role_signal(subject) and _source_label(subject):
+            return True
+    return False
+
+
 def _dependency_frame_sources(value: str) -> list[str]:
     rows: list[str] = []
-    for clause in re.split(r"[,.;:!?\n]+", clean_text(value)):
+    text = clean_text(value)
+    for sentence in re.split(r"[.;!?\n]+", text):
+        rows.extend(_declared_external_sources(sentence))
+    for clause in re.split(r"[,.;:!?\n]+", text):
         tokens = _LEXEME_RE.findall(clause)
         lowered = [token.casefold() for token in tokens]
         if not tokens or lowered[0] in {"if", "unless", "when", "while"}:
@@ -312,6 +335,26 @@ def _dependency_frame_sources(value: str) -> list[str]:
                 if _system_boundary_candidate(candidate):
                     rows.append(candidate)
     return [row for row in rows if row]
+
+
+def _declared_external_sources(value: str) -> list[str]:
+    """Read explicit ``<name> is/are external source/system`` declarations."""
+
+    subject, predicate_text = declaration_subject_predicate(value)
+    subject_tokens = {token.casefold() for token in _LEXEME_RE.findall(subject)}
+    predicate = {token.casefold() for token in _LEXEME_RE.findall(predicate_text)}
+    if not subject or {"no", "neither", "nor"} & subject_tokens:
+        return []
+    if {"forbidden", "never", "not", "prohibited", "without"} & predicate:
+        return []
+    if "external" not in predicate or not predicate & {"source", "sources", "system", "systems"}:
+        return []
+    return _declared_source_labels(subject)
+
+
+def _declared_source_labels(value: str) -> list[str]:
+    labels = [_source_label(subject, explicit=True) for subject in coordinated_subjects(value)]
+    return [label for label in labels if label and not has_human_actor_signal(label)]
 
 
 def _supplier_subject(tokens: Sequence[str]) -> str:
@@ -389,7 +432,7 @@ def _collect_structured_source_rows(value: Any, rows: list[str], *, key: str = "
             rows.append(text)
 
 
-def _source_label(value: Any) -> str:
+def _source_label(value: Any, *, explicit: bool = False) -> str:
     text = clean_text(value).strip(" .,:;\"'")
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
     words = text.split()
@@ -398,7 +441,7 @@ def _source_label(value: Any) -> str:
     lowered = {word.casefold().strip(".,;:()[]{}") for word in words}
     if lowered <= _NON_SYSTEM_SOURCE_LABELS:
         return ""
-    if not (
+    if not explicit and not (
         lowered & _SOURCE_LABEL_CARRIERS
         or any(word.isupper() and len(word) >= 2 for word in words)
         or any(word[:1].isupper() for word in words)

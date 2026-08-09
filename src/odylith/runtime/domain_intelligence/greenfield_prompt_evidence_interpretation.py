@@ -27,6 +27,10 @@ from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics 
     is_external_dependency_clause,
 )
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import is_source_obligation_clause
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import confirmed_direction_evidence_text
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    without_confirmation_evidence_label,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
     word_sense_content_clause_describes_comparison,
@@ -275,18 +279,26 @@ def ranked_first_path_evidence(value: str) -> str:
     ordered: list[str] = []
     candidates: list[tuple[int, int, str]] = []
     for index, row in enumerate(rows):
-        workflow_row = _workflow_row_projection(_workflow_claim_before_prohibition(row))
+        workflow_row = _without_external_dependency_steps(
+            _workflow_row_projection(_workflow_claim_before_prohibition(row))
+        )
         if workflow_row and not _hard_non_path(workflow_row):
             score = _path_score(workflow_row)
             candidates.append((score, -index, workflow_row))
             if score >= 12 and _is_ordered_workflow_row(workflow_row):
                 ordered.append(workflow_row)
         for workflow in _embedded_workflow_clauses(row):
-            candidates.append((_path_score(workflow) + 4, -index, workflow))
+            workflow = _without_external_dependency_steps(workflow)
+            if workflow:
+                candidates.append((_path_score(workflow) + 4, -index, workflow))
         for granted_path in _embedded_product_grant_clauses(row):
-            candidates.append((_path_score(granted_path) + 4, -index, granted_path))
+            granted_path = _without_external_dependency_steps(granted_path)
+            if granted_path:
+                candidates.append((_path_score(granted_path) + 4, -index, granted_path))
         for evidence_clause in _embedded_evidence_clauses(row):
-            candidates.append((_path_score(evidence_clause) + 2, -index, evidence_clause))
+            evidence_clause = _without_external_dependency_steps(evidence_clause)
+            if evidence_clause:
+                candidates.append((_path_score(evidence_clause) + 2, -index, evidence_clause))
         if index + 1 < len(rows) and workflow_row and not _hard_non_path(workflow_row):
             release_result = _release_visible_result_action(rows[index + 1])
             if release_result:
@@ -299,6 +311,21 @@ def ranked_first_path_evidence(value: str) -> str:
         return ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
     score, _position, candidate = max(candidates, default=(0, 0, ""))
     return candidate if score >= 12 else ""
+
+
+def _without_external_dependency_steps(value: str) -> str:
+    """Keep user workflow steps while moving external-only clauses to the boundary."""
+
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    model = first_path_model(text)
+    steps = tuple(step for step in model.steps if not is_external_dependency_clause(step))
+    if not steps:
+        return ""
+    if len(steps) == len(model.steps):
+        return text
+    return ". ".join(step.strip(" .") for step in steps)
 
 
 def _workflow_row_projection(value: str) -> str:
@@ -745,16 +772,43 @@ def _narrative_rows(value: str) -> list[str]:
     rows: list[str] = []
     for raw_line in str(value or "").splitlines() or [str(value or "")]:
         line = raw_line.strip()
-        if not line or re.match(r"^#{1,6}\s+", line):
+        if re.match(r"^#{1,6}\s+", line):
+            line = _without_confirmed_direction_title(confirmed_direction_evidence_text(line))
+        if not line or _is_heading_like_evidence_label(line):
             continue
         line = re.sub(r"^\s*>\s?", "", line)
         line = re.sub(r"^\s*[-*]\s+", "", line)
         text = clean_markdown_text(line).strip()
         for fragment in re.split(r"(?<=[.!?])\s+", text):
+            confirmation_evidence = without_confirmation_evidence_label(fragment)
             row = _LABELED_PREFIX_RE.sub("", fragment).strip(" .")
+            if row and confirmation_evidence != fragment:
+                row = row[:1].upper() + row[1:]
             if row:
                 rows.append(row)
     return rows
+
+
+def _without_confirmed_direction_title(value: str) -> str:
+    identity, separator, evidence = value.partition(".")
+    words = identity.split()
+    if separator and words and words[0].casefold() == "use":
+        return evidence.strip()
+    return value
+
+
+def _is_heading_like_evidence_label(value: str) -> bool:
+    """Exclude short uppercase envelope labels from narrative product facts."""
+
+    text = clean_markdown_text(value).strip()
+    words = text.replace(":", " ").split()
+    return bool(
+        1 < len(words) <= 6
+        and text == text.upper()
+        and any(character.isalpha() for character in text)
+        and not text.endswith((".", "!", "?"))
+        and not has_human_actor_signal(text)
+    )
 
 
 def _workflow_claim_before_prohibition(value: str) -> str:

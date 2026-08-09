@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
+    intent_hypothesis_from_operator_evidence,
+)
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
@@ -818,6 +821,49 @@ def test_prompt_source_preserves_short_command_title_before_focus_workflow() -> 
     assert "Recorded Using Structure" not in rendered
     assert "Protein Design Wetlab Handoff Workspace" in rendered
     assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_prefers_labeled_request_over_evidence_envelope() -> None:
+    clinic = prompt_intent_source(
+        "PASTED CLINIC BRIEF\n"
+        "Intake nurses capture referral requests. Social workers verify eligibility. "
+        "Partner pharmacies confirm pickup.\n"
+        "Request: propose the mobile-clinic referral ledger."
+    )
+    radio = prompt_intent_source(
+        "RESEARCH PACKET: COMMUNITY RADIO\n"
+        "Producers submit episode metadata, editors verify music licenses, and archivists retain master files.\n"
+        "Keep license evidence for seven years. Request: propose a community-radio archive."
+    )
+
+    assert clinic.title == "mobile-clinic referral ledger"
+    assert clinic.first_path.startswith("Intake nurses capture referral requests")
+    assert radio.title == "community-radio archive"
+    assert radio.first_path.startswith("Producers submit episode metadata")
+
+
+def test_prompt_source_keeps_compact_confirmed_direction_title_out_of_dependencies() -> None:
+    prompt = (
+        "## Confirmed direction Use the tree-canopy ledger. "
+        "Keep: arborists verify species plans, inspection receipts gate microgrants, "
+        "and the mapping gateway supplies site context. "
+        "Changed: neighborhood stewards may correct site text. "
+        "Retain geotagged photos for seven years. Do not score neighborhoods."
+    )
+    source = prompt_intent_source(prompt)
+    intent = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
+
+    assert source.title == "tree-canopy ledger"
+    assert "arborists verify species plans" in source.first_path.casefold()
+    assert "tree-canopy ledger" not in source.first_path.casefold()
+    assert "mapping gateway" not in source.first_path.casefold()
+    assert "Neighborhood stewards may correct site text" in source.first_path
+    assert intent["external_systems"] == ("mapping gateway",)
+    assert {row.split(":", 1)[0] for row in intent["human_actors"]} == {
+        "Arborists",
+        "Neighborhood Stewards",
+    }
+    assert intent["operational_constraints"] == ("Retain geotagged photos for seven years",)
 
 
 def test_prompt_source_rejects_action_bearing_multi_role_actor_label() -> None:

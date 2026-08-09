@@ -910,7 +910,9 @@ def _actor_led_clause_has_modal(value: str, actor_prefix: str) -> bool:
     prefix = _clean(actor_prefix).strip(" .")
     if not text or not prefix:
         return False
-    return bool(re.match(rf"^{re.escape(prefix)}\s+(?:can|could|must|should|will)\b", text, flags=re.IGNORECASE))
+    tail = text[len(prefix) :].strip() if text.casefold().startswith(prefix.casefold()) else ""
+    marker = tail.split(maxsplit=1)[0].casefold() if tail else ""
+    return marker in _MODAL_MARKERS
 
 
 def _sentence_case(value: str) -> str:

@@ -96,6 +96,19 @@ _CF410_FALSE_CLARIFICATION_CASES = tuple(
     for case in _CF410_RETIRED_HOLDOUT["cases"]
     if case["case_id"] in _CF410_FALSE_CLARIFICATION_CASE_IDS
 )
+_CF410_MISSING_SYSTEM_CASE_IDS = frozenset(
+    {
+        "gfh-20260808-v3-01",
+        "gfh-20260808-v3-08",
+        "gfh-20260808-v3-09",
+        "gfh-20260808-v3-17",
+    }
+)
+_CF410_MISSING_SYSTEM_CASES = tuple(
+    case
+    for case in _CF410_RETIRED_HOLDOUT["cases"]
+    if case["case_id"] in _CF410_MISSING_SYSTEM_CASE_IDS
+)
 
 
 def _material_field_key(value: object) -> str:
@@ -171,6 +184,39 @@ def test_cf410_structured_evidence_reaches_candidate_materialization(
 
     assert intent["product_intent_authority"]["materiality_status"] == "passed"
     assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _CF410_MISSING_SYSTEM_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_cf410_named_external_systems_retain_custody_without_entering_the_user_path(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    annotation = _CF410_ANNOTATIONS[str(case["case_id"])]
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+
+    expected_systems = tuple(str(system) for system in annotation["explicit_systems"])
+    assert tuple(intent["external_systems"]) == expected_systems
+    first_path = str(intent["first_path"]).casefold()
+    actor_text = " ".join(str(actor) for actor in intent["human_actors"]).casefold()
+    assert all(system.casefold() not in first_path for system in expected_systems)
+    assert all(system.casefold() not in actor_text for system in expected_systems)
+    assert "pasted clinic brief" not in first_path
+    assert "research packet" not in first_path
+    assert str(case["required_terms"][0]).casefold() in str(intent["title"]).casefold()
+    accepted_dependencies = {
+        " ".join(str(atom["normalized_value"]).casefold().split())
+        for atom in intent["product_intent_authority"]["atomic_facts"]
+        if "dependencies" in atom["categories"] and atom["custody_state"] == "accepted_fact"
+    }
+    assert accepted_dependencies == {" ".join(system.casefold().split()) for system in expected_systems}
 
 
 @pytest.mark.parametrize(
@@ -1019,4 +1065,41 @@ def test_canopy_restatement_preserves_complete_source_meaning(tmp_path: Path) ->
         str(value).casefold().rstrip(" .") for value in intent["non_goals"]
     }
     assert all(str(term).casefold() in rendered for term in case["required_terms"])
+    assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
+
+
+def test_compact_canopy_confirmation_preserves_custody_without_envelope_leakage(tmp_path: Path) -> None:
+    case = next(
+        row for row in _87E277_RETIRED_HOLDOUT["cases"] if row["case_id"] == "gfh-20260808-v2-06"
+    )
+    prompt = str(case["prompt"])
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    accepted = {
+        str(atom["normalized_value"]).casefold()
+        for atom in intent["product_intent_authority"]["atomic_facts"]
+        if atom["custody_state"] == "accepted_fact"
+    }
+
+    assert intent["title"] == "Tree-canopy Ledger"
+    assert "mapping gateway" not in str(intent["first_path"]).casefold()
+    assert "neighborhood stewards may correct site text" in str(intent["first_path"]).casefold()
+    assert {str(row).split(":", 1)[0].casefold() for row in intent["human_actors"]} == {
+        "arborists",
+        "neighborhood stewards",
+    }
+    assert intent["external_systems"] == ["mapping gateway"]
+    assert intent["operational_constraints"] == ["Retain geotagged photos for seven years"]
+    assert {"arborists", "neighborhood stewards", "mapping gateway"} <= accepted
     assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed

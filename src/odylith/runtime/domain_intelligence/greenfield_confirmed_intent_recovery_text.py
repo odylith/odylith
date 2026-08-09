@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 import re
 
+from odylith.runtime.common.prose_grammar import ACTION_MODAL_WORDS
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
@@ -15,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 
-MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
+MODAL_MARKERS = ACTION_MODAL_WORDS | {"needs", "need"}
 LEADING_ARTICLES = frozenset({"a", "an", "the"})
 LEADING_CONNECTORS = frozenset({"and", "or", "then"})
 PRODUCT_CONTAINER_TERMS = frozenset(

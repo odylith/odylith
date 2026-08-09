@@ -100,11 +100,93 @@ def test_source_boundary_rows_preserve_named_sources_across_evidence_shapes(evid
 
 
 @pytest.mark.parametrize(
+    ("evidence", "expected"),
+    (
+        (
+            "Use the watershed gauge service for basin readings.",
+            ["watershed gauge service"],
+        ),
+        (
+            "Use the municipal work-order gateway, retain inspection photos for four years.",
+            ["municipal work-order gateway"],
+        ),
+        (
+            "The insurer directory and pharmacy status feed are required external sources.",
+            ["insurer directory", "pharmacy status feed"],
+        ),
+        (
+            "The insurer directory or pharmacy status feed are required external sources.",
+            ["insurer directory", "pharmacy status feed"],
+        ),
+        (
+            "The insurer directory, pharmacy status feed, and transcript vendor are required external sources.",
+            ["insurer directory", "pharmacy status feed", "transcript vendor"],
+        ),
+        (
+            "The transcript vendor is an external system.",
+            ["transcript vendor"],
+        ),
+    ),
+)
+def test_source_boundary_rows_preserve_explicit_dependency_grammar(
+    evidence: str,
+    expected: list[str],
+) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == expected
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        "The product is an external system.",
+        "The service is an external system.",
+        "Coordinators and pharmacists are required external reviewers.",
+        "Admissions Coordinators and Pharmacists are required external sources.",
+        "No external systems are required.",
+        "The transcript vendor is not an external system.",
+        "Neither the insurer directory nor the pharmacy status feed are external systems.",
+    ),
+)
+def test_explicit_dependency_grammar_rejects_generic_or_human_subjects(evidence: str) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == []
+
+
+def test_explicit_external_system_declaration_stays_outside_the_user_path() -> None:
+    evidence = (
+        "Producers submit episode metadata, editors verify music licenses, and archivists retain master files. "
+        "The transcript vendor is an external system."
+    )
+
+    assert ranked_first_path_evidence(evidence) == (
+        "Producers submit episode metadata, editors verify music licenses, and archivists retain master files"
+    )
+
+
+def test_uppercase_evidence_envelope_stays_outside_the_user_path() -> None:
+    evidence = (
+        "PASTED CLINIC BRIEF\n"
+        "Intake nurses capture referral requests. Social workers verify eligibility. "
+        "Partner pharmacies confirm pickup.\n"
+        "Request: propose the mobile-clinic referral ledger."
+    )
+
+    assert ranked_first_path_evidence(evidence) == (
+        "Intake nurses capture referral requests. Social workers verify eligibility. "
+        "Partner pharmacies confirm pickup"
+    )
+
+
+def test_uppercase_human_workflow_is_not_treated_as_an_evidence_label() -> None:
+    assert ranked_first_path_evidence("NURSES SUBMIT REQUESTS") == "NURSES SUBMIT REQUESTS"
+
+
+@pytest.mark.parametrize(
     "evidence",
     (
         "It relies on the mapping gateway.",
         "The first path depends on the Hall Calendar.",
         "Harbor Slate relies on Tide Ledger.",
+        "The mapping gateway supplies site context.",
     ),
 )
 def test_external_dependency_clause_identifies_non_human_boundary_statements(evidence: str) -> None:
@@ -118,6 +200,8 @@ def test_external_dependency_clause_identifies_non_human_boundary_statements(evi
         "The archive relies on the Hall Calendar to prepare a receipt.",
         "The product records a site and relies on the mapping gateway.",
         "The product displays the accepted mapping result.",
+        "A coordinator supplies site context.",
+        "The SkyTrace tracking service flags a conjunction and places it in screening state.",
     ),
 )
 def test_external_dependency_clause_does_not_absorb_human_or_mixed_workflows(evidence: str) -> None:

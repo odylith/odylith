@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_need_product_focus import pr
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
 from odylith.runtime.domain_intelligence.greenfield_gerund_actions import GERUND_ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import REQUEST_COMMAND_WORDS
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import confirmed_direction_evidence_text
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import is_source_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import looks_like_trailing_operator_instruction
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import markdown_section_text
@@ -219,7 +220,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     )
     text = without_leading_explicit_intent_label(text)
     product_text = without_source_metadata_clauses(text)
-    ranked_first_path = ranked_first_path_evidence(product_text)
+    ranked_first_path = strip_trailing_operator_instruction_sentences(
+        ranked_first_path_evidence(original_intent)
+    )
     explicit_actor = explicit_actor_evidence(original_intent)
     explicit_title = explicit_product_title_evidence(original_intent)
     operator_context = operator_context_from_product_text(product_text)
@@ -297,6 +300,8 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
                 first_path = f"{recovered_actor} can {first_path_action}".strip(" .")
     return PromptIntentSource(
         title=structured_facts.title
+        or _labeled_request_title(original_intent)
+        or _confirmed_direction_title(original_intent)
         or explicit_title
         or product_focus_after_command_sentence(product_text)
         or product_focus_after_need_sentence(product_text)
@@ -307,6 +312,40 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         actor=resolved_actor,
         operator_context=operator_context,
     )
+
+
+def _labeled_request_title(value: str) -> str:
+    """Read the bounded target noun phrase from an explicit ``Request:`` line."""
+
+    candidates = tuple(dict.fromkeys((*str(value or "").splitlines(), *sentence_fragments(value))))
+    for candidate in candidates:
+        label, separator, request = candidate.partition(":")
+        if not separator or label.strip().casefold() != "request":
+            continue
+        words = request_words(request)
+        start, command_led = _request_content_start(words)
+        title_words = [word.strip(".,:;!? ") for word in words[start:] if word.strip(".,:;!? ")]
+        title = " ".join(title_words).strip()
+        if command_led and 1 <= len(title_words) <= _REQUEST_TITLE_MAX_WORDS and not looks_like_action_clause(title):
+            return title
+    return ""
+
+
+def _confirmed_direction_title(value: str) -> str:
+    """Read a product title from ``Confirmed direction Use <title>.`` evidence."""
+
+    direction = confirmed_direction_evidence_text(value)
+    first_sentence = direction.partition(".")[0].strip()
+    words = request_words(first_sentence)
+    if not words or word_key(words[0]) != "use":
+        return ""
+    title_words = [word.strip(".,:;!? ") for word in words[1:] if word.strip(".,:;!? ")]
+    while title_words and word_key(title_words[0]) in {"a", "an", "the"}:
+        title_words.pop(0)
+    title = " ".join(title_words)
+    if 1 <= len(title_words) <= _REQUEST_TITLE_MAX_WORDS and not looks_like_action_clause(title):
+        return title
+    return ""
 
 
 def prompt_has_material_first_path_gap(value: str) -> bool:

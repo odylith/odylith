@@ -17,7 +17,8 @@ from odylith.runtime.common.prose_tail import strip_clipped_terminal_fragment
 from odylith.runtime.common.prose_tail import strip_dangling_word_tail
 
 
-_ACTION_MODAL_WORDS = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
+ACTION_MODAL_WORDS = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
+_ACTION_MODAL_WORDS = ACTION_MODAL_WORDS
 _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
     "acknowledge": "acknowledges",
