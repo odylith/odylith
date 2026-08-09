@@ -212,7 +212,11 @@ def leading_subject_prefix(value: str) -> str:
         subject,
         flags=re.IGNORECASE,
     ).strip()
-    if len(label_terms(subject)) > 6:
+    subject_words = {word.casefold().strip(".,:;") for word in subject.split() if word.strip(".,:;")}
+    if not subject_words - ACTOR_SIGNATURE_STOPWORDS:
+        return ""
+    subject_terms = label_terms(subject)
+    if not subject_terms or len(subject_terms) > 6:
         return ""
     return subject
 

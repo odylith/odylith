@@ -12,7 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import look
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import ACTOR_SIGNATURE_STOPWORDS
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import leading_subject_prefix
 
 _SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(exclude={"keep", "keeps"})
 _SUBJECT_PREFIX_BOUNDARY_WORDS = frozenset(
@@ -94,6 +95,9 @@ def carried_subject_prefix(value: str) -> str:
 def _actor_subject_prefix_candidate(prefix: str, *, full_text: str) -> str:
     raw = clean_first_path_text(prefix).strip(" .,;:")
     if not raw:
+        return ""
+    raw_words = {word.casefold().strip(".,:;") for word in raw.split() if word.strip(".,:;")}
+    if not raw_words - ACTOR_SIGNATURE_STOPWORDS:
         return ""
     candidates = tuple(dict.fromkeys((_trim_trailing_unowned_action_tail(raw), raw)))
     for candidate in candidates:

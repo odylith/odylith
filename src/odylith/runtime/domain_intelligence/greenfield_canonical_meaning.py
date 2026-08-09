@@ -293,7 +293,7 @@ def internal_system_rows_from_first_path(
         elif index == 0 and "Intake" in responsibilities:
             name = f"{state_label} Intake"
             description = (
-                f"captures {state_label.casefold()} input and required context, then exposes validation or blocked state"
+                f"captures {state_label.casefold()} input and required context and exposes either a validated or blocked state"
             )
         elif index == len(steps) - 1 and any(
             label in {"Delivery", "Generation", "Proof", "Validation"} for label in responsibilities
@@ -468,7 +468,7 @@ def _action_object(value: str) -> str:
     text = " ".join(words).strip(" .")
     text = _before_coordinated_action(text)
     text = re.split(
-        rf"\s+(?:based on|for|from|{_CONTEXTUAL_ON_RE}|so that|such as|through|to|using|with|without)\s+",
+        rf"\s+(?:based on|for|from|{_CONTEXTUAL_ON_RE}|so that|such as|through|to|until|using|with|without)\s+",
         text,
         maxsplit=1,
         flags=re.IGNORECASE,

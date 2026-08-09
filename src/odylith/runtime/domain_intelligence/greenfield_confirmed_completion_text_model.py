@@ -227,6 +227,8 @@ def outcome_action_phrase(outcome: str) -> str:
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
     if words & {"explanation", "explanations", "recommendation", "recommendations"}:
         return _modal_safe_outcome_action(f"review {_object_phrase(text)}")
+    if re.match(r"^(?:a|an|the)\s+blocked\s+\S+", text, flags=re.IGNORECASE):
+        return _modal_safe_outcome_action(f"see {_object_phrase(text)}")
     actor, actor_action = _actor_led_base_action_parts(
         re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
     )

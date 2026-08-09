@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_visible_result_focus import focused_visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
@@ -16,6 +17,29 @@ def test_visible_result_object_stays_modal_safe_in_user_can_projection() -> None
 
     assert action == "review an invoice anomaly review result with blockers and evidence for review"
     assert generated_semantic_slop_issues(f"Result proof confirms the user can {action}.") == []
+
+
+def test_article_led_blocked_result_stays_a_reviewable_noun_phrase() -> None:
+    action = outcome_action_phrase("the blocked shipment until exceptions are approved")
+
+    assert action == "see the blocked shipment until exceptions are approved"
+    assert generated_semantic_slop_issues(f"Result proof confirms the user can {action}.") == []
+
+
+def test_article_led_entities_do_not_inherit_the_blocked_result_rule() -> None:
+    assert outcome_action_phrase("the approved vendor") == "reach the approved vendor"
+    assert outcome_action_phrase("the confirmed reviewer") == "reach the confirmed reviewer"
+    assert outcome_action_phrase("the verified owner") == "review the verified owner"
+
+
+def test_open_source_product_noun_is_not_carried_as_the_article_an() -> None:
+    steps = first_path_steps(
+        "An open source security embargo room that receives vulnerability reports, coordinates maintainer triage, "
+        "tracks affected package evidence, records disclosure approvals, and shows advisory readiness."
+    )
+
+    assert steps[1] == "Coordinate maintainer triage"
+    assert all(not step.startswith("An coordinates") for step in steps)
 
 
 def test_visible_result_focus_strips_non_goal_tails_from_result_identity() -> None:
