@@ -19,12 +19,14 @@ PROMPT_FIELD_NAMES = (
     "assumptions",
     "constraint",
     "constraints",
+    "confirmed request",
     "data source",
     "data sources",
     "dependency",
     "dependencies",
     "domain",
     "domain label",
+    "edited request",
     "external system",
     "external systems",
     "first complete path",
@@ -33,6 +35,7 @@ PROMPT_FIELD_NAMES = (
     "first user",
     "gate",
     "goal",
+    "need",
     "non-goal",
     "non-goals",
     "objective",
@@ -44,6 +47,7 @@ PROMPT_FIELD_NAMES = (
     "product name",
     "proof boundary",
     "result",
+    "request",
     "role",
     "roles",
     "rule",
@@ -61,7 +65,9 @@ PROMPT_FIELD_NAMES = (
     "upstream system",
     "upstream systems",
     "user",
+    "user task",
     "user role",
+    "users",
     "visible result",
     "workflow",
 )
@@ -156,6 +162,8 @@ def _markdown_field_mapping(value: str) -> dict[str, Any]:
     for raw_row in value.splitlines():
         row = raw_row.strip()
         if not row:
+            continue
+        if len(tuple(_INLINE_FIELD_RE.finditer(raw_row))) > 1:
             continue
         if row.startswith("|") and row.endswith("|"):
             cells = [cell.strip() for cell in row.strip("|").split("|")]

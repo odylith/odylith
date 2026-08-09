@@ -102,6 +102,13 @@ def test_chained_actions_choose_the_durable_object_after_the_final_verb() -> Non
     assert state_object == "The primary state object is an E91 communication run."
 
 
+def test_start_with_path_uses_the_started_item_as_durable_state() -> None:
+    assert state_object_from_first_path(
+        "Start with inspection tickets, then route a ticket to a mechanic, and produce a repair clearance.",
+        fallback="Canal-lock Dispatch Board",
+    ) == "The primary state object is an inspection ticket."
+
+
 def test_complex_first_path_keeps_every_distinct_product_responsibility() -> None:
     rows = internal_system_rows_from_first_path(
         title="Reliability Lab Custody Platform",

@@ -137,6 +137,11 @@ _1C54_FALSE_CLARIFICATION_CASES = tuple(
     for case in _1C54_RETIRED_HOLDOUT["cases"]
     if case["case_id"] in {"gfh-20260809-03", "gfh-20260809-10", "gfh-20260809-20"}
 )
+_1C54_PROPOSAL_BLOCKER_CASES = tuple(
+    case
+    for case in _1C54_RETIRED_HOLDOUT["cases"]
+    if case["case_id"] in {"gfh-20260809-02", "gfh-20260809-03"}
+)
 _1C54_CUSTODY_CASE_IDS = frozenset(
     {
         "gfh-20260809-05",
@@ -250,6 +255,101 @@ def test_1c54_complete_distributed_paths_reach_candidate_materialization(
 
     assert intent["product_intent_authority"]["materiality_status"] == "passed"
     assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _1C54_PROPOSAL_BLOCKER_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_1c54_revision_and_compact_brief_cases_compile_clean_packages(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    prompt = str(case["prompt"])
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    assert tribunal.passed, tribunal.issues
+
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    package_issues = greenfield_rendered_package_quality_issues(prewrite.package)
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert not package_issues
+    assert all(str(term).casefold() in rendered for term in case["required_terms"])
+
+
+@pytest.mark.parametrize("actor", ("SAP ECC", "CI jobs"))
+def test_nonhuman_users_field_requires_a_human_owner_before_staging(
+    tmp_path: Path,
+    actor: str,
+) -> None:
+    prompt = json.dumps(
+        {
+            "users": actor,
+            "need": "sync invoices",
+            "first path": "review an invoice",
+            "output": "a sync receipt",
+        }
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Invoice Sync",
+        )
+
+    assert error.value.required_fields == ("human_actors", "first_path")
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize(
+    ("fallback_title", "prompt", "expected_title"),
+    (
+        (
+            "qber ops console",
+            "A lab operator reviews one QBER reading and receives a QBER report.",
+            "QBER Ops Console",
+        ),
+        (
+            "ios build dashboard",
+            "A build operator reviews one iOS build and receives an iOS readiness report.",
+            "iOS Build Dashboard",
+        ),
+    ),
+)
+def test_fallback_title_formatting_restores_source_owned_casing(
+    tmp_path: Path,
+    fallback_title: str,
+    prompt: str,
+    expected_title: str,
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title=fallback_title,
+    )
+
+    assert intent["title"] == expected_title
 
 
 @pytest.mark.parametrize(

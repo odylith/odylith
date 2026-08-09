@@ -448,7 +448,10 @@ def _action_object(value: str) -> str:
         first = words[0].casefold().strip(".,;:")
         base = base_action_verb(first)
         if looks_like_base_action_token(base) or looks_like_finite_action_token(first):
-            action = " ".join(words[1:]).strip(" .")
+            object_start = (
+                2 if base == "start" and len(words) > 1 and words[1].casefold() == "with" else 1
+            )
+            action = " ".join(words[object_start:]).strip(" .")
     chained_action = re.match(
         r"^(?:and|or|then)\s+(?P<verb>[A-Za-z][A-Za-z'-]*)\s+(?P<object>.+)$",
         action,

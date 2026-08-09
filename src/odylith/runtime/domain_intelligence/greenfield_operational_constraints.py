@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     without_confirmation_evidence_label,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import PROMPT_FIELD_NAMES
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_values
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -66,19 +67,24 @@ def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
     """Return source-stated obligations, sites, and times for the first release."""
 
     text = clean_text(value).strip(" .")
-    matches = [
-        (match.start(), match.group("site")) for match in _SITE_IDENTIFIER_RE.finditer(text)
-    ]
-    matches.extend(
-        (match.start(), match.group("window")) for match in _TIME_WINDOW_RE.finditer(text)
+    structured_json = str(value or "").lstrip().startswith(("{", "[")) and bool(
+        prompt_field_mapping(value)
     )
-    matches.extend(
-        (match.start(), match.group("deadline")) for match in _DEADLINE_RE.finditer(text)
-    )
-    matches.extend(
-        (max(0, text.casefold().find(constraint.casefold())), constraint)
-        for constraint in _positive_source_obligations(text)
-    )
+    matches: list[tuple[int, str]] = []
+    if not structured_json:
+        matches.extend(
+            (match.start(), match.group("site")) for match in _SITE_IDENTIFIER_RE.finditer(text)
+        )
+        matches.extend(
+            (match.start(), match.group("window")) for match in _TIME_WINDOW_RE.finditer(text)
+        )
+        matches.extend(
+            (match.start(), match.group("deadline")) for match in _DEADLINE_RE.finditer(text)
+        )
+        matches.extend(
+            (max(0, text.casefold().find(constraint.casefold())), constraint)
+            for constraint in _positive_source_obligations(text)
+        )
     matches.extend(
         (max(0, text.casefold().find(constraint.casefold())), constraint)
         for constraint in _labeled_constraint_phrases(value)
@@ -194,6 +200,9 @@ def _constraint_values(value: Any) -> list[str]:
 def _positive_source_obligations(value: str) -> tuple[str, ...]:
     obligations: list[str] = []
     for sentence in sentence_fragments(value):
+        mapping = prompt_field_mapping(sentence)
+        if any(field in mapping for field in PROMPT_FIELD_NAMES):
+            continue
         text = clean_text(without_confirmation_evidence_label(sentence)).strip(" .")
         if _is_non_product_context_sentence(text):
             continue

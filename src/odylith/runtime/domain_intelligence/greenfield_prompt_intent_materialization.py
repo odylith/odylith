@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import is_noncompleting_action_head
@@ -233,7 +234,7 @@ def _preferred_implicit_title(*, fallback_title: str, outcome_title: str) -> str
     fallback = " ".join(str(fallback_title or "").split()).strip(" .")
     words = fallback.split()
     if 1 <= len(words) <= 8 and not looks_like_action_clause(fallback):
-        return fallback
+        return title_case_text(fallback)
     return outcome_title if outcome_title != "Recovered Product Workspace" else fallback
 
 

@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import (
     contains_requirement_control_clause,
@@ -49,7 +50,7 @@ class StructuredPromptFacts:
 
 
 _TITLE_FIELDS = ("product", "product name", "title", "domain label")
-_ACTOR_FIELDS = ("actor", "actors", "operator", "user", "first user")
+_ACTOR_FIELDS = ("actor", "actors", "operator", "user", "users", "first user")
 _PATH_FIELDS = (
     "first complete path",
     "first path",
@@ -59,7 +60,17 @@ _PATH_FIELDS = (
     "workflow",
 )
 _ROLE_FIELDS = ("role", "roles", "operator role", "user role")
-_ACTION_FIELDS = ("objective", "action", "task", "user task")
+_EXPLICIT_HUMAN_FIELDS = (
+    "first user",
+    "operator",
+    "operator role",
+    "role",
+    "roles",
+    "user",
+    "user role",
+    "users",
+)
+_ACTION_FIELDS = ("objective", "action", "task", "user task", "need")
 _OUTPUT_FIELDS = ("visible result", "output", "result")
 _HARD_NON_PATH_RE = re.compile(
     r"\b(?:out\s+of\s+scope|unrelated|proof(?:\s+boundary)?|prove|success\s+means|"
@@ -78,6 +89,9 @@ _VISIBLE_RESULT_RE = re.compile(
 _SEQUENCE_RE = re.compile(r"(?:->|\b(?:first|then|after|before|next|finally)\b|;)", flags=re.IGNORECASE)
 _LABELED_PREFIX_RE = re.compile(r"^[A-Za-z][A-Za-z0-9 _/-]{1,60}:\s*")
 _NON_PATH_NARRATIVE_LABELS = frozenset({"deliverable", "requested deliverable"})
+_HISTORICAL_REVISION_QUALIFIERS = frozenset({"earlier", "former", "old", "previous", "prior", "superseded"})
+_HISTORICAL_REVISION_OBJECTS = frozenset({"draft", "instruction", "note", "proposal", "request", "rule", "version"})
+_HISTORICAL_REVISION_VERBS = frozenset({"allowed", "required", "said", "specified", "stated"})
 _TITLE_TOKEN = r"[A-Z][A-Za-z0-9'/-]*"
 _TITLE_PHRASE = rf"{_TITLE_TOKEN}(?:\s+{_TITLE_TOKEN}){{0,4}}"
 _TITLE_REFERENCE_WORDS = frozenset({"a", "an", "it", "that", "the", "these", "this", "those"})
@@ -449,6 +463,15 @@ def explicit_actor_has_human_grammar(value: str) -> bool:
     """Return whether prompt syntax explicitly marks the recovered actor as a person."""
 
     text = clean_markdown_text(str(value or ""))
+    mapping = prompt_field_mapping(value)
+    for field in _EXPLICIT_HUMAN_FIELDS:
+        actor = _clean(mapping.get(field))
+        words = re.findall(r"[A-Za-z][A-Za-z'-]*", actor)
+        if actor and not has_non_human_actor_signal(actor) and any(
+            word_has_actor_role_signal(word) or looks_actor_term(word.removesuffix("s"))
+            for word in words
+        ):
+            return True
     product_match = _PRODUCT_FOR_ACTOR_RE.search(text)
     if product_match and product_match.group("human_connector"):
         return True
@@ -719,7 +742,12 @@ def _structured_actor_subject(value: str) -> str:
         return ""
     if "," not in actor:
         words = actor.split()
-        if len(words) >= 2 and words[-1][:1].isupper():
+        if (
+            len(words) >= 2
+            and words[-1][:1].isupper()
+            and not words[-1].isupper()
+            and any(word_has_actor_role_signal(word) for word in words[:-1])
+        ):
             return f"{words[-1]}, a {' '.join(words[:-1])},"
         return actor[:1].upper() + actor[1:]
     name, role = (part.strip() for part in actor.split(",", 1))
@@ -897,6 +925,37 @@ def _hard_non_path(value: str) -> bool:
         or _is_policy_only_obligation(value)
         or contains_requirement_control_clause(value)
         or contains_word_sense_metadata_clause(value)
+        or _is_historical_revision_clause(value)
+        or _is_descriptive_state_clause(value)
+    )
+
+
+def _is_historical_revision_clause(value: str) -> bool:
+    words = re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value).casefold())
+    start = 1 if words and words[0] in {"a", "an", "the"} else 0
+    return bool(
+        len(words) >= start + 3
+        and words[start] in _HISTORICAL_REVISION_QUALIFIERS
+        and words[start + 1] in _HISTORICAL_REVISION_OBJECTS
+        and words[start + 2] in _HISTORICAL_REVISION_VERBS
+    )
+
+
+def is_non_path_evidence(value: str) -> bool:
+    """Return whether supplied evidence describes control or state rather than a user event."""
+
+    return _hard_non_path(value)
+
+
+def _is_descriptive_state_clause(value: str) -> bool:
+    words = re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value).casefold())
+    if not words or words[0] not in {"a", "an", "the"}:
+        return False
+    state_index = next((index for index, word in enumerate(words[:5]) if word == "state"), -1)
+    return bool(
+        state_index > 0
+        and state_index + 1 < len(words)
+        and words[state_index + 1] in {"are", "is"}
     )
 
 
@@ -921,6 +980,7 @@ __all__ = [
     "explicit_actor_has_human_grammar",
     "explicit_actor_evidence",
     "explicit_product_title_evidence",
+    "is_non_path_evidence",
     "is_labeled_non_path_evidence",
     "ranked_first_path_evidence",
     "structured_prompt_facts",

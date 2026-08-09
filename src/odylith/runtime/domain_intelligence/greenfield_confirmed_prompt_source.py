@@ -48,8 +48,11 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import ranked_first_path_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_product_title_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import is_non_path_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import is_labeled_non_path_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import structured_prompt_facts
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_values
 from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
@@ -60,6 +63,7 @@ from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import w
 
 
 _REQUEST_TITLE_MAX_WORDS = 10
+_REQUEST_EVIDENCE_LABELS = frozenset({"confirmed request", "edited request", "request"})
 _REQUEST_PRODUCT_WORDS = frozenset(
     {
         "app",
@@ -213,6 +217,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
 
     original_intent = product_intent_source_text(value)
     structured_facts = structured_prompt_facts(original_intent)
+    has_structured_fields = bool(prompt_field_mapping(original_intent))
     explicit_first_path = markdown_section_text(
         original_intent,
         headings=frozenset({"first complete path", "first path"}),
@@ -305,10 +310,14 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         or _labeled_request_title(original_intent)
         or _confirmed_direction_title(original_intent)
         or explicit_title
-        or product_focus_after_command_sentence(product_text)
-        or product_focus_after_need_sentence(product_text)
-        or contextual_product_title(product_text)
-        or _project_title_source_from_words(words, start=start, command_led=command_led),
+        or ("" if has_structured_fields else product_focus_after_command_sentence(product_text))
+        or ("" if has_structured_fields else product_focus_after_need_sentence(product_text))
+        or ("" if has_structured_fields else contextual_product_title(product_text))
+        or (
+            ""
+            if has_structured_fields
+            else _project_title_source_from_words(words, start=start, command_led=command_led)
+        ),
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
@@ -319,13 +328,22 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
 def _labeled_request_title(value: str) -> str:
     """Read the bounded target noun phrase from an explicit ``Request:`` line."""
 
-    candidates = tuple(dict.fromkeys((*str(value or "").splitlines(), *sentence_fragments(value))))
+    typed_candidates = tuple(
+        f"request: {request}"
+        for request in prompt_field_values(value, names=tuple(_REQUEST_EVIDENCE_LABELS))
+    )
+    candidates = tuple(
+        dict.fromkeys((*typed_candidates, *str(value or "").splitlines(), *sentence_fragments(value)))
+    )
     for candidate in candidates:
         label, separator, request = candidate.partition(":")
-        if not separator or label.strip().casefold() != "request":
+        if not separator or label.strip().casefold() not in _REQUEST_EVIDENCE_LABELS:
             continue
         words = request_words(request)
         start, command_led = _request_content_start(words)
+        bounded_title = _project_title_source_from_words(words, start=start, command_led=command_led)
+        if bounded_title:
+            return bounded_title
         title_words = [word.strip(".,:;!? ") for word in words[start:] if word.strip(".,:;!? ")]
         title = " ".join(title_words).strip()
         if command_led and 1 <= len(title_words) <= _REQUEST_TITLE_MAX_WORDS and not looks_like_action_clause(title):
@@ -397,6 +415,8 @@ def _first_path_source_from_text(value: str) -> str:
         if (
             candidate
             and not is_labeled_non_path_evidence(candidate)
+            and not _labeled_request_title(candidate)
+            and not is_non_path_evidence(candidate)
             and not is_external_dependency_clause(candidate)
             and not is_source_metadata_clause(candidate)
             and word_count(candidate) >= 8
@@ -419,10 +439,17 @@ def _first_path_source_from_text(value: str) -> str:
         candidate = _tail_after_word(raw_text, marker)
         if not candidate:
             continue
+        candidate_rows = sentence_fragments(candidate)
+        candidate = candidate_rows[0] if candidate_rows else candidate
         candidate = _strip_operator_request_wrapper(candidate)
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
             return _strip_release_proof_tail(candidate)
-    if not is_labeled_non_path_evidence(text) and _looks_like_recoverable_first_path(text):
+    if (
+        not is_labeled_non_path_evidence(text)
+        and not _labeled_request_title(text)
+        and not is_non_path_evidence(text)
+        and _looks_like_recoverable_first_path(text)
+    ):
         return _strip_release_proof_tail(text)
     for marker in ("so",):
         candidate = _tail_after_word(raw_text, marker)
@@ -431,7 +458,11 @@ def _first_path_source_from_text(value: str) -> str:
         candidate = _strip_operator_request_wrapper(candidate)
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
             return _strip_release_proof_tail(candidate)
-    return "" if is_labeled_non_path_evidence(text) else _strip_release_proof_tail(text)
+    return (
+        ""
+        if is_labeled_non_path_evidence(text) or _labeled_request_title(text) or is_non_path_evidence(text)
+        else _strip_release_proof_tail(text)
+    )
 
 
 def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
@@ -440,7 +471,7 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
     product_title = explicit_product_title_evidence(value).casefold()
     for sentence in sentence_fragments(value):
         text = clean_markdown_text(sentence).strip(" .")
-        if _is_release_boundary_statement(text):
+        if _is_release_boundary_statement(text) or is_non_path_evidence(text):
             continue
         role_actor, role_first_path = _role_object_record_path(text)
         if role_actor and role_first_path:
@@ -468,7 +499,7 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
         return actor, f"{actor} {action}"
     for sentence in sentence_fragments(value):
         actor, action, article = _explicit_human_actor_action(sentence)
-        if _is_release_boundary_statement(sentence):
+        if _is_release_boundary_statement(sentence) or is_non_path_evidence(sentence):
             continue
         if _is_role_bound_review_statement(sentence):
             action = _strip_role_bound_review_requirement(action)

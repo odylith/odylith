@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
     intent_hypothesis_from_operator_evidence,
@@ -28,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfie
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import confirmed_intent_sections
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import (
+    explicit_actor_has_human_grammar,
+)
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import _explicit_edit_overrides
 from odylith.runtime.project_intelligence.intent_confirmation import _fallback_confirmation_markdown
 
@@ -1172,3 +1177,88 @@ def test_prompt_source_rejects_non_human_product_surfaces_as_where_actors() -> N
 
         assert source.actor == ""
         assert not any(row.startswith(forbidden_actor) for row in intent["human_actors"])
+
+
+def test_edited_request_keeps_history_and_state_descriptions_out_of_the_first_path() -> None:
+    prompt = (
+        "Edited request: make the canal-lock dispatch board for lock tenders. "
+        "Start with inspection tickets, then route a ticket to a mechanic, and produce a repair clearance. "
+        "The ticket state is queued, assigned, repaired, or cleared. "
+        "The earlier draft said a tender may clear a repair alone; replace that rule: "
+        "a hydraulic inspector must clear every repair."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == "canal-lock dispatch board"
+    assert source.first_path == (
+        "Start with inspection tickets, then route a ticket to a mechanic, and produce a repair clearance"
+    )
+
+
+def test_plural_users_and_need_fields_form_an_explicit_complete_path() -> None:
+    prompt = """Pasted field brief
+- Users: refuge wardens and rescue dispatchers
+- Need: log emergency cache inspections in CairnSignal
+- Output: a cache readiness slip
+- First path: inspect a cache"""
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "refuge wardens and rescue dispatchers"
+    assert source.first_path == (
+        "Refuge wardens and rescue dispatchers can inspect a cache, log emergency cache inspections "
+        "in CairnSignal, and receive a cache readiness slip"
+    )
+    assert operational_constraint_phrases(prompt) == ()
+
+
+def test_structured_brief_rule_is_the_only_positive_obligation() -> None:
+    prompt = """Pasted field brief
+- Users: refuge wardens and rescue dispatchers
+- Need: log emergency cache inspections in CairnSignal
+- Rule: dispatchers release a resupply request after a warden records seal condition
+- First path: inspect a cache"""
+
+    assert operational_constraint_phrases(prompt) == (
+        "dispatchers release a resupply request after a warden records seal condition",
+    )
+
+
+def test_state_description_cannot_supply_a_missing_user_path() -> None:
+    source = prompt_intent_source(
+        "Edited request: build the audit board for lock tenders. "
+        "The ticket state is synchronized to the audit log after approval."
+    )
+
+    assert source.title == "audit board"
+    assert source.first_path == ""
+
+
+def test_json_edited_request_uses_typed_title_and_path_fields() -> None:
+    prompt = json.dumps(
+        {
+            "edited request": "make the canal-lock dispatch board for lock tenders",
+            "first path": "inspect a ticket and receive a repair clearance",
+        }
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == "canal-lock dispatch board"
+    assert source.first_path == "inspect a ticket and receive a repair clearance"
+    assert operational_constraint_phrases(prompt) == ()
+
+
+@pytest.mark.parametrize("actor", ("SAP ECC", "CI jobs"))
+def test_nonhuman_users_field_does_not_establish_human_actor_grammar(actor: str) -> None:
+    prompt = json.dumps(
+        {
+            "users": actor,
+            "need": "sync invoices",
+            "first path": "review an invoice",
+            "output": "a sync receipt",
+        }
+    )
+
+    assert not explicit_actor_has_human_grammar(prompt)
