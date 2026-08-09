@@ -187,6 +187,9 @@ def lower_leading_word(value: str) -> str:
     text = clean_text(value).strip(" .")
     if not text:
         return ""
+    first = text.split(maxsplit=1)[0]
+    if first.isupper() and len(first) <= 6 and first.casefold() not in LEADING_ARTICLES:
+        return text
     return f"{text[:1].lower()}{text[1:]}"
 
 
@@ -393,7 +396,7 @@ def recovered_story_text(
     if "." in first_path_inline:
         opening = f"{title} helps {lead_actor_ref} complete this first path: {first_path}."
     else:
-        opening = f"{title} helps {lead_actor_ref} complete a first path where {first_path_inline}."
+        opening = f"{title} helps {lead_actor_ref} complete a first path where {lower_leading_word(first_path_inline)}."
     return (
         f"{opening} It keeps {outcome_object} tied to source input, current state, blockers, handoffs, "
         "and proof evidence so the next step is clear."
@@ -406,7 +409,7 @@ def recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str:
     if "." in first_path_inline:
         opening = "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required."
     else:
-        opening = f"Release 0.0.1 succeeds when {first_path_inline}."
+        opening = f"Release 0.0.1 succeeds when {lower_leading_word(first_path_inline)}."
     return (
         f"{opening} The product shows {outcome_object}. It explains missing or invalid input with a clear blocker "
         "and keeps replayable evidence for review."

@@ -1334,6 +1334,11 @@ def test_component_contract_focus_does_not_clip_confirmed_first_path_tail() -> N
 def test_component_contract_artifact_slots_nominalize_validation_action_clauses() -> None:
     assert noun_slot_artifact_phrase("cover successful completion") == "successful completion evidence"
     assert noun_slot_artifact_phrase("cover successful completion evidence") == "successful completion evidence"
+    assert noun_slot_artifact_phrase("vessel can sail") == "evidence for whether the vessel can sail"
+    assert noun_slot_artifact_phrase("evidence for vessel can sail") == "evidence for whether the vessel can sail"
+    assert noun_slot_artifact_phrase("this reviewer can approve") == "evidence for whether this reviewer can approve"
+    assert noun_slot_artifact_phrase("one reviewer can approve") == "evidence for whether one reviewer can approve"
+    assert noun_slot_artifact_phrase("evidence for that reviewer can approve") == "evidence for whether that reviewer can approve"
     normalized = normalize_contract(
         {
             "owned_state": "cover successful completion evidence",

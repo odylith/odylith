@@ -742,7 +742,15 @@ def _preserve_one_line_actor_source(value: str) -> bool:
     if not actor or not action or not _looks_like_actor_subject(_words(actor)):
         return False
     steps = first_path_model(text).steps
-    return len(steps) >= 2 and any(not _actor_led_base_action_parts(step)[1] for step in steps[1:])
+    actor_actions = [_actor_led_base_action_parts(step) for step in steps]
+    same_actor = bool(
+        actor_actions
+        and all(step_actor and step_action for step_actor, step_action in actor_actions)
+        and len({_clean(step_actor).casefold() for step_actor, _step_action in actor_actions}) == 1
+    )
+    return len(steps) >= 2 and (
+        same_actor or any(not step_action for _step_actor, step_action in actor_actions[1:])
+    )
 
 
 def _path_source_restates_title(value: str, *, title: str) -> bool:
@@ -817,7 +825,11 @@ def _embedded_first_path_clause(value: str, *, actor: str, force_actor_modal: bo
     text = _clean(value).strip(" .")
     if not text:
         return ""
-    if _preserve_complete_source_sequence(text) or _preserve_explicit_actor_action_chain(text):
+    if (
+        _preserve_complete_source_sequence(text)
+        or _preserve_explicit_actor_action_chain(text)
+        or (not force_actor_modal and _preserve_one_line_actor_source(text))
+    ):
         return _sentence_case(text)
     relative_action = _relative_actor_action(text)
     if relative_action:

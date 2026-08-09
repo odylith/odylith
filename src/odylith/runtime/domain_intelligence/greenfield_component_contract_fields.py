@@ -17,6 +17,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import clean
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import looks_like_plural_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -36,6 +38,17 @@ _PROOF_RESULT_TERMS = frozenset(
         "score",
         "summary",
     }
+)
+_MODAL_ARTIFACT_PREFIXES = (
+    "evidence for whether ",
+    "evidence about whether ",
+    "proof for whether ",
+    "evidence for ",
+    "proof for ",
+    "whether ",
+)
+_MODAL_SUBJECT_DETERMINERS = frozenset(
+    {"a", "an", "another", "any", "each", "either", "every", "neither", "one", "that", "the", "these", "this", "those"}
 )
 
 
@@ -216,6 +229,28 @@ def noun_slot_artifact_phrase(value: str) -> str:
     action_artifact = _action_clause_artifact_noun(text)
     if action_artifact:
         return action_artifact
+    modal_source = text
+    for prefix in _MODAL_ARTIFACT_PREFIXES:
+        if modal_source.casefold().startswith(prefix):
+            modal_source = modal_source[len(prefix) :].strip()
+            break
+    modal_actor, modal_action = modal_actor_action_parts(modal_source)
+    source_head, separator, source_tail = modal_source.partition(" ")
+    if not modal_actor and separator and source_head.casefold() in _MODAL_SUBJECT_DETERMINERS:
+        nested_actor, modal_action = modal_actor_action_parts(source_tail)
+        if nested_actor and modal_action:
+            modal_actor = f"{source_head.casefold()} {nested_actor}"
+    if modal_actor and modal_action:
+        actor = modal_actor
+        actor_head = actor.split(maxsplit=1)[0].casefold()
+        if (
+            actor[:1].islower()
+            and actor_head not in _MODAL_SUBJECT_DETERMINERS
+            and not looks_like_plural_subject(actor)
+        ):
+            actor = f"the {actor}"
+        modal_tail = modal_source[len(modal_actor) :].strip()
+        return f"evidence for whether {actor} {modal_tail}"
     if looks_like_action_clause(text):
         action = base_action_clause(text).strip(" .")
         return f"evidence for {action}" if action else "local proof evidence"

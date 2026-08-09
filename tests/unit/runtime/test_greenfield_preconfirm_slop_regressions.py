@@ -617,6 +617,7 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
         "Release readiness requires evidence that a handoff summary that the incoming lead can acknowledge is correct."
     ) == []
     assert modal_base_form_drift_phrases("A decision about whether a model can progress is shown.") == []
+    assert modal_base_form_drift_phrases("Evidence for whether the vessel can sail is missing.") == []
     assert modal_base_form_drift_phrases(
         "Whether Model Can Progress Workflow decides whether a model can progress and keeps status."
     ) == []

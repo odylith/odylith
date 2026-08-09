@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_action_split import split_action_pieces
 from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import actor_led_open_action_parts
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -229,6 +230,28 @@ def test_first_path_steps_keep_compound_review_outcomes_inside_object_list() -> 
     assert model.material_action != "Review a fix is approved"
 
 
+def test_short_action_shaped_compound_remains_an_action_outside_an_object_list() -> None:
+    assert first_path_model("replay timelines").steps == ("Replay timelines",)
+
+
+def test_short_compound_carry_does_not_absorb_follow_on_actor_actions() -> None:
+    operator_path = "Operators audit evidence, record state changes, and publish proof"
+    assert split_action_pieces(operator_path) == [
+        "Operators audit evidence",
+        "Operators record state changes",
+        "Operators publish proof",
+    ]
+    assert first_path_model(operator_path).steps == (
+        "Operators record state changes",
+        "Operators publish proof",
+    )
+    assert first_path_model("Researchers review evidence, notes, record findings, and publish proof").steps == (
+        "Researchers review evidence, notes",
+        "Researchers record findings",
+        "Researchers publish proof",
+    )
+
+
 def test_actor_led_open_action_beats_homonym_object_fallback() -> None:
     model = first_path_model(
         "Safety engineers replay robot paths, human proximity events, intervention thresholds, sensor occlusion. "
@@ -333,7 +356,7 @@ def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_i
     )
     assert "where a city emergency team" not in str(confirmed_intent["product_story"]).casefold()
     assert "residents request beds coordinators" not in str(confirmed_intent["product_story"]).casefold()
-    assert str(confirmed_intent["first_path"]).startswith("Residents can request beds")
+    assert str(confirmed_intent["first_path"]).startswith("Residents request beds")
     assert any(str(row).startswith("Residents:") for row in confirmed_intent["human_actors"])
 
     proposal = build_confirmed_greenfield_proposal(
@@ -484,7 +507,8 @@ def test_confirmed_completion_preserves_plural_actor_for_ambiguous_decision_evid
     assert "Multiple teams bring decides" not in confirmation_text
     assert "Multiple teams bring preserves" not in confirmation_text
     assert "Multiple teams bring publishes" not in confirmation_text
-    assert "Multiple teams decide what is ready" in confirmation_text
+    assert "review can support facts" not in confirmation_text
+    assert "decide what is ready" in confirmation_text
 
     confirmed_intent = parse_confirmed_intent_text(
         confirmation_text,

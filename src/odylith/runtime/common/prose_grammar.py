@@ -417,6 +417,7 @@ def _modal_base_form_drift_segment(value: str, *, window: int) -> list[str]:
             and not looks_like_base_action_token(lowered[direct_index])
             and direct_index + 1 < window_end
             and looks_like_finite_action_token(lowered[direct_index + 1])
+            and not embedded_question_scope
         ):
             phrases.append(" ".join(tokens[modal_index : direct_index + 2]))
         for index in range(modal_index + 1, window_end - 1):

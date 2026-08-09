@@ -6,7 +6,8 @@ import re
 
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 
-_ACTION_NOUNS = frozenset({"audit", "capture", "change", "control", "record", "report", "review", "test"})
+_ACTION_NOUNS = frozenset({"audit", "capture", "change", "control", "record", "replay", "report", "review", "test"})
+_SHORT_COMPOUND_NOUN_MODIFIERS = frozenset({"replay"})
 _OBJECT_HEADS = frozenset(
     {
         "case",
@@ -59,10 +60,10 @@ _LIST_RESULT_HEADS = frozenset(
 )
 
 
-def starts_with_compound_noun_object(value: str) -> bool:
+def starts_with_compound_noun_object(value: str, *, allow_short: bool = False) -> bool:
     """Return true when an action-looking token is a noun modifier in an object phrase."""
 
-    return _compound_noun_index(value) is not None
+    return _compound_noun_index(value, allow_short=allow_short) is not None
 
 
 def action_word_inside_compound_noun(value: str, action_start: int) -> bool:
@@ -93,9 +94,16 @@ def action_word_starts_result_list_noun(value: str, action_start: int) -> bool:
     return False
 
 
-def _compound_noun_index(value: str, *, required_index: int | None = None) -> int | None:
+def _compound_noun_index(
+    value: str,
+    *,
+    required_index: int | None = None,
+    allow_short: bool = False,
+) -> int | None:
     words = _word_spans(value)
-    if len(words) < 3:
+    if len(words) < (2 if allow_short else 3):
+        return None
+    if len(words) == 2 and words[0][0] not in _SHORT_COMPOUND_NOUN_MODIFIERS:
         return None
     start = 0 if required_index == 0 or required_index is None else 1
     for index, (word, _start, _end) in enumerate(words[start:-1], start=start):

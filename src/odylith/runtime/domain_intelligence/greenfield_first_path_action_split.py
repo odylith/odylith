@@ -30,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    actor_led_action_parts as _actor_led_action_parts,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     leading_subject_prefix as _leading_subject_prefix,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_subject_kind import (
@@ -76,10 +79,17 @@ def split_action_pieces(value: str) -> list[str]:
             for purpose_segment in _split_purpose_action_tail(raw_segment):
                 for segment in _split_temporal_action_tail(purpose_segment):
                     current = ""
-                    for part in _merge_status_modifier_parts(
+                    comma_parts = _merge_status_modifier_parts(
                         [piece.strip(" .,;:") for piece in re.split(r",\s+", segment) if piece.strip(" .,;:")]
-                    ):
-                        if current and _continues_adverbial_object_list(part, current):
+                    )
+                    has_follow_on_comma_action = any(
+                        _starts_new_action_clause(part, allow_homonym_subject=True)
+                        for part in comma_parts[1:]
+                    )
+                    for part in comma_parts:
+                        if current and _continues_compound_object_list(part, current):
+                            current = f"{current}, {part}".strip(" .,;:")
+                        elif current and _continues_adverbial_object_list(part, current):
                             current = f"{current}, {part}".strip(" .,;:")
                         elif current and _starts_new_action_clause(
                             part,
@@ -90,6 +100,8 @@ def split_action_pieces(value: str) -> list[str]:
                         else:
                             current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
                         explicit_subject = _carried_subject_prefix(current)
+                        if not explicit_subject and has_follow_on_comma_action:
+                            explicit_subject, _explicit_action = _actor_led_action_parts(current)
                         if explicit_subject:
                             subject_prefix = explicit_subject
                             previous_subject_prefix = explicit_subject
@@ -330,6 +342,15 @@ def _continues_subject_object_list(value: str, current: str) -> bool:
     return bool(_carried_subject_prefix(current))
 
 
+def _continues_compound_object_list(value: str, current: str) -> bool:
+    text = _clean(value).strip(" .")
+    return (
+        "," in _clean(current)
+        and len(text.split()) == 2
+        and _starts_with_compound_noun_object(text, allow_short=True)
+    )
+
+
 def _continues_adverbial_object_list(value: str, current: str) -> bool:
     current_text = _clean(current).strip(" .")
     if not re.search(
@@ -453,7 +474,7 @@ def _starts_new_action_clause(value: str, *, allow_homonym_subject: bool = False
             or _starts_with_compound_noun_object(action_tail)
         ):
             return True
-    if _starts_with_compound_noun_object(text):
+    if _starts_with_compound_noun_object(text) and not _MATERIAL_ACTION_RE.match(text):
         return False
     if _starts_with_result_object_modifier(text):
         return False

@@ -12,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import _first_path_is_clear_enough
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_proof_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_story_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import product_intent_source_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
@@ -47,6 +49,22 @@ Next step
 Compile transaction: odylith greenfield compile-transaction --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --output .odylith/runtime/greenfield/product-create-transaction.v1.json --release 0.0.1
 Commit transaction after hash confirmation: odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/product-create-transaction.v1.json --transaction-hash <hash> --confirm
 """
+
+
+def test_recovered_embedded_first_path_preserves_acronym_actor_case() -> None:
+    story = recovered_story_text(
+        title="Evidence Review",
+        lead_actor_ref="API reviewers",
+        first_path_inline="API reviewers request evidence",
+        outcome_object="the evidence decision",
+    )
+    proof = recovered_proof_text(
+        first_path_inline="NASA operators review telemetry",
+        outcome_object="the telemetry decision",
+    )
+
+    assert "where API reviewers request evidence" in story
+    assert "when NASA operators review telemetry" in proof
 
 
 def test_prompt_source_recovers_sentence_style_title_and_release_path() -> None:
