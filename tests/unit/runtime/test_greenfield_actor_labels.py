@@ -241,3 +241,25 @@ def test_completed_actor_rows_do_not_add_title_expanded_generic_user() -> None:
 
     assert "Individual User" in labels
     assert not any(label.startswith("PeptideTrack") and label.endswith("User") for label in labels)
+
+
+def test_completed_actor_rows_do_not_reclassify_the_product_title_as_a_person() -> None:
+    intent = {
+        "title": "Cold-chain Pantry Ledger",
+        "first_path": (
+            "The cold-chain pantry ledger receives donated lots from intake clerks. "
+            "Nutrition leads verify allergen labels before dispatch drivers hand out parcels."
+        ),
+        "state_object": "A donated lot.",
+        "human_actors": [
+            "Nutrition leads: need the product to verify allergen labels and keep the result visible and reviewable",
+            "Intake clerks: need the product to provide donated lots and keep the result visible and reviewable",
+            "Dispatch drivers: need the product to hand out parcels and keep the result visible and reviewable",
+        ],
+    }
+
+    rows = completed_actor_rows(intent, title=intent["title"])
+    labels = {row.split(":", 1)[0].casefold() for row in rows}
+
+    assert labels == {"nutrition leads", "intake clerks", "dispatch drivers"}
+    assert "cold-chain pantry ledger" not in labels

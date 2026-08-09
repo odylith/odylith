@@ -54,6 +54,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
     literal_label_terms as _literal_label_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -80,6 +81,15 @@ def derive_component_semantic_contract(
 
     label = _label(row)
     description = _description(row)
+    gate_focus = semantic_context.validation_gate_focus(description)
+    if gate_focus:
+        return _validation_gate_contract(
+            label=label,
+            focus=gate_focus,
+            previous_label=previous_label,
+            next_label=next_label,
+            state_label=state_label,
+        )
     proposal_context = _proposal_context(proposal)
     proof_boundary = _proof_boundary_text(proposal)
     local_text = " ".join(text for text in (label, description) if text)
@@ -115,7 +125,6 @@ def derive_component_semantic_contract(
     label_phrases = _label_compound_phrases(label)
     bridge_phrases = _bridge_phrases(label, description)
     lifecycle_phrases = _lifecycle_phrases(label, description)
-    role_phrases = semantic_context.component_role_phrases(label=label, description=description)
     context_required_phrases = semantic_context.context_required_phrases(
         context_phrases,
         label_terms=label_terms,
@@ -131,7 +140,7 @@ def derive_component_semantic_contract(
         proposal_context,
         anchor_terms=unique_text([*label_terms, *description_terms]),
     )
-    local_phrases = [*description_phrases, *label_phrases, *bridge_phrases, *lifecycle_phrases, *role_phrases]
+    local_phrases = [*description_phrases, *label_phrases, *bridge_phrases, *lifecycle_phrases]
     needs_context_backfill = semantic_context.needs_context_backfill(
         description=description,
         description_phrases=description_phrases,
@@ -159,7 +168,6 @@ def derive_component_semantic_contract(
             *context_identity_phrases[:4],
             *bridge_phrases[:2],
             *lifecycle_phrases,
-            *role_phrases,
             *([] if not needs_context_backfill else context_compound_phrases[:4]),
         ]
     else:
@@ -167,7 +175,6 @@ def derive_component_semantic_contract(
             *label_phrases[:3],
             *bridge_phrases[:2],
             *lifecycle_phrases,
-            *role_phrases,
             *context_required_phrases[:3],
             *context_compound_phrases[:3],
         ]
@@ -266,7 +273,6 @@ def derive_component_semantic_contract(
             *context_identity_phrases[:4],
             *owned_summary_phrases,
             *preserved_material_phrases[:3],
-            *role_phrases[:3],
             *owned_context_phrases[:2],
             *evidence_phrases,
             "blocker state",
@@ -301,6 +307,32 @@ def derive_component_semantic_contract(
     fields = contract_support.restore_protected_phrase_surface(fields, protected_description_phrases)
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
     return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
+
+
+def _validation_gate_contract(
+    *, label: str, focus: str, previous_label: str, next_label: str, state_label: str
+) -> SemanticComponentContract:
+    result = f"{singularize_last_word(focus)} result"
+    state = _clean(state_label).casefold() or "accepted state"
+    fields = contract_support.sanitize_contract_fields(
+        {
+            "owned_state": f"{result}, blocked reason, validation evidence, release status",
+            "accepted_inputs": f"{state}, {focus} evidence, release criteria, prior release status, authorized actor",
+            "produced_outputs": f"{result}, allowed or blocked release decision, validation evidence, release status",
+            "states_or_transitions": "pending, evaluated, blocked, ready-for-release",
+            "outside_boundary": f"upstream source truth; changes to {state}; final release approval and downstream delivery",
+            "local_proof": [
+                f"Successful path evidence for {label}: accepted {state} passes {focus} and records validation evidence before release.",
+                f"Blocked input evidence for {label}: missing or failed {focus} keeps {state} blocked and explains the recovery action.",
+                f"Replay evidence for {label}: {result}, source evidence, actor, criteria, and release status reproduce the gate decision.",
+            ],
+            "upstream_truth": previous_label or f"accepted {state} input",
+            "downstream_consumers": next_label or "release review",
+            "unique_failure": f"{label} can release {state} incorrectly when {focus} evidence is missing or stale, or when a blocked result is hidden.",
+        }
+    )
+    local_terms = tuple(_content_terms(f"{focus} {result} blocked reason validation evidence release status"))
+    return SemanticComponentContract(fields=fields, confidence=40, local_terms=local_terms)
 
 
 def _label(row: Mapping[str, Any] | None) -> str:

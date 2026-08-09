@@ -162,6 +162,24 @@ def test_explicit_external_system_declaration_stays_outside_the_user_path() -> N
     )
 
 
+def test_named_source_declaration_stays_outside_the_user_path() -> None:
+    evidence = (
+        "Intake clerks record donated lots. "
+        "The refrigeration telemetry API is the source for readings."
+    )
+
+    assert source_boundary_rows_from_evidence(evidence) == ["refrigeration telemetry API"]
+    assert ranked_first_path_evidence(evidence) == "Intake clerks record donated lots"
+    assert is_external_dependency_clause("The refrigeration telemetry API is the source for readings.")
+
+
+def test_internal_source_of_truth_is_not_an_external_dependency() -> None:
+    evidence = "The release record is the source of truth."
+
+    assert source_boundary_rows_from_evidence(evidence) == []
+    assert not is_external_dependency_clause(evidence)
+
+
 def test_uppercase_evidence_envelope_stays_outside_the_user_path() -> None:
     evidence = (
         "PASTED CLINIC BRIEF\n"

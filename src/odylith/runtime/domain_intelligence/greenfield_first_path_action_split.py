@@ -229,6 +229,18 @@ def _split_temporal_action_tail(value: str) -> list[str]:
     text = _clean(value).strip(" .")
     if not text:
         return []
+    actor_tail = re.search(
+        r"\s+(?:before|after)\s+(?P<tail>[^.;]+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    actor_head = text[: actor_tail.start()].strip(" ,") if actor_tail else ""
+    if (
+        actor_tail
+        and _temporal_head_can_split(actor_head, actor_led_subject_prefix=_has_actor_led_subject_prefix(actor_head))
+        and _actor_role_subject_action(actor_tail.group("tail"))
+    ):
+        return [actor_head, actor_tail.group("tail").strip(" ,")]
     match = re.search(
         r"\s+(?:before|after)\s+(?P<verb>[A-Za-z]+ing)\b(?P<tail>[^.;]*)$",
         text,

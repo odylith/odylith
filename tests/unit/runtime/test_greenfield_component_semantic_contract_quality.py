@@ -274,6 +274,37 @@ def test_component_contract_does_not_promote_topic_terms_as_owned_state() -> Non
     assert not generated_semantic_slop_issues(contract)
 
 
+def test_validation_gate_contract_uses_the_accepted_gate_subject_without_invented_artifacts() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Temperature Checks Validation Service",
+            "source_system_description": (
+                "enforces temperature checks as the release gate and keeps blocked reason, "
+                "validation evidence, and release status visible"
+            ),
+        },
+        proposal={
+            "intent": {
+                "first_path": "Temperature checks are the release gate.",
+                "assumptions": ["Retain lot temperatures for 18 months and never infer an allergen."],
+            }
+        },
+        sibling=None,
+        previous_label="Parcels Delivery Service",
+        next_label="",
+        state_label="Donated Lot",
+    ).fields
+    rendered = json.dumps(contract, sort_keys=True).casefold()
+
+    assert contract["owned_state"] == "temperature check result, blocked reason, validation evidence, release status"
+    assert "allowed or blocked release decision" in contract["produced_outputs"]
+    assert "retain temperature" not in rendered
+    assert "failure reason ledger" not in rendered
+    assert "known-limit checkpoint" not in rendered
+    assert "recovery-condition ledger" not in rendered
+    assert not generated_semantic_slop_issues(contract)
+
+
 def test_generic_component_contract_builder_prefers_semantic_artifacts_over_raw_action_focus() -> None:
     proposal = {
         "intent": {

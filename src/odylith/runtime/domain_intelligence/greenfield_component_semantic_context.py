@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase as _transfer_object_phrase
 
 
@@ -655,16 +656,19 @@ _CONTEXT_METADATA_LEADS = frozenset(
 )
 
 
-def component_role_phrases(*, label: str, description: str) -> tuple[str, ...]:
-    text = _clean(" ".join([label, description])).casefold()
-    phrases: list[str] = []
-    if re.search(r"\b(?:audit|evidence|ledger|log|proof|replay|reviewable|trace)\b", text):
-        phrases.extend(["audit trail", "replay evidence", "decision ledger"])
-    if re.search(r"\b(?:failure|blocked|invalid|missing|recovery)\b", text):
-        phrases.append("failure reason ledger")
-    if re.search(r"\b(?:guardrail|limit|rollout|release)\b", text):
-        phrases.extend(["known-limit checkpoint", "recovery-condition ledger"])
-    return tuple(unique_text(phrases))
+def validation_gate_focus(value: str) -> str:
+    """Return the governed subject from a generated ``enforces X as ... gate`` clause."""
+
+    words = visible_words(_clean(value))
+    lowered = [word.casefold() for word in words]
+    if len(words) < 4 or not looks_like_finite_action_token(words[0]) or "gate" not in lowered:
+        return ""
+    gate_index = lowered.index("gate")
+    as_index = next((index for index, word in enumerate(lowered[1:gate_index], start=1) if word == "as"), -1)
+    focus_words = words[1:as_index] if as_index > 1 else []
+    if not 1 <= len(_content_terms(" ".join(focus_words))) <= 5:
+        return ""
+    return _clean_artifact_phrase(" ".join(focus_words)) or " ".join(focus_words).casefold()
 
 
 def needs_source_evidence(
@@ -726,7 +730,6 @@ def _clean(value: Any) -> str:
 __all__ = [
     "clauses",
     "action_terms",
-    "component_role_phrases",
     "context_anchor_compounds",
     "context_object_phrases",
     "context_required_phrases",
@@ -741,4 +744,5 @@ __all__ = [
     "preserved_scaffold_material",
     "relation_phrases",
     "transition_context_text",
+    "validation_gate_focus",
 ]

@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import is_external_dependency_clause
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is_requester_product_framing
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
@@ -47,6 +48,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import ranked_first_path_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_product_title_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import is_labeled_non_path_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import structured_prompt_facts
 from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -394,6 +396,8 @@ def _first_path_source_from_text(value: str) -> str:
         candidate = sentence.strip(" .")
         if (
             candidate
+            and not is_labeled_non_path_evidence(candidate)
+            and not is_external_dependency_clause(candidate)
             and not is_source_metadata_clause(candidate)
             and word_count(candidate) >= 8
             and _looks_like_recoverable_first_path(candidate)
@@ -418,7 +422,7 @@ def _first_path_source_from_text(value: str) -> str:
         candidate = _strip_operator_request_wrapper(candidate)
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
             return _strip_release_proof_tail(candidate)
-    if _looks_like_recoverable_first_path(text):
+    if not is_labeled_non_path_evidence(text) and _looks_like_recoverable_first_path(text):
         return _strip_release_proof_tail(text)
     for marker in ("so",):
         candidate = _tail_after_word(raw_text, marker)
@@ -427,12 +431,13 @@ def _first_path_source_from_text(value: str) -> str:
         candidate = _strip_operator_request_wrapper(candidate)
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
             return _strip_release_proof_tail(candidate)
-    return _strip_release_proof_tail(text)
+    return "" if is_labeled_non_path_evidence(text) else _strip_release_proof_tail(text)
 
 
 def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
     """Recover the first declarative user path before trailing proof constraints."""
 
+    product_title = explicit_product_title_evidence(value).casefold()
     for sentence in sentence_fragments(value):
         text = clean_markdown_text(sentence).strip(" .")
         if _is_release_boundary_statement(text):
@@ -445,7 +450,16 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             continue
         actor = _strip_leading_actor_article(match.actor)
         action = match.action.strip(" .")
-        if not actor or not action or not _is_bounded_prompt_actor(actor):
+        if (
+            not actor
+            or not action
+            or actor.casefold() == product_title
+            or not _is_bounded_prompt_actor(actor)
+            or not (
+                has_human_actor_action_context(actor, action)
+                or _single_proper_person_actor(actor)
+            )
+        ):
             continue
         if match.gerund:
             verb, _separator, tail = action.partition(" ")
@@ -459,6 +473,8 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
         if _is_role_bound_review_statement(sentence):
             action = _strip_role_bound_review_requirement(action)
         if not actor or not action:
+            continue
+        if actor.casefold() == product_title:
             continue
         action_head = request_words(action)[:1]
         if action_head and has_non_human_actor_signal(f"{actor} {action_head[0]}"):
@@ -1083,6 +1099,15 @@ def _is_bounded_prompt_actor(value: str) -> bool:
         and len(words) <= 6
         and not any(word.endswith((".", "!", "?")) for word in words)
         and not _looks_like_non_human_subject(words)
+    )
+
+
+def _single_proper_person_actor(value: str) -> bool:
+    words = request_words(value)
+    return bool(
+        len(words) == 1
+        and words[0][:1].isupper()
+        and not has_non_human_actor_signal(value)
     )
 
 

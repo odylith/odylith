@@ -280,6 +280,31 @@ def test_cf410_pasted_cold_chain_brief_does_not_false_block_phrasal_action(tmp_p
         require_completion_ready=False,
     )
 
+    actor_labels = {str(row).split(":", 1)[0].casefold() for row in intent["human_actors"]}
+    first_path = str(intent["first_path"]).casefold()
+
+    assert "cold-chain pantry ledger" in str(intent["title"]).casefold()
+    assert actor_labels == {"intake clerks", "nutrition leads", "dispatch drivers"}
+    assert "refrigeration telemetry api" not in first_path
+    assert "a proposal with" not in first_path
+    assert "donated lot" in str(intent["state_object"]).casefold()
+    assert "dispatch drivers" not in str(intent["state_object"]).casefold()
+    assert tuple(intent["external_systems"]) == ("refrigeration telemetry API",)
+    component_labels = {str(row["label"]).casefold() for row in proposal["components"]}
+    assert "temperature checks validation service" in component_labels
+    assert all(not label.startswith("are ") for label in component_labels)
+    gate_component = next(
+        row for row in proposal["components"] if str(row["label"]).casefold() == "temperature checks validation service"
+    )
+    assert str(gate_component["responsibility"]).casefold().startswith(
+        "enforces temperature checks as the release gate"
+    )
+    gate_contract = json.dumps(gate_component["component_contract"], sort_keys=True).casefold()
+    assert "checks are the release gate" not in gate_contract
+    assert "retain temperature" not in gate_contract
+    assert "failure reason ledger" not in gate_contract
+    assert "known-limit checkpoint" not in gate_contract
+    assert "recovery-condition ledger" not in gate_contract
     assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
 
 

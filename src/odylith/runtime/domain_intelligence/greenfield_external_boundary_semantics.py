@@ -338,7 +338,7 @@ def _dependency_frame_sources(value: str) -> list[str]:
 
 
 def _declared_external_sources(value: str) -> list[str]:
-    """Read explicit ``<name> is/are external source/system`` declarations."""
+    """Read explicit external-system and named-source declarations."""
 
     subject, predicate_text = declaration_subject_predicate(value)
     subject_tokens = {token.casefold() for token in _LEXEME_RE.findall(subject)}
@@ -347,9 +347,13 @@ def _declared_external_sources(value: str) -> list[str]:
         return []
     if {"forbidden", "never", "not", "prohibited", "without"} & predicate:
         return []
-    if "external" not in predicate or not predicate & {"source", "sources", "system", "systems"}:
-        return []
-    return _declared_source_labels(subject)
+    if "external" in predicate and predicate & {"source", "sources", "system", "systems"}:
+        return _declared_source_labels(subject)
+    if "source" in predicate and predicate & {"for", "of"} and "truth" not in predicate:
+        label = _source_label(subject, explicit=True)
+        if label and _system_boundary_candidate(label) and not has_human_actor_signal(label):
+            return [label]
+    return []
 
 
 def _declared_source_labels(value: str) -> list[str]:

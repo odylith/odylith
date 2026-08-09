@@ -842,6 +842,37 @@ def test_prompt_source_prefers_labeled_request_over_evidence_envelope() -> None:
     assert radio.first_path.startswith("Producers submit episode metadata")
 
 
+def test_prompt_source_separates_narrative_product_identity_workflow_and_deliverable() -> None:
+    prompt = (
+        "PASTED DISTRIBUTION BRIEF\n"
+        "The cold-chain pantry ledger receives donated lots from intake clerks. "
+        "Nutrition leads verify allergen labels before dispatch drivers hand out parcels. "
+        "Temperature checks are the release gate. "
+        "The refrigeration telemetry API is the source for readings.\n"
+        "Deliverable: a proposal with the custody path and release record."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == "cold-chain pantry ledger"
+    assert source.actor == "Nutrition leads"
+    assert "dispatch drivers hand out parcels" in source.first_path
+    assert "refrigeration telemetry API" not in source.first_path
+    assert "deliverable" not in source.first_path.casefold()
+    assert "a proposal with" not in source.first_path.casefold()
+
+
+def test_prompt_source_does_not_promote_source_or_deliverable_evidence_to_product_truth() -> None:
+    source = prompt_intent_source(
+        "Deliverable: a proposal with the custody path and release record. "
+        "The payment system is the source for balances."
+    )
+
+    assert source.title == ""
+    assert source.first_path == ""
+    assert source.actor == ""
+
+
 def test_prompt_source_keeps_compact_confirmed_direction_title_out_of_dependencies() -> None:
     prompt = (
         "## Confirmed direction Use the tree-canopy ledger. "

@@ -313,6 +313,7 @@ def _actor_row_has_usable_description(value: str) -> bool:
 
 def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generic_fallback: bool = True) -> list[str]:
     focus = _focus_label(title)
+    title_reference = _actor_reference(title)
     first_path = _clean(intent.get("first_path"))
     story = _clean(intent.get("product_story"))
     state = _clean(intent.get("state_object"))
@@ -332,6 +333,8 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generi
     for candidate in candidates:
         if _word_count(candidate) <= 5:
             label = _actor_label_display(candidate)
+            if _actor_reference(label) == title_reference:
+                continue
             if value_starts_with_generic_actor_label(label):
                 role = label.casefold()
                 label = _actor_label_display(f"{_role_focus(focus, role)} {role}")

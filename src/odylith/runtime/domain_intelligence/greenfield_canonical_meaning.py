@@ -278,12 +278,19 @@ def internal_system_rows_from_first_path(
         if not responsibilities:
             responsibilities = ["Processing"]
         used_responsibilities.update(responsibilities)
+        gate_subject = _copular_gate_subject(step)
         action_label = _compact_label(
-            _action_object_for_owned_clause(action, has_subject=bool(non_human_subject)),
+            gate_subject or _action_object_for_owned_clause(action, has_subject=bool(non_human_subject)),
             fallback=state_label,
             max_words=4,
         )
-        if index == 0 and "Intake" in responsibilities:
+        if gate_subject:
+            name = f"{action_label} Validation"
+            description = (
+                f"enforces {action_label.casefold()} as the release gate and keeps blocked reason, "
+                "validation evidence, and release status visible"
+            )
+        elif index == 0 and "Intake" in responsibilities:
             name = f"{state_label} Intake"
             description = (
                 f"captures {state_label.casefold()} input and required context, then exposes validation or blocked state"
@@ -512,6 +519,8 @@ def _compact_label(value: str, *, fallback: str, max_words: int) -> str:
 
 
 def _responsibility_labels(action: str, *, step: str) -> list[str]:
+    if _copular_gate_subject(step):
+        return ["Validation"]
     tokens = set(_action_verbs(_action_without_subject(action)))
     if re.search(r"\bvalidat(?:e[sd]?|ing)\b", step, flags=re.IGNORECASE):
         tokens.add("validate")
@@ -682,6 +691,9 @@ def _ownership_steps(value: str, *, human_actors: Sequence[str]) -> list[str]:
 
 
 def _non_human_subject_prefix(value: str) -> str:
+    gate_subject = _copular_gate_subject(value)
+    if gate_subject:
+        return gate_subject
     words = clean_text(value).strip(" .").split()
     if not words:
         return ""
@@ -692,6 +704,25 @@ def _non_human_subject_prefix(value: str) -> str:
         candidate = " ".join(words[:end]).strip(" ,.;:-")
         if has_non_human_actor_signal(candidate):
             return candidate
+    return ""
+
+
+def _copular_gate_subject(value: str) -> str:
+    """Return the state subject in ``<state> is/are the ... gate`` clauses."""
+
+    words = [word.strip(".,;:()[]{}") for word in clean_text(value).split() if word.strip(".,;:()[]{}")]
+    lowered = [word.casefold() for word in words]
+    for index, token in enumerate(lowered):
+        if token not in {"are", "is", "was", "were"} or not 1 <= index <= 5:
+            continue
+        if "gate" not in lowered[index + 1 :]:
+            continue
+        subject_words = words[:index]
+        if subject_words and subject_words[0].casefold() in {"a", "an", "the"}:
+            subject_words = subject_words[1:]
+        subject = " ".join(subject_words).strip(" .")
+        if subject and not has_actor_role_word(subject):
+            return subject
     return ""
 
 

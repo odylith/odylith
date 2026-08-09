@@ -7,6 +7,7 @@ import json
 import re
 from typing import Any, Mapping
 
+from odylith.runtime.common.prose_grammar import action_token_form
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
@@ -97,6 +98,7 @@ _VISIBLE_RESULT_RE = re.compile(
 )
 _SEQUENCE_RE = re.compile(r"(?:->|\b(?:first|then|after|before|next|finally)\b|;)", flags=re.IGNORECASE)
 _LABELED_PREFIX_RE = re.compile(r"^[A-Za-z][A-Za-z0-9 _/-]{1,60}:\s*")
+_NON_PATH_NARRATIVE_LABELS = frozenset({"deliverable", "requested deliverable"})
 _TITLE_TOKEN = r"[A-Z][A-Za-z0-9'/-]*"
 _TITLE_PHRASE = rf"{_TITLE_TOKEN}(?:\s+{_TITLE_TOKEN}){{0,4}}"
 _TITLE_REFERENCE_WORDS = frozenset({"a", "an", "it", "that", "the", "these", "this", "those"})
@@ -443,7 +445,32 @@ def explicit_product_title_evidence(value: str) -> str:
                 continue
             score = structural_score + min(len(words), 4) + text.casefold().count(title.casefold())
             candidates.append((score, title))
-    return max(candidates, default=(0, ""))[1]
+    explicit_title = max(candidates, default=(0, ""))[1]
+    return explicit_title or _narrative_product_subject_title(value)
+
+
+def _narrative_product_subject_title(value: str) -> str:
+    """Recover a product-shaped sentence subject without promoting human actors."""
+
+    for row in _narrative_rows(value):
+        if is_external_dependency_clause(row):
+            continue
+        words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'/-]*", row)
+        if words and words[0].casefold() in {"a", "an", "the"}:
+            words = words[1:]
+        action_index = next(
+            (index for index, word in enumerate(words[:6]) if action_token_form(word)),
+            -1,
+        )
+        if action_index < 2 or action_index > 5:
+            continue
+        subject_words = words[:action_index]
+        if subject_words[-1].casefold() not in _PRODUCT_TITLE_TERMINALS:
+            continue
+        subject = " ".join(subject_words)
+        if not has_human_actor_signal(subject):
+            return subject
+    return ""
 
 
 def explicit_actor_has_human_grammar(value: str) -> bool:
@@ -499,8 +526,11 @@ def explicit_actor_evidence(value: str) -> str:
                 if _INVALID_ROLE_TRAILING_RE.search(role):
                     continue
                 if pattern is _APPOSITIVE_ACTOR_RE:
-                    return f"{match.group('name')}, {match.group('article')} {role}".strip()
-                return f"{role} {match.group('name')}".strip()
+                    candidate = f"{match.group('name')}, {match.group('article')} {role}".strip()
+                else:
+                    candidate = f"{role} {match.group('name')}".strip()
+                if _pattern_actor_is_human(match=match, candidate=candidate):
+                    return candidate
         need_match = _LEADING_NEED_ACTOR_RE.search(source)
         if need_match:
             actor = need_match.group("actor").strip(" ,")
@@ -510,6 +540,20 @@ def explicit_actor_evidence(value: str) -> str:
         if helper_actor:
             return helper_actor
     return ""
+
+
+def _pattern_actor_is_human(*, match: re.Match[str], candidate: str) -> bool:
+    if has_non_human_actor_signal(candidate):
+        return False
+    if _has_actor_label_signal(candidate):
+        return True
+    name = str(match.groupdict().get("name") or "").strip()
+    return bool(
+        name
+        and name[:1].isupper()
+        and not name.isupper()
+        and not any(character.isdigit() for character in name)
+    )
 
 
 def _named_product_helper_actor(value: str) -> str:
@@ -780,6 +824,8 @@ def _narrative_rows(value: str) -> list[str]:
         line = re.sub(r"^\s*[-*]\s+", "", line)
         text = clean_markdown_text(line).strip()
         for fragment in re.split(r"(?<=[.!?])\s+", text):
+            if is_labeled_non_path_evidence(fragment):
+                continue
             confirmation_evidence = without_confirmation_evidence_label(fragment)
             row = _LABELED_PREFIX_RE.sub("", fragment).strip(" .")
             if row and confirmation_evidence != fragment:
@@ -787,6 +833,11 @@ def _narrative_rows(value: str) -> list[str]:
             if row:
                 rows.append(row)
     return rows
+
+
+def is_labeled_non_path_evidence(value: str) -> bool:
+    label, separator, _body = str(value or "").partition(":")
+    return bool(separator and _field_key(label) in _NON_PATH_NARRATIVE_LABELS)
 
 
 def _without_confirmed_direction_title(value: str) -> str:
@@ -947,6 +998,7 @@ __all__ = [
     "explicit_actor_has_human_grammar",
     "explicit_actor_evidence",
     "explicit_product_title_evidence",
+    "is_labeled_non_path_evidence",
     "ranked_first_path_evidence",
     "structured_prompt_facts",
 ]

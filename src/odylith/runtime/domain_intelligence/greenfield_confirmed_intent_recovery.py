@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import base_action_verb
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
@@ -14,6 +15,7 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_signal
@@ -67,6 +69,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_rows_from_evidence
 
 _ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
+_SOURCE_RELATION_ACTIONS = frozenset({"accept", "collect", "import", "receive"})
 _NON_HUMAN_ACTOR_TERMS = frozenset(
     {
         "api",
@@ -358,7 +361,7 @@ def confirmation_from_operator_intent(
     state = state_object_from_first_path(
         actor_fact_source or first_path,
         fallback=title,
-        preferred_action=lead_action,
+        preferred_action="" if recovered_source_has_non_human_subject else lead_action,
     )
     proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
     if evaluation.story:
@@ -474,7 +477,10 @@ def _usable_first_path_source(
         return ""
     if _path_is_title_qualified_product_constraint(text, title=title):
         return ""
-    if _path_starts_with_non_human_workflow_subject(text):
+    if (
+        _path_starts_with_non_human_workflow_subject(text)
+        and not _human_actor_rows_from_first_path(text, title=title, include_fallback=False)
+    ):
         return ""
     model = first_path_model(text)
     gerund_actor, gerund_action = _actor_gerund_action_parts(text)
@@ -1114,6 +1120,9 @@ def _human_actor_row_from_clause(
     words = _words(clause)
     if len(words) < 2:
         return ""
+    source_actor, source_action = _human_source_actor_event(words)
+    if source_actor and source_action:
+        return _human_actor_row(source_actor, source_action)
     purpose_actor, purpose_action = _actor_purpose_parts(clause)
     if purpose_actor and purpose_action:
         if require_actor_signal and not _has_actor_action_signal(_words(purpose_actor), _words(purpose_action)):
@@ -1193,6 +1202,47 @@ def _human_actor_row_from_clause(
             return ""
         return _human_actor_row(actor, action)
     return ""
+
+
+def _human_source_actor_event(words: Sequence[str]) -> tuple[str, str]:
+    """Project explicit ``receives <object> from <human role>`` evidence as a human event."""
+
+    lowered = [word.casefold().strip(".,:;") for word in words]
+    for relation_index, token in enumerate(lowered):
+        if token != "from" or relation_index < 2 or relation_index + 1 >= len(words):
+            continue
+        action_index = next(
+            (
+                index
+                for index, word in enumerate(words[:relation_index])
+                if base_action_verb(word) in _SOURCE_RELATION_ACTIONS
+            ),
+            -1,
+        )
+        if action_index < 0:
+            continue
+        object_words = list(words[action_index + 1 : relation_index])
+        actor_words = list(words[relation_index + 1 :])
+        boundary_index = next(
+            (
+                index
+                for index, word in enumerate(actor_words[1:], start=1)
+                if word.casefold().strip(".,:;") in _RELATION_BOUNDARY_WORDS
+            ),
+            len(actor_words),
+        )
+        actor_words = _strip_leading_articles(actor_words[:boundary_index])
+        actor = " ".join(actor_words).strip(" .")
+        object_text = " ".join(object_words).strip(" .")
+        if (
+            actor
+            and object_text
+            and len(actor_words) <= 5
+            and has_actor_role_word(actor)
+            and not has_non_human_actor_signal(actor)
+        ):
+            return actor, f"provide {object_text}"
+    return "", ""
 
 
 def _explicit_actor_action_split(words: Sequence[str]) -> tuple[list[str], list[str]] | None:
