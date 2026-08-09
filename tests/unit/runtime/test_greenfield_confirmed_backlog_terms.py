@@ -329,6 +329,17 @@ def test_proof_claim_summary_removes_a_clipped_output_verb_and_connector() -> No
     assert not summary.endswith((" and", " produce"))
 
 
+def test_proof_claim_summary_preserves_a_complete_reviewability_predicate() -> None:
+    proof_boundary = (
+        "Release 0.0.1 succeeds when the accepted first path is complete and "
+        "the simulation evidence remains reviewable."
+    )
+
+    assert proof_claim_summary(proof_boundary) == (
+        "the accepted first path is complete and the simulation evidence remains reviewable"
+    )
+
+
 def test_ranking_basis_does_not_repeat_a_secondary_visible_result_sentence() -> None:
     lines = rationale_lines(
         label="Permit Review Workspace",

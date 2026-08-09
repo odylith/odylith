@@ -129,6 +129,9 @@ _INCOMPLETE_TERMINAL_MODIFIERS = frozenset(
         "visible",
     }
 )
+_TERMINAL_MODIFIER_PREDICATES = frozenset(
+    {"are", "be", "been", "being", "is", "remain", "remains", "was", "were"}
+)
 _OPEN_CONNECTOR_INTERRUPTER_RE = re.compile(
     r"\b(?:and|or),\s+(?:after|although|as|before|because|if|once|until|when|where|while)\b[^,.;]*$",
     re.IGNORECASE,
@@ -470,7 +473,7 @@ def _strip_proof_claim_intro(value: str) -> str:
     patterns = (
         r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+",
         r"^(?:the\s+)?product\s+is\s+proven\s+when\s+",
-        r"^(?:release\s+[0-9.]+\s+)?(?:is\s+)?proven\s+when\s+",
+        r"^(?:release\s+[0-9.]+\s+)?(?:(?:is\s+)?(?:proven|trusted)|succeeds|works)\s+when\s+",
         r"^(?:the\s+)?proof\s+boundary\s+(?:is|means)\s*:?\s*",
         r"^(?:the\s+)?first\s+thing\s+(?:the\s+)?product\s+must\s+prove\s+(?:is\s+)?(?:that\s+)?",
         r"^(?:the\s+)?first\s+complete\s+path\s+(?:the\s+)?product\s+must\s+prove\s+(?:is\s+)?(?:that\s+)?",
@@ -502,15 +505,7 @@ def _trim_incomplete_terminal_phrase(value: str) -> str:
     while words:
         tail = words[-1].casefold().strip(".,;:'")
         previous = words[-2].casefold().strip(".,;:'") if len(words) >= 2 else ""
-        if tail in {"accepted", "complete", "safe", "trusted", "visible"} and previous in {
-            "is",
-            "are",
-            "be",
-            "being",
-            "been",
-            "was",
-            "were",
-        }:
+        if tail in _INCOMPLETE_TERMINAL_MODIFIERS and previous in _TERMINAL_MODIFIER_PREDICATES:
             break
         if tail not in _INCOMPLETE_TERMINAL_WORDS and tail not in _INCOMPLETE_TERMINAL_MODIFIERS:
             break
@@ -526,15 +521,7 @@ def _trim_incomplete_terminal_phrase(value: str) -> str:
     while words:
         tail = words[-1].casefold().strip(".,;:'")
         previous = words[-2].casefold().strip(".,;:'") if len(words) >= 2 else ""
-        if tail in {"accepted", "complete", "safe", "trusted", "visible"} and previous in {
-            "is",
-            "are",
-            "be",
-            "being",
-            "been",
-            "was",
-            "were",
-        }:
+        if tail in _INCOMPLETE_TERMINAL_MODIFIERS and previous in _TERMINAL_MODIFIER_PREDICATES:
             break
         if tail not in _INCOMPLETE_TERMINAL_WORDS and tail not in _INCOMPLETE_TERMINAL_MODIFIERS:
             break

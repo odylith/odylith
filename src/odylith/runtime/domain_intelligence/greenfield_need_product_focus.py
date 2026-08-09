@@ -111,6 +111,8 @@ def command_product_title(value: str) -> str:
                 if _word_key(lead[-1]) in _GENERIC_REQUEST_CONTAINERS
                 else f"{action_object} {lead[-1]}"
             )
+        if _word_key(lead[-1]) in _GENERIC_REQUEST_CONTAINERS:
+            return ""
         if tail and len(lead) <= 2 and len(tail) <= 5 and not looks_like_action_clause(" ".join(tail)):
             return " ".join((*tail, *lead))
         return " ".join(lead)

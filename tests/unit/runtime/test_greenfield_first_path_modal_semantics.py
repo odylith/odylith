@@ -90,6 +90,17 @@ def test_capability_keeps_capitalized_human_actor_actions() -> None:
     )
 
 
+def test_capability_does_not_append_an_actor_led_visible_step_twice() -> None:
+    first_path = (
+        "A case manager creates an eligibility record, routes a service decision, "
+        "and verifies a resolution notice."
+    )
+
+    assert first_path_capability_phrase(first_path, gerund=True) == (
+        "creating an eligibility record, routing a service decision, and verifying a resolution notice"
+    )
+
+
 def test_first_path_steps_drop_workflow_requirement_control_clause_after_real_actions() -> None:
     first_path = (
         "Physicists tune magnetic confinement parameters, impurity injection timing, sensor channels, "

@@ -219,11 +219,15 @@ def _first_path_capability_text(
             break
         if step.is_material_action or step.is_visible_result:
             selected.append(step)
+            included_visible_result = included_visible_result or step.is_visible_result
             if step.visible_object and view.covers_visible_object(step.visible_object):
                 included_visible_result = True
             if fragment_key:
                 selected_fragments.add(fragment_key)
         visible_seen = visible_seen or step.is_visible_result
+    model_visible_step = first_path_step_view(model.visible_outcome)
+    if model_visible_step.fragment_key in selected_fragments:
+        included_visible_result = True
     fragments = _unique([_step_fragment(step, gerund=gerund) for step in selected])
     if not fragments and setup_fallbacks:
         fragments = _unique([_step_fragment(step, gerund=gerund) for step in setup_fallbacks[: max(1, max_fragments)]])

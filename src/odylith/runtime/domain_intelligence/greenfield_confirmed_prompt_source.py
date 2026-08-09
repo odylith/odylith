@@ -437,6 +437,9 @@ def _first_path_source_from_text(value: str) -> str:
     if is_source_metadata_clause(raw_text):
         return ""
     text = _strip_operator_request_wrapper(raw_text)
+    release_candidate = _release_action_sentence_source(raw_text) or _release_action_sentence_source(text)
+    if word_count(release_candidate) >= 8 and _looks_like_recoverable_first_path(release_candidate):
+        return _strip_release_proof_tail(release_candidate)
     ranked = ranked_first_path_evidence(text)
     if ranked:
         return _strip_release_proof_tail(ranked)
@@ -462,9 +465,6 @@ def _first_path_source_from_text(value: str) -> str:
     actor_led_candidate = _actor_led_relative_clause_source(raw_text)
     if word_count(actor_led_candidate) >= 8 and _looks_like_recoverable_first_path(actor_led_candidate):
         return _strip_release_proof_tail(actor_led_candidate)
-    release_candidate = _release_action_sentence_source(raw_text) or _release_action_sentence_source(text)
-    if word_count(release_candidate) >= 8 and _looks_like_recoverable_first_path(release_candidate):
-        return _strip_release_proof_tail(release_candidate)
     for marker in ("where", "that", "for", "who"):
         candidate = _tail_after_word(raw_text, marker)
         if not candidate:

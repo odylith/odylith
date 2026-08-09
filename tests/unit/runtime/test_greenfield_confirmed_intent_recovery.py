@@ -634,7 +634,7 @@ def test_prompt_source_does_not_promote_a_delimiter_prefixed_intent_label_after_
 
     assert source.title == "evidence review workspace"
     assert source.actor == ""
-    assert source.first_path == "Create an evidence review workspace"
+    assert source.first_path == ""
     assert "service coordinator" not in source.first_path
 
 
