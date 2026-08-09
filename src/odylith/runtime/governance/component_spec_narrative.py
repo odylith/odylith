@@ -439,10 +439,8 @@ def _state_narrative(
     produced_rows = view.produced_items
     accepted = _human_join(accepted_rows)
     produced = _human_join(produced_rows)
-    blocker_state = _human_join(view.blocker_state_items)
     transition_rows = view.transition_items
     state_path = _human_join(transition_rows)
-    blocker = f"Specific missing or blocked inputs include {blocker_state}" if role in {"entry", "recovery"} and blocker_state else ""
     if role in {"entry", "recovery"}:
         first = f"It owns {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
@@ -489,7 +487,7 @@ def _state_narrative(
     material = _material_state_sentence(label=label, role=role, material_state=material_state)
     material_contract = _material_contract_sentence(label=label, view=view)
     transition = _transition_sentence(label=label, view=view, text=state_path)
-    return _sentences(first, second, blocker, material, material_contract, transition)
+    return _sentences(first, second, material, material_contract, transition)
 
 
 def _material_contract_sentence(*, label: str, view: ComponentNarrativeView) -> str:

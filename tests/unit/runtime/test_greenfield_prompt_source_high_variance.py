@@ -1262,3 +1262,52 @@ def test_nonhuman_users_field_does_not_establish_human_actor_grammar(actor: str)
     )
 
     assert not explicit_actor_has_human_grammar(prompt)
+
+
+def test_structured_multi_actor_rule_orders_the_grounded_handoff() -> None:
+    prompt = """Pasted request
+**Goal:** schedule light exposure for fragile display pages.
+**Actors:** exhibit conservators, gallery technicians.
+**Output:** exposure allowance card.
+**Rule:** a conservator approves an allowance after a technician uploads the lux reading.
+**First path:** upload a lux reading."""
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "gallery technicians"
+    assert source.first_path == (
+        "Gallery technicians upload the lux reading. "
+        "Exhibit conservators approve an allowance. "
+        "The product shows the exposure allowance card"
+    )
+
+
+def test_command_audience_owns_an_explicit_start_before_a_state_gate() -> None:
+    prompt = (
+        "Source notes say traveling organ tuners need routes for municipal instruments. "
+        "Build the service for tuning leads. "
+        "A route becomes ready after the venue custodian accepts the access window, "
+        "and it produces a tuning itinerary. "
+        "Begin by recording a reed measurement."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "tuning leads"
+    assert source.first_path == (
+        "Tuning leads can record a reed measurement. "
+        "A route becomes ready after the venue custodian accepts the access window. "
+        "The product shows a tuning itinerary"
+    )
+
+
+def test_nested_human_constraint_does_not_turn_an_artifact_into_the_user() -> None:
+    prompt = (
+        "Service operators open an incident, field crews log isolation work, and tenant liaisons receive a bulletin. "
+        "A bulletin is published after a control-room supervisor approves the restoration reading."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "Service operators"
+    assert source.actor.casefold() != "bulletin"

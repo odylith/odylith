@@ -403,6 +403,51 @@ def test_1c54_compact_negative_field_does_not_absorb_the_evidence_envelope(tmp_p
 
 
 @pytest.mark.parametrize(
+    "case_id",
+    (
+        "gfh-20260809-06",
+        "gfh-20260809-09",
+        "gfh-20260809-13",
+        "gfh-20260809-20",
+    ),
+)
+def test_1c54_projection_inputs_keep_actor_state_and_copy_boundaries_clean(
+    tmp_path: Path,
+    case_id: str,
+) -> None:
+    case = next(case for case in _1C54_RETIRED_HOLDOUT["cases"] if case["case_id"] == case_id)
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=str(case["prompt"]),
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    actor_labels = {str(row).split(":", 1)[0].casefold() for row in intent["human_actors"]}
+    findings = generated_public_copy_findings("proposal", proposal)
+
+    assert run_greenfield_tribunal(proposal, release_selector="0.0.1").passed
+    assert not findings
+    assert all(not label.endswith(" can") for label in actor_labels)
+    if case_id == "gfh-20260809-06":
+        assert {"service operators", "field valves crews", "tenant liaisons"} <= actor_labels
+        assert "bulletin" not in actor_labels
+    elif case_id == "gfh-20260809-09":
+        assert actor_labels == {"tuning leads"}
+        assert intent["state_object"] == "The primary state object is a route."
+    elif case_id == "gfh-20260809-13":
+        assert actor_labels == {"gallery technicians", "exhibit conservators"}
+        assert "gallery gallery" not in json.dumps(proposal, sort_keys=True).casefold()
+    else:
+        assert actor_labels == {"dietitians", "kitchen leads", "campus nurses"}
+
+
+@pytest.mark.parametrize(
     "case",
     _CF410_CLARIFICATION_CASES,
     ids=lambda case: str(case["case_id"]),

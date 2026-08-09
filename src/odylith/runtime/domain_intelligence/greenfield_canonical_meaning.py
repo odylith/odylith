@@ -148,6 +148,17 @@ def _state_transition_object(value: str) -> str:
     text = clean_text(value).strip(" .")
     if not text:
         return ""
+    changed_subject = re.search(
+        r"(?:^|[.!?;]\s+)(?P<object>(?:(?:a|an|the)\s+)?"
+        r"[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4}?)\s+"
+        r"(?:becomes?|turns?)\s+",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if changed_subject:
+        subject = changed_subject.group("object").strip(" .")
+        if not has_actor_role_word(subject) and not has_non_human_actor_signal(subject):
+            return re.sub(r"^(?:a|an|the)\s+", "", subject, flags=re.IGNORECASE)
     moved_object = re.search(
         r"\b(?:moves?|moved)\s+(?P<object>(?:a|an|the)\s+[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4}?)\s+"
         r"(?:from|into|to)\b[^.;]{0,100}\bstate\b",

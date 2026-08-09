@@ -278,11 +278,11 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
                 structured_facts.actor,
                 workflow_actor,
                 multi_role_actor,
+                direct_actor,
                 explicit_actor,
                 purpose_actor,
                 need_actor,
                 actor,
-                direct_actor,
                 context_actor,
             )
             if _is_bounded_prompt_actor(candidate)
@@ -473,6 +473,18 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
         text = clean_markdown_text(sentence).strip(" .")
         if _is_release_boundary_statement(text) or is_non_path_evidence(text):
             continue
+        explicit_actor, explicit_action, article = _explicit_human_actor_action(text)
+        if _is_role_bound_review_statement(text):
+            explicit_action = _strip_role_bound_review_requirement(explicit_action)
+        if (
+            explicit_actor
+            and explicit_action
+            and explicit_actor.casefold() != product_title
+        ):
+            if article:
+                return explicit_actor, f"{article.capitalize()} {explicit_actor} {explicit_action}"
+            canonical_action = base_action_clause(explicit_action, force_leading_finite=True).strip(" .") or explicit_action
+            return explicit_actor, f"{explicit_actor} can {canonical_action}"
         role_actor, role_first_path = _role_object_record_path(text)
         if role_actor and role_first_path:
             return role_actor, role_first_path
@@ -497,23 +509,6 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             action = f"{_base_direct_gerund(verb) or verb} {tail}".strip(" .")
             return actor, f"{actor} can {action}"
         return actor, f"{actor} {action}"
-    for sentence in sentence_fragments(value):
-        actor, action, article = _explicit_human_actor_action(sentence)
-        if _is_release_boundary_statement(sentence) or is_non_path_evidence(sentence):
-            continue
-        if _is_role_bound_review_statement(sentence):
-            action = _strip_role_bound_review_requirement(action)
-        if not actor or not action:
-            continue
-        if actor.casefold() == product_title:
-            continue
-        action_head = request_words(action)[:1]
-        if action_head and has_non_human_actor_signal(f"{actor} {action_head[0]}"):
-            continue
-        if article:
-            return actor, f"{article.capitalize()} {actor} {action}"
-        canonical_action = base_action_clause(action, force_leading_finite=True).strip(" .") or action
-        return actor, f"{actor} can {canonical_action}"
     return "", ""
 
 
@@ -576,9 +571,17 @@ def _explicit_human_actor_action(value: str) -> tuple[str, str, str]:
     for boundary in range(1, min(5, len(words) - 1) + 1):
         actor_words = words[:boundary]
         action_words = words[boundary:]
-        if not has_human_actor_action_context(" ".join(actor_words), " ".join(action_words)):
+        if word_key(actor_words[-1]) in _MULTI_ROLE_MODAL_TOKENS:
             continue
+        owned_action = re.split(
+            r"\b(?:after|before|if|once|until|when|while)\b",
+            " ".join(action_words),
+            maxsplit=1,
+            flags=re.IGNORECASE,
+        )[0]
         actor = _strip_leading_actor_article(" ".join(actor_words))
+        if not has_human_actor_action_context(actor, owned_action):
+            continue
         action = " ".join(action_words).strip(" .")
         if actor and action and _looks_like_recoverable_first_path(action):
             article = word_key(actor_words[0]) if word_key(actor_words[0]) in {"a", "an", "the"} else ""

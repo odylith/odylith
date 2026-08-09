@@ -225,6 +225,18 @@ def test_durable_on_qualifier_remains_in_responsibility_label() -> None:
     assert any(row.startswith("Proof on File Recordkeeping —") for row in rows)
 
 
+def test_state_transition_subject_is_the_durable_object_not_a_clipped_predicate() -> None:
+    first_path = (
+        "Tuning leads can record a reed measurement. "
+        "A route becomes ready after the venue custodian accepts the access window. "
+        "The product shows a tuning itinerary."
+    )
+
+    assert state_object_from_first_path(first_path, fallback="tuning route") == (
+        "The primary state object is a route."
+    )
+
+
 def test_hyphenated_actor_label_keeps_its_full_identity() -> None:
     rows = internal_system_rows_from_first_path(
         title="Coordinated Review Workspace",

@@ -50,6 +50,7 @@ def test_evidence_component_specs_do_not_repeat_generic_opening_sentence() -> No
     rendered = "\n".join(specs.values())
 
     assert "Its job is to keep" not in rendered
+    assert "Specific missing or blocked inputs include" not in rendered
     assert "without making this component own the decision" in rendered
     assert "repeats a noncanonical sentence" not in "\n".join(issues)
 
