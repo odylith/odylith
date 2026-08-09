@@ -50,6 +50,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import require_product_intent_authority
 from odylith.runtime.domain_intelligence.greenfield_source_casing import restore_source_casing_in_public_copy
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality import (
     title_supports_conservative_first_path,
 )
@@ -424,6 +425,8 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
     path = first_path_model(path_source)
     if _CONCRETE_DEVICE_BEHAVIOR_RE.search(evidence):
         return True
+    if _has_complete_path_evidence(evidence, primary=path, recovered=first_path_model(source.first_path)):
+        return True
     return bool(
         len(path.steps) >= 2
         or _has_explicit_single_step_actor_action(path_source)
@@ -434,6 +437,26 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
             and has_explicit_visible_result(path_source)
         )
     )
+
+
+def _has_complete_path_evidence(evidence: str, *, primary: Any, recovered: Any) -> bool:
+    """Accept a path whose actor, action, and result are distributed across supplied evidence."""
+
+    candidates = (
+        primary,
+        recovered,
+        *(
+            first_path_model(sentence)
+            for sentence in sentence_fragments(product_intent_source_text(evidence))
+        ),
+    )
+    for model in candidates:
+        action = clean_markdown_text(model.material_action).casefold()
+        if not action:
+            continue
+        if has_explicit_visible_result(model.raw_path):
+            return True
+    return False
 
 
 def _has_grounded_human_action_evidence(evidence: str) -> bool:

@@ -1141,6 +1141,7 @@ def test_explicit_clarification_expectation_passes_without_create_or_records(
             prompt="Create a cell therapy proposal with several possible operating paths.",
             required_terms=("cell", "therapy"),
             expectation="clarification_required",
+            expected_question_fields=("first_path",),
         ),
         repo_root=repo_root,
         install_script=tmp_path / "install.sh",
@@ -1200,6 +1201,7 @@ def test_explicit_clarification_expectation_rejects_staged_transaction_record(
             prompt="Create a cell therapy proposal with several possible operating paths.",
             required_terms=("cell", "therapy"),
             expectation="clarification_required",
+            expected_question_fields=("first_path",),
         ),
         repo_root=repo_root,
         install_script=tmp_path / "install.sh",
@@ -1232,6 +1234,7 @@ def test_explicit_clarification_expectation_rejects_extra_payload_fields(monkeyp
             prompt="Create a cell therapy proposal with several possible operating paths.",
             required_terms=("cell", "therapy"),
             expectation="clarification_required",
+            expected_question_fields=("first_path",),
         ),
         repo_root=tmp_path / "clarification-repo",
         install_script=tmp_path / "install.sh",
@@ -1264,6 +1267,7 @@ def test_explicit_clarification_expectation_rejects_reply_instruction_inside_que
             prompt="Create a cell therapy proposal with several possible operating paths.",
             required_terms=("cell", "therapy"),
             expectation="clarification_required",
+            expected_question_fields=("first_path",),
         ),
         repo_root=tmp_path / "clarification-repo",
         install_script=tmp_path / "install.sh",
@@ -1294,6 +1298,7 @@ def test_explicit_clarification_expectation_rejects_persisted_write_attempt(monk
             prompt="Create a cell therapy proposal with several possible operating paths.",
             required_terms=("cell", "therapy"),
             expectation="clarification_required",
+            expected_question_fields=("first_path",),
         ),
         repo_root=repo_root,
         install_script=tmp_path / "install.sh",
@@ -1331,6 +1336,7 @@ def test_explicit_clarification_expectation_requires_an_active_installed_write_a
             prompt="Create a cell therapy proposal with several possible operating paths.",
             required_terms=("cell", "therapy"),
             expectation="clarification_required",
+            expected_question_fields=("first_path",),
         ),
         repo_root=repo_root,
         install_script=tmp_path / "install.sh",
@@ -1358,6 +1364,7 @@ def test_explicit_clarification_expectation_cannot_opt_out_of_the_write_audit(tm
                 prompt="Create a cell therapy proposal with several possible operating paths.",
                 required_terms=("cell", "therapy"),
                 expectation="clarification_required",
+                expected_question_fields=("first_path",),
             ),
             repo_root=repo_root,
             install_script=tmp_path / "install.sh",
@@ -1378,6 +1385,7 @@ def test_release_proof_accepts_expected_clarification_cases(monkeypatch, tmp_pat
         required_terms=("cell", "therapy"),
         leakage_terms=("cell therapy",),
         expectation="clarification_required",
+        expected_question_fields=("first_path",),
     )
 
     class Server:
@@ -2423,7 +2431,13 @@ def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
                         "tags": ["science", "regulated"],
                         "stressors": ["thin prompt", "specialized vocabulary"],
                     }
-                ]
+                ],
+                "annotations": [
+                    {
+                        "case_id": "science-001",
+                        "expected_question_fields": ["first_path"],
+                    }
+                ],
             }
         ),
         encoding="utf-8",
@@ -2436,6 +2450,31 @@ def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
     assert case.tags == ("science", "regulated")
     assert case.stressors == ("thin prompt", "specialized vocabulary")
     assert case.source_file == str(case_file.resolve())
+
+
+def test_case_file_rejects_clarification_without_frozen_question_fields(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "missing-question-oracle.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "science-001",
+                        "name": "rare assay workflow",
+                        "prompt": "Create a proposal for a rare assay workflow.",
+                        "required_terms": ["assay"],
+                        "leakage_terms": ["rare assay"],
+                        "expectation": "clarification_required",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="without frozen expected_question_fields: science-001"):
+        module.load_case_file(case_file)
 
 
 def test_case_file_rejects_duplicate_case_ids(tmp_path: Path) -> None:

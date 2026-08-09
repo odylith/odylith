@@ -126,6 +126,17 @@ _1C54_RETIRED_HOLDOUT_PATH = (
     / "fixtures/greenfield-release-corpus/retired-1c54-final-holdout-regressions.v1.json"
 )
 _1C54_RETIRED_HOLDOUT = json.loads(_1C54_RETIRED_HOLDOUT_PATH.read_text(encoding="utf-8"))
+_1C54_ANNOTATIONS = {
+    str(annotation["case_id"]): annotation for annotation in _1C54_RETIRED_HOLDOUT["annotations"]
+}
+_1C54_CLARIFICATION_CASES = tuple(
+    case for case in _1C54_RETIRED_HOLDOUT["cases"] if case["expectation"] == "clarification_required"
+)
+_1C54_FALSE_CLARIFICATION_CASES = tuple(
+    case
+    for case in _1C54_RETIRED_HOLDOUT["cases"]
+    if case["case_id"] in {"gfh-20260809-03", "gfh-20260809-10", "gfh-20260809-20"}
+)
 
 
 def _material_field_key(value: object) -> str:
@@ -172,6 +183,49 @@ def test_1c54_failed_holdout_is_marked_disclosed_and_retired() -> None:
     }
     assert len(_1C54_RETIRED_HOLDOUT["cases"]) == 24
     assert len(_1C54_RETIRED_HOLDOUT["annotations"]) == 24
+
+
+@pytest.mark.parametrize(
+    "case",
+    _1C54_CLARIFICATION_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_1c54_material_decisions_ask_one_focused_question_before_staging(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    annotation = _1C54_ANNOTATIONS[str(case["case_id"])]
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=str(case["prompt"]),
+            repo_root=tmp_path,
+            fallback_title=str(case["name"]),
+        )
+
+    assert error.value.required_fields == tuple(annotation["expected_question_fields"])
+    assert error.value.question.count("?") == 1
+    assert len(error.value.question) <= 280
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize(
+    "case",
+    _1C54_FALSE_CLARIFICATION_CASES,
+    ids=lambda case: str(case["case_id"]),
+)
+def test_1c54_complete_distributed_paths_reach_candidate_materialization(
+    tmp_path: Path,
+    case: dict[str, object],
+) -> None:
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+
+    assert intent["product_intent_authority"]["materiality_status"] == "passed"
+    assert (tmp_path / ".odylith/runtime/greenfield/candidate-intent.json").is_file()
 
 
 @pytest.mark.parametrize(

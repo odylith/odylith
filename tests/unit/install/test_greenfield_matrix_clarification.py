@@ -105,3 +105,14 @@ def test_typed_clarification_rejects_a_generic_question_for_the_wrong_field() ->
 
     assert "clarification payload must ask one focused question about the expected material fields" in issues
     assert any("required_fields must match the expected material fields" in issue for issue in issues)
+
+
+def test_typed_clarification_rejects_a_missing_frozen_field_oracle() -> None:
+    execution = _clarification_execution(
+        question="What is the first complete task the product should help a person finish?",
+        required_fields=("first_path",),
+    )
+
+    issues = clarification_contract_issues(execution)
+
+    assert "clarification release case lacks frozen expected material fields" in issues

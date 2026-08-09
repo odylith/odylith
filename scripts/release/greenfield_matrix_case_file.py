@@ -12,9 +12,11 @@ from greenfield_matrix_leakage import term_present
 from greenfield_matrix_corpus_provenance import case_provenance_from_mapping
 from greenfield_matrix_input_axes import normalize_axis_token
 from greenfield_matrix_input_axes import normalize_input_style
+from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION
 from greenfield_preconfirm_matrix_cases import DEFAULT_CASE_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import VALID_CASE_EXPECTATIONS
+from greenfield_preconfirm_matrix_cases import case_expectation
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
 
@@ -49,6 +51,18 @@ def load_case_file(path: Path) -> tuple[GreenfieldMatrixCase, ...]:
     if duplicates:
         raise RuntimeError(
             f"greenfield case file {case_path} has duplicate case IDs: {', '.join(duplicates)}"
+        )
+    missing_question_oracles = sorted(
+        _case_identity(case)
+        for case in compiled
+        if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION
+        and not case.expected_question_fields
+    )
+    if missing_question_oracles:
+        raise RuntimeError(
+            f"greenfield case file {case_path} has clarification cases without frozen "
+            "expected_question_fields: "
+            + ", ".join(missing_question_oracles)
         )
     return compiled
 

@@ -101,19 +101,19 @@ def clarification_contract_issues(
     clarification = payload.get("clarification") if isinstance(payload.get("clarification"), Mapping) else {}
     if set(clarification) != {"question", "required_fields"}:
         issues.append("clarification payload must contain only question and required_fields")
-    required_fields = tuple(
-        str(field).strip()
-        for field in (expected_fields or ("first_path",))
-        if str(field).strip()
-    )
+    required_fields = tuple(str(field).strip() for field in expected_fields if str(field).strip())
+    if not required_fields:
+        issues.append("clarification release case lacks frozen expected material fields")
     observed_fields = tuple(
         str(field).strip()
         for field in (clarification.get("required_fields") or ())
         if str(field).strip()
     )
-    if not focused_material_question(clarification.get("question"), required_fields=required_fields):
+    if required_fields and not focused_material_question(
+        clarification.get("question"), required_fields=required_fields
+    ):
         issues.append("clarification payload must ask one focused question about the expected material fields")
-    if tuple(question_field_key(field) for field in observed_fields) != tuple(
+    if required_fields and tuple(question_field_key(field) for field in observed_fields) != tuple(
         question_field_key(field) for field in required_fields
     ):
         issues.append(
