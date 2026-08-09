@@ -14,6 +14,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import (
     GreenfieldPreconfirmRepairContext,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import (
     projection_repair_target_value,
 )
@@ -91,10 +94,89 @@ def enrich_rescue_patchset_with_structured_plan(
                 "tribunal_patch_plan": _patch_plan_summary(patch_plan),
             },
         )
+    planned_patchset = tribunal_patch_planner.merge_patch_plan_into_request(patchset, patch_plan)
     return replace(
         repair_context,
-        patchset_request=tribunal_patch_planner.merge_patch_plan_into_request(patchset, patch_plan),
+        patchset_request=_bind_planned_semantic_facts_to_authority(proposal, planned_patchset),
     )
+
+
+def _bind_planned_semantic_facts_to_authority(
+    proposal: Mapping[str, Any],
+    patchset: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    """Keep host-planned semantic repair inside the sealed Product Intent boundary."""
+
+    authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    intent = proposal.get("intent")
+    if not isinstance(authority, Mapping) or not isinstance(intent, Mapping):
+        return patchset
+    if normalize_string(authority.get(PRODUCT_FACTS_HASH_KEY)) != product_facts_hash(intent):
+        return patchset
+    operations = patchset.get("operations")
+    if not isinstance(operations, list):
+        return patchset
+    changed = False
+    next_operations: list[Any] = []
+    for operation in operations:
+        if not isinstance(operation, Mapping) or normalize_string(operation.get("target_layer")) != "semantic_model":
+            next_operations.append(operation)
+            continue
+        target = semantic_patch_target_for_operation(operation)
+        replacement = _authority_replacement_fact(intent, target)
+        if not replacement:
+            next_operations.append(operation)
+            continue
+        updated = dict(operation)
+        updated["replacement_fact"] = replacement
+        updated["decision_ledger_entry"] = _authority_bound_decision_ledger(operation)
+        updated["proof_obligation_delta"] = {
+            "summary": "No proof obligation change; the repair preserves the sealed Product Intent fact."
+        }
+        updated["confidence"] = max(_float_or_zero(operation.get("confidence")), 1.0)
+        next_operations.append(updated)
+        changed = True
+    return {**dict(patchset), "operations": next_operations} if changed else patchset
+
+
+def _authority_replacement_fact(
+    intent: Mapping[str, Any],
+    target: SemanticPatchTarget | None,
+) -> dict[str, Any]:
+    if target is None or not target.replacement_keys:
+        return {}
+    value = intent.get(target.intent_key)
+    key = target.replacement_keys[0]
+    if target.value_kind == "list":
+        if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+            return {}
+        return {key: [normalize_string(row) for row in value if normalize_string(row)]}
+    text = normalize_string(value)
+    return {key: text} if text else {}
+
+
+def _authority_bound_decision_ledger(operation: Mapping[str, Any]) -> dict[str, Any]:
+    evidence_ids = [
+        value
+        for value in (
+            normalize_string(operation.get("semantic_node_id")),
+            normalize_string(operation.get("target_path")),
+            normalize_string(operation.get("source_finding")),
+        )
+        if value
+    ]
+    return {
+        "chosen_interpretation": "preserve the sealed Product Intent fact",
+        "rationale": (
+            "the host planner may propose a repair, but it cannot add or replace accepted Product Intent facts "
+            "after the evidence-bound authority is sealed"
+        ),
+        "rejected_interpretations": [
+            "treating a host-planned semantic replacement as new accepted user evidence",
+            normalize_string(operation.get("rejected_interpretation")) or "inventing unsupported semantic facts",
+        ],
+        "evidence_ids": evidence_ids,
+    }
 
 
 def _with_source_anchored_semantic_patch_facts(

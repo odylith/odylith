@@ -14,6 +14,9 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import (
     GreenfieldCompletionReport,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 
 
 def test_repair_payload_enriches_rescue_patchset_with_structured_planner(
@@ -287,6 +290,42 @@ def test_structured_rescue_planner_uses_cheap_profile_for_local_provider(
             "reasoning_effort": "low",
         },
     }
+
+
+def test_host_planned_semantic_repair_cannot_mutate_sealed_product_intent() -> None:
+    intent = {"title": "Disclosure Council", "external_systems": []}
+    proposal = {
+        "intent": intent,
+        PRODUCT_INTENT_AUTHORITY_KEY: {PRODUCT_FACTS_HASH_KEY: product_facts_hash(intent)},
+    }
+    patchset = {
+        "operations": [
+            {
+                "operation_id": "GF-PATCH-001",
+                "target_layer": "semantic_model",
+                "target_path": "semantic_model.domain_ontology.external_systems",
+                "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+                "issue_code": "structured_rescue_semantic_patch",
+                "operation_kind": "semantic_external_systems",
+                "replacement_fact": {"external_systems": ["notification gateway"]},
+                "rejected_interpretation": "no external system",
+                "confidence": 0.93,
+            }
+        ],
+        "tribunal_patch_plan": {"status": "planned", "operation_count": 1},
+    }
+
+    rebound = greenfield_preconfirm_rescue_planner._bind_planned_semantic_facts_to_authority(
+        proposal,
+        patchset,
+    )
+
+    operation = rebound["operations"][0]
+    assert operation["replacement_fact"] == {"external_systems": []}
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "preserve the sealed Product Intent fact"
+    )
+    assert rebound["tribunal_patch_plan"]["status"] == "planned"
 
 
 def test_repair_payload_skips_structured_planner_on_standard_tier(

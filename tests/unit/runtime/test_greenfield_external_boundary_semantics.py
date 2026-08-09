@@ -150,6 +150,22 @@ def test_source_boundary_rejects_product_relative_clause_with_input_carrier() ->
     assert source_boundary_rows_from_evidence(evidence) == []
 
 
+def test_source_boundary_does_not_treat_received_reports_as_a_supplier_action() -> None:
+    evidence = (
+        "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "
+        "coordinates review, records evidence custody, and decides embargo status."
+    )
+
+    assert source_boundary_rows_from_evidence(evidence) == []
+    assert intent_hypothesis_from_operator_evidence(evidence, prefer_product_title=True)["external_systems"] == ()
+
+
+def test_source_boundary_preserves_reports_as_a_real_supplier_action() -> None:
+    assert source_boundary_rows_from_evidence("Disclosure Registry reports accepted status.") == [
+        "Disclosure Registry"
+    ]
+
+
 def test_prompt_prose_does_not_override_an_empty_structured_external_boundary() -> None:
     intent = _intent()
     intent.update(

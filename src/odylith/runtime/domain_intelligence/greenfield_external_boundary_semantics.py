@@ -296,7 +296,7 @@ def _dependency_frame_sources(value: str) -> list[str]:
             continue
         for index, token in enumerate(lowered):
             if token in _SUPPLIER_ACTIONS:
-                rows.append(_source_subject(tokens[:index]))
+                rows.append(_supplier_subject(tokens[:index]))
             if token in _SOURCE_PREPOSITIONS:
                 candidate = _source_object(tokens, start=index + 1)
                 if _system_boundary_candidate(candidate):
@@ -312,6 +312,13 @@ def _dependency_frame_sources(value: str) -> list[str]:
                 if _system_boundary_candidate(candidate):
                     rows.append(candidate)
     return [row for row in rows if row]
+
+
+def _supplier_subject(tokens: Sequence[str]) -> str:
+    subject = _source_subject(tokens)
+    if any(action_token_form(token) for token in _LEXEME_RE.findall(subject)):
+        return ""
+    return subject
 
 
 def _source_subject(tokens: Sequence[str]) -> str:
