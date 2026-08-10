@@ -13,11 +13,10 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from tests.unit.runtime.greenfield_proposal_fixtures import (
-    CONFIRMED_INTENT_TEXT,
     _host_reasoned_ecommerce_proposal,
     _seed_empty_governance_repo,
     commit_precompiled_greenfield_proposal,
-    confirmed_intent_with_authority,
+    confirmed_mapping_with_authority,
     stub_preconfirm_surface_refresh,
 )
 
@@ -61,13 +60,9 @@ def _assert_greenfield_text_does_not_leak_odylith_surfaces(text: str) -> None:
 
 def _proposal_with_confirmed_authority(tmp_path) -> dict[str, object]:
     proposal = _host_reasoned_ecommerce_proposal()
-    confirmed_intent = confirmed_intent_with_authority(
-        CONFIRMED_INTENT_TEXT,
-        prompt="Draft a governed ecommerce launch proposal",
-        repo_root=tmp_path,
-        write_files=True,
-    )
-    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = confirmed_intent[PRODUCT_INTENT_AUTHORITY_KEY]
+    sealed_intent = confirmed_mapping_with_authority(proposal["intent"], repo_root=tmp_path)
+    proposal["intent"] = sealed_intent
+    proposal[PRODUCT_INTENT_AUTHORITY_KEY] = sealed_intent.pop(PRODUCT_INTENT_AUTHORITY_KEY)
     return proposal
 
 

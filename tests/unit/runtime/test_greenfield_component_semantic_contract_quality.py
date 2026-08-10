@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
@@ -318,6 +319,11 @@ def test_component_context_does_not_preserve_finite_action_as_owned_state() -> N
     compounds = description_compound_phrases(description)
 
     assert all("exposes" not in phrase for phrase in (*owned, *compounds))
+
+
+def test_component_artifact_cleanup_removes_action_debris_before_owned_carriers() -> None:
+    assert clean_artifact_phrase("dismiss suggestion") == "suggestion"
+    assert clean_artifact_phrase("health readout dismiss suggestion") == "health readout suggestion"
 
 
 def test_artifact_phrase_shape_separates_state_nouns_from_sentence_fragments() -> None:

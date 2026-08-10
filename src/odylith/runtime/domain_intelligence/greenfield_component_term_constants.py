@@ -5,7 +5,7 @@ from __future__ import annotations
 ACTION_VERBS = (
     "accept", "add", "adjust", "allocate", "apply", "approve", "assemble", "assign", "attach", "block", "build", "calculate", "capture",
     "check", "choose", "combine", "compare", "complete", "compute", "connect", "convert", "coordinate", "correlate", "create", "decide", "delete", "derive",
-    "describe", "display", "draft", "edit", "enforce", "enter", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
+    "describe", "dismiss", "display", "draft", "edit", "enforce", "enter", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
     "drill", "forecast", "flag", "highlight", "import", "include", "inspect", "issue", "keep", "land", "link", "leave", "log", "make", "maintain",
     "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "pick", "predict", "present", "preserve",
     "prepare", "propose", "provide", "produce", "publish", "pull", "rank", "read", "receive", "recommend", "record", "render", "request",

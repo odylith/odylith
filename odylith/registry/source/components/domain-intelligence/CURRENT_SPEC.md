@@ -51,6 +51,14 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-09: Removed action debris from component-owned state without weakening custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Component artifact cleanup now uses the shared action-form vocabulary instead
+  of a local `move`/`reach` list, so finite actions such as `dismiss suggestion`
+  cannot survive as owned state while noun compounds such as `checks record`
+  remain intact. Atlas tests now seal authority from their own ecommerce intent
+  rather than attaching unrelated municipal-permit facts. Focused proof passes
+  39 tests; full runtime and exact-distribution proof remain open.
+
 - 2026-08-09: Separated external dependency custody from internal product projections. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Actor, product-title, external-source, state-transition, and internal-system
   spans now retain distinct pre-confirm ownership. Only explicit external

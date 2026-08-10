@@ -21,7 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_t
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase
 
-NOUN_MODIFIER_ACTION_TERMS = {"review"}
+NOUN_MODIFIER_ACTION_TERMS = {"check", "review"}
 RELATION_TAIL_TERMS = {
     "after",
     "against",
@@ -346,19 +346,24 @@ def _drop_misplaced_action_modifier_before_carrier(value: str) -> str:
     """Remove action-window debris when a verb landed before an artifact carrier."""
 
     words = clean_text(value).casefold().strip(" .,;:").split()
-    if len(words) < 3:
+    if len(words) < 2:
         return " ".join(words)
     carriers = {index for index, word in enumerate(words) if word in ARTIFACT_CARRIER_TERMS}
     if not carriers:
         return " ".join(words)
-    action_modifiers = {"move", "moves", "moved", "moving", "reach", "reaches", "reached", "reaching"}
     kept: list[str] = []
     for index, word in enumerate(words):
         later_carriers = {words[carrier_index] for carrier_index in carriers if carrier_index > index}
         if word in {"move", "moves", "moved", "moving"} and later_carriers == {"state"}:
             kept.append(word)
             continue
-        if word in action_modifiers and later_carriers:
+        next_word = words[index + 1] if index + 1 < len(words) else ""
+        noun_modifier = (
+            word in ARTIFACT_CARRIER_TERMS
+            or any(word in verb_forms(term) for term in NOUN_MODIFIER_ACTION_TERMS)
+            or word.endswith("ing")
+        ) and next_word in ARTIFACT_CARRIER_TERMS
+        if looks_action_form(word) and later_carriers and not noun_modifier:
             continue
         kept.append(word)
     return " ".join(kept).strip(" .,;:")
