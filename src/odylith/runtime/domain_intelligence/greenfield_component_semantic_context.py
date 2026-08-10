@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import phras
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_forms_pattern as _verb_forms_pattern
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
@@ -353,9 +354,7 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
         phrase = _clean_artifact_phrase(phrase) or phrase
         if not phrase:
             continue
-        if _looks_action_word(phrase.split(maxsplit=1)[0]):
-            continue
-        if artifact_phrase_has_clause_shape(phrase):
+        if not owned_state_noun_phrase(phrase):
             continue
         terms = list(_content_terms(phrase))
         has_carrier = _owned_phrase_has_carrier(phrase, terms)
@@ -424,7 +423,7 @@ def _preserved_compound_phrase(value: str) -> str:
         return ""
     if len(words) > 8:
         return ""
-    if _is_deferred_or_outside_clause(text):
+    if _is_deferred_or_outside_clause(text) or not owned_state_noun_phrase(text):
         return ""
     if _looks_action_term(terms[0]) and not _protected_modifier_lead(words) and not set(terms) & _ARTIFACT_CARRIER_TERMS:
         return ""
@@ -548,10 +547,8 @@ def _owned_context_detail_rank(value: str, label_terms: set[str]) -> tuple[int, 
 
 
 def _owned_phrase_has_carrier(phrase: str, terms: Sequence[str]) -> bool:
-    return bool(
-        set(terms) & _ARTIFACT_CARRIER_TERMS
-        or re.search(r"\b(?:acknowledgement|acknowledgment|blockers?|events?|flags?|histories|history|notes?|states?)\b", phrase, flags=re.IGNORECASE)
-    )
+    visible = {word.casefold() for word in visible_words(phrase)}
+    return bool((set(terms) | visible) & _ARTIFACT_CARRIER_TERMS)
 
 
 def _truth_unit_artifact(value: str) -> str:

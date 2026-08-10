@@ -12,7 +12,6 @@ from odylith.runtime.common.prose_grammar import repair_infinitive_base_form_dri
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase, outcome_action_phrase as _outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_context_completion import complete_external_boundary as _complete_external_boundary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_context_completion import normalize_confirmed_actor_context as _normalize_confirmed_actor_context
@@ -188,8 +187,7 @@ def _normalize_proof_boundary(value: str) -> str:
         text = " ".join(sentences[1:]).strip()
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s*:\s*", "Release 0.0.1 succeeds when ", text, flags=re.I)
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s+", "Release 0.0.1 succeeds when ", text, flags=re.I)
-    summarized = proof_claim_summary(normalize_confirmed_proof_boundary_sentence(text), limit=420)
-    return (summarized or text).strip()
+    return (normalize_confirmed_proof_boundary_sentence(text) or text).strip()
 
 
 def _normalize_state_object(value: str) -> str:

@@ -16,6 +16,7 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
+from odylith.runtime.domain_intelligence import greenfield_component_owned_state as owned_state_semantics
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     accepted_inputs_text as _accepted_inputs_text,
@@ -40,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     clean_artifact_phrases as _clean_artifact_phrases,
     content_terms as _content_terms,
     descriptor_anchor_phrases as _descriptor_anchor_phrases,
+    label_object_base as _label_object_base,
     local_terms as _local_terms,
     looks_action_term as _looks_action_term,
     material_contract_phrase as _material_contract_phrase,
@@ -270,16 +272,19 @@ def derive_component_semantic_contract(
         proposal_context=proposal_context,
         action_terms=action_terms,
     ) else ()
-    owned_context_phrases = (
-        semantic_context.owned_context_detail_phrases(
-            context_phrases,
-            context_compound_phrases,
-            label_terms=label_terms,
-        )
-        if needs_context_backfill
-        else ()
+    owned_context_phrases = semantic_context.owned_context_detail_phrases(
+        context_phrases,
+        context_compound_phrases,
+        label_terms=label_terms,
     )
     description_owned_phrases = semantic_context.description_owned_phrases(description)
+    description_identities = tuple(map(_phrase_identity_terms, (*description_owned_phrases, *summary_phrases)))
+    owned_context_phrases = tuple(
+        phrase
+        for phrase in owned_context_phrases
+        if not any(_phrase_identity_terms(phrase) <= identity for identity in description_identities)
+    )
+    lifecycle_identity_phrases = owned_state_semantics.lifecycle_identity_phrases(description_owned_phrases)
     preserved_material_phrases = semantic_context.preserved_scaffold_material(description)
     owned_summary_phrases = summary_phrases[:7]
     title_identity_phrases = contract_support.title_identity_phrases(label_phrases, owned_summary_phrases)
@@ -288,6 +293,7 @@ def derive_component_semantic_contract(
             *title_identity_phrases,
             *([contract_identity] if contract_identity else []),
             *description_owned_phrases[:5],
+            *lifecycle_identity_phrases,
             *protected_description_phrases[:6],
             *context_identity_phrases[:4],
             *owned_summary_phrases,
@@ -300,6 +306,7 @@ def derive_component_semantic_contract(
         if summary_phrases
         else (f"{_clean(label).casefold()} state", *label_phrases[:1], *evidence_phrases, "blocker state")
     )
+    owned_seed = owned_state_semantics.owned_state_phrases(owned_seed)
     owned_seed = tuple(_drop_subsumed_singletons(owned_seed))
     failure_cause = (
         "calculated from the wrong inputs"
@@ -416,7 +423,6 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
     ontology = semantic_model.get("domain_ontology") if isinstance(semantic_model.get("domain_ontology"), Mapping) else {}
     values = [
         intent.get("first_path"),
-        intent.get("proof_boundary"),
         intent.get("state_object"),
         intent.get("product_story"),
         intent.get("external_systems"),
@@ -551,7 +557,10 @@ def _bridge_phrases(label: str, description: str) -> list[str]:
 
 
 def _label_compound_phrases(label: str) -> list[str]:
+    base = _clean_artifact_phrase(_label_object_base(label))
     rows: list[str] = []
+    if base and _material_contract_phrase(base, label_terms=_content_terms(label), description_terms=()):
+        rows.append(base)
     for group in re.split(r"\b(?:and|or)\b", label, flags=re.IGNORECASE):
         terms = [
             term

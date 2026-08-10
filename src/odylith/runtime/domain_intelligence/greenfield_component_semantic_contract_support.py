@@ -111,19 +111,9 @@ def component_contract_io_identity_repair(
     identity = _component_contract_identity_focus(label)
     if not identity:
         return "", accepted_inputs, produced_outputs
-    identity_terms = {word.casefold() for word in visible_words(identity)}
-    required_overlap = min(2, len(identity_terms))
-    needs_repair = bool(
-        generic_contract_placeholder_fragments(accepted_inputs)
-        or generic_contract_placeholder_fragments(produced_outputs)
-    )
-    for value in (accepted_inputs, produced_outputs):
-        if not any(
-            len(identity_terms & {word.casefold() for word in visible_words(fragment)}) >= required_overlap
-            for fragment in value.split(",")
-        ):
-            needs_repair = True
-    if not needs_repair:
+    repair_inputs = bool(generic_contract_placeholder_fragments(accepted_inputs))
+    repair_outputs = bool(generic_contract_placeholder_fragments(produced_outputs))
+    if not repair_inputs and not repair_outputs:
         return "", accepted_inputs, produced_outputs
     identity_text = clean_artifact_text(identity).casefold()
     identity_words = visible_words(identity_text)
@@ -134,8 +124,8 @@ def component_contract_io_identity_repair(
     )
     return (
         identity,
-        f"{identity_text} request, authorized actor, validation context",
-        output_artifact,
+        f"{identity_text} request, authorized actor, validation context" if repair_inputs else accepted_inputs,
+        output_artifact if repair_outputs else produced_outputs,
     )
 
 

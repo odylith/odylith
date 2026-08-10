@@ -280,6 +280,26 @@ def test_completed_actor_rows_do_not_add_title_expanded_generic_user() -> None:
     assert not any(label.startswith("PeptideTrack") and label.endswith("User") for label in labels)
 
 
+def test_completed_actor_rows_contextualize_bare_roles_without_duplication_or_role_drift() -> None:
+    cases = (
+        ("Claims Review Workspace", "User", "Claims Review User"),
+        ("Clinical Intake Board", "Person", "Clinical Intake Person"),
+        ("Field Sensor Console", "Operator", "Field Sensor Operator"),
+    )
+
+    for title, actor, expected_label in cases:
+        intent = {
+            "title": title,
+            "first_path": f"{actor} reviews one result and records the outcome.",
+            "human_actors": (actor,),
+            "state_object": "A review result.",
+        }
+        rows = completed_actor_rows(intent, title=title)
+        labels = project_specific_actor_labels({**intent, "human_actors": rows})
+
+        assert labels == [expected_label]
+
+
 def test_completed_actor_rows_do_not_reclassify_the_product_title_as_a_person() -> None:
     intent = {
         "title": "Cold-chain Pantry Ledger",

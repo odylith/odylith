@@ -19,6 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generi
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import description_compound_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import description_owned_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import lifecycle_identity_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_noun_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import relation_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
@@ -26,6 +29,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 ROOT = Path(__file__).resolve().parents[3]
 SEMANTIC_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
 SEMANTIC_CONTEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py"
+OWNED_STATE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py"
+COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
 
 
 def test_unqualified_context_artifacts_are_generic_contract_placeholders() -> None:
@@ -71,12 +76,43 @@ def test_component_io_repair_does_not_duplicate_terminal_lifecycle() -> None:
     assert produced_outputs == "audit and review lifecycle record"
 
 
+def test_component_io_repair_changes_only_the_placeholder_side() -> None:
+    meaningful_inputs = "signed claim packet, reviewer identity"
+    identity, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
+        "Review Coordination",
+        accepted_inputs=meaningful_inputs,
+        produced_outputs="context state",
+    )
+
+    assert identity == "Review Coordination"
+    assert accepted_inputs == meaningful_inputs
+    assert produced_outputs == "review coordination record"
+
+    meaningful_output = "signed review decision"
+    _, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
+        "Review Coordination",
+        accepted_inputs="context command",
+        produced_outputs=meaningful_output,
+    )
+
+    assert accepted_inputs == "review coordination request, authorized actor, validation context"
+    assert produced_outputs == meaningful_output
+
+
 def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     contract_source = SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
     context_source = SEMANTIC_CONTEXT_PATH.read_text(encoding="utf-8")
+    owned_state_source = OWNED_STATE_PATH.read_text(encoding="utf-8")
+    terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
 
     assert len(contract_source.splitlines()) < 800
+    assert len(context_source.splitlines()) < 800
+    assert len(owned_state_source.splitlines()) < 200
     assert "greenfield_component_semantic_context as semantic_context" in contract_source
+    assert "def owned_state_noun_phrase" in owned_state_source
+    assert "def enrich_owned_state_from_io" in owned_state_source
+    assert "def owned_state_noun_phrase" not in context_source
+    assert "def enrich_owned_state_from_io" not in terms_source
     assert "def _context_object_phrases" not in contract_source
     assert "def _context_required_phrases" not in contract_source
     assert "def _needs_context_backfill" not in contract_source
@@ -331,6 +367,47 @@ def test_component_context_does_not_preserve_finite_action_as_owned_state() -> N
     compounds = description_compound_phrases(description)
 
     assert all("exposes" not in phrase for phrase in (*owned, *compounds))
+
+
+def test_owned_state_projection_keeps_noun_compounds_and_rejects_clause_debris() -> None:
+    valid = (
+        "document folder reference note",
+        "visit readiness blocker",
+        "visit windows",
+        "visit handoff",
+        "release status",
+        "support lead decision",
+        "support lead decisions",
+        "follow-up questions",
+        "replay evidence",
+    )
+    invalid = (
+        "turn quote context",
+        "preserve readiness",
+        "logs progress seven",
+        "release the package",
+        "record reviewer decision",
+        "the support leads decision",
+        "until outcome claim adjacent automation",
+        "operational scale until outcome",
+    )
+
+    assert all(owned_state_noun_phrase(phrase) for phrase in valid)
+    assert all(not owned_state_noun_phrase(phrase) for phrase in invalid)
+    assert owned_state_phrases((*valid, *invalid)) == valid
+    assert "outcome claim adjacent until operational scale" not in description_compound_phrases(
+        "keeps outcome claim adjacent until operational scale"
+    )
+
+
+def test_owned_state_projection_derives_lifecycle_from_matching_events_and_history() -> None:
+    phrases = description_owned_phrases(
+        "owns alert events, severity state, acknowledgement state, and alert resolution history"
+    )
+
+    assert lifecycle_identity_phrases(phrases) == ("alert lifecycle",)
+    assert lifecycle_identity_phrases(("immutable event history",)) == ()
+    assert lifecycle_identity_phrases(("review event note", "approval history note")) == ()
 
 
 def test_component_artifact_cleanup_removes_action_debris_before_owned_carriers() -> None:

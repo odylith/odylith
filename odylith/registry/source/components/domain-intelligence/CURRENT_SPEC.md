@@ -3036,6 +3036,19 @@ This section captures synchronized requirement and contract signals derived from
   in 29.828s with governed writes, five Radar records, five Registry specs, six
   Atlas diagrams, and zero scanned duplicate-copy sentinels.
   Installed dist proof remains required before release readiness.
+- Greenfield owned-state and clarification custody update: component state
+  generation, validation, and I/O enrichment must use the same noun-state
+  classifier. Placeholder repair is field-local and may not overwrite a
+  meaningful paired field. Lifecycle synthesis requires shared domain identity,
+  not a generic artifact carrier, and role-owned decisions must behave the same
+  in singular and plural form while command-shaped phrases remain invalid.
+  Conditional runtime failures do not create questions merely because input is
+  missing; source-declared unresolved, unknown, or unspecified decisions remain
+  material. Accepted proof boundaries retain their complete canonical text and
+  do not pass through summary projection before sealing. Fresh source proof
+  passes 283 broad owner and package tests plus all 42 confirmed-intent tests;
+  full runtime, exact-distribution, installed, recovery, browser/readback, and
+  untouched-holdout gates remain required.
 
 ## Research Basis
 

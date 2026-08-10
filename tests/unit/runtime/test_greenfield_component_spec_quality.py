@@ -33,7 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import descriptor_anchor_phrases
-from odylith.runtime.domain_intelligence.greenfield_component_terms import enrich_owned_state_from_io
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import enrich_owned_state_from_io
 from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_form
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
@@ -806,6 +806,16 @@ def test_descriptor_anchors_preserve_action_derived_artifact_labels() -> None:
         assert anchors, label
         assert all(anchor.startswith(label.casefold()) for anchor in anchors)
 
+    assert descriptor_anchor_phrases(
+        "Routing Table",
+        "Stores retry reason, owner evidence, and fallback route.",
+    )
+
+    assert descriptor_anchor_phrases(
+        "Audit Trail for Source-backed Claims",
+        "preserves claim-source lineage, citation history, version replay, access events, and public-record retention",
+    ) == []
+
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:
     contract = derive_component_semantic_contract(
@@ -1178,7 +1188,7 @@ def test_greenfield_owned_state_enrichment_cleans_io_clauses_before_lifting() ->
             ),
             "produced_outputs": (
                 "checks the learner explanation for required assumptions before producing an export, "
-                "misconception prompt result"
+                "misconception prompt result, operational scale until outcome, support leads decision"
             ),
         },
         noise_terms={"state"},
@@ -1189,6 +1199,8 @@ def test_greenfield_owned_state_enrichment_cleans_io_clauses_before_lifting() ->
     assert "checks the learner explanation" not in enriched
     assert "enforces bounds" not in enriched
     assert "keeps unit conversions visible" not in enriched
+    assert "operational scale until outcome" not in enriched
+    assert "support leads decision" not in enriched
 
 
 def test_greenfield_narrative_component_spec_avoids_relation_tail_and_status_clip() -> None:

@@ -681,9 +681,15 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
         )
     if any(label in {"Approval", "Assignment", "Selection"} for label in responsibilities):
         suffix = _join_labels(responsibilities)
+        decision_subject = singularize_last_word(action_object)
         return (
-            f"{title_case_text(f'{action_object} {suffix} Record')} — records the {actor_ref} decision and keeps "
+            f"{title_case_text(f'{decision_subject} {suffix} Record')} — records the {actor_ref} decision and keeps "
             f"status, blockers, evidence, and handoff context visible{action_note}"
+        )
+    if "Proof" in responsibilities:
+        return (
+            f"{title_case_text(f'{action_object} Proof')} — owns the {actor_ref} proof claim with source evidence, "
+            f"failure reason, review status, and handoff context{action_note}"
         )
     if "Review" in responsibilities:
         return (

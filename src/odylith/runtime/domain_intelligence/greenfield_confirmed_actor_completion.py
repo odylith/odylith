@@ -84,7 +84,7 @@ _GENERIC_CONFIRMED_ACTOR_LABELS = frozenset(
 
 def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
-    labels = [_explicit_first_path_actor_label(row, intent) or _actor_label(row, title=title) for row in rows]
+    labels = [_explicit_first_path_actor_label(row, intent, title=title) or _actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
     should_derive = _should_derive_missing_actor_labels(rows)
     if should_derive and len(rows) == 1 and _single_actor_covers_first_path(rows[0], intent):
@@ -144,12 +144,12 @@ def _single_actor_covers_first_path(row: str, intent: Mapping[str, Any]) -> bool
     return bool(subject and _actor_reference(subject) == _actor_reference(label))
 
 
-def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any]) -> str:
+def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any], *, title: str) -> str:
     label = _clean(str(row).split("—", 1)[0].split(":", 1)[0])
     first_path = _clean(intent.get("first_path"))
     subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
     if label and subject and _actor_reference(subject) == _actor_reference(label):
-        return _title_case(label)
+        return _actor_label(row, title=title) if value_starts_with_generic_actor_label(label) else _title_case(label)
     return ""
 
 
@@ -672,6 +672,10 @@ def _actor_label(row: str, *, title: str) -> str:
     raw = re.sub(r"^(?:one|first|main|primary)\s+", "", raw, flags=re.IGNORECASE).strip()
     if not raw:
         return ""
+    generic_role = re.sub(r"^individual\s+", "", raw.casefold())
+    if generic_role in {"person", "participant", "user"}:
+        label = _actor_label_display(f"{_role_focus(_focus_label(title), generic_role)} {generic_role}")
+        return label if _actor_label_is_usable(label) else ""
     accepted = accepted_actor_label(str(row), project_focus=_focus_label(title))
     if accepted:
         accepted = re.sub(r"^(?:one|first|main|primary)\s+", "", accepted, flags=re.IGNORECASE).strip()
@@ -715,6 +719,10 @@ def _specific_role_label(value: str) -> str:
 
 def _role_focus(focus: str, role: str) -> str:
     text = _clean(focus)
+    words = text.split()
+    while words and words[-1].casefold() in _DERIVED_CONTEXT_ACTOR_MODIFIERS:
+        words.pop()
+    text = " ".join(words)
     if role.casefold() == "reviewer":
         text = re.sub(r"\breview$", "", text, flags=re.IGNORECASE).strip()
     return text or _clean(focus) or "Project"

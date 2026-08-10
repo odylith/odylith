@@ -51,6 +51,18 @@ _RULE_TERMS = ("appeal route", "jurisdiction", "policy", "protocol", "rule", "st
 _FIELD_TOKEN_RE = re.compile(r"[a-z0-9]+")
 _FIELD_DELIMITER_RE = re.compile(r",|\b(?:and|or)\b", flags=re.IGNORECASE)
 _ANAPHORIC_FIELDS = frozenset({"both", "either", "it", "them", "they", "those", "those_fields"})
+_DECLARED_UNCERTAINTY_PREDICATES = frozenset(
+    {
+        "are unresolved",
+        "is unresolved",
+        "are unknown",
+        "is unknown",
+        "are unspecified",
+        "is unspecified",
+        "are not specified",
+        "is not specified",
+    }
+)
 
 
 def explicit_decision_gap(evidence: str) -> ExplicitDecisionGap | None:
@@ -219,8 +231,16 @@ def _subjects_for_predicates(sentence: str, predicates: tuple[str, ...]) -> list
     for index, predicate in occurrences:
         if index < cursor:
             continue
-        subject = _subject_tail(sentence[cursor:index])
-        if predicate in {" are absent", " is absent"} and not _material_absence_subject(subject):
+        subject_source = sentence[cursor:index]
+        subject = _subject_tail(subject_source)
+        if _runtime_condition_before_predicate(subject_source):
+            subject = re.sub(r"^(?:if|when|whenever)\s+", "", subject, flags=re.IGNORECASE)
+            if not _material_decision_subject(subject, predicate=predicate):
+                cursor = index + len(predicate)
+                continue
+        if predicate in {" are absent", " is absent"} and not _material_decision_subject(
+            subject, predicate=predicate
+        ):
             cursor = index + len(predicate)
             continue
         if subject:
@@ -229,8 +249,16 @@ def _subjects_for_predicates(sentence: str, predicates: tuple[str, ...]) -> list
     return labels
 
 
-def _material_absence_subject(value: str) -> bool:
+def _runtime_condition_before_predicate(value: str) -> bool:
+    """Keep blocked-state conditions out of explicit user-decision gaps."""
+
+    return bool(re.search(r"\b(?:if|when|whenever)\s+[^.;]{1,160}$", value, flags=re.IGNORECASE))
+
+
+def _material_decision_subject(value: str, *, predicate: str) -> bool:
     key = _field_key(value)
+    if predicate.strip() in _DECLARED_UNCERTAINTY_PREDICATES:
+        return bool(key and key not in _ANAPHORIC_FIELDS)
     return key.endswith(("_authority", "_jurisdiction", "_owner", "_policy", "_protocol", "_rule"))
 
 
@@ -278,7 +306,7 @@ def _subject_tail(value: str) -> str:
             lowered = text.casefold()
     if " until " in lowered:
         text = text[lowered.rindex(" until ") + len(" until ") :].strip(" .,:;-")
-    for prefix in ("and ", "but ", "no ", "yet "):
+    for prefix in ("and ", "but ", "no ", "or ", "yet "):
         if text.casefold().startswith(prefix):
             text = text[len(prefix) :].strip()
             break
@@ -389,7 +417,9 @@ def _all_indexes(value: str, needle: str) -> tuple[int, ...]:
     indexes: list[int] = []
     start = 0
     while (index := value.find(needle, start)) >= 0:
-        indexes.append(index)
+        end = index + len(needle)
+        if end >= len(value) or not value[end].isalnum():
+            indexes.append(index)
         start = index + len(needle)
     return tuple(indexes)
 

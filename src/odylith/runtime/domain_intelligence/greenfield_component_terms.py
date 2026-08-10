@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from typing import Any
+
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_TERMS
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
@@ -393,12 +394,16 @@ def descriptor_anchor_phrases(label: str, description: str) -> list[str]:
     base = label_object_base(label)
     if not base:
         return []
+    description_clauses = clauses(description)
     rows: list[str] = []
     base_terms = set(content_terms(base))
+    if len(set(content_terms(label)) - base_terms) >= 2:
+        return []
+    base_words = {word.casefold() for word in visible_words(base)}
     label_words = [word.casefold() for word in visible_words(label) if word.casefold() not in COMPONENT_SHELL_TERMS]
     if looks_action_form(base.split()[0]) and label_words and looks_action_form(label_words[-1]):
         return []
-    for clause in clauses(description):
+    for clause in description_clauses:
         phrase = trim_phrase(strip_action(object_clause_focus(clause))).casefold()
         phrase = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", phrase, flags=re.I)
         phrase = re.sub(r"^(?:required|validated|candidate|selected|ranked|authorized)\s+", "", phrase, flags=re.I)
@@ -408,6 +413,8 @@ def descriptor_anchor_phrases(label: str, description: str) -> list[str]:
         if len(terms) == 1 and terms[0] not in ARTIFACT_CARRIER_TERMS:
             continue
         if set(terms) & base_terms:
+            continue
+        if base_words & {word.casefold() for word in visible_words(phrase)}:
             continue
         if set(terms) & ARTIFACT_CARRIER_TERMS:
             continue
@@ -471,66 +478,6 @@ def local_terms(label: str, description: str, proposal_context: str, object_phra
         for term in ordered_domain_terms(" ".join([label, description, proposal_context, *object_phrases]))
         if term not in GENERIC_TERMS and not term.isdigit()
     )
-
-
-_OWNED_ARTIFACT_TERMS = {
-    "case",
-    "choice",
-    "decision",
-    "entry",
-    "event",
-    "finding",
-    "item",
-    "measurement",
-    "note",
-    "outcome",
-    "record",
-    "request",
-    "result",
-    "signal",
-    "snapshot",
-    "summary",
-    "view",
-}
-
-_OWNED_ENRICHMENT_SKIP_RE = re.compile(
-    r"\b(?:blocked-state|command|correction\s+marker|handoff\s+record|prior\s+state|"
-    r"replayable\s+change\s+evidence|reviewer\s+explanation|validation\s+context)\b",
-    re.IGNORECASE,
-)
-
-
-def enrich_owned_state_from_io(
-    owned_state: Any,
-    fields: Mapping[str, Any],
-    *,
-    noise_terms: set[str],
-) -> str:
-    """Keep material product artifacts in ownership, not only in IO lists."""
-
-    owned_clauses = split_contract_clauses(owned_state)
-    owned_terms = set(domain_terms(" ".join(owned_clauses), noise_terms=noise_terms))
-    additions: list[str] = []
-    for key in ("accepted_inputs", "produced_outputs"):
-        for clause in split_contract_clauses(fields.get(key)):
-            raw_candidate = clean(re.sub(r"^(?:required|validated)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
-            candidate = clean_artifact_phrase(raw_candidate)
-            if not candidate or _OWNED_ENRICHMENT_SKIP_RE.search(candidate):
-                continue
-            terms = domain_terms(candidate, noise_terms=noise_terms)
-            if len(terms) < 2:
-                continue
-            if not (set(terms) & _OWNED_ARTIFACT_TERMS):
-                continue
-            if len(set(terms) - owned_terms) < 1:
-                continue
-            additions.append(candidate)
-            owned_terms.update(terms)
-            if len(additions) >= 2:
-                break
-        if len(additions) >= 2:
-            break
-    return phrase([*owned_clauses, *additions])
 
 
 def split_contract_clauses(value: Any) -> list[str]:
@@ -781,7 +728,7 @@ __all__ = [
     "ACTION_VERBS", "ARTIFACT_CARRIER_TERMS", "GENERIC_TERMS",
     "action_forms_pattern", "action_object_artifact_phrases", "clean_artifact_phrase",
     "clean_artifact_phrases", "content_terms", "descriptor_anchor_phrases", "domain_terms",
-    "enrich_owned_state_from_io", "local_terms", "looks_action_form", "looks_action_term", "material_contract_phrase",
+    "local_terms", "looks_action_form", "looks_action_term", "material_contract_phrase",
     "looks_actor_term", "natural_phrase", "object_clause_focus", "phrase", "phrase_identity_terms",
     "split_contract_clauses", "strip_action", "term_phrase", "trim_phrase", "verb_forms_pattern",
 ]

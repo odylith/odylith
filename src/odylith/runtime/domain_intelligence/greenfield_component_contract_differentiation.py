@@ -32,10 +32,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import enrich_owned_state_from_io
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     domain_terms,
-    enrich_owned_state_from_io,
     natural_phrase,
     split_contract_clauses,
 )

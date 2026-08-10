@@ -5,9 +5,26 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import _normalize_proof_boundary
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+
+
+def test_accepted_proof_boundary_is_not_clipped_into_a_view_summary() -> None:
+    proof = (
+        "Release 0.0.1 succeeds when one reviewer can inspect the complete source packet, compare every decision "
+        "against its accepted evidence, reproduce the normal and blocked paths, verify ownership and handoff state, "
+        "and confirm that missing or invalid inputs produce a correction path instead of a misleading result. "
+        "The review also preserves the source versions, timestamps, actor decisions, boundary assumptions, recovery "
+        "receipt, and final audit receipt without replacing accepted product truth with a shortened presentation."
+    )
+
+    normalized = _normalize_proof_boundary(proof)
+
+    assert normalized.startswith("Release 0.0.1 succeeds when")
+    assert normalized.endswith("shortened presentation")
+    assert len(normalized) > 420
 
 
 def test_prd_style_proof_language_repairs_generated_modal_drift(tmp_path: Path) -> None:
