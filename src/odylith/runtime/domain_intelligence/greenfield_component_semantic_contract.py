@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence import greenfield_component_owned_state as owned_state_semantics
@@ -577,7 +578,7 @@ def _label_compound_phrases(label: str) -> list[str]:
             if not _descriptor_list_pair(terms[index], terms[index + 1])
         )
         for candidate in candidates:
-            cleaned = _clean_artifact_phrase(candidate)
+            cleaned = strip_trailing_subject_modal(_clean_artifact_phrase(candidate))
             if (
                 cleaned
                 and len(cleaned.split()) >= 2

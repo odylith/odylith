@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import component_shell_artifact
@@ -13,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
     status_only_artifact_fragment as _status_only_artifact_fragment,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
@@ -132,6 +134,9 @@ def component_contract_io_identity_repair(
 
 def _component_contract_identity_focus(label: str) -> str:
     candidate = _clean_artifact_phrase(label) or clean_artifact_text(label)
+    without_modal = strip_trailing_subject_modal(candidate)
+    if without_modal != candidate:
+        candidate = " ".join(ordered_domain_terms(without_modal)) or without_modal
     words = visible_words(candidate)
     while len(words) > 2 and component_shell_artifact(candidate):
         trimmed = _clean_artifact_phrase(" ".join(words[:-1]))
