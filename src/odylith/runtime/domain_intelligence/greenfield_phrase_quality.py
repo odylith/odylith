@@ -7,10 +7,14 @@ from collections.abc import Iterable, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_status_modifiers import TERMINAL_STATUS_MODIFIERS
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 TRANSITION_ACTION_TERMS = frozenset({"advance", "advances", "advanced", "moving", "move", "moved", "moves", "transition", "transitioned", "transitions"})
 TRANSITION_CONTEXT_TERMS = frozenset({"draft", "final", "from", "live", "scheduled", "state", "status"})
 RELATION_TAIL_WORDS = frozenset({"against", "around", "for", "from", "into", "to", "toward", "towards", "with"})
+_CLAUSE_SHAPE_MARKERS = frozenset(
+    {"after", "are", "before", "because", "is", "unless", "until", "was", "were", "when", "while"}
+)
 TRAILING_RELATION_ACTIONS = frozenset(
     {
         "attach",
@@ -55,6 +59,13 @@ ACTION_SPLICE_VERBS = frozenset(
         "upload",
     }
 )
+
+
+def artifact_phrase_has_clause_shape(value: str) -> bool:
+    """Return whether an alleged artifact is still a condition or sentence fragment."""
+
+    words = tuple(word.casefold().strip(".,;:") for word in visible_words(clean_text(value)))
+    return bool(words and _CLAUSE_SHAPE_MARKERS.intersection(words))
 
 
 def normalize_action_splice_phrase(value: str) -> str:
@@ -424,6 +435,7 @@ def _term_key(value: str) -> str:
 
 __all__ = [
     "RELATION_TAIL_WORDS",
+    "artifact_phrase_has_clause_shape",
     "collapse_adjacent_duplicate_terms",
     "collapse_adjacent_duplicate_terms_tree",
     "collapse_repeated_phrase_units",

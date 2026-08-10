@@ -44,7 +44,21 @@ def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) 
     assert not any(str(row.get("label", "")).startswith("Until ") for row in proposal["components"])
     assert any(str(row.get("label", "")).startswith("Shipment Workflow") for row in proposal["components"])
     assert all(str(row.get("title", "")) != "Let Package Are Approved" for row in proposal["backlog"])
-    assert any("See the Blocked Shipment" in str(row.get("title", "")) for row in proposal["backlog"])
+    assert all(
+        "supply chain exception desk user receive" not in str(row).casefold()
+        for row in candidate["human_actors"]
+    )
+    rendered_contracts = " ".join(
+        str(row.get("component_contract", ""))
+        for row in proposal["components"]
+    ).casefold()
+    for malformed in (
+        "expand adjacent workflow",
+        "preserve readiness",
+        "shipment until exception",
+        "supplies chain",
+    ):
+        assert malformed not in rendered_contracts
 
     names = tuple(specs)
     name_terms = {name: component_domain_terms(name) for name in names}

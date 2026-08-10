@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_path_role import actor_path_role
 from odylith.runtime.domain_intelligence.greenfield_first_path_actor import FirstPathActorAction
 from odylith.runtime.domain_intelligence.greenfield_first_path_actor import resolve_first_path_events
 from odylith.runtime.domain_intelligence.greenfield_first_path_actor import select_first_path_actor_action
@@ -84,6 +85,20 @@ def test_actor_object_mentions_do_not_transfer_event_ownership() -> None:
         action="choose a response",
         text="The learner chooses a response",
     )
+
+
+def test_shared_domain_modifier_does_not_transfer_path_role_to_object_actor() -> None:
+    path = (
+        "A package supply chain exception desk user can receive vulnerable dependency reports, "
+        "track provenance evidence, and coordinate package manager review."
+    )
+
+    assert actor_path_role(label="Package Manager", first_path=path, state="") == ""
+    assert actor_path_role(
+        label="Package Supply Chain Exception Desk User",
+        first_path=path,
+        state="",
+    ).startswith("uses the product to receive vulnerable dependency reports")
 
 
 def test_parent_lead_skips_account_profile_and_child_setup_before_material_action() -> None:

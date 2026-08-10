@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-08
+Last updated: 2026-08-09
 
 
 ## Overview
@@ -50,6 +50,14 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-09: Separated first-path action traceability from component-owned state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Canonical components now retain the accepted action as a visible first-path
+  trace while compiling owned state from component-local noun records. Long
+  modal actors, object actors, decision records, and preservation actions share
+  the same typed boundaries. Concrete descriptions no longer import unrelated
+  project actions or conditions, and the pre-confirm Tribunal rejects action or
+  condition fragments that do not match component identity.
 
 - 2026-08-06: Preserved complete cross-domain Product Intent meaning before confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-323`; Diagram: D-043)
   Prompt evidence now keeps complete ordered workflows, source actors,

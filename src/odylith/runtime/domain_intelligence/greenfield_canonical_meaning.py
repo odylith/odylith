@@ -37,6 +37,7 @@ _ACTION_RESPONSIBILITIES = (
     (frozenset({"cluster", "group", "organize"}), "Organization"),
     (frozenset({"coordinate"}), "Coordination"),
     (frozenset({"decompose"}), "Decomposition"),
+    (frozenset({"decide"}), "Decision"),
     (frozenset({"deliver", "display", "hand", "publish", "release", "return", "see", "show", "surface"}), "Delivery"),
     (frozenset({"draft"}), "Drafting"),
     (frozenset({"generate", "produce"}), "Generation"),
@@ -579,6 +580,17 @@ def _sentence_start(value: str) -> str:
 
 
 def _matching_human_subject(value: str, *, human_actors: Sequence[str]) -> str:
+    text = clean_text(value).strip(" .")
+    for row in human_actors:
+        label = re.split(r"\s*(?::|—|–)\s*|\s+-\s+", clean_text(row), maxsplit=1)[0].strip(" .")
+        if not label:
+            continue
+        match = _subject_prefix_match(text, label)
+        if not match:
+            continue
+        action = strip_leading_action_modal(text[match.end() :].strip(" ."))
+        if _starts_with_material_action(action):
+            return match.group("subject")
     subject = _explicit_action_subject(value)
     subject_key = _actor_key(subject)
     if not subject_key:
@@ -596,6 +608,12 @@ def _actor_key(value: str) -> str:
     while words and words[0] in _LEADING_OBJECT_WORDS:
         words.pop(0)
     return " ".join(words)
+
+
+def _subject_prefix_match(value: str, subject: str) -> re.Match[str] | None:
+    article = subject.split(maxsplit=1)[0].casefold()
+    optional_article = "" if article in {"a", "an", "the", "one"} else r"(?:(?:a|an|the|one)\s+)?"
+    return re.match(rf"^(?P<subject>{optional_article}{re.escape(subject)})\s+", value, flags=re.IGNORECASE)
 
 
 def _source_actor_mention_count(value: str, *, actor: str) -> int:
@@ -617,56 +635,74 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
     action_object = _compact_label(_action_object(owned_action), fallback=state_label, max_words=4)
     responsibilities = _responsibility_labels(owned_action, step=owned_action)
     actor_ref = _actor_key(actor) or "user"
+    action_note = f"First-path action is {actor_ref} {_human_actor_action(owned_action, actor_ref=actor_ref)}; "
     if "Intake" in responsibilities:
-        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
-            f"{title_case_text(f'{action_object} Intake')} — records when the {actor_ref} {actor_action} and keeps "
-            f"{action_object.casefold()} intake status, blockers, evidence, and handoff context visible"
+            f"{title_case_text(f'{action_object} Intake')} — {action_note}owns {action_object.casefold()} intake records, status, "
+            "blockers, evidence, and handoff context"
         )
     if "Delivery" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Delivery')} — presents {action_object.casefold()} as the visible result "
+            f"{title_case_text(f'{action_object} Delivery')} — {action_note}presents {action_object.casefold()} as the visible result "
             f"to the {actor_ref} with status, blockers, explanation, and review evidence"
+        )
+    if "Decision" in responsibilities:
+        decision_subject = _decision_subject_label(action_object)
+        return (
+            f"{title_case_text(f'{decision_subject} Decision Record')} — {action_note}owns the {actor_ref} decision, status, "
+            "rationale, blockers, evidence, and handoff context"
         )
     if any(label in {"Approval", "Assignment", "Selection"} for label in responsibilities):
         suffix = _join_labels(responsibilities)
         return (
-            f"{title_case_text(f'{action_object} {suffix} Record')} — records the {actor_ref} decision and keeps "
+            f"{title_case_text(f'{action_object} {suffix} Record')} — {action_note}records the {actor_ref} decision and keeps "
             "status, blockers, evidence, and handoff context visible"
         )
     if "Review" in responsibilities:
-        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
-            f"{title_case_text(f'{action_object} Review Record')} — records when the {actor_ref} {actor_action} and "
-            "keeps status, blockers, evidence, and handoff context visible"
+            f"{title_case_text(f'{action_object} Review Record')} — {action_note}owns {action_object.casefold()} review records, "
+            "status, blockers, evidence, and handoff context"
         )
     if "Recordkeeping" in responsibilities:
-        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
-            f"{title_case_text(f'{action_object} Recordkeeping')} — records when the {actor_ref} {actor_action} and "
-            "keeps status, correction history, blockers, and handoff context visible"
+            f"{title_case_text(f'{action_object} Recordkeeping')} — {action_note}owns {action_object.casefold()} records, status, "
+            "correction history, blockers, and handoff context"
         )
     if "Coordination" in responsibilities:
-        actor_action = _human_actor_action(owned_action, actor_ref=actor_ref)
         return (
-            f"{title_case_text(f'{action_object} Coordination')} — records when the {actor_ref} {actor_action} and "
-            "keeps coordination status, blockers, evidence, and handoff context visible"
+            f"{title_case_text(f'{action_object} Coordination')} — {action_note}owns {action_object.casefold()} coordination records, "
+            "status, blockers, evidence, and handoff context"
         )
     if "Validation" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Workflow Support')} — records {action_object.casefold()} validation "
+            f"{title_case_text(f'{action_object} Workflow Support')} — {action_note}records {action_object.casefold()} validation "
             f"performed by the {actor_ref} and keeps validation status, blockers, evidence, and handoff context visible"
         )
     if "Routing" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Workflow Support')} — records routing of {action_object.casefold()} "
+            f"{title_case_text(f'{action_object} Workflow Support')} — {action_note}records routing of {action_object.casefold()} "
             f"performed by the {actor_ref} and keeps source, destination, status, blockers, and handoff evidence visible"
         )
-    actor_action = _human_actor_action(action, actor_ref=actor_ref)
     return (
-        f"{title_case_text(f'{action_object} Workflow Support')} — records when the {actor_ref} {actor_action} and keeps "
-        f"{action_object.casefold()} status, blockers, evidence, and handoff context visible"
+        f"{title_case_text(f'{action_object} Workflow Support')} — {action_note}owns {action_object.casefold()} workflow status, "
+        "blockers, evidence, and handoff context"
     )
+
+
+def _decision_subject_label(value: str) -> str:
+    words = clean_text(value).casefold().strip(" .").split()
+    if words == ["what", "is", "ready"]:
+        return "Readiness"
+    if words and words[0] in {"what", "whether"}:
+        return "Outcome"
+    return value
+
+
+def _human_actor_action(value: str, *, actor_ref: str) -> str:
+    actor_words = actor_ref.split()
+    if actor_words and looks_plural(actor_words[-1]):
+        return base_action_clause(value).strip(" .")
+    return _finite_action(value)
 
 
 def _before_coordinated_action(value: str) -> str:
@@ -681,13 +717,6 @@ def _before_coordinated_action(value: str) -> str:
             if looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first):
                 return text[: match.start()].strip(" .")
     return text
-
-
-def _human_actor_action(value: str, *, actor_ref: str) -> str:
-    actor_words = actor_ref.split()
-    if actor_words and looks_plural(actor_words[-1]):
-        return base_action_clause(value).strip(" .")
-    return _finite_action(value)
 
 
 def _ownership_steps(value: str, *, human_actors: Sequence[str]) -> list[str]:
@@ -745,8 +774,10 @@ def _action_after_subject(value: str, *, subject: str) -> str:
     prefix = clean_text(subject).strip(" .")
     if not text or not prefix:
         return ""
-    action = re.sub(rf"^{re.escape(prefix)}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
-    return strip_leading_action_modal(action)
+    match = _subject_prefix_match(text, prefix)
+    if not match:
+        return ""
+    return strip_leading_action_modal(text[match.end() :].strip(" ."))
 
 
 def _lower_sentence_start(value: str) -> str:

@@ -21,6 +21,16 @@ def test_rich_local_component_description_does_not_import_whole_path_context() -
             "shipment blocker",
         ),
     )
+    assert not needs_context_backfill(
+        description="owns supporting facts review records, status, blockers, evidence, and handoff context",
+        description_phrases=("supporting facts review records", "blockers", "handoff context"),
+        context_required_phrases=("bring request", "readiness decision", "rationale record"),
+    )
+    assert not needs_context_backfill(
+        description="owns review coordination records, status, blockers, evidence, and handoff context",
+        description_phrases=("review coordination records", "blockers", "handoff context"),
+        context_required_phrases=("invalid clear blocker", "primary object report"),
+    )
 
 
 def test_sparse_or_generated_component_description_still_receives_context_backfill() -> None:

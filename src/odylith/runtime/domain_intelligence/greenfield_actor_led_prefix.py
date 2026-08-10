@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import ACTOR_ROLE_NOUNS
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
@@ -54,7 +55,10 @@ def _has_unowned_action_tail(words: list[str]) -> bool:
             continue
         if not looks_like_action_clause(f"{token} placeholder"):
             continue
-        if any(looks_like_actor_role_term(word) for word in words[index + 1 :]):
+        if (
+            any(looks_like_actor_role_term(word) for word in words[index + 1 :])
+            and not looks_like_finite_action_token(token)
+        ):
             continue
         return True
     return False

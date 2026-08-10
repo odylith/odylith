@@ -6,7 +6,7 @@ import re
 
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 
-_ACTION_NOUNS = frozenset({"audit", "capture", "change", "control", "record", "replay", "report", "review", "test"})
+ACTION_NOUNS = frozenset({"audit", "capture", "change", "control", "record", "replay", "report", "review", "test"})
 _SHORT_COMPOUND_NOUN_MODIFIERS = frozenset({"replay"})
 _OBJECT_HEADS = frozenset(
     {
@@ -82,7 +82,7 @@ def action_word_starts_result_list_noun(value: str, action_start: int) -> bool:
     text = clean_first_path_text(value)
     words = _word_spans(text)
     for index, (word, start, end) in enumerate(words):
-        if not start <= action_start < end or word not in _ACTION_NOUNS:
+        if not start <= action_start < end or word not in ACTION_NOUNS:
             continue
         if index + 1 >= len(words):
             return False
@@ -109,7 +109,7 @@ def _compound_noun_index(
     for index, (word, _start, _end) in enumerate(words[start:-1], start=start):
         if required_index is not None and index != required_index:
             continue
-        if word not in _ACTION_NOUNS:
+        if word not in ACTION_NOUNS:
             continue
         if words[index + 1][0] in _OBJECT_HEADS:
             return index
@@ -125,6 +125,7 @@ def _word_spans(value: str) -> list[tuple[str, int, int]]:
 
 
 __all__ = [
+    "ACTION_NOUNS",
     "action_word_inside_compound_noun",
     "action_word_starts_result_list_noun",
     "starts_with_compound_noun_object",

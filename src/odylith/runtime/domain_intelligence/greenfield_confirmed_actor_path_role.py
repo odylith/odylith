@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 
@@ -82,7 +83,7 @@ def _trim_following_actor_transition(value: str) -> str:
 def _clause_subject_matches_actor(value: str, *, label: str) -> bool:
     """Reject object-term overlap when another actor owns the clause."""
 
-    subject = leading_subject_prefix(value) or _explicit_clause_subject(value)
+    subject = carried_subject_prefix(value) or leading_subject_prefix(value) or _explicit_clause_subject(value)
     if not subject:
         return True
     subject_terms = _actor_match_terms(subject)
@@ -92,6 +93,10 @@ def _clause_subject_matches_actor(value: str, *, label: str) -> bool:
         return True
     overlap = subject_terms & actor_terms
     if not overlap:
+        return False
+    subject_roles = subject_terms & _ROLE_WORDS
+    actor_roles = _actor_match_terms(label) & _ROLE_WORDS
+    if subject_roles and actor_roles and not (subject_roles & actor_roles):
         return False
     subject_specific = subject_terms - _ROLE_WORDS
     actor_specific = actor_terms - _ROLE_WORDS

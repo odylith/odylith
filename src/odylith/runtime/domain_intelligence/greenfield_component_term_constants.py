@@ -7,7 +7,7 @@ ACTION_VERBS = (
     "check", "choose", "combine", "compare", "complete", "compute", "connect", "convert", "coordinate", "correlate", "create", "decide", "delete", "derive",
     "describe", "display", "draft", "edit", "enforce", "enter", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
     "drill", "forecast", "flag", "highlight", "import", "include", "inspect", "issue", "keep", "land", "link", "leave", "log", "make", "maintain",
-    "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "pick", "predict", "present",
+    "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "pick", "predict", "present", "preserve",
     "prepare", "propose", "provide", "produce", "publish", "pull", "rank", "read", "receive", "recommend", "record", "render", "request",
     "reach", "recompute", "resolve", "respond", "review", "route", "run", "save", "schedule", "score", "see", "select", "send", "set", "settle", "show", "store",
     "submit", "suggest", "summarize", "sync", "track", "update", "upload", "validate", "verify", "view", "watch",

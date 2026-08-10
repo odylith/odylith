@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import strip
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_forms_pattern as _verb_forms_pattern
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
@@ -206,18 +207,16 @@ def needs_context_backfill(
         flags=re.IGNORECASE,
     ):
         return True
-    underspecified_detail = re.compile(
-        r"\b(?:central\s+object|details?|facts?|data|payload|information)\b",
-        flags=re.IGNORECASE,
-    )
-    if underspecified_detail.search(description_text) or any(
-        underspecified_detail.search(_clean(phrase)) for phrase in description_phrases
+    if _is_underspecified_detail(description_text) or any(
+        _is_underspecified_detail(phrase) for phrase in description_phrases
     ):
         return True
     has_material_local_detail = (
         len(description_phrases) >= 2
-        and len(local_terms) >= 5
-        and any(_has_visible_artifact_carrier(phrase) for phrase in description_phrases)
+        and any(
+            _has_visible_artifact_carrier(phrase) and bool(_content_terms(phrase))
+            for phrase in description_phrases
+        )
     )
     if has_material_local_detail:
         return False
@@ -228,6 +227,24 @@ def needs_context_backfill(
     if any(_has_visible_artifact_carrier(phrase) for phrase in description_phrases):
         return False
     return bool(len(description_phrases) <= 3 and context_required_phrases)
+
+
+def _is_underspecified_detail(value: str) -> bool:
+    words = {word.casefold().strip(".,;:") for word in visible_words(_clean(value))}
+    words -= {"a", "an", "captures", "keeps", "owns", "stores", "the", "tracks"}
+    broad_terms = {
+        "central",
+        "data",
+        "detail",
+        "details",
+        "fact",
+        "facts",
+        "information",
+        "object",
+        "payload",
+    }
+    material_carriers = _ARTIFACT_CARRIER_TERMS - broad_terms
+    return bool(words & broad_terms) and not bool(words & material_carriers) and len(words) <= 3
 
 
 def _has_visible_artifact_carrier(value: str) -> bool:
@@ -335,6 +352,8 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
         phrase = re.sub(r"^(?:and|or)\s+", "", phrase, flags=re.IGNORECASE).strip(" .")
         phrase = _clean_artifact_phrase(phrase) or phrase
         if not phrase:
+            continue
+        if artifact_phrase_has_clause_shape(phrase):
             continue
         terms = list(_content_terms(phrase))
         has_carrier = _owned_phrase_has_carrier(phrase, terms)

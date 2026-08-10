@@ -44,11 +44,8 @@ def carried_subject_prefix(value: str) -> str:
     text = clean_first_path_text(value).strip()
     if re.match(r"^(?:after|before|during|once|until|when|while)\b", text, flags=re.IGNORECASE):
         return ""
-    subject = leading_subject_prefix(value)
-    if subject:
-        return subject
     modal = re.match(
-        r"^(?P<subject>[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,5}?)\s+"
+        r"^(?P<subject>[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,7}?)\s+"
         r"(?:can|could|may|might|must|should|will|would|needs?\s+to|has\s+to|have\s+to)\s+"
         r"(?P<action>.+)$",
         text,
@@ -77,6 +74,9 @@ def carried_subject_prefix(value: str) -> str:
             candidates.append(subject)
     if candidates:
         return max(candidates, key=lambda candidate: len(label_terms(candidate)))
+    subject = leading_subject_prefix(value)
+    if subject:
+        return subject
     actor_action = re.match(
         rf"^(?P<subject>(?:(?:a|an|the|one|this|that|each|another)\s+)?"
         rf"[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){{1,5}}?)\s+"

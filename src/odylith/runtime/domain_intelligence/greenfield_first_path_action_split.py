@@ -103,11 +103,26 @@ def split_action_pieces(value: str) -> list[str]:
                         if not explicit_subject and has_follow_on_comma_action:
                             explicit_subject, _explicit_action = _actor_led_action_parts(current)
                         if explicit_subject:
-                            subject_prefix = explicit_subject
-                            previous_subject_prefix = explicit_subject
+                            if not _extends_carried_subject_with_action(
+                                explicit_subject,
+                                carried_subject=subject_prefix,
+                            ):
+                                subject_prefix = explicit_subject
+                                previous_subject_prefix = explicit_subject
                     if current:
                         pieces.append(current.strip(" .,;:"))
     return pieces
+
+
+def _extends_carried_subject_with_action(value: str, *, carried_subject: str) -> bool:
+    candidate = _clean(value).strip(" .")
+    carried = _clean(carried_subject).strip(" .")
+    if not candidate or not carried or candidate.casefold() == carried.casefold():
+        return False
+    prefix = f"{carried.casefold()} "
+    if not candidate.casefold().startswith(prefix):
+        return False
+    return bool(_MATERIAL_ACTION_RE.match(candidate[len(carried) :].strip()))
 
 
 def normalize_role_can_step(value: str) -> str:

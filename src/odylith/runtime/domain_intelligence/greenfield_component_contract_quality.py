@@ -9,11 +9,14 @@ from typing import Any
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.prose_tail import has_incomplete_public_tail
 from odylith.runtime.common.prose_grammar import contains_finite_action
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_texts
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import ACTION_NOUNS
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
@@ -21,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_s
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 
 CONTRACT_KEYS = (
@@ -247,11 +251,45 @@ def component_contract_issues(proposal: Mapping[str, Any]) -> list[str]:
             values = text_values(normalized.get(key))
             if not values:
                 issues.append(f"component row {index} `{label}` component_contract.{key} is empty")
+        issues.extend(
+            _owned_state_structure_issues(
+                normalized.get("owned_state"),
+                row_index=index,
+                label=label,
+            )
+        )
         terms = component_domain_terms(" ".join(text_values(normalized)))
         if len(terms) < 8:
             issues.append(f"component row {index} `{label}` component_contract is too generic to guide implementation")
     issues.extend(public_prose_quality_issues(proposal))
     return dedupe_text(issues)
+
+
+def _owned_state_structure_issues(value: Any, *, row_index: int, label: str) -> list[str]:
+    issues: list[str] = []
+    label_words = {
+        singularize_last_word(word.casefold())
+        for word in visible_words(_clean(label))
+    }
+    for raw in _clean(value).split(","):
+        fragment = raw.strip(" .;:")
+        words = [word.casefold() for word in visible_words(fragment)]
+        if not words:
+            continue
+        if {"after", "before", "unless", "until", "when"} & set(words):
+            issues.append(
+                f"component row {row_index} `{label}` component_contract.owned_state contains a condition clause `{fragment}`"
+            )
+            continue
+        if (
+            looks_like_action_clause(fragment)
+            and singularize_last_word(words[0]) not in ACTION_NOUNS
+            and len({singularize_last_word(word) for word in words} & label_words) < 2
+        ):
+            issues.append(
+                f"component row {row_index} `{label}` component_contract.owned_state contains an action clause `{fragment}`"
+            )
+    return issues
 
 
 def public_prose_quality_issues(value: Any) -> list[str]:

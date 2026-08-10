@@ -187,6 +187,25 @@ def test_modal_actor_with_action_homonym_keeps_its_complete_subject() -> None:
     assert "oceanographic monitors" not in " ".join(model.steps).casefold()
 
 
+def test_modal_actor_with_action_homonym_inside_domain_label_keeps_its_complete_subject() -> None:
+    path = (
+        "A package supply chain exception desk user can receive vulnerable dependency reports, "
+        "track provenance evidence, coordinate reviewer decisions, preserve readiness proof, "
+        "and block shipment until exceptions are approved."
+    )
+
+    model = first_path_model(path)
+
+    assert model.steps == (
+        "Package supply chain exception desk user receives vulnerable dependency reports",
+        "A package supply chain exception desk user tracks provenance evidence",
+        "A package supply chain exception desk user coordinates reviewer decisions",
+        "A package supply chain exception desk user preserves readiness proof",
+        "A package supply chain exception desk user blocks shipment until exceptions are approved",
+    )
+    assert "a package tracks" not in " ".join(model.steps).casefold()
+
+
 def test_first_path_steps_do_not_absorb_unknown_action_into_plural_actor_subject() -> None:
     steps = first_path_steps(
         "Multiple teams bring requests, review supporting facts, decide what is ready, "
@@ -567,6 +586,11 @@ def test_confirmed_completion_preserves_plural_actor_for_ambiguous_decision_evid
         if "modal/base-form grammar drift" in issue
     ]
     assert modal_issues == []
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+    assert "readiness decision record" in rendered
+    assert "what is ready workflow support" not in rendered
+    assert "is ready state" not in rendered
+    assert "when the multiple teams preserve rationale" not in rendered
 
 
 def test_actor_owned_visible_result_is_not_reassigned_to_supporting_actor() -> None:

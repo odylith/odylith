@@ -203,6 +203,31 @@ def test_receive_and_coordinate_actions_keep_distinct_operational_boundaries() -
     assert rows[1].startswith("Review Coordination —")
 
 
+def test_modal_domain_actor_keeps_distinct_component_responsibilities() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Dependency Exception Desk",
+        first_path=(
+            "A package supply chain exception desk user can receive vulnerable dependency reports, "
+            "track provenance and waiver evidence, coordinate package manager review, preserve release "
+            "readiness proof, and block shipment until exceptions are approved."
+        ),
+        state_object="The primary state object is a vulnerable dependency report.",
+        visible_result="a release readiness decision",
+        human_actors=(
+            "Package supply chain exception desk user: completes the accepted review path.",
+        ),
+    )
+
+    rendered = "\n".join(rows).casefold()
+    assert len(rows) >= 5
+    assert "vulnerable dependency reports intake" in rendered
+    assert "provenance and waiver evidence" in rendered
+    assert "package manager review" in rendered
+    assert "release readiness proof" in rendered
+    assert "shipment" in rendered
+    assert "supplies chain" not in rendered
+
+
 def test_durable_on_qualifiers_remain_part_of_the_state_object() -> None:
     for first_path, expected in (
         ("A coordinator records charge on hold reason.", "The primary state object is a charge on hold reason."),

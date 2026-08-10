@@ -15,6 +15,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     accepted_inputs_text as _accepted_inputs_text,
     component_shell_artifact as _component_shell_artifact,
@@ -53,8 +54,11 @@ from odylith.runtime.domain_intelligence.greenfield_component_outputs import (
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
     literal_label_terms as _literal_label_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import (
+    artifact_phrase_has_clause_shape as _artifact_phrase_has_clause_shape,
+    singularize_last_word,
+)
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
-from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -256,10 +260,14 @@ def derive_component_semantic_contract(
         proposal_context=proposal_context,
         action_terms=action_terms,
     ) else ()
-    owned_context_phrases = semantic_context.owned_context_detail_phrases(
-        context_phrases,
-        context_compound_phrases,
-        label_terms=label_terms,
+    owned_context_phrases = (
+        semantic_context.owned_context_detail_phrases(
+            context_phrases,
+            context_compound_phrases,
+            label_terms=label_terms,
+        )
+        if needs_context_backfill
+        else ()
     )
     description_owned_phrases = semantic_context.description_owned_phrases(description)
     preserved_material_phrases = semantic_context.preserved_scaffold_material(description)
@@ -358,6 +366,9 @@ def _description(row: Mapping[str, Any]) -> str:
 
 def _scrub_description_scaffold(value: str) -> str:
     text = _clean(value)
+    if text.casefold().startswith("first-path action is "):
+        _action, separator, remainder = text.partition("; ")
+        text = remainder if separator else ""
     text = re.sub(r"\bRelevant\s+behavior\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"(?:^|(?<=[.;])\s*)Rationale\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"^Rationale$", "", text, flags=re.IGNORECASE).strip()
@@ -419,6 +430,8 @@ def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
     rows: list[str] = []
     for clause in clauses:
         clause = normalize_relative_clause_artifacts(clause) or clause
+        if _artifact_phrase_has_clause_shape(clause):
+            continue
         cleaned_boundary = _clean_artifact_phrase(clause)
         if cleaned_boundary and {"boundary", "boundaries"} & set(cleaned_boundary.casefold().split()):
             rows.append(cleaned_boundary.casefold())
@@ -533,7 +546,9 @@ def _label_compound_phrases(label: str) -> list[str]:
         right = terms[index + 1]
         if _descriptor_list_pair(left, right):
             continue
-        rows.append(f"{left} {right}")
+        phrase = f"{left} {right}"
+        if not _artifact_phrase_has_clause_shape(phrase):
+            rows.append(phrase)
     rows = list(unique_text(rows))
     rows.sort(key=_label_compound_rank)
     return rows[:4]
@@ -549,7 +564,7 @@ def _descriptor_list_pair(left: str, right: str) -> bool:
 
 def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Sequence[str]) -> tuple[str, ...]:
     summary = {phrase.casefold() for phrase in summary_phrases}
-    rows: list[str] = []
+    candidates: list[str] = []
     for phrase in label_phrases:
         words = phrase.split()
         if len(words) < 2:
@@ -560,10 +575,13 @@ def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Seque
             continue
         if _component_shell_artifact(phrase) or _status_only_artifact_fragment(phrase):
             continue
-        rows.append(phrase)
-        if len(rows) >= 2:
-            break
-    return tuple(rows)
+        candidates.append(phrase)
+    non_actor_candidates = [
+        phrase
+        for phrase in candidates
+        if not any(_looks_actor_term(word) for word in _content_terms(phrase))
+    ]
+    return tuple((non_actor_candidates or candidates)[:2])
 
 
 def _bridge_phrase_rank(phrase: str) -> tuple[int, str]:

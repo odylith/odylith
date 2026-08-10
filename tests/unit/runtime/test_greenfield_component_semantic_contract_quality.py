@@ -8,7 +8,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
+from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import relation_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -173,6 +175,88 @@ def test_component_contract_does_not_promote_subordinate_actor_actions_to_owned_
     assert "result status" in contract["owned_state"].casefold()
 
 
+def test_concrete_component_contract_does_not_import_project_actions_or_non_goals() -> None:
+    proposal = {
+        "intent": {
+            "title": "Controlled Dispatch Desk",
+            "first_path": (
+                "A dispatch coordinator records an exception, preserves release readiness proof, "
+                "and blocks dispatch until approval."
+            ),
+            "product_story": "The first release proves controlled dispatch without expanding adjacent workflows.",
+        }
+    }
+    readiness = derive_component_semantic_contract(
+        {
+            "label": "Release Readiness Proof Recordkeeping Service",
+            "source_system_description": (
+                "records when the dispatch coordinator preserves release readiness proof and keeps status, "
+                "correction history, blockers, and visible handoff context"
+            ),
+        },
+        proposal=proposal,
+        sibling={"label": "Dispatch Approval"},
+        previous_label="Exception Record",
+        next_label="Dispatch Approval",
+        state_label="Dispatch Exception",
+    ).fields
+    dispatch = derive_component_semantic_contract(
+        {
+            "label": "Dispatch Workflow Support Service",
+            "source_system_description": (
+                "records when the dispatch coordinator blocks dispatch until approval and keeps dispatch status, "
+                "blockers, evidence, and visible handoff context"
+            ),
+        },
+        proposal=proposal,
+        sibling=None,
+        previous_label="Dispatch Approval",
+        next_label="",
+        state_label="Dispatch Exception",
+    ).fields
+
+    rendered = json.dumps({"readiness": readiness, "dispatch": dispatch}, sort_keys=True).casefold()
+    assert "preserve readiness" not in readiness["owned_state"].casefold()
+    assert "expand adjacent workflow" not in rendered
+    assert "dispatch until approval" not in dispatch["owned_state"].casefold()
+
+
+def test_component_tribunal_rejects_action_and_condition_clauses_in_owned_state() -> None:
+    contract = {
+        "owned_state": "preserve readiness, dispatch until approval",
+        "accepted_inputs": "exception record",
+        "produced_outputs": "readiness decision",
+        "states_or_transitions": "pending, approved",
+        "outside_boundary": "external release decision",
+        "local_proof": ["Successful path evidence remains reviewable."],
+        "upstream_truth": "exception record",
+        "downstream_consumers": "release review",
+        "unique_failure": "Missing approval keeps dispatch blocked.",
+    }
+    issues = component_contract_issues(
+        {
+            "components": [
+                {
+                    "label": "Dispatch Workflow Support Service",
+                    "component_contract": contract,
+                }
+            ]
+        }
+    )
+
+    lowered = [issue.casefold() for issue in issues]
+    assert any("contains an action clause preserve readiness" in issue for issue in lowered)
+    assert any("contains a condition clause dispatch until approval" in issue for issue in lowered)
+
+
+def test_artifact_phrase_shape_separates_state_nouns_from_sentence_fragments() -> None:
+    assert artifact_phrase_has_clause_shape("when reviewers preserve rationale")
+    assert artifact_phrase_has_clause_shape("what is ready status")
+    assert artifact_phrase_has_clause_shape("dispatch status until approval")
+    assert not artifact_phrase_has_clause_shape("readiness decision record")
+    assert not artifact_phrase_has_clause_shape("reports intake status")
+
+
 def test_action_object_artifacts_require_a_direct_owned_action_clause() -> None:
     assert action_object_artifact_phrases("captures extracted fields") == ("extracted field capture",)
     assert action_object_artifact_phrases(
@@ -181,6 +265,23 @@ def test_action_object_artifacts_require_a_direct_owned_action_clause() -> None:
     assert action_object_artifact_phrases(
         "This boundary is valid when a reviewer validates a packet after approval."
     ) == ()
+
+
+def test_preservation_responsibility_becomes_owned_artifact_state() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Vendor Audit Retention Ledger",
+            "source_system_description": "preserves immutable onboarding history",
+        },
+        proposal={"intent": {"first_path": "A reviewer approves a vendor and preserves audit history."}},
+        sibling=None,
+        previous_label="Vendor Decision Service",
+        next_label="",
+        state_label="Vendor onboarding file",
+    ).fields
+
+    assert "immutable onboarding history" in contract["owned_state"].casefold()
+    assert "preserves immutable onboarding history" not in json.dumps(contract).casefold()
 
 
 def test_protected_hyphen_surface_does_not_lowercase_a_generated_component_title() -> None:
