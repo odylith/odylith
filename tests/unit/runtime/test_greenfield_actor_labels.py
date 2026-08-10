@@ -313,6 +313,36 @@ def test_completed_actor_rows_preserve_described_generic_first_path_actor() -> N
     assert rows == ["User: describes a difficult choice and selects the next action"]
 
 
+def test_completed_actor_rows_localize_described_operational_placeholder() -> None:
+    intent = {
+        "title": "Field Sensor Review Workspace",
+        "first_path": "An operator pairs one sensor, reviews the readings, and records follow-up.",
+        "human_actors": ("Operator: pairs the sensor, reads the dashboard, and decides follow-up.",),
+        "state_object": "A site reading timeline.",
+    }
+
+    rows = completed_actor_rows(intent, title=intent["title"])
+
+    assert rows == [
+        "Field Sensor Operator: pairs the sensor, reads the dashboard, and decides follow-up"
+    ]
+
+
+def test_completed_actor_rows_localize_described_review_placeholder() -> None:
+    intent = {
+        "title": "Grant Evidence Review Workspace",
+        "first_path": "A reviewer opens one submitted grant, records the decision, and sends the outcome.",
+        "human_actors": ("Reviewer: opens the grant, records the decision, and sends the outcome.",),
+        "state_object": "A grant review record.",
+    }
+
+    rows = completed_actor_rows(intent, title=intent["title"])
+
+    assert rows == [
+        "Grant Reviewer: opens the grant, records the decision, and sends the outcome"
+    ]
+
+
 def test_completed_actor_rows_do_not_reclassify_the_product_title_as_a_person() -> None:
     intent = {
         "title": "Cold-chain Pantry Ledger",

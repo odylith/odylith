@@ -139,7 +139,8 @@ def _should_derive_missing_actor_labels(rows: Sequence[str]) -> bool:
 
 
 def _single_actor_covers_first_path(row: str, intent: Mapping[str, Any]) -> bool:
-    label = _actor_label(row, title="")
+    source_label = _clean(str(row).split("—", 1)[0].split(":", 1)[0])
+    label = source_label if value_starts_with_generic_actor_label(source_label) else _actor_label(row, title="")
     if not label or not _actor_row_has_usable_description(row):
         return False
     first_path = _clean(intent.get("first_path"))
@@ -154,8 +155,13 @@ def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any], *, tit
     first_path = _clean(intent.get("first_path"))
     subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
     if label and subject and _actor_reference(subject) == _actor_reference(label):
-        if value_starts_with_generic_actor_label(label) and not _actor_row_has_usable_description(row):
-            return _actor_label(row, title=title)
+        if value_starts_with_generic_actor_label(label):
+            preserve_explicit_person = bool(
+                _actor_row_has_usable_description(row)
+                and _actor_reference(label) in _GENERIC_CONFIRMED_ACTOR_LABELS
+            )
+            if not preserve_explicit_person:
+                return _actor_label(row, title=title)
         return _title_case(label)
     return ""
 
