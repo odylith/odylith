@@ -353,6 +353,8 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
         phrase = _clean_artifact_phrase(phrase) or phrase
         if not phrase:
             continue
+        if _looks_action_word(phrase.split(maxsplit=1)[0]):
+            continue
         if artifact_phrase_has_clause_shape(phrase):
             continue
         terms = list(_content_terms(phrase))
@@ -370,7 +372,12 @@ def description_compound_phrases(value: str) -> tuple[str, ...]:
 
     rows: list[str] = []
     for clause in clauses(value):
-        focused = _strip_action(_object_clause_focus(clause)) or clause
+        focused_clause = _object_clause_focus(clause)
+        focused = _strip_action(focused_clause)
+        clause_words = visible_words(focused_clause)
+        if focused.casefold() == focused_clause.casefold() and clause_words and _looks_action_word(clause_words[0]):
+            continue
+        focused = focused or clause
         focused = re.sub(
             r"\b(?:before|after|while|because|unless|without)\b.+$",
             "",
@@ -428,6 +435,8 @@ def _preserved_compound_phrase(value: str) -> str:
 
 def _looks_action_word(value: str) -> bool:
     token = value.casefold().strip(".,;:")
+    if looks_like_finite_action_token(token):
+        return True
     if _looks_action_term(token):
         return True
     for suffix in ("ing", "ed", "es", "s"):

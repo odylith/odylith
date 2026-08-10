@@ -242,6 +242,10 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     need_actor, need_action = need_product_actor_action(product_text)
     need_first_path = f"{need_actor} can {need_action}" if need_actor and need_action else ""
     grant_actor, grant_first_path = _path_grant_actor_action(product_text)
+    if grant_actor and not grant_first_path:
+        ranked_rows = sentence_fragments(ranked_first_path)
+        if len(ranked_rows) > 1:
+            ranked_first_path = ". ".join(ranked_rows[1:])
     workflow_actor, workflow_first_path = _workflow_where_actor_action(product_text)
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
     purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
@@ -902,13 +906,15 @@ def _non_human_subject_relative_action(value: str) -> str:
 def _path_grant_actor_action(value: str) -> tuple[str, str]:
     words = request_words(value)
     lowered = [word_key(word) for word in words]
+    actor_candidate = ""
     for grant_index, token in enumerate(lowered[:-4]):
         if token not in {"give", "gives", "grant", "grants", "provide", "provides"}:
             continue
         actor, action = _path_grant_tail_parts(words[grant_index + 1 :])
+        actor_candidate = actor_candidate or actor
         if actor and action:
             return actor, f"{actor} {action}".strip(" .")
-    return "", ""
+    return actor_candidate, ""
 
 
 def _path_grant_tail_parts(words: list[str]) -> tuple[str, str]:
@@ -923,15 +929,17 @@ def _path_grant_tail_parts(words: list[str]) -> tuple[str, str]:
         if not _looks_like_actor_purpose_left(actor_words):
             continue
         action_start = path_index + 1
-        if action_start < len(words) and word_key(words[action_start]) == "to":
-            action_start += 1
+        actor = _strip_leading_actor_article(" ".join(actor_words))
+        if action_start >= len(words) or word_key(words[action_start]) != "to":
+            return actor, ""
+        action_start += 1
         action_words = words[action_start:]
         if not action_words:
             continue
         action_source = _smooth_request_first_path_clause(" ".join(action_words))
         action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
         if action and _looks_like_recoverable_first_path(action):
-            return _strip_leading_actor_article(" ".join(actor_words)), action
+            return actor, action
     return "", ""
 
 
@@ -939,6 +947,15 @@ def _path_grant_actor_stop(words: list[str], path_index: int) -> int:
     stop = path_index
     while stop > 0 and word_key(words[stop - 1]) in _PATH_GRANT_PATH_MODIFIERS:
         stop -= 1
+    if stop == path_index:
+        stop = next(
+            (
+                index
+                for index in range(path_index - 1, max(0, path_index - 4), -1)
+                if word_key(words[index]) in {"a", "an", "the"}
+            ),
+            stop,
+        )
     return stop
 
 

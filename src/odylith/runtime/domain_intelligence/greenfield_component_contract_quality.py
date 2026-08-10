@@ -15,6 +15,7 @@ from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import ACTION_NOUNS
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
@@ -289,13 +290,21 @@ def _owned_state_structure_issues(value: Any, *, row_index: int, label: str) -> 
             continue
         if (
             looks_like_action_clause(fragment)
-            and singularize_last_word(words[0]) not in ACTION_NOUNS
+            and not _starts_with_owned_state_noun_compound(words)
             and len({singularize_last_word(word) for word in words} & label_words) < 2
         ):
             issues.append(
                 f"component row {row_index} `{label}` component_contract.owned_state contains an action clause `{fragment}`"
             )
     return issues
+
+
+def _starts_with_owned_state_noun_compound(words: Sequence[str]) -> bool:
+    if len(words) < 2:
+        return False
+    lead = singularize_last_word(words[0])
+    carrier = singularize_last_word(words[1])
+    return lead in ACTION_NOUNS and carrier in ARTIFACT_CARRIER_TERMS
 
 
 def public_prose_quality_issues(value: Any) -> list[str]:

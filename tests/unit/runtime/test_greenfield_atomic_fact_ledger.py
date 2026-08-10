@@ -136,6 +136,25 @@ def test_atomic_fact_ledger_binds_positive_dependency_beside_a_prohibition() -> 
     assert dependency["source_span_ids"]
 
 
+def test_atomic_fact_ledger_keeps_internal_system_projections_out_of_dependencies() -> None:
+    source = "Route stewards read the forecast service and publish a reopening notice."
+    facts = {
+        **_FACTS,
+        "external_systems": ["forecast service"],
+        "internal_systems": ["Forecast Service Read Record"],
+    }
+
+    atoms = _authority(facts=facts, source=source)["atomic_facts"]
+    dependency_values = {
+        atom["normalized_value"]
+        for atom in atoms
+        if "dependencies" in atom["categories"]
+    }
+
+    assert dependency_values == {"forecast service"}
+    assert "actions" in _atom(atoms, "Forecast Service Read Record")["categories"]
+
+
 def test_atomic_fact_ledger_binds_each_required_external_source_subject() -> None:
     source = "The insurer directory and pharmacy status feed are required external sources."
     facts = {

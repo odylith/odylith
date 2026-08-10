@@ -151,6 +151,9 @@ def need_product_actor_action(value: str) -> tuple[str, str]:
             flags=re.IGNORECASE,
         )
         if not match:
+            direct_need = _direct_need_actor_action(sentence)
+            if direct_need != ("", ""):
+                return direct_need
             continue
         words = _request_words(match.group("focus"))
         for index, word in enumerate(words[:-1]):
@@ -161,6 +164,30 @@ def need_product_actor_action(value: str) -> tuple[str, str]:
             if action:
                 return " ".join(actor_words).strip(" ."), action
     return "", ""
+
+
+def _direct_need_actor_action(value: str) -> tuple[str, str]:
+    words = _request_words(value)
+    need_index = next(
+        (index for index, word in enumerate(words[1:-2], start=1) if _word_key(word) in {"need", "needs"}),
+        -1,
+    )
+    if need_index < 1:
+        return "", ""
+    actor_words = words[:need_index]
+    if actor_words and _word_key(actor_words[0]) in {"a", "an", "the"}:
+        actor_words = actor_words[1:]
+    if not _looks_like_prompt_actor(actor_words):
+        return "", ""
+    action_index = next(
+        (index for index in range(need_index + 2, len(words) - 1) if _word_key(words[index]) == "to"),
+        -1,
+    )
+    if action_index < 0 or not MATERIAL_ACTION_RE.fullmatch(_word_key(words[action_index + 1])):
+        return "", ""
+    actor = " ".join(actor_words).strip(" .")
+    action = " ".join(words[action_index + 1 :]).strip(" .")
+    return actor, action
 
 
 def is_requester_product_framing(value: str) -> bool:

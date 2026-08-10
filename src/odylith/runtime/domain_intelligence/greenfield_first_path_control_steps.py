@@ -226,7 +226,11 @@ def strip_trailing_requirement_control_steps(value: str) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
-    rows = _sentence_fragments(text)
+    rows = [
+        row.strip(" .")
+        for row in re.split(r"(?<=[.!?])\s+|;\s*", text)
+        if row.strip(" .")
+    ]
     if len(rows) <= 1:
         return text
     kept: list[str] = []

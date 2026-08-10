@@ -328,6 +328,8 @@ def _dependency_frame_sources(value: str) -> list[str]:
                 if _system_boundary_candidate(candidate):
                     rows.append(candidate)
             if token == "from":
+                if _from_starts_state_transition(lowered, start=index + 1):
+                    continue
                 candidate = _source_object(tokens, start=index + 1)
                 if _named_system_boundary_candidate(candidate):
                     rows.append(candidate)
@@ -342,6 +344,18 @@ def _dependency_frame_sources(value: str) -> list[str]:
                 if _system_boundary_candidate(candidate):
                     rows.append(candidate)
     return [row for row in rows if row]
+
+
+def _from_starts_state_transition(tokens: Sequence[str], *, start: int) -> bool:
+    tail = list(tokens[start:])
+    to_index = next((index for index, token in enumerate(tail) if token == "to"), -1)
+    if to_index < 0:
+        return False
+    carrier_index = next(
+        (index for index, token in enumerate(tail) if token in _DIRECT_BOUNDARY_CARRIERS),
+        -1,
+    )
+    return carrier_index < 0 or to_index < carrier_index
 
 
 def _declared_external_sources(value: str) -> list[str]:

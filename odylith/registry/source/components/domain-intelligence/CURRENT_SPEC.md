@@ -51,6 +51,15 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-09: Separated external dependency custody from internal product projections. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Actor, product-title, external-source, state-transition, and internal-system
+  spans now retain distinct pre-confirm ownership. Only explicit external
+  systems can create dependency-category atomic facts; internal systems remain
+  bounded action projections, and source-only access does not create a
+  redundant component. The mixed retired corpus passes all 274 tests after
+  previously reporting seven failures. Rebuilt installed and untouched-holdout
+  proof remain required.
+
 - 2026-08-09: Preserved terminal record identity during component I/O repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The exact installed matrix passed 13 of 14 maintained cases and isolated one
   remaining pre-confirm Registry failure: an identity already ending in

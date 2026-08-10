@@ -343,6 +343,27 @@ def test_source_boundary_rows_trim_trailing_product_action() -> None:
     assert source_boundary_rows_from_evidence(evidence) == ["Hall Calendar"]
 
 
+def test_state_transition_is_not_recovered_as_an_external_source() -> None:
+    evidence = (
+        "Noor moves the herd from suspected-exposure state to clearance-pending state "
+        "after laboratory receipt."
+    )
+
+    assert source_boundary_rows_from_evidence(evidence) == []
+
+
+def test_supplier_service_stays_external_when_it_also_places_initial_state() -> None:
+    evidence = (
+        "The SkyTrace tracking service flags a conjunction and places it in screening state. "
+        "An orbital flight director asks an analyst to compare covariance data."
+    )
+
+    hypothesis = intent_hypothesis_from_operator_evidence(evidence, prefer_product_title=True)
+
+    assert hypothesis["title"] != "SkyTrace Tracking Service"
+    assert hypothesis["external_systems"] == ("SkyTrace tracking service",)
+
+
 def test_source_boundary_rows_isolate_supplier_after_prior_action() -> None:
     evidence = "A coordinator checks a request and the Mapping Gateway supplies site context."
 

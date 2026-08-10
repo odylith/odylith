@@ -6,7 +6,7 @@ import re
 
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 
-ACTION_NOUNS = frozenset({"audit", "capture", "change", "control", "record", "replay", "report", "review", "test"})
+ACTION_NOUNS = frozenset("audit capture change control record release replay report review test".split())
 _SHORT_COMPOUND_NOUN_MODIFIERS = frozenset({"replay"})
 _OBJECT_HEADS = frozenset(
     {

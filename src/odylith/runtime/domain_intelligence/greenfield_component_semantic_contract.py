@@ -13,6 +13,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
+
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
@@ -468,7 +470,10 @@ def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
             )
             if 2 <= len(phrase.split()) <= 10:
                 rows.append(phrase.casefold())
-        phrase = _strip_action(_object_clause_focus(clause))
+        focused_clause = _object_clause_focus(clause)
+        phrase = _strip_action(focused_clause)
+        if phrase.casefold() == focused_clause.casefold() and looks_like_action_clause(focused_clause):
+            continue
         if not _content_terms(phrase):
             phrase = clause
         phrase = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", phrase, flags=re.IGNORECASE)

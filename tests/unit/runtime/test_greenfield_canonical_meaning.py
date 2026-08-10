@@ -43,6 +43,25 @@ def test_human_record_action_is_not_misclassified_as_a_nonhuman_record_subject()
     assert any("lab operators record either a conflict" in row.casefold() for row in rows)
 
 
+def test_external_source_access_does_not_become_an_internal_system() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Trail Closure Bulletin",
+        first_path=(
+            "Route stewards maintain a trail closure bulletin. They read the forecast service, "
+            "record closure reason and inspection evidence, and issue a reopening notice after ranger review."
+        ),
+        state_object="The primary state object is a trail closure bulletin.",
+        visible_result="a reopening notice",
+        human_actors=("Route stewards: maintain the closure bulletin.",),
+        external_systems=("forecast service",),
+    )
+
+    rendered = "\n".join(rows).casefold()
+    assert "forecast service record" not in rendered
+    assert "closure reason and inspection evidence" in rendered
+    assert "reopening notice" in rendered
+
+
 def test_explicit_exception_signoff_remains_a_distinct_product_responsibility() -> None:
     rows = internal_system_rows_from_first_path(
         title="Port Berth Carbon Tariff Planner",

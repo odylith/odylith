@@ -395,6 +395,12 @@ def confirmation_from_operator_intent(
     evidence_requirements = evidence_anchor_phrases(product_source)
     operational_constraints = operational_constraint_phrases(product_source)
     non_goals = prohibited_product_phrases(product_source)
+    external_systems = tuple(
+        source_boundary_rows_from_evidence(
+            raw_source,
+            excluded_labels=(title, prompt_source.title),
+        )
+    )
     internal_systems = tuple(
         evaluation.internal_systems
         or internal_system_rows_from_first_path(
@@ -403,6 +409,7 @@ def confirmation_from_operator_intent(
             state_object=state,
             visible_result=outcome,
             human_actors=actor_rows,
+            external_systems=external_systems,
         )
     )
     hypothesis: dict[str, object] = {
@@ -412,12 +419,7 @@ def confirmation_from_operator_intent(
         "state_object": state,
         "first_path": first_path.rstrip(".") + ".",
         "human_actors": tuple(actor_rows),
-        "external_systems": tuple(
-            source_boundary_rows_from_evidence(
-                raw_source,
-                excluded_labels=(title, prompt_source.title),
-            )
-        ),
+        "external_systems": external_systems,
         "internal_systems": internal_systems,
         "problem": problem,
         "opportunity": f"Prove the smallest complete {title.lower()} path before broader automation expands.",

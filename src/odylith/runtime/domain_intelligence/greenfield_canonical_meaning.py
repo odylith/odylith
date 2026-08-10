@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
+    source_boundary_rows_from_evidence,
+)
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -224,6 +227,7 @@ def internal_system_rows_from_first_path(
     state_object: str,
     visible_result: str,
     human_actors: Sequence[str] = (),
+    external_systems: Sequence[str] = (),
 ) -> list[str]:
     """Project distinct product responsibilities from first-path actions."""
 
@@ -232,6 +236,7 @@ def internal_system_rows_from_first_path(
         owned_step
         for step in model.steps
         if clean_text(step).strip(" .")
+        and not _external_source_only_step(step, external_systems=external_systems)
         for owned_step in _ownership_steps(clean_text(step).strip(" ."), human_actors=human_actors)
     ]
     if not steps:
@@ -336,6 +341,29 @@ def internal_system_rows_from_first_path(
     if len(rows) == 1 or (removed_signoff_duplicate and len(rows) < 3):
         rows.append(_result_review_system_row(result_label))
     return list(unique_text(rows))
+
+
+def _external_source_only_step(value: str, *, external_systems: Sequence[str]) -> bool:
+    known_sources = {
+        clean_text(source).casefold().strip(" .")
+        for source in external_systems
+        if clean_text(source)
+    }
+    if not known_sources:
+        return False
+    cited_sources = {
+        clean_text(source).casefold().strip(" .") for source in source_boundary_rows_from_evidence(value)
+    }
+    if not cited_sources & known_sources:
+        return False
+    action = strip_leading_action_modal(_action_without_subject(value))
+    words = clean_text(action).casefold().strip(" .").split()
+    if len(words) < 2:
+        return False
+    object_words = words[1:]
+    while object_words and object_words[0] in _LEADING_OBJECT_WORDS:
+        object_words.pop(0)
+    return " ".join(object_words) in known_sources
 
 
 def _exception_review_system_row(*, first_path: str, state_label: str) -> str:

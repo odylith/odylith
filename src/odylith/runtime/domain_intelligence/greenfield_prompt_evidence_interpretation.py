@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
     is_external_dependency_clause,
+    source_boundary_rows_from_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import is_source_obligation_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import confirmed_direction_evidence_text
@@ -547,6 +548,9 @@ def _narrative_product_subject_title(value: str) -> str:
         if subject_words[-1].casefold() not in _PRODUCT_TITLE_TERMINALS:
             continue
         subject = " ".join(subject_words)
+        source_labels = source_boundary_rows_from_evidence(row)
+        if any(subject.casefold() == label.casefold() for label in source_labels):
+            continue
         if not has_human_actor_signal(subject):
             return subject
     return ""

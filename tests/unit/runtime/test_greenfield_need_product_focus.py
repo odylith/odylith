@@ -133,6 +133,40 @@ def test_need_product_request_recovers_actor_infinitive_first_path() -> None:
     assert intent["first_path"].startswith("Analysts can review exceptions before handoff")
 
 
+def test_direct_need_request_separates_actor_product_object_and_actions() -> None:
+    prompt = (
+        "A museum registrar needs a register to document inbound loan conditions, compare humidity readings, "
+        "request conservator review, obtain lender approval, and create a return readiness summary."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert need_product_actor_action(prompt) == (
+        "museum registrar",
+        "document inbound loan conditions, compare humidity readings, request conservator review, "
+        "obtain lender approval, and create a return readiness summary",
+    )
+    assert source.actor == "museum registrar"
+    assert source.first_path.startswith("museum registrar can document inbound loan conditions")
+    assert "needs a register" not in source.first_path
+
+    bounded = prompt_intent_source(f"{prompt.rstrip('.')} ; it must not transfer ownership.")
+    assert "transfer ownership" not in bounded.first_path
+
+
+def test_path_grant_context_does_not_merge_product_framing_into_actor_or_workflow() -> None:
+    prompt = (
+        "BarnSignal gives Noor, the veterinary field officer, an outbreak path. "
+        "A farmer submits a fever report through the HerdWatch portal."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor.rstrip(" ,") == "Noor, the veterinary field officer"
+    assert source.first_path == "A farmer submits a fever report through the HerdWatch portal"
+    assert "outbreak a farmer" not in source.first_path.casefold()
+
+
 def test_need_product_request_framing_is_not_a_product_title() -> None:
     assert is_requester_product_framing("Our developer-experience group needs a product")
     assert is_requester_product_framing("A support team needs an app")

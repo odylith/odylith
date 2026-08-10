@@ -16,6 +16,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import actio
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import description_compound_phrases
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import description_owned_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import relation_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
@@ -282,6 +284,40 @@ def test_component_tribunal_rejects_action_and_condition_clauses_in_owned_state(
     lowered = [issue.casefold() for issue in issues]
     assert any("contains an action clause preserve readiness" in issue for issue in lowered)
     assert any("contains a condition clause dispatch until approval" in issue for issue in lowered)
+
+
+def test_component_tribunal_distinguishes_release_state_from_release_action() -> None:
+    base_contract = {
+        "owned_state": "temperature check result, blocked reason, validation evidence, release status",
+        "accepted_inputs": "donated lot record, temperature reading, authorized actor",
+        "produced_outputs": "temperature check result, release decision, validation evidence",
+        "states_or_transitions": "pending, evaluated, blocked, ready-for-release",
+        "outside_boundary": "sensor operation and final shipment approval",
+        "local_proof": ["Replay evidence preserves the reading, criteria, actor, and decision."],
+        "upstream_truth": "donated lot record",
+        "downstream_consumers": "parcel release review",
+        "unique_failure": "A stale reading can allow an unsafe release decision.",
+    }
+    action_contract = {**base_contract, "owned_state": "release the package"}
+
+    noun_issues = component_contract_issues(
+        {"components": [{"label": "Temperature Validation Service", "component_contract": base_contract}]}
+    )
+    action_issues = component_contract_issues(
+        {"components": [{"label": "Package Delivery Service", "component_contract": action_contract}]}
+    )
+
+    assert all("contains an action clause" not in issue.casefold() for issue in noun_issues)
+    assert any("contains an action clause release the package" in issue.casefold() for issue in action_issues)
+
+
+def test_component_context_does_not_preserve_finite_action_as_owned_state() -> None:
+    description = "captures donated lot input and required context and exposes either a validated or blocked state"
+
+    owned = description_owned_phrases(description)
+    compounds = description_compound_phrases(description)
+
+    assert all("exposes" not in phrase for phrase in (*owned, *compounds))
 
 
 def test_artifact_phrase_shape_separates_state_nouns_from_sentence_fragments() -> None:
