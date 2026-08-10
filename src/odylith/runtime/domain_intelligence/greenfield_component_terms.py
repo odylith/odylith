@@ -22,25 +22,10 @@ from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase
 
 NOUN_MODIFIER_ACTION_TERMS = {"check", "review"}
+COMPONENT_SHELL_TERMS = frozenset({"adapter", "client", "engine", "service", "surface", "system", "viewer"})
 RELATION_TAIL_TERMS = {
-    "after",
-    "against",
-    "because",
-    "before",
-    "by",
-    "for",
-    "from",
-    "into",
-    "plus",
-    "through",
-    "to",
-    "unless",
-    "until",
-    "using",
-    "when",
-    "while",
-    "with",
-    "without",
+    "after", "against", "because", "before", "by", "for", "from", "into", "plus",
+    "through", "to", "unless", "until", "using", "when", "while", "with", "without",
 }
 
 
@@ -81,6 +66,9 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(rf"^(?:{leading_modifiers})\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:central|core|main|primary)\s+", "", text, flags=re.I)
     words = text.split()
+    if words and words[-1] == "command" and _qualified_boundary_artifact(" ".join(words[:-1])):
+        words = words[:-1]
+        text = " ".join(words)
     preserve_modifier = bool(
         len(words) >= 2 and words[0].casefold().endswith("ing") and words[1].casefold() in ARTIFACT_CARRIER_TERMS
     ) or bool(
@@ -348,6 +336,8 @@ def _drop_misplaced_action_modifier_before_carrier(value: str) -> str:
     words = clean_text(value).casefold().strip(" .,;:").split()
     if len(words) < 2:
         return " ".join(words)
+    if _qualified_boundary_artifact(" ".join(words)):
+        return " ".join(words)
     carriers = {index for index, word in enumerate(words) if word in ARTIFACT_CARRIER_TERMS}
     if not carriers:
         return " ".join(words)
@@ -363,7 +353,11 @@ def _drop_misplaced_action_modifier_before_carrier(value: str) -> str:
             or any(word in verb_forms(term) for term in NOUN_MODIFIER_ACTION_TERMS)
             or word.endswith("ing")
         ) and next_word in ARTIFACT_CARRIER_TERMS
-        if looks_action_form(word) and later_carriers and not noun_modifier:
+        actor_led_action = bool(
+            kept
+            and (looks_actor_term(kept[-1]) or looks_actor_term(" ".join(kept)))
+        )
+        if looks_action_form(word) and later_carriers and not noun_modifier and not actor_led_action:
             continue
         kept.append(word)
     return " ".join(kept).strip(" .,;:")
@@ -401,6 +395,9 @@ def descriptor_anchor_phrases(label: str, description: str) -> list[str]:
         return []
     rows: list[str] = []
     base_terms = set(content_terms(base))
+    label_words = [word.casefold() for word in visible_words(label) if word.casefold() not in COMPONENT_SHELL_TERMS]
+    if looks_action_form(base.split()[0]) and label_words and looks_action_form(label_words[-1]):
+        return []
     for clause in clauses(description):
         phrase = trim_phrase(strip_action(object_clause_focus(clause))).casefold()
         phrase = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", phrase, flags=re.I)
@@ -737,8 +734,14 @@ def label_object_base(label: str) -> str:
     terms = [
         term
         for term in content_terms(label)
-        if term not in {"adapter", "client", "engine", "service", "surface", "system", "viewer"}
+        if term not in COMPONENT_SHELL_TERMS
     ]
+    if len(terms) < 2:
+        terms = [
+            term
+            for term in ordered_terms(clean(label), stopwords=GENERIC_TERMS - ARTIFACT_CARRIER_TERMS)
+            if not term.isdigit() and term not in COMPONENT_SHELL_TERMS
+        ]
     if len(terms) < 2:
         return ""
     for index, term in enumerate(terms):

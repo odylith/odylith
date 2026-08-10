@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
@@ -59,6 +60,13 @@ _MARKDOWN_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}(?:\s+|$)")
 _DECLARATION_COPULA_RE = re.compile(r"\b(?:is|are)\b", flags=re.IGNORECASE)
 _SUBJECT_CONJUNCTION_RE = re.compile(r"\s*(?:,|\band\b|\bor\b)\s*", flags=re.IGNORECASE)
 _CONFIRMATION_EVIDENCE_LABELS = frozenset({"changed", "keep"})
+_MATERIAL_TERM_STOPWORDS = frozenset(
+    {
+        "accepted", "action", "artifact", "complete", "evidence", "first", "greenfield", "intent", "path",
+        "product", "project", "proof", "proposal", "record", "release", "result", "review", "source", "state",
+        "system", "user", "workspace",
+    }
+)
 
 
 def product_intent_source_text(value: str) -> str:
@@ -66,6 +74,18 @@ def product_intent_source_text(value: str) -> str:
 
     original_intent = _operator_original_intent_block_text(value) or str(value or "")
     return _without_inline_source_metadata_clauses(_without_source_evidence_sections(original_intent))
+
+
+def material_prompt_terms(value: object) -> set[str]:
+    """Return material prompt nouns used to detect first-path custody loss."""
+
+    terms: set[str] = set()
+    for term in label_terms(value):
+        for token in str(term).casefold().replace("-", " ").replace("/", " ").split():
+            token = token.strip(".,:;()[]{}\"'")
+            if len(token) >= 4 and token not in _MATERIAL_TERM_STOPWORDS:
+                terms.add(token)
+    return terms
 
 
 def markdown_section_text(value: str, *, headings: frozenset[str]) -> str:
@@ -331,6 +351,7 @@ __all__ = [
     "declaration_subject_predicate",
     "is_source_metadata_clause",
     "looks_like_trailing_operator_instruction",
+    "material_prompt_terms",
     "markdown_section_text",
     "operator_context_from_product_text",
     "product_intent_source_text",

@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import descriptor_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import enrich_owned_state_from_io
 from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_form
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
@@ -667,6 +668,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert localize_generic_actor_label("Operator approval packet") == "local operator approval packet"
     assert localize_generic_actor_label("Build owner proof") == "local build owner proof"
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
+    assert clean_artifact_phrase("handoff boundaries for the confirmed first path") == "handoff boundaries"
+    assert clean_artifact_phrase("required handoff boundaries command") == "handoff boundaries"
     assert clean_artifact_phrase("participant submits intake package") == "intake package"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
     assert clean_artifact_phrase("user adds protocol") == "protocol"
@@ -788,6 +791,20 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "run" in action_transition
     assert "picked" in action_transition
     assert "reached" in action_transition
+
+
+def test_descriptor_anchors_preserve_action_derived_artifact_labels() -> None:
+    cases = {
+        "Routing Table": "Stores retry reason and owner evidence.",
+        "Review Queue": "Stores escalation reason.",
+        "Scoring Rubric": "Captures evaluation threshold.",
+        "Monitoring Report": "Stores telemetry status and anomaly evidence.",
+    }
+
+    for label, description in cases.items():
+        anchors = descriptor_anchor_phrases(label, description)
+        assert anchors, label
+        assert all(anchor.startswith(label.casefold()) for anchor in anchors)
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:

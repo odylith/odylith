@@ -7,6 +7,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import value_starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
@@ -48,10 +49,33 @@ def normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> 
                 fallback=f"{_focus_label(title)} user",
             )
         )
-    for key in ("product_story", "problem", "customer", "opportunity", "product_view"):
+    for key in ("product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"):
         text = _clean(intent.get(key))
         if text:
-            intent[key] = _lower_embedded_plain_actor_labels(text, intent.get("human_actors"))
+            intent[key] = _lower_embedded_plain_actor_labels(
+                _localize_generic_actor_statement(text, actor_rows=intent.get("human_actors"), title=title),
+                intent.get("human_actors"),
+            )
+    for key in ("success_metrics", "assumptions", "ambiguities", "non_goals", "operational_constraints"):
+        rows = confirmed_text_values(intent.get(key))
+        if rows:
+            intent[key] = [
+                _localize_generic_actor_statement(row, actor_rows=intent.get("human_actors"), title=title)
+                for row in rows
+            ]
+
+
+def _localize_generic_actor_statement(value: str, *, actor_rows: object, title: str) -> str:
+    text = _clean(value)
+    if not value_starts_with_generic_actor_label(text):
+        return text
+    return localize_leading_actor_reference(
+        text,
+        actor_rows=confirmed_text_values(actor_rows),
+        project_focus=title,
+        fallback=f"{_focus_label(title)} user",
+        sentence_context=True,
+    )
 
 
 def _lower_embedded_plain_actor_labels(value: str, actor_rows: object) -> str:

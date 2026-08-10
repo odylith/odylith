@@ -551,22 +551,30 @@ def _bridge_phrases(label: str, description: str) -> list[str]:
 
 
 def _label_compound_phrases(label: str) -> list[str]:
-    terms = [
-        term
-        for term in _literal_label_terms(label)
-        if term not in {"adapter", "client", "engine", "service", "surface", "system", "viewer"}
-    ]
     rows: list[str] = []
-    if 2 <= len(terms) <= 5 and terms[-1] in _ARTIFACT_CARRIER_TERMS:
-        rows.append(" ".join(terms))
-    for index in range(max(0, len(terms) - 1)):
-        left = terms[index]
-        right = terms[index + 1]
-        if _descriptor_list_pair(left, right):
-            continue
-        phrase = f"{left} {right}"
-        if not _artifact_phrase_has_clause_shape(phrase):
-            rows.append(phrase)
+    for group in re.split(r"\b(?:and|or)\b", label, flags=re.IGNORECASE):
+        terms = [
+            term
+            for term in _literal_label_terms(group)
+            if term not in {"adapter", "client", "engine", "service", "surface", "system", "viewer"}
+        ]
+        candidates = []
+        if 2 <= len(terms) <= 5 and terms[-1] in _ARTIFACT_CARRIER_TERMS:
+            candidates.append(" ".join(terms))
+        candidates.extend(
+            f"{terms[index]} {terms[index + 1]}"
+            for index in range(max(0, len(terms) - 1))
+            if not _descriptor_list_pair(terms[index], terms[index + 1])
+        )
+        for candidate in candidates:
+            cleaned = _clean_artifact_phrase(candidate)
+            if (
+                cleaned
+                and len(_content_terms(cleaned)) >= 2
+                and not _artifact_phrase_has_clause_shape(cleaned)
+                and _material_contract_phrase(cleaned, label_terms=terms, description_terms=())
+            ):
+                rows.append(cleaned)
     rows = list(unique_text(rows))
     rows.sort(key=_label_compound_rank)
     return rows[:4]

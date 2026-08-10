@@ -51,6 +51,20 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-09: Localized generic actors and preserved component boundary identity before sealing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Product Intent completion now replaces a generic actor only for a finite or
+  modal actor-led statement, preserving product nouns such as `Operator console`
+  and `Reviewer scoring rubric`.
+  Component language derives noun compounds within clause boundaries, keeps
+  qualified artifacts such as `handoff boundaries`, and removes actor-action
+  debris without inventing local exception vocabularies. Concrete action-derived
+  artifacts retain descriptor anchors while action-led service labels remain
+  bounded. Prompt material-term custody now has one owner, and both touched
+  parsers stay below their structural size gates. Adversarial counterexamples,
+  115 touched-owner tests, and three exact end-to-end regressions pass; full
+  runtime, rebuilt exact-distribution, browser/readback, and untouched-holdout
+  proof remain open.
+
 - 2026-08-09: Canonicalized EDIT constraints and routed-object ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   First-path EDIT rebuilds now remove sequencing syntax before constraint
   replacement and deduplication. Routing systems use the routed domain object

@@ -115,6 +115,9 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
     )
     assert normalize_artifact_tail("key established", carrier_terms={"state"}) == "key established"
     assert normalize_artifact_tail("prior runs viewable", carrier_terms={"state"}) == "prior runs viewable"
+    assert normalize_artifact_tail("audit and review lifecycle", carrier_terms={"lifecycle"}) == (
+        "audit and review lifecycle"
+    )
 
     lines = rationale_lines(
         label="Cooking Robot Controller",

@@ -291,7 +291,8 @@ def _normalize_lifecycle_status_state(words: Sequence[str], carriers: set[str]) 
     ]
     if not core:
         return list(words)
-    return [*core[:3], "lifecycle", words[-1]]
+    lifecycle_modifier = [] if lowered[-1] == "lifecycle" else ["lifecycle"]
+    return [*core[:3], *lifecycle_modifier, words[-1]]
 
 
 def _normalize_history_modifier_order(words: Sequence[str], carriers: set[str]) -> list[str]:

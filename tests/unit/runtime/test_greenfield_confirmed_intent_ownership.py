@@ -38,6 +38,9 @@ CONFIRMED_INTENT_VALIDATION_PATH = (
 )
 CONFIRMED_INTENT_INPUT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_input.py"
 CONFIRMED_INTENT_PARSER_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
+PROMPT_EVIDENCE_CUSTODY_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_custody.py"
+)
 
 
 def test_confirmed_intent_actor_completion_stays_in_dedicated_owner() -> None:
@@ -87,6 +90,7 @@ def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
 def test_confirmed_intent_input_recovery_stays_in_dedicated_owner() -> None:
     parser_source = CONFIRMED_INTENT_PARSER_PATH.read_text(encoding="utf-8")
     input_source = CONFIRMED_INTENT_INPUT_PATH.read_text(encoding="utf-8")
+    custody_source = PROMPT_EVIDENCE_CUSTODY_PATH.read_text(encoding="utf-8")
 
     assert len(parser_source.splitlines()) < 800
     assert "greenfield_confirmed_intent_input import" in parser_source
@@ -96,6 +100,9 @@ def test_confirmed_intent_input_recovery_stays_in_dedicated_owner() -> None:
     assert "def _thin_operator_intent_source" not in parser_source
     assert "def recover_host_guidance_confirmation" in input_source
     assert "def thin_operator_intent_source" in input_source
+    assert "material_prompt_terms as _material_prompt_terms" in parser_source
+    assert "def _material_prompt_terms" not in parser_source
+    assert "def material_prompt_terms" in custody_source
 
 
 def test_confirmed_intent_progression_markers_use_shared_text_owner() -> None:
@@ -272,8 +279,10 @@ def test_confirmed_system_completion_does_not_repeat_focus_words_in_fallback_lab
 
 def test_confirmed_intent_bare_title_uses_shared_label_terms() -> None:
     parser_source = CONFIRMED_INTENT_PARSER_PATH.read_text(encoding="utf-8")
+    custody_source = PROMPT_EVIDENCE_CUSTODY_PATH.read_text(encoding="utf-8")
 
-    assert "greenfield_domain_term_index import label_terms as _label_terms" in parser_source
+    assert "greenfield_domain_term_index import label_terms" in custody_source
+    assert "def material_prompt_terms" in custody_source
     assert "re.findall(r\"[A-Za-z0-9][A-Za-z0-9'-]*\", text)" not in parser_source
     assert label_terms("Source-backed Evidence Workspace") == ["Source-backed", "Evidence", "Workspace"]
     assert _looks_like_bare_title("Source-backed Evidence Workspace")

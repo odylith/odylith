@@ -59,6 +59,18 @@ def test_component_io_repair_preserves_meaningful_responsibility_identity() -> N
     assert produced_outputs == "quantum bell inequality checks record"
 
 
+def test_component_io_repair_does_not_duplicate_terminal_lifecycle() -> None:
+    identity, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
+        "Lifecycle Audit and Review View",
+        accepted_inputs="context command",
+        produced_outputs="context state",
+    )
+
+    assert identity == "audit and review lifecycle"
+    assert accepted_inputs == "audit and review lifecycle request, authorized actor, validation context"
+    assert produced_outputs == "audit and review lifecycle record"
+
+
 def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     contract_source = SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
     context_source = SEMANTIC_CONTEXT_PATH.read_text(encoding="utf-8")

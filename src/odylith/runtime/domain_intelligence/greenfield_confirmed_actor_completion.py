@@ -252,7 +252,11 @@ def value_starts_with_generic_actor_label(value: Any) -> bool:
         return False
     if len(words) == 1:
         return True
-    return words[1] in _GENERIC_ACTOR_VALUE_ACTIONS
+    action = words[1]
+    return bool(
+        action in {"can", "cannot", "could", "is", "must", "needs", "need", "should", "will", "would"}
+        or looks_like_finite_action_token(action)
+    )
 
 
 def _preserve_deferred_scope(row: str, source: str) -> str:
@@ -775,33 +779,6 @@ _GENERIC_ACTOR_VALUE_HEADS = {
     "support",
     "user",
 }
-_GENERIC_ACTOR_VALUE_ACTIONS = {
-    "adds",
-    "approves",
-    "can",
-    "checks",
-    "chooses",
-    "creates",
-    "enters",
-    "inspects",
-    "is",
-    "logs",
-    "must",
-    "needs",
-    "opens",
-    "records",
-    "reviews",
-    "sees",
-    "should",
-    "submits",
-    "updates",
-    "uses",
-    "views",
-    "will",
-    "would",
-}
-
-
 __all__ = [
     "actor_labels",
     "actor_row_description",

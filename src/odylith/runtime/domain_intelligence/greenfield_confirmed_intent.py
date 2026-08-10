@@ -34,6 +34,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_input impor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
     prompt_has_material_first_path_gap as _prompt_has_material_first_path_gap,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    material_prompt_terms as _material_prompt_terms,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import (
     contains_meta_narration as _contains_meta_narration,
 )
@@ -122,7 +125,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     confirmed_intent_sections as _sections,
 )
-from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     clean_first_path_text as _clean_first_path,
 )
@@ -142,32 +144,6 @@ class ConfirmedIntentRecord:
     envelope: dict[str, Any]
 
 
-_PROMPT_MATERIAL_TERM_STOPWORDS = frozenset(
-    {
-        "accepted",
-        "action",
-        "artifact",
-        "complete",
-        "evidence",
-        "first",
-        "greenfield",
-        "intent",
-        "path",
-        "product",
-        "project",
-        "proof",
-        "proposal",
-        "record",
-        "release",
-        "result",
-        "review",
-        "source",
-        "state",
-        "system",
-        "user",
-        "workspace",
-    }
-)
 PRECONFIRM_STAGING_MARKER = "<!-- odylith:preconfirm-staging -->"
 _TYPED_CANDIDATE_SCHEMA_VERSION = "odylith.greenfield.typed_candidate.v1"
 _CANDIDATE_EVIDENCE_SCHEMA_VERSION = "odylith.greenfield.candidate_evidence.v1"
@@ -734,17 +710,6 @@ def _redact_source_evidence_reference(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     )
-
-
-def _material_prompt_terms(value: Any) -> set[str]:
-    terms: set[str] = set()
-    for term in _label_terms(value):
-        for token in str(term).casefold().replace("-", " ").replace("/", " ").split():
-            token = token.strip(".,:;()[]{}\"'")
-            if len(token) < 4 or token in _PROMPT_MATERIAL_TERM_STOPWORDS:
-                continue
-            terms.add(token)
-    return terms
 
 
 def confirmed_intent_summary(intent: Mapping[str, Any] | None, key: str, fallback: str) -> str:

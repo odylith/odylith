@@ -3,6 +3,9 @@ from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_context_completion import (
+    normalize_confirmed_actor_context,
+)
 
 
 def test_generic_composite_actor_label_gets_project_focus() -> None:
@@ -28,6 +31,40 @@ def test_leading_actor_path_uses_sentence_case_for_an_accepted_role() -> None:
         project_focus="Flood Shelter Intake",
         sentence_context=True,
     ) == "City staff can register one household."
+
+
+def test_confirmed_actor_context_localizes_action_led_product_statements_before_sealing() -> None:
+    intent = {
+        "first_path": "Operator picks a recipe and reaches a safe state.",
+        "problem": "Operator needs a dependable way to understand the cook state.",
+        "success_metrics": ["Operator picks one recipe without manual reinterpretation."],
+        "opportunity": "Operator console availability remains outside the first release.",
+        "human_actors": ["Home cook: selects recipes and responds to prompts."],
+    }
+
+    normalize_confirmed_actor_context(intent, title="Cooking Robot Controller")
+
+    assert intent["first_path"].startswith("Home cook picks")
+    assert intent["problem"].startswith("Home cook needs")
+    assert intent["success_metrics"][0].startswith("Home cook picks")
+    assert intent["opportunity"].startswith("Operator console")
+
+
+def test_confirmed_actor_context_preserves_generic_head_artifact_nouns() -> None:
+    intent = {
+        "product_story": "Reviewer scoring rubric guides final approval.",
+        "problem": "Reviewer routing table needs a stable owner.",
+        "opportunity": "Operator monitoring dashboard remains outside the first release.",
+        "non_goals": ["Owner pricing record remains outside the first release."],
+        "human_actors": ["Audit coordinator: reviews and approves audit evidence."],
+    }
+
+    normalize_confirmed_actor_context(intent, title="Audit Review Workspace")
+
+    assert intent["product_story"].startswith("Reviewer scoring rubric")
+    assert intent["problem"].startswith("Reviewer routing table")
+    assert intent["opportunity"].startswith("Operator monitoring dashboard")
+    assert intent["non_goals"][0].startswith("Owner pricing record")
 
 
 def test_generic_person_actor_uses_accepted_activity_not_project_fallback() -> None:
