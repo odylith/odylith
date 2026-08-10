@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import ACTION_NOUNS
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
@@ -258,6 +259,11 @@ def component_contract_issues(proposal: Mapping[str, Any]) -> list[str]:
                 label=label,
             )
         )
+        for key in ("accepted_inputs", "produced_outputs"):
+            for placeholder in generic_contract_placeholder_fragments(_clean(normalized.get(key))):
+                issues.append(
+                    f"component row {index} `{label}` component_contract.{key} contains generic placeholder `{placeholder}`"
+                )
         terms = component_domain_terms(" ".join(text_values(normalized)))
         if len(terms) < 8:
             issues.append(f"component row {index} `{label}` component_contract is too generic to guide implementation")

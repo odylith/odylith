@@ -5,6 +5,7 @@ import subprocess
 from odylith.runtime.domain_intelligence import greenfield_component_contract_differentiation as differentiation
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
+    component_contract_issues,
     rendered_component_spec_quality_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import (
@@ -14,27 +15,34 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     materialize_prompt_intent_hypothesis,
 )
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import (
+    generic_contract_placeholder_fragments,
+)
 
 
-def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) -> None:
+def _proposal_from_prompt(tmp_path, prompt: str):  # noqa: ANN001, ANN202
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    prompt = (
-        "Create a greenfield proposal for a package supply chain exception desk that receives vulnerable "
-        "dependency reports, tracks provenance and waiver evidence, coordinates package manager review, "
-        "preserves release readiness proof, and blocks shipment until exceptions are approved."
-    )
     candidate = materialize_prompt_intent_hypothesis(
         prompt=prompt,
         repo_root=tmp_path,
         fallback_title=greenfield_proposals.intent_title(prompt),
     )
-
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
         prompt=prompt,
         confirmed_intent=candidate,
         require_completion_ready=False,
     )
+    return candidate, proposal
+
+
+def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a package supply chain exception desk that receives vulnerable "
+        "dependency reports, tracks provenance and waiver evidence, coordinates package manager review, "
+        "preserves release readiness proof, and blocks shipment until exceptions are approved."
+    )
+    candidate, proposal = _proposal_from_prompt(tmp_path, prompt)
     specs = differentiation._render_component_specs(proposal)
 
     assert rendered_component_spec_quality_issues(
@@ -52,6 +60,11 @@ def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) 
         str(row.get("component_contract", ""))
         for row in proposal["components"]
     ).casefold()
+    assert component_contract_issues(proposal) == []
+    for row in proposal["components"]:
+        contract = row["component_contract"]
+        for key in ("accepted_inputs", "produced_outputs"):
+            assert generic_contract_placeholder_fragments(str(contract[key])) == ()
     for malformed in (
         "expand adjacent workflow",
         "preserve readiness",
@@ -59,6 +72,24 @@ def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) 
         "supplies chain",
     ):
         assert malformed not in rendered_contracts
+
+    manager_review = next(
+        row
+        for row in proposal["components"]
+        if str(row.get("label", "")).startswith("Package Manager Review")
+    )
+    manager_contract = manager_review["component_contract"]
+    assert "package review request" in str(manager_contract["accepted_inputs"]).casefold()
+    assert "package review record" in str(manager_contract["produced_outputs"]).casefold()
+
+    shipment = next(
+        row
+        for row in proposal["components"]
+        if str(row.get("label", "")).startswith("Shipment Workflow")
+    )
+    shipment_contract = shipment["component_contract"]
+    assert "shipment workflow request" in str(shipment_contract["accepted_inputs"]).casefold()
+    assert "shipment workflow record" in str(shipment_contract["produced_outputs"]).casefold()
 
     names = tuple(specs)
     name_terms = {name: component_domain_terms(name) for name in names}
@@ -104,24 +135,12 @@ def test_preconfirm_component_contracts_keep_local_first_path_meaning(tmp_path) 
 
 
 def test_sparse_action_components_keep_source_backed_local_meaning(tmp_path) -> None:
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     prompt = (
         "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "
         "coordinates review, records evidence custody, decides embargo status, and publishes first release "
         "readiness proof without personalized notification delivery."
     )
-    candidate = materialize_prompt_intent_hypothesis(
-        prompt=prompt,
-        repo_root=tmp_path,
-        fallback_title=greenfield_proposals.intent_title(prompt),
-    )
-
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt=prompt,
-        confirmed_intent=candidate,
-        require_completion_ready=False,
-    )
+    _candidate, proposal = _proposal_from_prompt(tmp_path, prompt)
     specs = differentiation._render_component_specs(proposal)
 
     assert rendered_component_spec_quality_issues(
@@ -152,23 +171,12 @@ def test_sparse_action_components_keep_source_backed_local_meaning(tmp_path) -> 
 
 
 def test_open_source_embargo_compiles_a_clean_preconfirm_transaction(tmp_path) -> None:
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     prompt = (
         "Create a greenfield proposal for an open source security embargo room that receives vulnerability "
         "reports, coordinates maintainer triage, tracks affected package evidence, records disclosure "
         "approvals, and shows advisory readiness without sending public announcements in the first release."
     )
-    candidate = materialize_prompt_intent_hypothesis(
-        prompt=prompt,
-        repo_root=tmp_path,
-        fallback_title=greenfield_proposals.intent_title(prompt),
-    )
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=tmp_path,
-        prompt=prompt,
-        confirmed_intent=candidate,
-        require_completion_ready=False,
-    )
+    _candidate, proposal = _proposal_from_prompt(tmp_path, prompt)
 
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
@@ -181,3 +189,51 @@ def test_open_source_embargo_compiles_a_clean_preconfirm_transaction(tmp_path) -
     assert transaction.quality_manifest["status"] == "passed"
     assert all(" An Coordinates " not in str(row.get("title", "")) for row in transaction.proposal["backlog"])
     assert any("Coordinate Maintainer Triage" in str(row.get("title", "")) for row in transaction.proposal["backlog"])
+
+
+def test_follow_up_compound_does_not_become_an_action_shaped_state(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a developer incident runbook readiness tool that lets engineering "
+        "leads capture service incidents, map owners to mitigation steps, collect verification evidence, "
+        "track follow-up exceptions, and publish release-readiness proof before the next deployment window."
+    )
+    _candidate, proposal = _proposal_from_prompt(tmp_path, prompt)
+
+    assert component_contract_issues(proposal) == []
+    owned_state = " ".join(
+        str(row["component_contract"]["owned_state"])
+        for row in proposal["components"]
+    ).casefold()
+    assert "follow lifecycle" not in owned_state
+    assert "follow up exceptions" in owned_state
+
+
+def test_generated_coordination_taxonomy_remains_grounded_in_preconfirm_compile(tmp_path) -> None:
+    prompts = (
+        (
+            "flood",
+            "Create a greenfield proposal for a flood shelter intake system that helps city staff register "
+            "displaced residents, match household needs to shelter capacity, track medical and accessibility "
+            "constraints, preserve consent evidence, and produce a daily placement readiness report.",
+        ),
+        (
+            "apprenticeship",
+            "Create a greenfield proposal for a regional apprenticeship credential readiness system that lets "
+            "training coordinators register apprentices, map completed skills to employer requirements, track "
+            "mentor signoff evidence, manage accommodation exceptions, and publish certification readiness for "
+            "review by a workforce board.",
+        ),
+    )
+    for slug, prompt in prompts:
+        case_root = tmp_path / slug
+        _candidate, proposal = _proposal_from_prompt(case_root, prompt)
+        transaction = greenfield_proposals.compile_greenfield_create_transaction(
+            repo_root=case_root,
+            proposal=proposal,
+            release_selector="",
+            proposal_ready=True,
+        )
+
+        assert transaction.verified is True
+        assert transaction.quality_manifest["status"] == "passed"
+        assert transaction.quality_manifest["issues"] == []

@@ -7,10 +7,14 @@ from odylith.runtime.domain_intelligence import greenfield_component_semantic_co
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import (
+    component_contract_io_identity_repair,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import relation_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -19,6 +23,27 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 ROOT = Path(__file__).resolve().parents[3]
 SEMANTIC_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
 SEMANTIC_CONTEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py"
+
+
+def test_unqualified_context_artifacts_are_generic_contract_placeholders() -> None:
+    assert generic_contract_placeholder_fragments(
+        "package review records, context command, context state, context result"
+    ) == ("context command", "context state", "context result")
+    assert generic_contract_placeholder_fragments(
+        "explanation context, validation context, prior state"
+    ) == ()
+
+
+def test_component_io_repair_preserves_meaningful_responsibility_identity() -> None:
+    identity, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
+        "Review Coordination",
+        accepted_inputs="context command",
+        produced_outputs="context state",
+    )
+
+    assert identity == "Review Coordination"
+    assert accepted_inputs == "review coordination request, authorized actor, validation context"
+    assert produced_outputs == "review coordination record"
 
 
 def test_component_semantic_context_stays_in_dedicated_owner() -> None:

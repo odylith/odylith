@@ -7,11 +7,15 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import component_shell_artifact
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     status_only_artifact_fragment as _status_only_artifact_fragment,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
@@ -94,6 +98,81 @@ def sanitize_contract_fields(fields: Mapping[str, Any]) -> dict[str, Any]:
         else:
             sanitized[key] = value
     return sanitized
+
+
+def component_contract_io_identity_repair(
+    label: str,
+    *,
+    accepted_inputs: str,
+    produced_outputs: str,
+) -> tuple[str, str, str]:
+    """Replace compressed I/O filler with a clean multi-term component identity."""
+
+    identity = _component_contract_identity_focus(label)
+    if not identity:
+        return "", accepted_inputs, produced_outputs
+    identity_terms = {word.casefold() for word in visible_words(identity)}
+    required_overlap = min(2, len(identity_terms))
+    needs_repair = bool(
+        generic_contract_placeholder_fragments(accepted_inputs)
+        or generic_contract_placeholder_fragments(produced_outputs)
+    )
+    for value in (accepted_inputs, produced_outputs):
+        if not any(
+            len(identity_terms & {word.casefold() for word in visible_words(fragment)}) >= required_overlap
+            for fragment in value.split(",")
+        ):
+            needs_repair = True
+    if not needs_repair:
+        return "", accepted_inputs, produced_outputs
+    identity_text = clean_artifact_text(identity).casefold()
+    return (
+        identity,
+        f"{identity_text} request, authorized actor, validation context",
+        f"{identity_text} record",
+    )
+
+
+def _component_contract_identity_focus(label: str) -> str:
+    candidate = _clean_artifact_phrase(label) or clean_artifact_text(label)
+    words = visible_words(candidate)
+    while len(words) > 2 and component_shell_artifact(candidate):
+        trimmed = _clean_artifact_phrase(" ".join(words[:-1]))
+        if len(visible_words(trimmed)) < 2:
+            break
+        candidate = trimmed
+        words = visible_words(candidate)
+    while len(words) > 2 and words[-1].casefold() in {"coordination", "recordkeeping", "support"}:
+        words = words[:-1]
+        candidate = _clean_artifact_phrase(" ".join(words))
+    words = visible_words(candidate)
+    role_words = {"coordination", "recordkeeping", "support", "workflow"}
+    return candidate if len(words) >= 2 and any(word.casefold() not in role_words for word in words) else ""
+
+
+def title_identity_phrases(
+    label_phrases: Sequence[str],
+    summary_phrases: Sequence[str],
+) -> tuple[str, ...]:
+    """Keep label-local artifact identity out of generic component state."""
+
+    summary = {phrase.casefold() for phrase in summary_phrases}
+    candidates: list[str] = []
+    for phrase in label_phrases:
+        words = phrase.split()
+        if len(words) < 2 or phrase.casefold() in summary:
+            continue
+        if words[-1] not in ARTIFACT_CARRIER_TERMS and len(_content_terms(phrase)) < 2:
+            continue
+        if component_shell_artifact(phrase) or _status_only_artifact_fragment(phrase):
+            continue
+        candidates.append(phrase)
+    non_actor_candidates = [
+        phrase
+        for phrase in candidates
+        if not any(looks_actor_term(word) for word in _content_terms(phrase))
+    ]
+    return tuple((non_actor_candidates or candidates)[:2])
 
 
 def restore_protected_phrase_surface(fields: Mapping[str, Any], protected_phrases: Sequence[str]) -> dict[str, Any]:

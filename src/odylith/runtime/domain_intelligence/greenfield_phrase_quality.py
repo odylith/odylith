@@ -15,6 +15,7 @@ RELATION_TAIL_WORDS = frozenset({"against", "around", "for", "from", "into", "to
 _CLAUSE_SHAPE_MARKERS = frozenset(
     {"after", "are", "before", "because", "is", "unless", "until", "was", "were", "when", "while"}
 )
+_GENERIC_CONTEXT_ARTIFACTS = frozenset({"command", "input", "result", "state"})
 TRAILING_RELATION_ACTIONS = frozenset(
     {
         "attach",
@@ -66,6 +67,17 @@ def artifact_phrase_has_clause_shape(value: str) -> bool:
 
     words = tuple(word.casefold().strip(".,;:") for word in visible_words(clean_text(value)))
     return bool(words and _CLAUSE_SHAPE_MARKERS.intersection(words))
+
+
+def generic_contract_placeholder_fragments(value: str) -> tuple[str, ...]:
+    """Return unqualified context artifacts that carry no component identity."""
+
+    placeholders: list[str] = []
+    for fragment in clean_text(value).split(","):
+        words = tuple(word.casefold().strip(".,;:") for word in visible_words(fragment))
+        if len(words) == 2 and words[0] == "context" and words[1] in _GENERIC_CONTEXT_ARTIFACTS:
+            placeholders.append(" ".join(words))
+    return tuple(dict.fromkeys(placeholders))
 
 
 def normalize_action_splice_phrase(value: str) -> str:

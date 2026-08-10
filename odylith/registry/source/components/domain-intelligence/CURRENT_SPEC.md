@@ -51,6 +51,17 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-09: Closed installed component-meaning and evaluator blind spots before confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Canonical projection now retains nominal evidence lists as distinct records,
+  attaches a list to a human coordination action only when that action governs
+  it, and keeps one explicit action trace beside noun-centered component state.
+  Component I/O that collapses into generic context artifacts is rebuilt from
+  the component's own multi-term identity before sealing, and the Tribunal
+  rejects any generic context placeholder that survives. Exact source replays
+  close all three installed-matrix failures and the package scorer blind spot;
+  focused semantic proof passes 20 tests. Rebuilt installed
+  distribution proof remains the release gate.
+
 - 2026-08-09: Separated first-path action traceability from component-owned state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Canonical components now retain the accepted action as a visible first-path
   trace while compiling owned state from component-local noun records. Long

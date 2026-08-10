@@ -15,7 +15,6 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     accepted_inputs_text as _accepted_inputs_text,
     component_shell_artifact as _component_shell_artifact,
@@ -128,7 +127,6 @@ def derive_component_semantic_contract(
     )
     label_phrases = _label_compound_phrases(label)
     bridge_phrases = _bridge_phrases(label, description)
-    lifecycle_phrases = _lifecycle_phrases(label, description)
     context_required_phrases = semantic_context.context_required_phrases(
         context_phrases,
         label_terms=label_terms,
@@ -144,7 +142,7 @@ def derive_component_semantic_contract(
         proposal_context,
         anchor_terms=unique_text([*label_terms, *description_terms]),
     )
-    local_phrases = [*description_phrases, *label_phrases, *bridge_phrases, *lifecycle_phrases]
+    local_phrases = [*description_phrases, *label_phrases, *bridge_phrases]
     needs_context_backfill = semantic_context.needs_context_backfill(
         description=description,
         description_phrases=description_phrases,
@@ -171,14 +169,12 @@ def derive_component_semantic_contract(
             *protected_description_phrases[:6],
             *context_identity_phrases[:4],
             *bridge_phrases[:2],
-            *lifecycle_phrases,
             *([] if not needs_context_backfill else context_compound_phrases[:4]),
         ]
     else:
         required_seed = [
             *label_phrases[:3],
             *bridge_phrases[:2],
-            *lifecycle_phrases,
             *context_required_phrases[:3],
             *context_compound_phrases[:3],
         ]
@@ -215,6 +211,18 @@ def derive_component_semantic_contract(
         role="output",
         contract_terms=contract_terms,
     )
+    accepted_inputs = _accepted_inputs_text(input_focus)
+    produced_outputs = _produced_outputs_text(output_focus)
+    contract_identity, accepted_inputs, produced_outputs = contract_support.component_contract_io_identity_repair(
+        label,
+        accepted_inputs=accepted_inputs,
+        produced_outputs=produced_outputs,
+    )
+    if contract_identity:
+        focus_list = contract_identity
+        critical = contract_identity
+        input_focus = f"{contract_identity} request"
+        output_focus = f"{contract_identity} record"
     transition_context = semantic_context.transition_context_text(
         proposal_context,
         label_terms=label_terms,
@@ -272,10 +280,11 @@ def derive_component_semantic_contract(
     description_owned_phrases = semantic_context.description_owned_phrases(description)
     preserved_material_phrases = semantic_context.preserved_scaffold_material(description)
     owned_summary_phrases = summary_phrases[:7]
-    title_identity_phrases = _title_identity_phrases(label_phrases, owned_summary_phrases)
+    title_identity_phrases = contract_support.title_identity_phrases(label_phrases, owned_summary_phrases)
     owned_seed = (
         (
             *title_identity_phrases,
+            *([contract_identity] if contract_identity else []),
             *description_owned_phrases[:5],
             *protected_description_phrases[:6],
             *context_identity_phrases[:4],
@@ -299,8 +308,8 @@ def derive_component_semantic_contract(
     fields = contract_support.sanitize_contract_fields(
         {
             "owned_state": _contract_list_text(*owned_seed),
-            "accepted_inputs": _accepted_inputs_text(input_focus),
-            "produced_outputs": _produced_outputs_text(output_focus),
+            "accepted_inputs": accepted_inputs,
+            "produced_outputs": produced_outputs,
             "states_or_transitions": states,
             "outside_boundary": _outside_boundary(sibling_focus=handoff_focus),
             "local_proof": proof,
@@ -369,6 +378,10 @@ def _scrub_description_scaffold(value: str) -> str:
     if text.casefold().startswith("first-path action is "):
         _action, separator, remainder = text.partition("; ")
         text = remainder if separator else ""
+    else:
+        marker_index = text.casefold().rfind("; first-path action is ")
+        if marker_index >= 0:
+            text = text[:marker_index].rstrip()
     text = re.sub(r"\bRelevant\s+behavior\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"(?:^|(?<=[.;])\s*)Rationale\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"^Rationale$", "", text, flags=re.IGNORECASE).strip()
@@ -562,44 +575,12 @@ def _descriptor_list_pair(left: str, right: str) -> bool:
     return False
 
 
-def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Sequence[str]) -> tuple[str, ...]:
-    summary = {phrase.casefold() for phrase in summary_phrases}
-    candidates: list[str] = []
-    for phrase in label_phrases:
-        words = phrase.split()
-        if len(words) < 2:
-            continue
-        if phrase.casefold() in summary:
-            continue
-        if words[-1] not in _ARTIFACT_CARRIER_TERMS and len(_content_terms(phrase)) < 2:
-            continue
-        if _component_shell_artifact(phrase) or _status_only_artifact_fragment(phrase):
-            continue
-        candidates.append(phrase)
-    non_actor_candidates = [
-        phrase
-        for phrase in candidates
-        if not any(_looks_actor_term(word) for word in _content_terms(phrase))
-    ]
-    return tuple((non_actor_candidates or candidates)[:2])
-
-
 def _bridge_phrase_rank(phrase: str) -> tuple[int, str]:
     terms = set(_content_terms(phrase))
     for index, term in enumerate(("rubric", "rule", "policy", "threshold", "rationale", "criteria", "version")):
         if term in terms:
             return (index, phrase)
     return (20, phrase)
-
-
-def _lifecycle_phrases(label: str, description: str) -> list[str]:
-    description_terms = set(_content_terms(description))
-    if not description_terms & {"event", "history", "resolution", "transition"}:
-        return []
-    for term in _content_terms(label):
-        if term in description_terms:
-            return [f"{term} lifecycle"]
-    return []
 
 
 def _dedupe_phrase_subsets(values: Sequence[str]) -> list[str]:

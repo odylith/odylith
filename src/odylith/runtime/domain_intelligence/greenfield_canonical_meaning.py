@@ -227,24 +227,11 @@ def internal_system_rows_from_first_path(
 ) -> list[str]:
     """Project distinct product responsibilities from first-path actions."""
 
-    source_path = clean_text(first_path).strip(" .")
     model = first_path_model(first_path)
-    source_subject_clause = model.steps[0] if model.steps else source_path
-    source_human_subject = _matching_human_subject(source_subject_clause, human_actors=human_actors)
-    nominal_carry_steps = {
-        clean_text(step).strip(" .").casefold()
-        for step in model.steps[1:]
-        if source_human_subject
-        and not _matching_human_subject(step, human_actors=human_actors)
-        and not _non_human_subject_prefix(step)
-        and not _starts_with_material_action(step)
-    }
-    source_has_nominal_carry = bool(nominal_carry_steps)
     steps = [
         owned_step
         for step in model.steps
         if clean_text(step).strip(" .")
-        and clean_text(step).strip(" .").casefold() not in nominal_carry_steps
         for owned_step in _ownership_steps(clean_text(step).strip(" ."), human_actors=human_actors)
     ]
     if not steps:
@@ -253,7 +240,10 @@ def internal_system_rows_from_first_path(
     result_label = _compact_label(visible_result or model.visible_outcome, fallback="Result", max_words=5)
     rows: list[str] = []
     used_responsibilities: set[str] = set()
+    merged_nominal_steps: set[int] = set()
     for index, step in enumerate(steps):
+        if index in merged_nominal_steps:
+            continue
         human_subject = _matching_human_subject(step, human_actors=human_actors)
         nominal_row = _nominal_responsibility_row(
             step,
@@ -265,8 +255,15 @@ def internal_system_rows_from_first_path(
             continue
         if human_subject:
             action = _action_after_subject(step, subject=human_subject) or _action_without_subject(step)
-            if index == 0 and source_has_nominal_carry and not re.search(r"[.!?]\s+\S", source_path):
-                action = _action_after_subject(source_path, subject=source_human_subject) or action
+            if "Coordination" in _responsibility_labels(action, step=action) and index + 1 < len(steps):
+                next_step = steps[index + 1]
+                if _nominal_responsibility_row(
+                    next_step,
+                    human_subject="",
+                    source_first_path=first_path,
+                ):
+                    action = f"{action}, {_lower_sentence_start(next_step)}"
+                    merged_nominal_steps.add(index + 1)
             rows.append(
                 _human_supported_system_row(
                     action=action,
@@ -635,57 +632,58 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
     action_object = _compact_label(_action_object(owned_action), fallback=state_label, max_words=4)
     responsibilities = _responsibility_labels(owned_action, step=owned_action)
     actor_ref = _actor_key(actor) or "user"
-    action_note = f"First-path action is {actor_ref} {_human_actor_action(owned_action, actor_ref=actor_ref)}; "
+    actor_action = _human_actor_action(action, actor_ref=actor_ref)
+    action_note = f"; First-path action is the {actor_ref} {actor_action}"
     if "Intake" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Intake')} — {action_note}owns {action_object.casefold()} intake records, status, "
-            "blockers, evidence, and handoff context"
+            f"{title_case_text(f'{action_object} Intake')} — owns {action_object.casefold()} intake records, status, "
+            f"blockers, evidence, and handoff context{action_note}"
         )
     if "Delivery" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Delivery')} — {action_note}presents {action_object.casefold()} as the visible result "
-            f"to the {actor_ref} with status, blockers, explanation, and review evidence"
+            f"{title_case_text(f'{action_object} Delivery')} — presents {action_object.casefold()} as the visible result "
+            f"to the {actor_ref} with status, blockers, explanation, and review evidence{action_note}"
         )
     if "Decision" in responsibilities:
         decision_subject = _decision_subject_label(action_object)
         return (
-            f"{title_case_text(f'{decision_subject} Decision Record')} — {action_note}owns the {actor_ref} decision, status, "
-            "rationale, blockers, evidence, and handoff context"
+            f"{title_case_text(f'{decision_subject} Decision Record')} — records the {actor_ref} decision and keeps "
+            f"status, rationale, blockers, evidence, and handoff context visible{action_note}"
         )
     if any(label in {"Approval", "Assignment", "Selection"} for label in responsibilities):
         suffix = _join_labels(responsibilities)
         return (
-            f"{title_case_text(f'{action_object} {suffix} Record')} — {action_note}records the {actor_ref} decision and keeps "
-            "status, blockers, evidence, and handoff context visible"
+            f"{title_case_text(f'{action_object} {suffix} Record')} — records the {actor_ref} decision and keeps "
+            f"status, blockers, evidence, and handoff context visible{action_note}"
         )
     if "Review" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Review Record')} — {action_note}owns {action_object.casefold()} review records, "
-            "status, blockers, evidence, and handoff context"
+            f"{title_case_text(f'{action_object} Review Record')} — owns {action_object.casefold()} review records, "
+            f"status, blockers, evidence, and handoff context{action_note}"
         )
     if "Recordkeeping" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Recordkeeping')} — {action_note}owns {action_object.casefold()} records, status, "
-            "correction history, blockers, and handoff context"
+            f"{title_case_text(f'{action_object} Recordkeeping')} — owns {action_object.casefold()} records, status, "
+            f"correction history, blockers, and handoff context{action_note}"
         )
     if "Coordination" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Coordination')} — {action_note}owns {action_object.casefold()} coordination records, "
-            "status, blockers, evidence, and handoff context"
+            f"{title_case_text(f'{action_object} Coordination')} — owns {action_object.casefold()} coordination records, "
+            f"status, blockers, evidence, and handoff context{action_note}"
         )
     if "Validation" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Workflow Support')} — {action_note}records {action_object.casefold()} validation "
-            f"performed by the {actor_ref} and keeps validation status, blockers, evidence, and handoff context visible"
+            f"{title_case_text(f'{action_object} Workflow Support')} — records {action_object.casefold()} validation "
+            f"performed by the {actor_ref} and keeps validation status, blockers, evidence, and handoff context visible{action_note}"
         )
     if "Routing" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Workflow Support')} — {action_note}records routing of {action_object.casefold()} "
-            f"performed by the {actor_ref} and keeps source, destination, status, blockers, and handoff evidence visible"
+            f"{title_case_text(f'{action_object} Workflow Support')} — records routing of {action_object.casefold()} "
+            f"performed by the {actor_ref} and keeps source, destination, status, blockers, and handoff evidence visible{action_note}"
         )
     return (
-        f"{title_case_text(f'{action_object} Workflow Support')} — {action_note}owns {action_object.casefold()} workflow status, "
-        "blockers, evidence, and handoff context"
+        f"{title_case_text(f'{action_object} Workflow Support')} — owns {action_object.casefold()} workflow status, "
+        f"blockers, evidence, and handoff context{action_note}"
     )
 
 
