@@ -697,7 +697,21 @@ def _command_product_owns_following_actions(source: str, *, actor: str) -> bool:
 
 def _action_has_distinct_sequence(value: str) -> bool:
     model = first_path_model(value)
-    return len(model.steps) >= 3
+    if len(model.steps) >= 3:
+        return True
+    if len(model.steps) != 2:
+        return False
+    text = _clean(value).strip(" .")
+    words = [word.casefold().strip("()[]{}\"'.,:;") for word in text.split()]
+    has_temporal_gerund = any(
+        word in {"after", "before"} and words[index + 1].endswith("ing")
+        for index, word in enumerate(words[:-1])
+    )
+    return bool(
+        has_temporal_gerund
+        or "then" in words
+        or any(mark in text for mark in ".;")
+    )
 
 
 def _first_path_source_from_steps(steps: Sequence[str]) -> str:

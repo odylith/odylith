@@ -778,7 +778,7 @@ def _passing_write_transaction() -> dict[str, object]:
         "commit_only": True,
         "prewrite_clean_before_commit": True,
         "rollback_guard": "enabled",
-        "product_create_transaction_hash": "a" * 64,
+        "product_create_transaction_hash": _passing_transaction_hash(),
         "product_facts_sha256": "c" * 64,
         "repository_write_set_hash": "b" * 64,
     }
@@ -786,7 +786,7 @@ def _passing_write_transaction() -> dict[str, object]:
 
 def _passing_transaction_summary() -> dict[str, object]:
     return {
-        "transaction_hash": "a" * 64,
+        "transaction_hash": _passing_transaction_hash(),
         "product_facts_sha256": "c" * 64,
         "repository_write_set_hash": "b" * 64,
     }
@@ -861,7 +861,7 @@ def _create_payload_with_manifest(manifest: dict[str, object]) -> dict[str, obje
 
 
 def _proposed_transaction_payload() -> dict[str, object]:
-    transaction_hash = "a" * 64
+    transaction_hash = _passing_transaction_hash()
     transaction_file = (
         f".odylith/runtime/greenfield/pending/{transaction_hash}/product-create-transaction.v1.json"
     )
@@ -903,6 +903,33 @@ def _write_compiled_transaction(repo_root: Path, proposal: dict[str, object]) ->
     transaction_hash = str(dict(proposal["product_create_transaction"])["transaction_hash"])
     transaction = {
         "transaction_hash": transaction_hash,
+        **_compiled_transaction_body(),
+    }
+    encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
+    transaction_file.parent.mkdir(parents=True, exist_ok=True)
+    transaction_file.write_bytes(encoded)
+    compiler_receipt = {
+        "transaction_hash": transaction_hash,
+        "transaction_file_sha256": hashlib.sha256(encoded).hexdigest(),
+    }
+    transaction_file.with_name(transaction_file.name + ".compiler-receipt.v1.json").write_text(
+        json.dumps(compiler_receipt, sort_keys=True),
+        encoding="utf-8",
+    )
+
+
+def _passing_transaction_hash() -> str:
+    encoded = json.dumps(
+        _compiled_transaction_body(),
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _compiled_transaction_body() -> dict[str, object]:
+    return {
         "quality_manifest": {"status": "passed", "validation_status": "passed"},
         "proposal": {
             "intent": {
@@ -923,17 +950,6 @@ def _write_compiled_transaction(repo_root: Path, proposal: dict[str, object]) ->
             },
         },
     }
-    encoded = json.dumps(transaction, sort_keys=True).encode("utf-8")
-    transaction_file.parent.mkdir(parents=True, exist_ok=True)
-    transaction_file.write_bytes(encoded)
-    compiler_receipt = {
-        "transaction_hash": transaction_hash,
-        "transaction_file_sha256": hashlib.sha256(encoded).hexdigest(),
-    }
-    transaction_file.with_name(transaction_file.name + ".compiler-receipt.v1.json").write_text(
-        json.dumps(compiler_receipt, sort_keys=True),
-        encoding="utf-8",
-    )
 
 
 def _clarification_payload() -> dict[str, object]:
@@ -1116,7 +1132,7 @@ def test_standard_matrix_propose_compiles_before_hash_bound_create_without_rescu
     assert len(create_envs) == 1
     assert RESCUE_PROBE_ENV not in create_envs[0]
     assert result.evidence["preconfirm_dry_run"]["status"] == "compiled"
-    assert result.evidence["preconfirm_dry_run"]["transaction_hash"] == "a" * 64
+    assert result.evidence["preconfirm_dry_run"]["transaction_hash"] == _passing_transaction_hash()
 
 
 def test_explicit_clarification_expectation_passes_without_create_or_records(
@@ -2452,7 +2468,7 @@ def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
     assert case.source_file == str(case_file.resolve())
 
 
-def test_case_file_rejects_clarification_without_frozen_question_fields(tmp_path: Path) -> None:
+def test_case_file_loads_discovery_clarification_without_release_oracle(tmp_path: Path) -> None:
     module = _module()
     case_file = tmp_path / "missing-question-oracle.json"
     case_file.write_text(
@@ -2473,8 +2489,10 @@ def test_case_file_rejects_clarification_without_frozen_question_fields(tmp_path
         encoding="utf-8",
     )
 
-    with pytest.raises(RuntimeError, match="without frozen expected_question_fields: science-001"):
-        module.load_case_file(case_file)
+    case = module.load_case_file(case_file)[0]
+
+    assert case.expectation == "clarification_required"
+    assert case.expected_question_fields == ()
 
 
 def test_case_file_rejects_duplicate_case_ids(tmp_path: Path) -> None:

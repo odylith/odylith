@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     status_only_artifact_fragment as _status_only_artifact_fragment,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
@@ -229,6 +230,8 @@ def merge_profile_contract_fields(
             profile_fields.get(key),
             limit=field_limit,
         )
+        if key == "owned_state":
+            normalized[key] = ", ".join(owned_state_phrases(contract_list_fragments(normalized[key])))
     normalized["states_or_transitions"] = ", ".join(
         unique_text(contract_list_fragments(normalized.get("states_or_transitions"), profile_fields.get("states_or_transitions")))
     )

@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import looks_plural
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import source_list_item_is_nominal
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
     source_boundary_rows_from_evidence,
@@ -442,7 +443,7 @@ def _nominal_responsibility_row(step: str, *, human_subject: str, source_first_p
             len(words) == 2
             and base_action
             and not finite_action
-            and _source_list_context_is_nominal(source_first_path, text)
+            and source_list_item_is_nominal(source_first_path, text)
         )
     if not nominal:
         return ""
@@ -453,19 +454,6 @@ def _nominal_responsibility_row(step: str, *, human_subject: str, source_first_p
     return (
         f"{title_case_text(name)} — maintains {detail} with provenance, status, blockers, and handoff context"
     )
-
-
-def _source_list_context_is_nominal(source: str, item: str) -> bool:
-    segments = [clean_text(part).strip(" .") for part in clean_text(source).split(",")]
-    item_key = clean_text(item).casefold().strip(" .")
-    for index, segment in enumerate(segments):
-        segment_key = re.sub(r"^(?:and|or)\s+", "", segment, flags=re.IGNORECASE).casefold()
-        if not segment_key.startswith(item_key) or index < 2:
-            continue
-        prior = [re.sub(r"^(?:and|or)\s+", "", row, flags=re.IGNORECASE) for row in segments[index - 2 : index]]
-        if all(not _starts_with_material_action(row) for row in prior):
-            return True
-    return False
 
 
 def _starts_with_material_action(value: str) -> bool:
@@ -834,7 +822,7 @@ def _action_verbs(value: str) -> list[str]:
     verbs: list[str] = []
     source = clean_text(value)
     for segment in re.split(r"\s*,\s*(?:and\s+)?|\s+(?:and|or|then)\s+", source, flags=re.IGNORECASE):
-        if _source_list_context_is_nominal(source, segment):
+        if source_list_item_is_nominal(source, segment):
             continue
         first = next(iter(re.findall(r"[A-Za-z]+", segment)), "")
         base = base_action_verb(first)

@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
@@ -46,6 +47,14 @@ def owned_state_noun_phrase(value: str) -> bool:
         return False
     core = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
     core_words = tuple(word.casefold().strip(".,;:") for word in visible_words(core))
+    actor_action_lead = bool(
+        len(core_words) >= 3
+        and looks_actor_term(core_words[0])
+        and looks_like_base_action_token(core_words[1])
+        and singularize_last_word(core_words[-1]) not in _OWNED_ARTIFACT_TERMS
+    )
+    if actor_action_lead:
+        return False
     if not looks_like_action_clause(core):
         return True
     if set(core_words) & {"a", "an", "the", "to", "into", "onto"}:

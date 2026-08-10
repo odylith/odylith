@@ -116,7 +116,7 @@ def write_semantic_release_fixture(*, repo_root: Path, temp_root: Path) -> tuple
                         "name": f"holdout {index}",
                         "prompt": prompt,
                         "required_terms": [prompt.split()[0]],
-                        "leakage_terms": [prompt.split()[0]],
+                        "leakage_terms": [" ".join(prompt.rstrip(".").split()[-2:])],
                     }
                     for index, prompt in enumerate(prompts, start=1)
                 ],

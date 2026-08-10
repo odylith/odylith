@@ -39,6 +39,10 @@ _SHORT_NOMINAL_RESULT_TERMS = frozenset(
         "results",
         "route",
         "routes",
+        "sign-off",
+        "sign-offs",
+        "signoff",
+        "signoffs",
         "state",
         "states",
         "status",
@@ -88,11 +92,15 @@ def short_nominal_result_phrase(value: str, *, limit: int) -> str:
         if word == match.group(0).casefold().strip(".,:;")
     ]
     material_after_result = bool(result_indexes) and all(index >= result_indexes[0] for index in material_token_indexes)
+    material_follows_result = bool(material_token_indexes) and all(
+        index > result_indexes[0] for index in material_token_indexes
+    )
     starts_with_article = words[0] in {"a", "an", "the"}
     content_lead = words[1] if starts_with_article and len(words) > 1 else words[0]
     noun_phrase_shape = (
         (starts_with_article and (not material_matches or content_lead in _SHORT_NOMINAL_RESULT_LEADS or material_after_result))
         or content_lead in _SHORT_NOMINAL_RESULT_LEADS
+        or (content_lead in _SHORT_NOMINAL_RESULT_TERMS and material_follows_result)
         or '"' in text
         or not material_matches
     )

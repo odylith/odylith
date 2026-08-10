@@ -300,6 +300,19 @@ def test_completed_actor_rows_contextualize_bare_roles_without_duplication_or_ro
         assert labels == [expected_label]
 
 
+def test_completed_actor_rows_preserve_described_generic_first_path_actor() -> None:
+    intent = {
+        "title": "Decision Coach",
+        "first_path": "User can describe a difficult choice, compare options, and choose one action.",
+        "human_actors": ("User: describes a difficult choice and selects the next action.",),
+        "state_object": "A decision record.",
+    }
+
+    rows = completed_actor_rows(intent, title=intent["title"])
+
+    assert rows == ["User: describes a difficult choice and selects the next action"]
+
+
 def test_completed_actor_rows_do_not_reclassify_the_product_title_as_a_person() -> None:
     intent = {
         "title": "Cold-chain Pantry Ledger",

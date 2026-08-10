@@ -105,7 +105,12 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     for index, label in enumerate(labels):
         original = rows[index] if index < len(rows) else label
         description = actor_row_description(original)
-        if description and _word_count(description) >= 4 and _actor_label(original, title=title).casefold() == label.casefold():
+        source_label = _title_case(_clean(str(original).split("—", 1)[0].split(":", 1)[0]))
+        matching_label = label.casefold() in {
+            source_label.casefold(),
+            _actor_label(original, title=title).casefold(),
+        }
+        if description and _word_count(description) >= 4 and matching_label:
             description = readable_actor_description(description)
             completed.append(_preserve_deferred_scope(f"{label}: {description}", original))
             continue
@@ -149,7 +154,9 @@ def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any], *, tit
     first_path = _clean(intent.get("first_path"))
     subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
     if label and subject and _actor_reference(subject) == _actor_reference(label):
-        return _actor_label(row, title=title) if value_starts_with_generic_actor_label(label) else _title_case(label)
+        if value_starts_with_generic_actor_label(label) and not _actor_row_has_usable_description(row):
+            return _actor_label(row, title=title)
+        return _title_case(label)
     return ""
 
 

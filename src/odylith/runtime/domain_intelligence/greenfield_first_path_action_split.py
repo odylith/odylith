@@ -44,6 +44,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds im
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
     starts_with_compound_noun_object as _starts_with_compound_noun_object,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import source_list_item_is_nominal
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import specific_decision_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_short_results import short_nominal_result_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import (
     base_from_gerund_action as _base_from_gerund_action,
@@ -348,6 +350,8 @@ def _continues_subject_object_list(value: str, current: str) -> bool:
     core = " ".join(words[1:]).strip()
     if not core:
         return False
+    if short_nominal_result_phrase(core, limit=180) and not _has_internal_finite_action(core):
+        return bool(_carried_subject_prefix(current))
     if _starts_new_action_clause(core):
         return False
     if _leading_subject_prefix(core) or _carried_subject_prefix(core):
@@ -361,8 +365,13 @@ def _continues_compound_object_list(value: str, current: str) -> bool:
     text = _clean(value).strip(" .")
     return (
         "," in _clean(current)
-        and len(text.split()) == 2
-        and _starts_with_compound_noun_object(text, allow_short=True)
+        and (
+            (len(text.split()) == 2 and _starts_with_compound_noun_object(text, allow_short=True))
+            or (
+                source_list_item_is_nominal(f"{current}, {text}", text)
+                and not specific_decision_result_object(text)
+            )
+        )
     )
 
 

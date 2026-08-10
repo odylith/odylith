@@ -1825,7 +1825,7 @@ def test_host_guidance_recovery_preserves_explicit_system_rows_through_completio
     assert len(intent["internal_systems"]) == 5
     assert any("Participant Consent Workflow Support" in row for row in intent["internal_systems"])
     assert any("Symptom Evidence Intake" in row for row in intent["internal_systems"])
-    assert any("Investigator Safety Review Workflow Support" in row for row in intent["internal_systems"])
+    assert any("Investigator Safety Review Routing" in row for row in intent["internal_systems"])
     assert any("Audit-ready Decisions" in row for row in intent["internal_systems"])
     assert any("Monitoring Report Delivery" in row for row in intent["internal_systems"])
     assert "component responsibility named by the accepted intent" not in rendered

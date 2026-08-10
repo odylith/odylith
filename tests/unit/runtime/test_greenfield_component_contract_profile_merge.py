@@ -29,6 +29,23 @@ def test_profile_supplements_do_not_reintroduce_generic_recordkeeping_shells() -
     assert merged == "result status"
 
 
+def test_profile_merge_rejects_action_clauses_from_generated_owned_state() -> None:
+    merged = contract_support.merge_profile_contract_fields(
+        {
+            "owned_state": "referral queue state, blocker state",
+            "accepted_inputs": "referral request",
+            "produced_outputs": "triage decision",
+        },
+        {
+            "owned_state": "coordinator triage referral, assembles context provenance",
+            "accepted_inputs": "coordinator identity",
+            "produced_outputs": "review context",
+        },
+    )
+
+    assert merged["owned_state"] == "referral queue state, blocker state"
+
+
 def test_profile_obligation_guard_ignores_proof_floor_boilerplate_for_generic_evidence_rows() -> None:
     assert not contract_support.material_profile_obligations_survive(
         label="Evidence Intake Service",

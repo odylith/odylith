@@ -22,6 +22,21 @@ def test_sparse_record_component_uses_the_accepted_state_object_for_specificity(
     assert len(component_domain_terms(label)) >= 4
 
 
+def test_specific_record_component_does_not_absorb_an_unrelated_state_prefix() -> None:
+    rows = confirmed_components(
+        label="Weather Radar Calibration Setup Workspace",
+        label_slug="weather-radar-calibration-setup-workspace",
+        internal_systems=[
+            "Beam Blockage Evidence Recordkeeping — preserves beam blockage evidence and handoff context",
+        ],
+        first_path="A meteorologist manages a radar scan and preserves beam blockage evidence.",
+        state_object="The primary state object is a radar scan.",
+        proof_boundary="A calibration reviewer can inspect beam blockage evidence.",
+    )
+
+    assert rows[0]["label"] == "Beam Blockage Evidence Recordkeeping Service"
+
+
 def test_each_component_rebuild_uses_its_own_source_action(monkeypatch) -> None:  # noqa: ANN001
     seen: list[tuple[str, str]] = []
 

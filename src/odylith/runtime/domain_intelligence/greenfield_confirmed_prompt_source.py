@@ -250,6 +250,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
     purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
     direct_actor, direct_first_path = _direct_actor_action_sentence(ranked_first_path or product_text)
+    release_actor, _release_first_path = _direct_actor_action_sentence(
+        _release_action_sentence_source(product_text)
+    )
     preferred_direct_first_path = direct_first_path
     ranked_step_count = sum(
         not is_contextual_path_step(step)
@@ -313,6 +316,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
                 multi_role_actor,
                 need_actor,
                 direct_actor,
+                release_actor,
                 explicit_actor,
                 purpose_actor,
                 actor,
@@ -620,8 +624,9 @@ def _explicit_human_actor_action(value: str) -> tuple[str, str, str]:
             maxsplit=1,
             flags=re.IGNORECASE,
         )[0]
-        actor = _strip_leading_actor_article(" ".join(actor_words))
-        if not has_human_actor_action_context(actor, owned_action):
+        actor_source = " ".join(actor_words)
+        actor = _strip_leading_actor_article(actor_source)
+        if not has_human_actor_action_context(actor_source, owned_action):
             continue
         action = " ".join(action_words).strip(" .")
         if actor and action and _looks_like_recoverable_first_path(action):

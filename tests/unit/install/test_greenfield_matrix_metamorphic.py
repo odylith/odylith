@@ -69,6 +69,42 @@ def test_metamorphic_output_accepts_required_clarification_without_a_transaction
     assert evaluation["complete_group_count"] == 1
 
 
+def test_metamorphic_output_rejects_clarification_without_a_frozen_oracle() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+    clarification_case = replace(clarification_case, expected_question_fields=())
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(_result(committed_case), _clarification_result(clarification_case)),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("lacks frozen expected material fields" in issue for issue in evaluation["issues"])
+
+
+def test_metamorphic_output_rejects_an_untyped_clarification_oracle() -> None:
+    committed_case, clarification_case = _clarification_pair_cases()
+    clarification_case = replace(
+        clarification_case,
+        expected_question_fields=("totally_unbounded_field",),
+    )
+
+    evaluation = evaluate_metamorphic_outputs(
+        cases=(committed_case, clarification_case),
+        results=(
+            _result(committed_case),
+            _clarification_result(
+                clarification_case,
+                question="What is the totally unbounded field?",
+                required_fields=("totally_unbounded_field",),
+            ),
+        ),
+    )
+
+    assert evaluation["status"] == "failed"
+    assert any("unsupported material question field" in issue for issue in evaluation["issues"])
+
+
 def test_metamorphic_output_rejects_clarification_that_stages_a_transaction() -> None:
     committed_case, clarification_case = _clarification_pair_cases()
 
@@ -96,8 +132,8 @@ def test_metamorphic_output_rejects_noncanonical_clarification() -> None:
     )
 
     assert evaluation["status"] == "failed"
-    assert any("did not ask the focused first-path question" in issue for issue in evaluation["issues"])
-    assert any("did not require only first_path" in issue for issue in evaluation["issues"])
+    assert any("did not ask its focused material question" in issue for issue in evaluation["issues"])
+    assert any("changed its expected material fields" in issue for issue in evaluation["issues"])
 
 
 def test_metamorphic_output_rejects_clarification_with_changed_record_count() -> None:
@@ -212,7 +248,11 @@ def _cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
 
 def _clarification_pair_cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
     committed_case, topic_case = _cases()
-    return committed_case, replace(topic_case, expectation="clarification_required")
+    return committed_case, replace(
+        topic_case,
+        expectation="clarification_required",
+        expected_question_fields=("first_path",),
+    )
 
 
 def _result(

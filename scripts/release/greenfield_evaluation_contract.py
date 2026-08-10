@@ -15,6 +15,7 @@ from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
 from greenfield_matrix_leakage import term_present
+from greenfield_matrix_clarification import material_question_field_issues
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
@@ -320,6 +321,20 @@ def validate_atomic_annotations(
         case_outcome = "clarify" if str(case.expectation) == "clarification_required" else "commit"
         if expected_outcome != case_outcome:
             issues.append(f"annotation `{case_id}` expected_outcome does not match case expectation")
+        expected_question_fields = _string_sequence(raw.get("expected_question_fields"))
+        if expected_outcome == "clarify" and not expected_question_fields:
+            issues.append(f"annotation `{case_id}` clarify outcome has no expected_question_fields")
+        elif expected_outcome == "clarify":
+            source_texts = [case.prompt]
+            for category in ("ambiguities", "material_questions"):
+                for item in raw.get(category, ()) if _is_sequence(raw.get(category)) else ():
+                    if isinstance(item, Mapping):
+                        source_texts.extend((str(item.get("value") or ""), str(item.get("source_quote") or "")))
+            for field_issue in material_question_field_issues(
+                expected_question_fields,
+                source_texts=source_texts,
+            ):
+                issues.append(f"annotation `{case_id}` {field_issue}")
         _validate_complexity(case_id, raw.get("complexity"), issues)
         item_ids: set[str] = set()
         for category in ATOMIC_CATEGORIES:

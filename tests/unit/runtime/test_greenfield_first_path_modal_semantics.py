@@ -282,6 +282,30 @@ def test_short_compound_carry_does_not_absorb_follow_on_actor_actions() -> None:
     )
 
 
+def test_nominal_signoff_tail_stays_in_the_coordinated_object_list() -> None:
+    assert split_action_pieces(
+        "Researchers compare evidence, exceptions, and signoff before release"
+    ) == ["Researchers compare evidence, exceptions, and signoff before release"]
+    assert split_action_pieces(
+        "Researchers compare evidence, then reviewers approve release"
+    ) == ["Researchers compare evidence", "reviewers approve release"]
+    assert split_action_pieces(
+        "Researchers compare evidence, exceptions, and reviewers approve release"
+    ) == ["Researchers compare evidence, exceptions", "reviewers approve release"]
+
+
+def test_action_shaped_nouns_stay_in_an_established_object_list() -> None:
+    model = first_path_model(
+        "Safety engineers replay robot paths, human proximity events, intervention thresholds, "
+        "sensor occlusion, baseline routes, and operator notes before releasing a safety result"
+    )
+
+    assert model.steps == (
+        "Safety engineers replay robot paths, human proximity events, intervention thresholds, sensor occlusion, baseline routes and operator notes",
+        "Safety engineers release a safety result",
+    )
+
+
 def test_actor_led_open_action_beats_homonym_object_fallback() -> None:
     model = first_path_model(
         "Safety engineers replay robot paths, human proximity events, intervention thresholds, sensor occlusion. "

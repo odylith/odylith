@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -98,6 +99,27 @@ def test_atomic_annotations_require_exact_source_byte_spans() -> None:
     annotation["actors"][0]["source_start"] = 1
     _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
     assert any("source_quote does not match" in issue or "UTF-8" in issue for issue in issues)
+
+
+def test_atomic_annotations_require_material_fields_for_clarification() -> None:
+    case = _case("case-1", "Operator needs a permit workflow.")
+    case = replace(case, expectation="clarification_required")
+    annotation = _annotation(case)
+    annotation["expected_outcome"] = "clarify"
+
+    _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
+
+    assert "annotation `case-1` clarify outcome has no expected_question_fields" in issues
+
+    annotation["expected_question_fields"] = ["first_path"]
+    _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
+
+    assert not issues
+
+    annotation["expected_question_fields"] = ["totally_unbounded_field"]
+    _annotations, issues = validate_atomic_annotations(cases=(case,), rows=[annotation])
+
+    assert "annotation `case-1` unsupported material question field `totally_unbounded_field`" in issues
 
 
 def test_atomic_annotations_reject_a_value_not_entailed_by_its_source_span() -> None:

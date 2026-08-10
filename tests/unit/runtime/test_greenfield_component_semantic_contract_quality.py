@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import component_contract_issues
+from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import normalize_contract
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
@@ -333,6 +334,39 @@ def test_component_tribunal_rejects_action_and_condition_clauses_in_owned_state(
     lowered = [issue.casefold() for issue in issues]
     assert any("contains an action clause preserve readiness" in issue for issue in lowered)
     assert any("contains a condition clause dispatch until approval" in issue for issue in lowered)
+
+
+def test_contract_normalization_preserves_invalid_owned_state_for_tribunal_rejection() -> None:
+    contract = normalize_contract(
+        {
+            "owned_state": (
+                "referral queue state, coordinator triage referral, triage referral, "
+                "assembles context provenance, blocker state"
+            ),
+        }
+    )
+
+    assert contract["owned_state"] == (
+        "Referral queue state, coordinator triage referral, triage referral, "
+        "assembles context provenance, blocker state."
+    )
+    full_contract = {
+        "owned_state": "release status, approve release",
+        "accepted_inputs": "release request, authorized actor, validation context",
+        "produced_outputs": "release decision, validation evidence",
+        "states_or_transitions": "pending, evaluated, approved, blocked",
+        "outside_boundary": "upstream evidence collection and downstream publication",
+        "local_proof": ["Replay preserves the request, actor, decision, and evidence."],
+        "upstream_truth": "validated release request",
+        "downstream_consumers": "publication review",
+        "unique_failure": "A stale request can permit an invalid release decision.",
+    }
+
+    issues = component_contract_issues(
+        {"components": [{"label": "Release Decision Service", "component_contract": full_contract}]}
+    )
+
+    assert any("contains an action clause approve release" in issue.casefold() for issue in issues)
 
 
 def test_component_tribunal_distinguishes_release_state_from_release_action() -> None:

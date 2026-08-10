@@ -8,6 +8,7 @@ from typing import Any
 
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_clarification import focused_material_question
+from greenfield_matrix_clarification import material_question_field_issues
 from greenfield_preconfirm_matrix_cases import CLARIFICATION_REQUIRED_EXPECTATION
 from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from greenfield_preconfirm_matrix_cases import case_expectation
@@ -209,6 +210,7 @@ def _completion_invariant_issues(
     if case_expectation(case) == CLARIFICATION_REQUIRED_EXPECTATION:
         return _clarification_invariant_issues(
             group=group,
+            case=case,
             case_id=case_id,
             result=result,
             evidence=evidence,
@@ -247,25 +249,31 @@ def _commit_invariant_issues(
 def _clarification_invariant_issues(
     *,
     group: str,
+    case: GreenfieldMatrixCase,
     case_id: str,
     result: GreenfieldMatrixResult,
     evidence: Mapping[str, Any],
 ) -> list[str]:
-    case = _mapping(evidence.get("case"))
+    case_evidence = _mapping(evidence.get("case"))
     clarification = _mapping(evidence.get("clarification"))
     no_write = _mapping(evidence.get("no_write"))
     receipt = _mapping(evidence.get("preconfirm_dry_run"))
     required_fields = clarification.get("required_fields")
-    expected_fields = list(case.get("expected_question_fields") or ["first_path"])
+    expected_fields = list(case_evidence.get("expected_question_fields") or [])
     before_record_count = no_write.get("before_record_count")
     after_record_count = no_write.get("after_record_count")
     issues: list[str] = []
-    if str(case.get("expectation") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
+    if str(case_evidence.get("expectation") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
         issues.append(f"metamorphic group {group} case {case_id} lost its clarification expectation")
     if str(clarification.get("mode") or "").strip().casefold() != CLARIFICATION_REQUIRED_EXPECTATION:
         issues.append(f"metamorphic group {group} case {case_id} did not return the required clarification mode")
-    if not focused_material_question(clarification.get("question"), required_fields=expected_fields):
-        issues.append(f"metamorphic group {group} case {case_id} did not ask its focused material question")
+    if not expected_fields:
+        issues.append(f"metamorphic group {group} case {case_id} lacks frozen expected material fields")
+    else:
+        for field_issue in material_question_field_issues(expected_fields, source_texts=(case.prompt,)):
+            issues.append(f"metamorphic group {group} case {case_id} {field_issue}")
+        if not focused_material_question(clarification.get("question"), required_fields=expected_fields):
+            issues.append(f"metamorphic group {group} case {case_id} did not ask its focused material question")
     if required_fields != expected_fields:
         issues.append(f"metamorphic group {group} case {case_id} changed its expected material fields")
     if clarification.get("returncode") != 0:

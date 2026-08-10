@@ -353,7 +353,7 @@ def _enriched_component_name(*, name: str, description: str, state_object: str =
 
     clean_name = re.sub(r"\s+", " ", str(name or "")).strip(" .")
     name_terms = component_domain_terms(clean_name)
-    if len(name_terms) < 4 and re.search(r"\b(?:ledger|record|recordkeeping|store)\b", clean_name, re.IGNORECASE):
+    if len(name_terms) < 3 and re.search(r"\b(?:ledger|record|recordkeeping|store)\b", clean_name, re.IGNORECASE):
         state_label = _domain_object_label(state_object, fallback="")
         additions = [term for term in ordered_domain_terms(state_label) if term not in name_terms]
         if additions:

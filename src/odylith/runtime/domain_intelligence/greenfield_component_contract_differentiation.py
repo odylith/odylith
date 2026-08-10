@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_owned_state import enrich_owned_state_from_io
+from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     domain_terms,
@@ -452,6 +453,9 @@ def _contract_payload(
         semantic_fields.get("owned_state"),
         semantic_fields,
         noise_terms=_FALLBACK_NOISE_TERMS,
+    )
+    semantic_fields["owned_state"] = ", ".join(
+        owned_state_phrases(split_contract_clauses(semantic_fields["owned_state"]))
     )
     semantic_fields["outside_boundary"] = _join_contract_clauses(
         axis_payload.get("outside_boundary"),

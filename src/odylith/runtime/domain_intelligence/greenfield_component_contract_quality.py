@@ -196,7 +196,8 @@ def normalize_contract(value: Mapping[str, Any]) -> dict[str, Any]:
                 if _clean(item)
             ]
         else:
-            normalized[key] = _sentence(_normalize_contract_artifact_actions(raw, field=key))
+            text = _normalize_contract_artifact_actions(raw, field=key)
+            normalized[key] = _sentence(text)
     return normalized
 
 

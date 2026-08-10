@@ -21,6 +21,52 @@ FOCUSED_FIRST_PATH_QUESTION = (
 _NO_WRITE_ROOTS = (Path(".odylith/runtime/greenfield"), Path("odylith"))
 _STAGED_TRANSACTION_ROOT = Path(".odylith/runtime/greenfield/pending")
 _FIELD_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_CORE_MATERIAL_QUESTION_FIELDS = frozenset(
+    {
+        "decision_authority",
+        "dependency_source",
+        "display_audience",
+        "first_approval_actor",
+        "first_path",
+        "governing_decision_rule",
+        "human_actors",
+        "product_story",
+        "proof_boundary",
+        "proof_record_owner",
+        "state_object",
+        "state_transition",
+        "visible_result",
+    }
+)
+_MATERIAL_DECISION_FIELD_TOKENS = frozenset(
+    {
+        "access",
+        "actor",
+        "approval",
+        "authority",
+        "audience",
+        "boundary",
+        "dependency",
+        "jurisdiction",
+        "owner",
+        "path",
+        "period",
+        "policy",
+        "procedure",
+        "protocol",
+        "restriction",
+        "result",
+        "role",
+        "route",
+        "rule",
+        "source",
+        "standard",
+        "state",
+        "transition",
+        "window",
+    }
+)
+_MATERIAL_FIELD_LINK_WORDS = frozenset({"between", "first", "governing", "may", "record", "the", "who"})
 
 
 @dataclass(frozen=True)
@@ -188,6 +234,36 @@ def focused_material_question(value: Any, *, required_fields: Sequence[str]) -> 
     )
 
 
+def material_question_field_issues(
+    fields: Sequence[str],
+    *,
+    source_texts: Sequence[str],
+) -> tuple[str, ...]:
+    """Reject evaluator question fields that are neither typed nor source-grounded."""
+
+    source_tokens = set(_FIELD_TOKEN_RE.findall(" ".join(source_texts).casefold()))
+    issues: list[str] = []
+    seen: set[str] = set()
+    for raw in fields:
+        field = question_field_key(raw)
+        if not field or field in seen:
+            issues.append(f"duplicate or empty material question field `{raw}`")
+            continue
+        seen.add(field)
+        if field in _CORE_MATERIAL_QUESTION_FIELDS:
+            continue
+        tokens = set(field.split("_"))
+        if not tokens & _MATERIAL_DECISION_FIELD_TOKENS:
+            issues.append(f"unsupported material question field `{raw}`")
+            continue
+        distinctive = tokens - _MATERIAL_DECISION_FIELD_TOKENS - _MATERIAL_FIELD_LINK_WORDS
+        if distinctive and not distinctive & source_tokens:
+            issues.append(f"material question field `{raw}` is not grounded in source evidence")
+        elif not distinctive and not tokens <= source_tokens:
+            issues.append(f"material question field `{raw}` is not grounded in source evidence")
+    return tuple(issues)
+
+
 def question_field_key(value: Any) -> str:
     """Canonicalize one material field ID without changing its display label."""
 
@@ -210,6 +286,7 @@ __all__ = [
     "clarification_quality_verdict",
     "focused_material_question",
     "focused_first_path_question",
+    "material_question_field_issues",
     "question_field_key",
     "run_expected_clarification",
 ]

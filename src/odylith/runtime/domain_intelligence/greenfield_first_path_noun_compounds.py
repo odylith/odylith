@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.common.prose_grammar import base_action_verb
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_NOUNS = frozenset("audit capture change control record release replay report review test".split())
 _SHORT_COMPOUND_NOUN_MODIFIERS = frozenset({"replay"})
@@ -58,6 +63,7 @@ _LIST_RESULT_HEADS = frozenset(
         "sign-offs",
     }
 )
+_SPECIFIC_DECISION_RESULT_HEADS = frozenset({"approval", "approvals", "decision", "decisions"})
 
 
 def starts_with_compound_noun_object(value: str, *, allow_short: bool = False) -> bool:
@@ -94,6 +100,53 @@ def action_word_starts_result_list_noun(value: str, action_start: int) -> bool:
     return False
 
 
+def source_list_item_is_nominal(source: str, item: str) -> bool:
+    """Return whether an action-shaped item belongs to an established object list."""
+
+    segments = [clean_first_path_text(part).strip(" .") for part in clean_first_path_text(source).split(",")]
+    item_key = _list_item_key(item)
+    for index, segment in enumerate(segments):
+        segment_key = _list_item_key(segment)
+        if not segment_key.startswith(item_key) or index < 2:
+            continue
+        prior = [_list_item_key(row) for row in segments[index - 2 : index]]
+        if all(not _starts_with_material_action(row) for row in prior):
+            return True
+    return False
+
+
+def specific_decision_result_object(value: str) -> bool:
+    words = [word.casefold() for word in visible_words(clean_first_path_text(value))]
+    while words and words[0] in {"and", "or"}:
+        words.pop(0)
+    return bool(len(words) >= 2 and words[-1] in _SPECIFIC_DECISION_RESULT_HEADS)
+
+
+def _starts_with_material_action(value: str) -> bool:
+    words = visible_words(clean_first_path_text(value))
+    if not words:
+        return False
+    first = words[0].casefold()
+    if looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first):
+        return True
+    for action_index in range(1, min(4, len(words))):
+        subject = " ".join(words[:action_index])
+        action = words[action_index].casefold()
+        if has_actor_role_word(subject) and (
+            looks_like_base_action_token(base_action_verb(action)) or looks_like_finite_action_token(action)
+        ):
+            return True
+    return False
+
+
+def _list_item_key(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .").casefold()
+    for prefix in ("and ", "or "):
+        if text.startswith(prefix):
+            return text[len(prefix) :]
+    return text
+
+
 def _compound_noun_index(
     value: str,
     *,
@@ -128,5 +181,7 @@ __all__ = [
     "ACTION_NOUNS",
     "action_word_inside_compound_noun",
     "action_word_starts_result_list_noun",
+    "source_list_item_is_nominal",
+    "specific_decision_result_object",
     "starts_with_compound_noun_object",
 ]
