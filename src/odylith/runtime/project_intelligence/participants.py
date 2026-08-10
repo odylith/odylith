@@ -112,7 +112,30 @@ def _title_text(value: str) -> str:
     words = text.split()
     if len(words) > 8:
         text = " ".join(words[:8])
-    return capitalize_sentence_start_preserving_source_terms(text)
+    return _sentence_case_role_title(capitalize_sentence_start_preserving_source_terms(text))
+
+
+def _sentence_case_role_title(value: str) -> str:
+    words = value.split()
+    if len(words) < 2:
+        return value
+    first = words[0].strip(".,;:!?()[]{}")
+    if first[:1].islower() and any(character.isupper() for character in first[1:]):
+        return value
+    return " ".join([words[0], *[_lower_role_title_word(word) for word in words[1:]]])
+
+
+def _lower_role_title_word(value: str) -> str:
+    token = value.strip(".,;:!?()[]{}")
+    preserve_source_case = bool(
+        token
+        and (
+            (len(token) > 1 and token.isupper())
+            or any(character.isdigit() for character in token)
+            or any(character.isupper() for character in token[1:])
+        )
+    )
+    return value if preserve_source_case else value.lower()
 
 
 def _activity_body(*, activity_tail: str, title: str) -> str:

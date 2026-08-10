@@ -133,6 +133,46 @@ def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     assert not semantic_contract._compact_artifact_phrase("source-backed audit trail evidence record")
 
 
+def test_component_contract_preserves_action_noun_label_compounds() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Review Assignment and Conflict-of-interest Tracking",
+            "source_system_description": "Tracks reviewer assignments and declared conflicts for one review case.",
+        },
+        proposal={
+            "intent": {
+                "title": "Research Review Workspace",
+                "first_path": "An editor assigns reviewers and records conflicts for one submitted paper.",
+            }
+        },
+        sibling={"label": "Structured Review Forms and Scoring Rubrics"},
+        previous_label="Submission Intake and Manuscript Versioning Service",
+        next_label="Structured Review Forms and Scoring Rubrics",
+        state_label="Review Case",
+    ).fields
+
+    assert "review assignment" in contract["owned_state"].casefold()
+    assert not generated_semantic_slop_issues(contract)
+
+    access_contract = derive_component_semantic_contract(
+        {
+            "label": "Role-based Access Control and Audit History Service",
+            "source_system_description": "Controls role-based visibility and records audit history for one review cycle.",
+        },
+        proposal={"intent": {"title": "Research Review Workspace", "first_path": "An editor reviews one paper."}},
+        sibling={"label": "Notification and Deadline Tracking Service"},
+        previous_label="Revision-round Management Service",
+        next_label="Notification and Deadline Tracking Service",
+        state_label="Review Case",
+    ).fields
+
+    access_owned_state = access_contract["owned_state"].casefold()
+    assert "role-based access" in access_owned_state
+    assert "access control" in access_owned_state
+    assert "audit history" in access_owned_state
+    assert not generated_semantic_slop_issues(access_contract)
+
+
 def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns() -> None:
     contract = derive_component_semantic_contract(
         {

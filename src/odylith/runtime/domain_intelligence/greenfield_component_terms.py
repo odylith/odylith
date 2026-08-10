@@ -529,6 +529,23 @@ def phrase_identity_terms(value: str) -> set[str]:
     return set(ordered_terms(clean(value), stopwords=stopwords))
 
 
+def drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
+    identities = [(value, phrase_identity_terms(value)) for value in values]
+    result: list[str] = []
+    for value, terms in identities:
+        if value.casefold() == "source evidence" or (terms == {"boundary"} and len(value.split()) >= 2):
+            result.append(value)
+            continue
+        if len(terms) == 1 and any(terms < other for candidate, other in identities if candidate != value):
+            continue
+        if terms & {"incomplete", "missing", "recent", "unavailable"} and any(
+            terms < other for candidate, other in identities if candidate != value
+        ):
+            continue
+        result.append(value)
+    return result
+
+
 def strip_action(value: str) -> str:
     return clean(re.sub(rf"^(?:{action_forms_pattern()})\s+", "", value, flags=re.I))
 
@@ -728,7 +745,7 @@ __all__ = [
     "ACTION_VERBS", "ARTIFACT_CARRIER_TERMS", "GENERIC_TERMS",
     "action_forms_pattern", "action_object_artifact_phrases", "clean_artifact_phrase",
     "clean_artifact_phrases", "content_terms", "descriptor_anchor_phrases", "domain_terms",
-    "local_terms", "looks_action_form", "looks_action_term", "material_contract_phrase",
+    "drop_subsumed_singletons", "local_terms", "looks_action_form", "looks_action_term", "material_contract_phrase",
     "looks_actor_term", "natural_phrase", "object_clause_focus", "phrase", "phrase_identity_terms",
     "split_contract_clauses", "strip_action", "term_phrase", "trim_phrase", "verb_forms_pattern",
 ]

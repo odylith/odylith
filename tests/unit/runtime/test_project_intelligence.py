@@ -69,6 +69,12 @@ def test_project_participant_titles_preserve_lower_first_source_symbols() -> Non
     assert tidy_fragment("mRNA Stability Batch desired state") == "mRNA Stability Batch desired state"
 
 
+def test_project_participant_titles_use_sentence_case_without_lowering_domain_symbols() -> None:
+    assert participant_title("Scientific Manuscript Author") == "Scientific manuscript author"
+    assert participant_title("Scientific QBER Reviewer") == "Scientific QBER reviewer"
+    assert participant_title("GitHub Submission Reviewer") == "GitHub submission reviewer"
+
+
 def test_greenfield_story_cards_preserve_lower_first_source_symbol_participants() -> None:
     cards = build_greenfield_story_cards(
         title="mRNA Stability Batch Comparison Workspace",

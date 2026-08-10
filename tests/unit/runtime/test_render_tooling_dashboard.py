@@ -1393,9 +1393,10 @@ def test_render_tooling_dashboard_rebuilds_when_greenfield_project_is_accepted(
     rc = renderer.main(["--repo-root", str(tmp_path), "--output", "odylith/index.html"])
     assert rc == 0
     html = (tmp_path / "odylith" / "index.html").read_text(encoding="utf-8")
+    payload_js = (tmp_path / "odylith" / "tooling-payload.v1.js").read_text(encoding="utf-8")
 
     assert "Product Story" in html
-    assert "Ecommerce Site With Checkout Recovery" in html
+    assert "Ecommerce Site With Checkout Recovery" in payload_js
     assert "Project not defined yet" not in html
 
 

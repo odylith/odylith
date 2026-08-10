@@ -41,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     clean_artifact_phrases as _clean_artifact_phrases,
     content_terms as _content_terms,
     descriptor_anchor_phrases as _descriptor_anchor_phrases,
+    drop_subsumed_singletons as _drop_subsumed_singletons,
     label_object_base as _label_object_base,
     local_terms as _local_terms,
     looks_action_term as _looks_action_term,
@@ -579,9 +580,12 @@ def _label_compound_phrases(label: str) -> list[str]:
             cleaned = _clean_artifact_phrase(candidate)
             if (
                 cleaned
-                and len(_content_terms(cleaned)) >= 2
+                and len(cleaned.split()) >= 2
                 and not _artifact_phrase_has_clause_shape(cleaned)
-                and _material_contract_phrase(cleaned, label_terms=terms, description_terms=())
+                and (
+                    _material_contract_phrase(cleaned, label_terms=terms, description_terms=())
+                    or (len(_content_terms(cleaned)) >= 2 and not looks_like_action_clause(cleaned))
+                )
             ):
                 rows.append(cleaned)
     rows = list(unique_text(rows))
@@ -770,26 +774,6 @@ def _preserve_summary_phrases(
         if phrase not in kept:
             kept.append(phrase)
     return kept[:limit]
-
-
-def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
-    result: list[str] = []
-    identities = [(phrase, _phrase_identity_terms(phrase)) for phrase in values]
-    for phrase, terms in identities:
-        if phrase.casefold() in {"source evidence"}:
-            result.append(phrase)
-            continue
-        if terms == {"boundary"} and len(phrase.split()) >= 2:
-            result.append(phrase)
-            continue
-        if len(terms) == 1 and any(terms < other_terms for other_phrase, other_terms in identities if other_phrase != phrase):
-            continue
-        if terms & {"incomplete", "missing", "recent", "unavailable"} and any(
-            terms < other_terms for other_phrase, other_terms in identities if other_phrase != phrase
-        ):
-            continue
-        result.append(phrase)
-    return result
 
 
 def _clean(value: Any) -> str:
