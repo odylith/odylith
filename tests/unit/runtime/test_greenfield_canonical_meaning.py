@@ -23,8 +23,22 @@ def test_human_actions_keep_domain_state_without_transferring_ownership_to_produ
     assert "the permit clerks intake applications" in rendered
     assert "zoning attachments validation performed by the permit clerks" in rendered
     assert "routing of reviewer decisions performed by the permit clerks" in rendered
+    assert any(row.startswith("Decision Routing") for row in rows)
+    assert not any(row.startswith("Reviewer Decisions") for row in rows)
     assert "the product validates" not in rendered
     assert "the product routes" not in rendered
+
+
+def test_routing_label_keeps_a_domain_object_that_is_not_a_generic_actor_modifier() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Permit Packet Dispatch",
+        first_path="Dispatch clerks route permit packets. Dispatch clerks see a delivery receipt.",
+        state_object="The primary state object is a permit packet.",
+        visible_result="a delivery receipt",
+        human_actors=("Dispatch clerks: route permit packets and review the receipt.",),
+    )
+
+    assert any(row.startswith("Permit Packets Routing") for row in rows)
 
 
 def test_human_record_action_is_not_misclassified_as_a_nonhuman_record_subject() -> None:

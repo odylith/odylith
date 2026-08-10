@@ -160,7 +160,7 @@ def operational_constraints_after_first_path_edit(
 def operational_constraint_is_present(value: Any, text: Any) -> bool:
     """Match a normalized constraint as a complete phrase, never as a substring."""
 
-    constraint = clean_text(value).strip(" .")
+    constraint = _canonical_constraint_text(value)
     captured = clean_text(text)
     if not constraint or not captured:
         return False
@@ -171,7 +171,7 @@ def operational_constraint_is_present(value: Any, text: Any) -> bool:
 def operational_constraint_kind(value: Any) -> str:
     """Classify a constraint so an edit can replace only its stated category."""
 
-    text = clean_text(value).strip(" .")
+    text = _canonical_constraint_text(value)
     if not text:
         return ""
     if re.fullmatch(
@@ -194,7 +194,7 @@ def operational_constraint_kind(value: Any) -> str:
 
 def _constraint_values(value: Any) -> list[str]:
     rows = value if isinstance(value, (list, tuple)) else (value,)
-    return [clean_text(row).strip(" .") for row in rows if clean_text(row).strip(" .")]
+    return [text for row in rows if (text := _canonical_constraint_text(row))]
 
 
 def _positive_source_obligations(value: str) -> tuple[str, ...]:
@@ -290,13 +290,24 @@ def _unique_constraints(values: list[str]) -> tuple[str, ...]:
     rows: list[str] = []
     seen: set[str] = set()
     for value in values:
-        cleaned = clean_text(value).strip(" .")
+        cleaned = _canonical_constraint_text(value)
         key = cleaned.casefold()
         if not cleaned or key in seen:
             continue
         seen.add(key)
         rows.append(cleaned)
     return tuple(rows[:12])
+
+
+def _canonical_constraint_text(value: Any) -> str:
+    """Remove path sequencing syntax that is not part of an operating condition."""
+
+    text = clean_text(value).strip(" .")
+    lowered = text.casefold()
+    for prefix in ("and then ", "then "):
+        if lowered.startswith(prefix):
+            return text[len(prefix) :].strip(" .")
+    return text
 
 
 __all__ = [

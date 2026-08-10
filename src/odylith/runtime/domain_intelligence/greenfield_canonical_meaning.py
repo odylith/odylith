@@ -13,10 +13,11 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.common.prose_grammar import strip_leading_action_modal
 from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 from odylith.runtime.common.prose_grammar import third_person_action_verb
-from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
-from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_action_homonym_actor_role
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_non_human_actor_signal
+from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import indefinite_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import looks_plural
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
@@ -705,8 +706,9 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
             f"performed by the {actor_ref} and keeps validation status, blockers, evidence, and handoff context visible{action_note}"
         )
     if "Routing" in responsibilities:
+        routing_subject = _routing_subject_label(action_object)
         return (
-            f"{title_case_text(f'{action_object} Workflow Support')} — records routing of {action_object.casefold()} "
+            f"{title_case_text(f'{routing_subject} Routing')} — records routing of {action_object.casefold()} "
             f"performed by the {actor_ref} and keeps source, destination, status, blockers, and handoff evidence visible{action_note}"
         )
     return (
@@ -722,6 +724,17 @@ def _decision_subject_label(value: str) -> str:
     if words and words[0] in {"what", "whether"}:
         return "Outcome"
     return value
+
+
+def _routing_subject_label(value: str) -> str:
+    """Name the routed object without turning a generic actor modifier into the owner."""
+
+    text = clean_text(value).strip(" .")
+    actor_prefix = generic_actor_label_prefix(text)
+    if not actor_prefix:
+        return text
+    subject = text[len(actor_prefix) :].strip(" .")
+    return singularize_last_word(subject) if subject else text
 
 
 def _human_actor_action(value: str, *, actor_ref: str) -> str:

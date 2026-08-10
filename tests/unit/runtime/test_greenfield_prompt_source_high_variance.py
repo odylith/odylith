@@ -10,7 +10,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery im
     intent_hypothesis_from_operator_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_is_present
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_kind
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
+from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraints_after_first_path_edit
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import prohibited_product_phrases
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
@@ -626,6 +629,24 @@ def test_operational_constraints_capture_positive_policy_without_absorbing_evide
         "Keep carrier manifests as evidence",
     )
     assert prompt_intent_source(prompt).first_path == "A vendor coordinator publishes an opening roster"
+
+
+def test_first_path_edit_deduplicates_sequence_connectors_from_constraints() -> None:
+    assert operational_constraints_after_first_path_edit(
+        ("match household needs to shelter capacity", "preserve consent evidence"),
+        (
+            "Shelter coordinators register displaced residents; then match household needs to shelter capacity; "
+            "then preserve consent evidence; then publish a placement result."
+        ),
+    ) == (
+        "match household needs to shelter capacity",
+        "preserve consent evidence",
+    )
+    assert operational_constraint_kind("and then preserve consent evidence") == "preserve consent evidence"
+    assert operational_constraint_is_present(
+        "then preserve consent evidence",
+        "The release must preserve consent evidence before placement.",
+    )
 
 
 def test_policy_classifier_keeps_complete_paths_and_atomizes_compound_obligations() -> None:

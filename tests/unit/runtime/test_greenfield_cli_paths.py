@@ -688,8 +688,8 @@ def test_greenfield_propose_cli_returns_typed_clarification_without_staging(tmp_
     assert payload == {
         "mode": "clarification_required",
         "clarification": {
-            "question": "For the first complete task, what result should the user see, and what proof or safety boundary should apply?",
-            "required_fields": ["visible_result", "proof_boundary"],
+            "question": "What is the first complete task the product should help a person finish, and what result should they see?",
+            "required_fields": ["first_path"],
         },
     }
     assert not transaction_path.exists()

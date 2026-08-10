@@ -51,6 +51,14 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-09: Canonicalized EDIT constraints and routed-object ownership. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  First-path EDIT rebuilds now remove sequencing syntax before constraint
+  replacement and deduplication. Routing systems use the routed domain object
+  as their label while preserving actor-modified source meaning in the owned
+  responsibility, so valid `reviewer decisions` do not weaken the generic-actor
+  quality gate. The five full-runtime failures and 115 owned tests pass; rebuilt
+  exact-distribution and untouched-holdout proof remain open.
+
 - 2026-08-09: Removed action debris from component-owned state without weakening custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Component artifact cleanup now uses the shared action-form vocabulary instead
   of a local `move`/`reach` list, so finite actions such as `dismiss suggestion`
