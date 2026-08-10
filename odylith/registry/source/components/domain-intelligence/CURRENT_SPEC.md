@@ -51,6 +51,15 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-09: Preserved terminal record identity during component I/O repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  The exact installed matrix passed 13 of 14 maintained cases and isolated one
+  remaining pre-confirm Registry failure: an identity already ending in
+  `Record` became `record record`. Component output repair now keeps that
+  exact terminal suffix and otherwise adds `record` to the local identity.
+  The exact quantum source transaction passes without duplicate copy while
+  retaining E91, Bell inequality, CHSH, and QBER meaning. Rebuilt installed
+  distribution proof remains the release gate.
+
 - 2026-08-09: Closed installed component-meaning and evaluator blind spots before confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Canonical projection now retains nominal evidence lists as distinct records,
   attaches a list to a human coordination action only when that action governs

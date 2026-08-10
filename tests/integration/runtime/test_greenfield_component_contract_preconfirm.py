@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 
 from odylith.runtime.domain_intelligence import greenfield_component_contract_differentiation as differentiation
@@ -237,3 +238,25 @@ def test_generated_coordination_taxonomy_remains_grounded_in_preconfirm_compile(
         assert transaction.verified is True
         assert transaction.quality_manifest["status"] == "passed"
         assert transaction.quality_manifest["issues"] == []
+
+
+def test_existing_artifact_carrier_does_not_repeat_in_prewrite_registry(tmp_path) -> None:
+    prompt = (
+        "Draft a greenfield proposal for a lab app where researchers configure and launch an E91 quantum "
+        "communication run on real hardware, observe live coincidence counts, Bell inequality checks, CHSH, "
+        "QBER, and established key bits, then compare the saved run against prior results."
+    )
+    _candidate, proposal = _proposal_from_prompt(tmp_path, prompt)
+    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+        repo_root=tmp_path,
+        proposal=proposal,
+        release_selector="",
+        proposal_ready=True,
+    )
+
+    registry_preview = json.dumps(transaction.prewrite_package.component_registry_preview).casefold()
+    assert transaction.verified is True
+    assert transaction.quality_manifest["status"] == "passed"
+    assert "record record" not in registry_preview
+    for term in ("e91", "bell inequality", "chsh", "qber"):
+        assert term in registry_preview

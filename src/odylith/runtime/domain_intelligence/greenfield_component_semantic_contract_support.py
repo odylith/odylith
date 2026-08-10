@@ -126,10 +126,16 @@ def component_contract_io_identity_repair(
     if not needs_repair:
         return "", accepted_inputs, produced_outputs
     identity_text = clean_artifact_text(identity).casefold()
+    identity_words = visible_words(identity_text)
+    output_artifact = (
+        identity_text
+        if identity_words and identity_words[-1].casefold() == "record"
+        else f"{identity_text} record"
+    )
     return (
         identity,
         f"{identity_text} request, authorized actor, validation context",
-        f"{identity_text} record",
+        output_artifact,
     )
 
 

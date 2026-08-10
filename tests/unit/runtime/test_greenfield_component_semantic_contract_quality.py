@@ -45,6 +45,16 @@ def test_component_io_repair_preserves_meaningful_responsibility_identity() -> N
     assert accepted_inputs == "review coordination request, authorized actor, validation context"
     assert produced_outputs == "review coordination record"
 
+    identity, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
+        "Quantum Bell Inequality Checks Record",
+        accepted_inputs="context command",
+        produced_outputs="context state",
+    )
+
+    assert identity.casefold() == "quantum bell inequality checks record"
+    assert accepted_inputs == "quantum bell inequality checks record request, authorized actor, validation context"
+    assert produced_outputs == "quantum bell inequality checks record"
+
 
 def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     contract_source = SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
