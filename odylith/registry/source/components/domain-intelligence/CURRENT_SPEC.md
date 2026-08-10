@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-09
+Last updated: 2026-08-10
 
 
 ## Overview
@@ -29,6 +29,9 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
 - **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
@@ -44,9 +47,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py`, `tests/integration/runtime/test_greenfield_component_contract_preconfirm.py`, plus 1 more
-- **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-03-automated-greenfield-create-opened-committed-dashboard-in-operator-browser.md`, `src/odylith/runtime/common/environment.py`, `src/odylith/runtime/domain_intelligence/greenfield_post_confirm_handoff.py`, `tests/conftest.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
