@@ -206,6 +206,7 @@ def confirmed_intent_with_authority(
         source_path=markdown_path,
         source_format=source_format,
     )
+    intent = dict(envelope["product_facts"])
     if write_files:
         markdown_path.parent.mkdir(parents=True, exist_ok=True)
         markdown_path.write_text(text, encoding="utf-8")
@@ -233,6 +234,7 @@ def confirmed_mapping_with_authority(
         source_path=markdown_path,
         source_format="in_memory_confirmed_intent",
     )
+    prepared = dict(envelope["product_facts"])
     if repo_root is not None:
         markdown_path.parent.mkdir(parents=True, exist_ok=True)
         markdown_path.write_text(source_text, encoding="utf-8")

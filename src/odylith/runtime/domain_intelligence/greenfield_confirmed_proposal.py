@@ -47,6 +47,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import sel
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import canonical_product_actor_rows
 
 
 def build_confirmed_greenfield_proposal(
@@ -89,7 +90,7 @@ def build_confirmed_greenfield_proposal(
     )
     human_actors = canonical_human_actor_rows(
         project_label=label,
-        rows=confirmed_intent_list(confirmed_intent, "human_actors"),
+        rows=canonical_product_actor_rows(confirmed_intent_list(confirmed_intent, "human_actors")),
     )
     first_path = canonical_first_path_actor_reference(
         project_label=label,

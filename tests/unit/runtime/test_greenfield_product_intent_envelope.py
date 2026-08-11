@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
     PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import build_product_intent_envelope
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import canonical_product_facts_payload
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_payload
 
@@ -81,6 +82,32 @@ Release 0.0.1 is proven only when the same workflow record can be opened, update
 """
 
 
+def _deferred_actor_confirmation() -> str:
+    return """# Pattern Relief Notebook
+
+## Product story
+People need one place to record recurring comfort patterns and review what appears to help.
+
+## State object
+A comfort timeline records daily entries, actions, and trends.
+
+## First complete path
+A person records daily entries and reviews the resulting trend.
+
+## Human actors
+- Person: records daily entries and reviews the trend.
+- Optionally, a coach or clinician receives a read-only summary later.
+- Grower / owner: reviews a related schedule later as one combined role.
+
+## Internal product systems
+- Daily Entry Workspace: records each daily entry and action.
+- Trend Review View: shows the resulting comfort trend.
+
+## Proof boundary
+One timeline can be recorded and read back with its trend intact.
+"""
+
+
 def test_product_facts_hash_tracks_operational_constraints() -> None:
     baseline = {"title": "Berth Turnaround Control", "first_path": "Planner reviews one vessel call."}
     constrained = {**baseline, "operational_constraints": ["Pier 7"]}
@@ -141,6 +168,74 @@ def test_typed_intent_receipts_preserve_custody_across_case_only_normalization()
 
     assert envelope["materiality_gate"]["status"] == "passed"
     assert envelope["custody_ledger"]["fields"]["human_actors"]["custody_state"] == "accepted_fact"
+
+
+def test_typed_intent_canonicalizes_unresolved_deferred_actor_alternatives_without_losing_evidence() -> None:
+    intent = {
+        "product_story": "People need one place to review recurring comfort patterns.",
+        "state_object": "A comfort timeline records daily entries, actions, and trends.",
+        "first_path": "A person records daily entries and reviews the resulting trend.",
+        "proof_boundary": "One timeline can be recorded and read back with its trend intact.",
+        "human_actors": [
+            "Person: records daily entries and reviews the trend.",
+            "Coach or Clinician: receives a read-only summary later.",
+            "Caregiver: helps the person stay on schedule later.",
+            "Builder or Reviewer: completes the active first path.",
+            "Grower / owner: reviews the schedule later as one combined role.",
+        ],
+    }
+
+    facts = canonical_product_facts_payload(intent)
+    assert facts["human_actors"] == [
+        "Person: records daily entries and reviews the trend.",
+        "Caregiver: helps the person stay on schedule later.",
+        "Builder or Reviewer: completes the active first path.",
+        "Grower / owner: reviews the schedule later as one combined role.",
+    ]
+    assert product_facts_hash(facts) != product_facts_hash(intent)
+
+    envelope = build_product_intent_envelope(
+        intent,
+        source_text=json.dumps(intent, ensure_ascii=True, sort_keys=True),
+        source_format="in_memory_confirmed_intent",
+    )
+    actor_custody = envelope["custody_ledger"]["fields"]["human_actors"]
+    claim_spans = [
+        span
+        for span in envelope["source_evidence"]["spans"]
+        if span["span_id"] in actor_custody["product_claim_span_ids"]
+    ]
+
+    assert envelope["materiality_gate"]["status"] == "passed"
+    assert actor_custody["custody_state"] == "accepted_fact"
+    assert any("Coach or Clinician" in row.get("evidence_text", "") for row in actor_custody["source_span_refs"])
+    assert not any("Coach or Clinician" in row["text"] for row in claim_spans)
+
+
+def test_markdown_deferred_actor_alternative_stays_evidence_without_becoming_product_truth(tmp_path: Path) -> None:
+    source = _deferred_actor_confirmation()
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+
+    record = load_confirmed_intent_record(path, prompt="Build a pattern relief notebook.")
+    actor_custody = record.envelope["custody_ledger"]["fields"]["human_actors"]
+    spans_by_id = {
+        span["span_id"]: span
+        for span in record.envelope["source_evidence"]["spans"]
+    }
+    actor_claims = [spans_by_id[span_id] for span_id in actor_custody["product_claim_span_ids"]]
+
+    assert record.envelope["materiality_gate"]["status"] == "passed"
+    assert "Coach or Clinician" not in json.dumps(record.product_facts, sort_keys=True)
+    assert any(
+        row.startswith("Grower:") and "one combined role" in row
+        for row in record.product_facts["human_actors"]
+    )
+    assert any(
+        "coach or clinician" in row.get("evidence_text", "").casefold()
+        for row in actor_custody["source_span_refs"]
+    )
+    assert not any("coach or clinician" in row["text"].casefold() for row in actor_claims)
 
 
 def test_confirmed_intent_record_keeps_product_facts_separate_from_ignored_sections(tmp_path: Path) -> None:
@@ -677,6 +772,29 @@ def test_verified_v3_envelope_migrates_from_sealed_facts_without_prompt_regenera
     assert migrated.envelope["schema_version"] == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
     assert migrated.envelope["custody_ledger"]["atomic_facts"]
     assert "casino" not in json.dumps(migrated.product_facts, sort_keys=True).casefold()
+
+
+def test_verified_v4_envelope_migrates_old_actor_hash_before_current_canonicalization(tmp_path: Path) -> None:
+    source = _deferred_actor_confirmation()
+    path = tmp_path / "confirmed-intent.md"
+    path.write_text(source, encoding="utf-8")
+    current = load_confirmed_intent_record(path, prompt="Build a pattern relief notebook.")
+    raw_intent = parse_confirmed_intent_text(source, prompt="Build a pattern relief notebook.")
+    legacy_facts = dict(current.envelope["product_facts"])
+    legacy_facts["human_actors"] = raw_intent["human_actors"]
+    payload = json.loads(json.dumps(current.envelope))
+    payload["schema_version"] = "odylith.product-intent-envelope.v4"
+    payload["custody_ledger"]["version"] = "odylith.product-intent-custody-ledger.v3"
+    payload["product_facts"] = legacy_facts
+    payload["decision_record"]["product_facts_sha256"] = product_facts_hash(legacy_facts)
+    json_path = path.with_suffix(".json")
+    json_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    migrated = load_confirmed_intent_record(json_path, prompt="Replace the product with a casino dashboard.")
+
+    assert migrated.envelope["schema_version"] == PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION
+    assert "Coach or Clinician" not in json.dumps(migrated.product_facts, sort_keys=True)
+    assert "coach or clinician" in json.dumps(migrated.envelope, sort_keys=True).casefold()
 
 
 def test_envelope_product_facts_win_over_conflicting_top_level_projection(tmp_path: Path) -> None:

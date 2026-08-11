@@ -138,7 +138,7 @@ def test_product_create_transaction_carries_confirmed_intent_authority_block(tmp
     payload = product_create_transaction_to_dict(transaction)
 
     persisted = payload["intent_authority"]
-    assert persisted["version"] == "odylith.product-intent-authority.v4"
+    assert persisted["version"] == "odylith.product-intent-authority.v5"
     assert persisted["origin"] == "verified_typed_envelope"
     assert persisted["decision"] == "confirmed_intent_accepted"
     assert persisted["fact_authority"] == "product_facts"
@@ -178,6 +178,21 @@ def test_product_create_transaction_rejects_v3_authority_with_rebuild_instructio
 
     with pytest.raises(ValueError, match="unsupported version; rebuild the proposal before confirmation"):
         _transaction(tmp_path, authority=legacy)
+
+
+def test_product_create_transaction_accepts_v4_authority_for_sealed_retry(tmp_path: Path) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    legacy = {
+        **authority,
+        "version": "odylith.product-intent-authority.v4",
+        "envelope_schema_version": "odylith.product-intent-envelope.v4",
+        "ledger_version": "odylith.product-intent-custody-ledger.v3",
+    }
+    legacy["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(legacy)
+
+    transaction = _transaction(tmp_path, authority=legacy)
+
+    assert transaction.intent_authority["version"] == "odylith.product-intent-authority.v4"
 
 
 def test_product_create_transaction_rejects_blocked_materiality_authority(tmp_path: Path) -> None:
@@ -262,6 +277,33 @@ def test_product_create_transaction_rejects_material_fact_without_resolvable_spa
 
     with pytest.raises(ValueError, match="invalid material source spans"):
         _transaction(tmp_path, authority=mutated)
+
+
+def test_product_create_transaction_rejects_tampered_material_evidence_text(tmp_path: Path) -> None:
+    _path, _facts, authority = _recorded_authority(tmp_path)
+    material_fields = json.loads(json.dumps(authority["material_fields"]))
+    material_fields["human_actors"]["source_span_refs"][0]["evidence_text"] = "tampered evidence"
+    mutated = {
+        **authority,
+        "material_fields": material_fields,
+        "material_custody_sha256": _stable_hash(material_fields),
+    }
+    mutated["authority_snapshot_sha256"] = product_intent_authority_snapshot_hash(mutated)
+
+    with pytest.raises(ValueError, match="invalid material source spans"):
+        _transaction(tmp_path, authority=mutated)
+
+
+def test_product_create_transaction_rejects_actor_injected_after_sealing(tmp_path: Path) -> None:
+    transaction = _transaction(tmp_path)
+    proposal = json.loads(json.dumps(transaction.proposal))
+    proposal["intent"]["human_actors"].append(
+        "Coach or Clinician: receives a read-only summary later."
+    )
+    mutated = replace(transaction, proposal=proposal)
+
+    with pytest.raises(ValueError, match="proposal facts do not match"):
+        require_product_create_transaction_verified(mutated)
 
 
 def test_product_create_transaction_rejects_markdown_material_fact_without_product_claim_custody(

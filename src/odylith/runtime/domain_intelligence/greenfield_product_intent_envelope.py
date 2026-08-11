@@ -43,6 +43,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
     split_unpunctuated_first_path_meta_control,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
     MATERIAL_FACT_KEYS,
@@ -76,13 +77,13 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
 from odylith.runtime.domain_intelligence.greenfield_typed_source_spans import (
-    append_typed_product_claim_spans,
+    append_typed_source_spans,
 )
 
 
 PRODUCT_FACTS_HASH_KEY = "product_facts_sha256"
 LEGACY_PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSIONS = frozenset(
-    {"odylith.product-intent-envelope.v3"}
+    {"odylith.product-intent-envelope.v3", "odylith.product-intent-envelope.v4"}
 )
 
 PRODUCT_FACT_KEYS = (
@@ -223,6 +224,30 @@ def product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
     return payload
 
 
+def canonical_product_facts_payload(intent: Mapping[str, Any]) -> dict[str, Any]:
+    """Canonicalize new facts before sealing without weakening exact hash checks."""
+
+    payload = product_facts_payload(intent)
+    actor_rows = canonical_product_actor_rows(payload.get("human_actors", ()))
+    if actor_rows:
+        payload["human_actors"] = actor_rows
+    else:
+        payload.pop("human_actors", None)
+    return payload
+
+
+def canonical_product_actor_rows(values: Sequence[str]) -> list[str]:
+    """Exclude unresolved deferred actor alternatives from canonical product facts."""
+
+    rows = confirmed_text_values(values)
+    return [row for row in rows if not _deferred_actor_alternative(row)]
+
+
+def _deferred_actor_alternative(value: str) -> bool:
+    label = clean_markdown_text(value).split(":", 1)[0].casefold()
+    return is_deferred_actor(value) and " or " in label
+
+
 def rebind_authoritative_product_facts(
     intent: Mapping[str, Any],
     *,
@@ -233,7 +258,7 @@ def rebind_authoritative_product_facts(
     rebound = copy.deepcopy(dict(intent))
     for key in PRODUCT_FACT_KEYS:
         rebound.pop(key, None)
-    rebound.update(copy.deepcopy(product_facts_payload(authoritative_intent)))
+    rebound.update(copy.deepcopy(canonical_product_facts_payload(authoritative_intent)))
     return rebound
 
 
@@ -246,7 +271,7 @@ def build_product_intent_envelope(
 ) -> dict[str, Any]:
     """Build the typed custody record trusted by pre-confirm compilers."""
 
-    facts = product_facts_payload(intent)
+    facts = canonical_product_facts_payload(intent)
     sections = (
         confirmed_intent_sections(source_text)
         if source_text and source_format not in TYPED_SOURCE_FORMATS
@@ -275,7 +300,7 @@ def build_product_intent_envelope(
             product_claim_span_ids_by_field=product_claim_span_ids_by_field,
             source_sections=sections,
         )
-    append_typed_product_claim_spans(
+    append_typed_source_spans(
         facts=facts,
         spans=spans,
         source_span_ids_by_field=source_span_ids_by_field,
@@ -283,6 +308,7 @@ def build_product_intent_envelope(
         source_text=source_text,
         source_format=source_format,
         typed_source_formats=TYPED_SOURCE_FORMATS,
+        canonical_row_fields=("human_actors",),
     )
     append_atomic_source_spans(spans)
     _add_span_digests(spans)
@@ -404,7 +430,7 @@ def product_intent_authority_from_intent(
 ) -> dict[str, Any]:
     """Build compact intent authority from an accepted in-memory intent mapping."""
 
-    facts = product_facts_payload(intent)
+    facts = canonical_product_facts_payload(intent)
     if not source_text and source_format in TYPED_SOURCE_FORMATS:
         source_text = json.dumps(facts, ensure_ascii=True, sort_keys=True)
     envelope = build_product_intent_envelope(
@@ -472,6 +498,8 @@ def _source_spans(
                 else [(text, section_classification)]
             )
             for unit_index, (unit_text, classification) in enumerate(classified_units, start=1):
+                if section_key == "human_actors" and _deferred_actor_alternative(unit_text):
+                    classification = "supporting_evidence"
                 span_id = f"{section_key}:{index}"
                 if len(classified_units) > 1:
                     span_id = f"{span_id}.{unit_index}"
@@ -820,11 +848,16 @@ def _evidence_span_ids(spans: Sequence[Mapping[str, Any]]) -> list[str]:
 
 
 def _span_ref(span: Mapping[str, Any]) -> dict[str, str]:
-    return {
+    ref = {
         "span_id": clean_markdown_text(span.get("span_id")),
         "classification": clean_markdown_text(span.get("classification")),
         "text_sha256": clean_markdown_text(span.get("text_sha256")),
     }
+    if ref["classification"] == "supporting_evidence":
+        evidence_text = clean_markdown_text(span.get("evidence_text") or span.get("text"))
+        if evidence_text:
+            ref["evidence_text"] = evidence_text
+    return ref
 
 
 def _authority_span_refs(value: Any) -> list[dict[str, str]]:
@@ -862,7 +895,9 @@ __all__ = [
     "product_intent_authority_snapshot_hash",
     "product_facts_from_envelope",
     "product_facts_from_legacy_envelope",
+    "canonical_product_facts_payload",
     "product_facts_payload",
+    "canonical_product_actor_rows",
     "rebind_authoritative_product_facts",
     "require_product_intent_authority",
 ]

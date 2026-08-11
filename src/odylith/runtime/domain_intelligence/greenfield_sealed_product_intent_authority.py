@@ -23,9 +23,19 @@ from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v4"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v4"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v3"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v5"
+PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v5"
+PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v4"
+_AUTHORITY_VERSION_CONTRACTS = {
+    PRODUCT_INTENT_AUTHORITY_VERSION: (
+        PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
+        PRODUCT_INTENT_LEDGER_VERSION,
+    ),
+    "odylith.product-intent-authority.v4": (
+        "odylith.product-intent-envelope.v4",
+        "odylith.product-intent-custody-ledger.v3",
+    ),
+}
 MATERIAL_FACT_KEYS = (
     "product_story",
     "state_object",
@@ -93,16 +103,19 @@ def require_product_intent_authority_structure(authority: Mapping[str, Any]) -> 
 
 
 def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
-    if authority.get("version") != PRODUCT_INTENT_AUTHORITY_VERSION:
+    version = authority.get("version")
+    version_contract = _AUTHORITY_VERSION_CONTRACTS.get(version)
+    if version_contract is None:
         raise ValueError(
             "ProductCreateTransaction sealed Product Intent authority uses an unsupported version; "
             "rebuild the proposal before confirmation"
         )
+    envelope_version, ledger_version = version_contract
     expected = {
-        "version": PRODUCT_INTENT_AUTHORITY_VERSION,
+        "version": version,
         "origin": "verified_typed_envelope",
-        "envelope_schema_version": PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
-        "ledger_version": PRODUCT_INTENT_LEDGER_VERSION,
+        "envelope_schema_version": envelope_version,
+        "ledger_version": ledger_version,
         "decision": "confirmed_intent_accepted",
         "fact_authority": "product_facts",
         "markdown_authority": "ingest_only",
@@ -243,9 +256,17 @@ def _valid_span_refs(value: Any, span_ids: Any) -> bool:
     for row in value:
         if not isinstance(row, Mapping):
             return False
+        if not set(row) <= {"span_id", "classification", "text_sha256", "evidence_text"}:
+            return False
         span_id = row.get("span_id")
         digest = row.get("text_sha256")
         if not _is_nonempty_string(span_id) or not _is_sha256(digest):
+            return False
+        evidence_text = row.get("evidence_text")
+        if evidence_text is not None and (
+            not _is_nonempty_string(evidence_text)
+            or hashlib.sha256(evidence_text.encode("utf-8")).hexdigest() != digest
+        ):
             return False
         actual_ids.append(span_id)
     return actual_ids == expected_ids

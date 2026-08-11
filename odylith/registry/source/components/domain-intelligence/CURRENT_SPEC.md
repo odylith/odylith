@@ -51,6 +51,17 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Versioned deferred-role custody without weakening exact fact hashes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Product Intent v5 canonicalizes unresolved deferred role alternatives before
+  sealing while retaining their exact source rows as digest-bound supporting
+  evidence. Accepted active roles, concrete deferred actors, and slash-combined
+  roles remain product facts. The integrity hash covers the exact canonical
+  payload and therefore detects facts injected after sealing. Verified v3 and
+  v4 envelopes migrate under their original hash semantics; authority versions
+  remain paired with their envelope and ledger contracts. Fresh proof covers
+  typed and Markdown custody, legacy migration, tamper rejection, all 20
+  confirmed surfaces, and concrete deferred-actor behavior.
+
 - 2026-08-09: Localized generic actors and preserved component boundary identity before sealing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Product Intent completion now replaces a generic actor only for a finite or
   modal actor-led statement, preserving product nouns such as `Operator console`

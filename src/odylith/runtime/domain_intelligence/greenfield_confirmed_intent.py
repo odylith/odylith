@@ -99,6 +99,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_document im
     title_from_text as _title_from_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+    canonical_product_facts_payload,
+)
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     PRODUCT_FACTS_HASH_KEY,
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
@@ -118,9 +121,6 @@ from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope impo
 )
 from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
     product_facts_hash,
-)
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
-    product_facts_payload,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_sections import (
     confirmed_intent_sections as _sections,
@@ -216,7 +216,7 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
                 source_path=markdown_path,
                 source_format="markdown",
             )
-            return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
+            return ConfirmedIntentRecord(product_facts=dict(envelope["product_facts"]), envelope=envelope)
         if is_product_intent_envelope(payload) or is_legacy_product_intent_envelope(payload):
             raise ValueError(
                 "confirmed intent JSON envelope could not be verified against its recorded Markdown source"
@@ -233,7 +233,7 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
             source_path=source,
             source_format="json",
         )
-        return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
+        return ConfirmedIntentRecord(product_facts=dict(envelope["product_facts"]), envelope=envelope)
     intent = parse_confirmed_intent_text(
         text,
         prompt=prompt,
@@ -261,7 +261,7 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
         source_path=source,
         source_format=source_format,
     )
-    return ConfirmedIntentRecord(product_facts=intent, envelope=envelope)
+    return ConfirmedIntentRecord(product_facts=dict(envelope["product_facts"]), envelope=envelope)
 
 
 def confirmed_intent_product_facts(record: ConfirmedIntentRecord | Mapping[str, Any]) -> dict[str, Any]:
@@ -362,7 +362,7 @@ def write_structured_confirmed_intent_file(
     target = structured_confirmed_intent_path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     payload = dict(envelope) if isinstance(envelope, Mapping) else build_product_intent_envelope(intent)
-    facts = product_facts_payload(intent)
+    facts = canonical_product_facts_payload(intent)
     payload["product_facts"] = facts
     decision_record = dict(payload.get("decision_record")) if isinstance(payload.get("decision_record"), Mapping) else {}
     decision_record[PRODUCT_FACTS_HASH_KEY] = product_facts_hash(facts)
@@ -383,7 +383,7 @@ def write_typed_candidate_intent_files(
 
     target = structured_confirmed_intent_path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    facts = product_facts_payload(intent)
+    facts = canonical_product_facts_payload(intent)
     materiality_gate = envelope.get("materiality_gate") if isinstance(envelope.get("materiality_gate"), Mapping) else {}
     decision_record = dict(envelope.get("decision_record")) if isinstance(envelope.get("decision_record"), Mapping) else {}
     decision_record[PRODUCT_FACTS_HASH_KEY] = product_facts_hash(facts)
