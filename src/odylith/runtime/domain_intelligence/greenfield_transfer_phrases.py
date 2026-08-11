@@ -30,6 +30,10 @@ _FINITE_TRANSFER_ACTIONS = frozenset(
         "sending",
         "sends",
         "sent",
+        "transfer",
+        "transferred",
+        "transferring",
+        "transfers",
     }
 )
 _FINITE_HAND_ACTIONS = frozenset({"handed", "handing", "hands"})

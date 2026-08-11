@@ -42,6 +42,7 @@ _PROFILE_SUPPLEMENT_NOISE_TERMS = frozenset(
 )
 
 _PROFILE_SOURCE_CONTEXT_TERMS = frozenset({"attachment", "document", "file", "packet", "upload"})
+_PROTECTED_RELATION_TERMS = frozenset({"against", "for", "from", "into", "to", "using", "with"})
 
 _PROFILE_MATERIAL_OBLIGATION_TERMS = frozenset(
     {
@@ -192,6 +193,86 @@ def restore_protected_phrase_surface(fields: Mapping[str, Any], protected_phrase
         else:
             restored[key] = value
     return restored
+
+
+def protected_projection_items(values: Sequence[str]) -> tuple[tuple[str, str], ...]:
+    surfaces = tuple(_clean(value).casefold().strip(" .,;:") for value in values if _clean(value))
+    rows: list[tuple[str, str]] = []
+    for surface in surfaces:
+        projection = _clean_artifact_phrase(surface)
+        if _middle_modifier_projection(surface, projection):
+            if projection in surfaces:
+                rows.append((projection, projection))
+            rows.append((projection, surface))
+    return tuple(dict.fromkeys(rows))
+
+
+def protected_projection_focus(items: Sequence[tuple[str, str]], output_values: Sequence[str]) -> str:
+    fragments = unique_text(fragment for value in output_values for fragment in contract_list_fragments(value))
+    modified = tuple((projection, surface) for projection, surface in items if projection != surface)
+    surfaces = {surface.casefold(): surface for _projection, surface in modified}
+    for fragment in fragments:
+        if surface := surfaces.get(fragment.casefold()):
+            return surface
+    groups: dict[str, list[str]] = {}
+    for projection, surface in modified:
+        groups.setdefault(projection, []).append(surface)
+    for projection, candidates in groups.items():
+        if len(set(candidates)) == 1 and any(
+            _fragment_projects_phrase(fragment, projection) for fragment in fragments
+        ):
+            return candidates[0]
+    return ""
+
+
+def restore_protected_contract_items(fields: Mapping[str, Any], protected_phrases: Sequence[str]) -> dict[str, Any]:
+    groups: dict[str, list[str]] = {}
+    for projection, surface in protected_projection_items(protected_phrases):
+        groups.setdefault(projection, []).append(surface)
+    restored = dict(fields)
+    for key in ("owned_state", "accepted_inputs", "produced_outputs"):
+        fragments = contract_list_fragments(restored.get(key))
+        fragment_keys = {fragment.casefold() for fragment in fragments}
+        restored[key] = ", ".join(
+            unique_text(
+                surface
+                for fragment in fragments
+                for surface in _restored_contract_fragment(fragment, groups, fragment_keys=fragment_keys)
+            )
+        )
+    return restored
+
+
+def _restored_contract_fragment(
+    fragment: str,
+    groups: Mapping[str, Sequence[str]],
+    *,
+    fragment_keys: set[str],
+) -> Sequence[str]:
+    key = fragment.casefold()
+    if key in groups:
+        return groups[key]
+    prefix, separator, suffix = key.rpartition(" ")
+    if separator and suffix in ARTIFACT_CARRIER_TERMS and prefix in groups:
+        if prefix in fragment_keys and suffix in {"input", "result"}:
+            return ()
+        return tuple(f"{surface} {suffix}" for surface in groups[prefix])
+    for projection, surfaces in groups.items():
+        relation_tail = key.removeprefix(f"{projection} ") if key.startswith(f"{projection} ") else ""
+        relation, _, _ = relation_tail.partition(" ")
+        if relation in _PROTECTED_RELATION_TERMS:
+            return tuple(f"{surface} {relation_tail}" for surface in surfaces)
+    return (fragment,)
+
+
+def _fragment_projects_phrase(fragment: str, projection: str) -> bool:
+    key = fragment.casefold()
+    projected = projection.casefold()
+    if key == projected:
+        return True
+    tail = key.removeprefix(f"{projected} ") if key.startswith(f"{projected} ") else ""
+    relation, _, _ = tail.partition(" ")
+    return bool(tail and (tail in ARTIFACT_CARRIER_TERMS or relation in _PROTECTED_RELATION_TERMS))
 
 
 def prioritize_local_proof_rows(rows: Sequence[str]) -> list[str]:
@@ -460,6 +541,23 @@ def _protected_replacements(values: Sequence[str]) -> tuple[tuple[str, str], ...
     return tuple(dict.fromkeys(rows))
 
 
+def _middle_modifier_projection(surface: str, projection: str) -> bool:
+    source_words = visible_words(surface)
+    projected_words = visible_words(projection)
+    if not (2 <= len(projected_words) < len(source_words)):
+        return False
+    if source_words[0].casefold() != projected_words[0].casefold():
+        return False
+    if source_words[-1].casefold() != projected_words[-1].casefold():
+        return False
+    projected = iter(word.casefold() for word in projected_words)
+    expected = next(projected, "")
+    for word in source_words:
+        if word.casefold() == expected:
+            expected = next(projected, "")
+    return not expected
+
+
 def _restore_text_surface(value: str, replacements: Sequence[tuple[str, str]]) -> str:
     text = value
     for normalized, surface in replacements:
@@ -519,8 +617,11 @@ __all__ = [
     "merge_profile_contract_fields",
     "present_verb",
     "prioritize_local_proof_rows",
+    "protected_projection_focus",
+    "protected_projection_items",
     "result_like_phrase",
     "result_like_transition_phrase",
+    "restore_protected_contract_items",
     "restore_protected_phrase_surface",
     "sanitize_contract_fields",
     "semantic_field_with_profile_supplements",

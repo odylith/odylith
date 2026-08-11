@@ -56,6 +56,7 @@ def test_component_proof_focus_skips_action_modified_result_noun_piles() -> None
         output_focus=output_focus,
         sibling_label="Review Signoff Ledger",
         sibling_focus="review signoff state",
+        preferred_focus="exception blocked state",
     )
     rendered = " ".join([output_focus, *rows]).casefold()
 

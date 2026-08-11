@@ -9,10 +9,14 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 )
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import (
     component_contract_io_identity_repair,
+    protected_projection_focus,
+    protected_projection_items,
+    restore_protected_contract_items,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import normalize_contract
+from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
@@ -171,6 +175,155 @@ def test_component_contract_preserves_action_noun_label_compounds() -> None:
     assert "access control" in access_owned_state
     assert "audit history" in access_owned_state
     assert not generated_semantic_slop_issues(access_contract)
+
+
+def test_component_contract_preserves_typed_blocked_state_identity() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Exception and Blocked Use Tracker",
+            "source_system_description": (
+                "Tracks exception blocked state, tracker exception, failure reason ledger, and use tracker state."
+            ),
+        },
+        proposal={
+            "intent": {
+                "title": "Exception Review Workspace",
+                "first_path": "An analyst records an exception and reviews its blocked state.",
+            }
+        },
+        sibling={"label": "Review Signoff Ledger"},
+        previous_label="Exception Intake",
+        next_label="Review Signoff Ledger",
+        state_label="Exception Case",
+    ).fields
+
+    rendered = " ".join(str(value) for value in contract.values()).casefold()
+    assert "exception blocked state" in contract["owned_state"].casefold()
+    assert "exception state" not in contract["owned_state"].casefold()
+    assert "exception blocked state" in contract["produced_outputs"].casefold()
+    assert "exception blocked state" in contract["unique_failure"].casefold()
+    assert "exception blocked state" in rendered
+    assert not generated_semantic_slop_issues(contract)
+
+
+def test_protected_compound_restoration_is_item_bounded_and_one_to_many() -> None:
+    protected = (
+        "exception blocked state",
+        "exception validated state",
+        "audit evidence",
+        "audit evidence validated status",
+        "export package state or blocked deletion decision",
+    )
+    restored = restore_protected_contract_items(
+        {
+            "owned_state": (
+                "exception state, exception state record, exception statement, audit evidence, "
+                "audit evidence status, audit evidence status history"
+            ),
+                "accepted_inputs": (
+                    "exception state, exception state to the permit record, exception state for permit review, "
+                    "exception stateful"
+                ),
+            "produced_outputs": "exception state result, preexception state, deletion decision",
+            "decision": "deletion decision",
+        },
+        protected,
+    )
+
+    assert protected_projection_items(protected)[:2] == (
+        ("exception state", "exception blocked state"),
+        ("exception state", "exception validated state"),
+    )
+    assert restored["owned_state"] == (
+        "exception blocked state, exception validated state, exception blocked state record, "
+        "exception validated state record, exception statement, audit evidence, "
+        "audit evidence validated status, audit evidence validated status history"
+    )
+    assert restored["accepted_inputs"] == (
+        "exception blocked state, exception validated state, exception blocked state to the permit record, "
+        "exception validated state to the permit record, exception blocked state for permit review, "
+        "exception validated state for permit review, exception stateful"
+    )
+    assert restored["produced_outputs"] == (
+        "exception blocked state result, exception validated state result, preexception state, deletion decision"
+    )
+    assert restored["decision"] == "deletion decision"
+    assert description_compound_phrases("A nurse blocked the state.") == ()
+    assert description_compound_phrases("Nurse blocked state.") == ()
+    assert description_compound_phrases(
+        "An analyst hands off exception blocked state to the review ledger."
+    ) == ("exception blocked state",)
+    assert description_compound_phrases(
+        "The service transfers exception blocked state to the review ledger."
+    ) == ("exception blocked state",)
+    assert description_compound_phrases(
+        "Senior community health nurse records exception blocked state."
+    ) == ("exception blocked state",)
+    assert description_compound_phrases(
+        "A municipal field service coordinator transfers exception blocked state to the review ledger."
+    ) == ("exception blocked state",)
+    homograph_transfer = (
+        "Senior records management coordinator transfers exception blocked state to the review ledger."
+    )
+    assert description_compound_phrases(homograph_transfer) == ("exception blocked state",)
+    assert relation_phrases(homograph_transfer) == ("exception blocked state to the review ledger",)
+    long_homograph_transfer = (
+        "Senior regional municipal public health records management coordinator transfers "
+        "exception blocked state to the review ledger."
+    )
+    assert description_compound_phrases(long_homograph_transfer) == ("exception blocked state",)
+    assert relation_phrases(long_homograph_transfer) == ("exception blocked state to the review ledger",)
+    assert description_compound_phrases(
+        "The service tracks exception blocked state, and this actorless clause follows."
+    ) == ("exception blocked state",)
+    assert description_compound_phrases(
+        "The service tracks exception blocked state, and this actorless clause follows, and unrelated audit status."
+    ) == ("exception blocked state",)
+    assert description_compound_phrases("The service tracks exception blocked state.") == (
+        "exception blocked state",
+    )
+    assert description_compound_phrases("Tracks exception blocked state and exception validated state.") == (
+        "exception blocked state",
+        "exception validated state",
+    )
+    relation_description = "An analyst links exception blocked state to the permit record."
+    assert description_compound_phrases(relation_description) == ("exception blocked state",)
+    assert relation_phrases(relation_description) == ("exception blocked state to the permit record",)
+    assert protected_projection_focus(
+        protected_projection_items(("exception validated state", "exception blocked state")),
+        ("exception blocked state",),
+    ) == "exception blocked state"
+
+
+def test_component_contract_selects_protected_proof_focus_from_output_ownership() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Exception Decision Service",
+            "source_system_description": (
+                "Accepts exception validated state and produces exception blocked state."
+            ),
+        },
+        proposal={"intent": {"title": "Exception Review", "first_path": "An analyst reviews one exception."}},
+        sibling={"label": "Review Ledger"},
+        previous_label="Exception Intake",
+        next_label="Review Ledger",
+        state_label="Exception Case",
+    ).fields
+
+    assert "exception blocked state" in contract["local_proof"][0].casefold()
+    assert "exception blocked state" in contract["unique_failure"].casefold()
+    assert "exception validated state" not in contract["local_proof"][0].casefold()
+    assert protected_projection_focus(
+        protected_projection_items(("exception validated state", "exception blocked state")),
+        ("exception state result",),
+    ) == ""
+    assert produced_output_artifact_phrases("Tracks export package state.") == ()
+    assert produced_output_artifact_phrases(
+        "Accepts return authorization state and produces exception blocked state."
+    ) == ("exception blocked state",)
+    assert produced_output_artifact_phrases(
+        "Tracks export package state and return authorization state and display configuration state."
+    ) == ()
 
 
 def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns() -> None:

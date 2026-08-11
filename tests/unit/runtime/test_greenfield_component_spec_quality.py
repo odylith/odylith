@@ -696,6 +696,10 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("cooking reach finished state") == "finished state"
     assert clean_artifact_phrase("gate story name result") == ""
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
+    assert clean_artifact_phrase("nurse approved request") == "nurse request"
+    assert clean_artifact_phrase("system approved request") == "system request"
+    assert clean_artifact_phrase("service validated result") == "service result"
+    assert clean_artifact_phrase("process validated record") == "process record"
     assert component_contract._state_terms_from_context(
         "submitted draft was blocked-state, ready, recovered, and ready again"
     ) == ("submitted", "draft", "blocked", "ready", "recovered")

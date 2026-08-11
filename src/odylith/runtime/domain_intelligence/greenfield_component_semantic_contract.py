@@ -106,6 +106,7 @@ def derive_component_semantic_contract(
     action_terms = semantic_context.action_terms(" ".join(text for text in (label, description) if text)) or semantic_context.action_terms(local_text)
     relation_phrases = semantic_context.relation_phrases(description)
     protected_description_phrases = semantic_context.description_compound_phrases(description)
+    protected_items = contract_support.protected_projection_items(protected_description_phrases)
     output_description_phrases = _produced_output_artifact_phrases(description)
     description_phrases = _clean_artifact_phrases(
         [
@@ -229,6 +230,10 @@ def derive_component_semantic_contract(
         critical = contract_identity
         input_focus = f"{contract_identity} request"
         output_focus = f"{contract_identity} record"
+    protected_focus = contract_support.protected_projection_focus(
+        protected_items,
+        [*output_description_phrases, output_focus, produced_outputs],
+    )
     transition_context = semantic_context.transition_context_text(
         proposal_context,
         label_terms=label_terms,
@@ -256,6 +261,7 @@ def derive_component_semantic_contract(
         output_focus=output_focus,
         sibling_label=handoff_label,
         sibling_focus=handoff_focus,
+        preferred_focus=protected_focus,
     )
     proof = unique_text(
         [
@@ -315,7 +321,7 @@ def derive_component_semantic_contract(
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score"))
         else "built from the wrong inputs"
     )
-    critical_noun = _noun_slot_artifact_phrase(critical)
+    critical_noun = protected_focus or _noun_slot_artifact_phrase(critical)
     fields = contract_support.sanitize_contract_fields(
         {
             "owned_state": _contract_list_text(*owned_seed),
@@ -332,6 +338,7 @@ def derive_component_semantic_contract(
             ),
         }
     )
+    fields = contract_support.restore_protected_contract_items(fields, protected_description_phrases)
     fields = contract_support.restore_protected_phrase_surface(fields, protected_description_phrases)
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
     return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
@@ -483,6 +490,8 @@ def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
         if phrase.casefold() == focused_clause.casefold() and looks_like_action_clause(focused_clause):
             continue
         if not _content_terms(phrase):
+            if focused_clause.casefold() != clause.casefold():
+                continue
             phrase = clause
         phrase = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", phrase, flags=re.IGNORECASE)
         tail_rows: list[str] = []

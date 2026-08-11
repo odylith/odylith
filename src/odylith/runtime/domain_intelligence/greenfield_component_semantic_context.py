@@ -15,6 +15,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_forms_pattern as _action_forms_pattern
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import finite_action_clause as _finite_action_clause
+from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    finite_action_object_clause as _finite_action_object_clause,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_term as _looks_action_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     object_clause_focus as _object_clause_focus,
@@ -123,14 +127,10 @@ def relation_phrases(value: str) -> list[str]:
         return rows
     parsed_clauses = clauses(text)
     for index, clause in enumerate(parsed_clauses):
-        words = clause.split()
-        action_index = next(
-            (offset for offset, word in enumerate(words[:4]) if looks_like_finite_action_token(word)),
-            None,
-        )
-        if action_index is None:
+        action_clause, owns_action = _finite_action_clause(clause)
+        if not owns_action:
             continue
-        body_words = words[action_index + 1 :]
+        body_words = action_clause.split()[1:]
         if len(body_words) < 4:
             continue
         lowered = [word.casefold().strip(".,;:") for word in body_words]
@@ -346,12 +346,18 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
     text = _clean(value)
     if not text:
         return ()
-    for part in re.split(r"\s*,\s*|\s+\band\b\s+", text, flags=re.IGNORECASE):
+    for part in clauses(text):
+        transfer_focus = _transfer_object_phrase(part)
+        finite_focus, owns_action = _finite_action_object_clause(part)
+        part = transfer_focus or (finite_focus if owns_action else _object_clause_focus(part))
         phrase = clean_artifact_text(
             re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?)\s+", "", part, flags=re.IGNORECASE)
         ).strip(" .")
         phrase = re.sub(r"^(?:and|or)\s+", "", phrase, flags=re.IGNORECASE).strip(" .")
-        phrase = _clean_artifact_phrase(phrase) or phrase
+        cleaned_phrase = _clean_artifact_phrase(phrase)
+        if not cleaned_phrase and phrase.split() and _looks_action_word(phrase.split()[0]):
+            continue
+        phrase = cleaned_phrase or phrase
         if not phrase:
             continue
         if not owned_state_noun_phrase(phrase):
@@ -368,35 +374,43 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
 
 def description_compound_phrases(value: str) -> tuple[str, ...]:
     """Preserve compact noun phrases from accepted component descriptions."""
-
     rows: list[str] = []
-    for clause in clauses(value):
-        focused_clause = _object_clause_focus(clause)
-        focused = _strip_action(focused_clause)
-        clause_words = visible_words(focused_clause)
-        if focused.casefold() == focused_clause.casefold() and clause_words and _looks_action_word(clause_words[0]):
-            continue
-        focused = focused or clause
-        focused = re.sub(
-            r"\b(?:before|after|while|because|unless|without)\b.+$",
-            "",
-            focused,
-            flags=re.IGNORECASE,
-        )
-        relation_head = re.split(
-            r"\b(?:against|from|into|to|using|with)\b",
-            focused,
-            maxsplit=1,
-            flags=re.IGNORECASE,
-        )[0]
-        rows.extend(_qualified_noun_phrases(focused))
-        for candidate in unique_text([clause, focused, relation_head, *re.split(r"\s*,\s*|\s+\band\s+\s*", focused)]):
-            phrase = _preserved_compound_phrase(candidate)
-            if phrase:
-                rows.append(phrase)
+    for sentence in re.split(r"[.!?]+", _clean(value)):
+        carry_object = False
+        for clause in clauses(sentence):
+            transfer_focus = _transfer_object_phrase(clause)
+            finite_focus, finite_action = _finite_action_object_clause(clause)
+            owns_action = bool(transfer_focus or finite_action)
+            if not owns_action and not carry_object:
+                continue
+            if owns_action and not (transfer_focus or finite_focus):
+                carry_object = False
+                continue
+            focused_clause = transfer_focus or finite_focus
+            focused = _strip_action(focused_clause) if owns_action else clause
+            if not focused:
+                carry_object = False
+                continue
+            focused = re.sub(
+                r"\b(?:before|after|while|because|unless|without)\b.+$",
+                "",
+                focused,
+                flags=re.IGNORECASE,
+            )
+            relation_head = re.split(
+                r"\b(?:against|from|into|to|using|with)\b",
+                focused,
+                maxsplit=1,
+                flags=re.IGNORECASE,
+            )[0]
+            row_count = len(rows)
+            rows.extend(_qualified_noun_phrases(focused))
+            for candidate in unique_text([relation_head, *re.split(r"\s*,\s*|\s+\band\s+\s*", relation_head)]):
+                phrase = _preserved_compound_phrase(candidate)
+                if phrase:
+                    rows.append(phrase)
+            carry_object = (owns_action or carry_object) and len(rows) > row_count
     return tuple(unique_text(rows))
-
-
 def _preserved_compound_phrase(value: str) -> str:
     text = clean_artifact_text(value, split_parentheses=True).casefold().strip(" .,;:")
     if not text:
@@ -411,6 +425,12 @@ def _preserved_compound_phrase(value: str) -> str:
     if not text:
         return ""
     words = text.split()
+    if any(
+        index > 1 and _looks_action_word(words[index - 1])
+        for index, word in enumerate(words)
+        if word in {"a", "an", "the"}
+    ):
+        return ""
     while words and _looks_action_word(words[0]) and not _protected_modifier_lead(words):
         words = words[1:]
     text = " ".join(words).strip(" .,;:")

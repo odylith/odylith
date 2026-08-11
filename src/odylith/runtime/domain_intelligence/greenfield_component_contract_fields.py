@@ -201,12 +201,13 @@ def proof_rows(
     output_focus: str,
     sibling_label: str,
     sibling_focus: str,
+    preferred_focus: str = "",
 ) -> list[str]:
     proof_focus = component_kind_echo_safe_phrase(
         label=label,
-        phrase=_proof_focus(critical=critical, output_focus=output_focus, object_list=object_list),
+        phrase=preferred_focus or _proof_focus(critical=critical, output_focus=output_focus, object_list=object_list),
     )
-    handoff_focus = noun_slot_artifact_phrase(proof_focus)
+    handoff_focus = proof_focus if preferred_focus else noun_slot_artifact_phrase(proof_focus)
     rows = [
         f"Successful path evidence for {label}: {proof_focus}, required inputs, visible result, and reviewer explanation.",
         f"Blocked input evidence for {label}: missing or malformed input, stops before a trusted result, and recovery explanation.",

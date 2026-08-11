@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from typing import Any
 
-from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import looks_like_finite_action, looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_TERMS
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_constants import ACTION_VERBS
@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_constants imp
 from odylith.runtime.domain_intelligence.greenfield_component_term_constants import GENERIC_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
@@ -548,6 +549,34 @@ def drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
 
 def strip_action(value: str) -> str:
     return clean(re.sub(rf"^(?:{action_forms_pattern()})\s+", "", value, flags=re.I))
+
+
+def finite_action_clause(value: str) -> tuple[str, bool]:
+    _actor, actor_action = actor_led_action_parts(value)
+    if actor_action:
+        return actor_action, True
+    words = value.split()
+    candidates = [index for index, word in enumerate(words) if looks_like_finite_action_token(word)]
+    if len(candidates) == 1:
+        return " ".join(words[candidates[0] :]), True
+    transfer_candidates = [
+        index
+        for index in candidates
+        if transfer_object_phrase(" ".join(words[index:]))
+    ]
+    if len(transfer_candidates) == 1:
+        return " ".join(words[transfer_candidates[0] :]), True
+    if candidates and candidates[0] == 0:
+        return value, True
+    return value, False
+
+
+def finite_action_object_clause(value: str) -> tuple[str, bool]:
+    action_clause, owns_action = finite_action_clause(value)
+    if not owns_action:
+        return value, False
+    words = action_clause.split()
+    return transfer_object_phrase(action_clause) or " ".join(words[1:]), True
 
 
 def object_clause_focus(value: str) -> str:

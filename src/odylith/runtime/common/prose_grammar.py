@@ -238,6 +238,7 @@ _INFINITIVE_TO_FINITE = {
     "sync": "syncs",
     "tap": "taps",
     "track": "tracks",
+    "transfer": "transfers",
     "transform": "transforms",
     "triage": "triages",
     "turn": "turns",
