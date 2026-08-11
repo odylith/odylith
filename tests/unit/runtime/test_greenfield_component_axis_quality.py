@@ -81,6 +81,7 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
     assert "risk flags" in risk_owned
     assert "reviewer notes" in risk_owned
     assert "readiness blockers" in risk_owned
+    assert "risk procurement" not in risk_owned
     assert "policy rule" not in risk_owned
     assert "risk disclosure" not in risk_owned
     assert "case identity" not in proposal_rendered

@@ -286,6 +286,13 @@ def test_protected_compound_restoration_is_item_bounded_and_one_to_many() -> Non
         "exception blocked state",
         "exception validated state",
     )
+    assert description_owned_phrases("records reviewer notes, risk flags, and readiness blockers") == (
+        "reviewer notes",
+        "risk flags",
+        "readiness blockers",
+    )
+    assert description_owned_phrases("A reviewer records") == ()
+    assert description_owned_phrases("One analyst stores") == ()
     relation_description = "An analyst links exception blocked state to the permit record."
     assert description_compound_phrases(relation_description) == ("exception blocked state",)
     assert relation_phrases(relation_description) == ("exception blocked state to the permit record",)

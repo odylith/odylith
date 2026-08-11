@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
@@ -328,7 +329,7 @@ def owned_context_detail_phrases(
             continue
         if set(terms) & {"context", "summary"}:
             continue
-        if not set(terms) & _ARTIFACT_CARRIER_TERMS and not overlap_detail:
+        if not set(terms) & _ARTIFACT_CARRIER_TERMS:
             continue
         if terms[-1] in {"link", "links"} and len(terms) > 2:
             terms = terms[:-1]
@@ -349,7 +350,10 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
     for part in clauses(text):
         transfer_focus = _transfer_object_phrase(part)
         finite_focus, owns_action = _finite_action_object_clause(part)
-        part = transfer_focus or (finite_focus if owns_action else _object_clause_focus(part))
+        actor_prefix = part.rsplit(maxsplit=1)[0]
+        if owns_action and not finite_focus and looks_like_actor_led_subject_prefix(actor_prefix, part):
+            continue
+        part = transfer_focus or (finite_focus if owns_action and finite_focus else _object_clause_focus(part))
         phrase = clean_artifact_text(
             re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?)\s+", "", part, flags=re.IGNORECASE)
         ).strip(" .")

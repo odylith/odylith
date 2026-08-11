@@ -595,14 +595,18 @@ def object_clause_focus(value: str) -> str:
         text,
         flags=re.I,
     )
-    if article_subject:
+    if article_subject and trim_phrase(article_subject.group("tail")):
         return f"{article_subject.group('action')}{article_subject.group('tail')}"
     bare_subject = re.match(
         rf"^(?:[a-z][a-z0-9_-]*\s+){{1,4}}(?:(?:can|must|should|will|may)\s+)?(?P<action>{action_pattern})\b(?P<tail>.*)$",
         text,
         flags=re.I,
     )
-    if bare_subject and len(content_terms(text[: bare_subject.start("action")])) <= 3:
+    if (
+        bare_subject
+        and trim_phrase(bare_subject.group("tail"))
+        and len(content_terms(text[: bare_subject.start("action")])) <= 3
+    ):
         return f"{bare_subject.group('action')}{bare_subject.group('tail')}"
     return text
 

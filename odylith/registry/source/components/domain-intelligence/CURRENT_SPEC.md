@@ -51,6 +51,14 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Preserved terminal action-noun compounds in component state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Owned-description parsing keeps a terminal homograph as a noun phrase when
+  no object follows it, so accepted facts such as `risk flags` retain their
+  modifiers, while the shared actor-prefix boundary still rejects objectless
+  actor clauses. Broader context enriches owned state only through artifact
+  carriers, preventing label overlap from creating fragments such as `risk
+  procurement`.
+
 - 2026-08-11: Separated public Product Intent preview from private custody evidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Greenfield JSON previews use a separately named and versioned authority
   summary containing the authority version, product-facts hash, source format,
