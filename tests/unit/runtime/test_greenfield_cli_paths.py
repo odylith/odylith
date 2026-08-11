@@ -385,13 +385,27 @@ def test_greenfield_edit_rebuilds_a_generic_use_request_without_a_malformed_titl
 
     payload = json.loads(capsys.readouterr().out)
     rendered = json.dumps(payload, sort_keys=True)
+    staged_path = tmp_path / payload["transaction_file"]
+    staged_transaction = json.loads(staged_path.read_text(encoding="utf-8"))
 
     assert rc == 0
     assert payload["mode"] == "product_create_transaction"
     assert payload["product_create_transaction"]["quality_status"] == "passed"
     assert payload["intent_hypothesis"]["title"] == "Release Notes Workspace"
+    assert "product_intent_authority" not in payload["intent_hypothesis"]
+    assert set(payload["intent_hypothesis"]["product_intent_authority_summary"]) == {
+        "authority_version",
+        "materiality_status",
+        "product_facts_sha256",
+        "schema_version",
+        "source_format",
+    }
+    assert payload["intent_hypothesis"]["product_intent_authority_summary"]["schema_version"] == (
+        "odylith.product-intent-authority-summary.v1"
+    )
     assert "For Release Notes" not in rendered
     assert "use for release notes" not in rendered.casefold()
+    assert "use for release notes" in json.dumps(staged_transaction["intent_authority"]).casefold()
     assert not (tmp_path / "odylith/radar/source").exists()
 
 
@@ -427,7 +441,9 @@ def test_greenfield_edit_rebuilds_the_staged_transaction_without_governed_writes
     assert initial_rc == edited_rc == 0
     assert initial["product_create_transaction"]["transaction_hash"] != edited["product_create_transaction"]["transaction_hash"]
     assert initial["product_create_transaction"]["product_facts_sha256"] != edited["product_create_transaction"]["product_facts_sha256"]
-    assert edited["product_create_transaction"]["product_facts_sha256"] == edited["intent_hypothesis"]["product_intent_authority"]["product_facts_sha256"]
+    transaction_facts_hash = edited["product_create_transaction"]["product_facts_sha256"]
+    preview_facts_hash = edited["intent_hypothesis"]["product_intent_authority_summary"]["product_facts_sha256"]
+    assert transaction_facts_hash == preview_facts_hash
     assert "shelter coordinator" in edited["intent_hypothesis"]["first_path"].casefold()
     assert not (tmp_path / "odylith/radar/source").exists()
     assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
@@ -458,7 +474,7 @@ def test_greenfield_sentence_form_edit_rebuilds_without_schema_shaped_input(tmp_
     assert rc == 0
     assert payload["product_create_transaction"]["quality_status"] == "passed"
     assert payload["intent_hypothesis"]["first_path"].startswith("Shelter coordinators can")
-    assert payload["intent_hypothesis"]["product_intent_authority"]["source_format"] == (
+    assert payload["intent_hypothesis"]["product_intent_authority_summary"]["source_format"] == (
         "operator_prompt_with_edit_evidence"
     )
     assert not (tmp_path / "odylith/radar/source").exists()
@@ -956,6 +972,12 @@ def test_greenfield_confirmation_command_quotes_transaction_paths(tmp_path, caps
     payload = json.loads(capsys.readouterr().out)
     command = payload["confirmation"]["choices"][0]["commit_command"]
     arguments = shlex.split(command)
+    authority_summary = payload["intent_hypothesis"]["product_intent_authority_summary"]
+    full_authority = payload["transaction"]["intent_authority"]
+    assert "product_intent_authority" not in payload["intent_hypothesis"]
+    assert "material_fields" not in authority_summary
+    assert full_authority["material_fields"]
+    assert authority_summary["product_facts_sha256"] == full_authority["product_facts_sha256"]
     assert arguments[5:7] == ["--transaction-file", str(output_path)]
     assert arguments[7:9] == ["--transaction-hash", payload["product_create_transaction"]["transaction_hash"]]
 

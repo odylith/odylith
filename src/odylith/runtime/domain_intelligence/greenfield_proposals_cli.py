@@ -19,6 +19,14 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRE
 from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
 
 
+_PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
+_PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
+    "product_facts_sha256",
+    "source_format",
+    "materiality_status",
+)
+
+
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith greenfield",
@@ -317,6 +325,24 @@ def _compile_prompt_evidence_transaction(
     return candidate_intent, transaction, transaction_path
 
 
+def _public_intent_hypothesis(candidate_intent: Mapping[str, Any]) -> dict[str, Any]:
+    """Return typed Product Intent without exposing the private custody receipt."""
+
+    visible = dict(candidate_intent)
+    authority = visible.pop("product_intent_authority", None)
+    if isinstance(authority, Mapping):
+        visible["product_intent_authority_summary"] = {
+            "schema_version": _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION,
+            "authority_version": str(authority.get("version", "")).strip(),
+            **{
+                key: authority[key]
+                for key in _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS
+                if str(authority.get(key, "")).strip()
+            },
+        }
+    return visible
+
+
 def _retired_intent_file_message() -> str:
     return (
         "The separate Product Intent confirmation flow is retired. `propose` now compiles the typed evidence and "
@@ -353,7 +379,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.output_format == "json":
             print(json.dumps({
                 "mode": "product_create_transaction",
-                "intent_hypothesis": candidate_intent,
+                "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
                 "product_create_transaction": transaction.summary(),
                 "transaction_file": str(transaction_path.relative_to(repo_root)),
                 "confirmation": _transaction_confirmation_payload(
@@ -400,7 +426,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 summary = transaction.summary()
                 payload = {
                     "mode": "product_create_transaction",
-                    "intent_hypothesis": candidate_intent,
+                    "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
                     "product_create_transaction": summary,
                     "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
                     "confirmation": _transaction_confirmation_payload(

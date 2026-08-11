@@ -51,6 +51,13 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Separated public Product Intent preview from private custody evidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Greenfield JSON previews use a separately named and versioned authority
+  summary containing the authority version, product-facts hash, source format,
+  and materiality status. Repeated raw evidence spans remain in the sealed
+  transaction receipt for audit and hash verification instead of leaking into
+  the user-facing intent hypothesis.
+
 - 2026-08-11: Kept generic slug fallbacks out of Product Intent identity. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The pre-confirm Tribunal derives project-title aliases only from supplied
   Product Intent values. A missing project slug can no longer become the
