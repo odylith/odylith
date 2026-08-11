@@ -26,6 +26,9 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
 from odylith.runtime.domain_intelligence.greenfield_rows import row_count
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_drift import (
     semantic_overlap_ratio as _semantic_overlap_ratio,
 )
@@ -584,6 +587,8 @@ def _accepted_project_preview_issues(
     if clean_text(gate.get("status")) != "passed":
         issues.append("accepted-project memory preview validation gate did not pass")
     proposal = accepted_preview.get("proposal") if isinstance(accepted_preview.get("proposal"), Mapping) else {}
+    if PRODUCT_INTENT_AUTHORITY_KEY in proposal:
+        issues.append("accepted-project memory preview contains the private Product Intent authority receipt")
     if not isinstance(proposal.get("semantic_model"), Mapping):
         issues.append("accepted-project memory preview must include the GreenfieldSemanticModel")
     created = accepted_preview.get("created") if isinstance(accepted_preview.get("created"), Mapping) else {}

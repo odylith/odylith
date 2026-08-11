@@ -51,6 +51,13 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Separated accepted product truth from the private authority receipt. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Accepted-project compilation omits `product_intent_authority` before its
+  public bytes are normalized and sealed. The ProductCreateTransaction keeps
+  the complete receipt and exact hash binding, while the pre-confirm package
+  gate rejects any accepted-project preview that reintroduces the private
+  authority object.
+
 - 2026-08-11: Converged component clause repair on shared semantic owners. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The owned-state Tribunal and deterministic repair router share one clause
   classification contract. Source-exact compounds are restored before noun

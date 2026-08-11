@@ -26,6 +26,9 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import
 )
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_package_hygiene import prewrite_path_leak_issues
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import repair_greenfield_package_until_clean
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
@@ -1184,6 +1187,19 @@ def test_greenfield_package_gate_rejects_mechanical_accepted_project_copy(tmp_pa
 
     assert not report.passed
     assert "accepted-project memory preview leaked Registry contract tuple prose" in "\n".join(report.issues)
+
+
+def test_greenfield_package_gate_rejects_private_authority_in_accepted_project(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    accepted = _accepted_preview(proposal)
+    accepted["proposal"][PRODUCT_INTENT_AUTHORITY_KEY] = {"source_spans": [{"evidence_text": "private"}]}
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, accepted_project_preview=accepted)
+    )
+
+    assert not report.passed
+    assert "accepted-project memory preview contains the private Product Intent authority receipt" in report.issues
 
 
 def test_greenfield_package_gate_rejects_rendered_modal_grammar_drift(tmp_path: Path) -> None:

@@ -24,6 +24,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_has_material_first_path_gap
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import build_greenfield_completion_report
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -75,7 +78,7 @@ def _run_confirmed_transaction_create(
     capsys,
     release: str = "0.0.1",
     edit_evidence_file: str = ".odylith/runtime/greenfield/confirmed-intent.md",
-) -> tuple[int, str, dict[str, object]]:
+) -> tuple[int, str, dict[str, object], dict[str, object]]:
     propose_args = ["propose", "--repo-root", str(repo_root), "--prompt", prompt]
     if edit_evidence_file:
         propose_args.extend(("--edit-evidence", edit_evidence_file))
@@ -86,6 +89,7 @@ def _run_confirmed_transaction_create(
     compile_payload = json.loads(compile_output)
     transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
     transaction_file = str(compile_payload["transaction_file"])
+    sealed_transaction = json.loads((Path(repo_root) / transaction_file).read_text(encoding="utf-8"))
     create_rc = greenfield_proposals.main(
         [
             "create",
@@ -99,7 +103,7 @@ def _run_confirmed_transaction_create(
         ]
     )
     create_output = capsys.readouterr().out
-    return create_rc, create_output, compile_payload
+    return create_rc, create_output, compile_payload, sealed_transaction
 
 
 def test_confirmed_intent_prompt_wrapper_semantics_stay_in_prompt_source_owner() -> None:
@@ -950,7 +954,7 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         encoding="utf-8",
     )
 
-    rc, output, _compile_payload = _run_confirmed_transaction_create(
+    rc, output, _compile_payload, _sealed_transaction = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a structured review workspace.",
         capsys=capsys,
@@ -1230,7 +1234,7 @@ Success means the exported package explains which records were included or exclu
         encoding="utf-8",
     )
 
-    rc, output, _compile_payload = _run_confirmed_transaction_create(
+    rc, output, _compile_payload, _sealed_transaction = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a structured evidence review workspace.",
         capsys=capsys,
@@ -1758,7 +1762,7 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
         encoding="utf-8",
     )
 
-    rc, output, _compile_payload = _run_confirmed_transaction_create(
+    rc, output, _compile_payload, _sealed_transaction = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt="Draft a product-first greenfield proposal for a decision review workspace.",
         capsys=capsys,
@@ -1839,7 +1843,7 @@ def test_greenfield_create_compiles_prompt_without_edit_evidence(
         "repair customer trust, and prove every response path before launch."
     )
 
-    rc, output, _compile_payload = _run_confirmed_transaction_create(
+    rc, output, _compile_payload, sealed_transaction = _run_confirmed_transaction_create(
         repo_root=tmp_path,
         prompt=prompt,
         capsys=capsys,
@@ -1854,6 +1858,9 @@ def test_greenfield_create_compiles_prompt_without_edit_evidence(
     assert "Customer Recovery Desk" in encoded
     assert "Greenfield Project State" not in encoded
     assert "Build a customer recovery desk" not in encoded
+    assert "Build a customer recovery desk" in json.dumps(sealed_transaction["intent_authority"])
+    assert PRODUCT_INTENT_AUTHORITY_KEY in sealed_transaction["proposal"]
+    assert PRODUCT_INTENT_AUTHORITY_KEY not in accepted["proposal"]
     assert "can can" not in encoded.casefold()
     assert "Let Support Leads Can" not in encoded
     assert "with reviewable blocker handoff correction release status" not in encoded

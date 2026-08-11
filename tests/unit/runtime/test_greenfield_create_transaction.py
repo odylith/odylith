@@ -625,6 +625,9 @@ def test_sealed_transaction_keeps_staging_paths_out_of_accepted_project_custody(
     accepted_payload = payload["prewrite_package"]["accepted_project_preview"]
     serialized = json.dumps(accepted_payload, sort_keys=True)
 
+    assert payload["intent_authority"] == transaction.intent_authority
+    assert PRODUCT_INTENT_AUTHORITY_KEY in payload["proposal"]
+    assert PRODUCT_INTENT_AUTHORITY_KEY not in accepted_payload["proposal"]
     assert str(staged_root) not in serialized
     assert "odylith-greenfield-prewrite" not in serialized
     assert accepted_payload["created"]["workstreams"][0]["idea_path"] == (

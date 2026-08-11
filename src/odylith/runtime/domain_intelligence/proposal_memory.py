@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_package_hygiene import managed_repo_path
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_terminal_punctuation
 
@@ -335,6 +338,7 @@ def _accepted_memory_proposal(
     """Return the proposal shape stored in accepted memory."""
 
     payload = _portable_repo_paths(copy.deepcopy(dict(proposal)), repo_root=repo_root)
+    payload.pop(PRODUCT_INTENT_AUTHORITY_KEY, None)
     first_path = _canonical_accepted_first_path(payload) or _normalized_first_path_from_events(payload)
     if not first_path:
         return payload
