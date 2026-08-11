@@ -408,6 +408,15 @@ def test_greenfield_tribunal_rejects_project_title_prefixed_diagram_titles() -> 
     assert any("title must name the architecture view" in issue for issue in decision.issues)
 
 
+def test_greenfield_tribunal_does_not_treat_missing_project_slug_as_component_identity() -> None:
+    proposal = _host_reasoned_ecommerce_proposal()
+    proposal["intent"].pop("project_slug", None)
+
+    decision = greenfield_proposals.run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    assert not any("title must name the architecture view" in issue for issue in decision.issues)
+
+
 def test_greenfield_preconfirm_rebuilds_unstyled_flowchart_evidence(tmp_path) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _proposal_with_confirmed_authority(tmp_path)

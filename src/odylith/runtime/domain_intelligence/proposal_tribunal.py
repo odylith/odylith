@@ -403,11 +403,8 @@ def _check_visible_tribunal_actors(
 
 def _project_title_slugs(proposal: Mapping[str, Any]) -> set[str]:
     intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    candidates = {
-        slugify(str(intent.get("title", ""))),
-        slugify(str(intent.get("project_slug", ""))),
-    }
-    return {candidate for candidate in candidates if candidate}
+    values = (intent.get("title"), intent.get("project_slug"))
+    return {slugify(str(value)) for value in values if str(value or "").strip()}
 
 
 def _has_text(row: Mapping[str, Any], key: str) -> bool:

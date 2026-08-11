@@ -51,6 +51,12 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Kept generic slug fallbacks out of Product Intent identity. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  The pre-confirm Tribunal derives project-title aliases only from supplied
+  Product Intent values. A missing project slug can no longer become the
+  generic `component` fallback and falsely reject a valid Component Boundary
+  View, while actual project-title-prefixed Atlas titles still fail closed.
+
 - 2026-08-11: Closed baseline custody regressions without expanding generated prose. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Result-only EDIT preserves the visible title-derived path assumption. Prompt
   text matching after outer-whitespace normalization remains raw evidence when
