@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import inline
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_confirmed_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
@@ -363,6 +364,8 @@ def test_markdown_sentence_casing_stays_in_text_owner() -> None:
     assert "def clean_markdown_sentence" in text_owner
     assert clean_markdown_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
     assert clean_markdown_sentence(" **ops** sees `status` , ready?") == "Ops sees status, ready?"
+    assert clean_markdown_sentence('the user asks "what changed?"') == 'The user asks "what changed?"'
+    assert sentence_confirmed_text('The user asks "what changed?"') == 'The user asks "what changed?"'
     assert diagram_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
     assert sequence_event_steps("1. Open app. 2. **ops** sees `status` , ready.") == [
         "Ops sees status, ready"

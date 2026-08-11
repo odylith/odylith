@@ -17,6 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_wi
 from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import generic_contract_placeholder_fragments
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
@@ -38,7 +41,9 @@ CONTRACT_KEYS = (
     "downstream_consumers",
     "unique_failure",
 )
-_INTERNAL_PROSE_ROOTS = frozenset({"artifact_plan_patch_ledger", "semantic_patch_ledger"})
+_INTERNAL_PROSE_ROOTS = frozenset(
+    {"artifact_plan_patch_ledger", PRODUCT_INTENT_AUTHORITY_KEY, "semantic_patch_ledger"}
+)
 
 _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (

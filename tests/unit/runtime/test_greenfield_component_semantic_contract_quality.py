@@ -83,6 +83,18 @@ def test_output_normalization_preserves_nominal_checks_record_without_actor_narr
     assert produced_output_artifact_phrases("checks record", preserve_unclassified=True) == ()
 
 
+def test_output_normalization_preserves_transformation_result_object() -> None:
+    assert produced_output_artifact_phrases(
+        "Converts body stats plus logged activity into an energy-out number"
+    ) == ("an energy-out number",)
+    assert produced_output_artifact_phrases(
+        "Turns body stats into an energy-out number and records an audit log"
+    ) == ("an energy-out number",)
+    assert produced_output_artifact_phrases(
+        "Turns a request into a quote with assumptions"
+    ) == ("a quote with assumptions",)
+
+
 def test_component_io_repair_does_not_duplicate_terminal_lifecycle() -> None:
     identity, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
         "Lifecycle Audit and Review View",

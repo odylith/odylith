@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import canon
 from odylith.runtime.domain_intelligence.greenfield_component_terms import finite_action_clause
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_term_constants import ARTIFACT_CARRIER_TERMS
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import transformation_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -43,10 +44,11 @@ _NOMINAL_ACTION_MODIFIERS = {"check", "export"}
 
 
 def produced_output_artifact_phrases(value: str, *, preserve_unclassified: bool = False) -> list[str]:
-    """Return artifact nouns from output clauses without retaining process narration."""
-
     rows: list[str] = []
     for raw in clean_artifact_text(value).replace(";", ",").split(","):
+        if transformation_output := transformation_result_object(raw):
+            rows.append(transformation_output)
+            continue
         for words in _coordinated_action_segments(trim_phrase(raw).split()):
             action_clause, owns_action = finite_action_clause(" ".join(words))
             action_words = action_clause.split() if owns_action else words
@@ -98,9 +100,8 @@ def _coordinated_action_segments(words: Sequence[str]) -> list[list[str]]:
 
 
 def _is_nominal_action_compound(words: Sequence[str], action: str) -> bool:
-    if action not in _NOMINAL_ACTION_MODIFIERS or len(words) < 2:
-        return False
-    return words[1].casefold().strip(".,;:") in ARTIFACT_CARRIER_TERMS
+    carrier = words[1].casefold().strip(".,;:") if len(words) >= 2 else ""
+    return action in _NOMINAL_ACTION_MODIFIERS and carrier in ARTIFACT_CARRIER_TERMS
 
 
 def _output_object_words(words: Sequence[str], *, drop_recipient: bool) -> list[str]:

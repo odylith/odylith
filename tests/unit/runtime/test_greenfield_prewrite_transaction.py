@@ -726,7 +726,8 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(
     assert "It should explain how the energy-out number is calculated" in component_text
     assert "Successful path evidence for Burn Estimation Engine: energy-out number" in component_text
     assert "Successful path evidence for Recommendation Engine: next-day adjustment recommendation" in component_text
-    assert "Successful path evidence for Daily Activity Log and Profile Store" in activity_component_text
+    assert "Successful path evidence for Activity Log and Profile Store" in activity_component_text
+    assert "Successful path evidence for Daily Activity Log and Profile Store" not in activity_component_text
     assert "No explicit dependency recorded yet" not in idea_text
     assert "Run focused validation for the touched paths once implementation begins" not in idea_text
     assert "Queue now, then bind a technical plan when the implementation wave starts" not in idea_text

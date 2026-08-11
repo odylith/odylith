@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_semantic_drift import contrastive_domain_drift_issues
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
@@ -22,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import rep
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
@@ -76,6 +80,21 @@ def test_generated_semantic_slop_gate_keeps_role_ending_actor_labels() -> None:
     assert generated_semantic_slop_issues(
         {"intent": {"human_actors": ["Lab Support Owner: needs the product to coordinate evidence."]}}
     ) == []
+
+
+def test_public_copy_gates_ignore_private_authority_prose_but_keep_public_siblings_strict() -> None:
+    private_fragment = 'The win is a clear answer to "did I burn enough?'
+    authority_only = {
+        PRODUCT_INTENT_AUTHORITY_KEY: {
+            "atomic_facts": [{"normalized_value": private_fragment}],
+        }
+    }
+
+    assert generated_semantic_slop_issues(authority_only, root="proposal") == []
+    assert public_prose_quality_issues(authority_only) == []
+
+    with_public_fragment = {**authority_only, "product_view": private_fragment}
+    assert any("unbalanced quoted text" in issue for issue in generated_semantic_slop_issues(with_public_fragment))
 
 
 def test_action_chain_fragment_preserves_conditional_visible_result() -> None:

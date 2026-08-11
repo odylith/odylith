@@ -8,6 +8,7 @@ from odylith.runtime.common.prose_grammar import (
     action_base_verb_pattern,
     base_action_clause,
     base_following_action_verbs,
+    coordinated_action_form_after_connector,
     gerund_action_verb,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import (
@@ -461,7 +462,7 @@ def visible_result_object(value: str) -> str:
     result_list_object = _result_list_visible_object(text)
     if result_list_object:
         return result_list_object
-    transformation_object = _transformation_result_object(text)
+    transformation_object = transformation_result_object(text)
     if transformation_object:
         return transformation_object
     text = strip_action_subject(text)
@@ -546,7 +547,7 @@ def _result_list_visible_object(value: str) -> str:
             return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     return ""
 
-def _transformation_result_object(value: str) -> str:
+def transformation_result_object(value: str) -> str:
     """Return the target object from transformation clauses such as `turn X into Y using Z`."""
 
     text = clean_first_path_text(value).strip(" .")
@@ -559,12 +560,13 @@ def _transformation_result_object(value: str) -> str:
     )
     if not match:
         return ""
-    full_result = focused_visible_result_object(nominal_visible_result_object(match.group("object")))
+    object_text = _before_coordinated_action(match.group("object"))
+    full_result = focused_visible_result_object(nominal_visible_result_object(object_text))
     if re.match(r"^(?:(?:a|an|the)\s+)?final\b", full_result, flags=re.IGNORECASE):
         return clip_first_path_phrase(full_result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     result = re.split(
-        r"\s+\b(?:using|with|from|based\s+on|backed\s+by|supported\s+by)\b\s+",
-        match.group("object"),
+        r"\s+\b(?:using|from|based\s+on|backed\s+by|supported\s+by)\b\s+",
+        object_text,
         maxsplit=1,
         flags=re.IGNORECASE,
     )[0]
@@ -574,6 +576,16 @@ def _transformation_result_object(value: str) -> str:
         return ""
     result = focused_visible_result_object(nominal_visible_result_object(result))
     return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+
+
+def _before_coordinated_action(value: str) -> str:
+    tokens = str(value or "").split()
+    for index, token in enumerate(tokens):
+        if token.casefold().strip(".,;:") not in {"and", "then"}:
+            continue
+        if coordinated_action_form_after_connector(tokens, index):
+            return " ".join(tokens[:index]).strip(" ,.;:")
+    return " ".join(tokens).strip(" ,.;:")
 
 
 def _is_transformation_action_clause(value: str) -> bool:
@@ -750,4 +762,4 @@ def _replace_word_token(value: str, replacement: str) -> str:
         value = value[:-1]
     return f"{replacement}{suffix}"
 
-__all__ = ["MATERIAL_ACTION_RE", "action_chain_fragment", "actor_led_action_parts", "actor_signature", "base_adverbial_note_action", "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action", "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_action_result_object", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature", "strip_action_subject", "visible_action_clause", "visible_result_object"]
+__all__ = ["MATERIAL_ACTION_RE", "action_chain_fragment", "actor_led_action_parts", "actor_signature", "base_adverbial_note_action", "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action", "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_action_result_object", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature", "strip_action_subject", "transformation_result_object", "visible_action_clause", "visible_result_object"]

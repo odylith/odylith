@@ -236,6 +236,9 @@ def derive_component_semantic_contract(
         protected_items,
         [*output_description_phrases, output_focus, produced_outputs],
     )
+    source_output_focus = (
+        _clean_artifact_phrase(output_description_phrases[0]) if output_description_phrases else ""
+    )
     transition_context = semantic_context.transition_context_text(
         proposal_context,
         label_terms=label_terms,
@@ -250,7 +253,7 @@ def derive_component_semantic_contract(
     transition_result = contract_support.result_like_transition_phrase(states)
     critical = _component_kind_echo_safe_phrase(
         label=label,
-        phrase=transition_result or contract_support.result_like_phrase(output_focus) or critical,
+        phrase=protected_focus or source_output_focus or transition_result or contract_support.result_like_phrase(output_focus) or critical,
     )
     sibling_label = _label(sibling) if isinstance(sibling, Mapping) else ""
     handoff_label = next_label or "release review"
@@ -263,7 +266,7 @@ def derive_component_semantic_contract(
         output_focus=output_focus,
         sibling_label=handoff_label,
         sibling_focus=handoff_focus,
-        preferred_focus=protected_focus,
+        preferred_focus=protected_focus or source_output_focus,
     )
     proof = unique_text(
         [
@@ -324,7 +327,7 @@ def derive_component_semantic_contract(
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score"))
         else "built from the wrong inputs"
     )
-    critical_noun = protected_focus or _noun_slot_artifact_phrase(critical)
+    critical_noun = protected_focus or source_output_focus or _noun_slot_artifact_phrase(critical)
     fields = contract_support.sanitize_contract_fields(
         {
             "owned_state": _contract_list_text(*owned_seed),

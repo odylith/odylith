@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import RELATI
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import relation_object_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import transformation_result_object
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import ComponentNarrativeView
 from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import component_narrative_view
@@ -121,6 +122,7 @@ def build_narrative_component_spec(
             input_focus=input_focus,
             output_focus=output_focus,
             transition_focus=transition_focus,
+            responsibility=responsibility,
             accepted_intent=accepted_intent,
         ),
         "",
@@ -221,6 +223,7 @@ def _opening_narrative(
     input_focus: str,
     output_focus: str,
     transition_focus: str,
+    responsibility: str,
     accepted_intent: str,
 ) -> str:
     noun = _kind_noun(kind)
@@ -245,10 +248,13 @@ def _opening_narrative(
             focus=raw_focus,
             output_focus=raw_output_focus,
             transition_focus=transition_focus,
+            responsibility=responsibility,
             label=label,
         )
+        responsibility_result = transformation_result_object(responsibility)
         has_calculation_result = bool(
-            _preferred_calculation_result(_calculation_parts(transition_focus))
+            responsibility_result
+            or _preferred_calculation_result(_calculation_parts(transition_focus))
             or _preferred_calculation_result(_calculation_parts(raw_output_focus))
             or _preferred_calculation_result(_calculation_parts(raw_focus))
         )
@@ -1056,7 +1062,17 @@ def _state_store_owned_text(values: Sequence[str]) -> str:
     return _human_join(rows)
 
 
-def _calculation_focus(*, focus: str, output_focus: str, transition_focus: str, label: str) -> str:
+def _calculation_focus(
+    *,
+    focus: str,
+    output_focus: str,
+    transition_focus: str,
+    responsibility: str,
+    label: str,
+) -> str:
+    responsibility_result = transformation_result_object(responsibility)
+    if responsibility_result:
+        return responsibility_result
     transition_parts = _calculation_parts(transition_focus)
     output_parts = _calculation_parts(output_focus)
     focus_parts = _calculation_parts(focus)
@@ -1119,7 +1135,9 @@ def _preferred_calculation_result(values: Sequence[str]) -> str:
 def _calculation_subject(value: str) -> str:
     text = _calculation_result_subject(clean_text(value).strip(" .")) or "result"
     first_word = text.split(maxsplit=1)[0].casefold().strip(".,;:")
-    if first_word in {"a", "an", "the", "this", "that", "these", "those"}:
+    if first_word in {"a", "an"}:
+        return f"the {text.split(maxsplit=1)[1]}" if len(text.split(maxsplit=1)) > 1 else "the result"
+    if first_word in {"the", "this", "that", "these", "those"}:
         return text
     if text[:1].islower():
         return f"the {text}"

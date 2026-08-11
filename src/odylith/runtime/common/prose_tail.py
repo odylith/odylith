@@ -119,6 +119,8 @@ _BASE_FORM_ACTION_PRECEDERS = frozenset(
 _TERMINAL_NOUN_DETERMINERS = frozenset(
     {"a", "an", "another", "any", "each", "every", "one", "the", "these", "this", "those"}
 )
+_COPULAR_TAIL_WORDS = frozenset({"am", "are", "be", "become", "becomes", "is", "remain", "remains", "was", "were"})
+_OBJECT_GAP_ADJECTIVES = frozenset({"clear", "difficult", "easy", "hard", "safe", "simple"})
 
 
 def strip_dangling_word_tail(
@@ -235,7 +237,15 @@ def _tail_needs_object(tokens: Sequence[str]) -> bool:
         return False
     if tail not in _BASE_FORM_INCOMPLETE_TAIL_WORDS:
         return True
+    if _has_copular_infinitive_tail(tokens):
+        return False
     return len(tokens) >= 2 and tokens[-2] in _BASE_FORM_ACTION_PRECEDERS
+
+
+def _has_copular_infinitive_tail(tokens: Sequence[str]) -> bool:
+    if len(tokens) < 5 or tokens[-2] != "to" or tokens[-3] not in _OBJECT_GAP_ADJECTIVES:
+        return False
+    return tokens[-4] in _COPULAR_TAIL_WORDS
 
 
 def _terminal_tail_is_noun_phrase(tokens: Sequence[str]) -> bool:

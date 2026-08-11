@@ -16,6 +16,7 @@ _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
 _COMMA_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;|,)+")
 _LIST_BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s*")
 _PUNCTUATION_SPACING_RE = re.compile(r"\s+([,.;:?!])")
+SENTENCE_TRAILING_CLOSERS = frozenset("\"'\u201d\u2019)]}")
 _CONTROL_ACTION_TARGET_RE = re.compile(
     r"\b(?P<action>control\s+actions?)\s+to\s+(?:the\s+)?(?P<target>[^.;:,]+)",
     re.IGNORECASE,
@@ -103,7 +104,7 @@ def clean_artifact_sentence(value: Any, *, split_parentheses: bool = False) -> s
     if not text:
         return ""
     text = text[:1].upper() + text[1:]
-    return text if text[-1] in ".!?" else f"{text}."
+    return text if has_terminal_sentence_punctuation(text) else f"{text}."
 
 
 def clean_markdown_text(value: Any) -> str:
@@ -128,7 +129,16 @@ def clean_markdown_sentence(value: Any) -> str:
         text = text[:1].upper() + text[1:]
     if not text:
         return ""
-    return text if text[-1] in ".!?" else f"{text}."
+    return text if has_terminal_sentence_punctuation(text) else f"{text}."
+
+
+def has_terminal_sentence_punctuation(value: Any) -> bool:
+    """Recognize sentence punctuation followed by closing quotes or brackets."""
+
+    text = clean_text(value).rstrip()
+    while text and text[-1] in SENTENCE_TRAILING_CLOSERS:
+        text = text[:-1].rstrip()
+    return bool(text and text[-1] in ".!?")
 
 
 def word_count(value: Any) -> int:

@@ -30,6 +30,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
+from odylith.runtime.domain_intelligence.greenfield_sealed_product_intent_authority import (
+    PRODUCT_INTENT_AUTHORITY_KEY,
+)
 
 
 _PROVISIONAL_TITLE_RE = re.compile(
@@ -704,7 +707,12 @@ def _text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, 
     if isinstance(value, Mapping):
         rows: list[tuple[str, str]] = []
         for key, nested in value.items():
-            if str(key).casefold() in {"artifact_plan_patch_ledger", "semantic_patch_ledger", "source_title"}:
+            if str(key).casefold() in {
+                "artifact_plan_patch_ledger",
+                PRODUCT_INTENT_AUTHORITY_KEY,
+                "semantic_patch_ledger",
+                "source_title",
+            }:
                 continue
             rows.extend(_text_leaves(nested, path=(*path, str(key))))
         return tuple(rows)

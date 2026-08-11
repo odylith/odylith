@@ -67,6 +67,33 @@ def test_generated_copy_quality_blocks_hiit_regression_shapes() -> None:
     assert any("malformed punctuation" in issue for issue in issues)
 
 
+def test_generated_copy_quality_keeps_closing_quote_with_quoted_question() -> None:
+    copy = 'The product gives a clear answer to "did I burn enough?"'
+
+    assert generated_public_copy_issues("quoted question", copy) == ()
+
+
+def test_generated_copy_quality_accepts_copular_infinitive_tail_without_weakening_missing_objects() -> None:
+    assert generated_public_copy_issues("valid complement", "The result is safe to show.") == ()
+    assert any(
+        "clipped or dangling public copy" in issue
+        for issue in generated_public_copy_issues("missing object", "The product needs to show.")
+    )
+    assert any(
+        "clipped or dangling public copy" in issue
+        for issue in generated_public_copy_issues("missing complement", "The result is to show.")
+    )
+    for copy in (
+        "The result is able to show.",
+        "The result is expected to show.",
+        "The result is meant to show.",
+    ):
+        assert any(
+            "clipped or dangling public copy" in issue
+            for issue in generated_public_copy_issues("missing object", copy)
+        )
+
+
 def test_generated_copy_quality_treats_shell_commands_as_atomic_quote_units() -> None:
     command = (
         "odylith greenfield create --repo-root . --prompt 'Service Goal Planning Workspace: "

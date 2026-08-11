@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
+from odylith.runtime.domain_intelligence.greenfield_text import has_terminal_sentence_punctuation
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import word_count as _generic_word_count
@@ -298,7 +299,7 @@ def confirmed_text_values(value: object) -> list[str]:
 
 def sentence_confirmed_text(value: str) -> str:
     text = clean_confirmed_text(value).strip()
-    if text and text[-1] not in ".!?":
+    if text and not has_terminal_sentence_punctuation(text):
         text += "."
     return text
 

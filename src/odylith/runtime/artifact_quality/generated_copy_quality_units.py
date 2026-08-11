@@ -11,6 +11,7 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import Rende
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import artifact_quality_units
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
 from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
+from odylith.runtime.domain_intelligence.greenfield_text import SENTENCE_TRAILING_CLOSERS
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 
@@ -99,14 +100,7 @@ def _append_text_quality_units_for_key(units: list[ArtifactQualityUnit], value: 
     if _looks_like_shell_command(str(value or "")):
         units.append(_scalar_unit(text=clean_text(value), key=key, text_kind="command"))
         return
-    current: list[str] = []
-    for char in str(value or ""):
-        if char in _SENTENCE_TERMINATORS:
-            _append_quality_chunk(units, current, key=key)
-            current = []
-        else:
-            current.append(char)
-    _append_quality_chunk(units, current, key=key)
+    _append_sentence_quality_units(units, str(value or ""), key=key)
 
 
 def _append_unit_text_quality_units(units: list[ArtifactQualityUnit], unit: ArtifactQualityUnit) -> None:
@@ -132,14 +126,32 @@ def _append_unit_text_quality_units(units: list[ArtifactQualityUnit], unit: Arti
     if unit.text_kind in {"command", "metadata", "mermaid_label"}:
         units.append(_copy_unit(unit, text=text))
         return
+    _append_sentence_quality_units(units, text, key=unit.surface_role, template=unit)
+
+
+def _append_sentence_quality_units(
+    units: list[ArtifactQualityUnit],
+    value: str,
+    *,
+    key: str,
+    template: ArtifactQualityUnit | None = None,
+) -> None:
     current: list[str] = []
-    for char in text:
-        if char in _SENTENCE_TERMINATORS:
-            _append_quality_chunk(units, current, key=unit.surface_role, template=unit)
-            current = []
-        else:
+    index = 0
+    while index < len(value):
+        char = value[index]
+        if char not in _SENTENCE_TERMINATORS:
             current.append(char)
-    _append_quality_chunk(units, current, key=unit.surface_role, template=unit)
+            index += 1
+            continue
+        index += 1
+        if char not in "\n\r":
+            while index < len(value) and value[index] in SENTENCE_TRAILING_CLOSERS:
+                current.append(value[index])
+                index += 1
+        _append_quality_chunk(units, current, key=key, template=template)
+        current = []
+    _append_quality_chunk(units, current, key=key, template=template)
 
 
 def _append_quality_chunk(

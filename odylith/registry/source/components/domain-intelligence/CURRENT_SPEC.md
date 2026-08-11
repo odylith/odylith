@@ -51,6 +51,14 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Kept private custody out of public prose gates and preserved explicit transformation outputs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Public semantic-copy walkers exclude the typed Product Intent authority
+  receipt without weakening its structural or hash validation. Shared sentence
+  boundaries retain closing quotes, clipped-tail validation narrowly permits
+  object-gap adjective constructions, and component projections recover an
+  explicit transformation result without absorbing a coordinated action or
+  deleting a meaningful `with` qualifier.
+
 - 2026-08-11: Separated accepted product truth from the private authority receipt. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Accepted-project compilation omits `product_intent_authority` before its
   public bytes are normalized and sealed. The ProductCreateTransaction keeps
