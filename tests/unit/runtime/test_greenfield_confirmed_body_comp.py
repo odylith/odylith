@@ -8,6 +8,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_INTENT_AUTHORITY_KEY
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_payload
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
@@ -340,10 +342,12 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
         prompt=prompt,
         repo_root=tmp_path,
     )
-    intent_encoded = json.dumps(intent)
+    intent_encoded = json.dumps(product_facts_payload(intent))
+    authority_encoded = json.dumps(intent[PRODUCT_INTENT_AUTHORITY_KEY])
     assert "control actions to battery" not in intent_encoded
     assert "That single path" not in intent_encoded
     assert "whole product proven end to end" not in intent_encoded
+    assert "whole product proven end to end" in authority_encoded
     assert "SunLedger pulls" not in intent_encoded
     assert "the product pulls live generation" in intent_encoded.casefold()
 
@@ -354,7 +358,8 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
         confirmed_intent=intent,
     )
 
-    encoded = json.dumps(proposal)
+    public_proposal = {key: value for key, value in proposal.items() if key != PRODUCT_INTENT_AUTHORITY_KEY}
+    encoded = json.dumps(public_proposal)
     generated_posture = json.dumps(
         {key: intent.get(key) for key in ("opportunity", "problem", "product_view", "success_metrics")}
     )
