@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
 
 ## Overview
@@ -50,6 +50,15 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-11: Closed baseline custody regressions without expanding generated prose. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Result-only EDIT preserves the visible title-derived path assumption. Prompt
+  text matching after outer-whitespace normalization remains raw evidence when
+  presented as an intent file. Canonical product facts exclude supporting
+  evidence while the private authority receipt
+  retains its digest-bound custody. First-path action custody is evaluated
+  independently from bounded generated architecture labels, and concise actor
+  responsibility text no longer has to repeat the complete accepted path.
 
 - 2026-08-11: Versioned deferred-role custody without weakening exact fact hashes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Product Intent v5 canonicalizes unresolved deferred role alternatives before

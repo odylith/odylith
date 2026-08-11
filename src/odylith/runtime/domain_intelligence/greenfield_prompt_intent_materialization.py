@@ -372,9 +372,12 @@ def _edited_actor_row_has_human_signal(value: object) -> bool:
 
 
 def _uses_title_only_first_path_hypothesis(*, prompt: str, edit_evidence: str) -> bool:
-    evidence = tuple(value for value in (prompt, edit_evidence) if value.strip())
-    return not any(_has_usable_first_path_evidence(value) for value in evidence) and any(
-        _title_supports_first_path_hypothesis(value) for value in evidence
+    if _has_usable_first_path_evidence(prompt) or not _title_supports_first_path_hypothesis(prompt):
+        return False
+    return bool(
+        not edit_evidence.strip()
+        or _visible_result_edit_value(edit_evidence)
+        or not _has_usable_first_path_evidence(edit_evidence)
     )
 
 
@@ -752,18 +755,21 @@ def _plain_language_edit_overrides(
         actor = _sentence_start(actor_match.group("actor"))
         if actor:
             return _first_path_actor_overrides(actor=actor, baseline=baseline)
-    visible_result_match = re.fullmatch(
+    result = _visible_result_edit_value(text)
+    if result:
+        return _first_path_visible_result_overrides(result=result, baseline=baseline)
+    return {}
+
+
+def _visible_result_edit_value(value: str) -> str:
+    match = re.fullmatch(
         r"(?:actually\s+)?(?:the\s+)?(?:visible\s+)?(?:result|outcome)\s+"
         r"(?:is|should\s+be|must\s+be|needs?\s+to\s+be)\s+"
         r"(?P<result>[A-Za-z][A-Za-z0-9 /&'(),-]{2,220})",
-        text,
+        " ".join(str(value or "").split()).strip(" ."),
         flags=re.IGNORECASE,
     )
-    if visible_result_match:
-        result = visible_result_match.group("result").strip(" .")
-        if result:
-            return _first_path_visible_result_overrides(result=result, baseline=baseline)
-    return {}
+    return match.group("result").strip(" .") if match else ""
 
 
 def _additive_edit_evidence_overrides(

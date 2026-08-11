@@ -355,7 +355,12 @@ def test_prompt_hypothesis_preserves_concrete_first_path_atomic_custody(
     authority = intent[PRODUCT_INTENT_AUTHORITY_KEY]
 
     require_product_intent_authority(authority)
-    action_atoms = [atom for atom in authority["atomic_facts"] if "actions" in atom["categories"]]
+    action_atoms = [
+        atom
+        for atom in authority["atomic_facts"]
+        if "actions" in atom["categories"]
+        and any(link["field"] == "first_path" for link in atom["projection_links"])
+    ]
     assert action_atoms
     assert all(atom["custody_state"] == "accepted_fact" for atom in action_atoms)
     assert all(atom["source_span_refs"] for atom in action_atoms)
@@ -631,11 +636,12 @@ def test_explicit_human_context_overrides_a_nonhuman_parser_actor(tmp_path: Path
         fallback_title="Port Berth Carbon Tariff Planner",
     )
 
-    assert intent["first_path"]
+    assert intent["first_path"] == (
+        "Port operations compare vessel schedules, berth windows, shore-power availability, emissions evidence, "
+        "tariff exceptions, and operator signoff before publishing a daily berth plan."
+    )
     assert intent["human_actors"] == [
-            "Port operations: need the product to compare vessel schedules, berth windows, shore-power availability, "
-        "emissions evidence, tariff exceptions, and operator signoff before publishing a daily berth plan and keep "
-        "the result visible and reviewable"
+        "Port operations: need the product to compare vessel schedules and keep the result visible and reviewable"
     ]
 
 

@@ -246,12 +246,13 @@ def load_confirmed_intent_record(path: Path, *, prompt: str = "", fallback_title
         source_sections,
         str(intent.get("title") or fallback_title),
     )
+    replays_prompt = bool(prompt.strip()) and text.strip() == prompt.strip()
     source_format = (
         "operator_prompt"
         if (
             not _has_explicit_section_boundaries(source_sections)
             and not unheaded_confirmation
-            and _thin_operator_intent_source(text, prompt="")
+            and (replays_prompt or _thin_operator_intent_source(text, prompt=""))
         )
         else "markdown"
     )

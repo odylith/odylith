@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materializatio
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_patch_apply import (
     complete_greenfield_semantic_apply_payload,
 )
+from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_payload
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -495,7 +496,7 @@ The decision and resolution notice remain traceable for review.
 
     source = product_intent_source_text(prompt)
     intent = confirmation_from_operator_intent(prompt, prefer_product_title=True, as_mapping=True)
-    product_truth = {key: value for key, value in intent.items() if key != "prompt"}
+    product_truth = product_facts_payload(intent)
     rendered = json.dumps(product_truth, sort_keys=True).casefold()
 
     assert "medical q&a" not in source.casefold()
@@ -558,7 +559,7 @@ The decision and resolution notice remain traceable for review.
         fallback_title=greenfield_proposals.intent_title(prompt),
         edit_evidence=edited_confirmation,
     )
-    product_truth = {key: value for key, value in intent.items() if key != "prompt"}
+    product_truth = product_facts_payload(intent)
     rendered = json.dumps(product_truth, sort_keys=True).casefold()
 
     assert "medical q&a" not in rendered
