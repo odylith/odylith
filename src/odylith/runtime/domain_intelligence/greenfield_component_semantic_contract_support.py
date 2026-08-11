@@ -195,6 +195,13 @@ def restore_protected_phrase_surface(fields: Mapping[str, Any], protected_phrase
     return restored
 
 
+def restore_protected_phrase_values(values: Sequence[str], protected_phrases: Sequence[str]) -> tuple[str, ...]:
+    """Restore exact accepted surfaces before semantic phrase classification."""
+
+    replacements = tuple(_protected_replacements(protected_phrases))
+    return tuple(_restore_text_surface(str(value), replacements) for value in values)
+
+
 def protected_projection_items(values: Sequence[str]) -> tuple[tuple[str, str], ...]:
     surfaces = tuple(_clean(value).casefold().strip(" .,;:") for value in values if _clean(value))
     rows: list[tuple[str, str]] = []
@@ -623,6 +630,7 @@ __all__ = [
     "result_like_transition_phrase",
     "restore_protected_contract_items",
     "restore_protected_phrase_surface",
+    "restore_protected_phrase_values",
     "sanitize_contract_fields",
     "semantic_field_with_profile_supplements",
     "with_required_local_proof_floor",

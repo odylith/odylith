@@ -89,6 +89,7 @@ def derive_component_semantic_contract(
     """Derive a deterministic, product-local component contract."""
 
     label = _label(row)
+    source_description = _clean(row.get("source_system_description"))
     description = _description(row)
     gate_focus = semantic_context.validation_gate_focus(description)
     if gate_focus:
@@ -106,6 +107,7 @@ def derive_component_semantic_contract(
     action_terms = semantic_context.action_terms(" ".join(text for text in (label, description) if text)) or semantic_context.action_terms(local_text)
     relation_phrases = semantic_context.relation_phrases(description)
     protected_description_phrases = semantic_context.description_compound_phrases(description)
+    source_surface_phrases = semantic_context.description_compound_phrases(source_description)
     protected_items = contract_support.protected_projection_items(protected_description_phrases)
     output_description_phrases = _produced_output_artifact_phrases(description)
     description_phrases = _clean_artifact_phrases(
@@ -314,6 +316,7 @@ def derive_component_semantic_contract(
         if summary_phrases
         else (f"{_clean(label).casefold()} state", *label_phrases[:1], *evidence_phrases, "blocker state")
     )
+    owned_seed = contract_support.restore_protected_phrase_values(owned_seed, source_surface_phrases)
     owned_seed = owned_state_semantics.owned_state_phrases(owned_seed)
     owned_seed = tuple(_drop_subsumed_singletons(owned_seed))
     failure_cause = (

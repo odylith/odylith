@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import inline_actor_subject
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text
@@ -71,7 +72,7 @@ def actor_phrase_for_sentence(value: str) -> str:
     """Join actor labels into a sentence-ready phrase."""
 
     parts = [
-        clean_generated_text(part).strip(" .")
+        inline_actor_subject(clean_generated_text(part).strip(" ."), fallback="")
         for part in clean_generated_text(value).split(";")
         if clean_generated_text(part).strip(" .")
     ]

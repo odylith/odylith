@@ -5,10 +5,16 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import actor_phrase_for_sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import _normalize_proof_boundary
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import semantic_compiler_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_intent_with_authority
+
+
+def test_display_actor_labels_become_readable_inline_subjects() -> None:
+    assert actor_phrase_for_sentence("Researchers") == "the researchers"
+    assert actor_phrase_for_sentence("Home Cook; Safety Reviewer") == "the home cook and the safety reviewer"
 
 
 def test_accepted_proof_boundary_is_not_clipped_into_a_view_summary() -> None:

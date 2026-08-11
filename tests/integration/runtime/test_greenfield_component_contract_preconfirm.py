@@ -204,7 +204,7 @@ def test_follow_up_compound_does_not_become_an_action_shaped_state(tmp_path) -> 
     owned_state = " ".join(
         str(row["component_contract"]["owned_state"])
         for row in proposal["components"]
-    ).casefold()
+    ).casefold().replace("-", " ")
     assert "follow lifecycle" not in owned_state
     assert "follow up exceptions" in owned_state
 
@@ -247,6 +247,7 @@ def test_existing_artifact_carrier_does_not_repeat_in_prewrite_registry(tmp_path
         "QBER, and established key bits, then compare the saved run against prior results."
     )
     _candidate, proposal = _proposal_from_prompt(tmp_path, prompt)
+    assert differentiation.differentiate_component_contracts(proposal) is False
     transaction = greenfield_proposals.compile_greenfield_create_transaction(
         repo_root=tmp_path,
         proposal=proposal,

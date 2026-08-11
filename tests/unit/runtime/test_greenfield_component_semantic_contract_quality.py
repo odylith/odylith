@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_
 from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import normalize_contract
+from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import owned_state_fragment_issue
 from odylith.runtime.domain_intelligence.greenfield_component_outputs import produced_output_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
@@ -67,6 +68,19 @@ def test_component_io_repair_preserves_meaningful_responsibility_identity() -> N
     assert identity.casefold() == "quantum bell inequality checks record"
     assert accepted_inputs == "quantum bell inequality checks record request, authorized actor, validation context"
     assert produced_outputs == "quantum bell inequality checks record"
+
+
+def test_output_normalization_preserves_nominal_checks_record_without_actor_narration() -> None:
+    assert produced_output_artifact_phrases(
+        "bell inequality checks record",
+        preserve_unclassified=True,
+    ) == ("bell inequality checks record",)
+    assert produced_output_artifact_phrases(
+        "The researcher checks record",
+        preserve_unclassified=True,
+    ) == ()
+    assert produced_output_artifact_phrases("check record", preserve_unclassified=True) == ()
+    assert produced_output_artifact_phrases("checks record", preserve_unclassified=True) == ()
 
 
 def test_component_io_repair_does_not_duplicate_terminal_lifecycle() -> None:
@@ -534,6 +548,8 @@ def test_component_tribunal_rejects_action_and_condition_clauses_in_owned_state(
     lowered = [issue.casefold() for issue in issues]
     assert any("contains an action clause preserve readiness" in issue for issue in lowered)
     assert any("contains a condition clause dispatch until approval" in issue for issue in lowered)
+    assert owned_state_fragment_issue("maintains bell") == "action"
+    assert owned_state_fragment_issue("bell inequality checks record") == ""
 
 
 def test_contract_normalization_preserves_invalid_owned_state_for_tribunal_rejection() -> None:

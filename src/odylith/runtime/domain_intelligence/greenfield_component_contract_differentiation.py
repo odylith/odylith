@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     normalize_contract,
+    owned_state_fragment_issue,
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
@@ -171,6 +172,8 @@ def _contract_repair_targets(
 
 def _contract_needs_repair(contract: Mapping[str, Any]) -> bool:
     if public_prose_quality_issues(contract):
+        return True
+    if any(owned_state_fragment_issue(row) for row in split_contract_clauses(contract.get("owned_state"))):
         return True
     values = text_values(contract)
     if any(_starts_with_generic_actor(value) for value in values):

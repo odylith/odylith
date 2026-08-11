@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import canonical_action
@@ -38,7 +39,7 @@ _ACTION_KINDS = {
     "validate": "nominal",
     "verify": "process",
 }
-_NOMINAL_ACTION_MODIFIERS = {"export"}
+_NOMINAL_ACTION_MODIFIERS = {"check", "export"}
 
 
 def produced_output_artifact_phrases(value: str, *, preserve_unclassified: bool = False) -> list[str]:
@@ -53,7 +54,12 @@ def produced_output_artifact_phrases(value: str, *, preserve_unclassified: bool 
                 continue
             action = canonical_action(action_words[0].strip(".,;:"), _ACTION_KINDS)
             kind = _ACTION_KINDS.get(action, "")
-            if preserve_unclassified and _is_nominal_action_compound(action_words, action):
+            if (
+                preserve_unclassified
+                and _is_nominal_action_compound(action_words, action)
+                and (action != "check" or len(words) - len(action_words) >= 2)
+                and not has_actor_role_word(" ".join(words[: len(words) - len(action_words)]))
+            ):
                 kind = ""
             if kind == "nominal":
                 rows.extend(action_object_artifact_phrases(" ".join(action_words)))

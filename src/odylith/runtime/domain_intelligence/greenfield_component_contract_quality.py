@@ -275,19 +275,33 @@ def _owned_state_structure_issues(value: Any, *, row_index: int, label: str) -> 
     issues: list[str] = []
     for raw in _clean(value).split(","):
         fragment = raw.strip(" .;:")
-        words = [word.casefold() for word in visible_words(fragment)]
-        if not words:
-            continue
-        if {"after", "before", "unless", "until", "when"} & set(words):
+        issue_kind = owned_state_fragment_issue(fragment)
+        if issue_kind == "condition":
             issues.append(
                 f"component row {row_index} `{label}` component_contract.owned_state contains a condition clause `{fragment}`"
             )
             continue
-        if looks_like_action_clause(fragment) and not owned_state_noun_phrase(fragment):
+        if issue_kind == "action":
             issues.append(
                 f"component row {row_index} `{label}` component_contract.owned_state contains an action clause `{fragment}`"
             )
     return issues
+
+
+def owned_state_fragment_issue(value: Any) -> str:
+    """Classify clause-shaped text that cannot represent component-owned state."""
+
+    fragment = _clean(value).strip(" .;:")
+    words = [word.casefold() for word in visible_words(fragment)]
+    if not words:
+        return ""
+    if {"after", "before", "unless", "until", "when"} & set(words):
+        return "condition"
+    if looks_like_action_clause(fragment) and not owned_state_noun_phrase(fragment):
+        return "action"
+    return ""
+
+
 def public_prose_quality_issues(value: Any) -> list[str]:
     """Catch malformed generated prose before it becomes governed truth."""
 
@@ -666,6 +680,7 @@ __all__ = [
     "contract_is_complete",
     "dedupe_text",
     "normalize_contract",
+    "owned_state_fragment_issue",
     "public_prose_quality_issues",
     "rendered_component_spec_quality_issues",
 ]

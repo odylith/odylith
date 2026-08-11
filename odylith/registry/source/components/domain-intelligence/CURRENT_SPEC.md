@@ -51,6 +51,13 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Converged component clause repair on shared semantic owners. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  The owned-state Tribunal and deterministic repair router share one clause
+  classification contract. Source-exact compounds are restored before noun
+  classification, and output normalization distinguishes multi-token nominal
+  `checks record` identity from bare or actor-led process narration. Inline
+  repair prose reuses the existing sentence actor owner.
+
 - 2026-08-11: Preserved terminal action-noun compounds in component state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Owned-description parsing keeps a terminal homograph as a noun phrase when
   no object follows it, so accepted facts such as `risk flags` retain their
