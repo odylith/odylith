@@ -64,8 +64,7 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import (
     singularize_last_word,
 )
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
-from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, unique_text
 
 
 @dataclass(frozen=True)
@@ -75,6 +74,7 @@ class SemanticComponentContract:
     fields: Mapping[str, Any]
     confidence: int
     local_terms: tuple[str, ...]
+    accepted_owned_state: tuple[str, ...] = ()
 
 
 def derive_component_semantic_contract(
@@ -320,7 +320,7 @@ def derive_component_semantic_contract(
         else (f"{_clean(label).casefold()} state", *label_phrases[:1], *evidence_phrases, "blocker state")
     )
     owned_seed = contract_support.restore_protected_phrase_values(owned_seed, source_surface_phrases)
-    owned_seed = owned_state_semantics.owned_state_phrases(owned_seed)
+    owned_seed = owned_state_semantics.owned_state_phrases(owned_seed, accepted_phrases=description_owned_phrases)
     owned_seed = tuple(_drop_subsumed_singletons(owned_seed))
     failure_cause = (
         "calculated from the wrong inputs"
@@ -347,7 +347,7 @@ def derive_component_semantic_contract(
     fields = contract_support.restore_protected_contract_items(fields, protected_description_phrases)
     fields = contract_support.restore_protected_phrase_surface(fields, protected_description_phrases)
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
-    return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
+    return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms), accepted_owned_state=tuple(contract_support.contract_list_fragments(fields["owned_state"])))
 
 
 def _validation_gate_contract(

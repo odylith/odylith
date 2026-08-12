@@ -198,6 +198,7 @@ def _specialized_contract_with_semantic_proof(
         semantic_fields,
         profile_fields,
         protected_phrases=tuple(getattr(semantic_contract, "local_terms", ()) or ()),
+        accepted_owned_state=tuple(getattr(semantic_contract, "accepted_owned_state", ()) or ()),
     )
     return contract_support.with_required_local_proof_floor(normalized, label=label)
 

@@ -51,6 +51,12 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-12: Bound accepted component state to typed compiler custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Semantic contracts carry their exact validated owned-state fragments through
+  profile merge and differentiation. Unaccepted base fields and generated
+  supplements remain fail-closed, weaker identity subsets are removed, and
+  role-led actor actions cannot become trusted component state.
+
 - 2026-08-11: Preserved coordinated component identity through owned-state projection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   A label-grounded canonical `owns ... state` phrase remains one accepted fact
   while weaker parser fragments are removed. Actor/action clauses, coordinated

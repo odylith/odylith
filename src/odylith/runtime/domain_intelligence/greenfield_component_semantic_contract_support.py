@@ -312,19 +312,28 @@ def merge_profile_contract_fields(
     profile_fields: Mapping[str, Any],
     *,
     protected_phrases: Sequence[str] = (),
+    accepted_owned_state: Sequence[str] = (),
     field_limit: int = 12,
 ) -> dict[str, Any]:
     """Preserve profile custody obligations while keeping semantic fields authoritative."""
 
     normalized = dict(base_fields)
     for key in ("owned_state", "accepted_inputs", "produced_outputs"):
+        base_value = normalized.get(key)
+        profile_value = profile_fields.get(key)
+        if key == "owned_state":
+            base_value = ", ".join(
+                owned_state_phrases(
+                    contract_list_fragments(base_value),
+                    accepted_phrases=accepted_owned_state,
+                )
+            )
+            profile_value = ", ".join(owned_state_phrases(contract_list_fragments(profile_value)))
         normalized[key] = semantic_field_with_profile_supplements(
-            normalized.get(key),
-            profile_fields.get(key),
+            base_value,
+            profile_value,
             limit=field_limit,
         )
-        if key == "owned_state":
-            normalized[key] = ", ".join(owned_state_phrases(contract_list_fragments(normalized[key])))
     normalized["states_or_transitions"] = ", ".join(
         unique_text(contract_list_fragments(normalized.get("states_or_transitions"), profile_fields.get("states_or_transitions")))
     )

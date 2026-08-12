@@ -9,7 +9,7 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term, word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms
@@ -48,8 +48,8 @@ def owned_state_noun_phrase(value: str) -> bool:
     core = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
     core_words = tuple(word.casefold().strip(".,;:") for word in visible_words(core))
     actor_action_lead = bool(
-        len(core_words) >= 3
-        and looks_actor_term(core_words[0])
+        len(core_words) >= 2
+        and ((len(core_words) >= 3 and looks_actor_term(core_words[0])) or word_has_actor_role_signal(core_words[0]))
         and looks_like_base_action_token(core_words[1])
         and singularize_last_word(core_words[-1]) not in _OWNED_ARTIFACT_TERMS
     )
@@ -82,8 +82,19 @@ def owned_state_noun_phrase(value: str) -> bool:
     )
 
 
-def owned_state_phrases(values: Sequence[str]) -> tuple[str, ...]:
-    return tuple(unique_text(value for value in values if owned_state_noun_phrase(value)))
+def owned_state_phrases(values: Sequence[str], *, accepted_phrases: Sequence[str] = ()) -> tuple[str, ...]:
+    accepted = {clean_artifact_text(value).casefold() for value in accepted_phrases if clean_artifact_text(value)}
+    accepted_identities = tuple(set(phrase_identity_terms(value)) for value in accepted)
+    rows = unique_text(
+        value for value in values if clean_artifact_text(value).casefold() in accepted or owned_state_noun_phrase(value)
+    )
+    return tuple(
+        value
+        for value in rows
+        if clean_artifact_text(value).casefold() in accepted
+        or not (identity := set(phrase_identity_terms(value)))
+        or not any(identity < accepted_identity for accepted_identity in accepted_identities)
+    )
 
 
 def enrich_owned_state_from_io(

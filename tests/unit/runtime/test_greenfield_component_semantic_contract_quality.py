@@ -330,6 +330,14 @@ def test_protected_compound_restoration_is_item_bounded_and_one_to_many() -> Non
         label="Notification and Deadline Tracking Service",
     ) == ("handoff boundaries",)
     assert description_owned_phrases(
+        "owns person follow list state; handoff boundaries",
+        label="Person Follow List Service",
+    ) == ("person follow list state", "handoff boundaries")
+    assert description_owned_phrases(
+        "owns analyst follow list state; handoff boundaries",
+        label="Analyst Follow List Service",
+    ) == ("handoff boundaries",)
+    assert description_owned_phrases(
         "owns reviewer notes, risk flags, and readiness blockers",
         label="Reviewer Notes Service",
     ) == ("reviewer notes", "risk flags", "readiness blockers")
@@ -342,6 +350,34 @@ def test_protected_compound_restoration_is_item_bounded_and_one_to_many() -> Non
         protected_projection_items(("exception validated state", "exception blocked state")),
         ("exception blocked state",),
     ) == "exception blocked state"
+
+
+def test_component_contract_does_not_accept_role_led_action_homograph_state() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Analyst Follow List Service",
+            "source_system_description": (
+                "owns analyst follow list state, required inputs, blocked-case evidence links, "
+                "and handoff boundaries for the confirmed first path"
+            ),
+        },
+        proposal={
+            "intent": {
+                "title": "Activity Watchlist",
+                "first_path": "A user selects one person and reviews a follow list.",
+                "state_object": "Tracked person profile",
+            }
+        },
+        sibling={"label": "Activity Signal Service"},
+        previous_label="Person Intake Service",
+        next_label="Activity Signal Service",
+        state_label="Tracked Person Profile",
+    )
+
+    assert all(not phrase.startswith("analyst follow") for phrase in contract.accepted_owned_state)
+    assert "analyst follow" not in str(contract.fields["owned_state"]).casefold()
+    assert not owned_state_noun_phrase("analyst follow")
+    assert not component_contract_issues({"components": [{"label": "Analyst Follow List Service", "component_contract": contract.fields}]})
 
 
 def test_component_contract_selects_protected_proof_focus_from_output_ownership() -> None:

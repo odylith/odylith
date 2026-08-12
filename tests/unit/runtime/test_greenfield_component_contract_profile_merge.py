@@ -46,6 +46,20 @@ def test_profile_merge_rejects_action_clauses_from_generated_owned_state() -> No
     assert merged["owned_state"] == "referral queue state, blocker state"
 
 
+def test_profile_merge_preserves_only_typed_accepted_semantic_state() -> None:
+    merged = contract_support.merge_profile_contract_fields(
+        {
+            "owned_state": "person follow list state, list state, person follow list state guides reviewer",
+            "accepted_inputs": "person follow list request",
+            "produced_outputs": "person follow list update",
+        },
+        {"owned_state": "coordinator triage referral"},
+        accepted_owned_state=("person follow list state",),
+    )
+
+    assert merged["owned_state"] == "person follow list state"
+
+
 def test_profile_obligation_guard_ignores_proof_floor_boilerplate_for_generic_evidence_rows() -> None:
     assert not contract_support.material_profile_obligations_survive(
         label="Evidence Intake Service",

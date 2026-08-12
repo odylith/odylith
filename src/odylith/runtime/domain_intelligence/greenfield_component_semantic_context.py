@@ -8,7 +8,7 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term, word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
@@ -31,9 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_
 from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
-from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
-from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, unique_text, visible_words
 from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase as _transfer_object_phrase
 
 
@@ -348,8 +346,10 @@ def description_owned_phrases(value: str, *, label: str = "") -> tuple[str, ...]
         return ()
     scaffold_subject = text.partition(";")[0] if label and text.casefold().startswith(("own ", "owns ")) else ""
     scaffold_phrase = re.sub(r"^owns?\s+", "", scaffold_subject, flags=re.IGNORECASE).strip(" .")
-    scaffold_state, scaffold_action = scaffold_phrase.casefold().endswith(" state"), _finite_action_clause(scaffold_phrase)[1]
-    rows: list[str] = [scaffold_phrase.casefold()] if scaffold_state and not scaffold_action and owned_state_noun_phrase(scaffold_phrase) and set(_content_terms(scaffold_phrase)) & set(_content_terms(label)) else []
+    scaffold_state, (scaffold_action_text, scaffold_action) = scaffold_phrase.casefold().endswith(" state"), _finite_action_clause(scaffold_phrase)
+    scaffold_terms, label_terms = set(_content_terms(scaffold_phrase)), set(_content_terms(label))
+    scaffold_label_action = scaffold_action and scaffold_action_text.split()[0].casefold() in label_terms and scaffold_terms - {"state"} <= label_terms and not word_has_actor_role_signal(scaffold_phrase.split()[0])
+    rows: list[str] = [scaffold_phrase.casefold()] if scaffold_state and ((not scaffold_action and owned_state_noun_phrase(scaffold_phrase)) or scaffold_label_action) and scaffold_terms & label_terms else []
     scaffold_terms = set(_content_terms(rows[0])) if rows else set()
     for part in clauses(text.partition(";")[2] if scaffold_state and scaffold_action else text):
         transfer_focus = _transfer_object_phrase(part)
