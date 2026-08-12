@@ -51,6 +51,13 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Preserved concrete first-release results in the accepted user path. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  Singular release-visible-result statements compile to bounded result actions.
+  Output-object identity, not whole-path substring matching, decides whether an
+  equivalent result already exists, so inputs cannot suppress required outputs
+  and `a`, `the`, or `one` determiner variation cannot create duplicate copy.
+  Plural and evidence-only release requirements remain outside the user path.
+
 - 2026-08-11: Disambiguated action-list steps without sacrificing noun compounds. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The shared comma-step owner separates a real clause-leading or actor-led
   action after an established input list. Bounded action-homonym artifacts and

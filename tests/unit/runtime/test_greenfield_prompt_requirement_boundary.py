@@ -142,6 +142,49 @@ def test_singular_release_visible_result_completes_the_first_path() -> None:
     assert "show a custody receipt" in source.first_path.casefold()
 
 
+def test_singular_release_visible_result_does_not_duplicate_an_existing_outcome() -> None:
+    source = prompt_intent_source(
+        "Archivists review one accession and show a custody receipt. "
+        "The first release must show a custody receipt."
+    )
+
+    assert source.first_path.casefold().count("custody receipt") == 1
+
+    explicit_source = prompt_intent_source(
+        "First path: Archivists review one accession. "
+        "The first release must show one custody receipt."
+    )
+    assert explicit_source.first_path.casefold().count("custody receipt") == 1
+
+    explicit_existing_source = prompt_intent_source(
+        "First path: Archivists review one accession and show the custody receipt. "
+        "The first release must show a custody receipt."
+    )
+    assert explicit_existing_source.first_path.casefold().count("custody receipt") == 1
+
+    for existing_article in ("the", "one"):
+        equivalent_source = prompt_intent_source(
+            f"Archivists review one accession and show {existing_article} custody receipt. "
+            "The first release must show a custody receipt."
+        )
+        assert equivalent_source.first_path.casefold().count("custody receipt") == 1
+
+
+def test_release_result_dedupe_compares_outputs_instead_of_all_path_mentions() -> None:
+    source = prompt_intent_source(
+        "Archivists review a custody receipt and show a condition record. "
+        "The first release must show a custody receipt."
+    )
+    assert source.first_path.casefold().endswith("show a custody receipt")
+    assert source.first_path.casefold().count("custody receipt") == 2
+
+    internal_article_source = prompt_intent_source(
+        "Archivists show a summary of the accession. "
+        "The first release must show one summary of the accession."
+    )
+    assert internal_article_source.first_path.casefold().count("summary of the accession") == 1
+
+
 def test_visible_confirmation_carries_typed_evidence_requirements() -> None:
     confirmation = build_product_intent_confirmation(
         prompt=_CRYOGENIC_REQUIREMENT_PROMPT,

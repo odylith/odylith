@@ -305,6 +305,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         or non_human_relative_first_path
         or ("" if is_source_metadata_clause(product_text) else _first_path_source_from_text(product_text))
     )
+    first_path_source = _with_release_visible_result(first_path_source, evidence=product_text)
     first_path = strip_leading_contextual_gerund_sentence(_strip_release_proof_tail(first_path_source))
     resolved_actor = next(
         (
@@ -1508,6 +1509,47 @@ def _release_visible_result_path_action(value: str) -> str:
         flags=re.IGNORECASE,
     )
     return match.group("action").strip(" .") if match else ""
+
+
+def _with_release_visible_result(value: str, *, evidence: str) -> str:
+    path_rows = sentence_fragments(clean_markdown_text(value).strip(" ."))
+    embedded_release_rows = [row for row in path_rows if is_release_visible_result_statement(row)]
+    path = ". ".join(row for row in path_rows if row not in embedded_release_rows).strip(" .")
+    existing_action = _release_visible_result_path_action(path)
+    existing_outcome = (
+        _release_result_identity(existing_action)
+        if existing_action
+        else _visible_outcome_identity(first_path_model(path).visible_outcome)
+    )
+    known_outcomes = {existing_outcome}
+    release_rows = [
+        *embedded_release_rows,
+        *(row for row in sentence_fragments(evidence) if is_release_visible_result_statement(row)),
+    ]
+    for row in release_rows:
+        action = _release_visible_result_path_action(row)
+        outcome = _release_result_identity(action)
+        if not action or (outcome and outcome in known_outcomes):
+            continue
+        path = ". ".join(part for part in (path, action) if part)
+        known_outcomes.add(outcome)
+    return path
+
+
+def _visible_outcome_identity(value: str) -> tuple[str, ...]:
+    words = [word_key(word) for word in request_words(value)]
+    while words and words[0] in {"a", "an", "one", "the"}:
+        words.pop(0)
+    return tuple(words)
+
+
+def _release_result_identity(value: str) -> tuple[str, ...]:
+    words = [word_key(word) for word in request_words(value)]
+    if words:
+        words.pop(0)
+    while words and words[0] in {"a", "an", "one", "the"}:
+        words.pop(0)
+    return tuple(words)
 
 
 def _release_proof_tail_starts(words: list[str]) -> bool:
