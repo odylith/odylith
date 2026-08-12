@@ -51,6 +51,12 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Preserved coordinated component identity through owned-state projection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  A label-grounded canonical `owns ... state` phrase remains one accepted fact
+  while weaker parser fragments are removed. Actor/action clauses, coordinated
+  non-state text, and ordinary owned-item lists retain their existing strict
+  handling rather than entering a broader rescue path.
+
 - 2026-08-11: Preserved concrete first-release results in the accepted user path. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Singular release-visible-result statements compile to bounded result actions.
   Output-object identity, not whole-path substring matching, decides whether an

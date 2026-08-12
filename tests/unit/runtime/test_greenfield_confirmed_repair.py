@@ -301,7 +301,9 @@ def test_confirmed_peer_review_shape_stays_component_specific_and_actor_complete
     assert "editorial decision" in decision["owned_state"].casefold()
     assert "revision round" in revision["owned_state"].casefold().replace("-", " ")
     assert "role-based access" in access["owned_state"].casefold()
-    assert "notification" in notification["owned_state"].casefold()
+    notification_owned = {phrase.strip() for phrase in notification["owned_state"].casefold().split(",")}
+    assert "notification and deadline tracking state" in notification_owned
+    assert "tracking state" not in notification_owned
     assert "search" in dashboard["owned_state"].casefold()
 
     encoded = json.dumps(proposal)

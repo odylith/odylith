@@ -290,7 +290,7 @@ def derive_component_semantic_contract(
         context_compound_phrases,
         label_terms=label_terms,
     )
-    description_owned_phrases = semantic_context.description_owned_phrases(description)
+    description_owned_phrases = semantic_context.description_owned_phrases(description, label=label)
     description_identities = tuple(map(_phrase_identity_terms, (*description_owned_phrases, *summary_phrases)))
     owned_context_phrases = tuple(
         phrase

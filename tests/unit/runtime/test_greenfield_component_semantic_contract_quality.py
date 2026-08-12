@@ -317,6 +317,22 @@ def test_protected_compound_restoration_is_item_bounded_and_one_to_many() -> Non
         "risk flags",
         "readiness blockers",
     )
+    assert description_owned_phrases(
+        "owns notification and deadline tracking state; handoff boundaries",
+        label="Notification and Deadline Tracking Service",
+    ) == ("notification and deadline tracking state", "handoff boundaries")
+    assert "notification and deadline tracking rules" not in description_owned_phrases(
+        "owns notification and deadline tracking rules; handoff boundaries",
+        label="Notification and Deadline Tracking Service",
+    )
+    assert description_owned_phrases(
+        "owns reviewer records notification and deadline tracking state; handoff boundaries",
+        label="Notification and Deadline Tracking Service",
+    ) == ("handoff boundaries",)
+    assert description_owned_phrases(
+        "owns reviewer notes, risk flags, and readiness blockers",
+        label="Reviewer Notes Service",
+    ) == ("reviewer notes", "risk flags", "readiness blockers")
     assert description_owned_phrases("A reviewer records") == ()
     assert description_owned_phrases("One analyst stores") == ()
     relation_description = "An analyst links exception blocked state to the permit record."

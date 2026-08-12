@@ -342,12 +342,16 @@ def owned_context_detail_phrases(
 _WEAK_CONTEXT_ANCHOR_TERMS = frozenset({"adapter", "data", "engine", "model", "service", "system", "view", "workspace"})
 
 
-def description_owned_phrases(value: str) -> tuple[str, ...]:
-    rows: list[str] = []
+def description_owned_phrases(value: str, *, label: str = "") -> tuple[str, ...]:
     text = _clean(value)
     if not text:
         return ()
-    for part in clauses(text):
+    scaffold_subject = text.partition(";")[0] if label and text.casefold().startswith(("own ", "owns ")) else ""
+    scaffold_phrase = re.sub(r"^owns?\s+", "", scaffold_subject, flags=re.IGNORECASE).strip(" .")
+    scaffold_state, scaffold_action = scaffold_phrase.casefold().endswith(" state"), _finite_action_clause(scaffold_phrase)[1]
+    rows: list[str] = [scaffold_phrase.casefold()] if scaffold_state and not scaffold_action and owned_state_noun_phrase(scaffold_phrase) and set(_content_terms(scaffold_phrase)) & set(_content_terms(label)) else []
+    scaffold_terms = set(_content_terms(rows[0])) if rows else set()
+    for part in clauses(text.partition(";")[2] if scaffold_state and scaffold_action else text):
         transfer_focus = _transfer_object_phrase(part)
         finite_focus, owns_action = _finite_action_object_clause(part)
         actor_prefix = part.rsplit(maxsplit=1)[0]
@@ -368,9 +372,7 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
             continue
         terms = list(_content_terms(phrase))
         has_carrier = _owned_phrase_has_carrier(phrase, terms)
-        if (len(terms) < 2 and not has_carrier) or len(terms) > 5:
-            continue
-        if not has_carrier:
+        if not has_carrier or len(terms) > 5 or (terms and scaffold_terms and set(terms) < scaffold_terms):
             continue
         rows.append(phrase.casefold())
     return tuple(unique_text(rows))
