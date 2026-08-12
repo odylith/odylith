@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import cle
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_NOUNS = frozenset("audit capture change control record release replay report review test".split())
+_ACTION_HOMONYM_OBJECT_MODIFIERS = ACTION_NOUNS | {"display", "export", "return"}
 _SHORT_COMPOUND_NOUN_MODIFIERS = frozenset({"replay"})
 _OBJECT_HEADS = frozenset(
     {
@@ -72,6 +73,17 @@ def starts_with_compound_noun_object(value: str, *, allow_short: bool = False) -
     return _compound_noun_index(value, allow_short=allow_short) is not None
 
 
+def action_homonym_result_object(value: str) -> bool:
+    """Return true for a short artifact phrase whose modifier is also an action."""
+
+    words = visible_words(clean_first_path_text(value))
+    return bool(
+        2 <= len(words) <= 4
+        and words[0].casefold() in _ACTION_HOMONYM_OBJECT_MODIFIERS
+        and words[-1].casefold() in _OBJECT_HEADS
+    )
+
+
 def action_word_inside_compound_noun(value: str, action_start: int) -> bool:
     """Return true when a matched action word is actually inside a compound noun."""
 
@@ -125,6 +137,8 @@ def specific_decision_result_object(value: str) -> bool:
 def _starts_with_material_action(value: str) -> bool:
     words = visible_words(clean_first_path_text(value))
     if not words:
+        return False
+    if action_homonym_result_object(value):
         return False
     first = words[0].casefold()
     if looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first):
@@ -181,6 +195,7 @@ __all__ = [
     "ACTION_NOUNS",
     "action_word_inside_compound_noun",
     "action_word_starts_result_list_noun",
+    "action_homonym_result_object",
     "source_list_item_is_nominal",
     "specific_decision_result_object",
     "starts_with_compound_noun_object",

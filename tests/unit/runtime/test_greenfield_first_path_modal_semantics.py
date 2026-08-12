@@ -264,6 +264,42 @@ def test_short_action_shaped_compound_remains_an_action_outside_an_object_list()
     assert first_path_model("replay timelines").steps == ("Replay timelines",)
 
 
+def test_action_after_list_inputs_starts_a_new_step() -> None:
+    path = (
+        "open the planner, enter roof details, usage, shading concerns, financing preferences and timeline, "
+        "review ranked installation plans, and check cost assumptions and blockers, then see a saved plan record"
+    )
+
+    assert first_path_model(path).steps == (
+        "Open the planner",
+        "Enter roof details, usage, shading concerns, financing preferences and timeline",
+        "Review ranked installation plans",
+        "Check cost assumptions and blockers",
+        "See a saved plan record",
+    )
+
+
+def test_actor_led_actions_are_not_absorbed_by_result_object_heads() -> None:
+    assert split_action_pieces(
+        "Researchers inspect evidence, exceptions, rationale notes, "
+        "reviewers record findings, and auditors publish proof"
+    ) == [
+        "Researchers inspect evidence, exceptions, rationale notes",
+        "reviewers record findings",
+        "auditors publish proof",
+    ]
+
+
+def test_action_homonym_state_items_keep_the_established_object_list() -> None:
+    assert split_action_pieces(
+        "Operators inspect request metadata, validation notes, routing rules, "
+        "export state, return state, and display state"
+    ) == [
+        "Operators inspect request metadata, validation notes, routing rules, "
+        "export state, return state, and display state"
+    ]
+
+
 def test_short_compound_carry_does_not_absorb_follow_on_actor_actions() -> None:
     operator_path = "Operators audit evidence, record state changes, and publish proof"
     assert split_action_pieces(operator_path) == [

@@ -51,6 +51,13 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-11: Disambiguated action-list steps without sacrificing noun compounds. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  The shared comma-step owner separates a real clause-leading or actor-led
+  action after an established input list. Bounded action-homonym artifacts and
+  later items in a homogeneous result-state list remain nouns, so compact
+  first-path copy retains material actions without turning `export state`,
+  `replay timelines`, or review outcomes into invented workflow steps.
+
 - 2026-08-11: Kept private custody out of public prose gates and preserved explicit transformation outputs. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Public semantic-copy walkers exclude the typed Product Intent authority
   receipt without weakening its structural or hash validation. Shared sentence

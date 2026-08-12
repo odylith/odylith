@@ -41,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_subject_kind impo
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
     action_word_inside_compound_noun as _action_word_inside_compound_noun,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_homonym_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
     starts_with_compound_noun_object as _starts_with_compound_noun_object,
 )
@@ -363,16 +364,17 @@ def _continues_subject_object_list(value: str, current: str) -> bool:
 
 def _continues_compound_object_list(value: str, current: str) -> bool:
     text = _clean(value).strip(" .")
-    return (
-        "," in _clean(current)
-        and (
-            (len(text.split()) == 2 and _starts_with_compound_noun_object(text, allow_short=True))
-            or (
-                source_list_item_is_nominal(f"{current}, {text}", text)
-                and not specific_decision_result_object(text)
-            )
-        )
-    )
+    if "," not in _clean(current):
+        return False
+    if len(text.split()) == 2 and _starts_with_compound_noun_object(text, allow_short=True):
+        return True
+    if not source_list_item_is_nominal(f"{current}, {text}", text) or specific_decision_result_object(text):
+        return False
+    if _actor_role_subject_action(text):
+        return False
+    if _MATERIAL_ACTION_RE.match(text):
+        return _starts_with_compound_noun_object(text, allow_short=True) or action_homonym_result_object(text)
+    return True
 
 
 def _continues_adverbial_object_list(value: str, current: str) -> bool:
