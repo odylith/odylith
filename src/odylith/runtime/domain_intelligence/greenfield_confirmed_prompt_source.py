@@ -199,6 +199,10 @@ class PromptIntentSource:
     first_path: str
     command_led: bool
     actor: str = ""
+    actor_action: str = ""
+    actor_label: str = ""
+    actor_subject: str = ""
+    state_action: str = ""
     operator_context: str = ""
 
 
@@ -249,7 +253,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     workflow_actor, workflow_first_path = _workflow_where_actor_action(product_text)
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
     purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
-    direct_actor, direct_first_path = _direct_actor_action_sentence(ranked_first_path or product_text)
+    direct_actor, direct_first_path = _direct_actor_action_sentence(ranked_first_path)
+    if not direct_actor:
+        direct_actor, direct_first_path = _direct_actor_action_sentence(product_text)
     release_actor, _release_first_path = _direct_actor_action_sentence(
         _release_action_sentence_source(product_text)
     )
@@ -277,6 +283,14 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     )
     context_actor, context_first_path = _for_role_actor_gerund_path(product_text)
     actor, actor_led_first_path = _actor_led_relative_clause(product_text)
+    actor_led_model = first_path_model(actor_led_first_path)
+    complete_actor_led_first_path = (
+        actor_led_first_path
+        if actor
+        and actor_led_model.material_action
+        and actor_led_model.visible_outcome
+        else ""
+    )
     non_human_relative_first_path = _non_human_subject_relative_action(product_text)
     ranked_rows = sentence_fragments(ranked_first_path)
     complete_ranked_first_path = (
@@ -288,14 +302,21 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         )
         else ""
     )
+    complete_structured_first_path = (
+        structured_facts.first_path
+        if structured_facts.first_path_contract and structured_facts.first_path_contract.complete
+        else ""
+    )
     first_path_source = (
-        explicit_first_path
+        (direct_first_path if direct_actor and structured_facts.first_path_contract.output_only else "")
+        or complete_ranked_first_path
+        or complete_structured_first_path
+        or explicit_first_path
         or grant_first_path
         or multi_role_first_path
         or need_first_path
         or preferred_context_first_path
-        or complete_ranked_first_path
-        or structured_facts.first_path
+        or complete_actor_led_first_path
         or ranked_first_path
         or workflow_first_path
         or purpose_first_path
@@ -343,6 +364,12 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             resolved_actor = recovered_actor
             if first_path_action and _actor_recovery_needs_canonical_path(first_path, recovery_kind=recovery_kind):
                 first_path = f"{recovered_actor} can {first_path_action}".strip(" .")
+    structured_contract = structured_facts.first_path_contract
+    structured_actor_owns_path = bool(
+        structured_contract
+        and structured_contract.complete
+        and resolved_actor.casefold() == structured_contract.actor.casefold()
+    )
     return PromptIntentSource(
         title=structured_facts.title
         or _labeled_request_title(original_intent)
@@ -360,6 +387,10 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
+        actor_action=(structured_contract.primary_actor_action if structured_actor_owns_path else ""),
+        actor_label=(structured_contract.actor_label if structured_actor_owns_path else ""),
+        actor_subject=(structured_contract.actor_subject if structured_actor_owns_path else ""),
+        state_action=(structured_contract.primary_state_action if structured_actor_owns_path else ""),
         operator_context=operator_context,
     )
 
@@ -411,6 +442,9 @@ def prompt_has_material_first_path_gap(value: str) -> bool:
     """Return whether an explicit actor path names only one material action."""
 
     product_text = product_intent_source_text(value)
+    structured = structured_prompt_facts(product_text)
+    if structured.first_path_contract and structured.first_path_contract.invalid_reasons:
+        return True
     source = prompt_intent_source(product_text)
     need_actor, need_action = need_product_actor_action(product_text)
     model = first_path_model(source.first_path)

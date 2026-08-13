@@ -133,6 +133,32 @@ def component_contract_io_identity_repair(
     )
 
 
+def component_contract_has_generic_io_placeholders(contract: Mapping[str, Any]) -> bool:
+    """Return whether either public I/O field still carries unqualified filler."""
+
+    return any(
+        generic_contract_placeholder_fragments(clean_artifact_text(contract.get(key)))
+        for key in ("accepted_inputs", "produced_outputs")
+    )
+
+
+def repair_component_contract_io_identity_fields(
+    label: str,
+    contract: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Repair generic I/O fields while retaining every other contract field."""
+
+    repaired = dict(contract)
+    _identity, accepted_inputs, produced_outputs = component_contract_io_identity_repair(
+        label,
+        accepted_inputs=clean_artifact_text(contract.get("accepted_inputs")),
+        produced_outputs=clean_artifact_text(contract.get("produced_outputs")),
+    )
+    repaired["accepted_inputs"] = accepted_inputs
+    repaired["produced_outputs"] = produced_outputs
+    return repaired
+
+
 def _component_contract_identity_focus(label: str) -> str:
     candidate = _clean_artifact_phrase(label) or clean_artifact_text(label)
     without_modal = strip_trailing_subject_modal(candidate)
@@ -150,7 +176,13 @@ def _component_contract_identity_focus(label: str) -> str:
         candidate = _clean_artifact_phrase(" ".join(words))
     words = visible_words(candidate)
     role_words = {"coordination", "recordkeeping", "support", "workflow"}
-    return candidate if len(words) >= 2 and any(word.casefold() not in role_words for word in words) else ""
+    if len(words) >= 2 and any(word.casefold() not in role_words for word in words):
+        return candidate
+    literal_words = visible_words(clean_artifact_text(label))
+    while len(literal_words) > 2 and literal_words[-1].casefold() in role_words:
+        literal_words = literal_words[:-1]
+    literal = " ".join(literal_words)
+    return literal if len(literal_words) >= 2 and any(word.casefold() not in role_words for word in literal_words) else ""
 
 
 def title_identity_phrases(

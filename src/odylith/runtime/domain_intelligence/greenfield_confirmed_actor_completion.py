@@ -78,7 +78,15 @@ _DERIVED_CONTEXT_ACTOR_MODIFIERS = frozenset(
 )
 _MODAL_ACTION_BOUNDARY_TAILS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 _GENERIC_CONFIRMED_ACTOR_LABELS = frozenset(
-    {"user", "individual user", "person", "individual person", "participant", "individual participant"}
+    {
+        "user",
+        "individual user",
+        "person",
+        "individual person",
+        "participant",
+        "individual participant",
+        "operator",
+    }
 )
 
 

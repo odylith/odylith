@@ -64,9 +64,14 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import re
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import structured_actor_aliases
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import path_entry_action
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import passive_event_parts
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import structured_actor_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import proof_boundary_with_first_release_requirements
-from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_rows_from_evidence
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_facts_from_evidence
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
 _SOURCE_RELATION_ACTIONS = frozenset({"accept", "collect", "import", "receive"})
@@ -285,8 +290,11 @@ def confirmation_from_operator_intent(
         else first_path_source
     )
     direct_actor_row = _prompt_actor_row(
-        "" if recovered_path_is_metadata else prompt_source.actor,
+        ""
+        if recovered_path_is_metadata
+        else prompt_source.actor_label or prompt_source.actor,
         actor_fact_source,
+        actor_action=prompt_source.actor_action,
     )
     recovered_actor_rows = _human_actor_rows_from_first_path(
         actor_fact_source,
@@ -322,7 +330,18 @@ def confirmation_from_operator_intent(
         title=title,
     )
     outcome_object = _object_result_phrase(outcome)
-    lead_actor_ref = _actor_reference(lead_actor)
+    typed_actor_subject = _clean(prompt_source.actor_subject).strip(" .")
+    typed_actor_label = _clean(prompt_source.actor_label).strip(" .")
+    typed_actor_is_lead = bool(
+        typed_actor_label
+        and typed_actor_label.casefold() == lead_actor.casefold()
+    )
+    lead_actor_ref = typed_actor_subject if typed_actor_is_lead else _actor_reference(lead_actor)
+    lead_actor_sentence_subject = (
+        _sentence_start(lead_actor_ref)
+        if typed_actor_is_lead
+        else structured_actor_subject(lead_actor)
+    )
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
     prompt_actor_is_generic = _clean(prompt_source.actor).casefold() in {"individual", "people", "person", "user"}
     force_actor_modal = bool(
@@ -357,13 +376,25 @@ def confirmation_from_operator_intent(
         lead_actor_ref=lead_actor_ref,
         first_path_inline=first_path_inline,
         outcome_object=outcome_object,
+        lead_action=lead_action,
+        preserve_leading_case=typed_actor_is_lead,
     )
     state = state_object_from_first_path(
         actor_fact_source or first_path,
         fallback=title,
-        preferred_action="" if recovered_source_has_non_human_subject else lead_action,
+        preferred_action=(
+            ""
+            if recovered_source_has_non_human_subject
+            else prompt_source.state_action or lead_action
+        ),
     )
-    proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
+    proof = _recovered_proof_text(
+        first_path_inline=first_path_inline,
+        outcome_object=outcome_object,
+        preserve_leading_case=typed_actor_is_lead,
+        lead_actor_ref=lead_actor_ref,
+        lead_action=lead_action,
+    )
     if evaluation.story:
         story = evaluation.story
     story = story_with_operator_context(story, context=prompt_source.operator_context)
@@ -374,7 +405,7 @@ def confirmation_from_operator_intent(
     proof = proof_with_reviewer_obligations(proof, reviewer_obligations)
     proof = proof_boundary_with_first_release_requirements(proof, product_source)
     problem = (
-        f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
+        f"{lead_actor_sentence_subject} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
         "together scattered context."
     )
     product_view = (
@@ -383,7 +414,7 @@ def confirmation_from_operator_intent(
         "The result remains visible, blocked when needed, and reviewable."
     )
     success_metrics = evaluation.success_metrics or (
-        f"{lead_actor} can {lead_action.rstrip('.')} and see the visible result.",
+        f"{lead_actor_sentence_subject} can {lead_action.rstrip('.')} and see the visible result.",
         "Missing or invalid input produces a clear blocker instead of a false success.",
         f"Review evidence backs {outcome_object} with replayable proof.",
     )
@@ -391,16 +422,16 @@ def confirmation_from_operator_intent(
         evaluation.assumptions or ("Release 0.0.1 proves the first path before broader automation or live integrations.",),
         reviewer_obligations,
     )
-    ambiguities = evaluation.ambiguities
+    ambiguities = list(evaluation.ambiguities)
     evidence_requirements = evidence_anchor_phrases(product_source)
     operational_constraints = operational_constraint_phrases(product_source)
     non_goals = prohibited_product_phrases(product_source)
-    external_systems = tuple(
-        source_boundary_rows_from_evidence(
-            raw_source,
-            excluded_labels=(title, prompt_source.title),
-        )
+    boundary_facts = source_boundary_facts_from_evidence(
+        raw_source,
+        excluded_labels=(title, prompt_source.title),
     )
+    external_systems = tuple(fact.label for fact in boundary_facts if fact.confidence == "source")
+    ambiguities.extend(fact.ambiguity for fact in boundary_facts if fact.confidence == "ambiguous")
     internal_systems = tuple(
         evaluation.internal_systems
         or internal_system_rows_from_first_path(
@@ -426,7 +457,7 @@ def confirmation_from_operator_intent(
         "product_view": product_view,
         "success_metrics": tuple(success_metrics),
         "assumptions": tuple(assumptions),
-        "ambiguities": tuple(ambiguities),
+        "ambiguities": tuple(unique_text(ambiguities)),
         "proof_boundary": proof,
         "evidence_requirements": tuple(evidence_requirements),
         "operational_constraints": tuple(operational_constraints),
@@ -580,12 +611,15 @@ def _path_starts_with_non_human_workflow_subject(value: str) -> bool:
     return False
 
 
-def _prompt_actor_row(actor: str, first_path: str) -> str:
+def _prompt_actor_row(actor: str, first_path: str, *, actor_action: str = "") -> str:
     actor_text = _clean(actor).strip(" .")
     path = _clean(first_path).strip(" .")
     if not actor_text or not path:
         return ""
-    action = _source_action_after_actor(actor=actor_text, first_path=path)
+    action = _clean(actor_action).strip(" .") or _source_action_after_actor(
+        actor=actor_text,
+        first_path=path,
+    )
     action = _strip_relative_action_prefix(action)
     if not action:
         return ""
@@ -601,15 +635,12 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
 
 
 def _source_action_after_actor(*, actor: str, first_path: str) -> str:
-    matches = list(re.finditer(rf"\b{re.escape(actor)}\b", first_path, flags=re.IGNORECASE))
-    appositive = re.fullmatch(
-        r"(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?:a|an|the)\s+.+",
-        actor,
-        flags=re.IGNORECASE,
-    )
-    if appositive:
-        matches.extend(re.finditer(rf"\b{re.escape(appositive.group('name'))}\b", first_path, flags=re.IGNORECASE))
-        matches.sort(key=lambda item: item.start())
+    matches = [
+        match
+        for alias in structured_actor_aliases(actor)
+        for match in re.finditer(rf"\b{re.escape(alias)}\b", first_path, flags=re.IGNORECASE)
+    ]
+    matches.sort(key=lambda item: item.start())
     for match in matches:
         action = first_path[match.end() :].strip(" ,.;:")
         normalized = _normalized_actor_tail(action)
@@ -1193,6 +1224,8 @@ def _human_actor_row_from_clause(
         actor_words, action_words = explicit_split
         actor = " ".join(actor_words)
         action = " ".join(action_words)
+        if require_actor_signal and not _has_actor_action_signal(actor_words, action_words):
+            return ""
         if _actor_prefix_contains_embedded_action(actor_words):
             return ""
         if _looks_like_material_actor_fragment(actor_words, action_words):
@@ -1389,6 +1422,9 @@ def _looks_like_passive_object_subject(actor_words: Sequence[str], action_words:
     subject_terms = {word.casefold().strip(".,:;") for word in subject}
     if subject_terms & _HUMAN_ACTOR_TERMS or any(_looks_like_human_actor_token(word) for word in subject):
         return False
+    passive_subject, _active_action = passive_event_parts(" ".join([*actor_words, *action_words]))
+    if passive_subject:
+        return True
     action_head = action[0].casefold().strip(".,:;")
     if action_head not in _PASSIVE_OBJECT_AUXILIARIES:
         return False
@@ -1549,6 +1585,9 @@ def _base_actor_action_clause(value: str) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
+    entry_action = path_entry_action(text)
+    if entry_action.casefold() != text.casefold():
+        return entry_action
     action = base_action_clause(text).strip(" .")
     if action and action.casefold() != text.casefold():
         return action
@@ -1735,6 +1774,13 @@ def _has_actor_action_signal(actor_words: Sequence[str], action_words: Sequence[
     if terminal in _NON_HUMAN_ACTOR_TERMS and terminal not in _HUMAN_ACTOR_TERMS:
         return False
     if action_words and has_non_human_actor_signal(f"{' '.join(actor)} {action_words[0]}"):
+        return False
+    if (
+        len(action_words) >= 2
+        and looks_like_base_action_token(action_words[0])
+        and looks_like_finite_action_token(action_words[1])
+        and not _looks_like_actor_subject(actor_words)
+    ):
         return False
     return (
         _looks_like_actor_subject(actor_words)

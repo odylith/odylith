@@ -8,8 +8,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import (
+    component_contract_has_generic_io_placeholders,
     component_contract_io_identity_repair,
     protected_projection_focus,
+    repair_component_contract_io_identity_fields,
     protected_projection_items,
     restore_protected_contract_items,
 )
@@ -68,6 +70,24 @@ def test_component_io_repair_preserves_meaningful_responsibility_identity() -> N
     assert identity.casefold() == "quantum bell inequality checks record"
     assert accepted_inputs == "quantum bell inequality checks record request, authorized actor, validation context"
     assert produced_outputs == "quantum bell inequality checks record"
+
+
+def test_component_io_field_repair_replaces_generic_profile_contract_artifacts() -> None:
+    contract = {
+        "accepted_inputs": "Workflow status, blockers, context input, prior state.",
+        "produced_outputs": "Workflow status, blockers, context result, state update.",
+        "outside_boundary": "Release approval.",
+    }
+
+    assert component_contract_has_generic_io_placeholders(contract) is True
+    repaired = repair_component_contract_io_identity_fields("Expert Review Workflow Support", contract)
+
+    assert repaired["accepted_inputs"] == (
+        "expert review request, authorized actor, validation context"
+    )
+    assert repaired["produced_outputs"] == "expert review record"
+    assert repaired["outside_boundary"] == "Release approval."
+    assert component_contract_has_generic_io_placeholders(repaired) is False
 
 
 def test_output_normalization_preserves_nominal_checks_record_without_actor_narration() -> None:

@@ -543,6 +543,10 @@ def test_confirmed_completion_keeps_action_title_out_of_sentence_projection() ->
     assert modal_issues == []
     assert title.startswith("Let Berth Planner Reconcile Container Discharge")
     assert completed["semantic_model"]["first_path_contract"]["visible_result"] == "whether the vessel can sail"
+    assert any(
+        "evidence for whether the vessel can sail is missing" in str(row["component_contract"]["unique_failure"])
+        for row in completed["components"]
+    )
     assert title.casefold() not in raw_sentence_projection.casefold()
     assert title.casefold() not in completed_sentence_projection.casefold()
     assert workflow_subject in raw_sentence_projection

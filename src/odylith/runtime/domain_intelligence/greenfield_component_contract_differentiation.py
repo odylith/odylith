@@ -170,7 +170,7 @@ def _contract_repair_targets(
 
 
 def _contract_needs_repair(contract: Mapping[str, Any]) -> bool:
-    if public_prose_quality_issues(contract):
+    if public_prose_quality_issues(contract) or contract_support.component_contract_has_generic_io_placeholders(contract):
         return True
     if any(owned_state_fragment_issue(row) for row in split_contract_clauses(contract.get("owned_state"))):
         return True
@@ -327,7 +327,7 @@ def _repair_row(
         description=_clean(row.get("source_system_description")),
         contract=profile_contract,
     ):
-        contract = normalize_contract(profile_contract)
+        contract = normalize_contract(contract_support.repair_component_contract_io_identity_fields(label, profile_contract))
         preserve_first_path_signal_terms(contract, first_path=_proposal_text(proposal, "intent.first_path", "first_path"))
         row["component_contract"] = contract
         _sync_generated_component_fields(row, label=label, contract=contract, previous_contract=previous_contract)

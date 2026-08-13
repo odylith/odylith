@@ -132,6 +132,11 @@ def incomplete_path_clarification(*, prompt: str, edit_evidence: str = "") -> Ma
         "proof_boundary": "what proof or safety boundary should apply",
         "first_path": "what complete task should the user finish",
     }
+    if required_fields == ("first_path",):
+        return MaterialClarification(
+            question="What should the user complete first, and what result should they see?",
+            required_fields=required_fields,
+        )
     clauses = [prompts[field] for field in required_fields]
     if len(clauses) == 1:
         body = clauses[0]

@@ -6,6 +6,7 @@ from collections.abc import Sequence
 import re
 
 from odylith.runtime.common.prose_grammar import ACTION_MODAL_WORDS
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
@@ -362,6 +363,17 @@ def _has_product_container_title(value: str) -> bool:
 def actor_reference(value: str) -> str:
     """Return a grammatical reference to a recovered human actor."""
 
+    source = clean_text(value).strip(" .")
+    appositive = re.fullmatch(
+        r"(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+(?P<article>a|an|the)\s+(?P<role>.+)",
+        source,
+        flags=re.IGNORECASE,
+    )
+    if appositive:
+        return (
+            f"{appositive.group('name')}, {appositive.group('article').casefold()} "
+            f"{appositive.group('role').casefold()},"
+        )
     text = lower_plain_title_subject_fragment(value, action_offset=0).strip(" .")
     if not text:
         return "a product user"
@@ -389,27 +401,44 @@ def recovered_story_text(
     lead_actor_ref: str,
     first_path_inline: str,
     outcome_object: str,
+    lead_action: str = "",
+    preserve_leading_case: bool = False,
 ) -> str:
     """Render recovered product-story copy from bounded confirmation facts."""
 
     first_path = sentence_start(first_path_inline)
-    if "." in first_path_inline:
+    actor_action = base_action_clause(lead_action).strip(" .")
+    if actor_action:
+        opening = f"{title} helps {lead_actor_ref} {actor_action}."
+    elif "." in first_path_inline:
         opening = f"{title} helps {lead_actor_ref} complete this first path: {first_path}."
     else:
-        opening = f"{title} helps {lead_actor_ref} complete a first path where {lower_leading_word(first_path_inline)}."
+        embedded_path = first_path_inline if preserve_leading_case else lower_leading_word(first_path_inline)
+        opening = f"{title} helps {lead_actor_ref} complete a first path where {embedded_path}."
     return (
         f"{opening} It keeps {outcome_object} tied to source input, current state, blockers, handoffs, "
         "and proof evidence so the next step is clear."
     )
 
 
-def recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str:
+def recovered_proof_text(
+    *,
+    first_path_inline: str,
+    outcome_object: str,
+    preserve_leading_case: bool = False,
+    lead_actor_ref: str = "",
+    lead_action: str = "",
+) -> str:
     """Render recovered proof-boundary copy from the first path and outcome."""
 
-    if "." in first_path_inline:
+    actor_action = base_action_clause(lead_action).strip(" .")
+    if lead_actor_ref and actor_action:
+        opening = f"Release 0.0.1 succeeds when {lead_actor_ref} can {actor_action}."
+    elif "." in first_path_inline:
         opening = "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required."
     else:
-        opening = f"Release 0.0.1 succeeds when {lower_leading_word(first_path_inline)}."
+        embedded_path = first_path_inline if preserve_leading_case else lower_leading_word(first_path_inline)
+        opening = f"Release 0.0.1 succeeds when {embedded_path}."
     return (
         f"{opening} The product shows {outcome_object}. It explains missing or invalid input with a clear blocker "
         "and keeps replayable evidence for review."

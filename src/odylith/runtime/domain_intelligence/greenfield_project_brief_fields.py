@@ -56,6 +56,13 @@ def brief_option(identifier: str, decision: str, recommended: str, impact: str) 
 
 def state_reference_text(state_object: str, *, state_label: str) -> str:
     text = compact_text(state_object)
+    canonical = re.fullmatch(
+        r"the primary state object is\s+(?P<object>.+?)\.?",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if canonical:
+        return sentence_label(canonical.group("object"))
     if text and ":" not in text:
         sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
         if len(sentences) <= 1:

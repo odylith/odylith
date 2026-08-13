@@ -380,6 +380,15 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
     """Detect visible generated prose that should never pass a greenfield gate."""
 
     issues: list[str] = []
+    if isinstance(value, Mapping):
+        intent = value.get("intent")
+        if isinstance(intent, Mapping) and _clean(intent.get("reasoning_mode")) == "odylith_confirmed_governed_proposal":
+            state_object = _clean(intent.get("state_object"))
+            if (
+                state_object.casefold().startswith("the primary state object is ")
+                and not _canonical_state_object_is_meaningful(state_object)
+            ):
+                issues.append(f"malformed canonical state object leaked at {root}.intent.state_object")
     actor_labels = _semantic_actor_labels(value)
     for actor_label in actor_labels:
         if _actor_label_contains_action_clause(actor_label):
@@ -734,6 +743,16 @@ def _terms(value: Any) -> set[str]:
             prefix_aliases=_SEMANTIC_QUALITY_TERM_PREFIX_ALIASES,
         )
     )
+
+
+def _canonical_state_object_is_meaningful(value: str) -> bool:
+    """Call the canonical state owner after semantic-quality initialization."""
+
+    from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import (
+        canonical_state_object_is_meaningful,
+    )
+
+    return canonical_state_object_is_meaningful(value)
 
 
 def _ngrams(value: str, *, ngram: int) -> set[tuple[str, ...]]:

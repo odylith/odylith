@@ -34,12 +34,26 @@ from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics 
 )
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import is_source_obligation_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import confirmed_direction_evidence_text
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     without_confirmation_evidence_label,
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_key
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import (
+    StructuredFirstPathContract,
+)
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import named_actor_phrase
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import (
+    compile_structured_first_path,
+)
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import compile_temporal_first_path
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import explicit_path_start_value
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import is_negated_output_scope
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import path_start_action
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import path_start_source
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import structured_actor_subject
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import (
     word_sense_content_clause_describes_comparison,
@@ -54,6 +68,7 @@ class StructuredPromptFacts:
     actor: str = ""
     first_path: str = ""
     path_needs_enrichment: bool = False
+    first_path_contract: StructuredFirstPathContract | None = None
 
 
 _TITLE_FIELDS = ("product", "product name", "title", "domain label")
@@ -190,6 +205,14 @@ _FOR_ROLE_PERSON_RE = re.compile(
     r"(?P<name>[A-Z][A-Za-z0-9'/-]*)\b",
 )
 _INVALID_ROLE_TRAILING_RE = re.compile(r"\b(?:at|for|from|in|on|to|with|within)$", flags=re.IGNORECASE)
+_EXPLICIT_PERSON_PATTERNS = (
+    _APPOSITIVE_ACTOR_RE,
+    _ROLE_NAMED_PERSON_RE,
+    _ROLE_COMMA_PERSON_RE,
+    _PERSON_ROLE_RE,
+    _FOR_ROLE_PERSON_RE,
+    _NAMED_ROLE_RE,
+)
 _PRODUCT_FOR_ACTOR_RE = re.compile(
     r"\b(?:build|create|design|make)\s+(?:a\s+|the\s+)?(?:greenfield\s+)?"
     r"(?:app|application|platform|product|service|system|tool|workspace)\s+for\s+"
@@ -211,25 +234,10 @@ _VISIBLE_OUTPUT_ACTION_RE = re.compile(
     r"(?P<output>(?:a|an|the)\s+[^,;.!?]{1,100})",
     flags=re.IGNORECASE,
 )
-_NEGATED_OUTPUT_SCOPE_RE = re.compile(
-    r"(?:\b(?:not|never|cannot|can't|won't|shouldn't|mustn't)\b|"
-    r"\b(?:forbidden|prohibited|barred|disallowed)\s+to\b|"
-    r"\bnot\s+(?:allowed|permitted)\s+to\b)[^,;.!?]*$",
-    flags=re.IGNORECASE,
-)
 _EVIDENCE_OWNED_OUTPUT_RE = re.compile(
     r"\bevidence\s+[A-Za-z0-9_-]+\s+says\s+(?:the\s+)?[^.!?]{1,100}?\s+owns\s+"
     r"(?P<output>(?:a|an|the)\s+[^.!?;]{1,100}?)"
     r"(?=\s+and\s+the\s+state\s+vocabulary\b|[.!?;])",
-    flags=re.IGNORECASE,
-)
-_PATH_START_RE = re.compile(
-    r"^(?:(?:the\s+)?first\s+path|it)?\s*(?:is\s+fixed\s*)?(?::\s*)?"
-    r"begins?\s+with\s+(?P<start>.+)$",
-    flags=re.IGNORECASE,
-)
-_PATH_NOMINAL_RESULT_RE = re.compile(
-    r"^(?:the\s+)?first(?:\s+[A-Za-z0-9'-]+){0,3}\s+path\s+is\s+(?P<result>.+)$",
     flags=re.IGNORECASE,
 )
 _DOMAIN_LABEL_RE = re.compile(
@@ -245,14 +253,18 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
     if not text:
         return StructuredPromptFacts()
     mapping = prompt_field_mapping(text)
-    natural_actor, natural_action = _natural_actor_action(text)
+    natural_actor, natural_action, natural_actor_is_human, actor_owned_action = _natural_actor_action(text)
     title = _explicit_domain_label(text) or _first_field(mapping, _TITLE_FIELDS)
     actors = _structured_actor_values(mapping)
     actor = (actors[0] if actors else "") or natural_actor
+    actor_is_human = _structured_actor_is_human(
+        actor=actor,
+        natural_actor_is_human=natural_actor_is_human,
+    )
     role = _first_field(mapping, _ROLE_FIELDS)
     if role and actor and role.casefold() not in actor.casefold():
         actor = f"{role} {actor}"
-    path_value = _first_raw_field(mapping, _PATH_FIELDS)
+    path_value = _first_raw_field(mapping, _PATH_FIELDS) or explicit_path_start_value(text)
     action_value = _first_raw_field(mapping, _ACTION_FIELDS) or natural_action
     output_value = _first_raw_field(mapping, _OUTPUT_FIELDS) or _natural_visible_output(text)
     temporal_path = _structured_temporal_rule_path(
@@ -262,21 +274,23 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
         output_value=output_value,
     )
     if temporal_path:
-        first_path, actor = temporal_path
+        first_path_contract, actor = temporal_path
     else:
-        first_path = _complete_structured_path(
+        first_path_contract = compile_structured_first_path(
             actor=actor,
+            actor_is_human=actor_is_human,
             path_value=path_value,
             action_value=action_value,
             output_value=output_value,
+            actor_owned_action=actor_owned_action,
         )
+    first_path = first_path_contract.text
     return StructuredPromptFacts(
         title=title,
         actor=actor,
         first_path=first_path,
-        path_needs_enrichment=bool(
-            path_value and len(first_path_model(first_path).steps) <= 1
-        ),
+        path_needs_enrichment=bool(first_path and not first_path_contract.complete),
+        first_path_contract=first_path_contract,
     )
 
 
@@ -284,8 +298,6 @@ def ranked_first_path_evidence(value: str) -> str:
     """Return the complete ordered workflow evidence, not one high-scoring sentence."""
 
     structured = structured_prompt_facts(value)
-    if structured.first_path and not structured.path_needs_enrichment:
-        return structured.first_path
     rows = _narrative_rows(value)
     if not rows:
         return structured.first_path
@@ -321,14 +333,42 @@ def ranked_first_path_evidence(value: str) -> str:
                 combined = f"{workflow_row}. {rows[index + 1]}"
                 candidates.append((_path_score(combined), -index, combined))
     if structured.first_path:
+        contract = structured.first_path_contract
+        if contract and contract.complete:
+            candidate = (
+                contract.actor_handoff_path_from_rows(ordered, actor=structured.actor)
+                or contract.actor_owned_path_from_rows(ordered)
+                or structured.first_path
+            )
+            return _command_audience_path(value, candidate=candidate) or candidate
+        person_actor = _explicit_person_actor(value)
+        handoff_candidate = (
+            contract.actor_handoff_path_from_rows(ordered, actor=person_actor)
+            if contract and person_actor
+            else ""
+        )
+        if handoff_candidate:
+            return _command_audience_path(value, candidate=handoff_candidate) or handoff_candidate
         anchor_terms = set(ordered_terms(structured.first_path, minimum=3, stopwords=("first", "path")))
-        richer_rows = [
-            row
-            for row in ordered
-            if len(first_path_model(row).steps) >= 2
-            and anchor_terms.intersection(ordered_terms(row, minimum=3))
-        ]
-        return max(richer_rows, key=_path_score) if richer_rows else structured.first_path
+        structured_has_action = bool(
+            structured.first_path_contract
+            and any(
+                event.kind in {"action", "start"}
+                for event in structured.first_path_contract.events
+            )
+        )
+        minimum_steps = 2 if structured_has_action else 1
+        richer_rows: list[str] = []
+        for row in ordered:
+            row_model = first_path_model(row)
+            if (
+                len(row_model.steps) >= minimum_steps
+                and row_model.material_action
+                and anchor_terms.intersection(ordered_terms(row, minimum=3))
+            ):
+                richer_rows.append(row)
+        candidate = max(richer_rows, key=_path_score) if richer_rows else structured.first_path
+        return _command_audience_path(value, candidate=candidate) or candidate
     if ordered:
         candidate = ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
         return _command_audience_path(value, candidate=candidate) or candidate
@@ -577,17 +617,7 @@ def explicit_actor_has_human_grammar(value: str) -> bool:
         return True
     if _named_product_helper_actor(text):
         return True
-    return any(
-        pattern.search(text)
-        for pattern in (
-            _APPOSITIVE_ACTOR_RE,
-            _ROLE_NAMED_PERSON_RE,
-            _ROLE_COMMA_PERSON_RE,
-            _PERSON_ROLE_RE,
-            _FOR_ROLE_PERSON_RE,
-            _NAMED_ROLE_RE,
-        )
-    )
+    return bool(_explicit_person_actor(text))
 
 
 def explicit_actor_evidence(value: str) -> str:
@@ -595,37 +625,15 @@ def explicit_actor_evidence(value: str) -> str:
 
     structured = structured_prompt_facts(value)
     if structured.actor:
-        return _structured_actor_subject(structured.actor).removeprefix("The ")
+        return structured_actor_subject(structured.actor).removeprefix("The ")
     command_actor = _command_audience_actor(value)
     if command_actor:
         return command_actor
     ranked = ranked_first_path_evidence(value)
-    patterns = (
-        _APPOSITIVE_ACTOR_RE,
-        _ROLE_NAMED_PERSON_RE,
-        _ROLE_COMMA_PERSON_RE,
-        _PERSON_ROLE_RE,
-        _FOR_ROLE_PERSON_RE,
-        _NAMED_ROLE_RE,
-    )
     for source in tuple(dict.fromkeys(item for item in (ranked, str(value or "")) if item)):
-        for pattern in patterns:
-            match = pattern.search(source)
-            if match:
-                role = re.sub(
-                    r"^(?:a|an|the)\s+",
-                    "",
-                    match.group("role"),
-                    flags=re.IGNORECASE,
-                ).strip(" ,")
-                if _INVALID_ROLE_TRAILING_RE.search(role):
-                    continue
-                if pattern is _APPOSITIVE_ACTOR_RE:
-                    candidate = f"{match.group('name')}, {match.group('article')} {role}".strip()
-                else:
-                    candidate = f"{role} {match.group('name')}".strip()
-                if _pattern_actor_is_human(match=match, candidate=candidate):
-                    return candidate
+        person_actor = _explicit_person_actor(source)
+        if person_actor:
+            return person_actor
         need_match = _LEADING_NEED_ACTOR_RE.search(source)
         if need_match:
             actor = need_match.group("actor").strip(" ,")
@@ -635,6 +643,55 @@ def explicit_actor_evidence(value: str) -> str:
         if helper_actor:
             return helper_actor
     return ""
+
+
+def _explicit_person_actor(value: str) -> str:
+    """Return a validated person-role match without consuming path or system text."""
+
+    for pattern in _EXPLICIT_PERSON_PATTERNS:
+        match = pattern.search(value)
+        if not match:
+            continue
+        candidate = _person_actor_candidate(pattern=pattern, match=match)
+        if candidate:
+            return candidate
+    return ""
+
+
+def _person_actor_candidate(*, pattern: re.Pattern[str], match: re.Match[str]) -> str:
+    role = re.sub(
+        r"^(?:a|an|the)\s+",
+        "",
+        match.group("role"),
+        flags=re.IGNORECASE,
+    ).strip(" ,")
+    if _INVALID_ROLE_TRAILING_RE.search(role):
+        return ""
+    candidate = named_actor_phrase(name=match.group("name"), role=role)
+    return candidate if _pattern_actor_is_human(match=match, candidate=candidate) else ""
+
+
+def _explicit_person_actor_action(value: str) -> tuple[str, str]:
+    """Return a validated named person and the finite action that follows that person."""
+
+    for sentence in sentence_fragments(clean_markdown_text(value)):
+        for pattern in _EXPLICIT_PERSON_PATTERNS:
+            match = pattern.search(sentence)
+            if not match:
+                continue
+            actor = _person_actor_candidate(pattern=pattern, match=match)
+            if not actor:
+                continue
+            action = str(match.groupdict().get("action") or "").strip(" ,.")
+            if not action:
+                action = sentence[match.end("name") :].lstrip(" ,").strip(" .")
+            head = action.split(maxsplit=1)[0].casefold().strip(".,:;") if action else ""
+            if (
+                len(action.split()) >= 2
+                and head not in {"at", "for", "from", "in", "on", "to", "with", "within"}
+            ):
+                return actor, action
+    return "", ""
 
 
 def _pattern_actor_is_human(*, match: re.Match[str], candidate: str) -> bool:
@@ -735,16 +792,34 @@ def _credible_structured_actor(value: str) -> bool:
     )
 
 
+def _structured_actor_is_human(
+    *,
+    actor: str,
+    natural_actor_is_human: bool,
+) -> bool:
+    """Keep explicit human-field custody separate from system-like command subjects."""
+
+    text = _clean(actor).strip(" .")
+    if not text or has_non_human_actor_signal(text):
+        return False
+    return bool(
+        natural_actor_is_human
+        or has_human_actor_signal(text)
+        or has_human_actor_role_signal(text)
+        or _has_actor_label_signal(text)
+    )
+
+
 def _structured_temporal_rule_path(
     *,
     mapping: Mapping[str, Any],
     actors: tuple[str, ...],
     path_value: Any,
     output_value: Any,
-) -> tuple[str, str] | None:
+) -> tuple[StructuredFirstPathContract, str] | None:
     if len(actors) < 2:
         return None
-    path_action = _path_start_action(_clean(path_value)) or _clean(path_value).strip(" .")
+    path_action = path_start_source(_clean(path_value)) or _clean(path_value).strip(" .")
     path_verb = base_action_verb(path_action.split(maxsplit=1)[0]) if path_action else ""
     if not path_verb:
         return None
@@ -755,12 +830,7 @@ def _structured_temporal_rule_path(
             events = _ordered_temporal_actor_events(_clean(value), actors=actors)
             if not events or not any(base_action_verb(action.split(maxsplit=1)[0]) == path_verb for _, action in events):
                 continue
-            event_rows = [f"{actor[:1].upper() + actor[1:]} {base_action_clause(action)}" for actor, action in events]
-            output = _clean(output_value).strip(" .")
-            if output and output.casefold() not in " ".join(event_rows).casefold():
-                article_output = output if output.casefold().startswith(("a ", "an ", "the ")) else f"the {output}"
-                event_rows.append(f"The product shows {article_output}")
-            return ". ".join(row.rstrip(" .") for row in event_rows) + ".", events[0][0]
+            return compile_temporal_first_path(events=events, output_value=output_value), events[0][0]
     return None
 
 
@@ -782,13 +852,22 @@ def _structured_actor_event(value: str, *, actors: tuple[str, ...]) -> tuple[str
     source_actor, action = match or ("", "")
     if not source_actor:
         for actor in actors:
-            actor_terminal = singularize_last_word(actor).split()[-1]
-            if not text.casefold().startswith(f"{actor_terminal.casefold()} "):
+            actor_label = singularize_last_word(actor)
+            actor_terminal = actor_label.split()[-1]
+            subject = next(
+                (
+                    candidate
+                    for candidate in (actor_label, actor_terminal)
+                    if text.casefold().startswith(f"{candidate.casefold()} ")
+                ),
+                "",
+            )
+            if not subject:
                 continue
-            candidate_action = text[len(actor_terminal) :].strip(" .")
+            candidate_action = text[len(subject) :].strip(" .")
             action_head = candidate_action.split(maxsplit=1)[0] if candidate_action else ""
             if action_token_form(action_head):
-                source_actor, action = actor_terminal, candidate_action
+                source_actor, action = subject, candidate_action
                 break
     if not source_actor or not action:
         return None
@@ -807,99 +886,20 @@ def _first_raw_field(mapping: Mapping[str, Any], fields: tuple[str, ...]) -> Any
     return ""
 
 
-def _structured_path(*, actor: str, value: Any) -> str:
-    if isinstance(value, (list, tuple)):
-        actions = [_clean(item).strip(" .") for item in value if _clean(item).strip(" .")]
-    else:
-        path = _clean(value).replace("->", ";")
-        actions = [part.strip(" .") for part in re.split(r"\s*;\s*", path) if part.strip(" .")]
-    if not actions:
-        return ""
-    action_chain = _join_actions(actions)
-    subject = _structured_actor_subject(actor)
-    if subject and not action_chain.casefold().startswith(subject.casefold() + " "):
-        action_chain = action_chain[:1].lower() + action_chain[1:]
-        return f"{subject} can {action_chain}".strip(" .")
-    return action_chain.strip(" .")
-
-
-def _complete_structured_path(
-    *,
-    actor: str,
-    path_value: Any,
-    action_value: Any,
-    output_value: Any,
-) -> str:
-    path = _clean(path_value).strip(" .")
-    action = _clean(action_value).strip(" .")
-    output = _clean(output_value).strip(" .")
-    if not (actor or path or action):
-        return ""
-    start = _path_start_action(path)
-    path_result = _path_nominal_result(path)
-    if path and not start and not action and not output:
-        return _structured_path(actor=actor, value=path_value)
-    actions: list[str] = []
-    if start:
-        actions.append(start)
-    elif path and not path_result:
-        actions.append(path)
-    if action and all(action.casefold() not in item.casefold() for item in actions):
-        actions.append(action)
-    path_result_action = _visible_output_action(path_result)
-    if path_result_action:
-        actions.append(path_result_action)
-    output_action = _visible_output_action(output)
-    if (
-        output_action
-        and not _output_already_present(output, actions)
-    ):
-        actions.append(output_action)
-    return _structured_path(actor=actor, value=actions)
-
-
-def _path_start_action(value: str) -> str:
-    match = _PATH_START_RE.match(_clean(value).strip(" ."))
-    if not match:
-        return ""
-    start = match.group("start").strip(" .")
-    if not start:
-        return ""
-    return f"complete {start}"
-
-
-def _path_nominal_result(value: str) -> str:
-    match = _PATH_NOMINAL_RESULT_RE.match(_clean(value).strip(" ."))
-    return match.group("result").strip(" .") if match else ""
-
-
-def _visible_output_action(value: str) -> str:
-    output = _clean(value).strip(" .")
-    if not output or _NEGATED_OUTPUT_SCOPE_RE.search(output):
-        return ""
-    if re.match(r"^(?:produce|generate|return|show|display|provide|receive|get)\b", output, re.IGNORECASE):
-        return output
-    return f"receive {output}"
-
-
-def _output_already_present(output: str, actions: list[str]) -> bool:
-    candidates = {output.casefold()}
-    without_system_context = re.sub(
-        r"\s+in\s+[A-Z][A-Za-z0-9'/-]*(?:\s+[A-Z][A-Za-z0-9'/-]*){0,4}$",
-        "",
-        output,
-    ).casefold()
-    if without_system_context:
-        candidates.add(without_system_context)
-    return any(candidate in action.casefold() for candidate in candidates for action in actions)
-
-
-def _natural_actor_action(value: str) -> tuple[str, str]:
+def _natural_actor_action(value: str) -> tuple[str, str, bool, bool]:
     for pattern in (_IMPLEMENTATION_REQUEST_RE, _PRODUCT_FOR_ACTOR_RE):
         match = pattern.search(clean_markdown_text(value))
         if match:
-            return match.group("actor").strip(" ,"), match.group("action").strip(" ,")
-    return "", ""
+            actor = match.group("actor").strip(" ,")
+            explicit_human = bool(match.groupdict().get("human_connector"))
+            actor_is_human = bool(
+                explicit_human
+                or has_human_actor_signal(actor)
+                or has_human_actor_role_signal(actor)
+            )
+            return actor, match.group("action").strip(" ,"), actor_is_human, False
+    actor, action = _explicit_person_actor_action(value)
+    return (actor, action, True, True) if actor and action else ("", "", False, False)
 
 
 def _natural_visible_output(value: str) -> str:
@@ -913,7 +913,7 @@ def _natural_visible_output(value: str) -> str:
         contrast = tuple(re.finditer(r"\b(?:but|however|instead)\b", scope, flags=re.IGNORECASE))
         if contrast:
             scope = scope[contrast[-1].end() :]
-        if _NEGATED_OUTPUT_SCOPE_RE.search(scope):
+        if is_negated_output_scope(scope):
             continue
         return match.group("output").strip(" ,")
     evidence_match = _EVIDENCE_OWNED_OUTPUT_RE.search(text)
@@ -947,33 +947,6 @@ def _credible_explicit_title(
         for word in words
     )
     return terminal in _PRODUCT_TITLE_TERMINALS or branded
-
-
-def _structured_actor_subject(value: str) -> str:
-    actor = _clean(value).strip(" .")
-    if not actor:
-        return ""
-    if "," not in actor:
-        words = actor.split()
-        if (
-            len(words) >= 2
-            and words[-1][:1].isupper()
-            and not words[-1].isupper()
-            and any(word_has_actor_role_signal(word) for word in words[:-1])
-        ):
-            return f"{words[-1]}, a {' '.join(words[:-1])},"
-        return actor[:1].upper() + actor[1:]
-    name, role = (part.strip() for part in actor.split(",", 1))
-    role = re.sub(r"^(?:a|an|the)\s+", "", role, flags=re.IGNORECASE).strip()
-    return f"{name}, a {role}," if name and role else actor.replace(",", "")
-
-
-def _join_actions(actions: list[str]) -> str:
-    if len(actions) == 1:
-        return actions[0]
-    if len(actions) == 2:
-        return f"{actions[0]} and {actions[1]}"
-    return f"{', '.join(actions[:-1])}, and {actions[-1]}"
 
 
 def _narrative_rows(value: str) -> list[str]:

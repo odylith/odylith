@@ -7,9 +7,11 @@ from collections.abc import Sequence
 
 from odylith.runtime.common.prose_grammar import base_action_verb
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import coordinated_action_form_after_connector
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.common.prose_grammar import past_action_verb
 from odylith.runtime.common.prose_grammar import strip_leading_action_modal
 from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 from odylith.runtime.common.prose_grammar import third_person_action_verb
@@ -28,8 +30,14 @@ from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics 
     source_boundary_rows_from_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
+from odylith.runtime.domain_intelligence.greenfield_first_path_subject_kind import explicit_generic_product_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import path_entry_action
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import actor_owned_action_from_text
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import passive_event_parts
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import structured_actor_aliases
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import structured_actor_subject
 from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase
 
 
@@ -43,12 +51,14 @@ _ACTION_RESPONSIBILITIES = (
     (frozenset({"coordinate"}), "Coordination"),
     (frozenset({"decompose"}), "Decomposition"),
     (frozenset({"decide"}), "Decision"),
-    (frozenset({"deliver", "display", "hand", "publish", "release", "return", "see", "show", "surface"}), "Delivery"),
+    (frozenset({"deliver", "display", "hand", "release", "return", "see", "show", "surface"}), "Delivery"),
     (frozenset({"draft"}), "Drafting"),
     (frozenset({"generate", "produce"}), "Generation"),
+    (frozenset({"inspect"}), "Inspection"),
     (frozenset({"match"}), "Matching"),
+    (frozenset({"publish"}), "Publication"),
     (frozenset({"route"}), "Routing"),
-    (frozenset({"log", "preserve", "record", "save", "store", "track"}), "Recordkeeping"),
+    (frozenset({"archive", "log", "preserve", "record", "save", "store", "track"}), "Recordkeeping"),
     (frozenset({"review"}), "Review"),
     (frozenset({"schedule"}), "Scheduling"),
     (frozenset({"score"}), "Scoring"),
@@ -136,12 +146,15 @@ def state_object_from_first_path(
         or (model.steps[0] if model.steps else "")
         or model.material_action
     )
-    subject = _state_transition_object(first_path) or _action_object(action)
+    rejected_assignment = _unaccepted_recorded_state_assignment(first_path)
+    subject = _state_transition_object(first_path)
+    if not subject and not rejected_assignment:
+        subject = _action_object(action)
     if _weak_state_object(subject):
         subject = ""
-    if not subject:
+    if not subject and not rejected_assignment:
         subject = _action_object(model.visible_outcome)
-    if not subject:
+    if not subject and not rejected_assignment:
         subject = _compact_label(model.visible_outcome, fallback=fallback, max_words=6).casefold()
     subject = singularize_last_word(subject)
     if subject.casefold().endswith(_STATE_RECORD_SUFFIXES):
@@ -181,6 +194,9 @@ def _state_transition_object(value: str) -> str:
     )
     if kept_object:
         return kept_object.group("object").strip(" .")
+    recorded_object, recorded_predicate = _recorded_state_assignment(text)
+    if recorded_object and past_action_verb(recorded_predicate):
+        return recorded_object
     entered = re.search(
         r"(?:^|[:.;]\s+)(?P<object>(?:(?:a|an|the)\s+)?"
         r"[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4}?)\s+"
@@ -204,6 +220,24 @@ def _state_transition_object(value: str) -> str:
     return ""
 
 
+def _recorded_state_assignment(value: str) -> tuple[str, str]:
+    match = re.search(
+        r"\b(?:records?|recorded|marks?|marked|sets?|set)\s+"
+        r"(?P<object>(?:a|an|the)\s+[A-Za-z0-9][A-Za-z0-9'/-]*(?:\s+[A-Za-z0-9][A-Za-z0-9'/-]*){0,4}?)\s+"
+        r"(?:as|to)\s+(?P<predicate>[A-Za-z][A-Za-z'-]*)\b",
+        clean_text(value),
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return "", ""
+    return match.group("object").strip(" ."), match.group("predicate")
+
+
+def _unaccepted_recorded_state_assignment(value: str) -> bool:
+    recorded_object, recorded_predicate = _recorded_state_assignment(value)
+    return bool(recorded_object and not past_action_verb(recorded_predicate))
+
+
 def canonical_state_object_is_meaningful(value: str) -> bool:
     """Return whether a bounded canonical state sentence names a concrete object."""
 
@@ -214,9 +248,12 @@ def canonical_state_object_is_meaningful(value: str) -> bool:
     )
     if not match:
         return False
+    object_words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", match.group("object"))
+    if object_words and object_words[-1].casefold().endswith("ed") and past_action_verb(object_words[-1]):
+        return False
     terms = {
         token.casefold()
-        for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", match.group("object"))
+        for token in object_words
         if token.casefold() not in _GENERIC_CANONICAL_STATE_TERMS
     }
     return bool(terms)
@@ -233,14 +270,22 @@ def internal_system_rows_from_first_path(
 ) -> list[str]:
     """Project distinct product responsibilities from first-path actions."""
 
-    model = first_path_model(first_path)
-    steps = [
-        owned_step
-        for step in model.steps
-        if clean_text(step).strip(" .")
-        and not _external_source_only_step(step, external_systems=external_systems)
-        for owned_step in _ownership_steps(clean_text(step).strip(" ."), human_actors=human_actors)
+    model = first_path_model(_system_projection_first_path(first_path, human_actors=human_actors))
+    owned_steps = [
+        (step, owner)
+        for step, owner in _path_steps_with_human_owners(model.steps, human_actors=human_actors)
+        if not _external_source_only_step(step, external_systems=external_systems)
+        and not _human_action_inside_external_system(
+            step,
+            human_subject=owner,
+            external_systems=external_systems,
+        )
     ]
+    without_path_definitions = [row for row in owned_steps if not _path_definition_step(row[0])]
+    if without_path_definitions:
+        owned_steps = without_path_definitions
+    steps = [step for step, _owner in owned_steps]
+    human_owners = [owner for _step, owner in owned_steps]
     if not steps:
         return []
     state_label = _state_label(state_object, fallback=title)
@@ -251,7 +296,7 @@ def internal_system_rows_from_first_path(
     for index, step in enumerate(steps):
         if index in merged_nominal_steps:
             continue
-        human_subject = _matching_human_subject(step, human_actors=human_actors)
+        human_subject = human_owners[index]
         nominal_row = _nominal_responsibility_row(
             step,
             human_subject=human_subject,
@@ -276,8 +321,22 @@ def internal_system_rows_from_first_path(
                     action=action,
                     actor=human_subject,
                     state_label=state_label,
+                    source_first_path=first_path,
+                    visible_result=visible_result or model.visible_outcome,
                 )
             )
+            continue
+        passive_subject, passive_action = passive_event_parts(step)
+        if passive_subject:
+            responsibilities = _responsibility_labels(passive_action, step=passive_action)
+            suffix = _join_labels(responsibilities)
+            action_label = _compact_label(passive_subject, fallback=state_label, max_words=5)
+            name = f"{action_label} Workflow" if responsibilities == ["Processing"] else f"{action_label} {suffix}"
+            rows.append(
+                f"{title_case_text(name)} — {_finite_action(passive_action)} and keeps status, ownership, "
+                "blockers, evidence, and handoff context"
+            )
+            used_responsibilities.update(responsibilities)
             continue
         non_human_subject = _non_human_subject_prefix(step)
         action = _action_after_subject(step, subject=non_human_subject) or _action_without_subject(step)
@@ -312,7 +371,7 @@ def internal_system_rows_from_first_path(
                 f"captures {state_label.casefold()} input and required context and exposes either a validated or blocked state"
             )
         elif index == len(steps) - 1 and any(
-            label in {"Delivery", "Generation", "Proof", "Validation"} for label in responsibilities
+            label in {"Delivery", "Generation", "Proof", "Publication", "Validation"} for label in responsibilities
         ):
             suffix = _join_labels(responsibilities)
             outcome_label = action_label or result_label
@@ -368,6 +427,73 @@ def _external_source_only_step(value: str, *, external_systems: Sequence[str]) -
     return " ".join(object_words) in known_sources
 
 
+def _human_action_inside_external_system(
+    value: str,
+    *,
+    human_subject: str,
+    external_systems: Sequence[str],
+) -> bool:
+    """Keep human work performed in an external system out of owned topology."""
+
+    if not human_subject:
+        return False
+    text = clean_text(value).casefold().strip(" .")
+    for source in external_systems:
+        label = re.split(r"\s+(?:—|-)+\s+", clean_text(source), maxsplit=1)[0].casefold().strip(" .")
+        if label and (text.endswith(f" in {label}") or text.endswith(f" in the {label}")):
+            return True
+    return False
+
+
+def _path_steps_with_human_owners(
+    values: Sequence[str],
+    *,
+    human_actors: Sequence[str],
+) -> list[tuple[str, str]]:
+    """Carry one explicit human owner across subjectless coordinated action steps."""
+
+    rows: list[tuple[str, str]] = []
+    current_owner = ""
+    for value in values:
+        for step in _ownership_steps(clean_text(value).strip(" ."), human_actors=human_actors):
+            explicit_human = _matching_human_subject(step, human_actors=human_actors)
+            if explicit_human:
+                current_owner = explicit_human
+            elif (
+                _explicit_action_subject(step)
+                or _non_human_subject_prefix(step)
+                or passive_event_parts(step)[0]
+            ):
+                current_owner = ""
+            rows.append((step, current_owner))
+    return rows
+
+
+def _system_projection_first_path(value: str, *, human_actors: Sequence[str]) -> str:
+    """Remove typed actor appositives before comma-delimited workflow parsing."""
+
+    text = clean_text(value)
+    for row in human_actors:
+        label = re.split(r"\s*(?::|—|–)\s*|\s+-\s+", clean_text(row), maxsplit=1)[0].strip(" .")
+        subject = structured_actor_subject(label)
+        name, separator, _role = subject.partition(",")
+        if separator and name.strip():
+            text = re.sub(re.escape(subject), name.strip(), text, flags=re.IGNORECASE)
+    return text
+
+
+def _path_definition_step(value: str) -> bool:
+    """Return whether a step only names the path instead of assigning product behavior."""
+
+    return bool(
+        re.fullmatch(
+            r"(?:the\s+)?first(?:\s+complete)?(?:\s+[A-Za-z0-9'-]+){0,3}\s+path\s+is\s+.+",
+            clean_text(value).strip(" ."),
+            flags=re.IGNORECASE,
+        )
+    )
+
+
 def _exception_review_system_row(*, first_path: str, state_label: str) -> str:
     text = clean_text(first_path)
     if not re.search(r"\bexceptions?\b", text, flags=re.IGNORECASE):
@@ -417,6 +543,8 @@ def _nominal_responsibility_row(step: str, *, human_subject: str, source_first_p
         return ""
     text = clean_text(step).strip(" .")
     if not text:
+        return ""
+    if _non_human_subject_prefix(text):
         return ""
     subject = _explicit_action_subject(text)
     action = _action_after_subject(text, subject=subject) or text
@@ -551,6 +679,9 @@ def _responsibility_labels(action: str, *, step: str) -> list[str]:
     if _copular_gate_subject(step):
         return ["Validation"]
     tokens = set(_action_verbs(_action_without_subject(action)))
+    first = clean_text(action).split(maxsplit=1)[0].casefold().strip(".,;:") if clean_text(action) else ""
+    if base := base_action_verb(first):
+        tokens.add(base)
     if re.search(r"\bvalidat(?:e[sd]?|ing)\b", step, flags=re.IGNORECASE):
         tokens.add("validate")
     labels = [label for verbs, label in _ACTION_RESPONSIBILITIES if verbs & tokens]
@@ -599,21 +730,23 @@ def _matching_human_subject(value: str, *, human_actors: Sequence[str]) -> str:
         label = re.split(r"\s*(?::|—|–)\s*|\s+-\s+", clean_text(row), maxsplit=1)[0].strip(" .")
         if not label:
             continue
-        match = _subject_prefix_match(text, label)
-        if not match:
-            continue
-        action = strip_leading_action_modal(text[match.end() :].strip(" ."))
-        if _starts_with_material_action(action):
-            return match.group("subject")
+        for alias in structured_actor_aliases(label):
+            match = _subject_prefix_match(text, alias)
+            if not match:
+                continue
+            action = strip_leading_action_modal(text[match.end() :].strip(" ."))
+            if _starts_with_material_action(action) or path_entry_action(action) != action:
+                return match.group("subject")
     subject = _explicit_action_subject(value)
     subject_key = _actor_key(subject)
     if not subject_key:
         return ""
     for row in human_actors:
         label = re.split(r"\s*(?::|—|–)\s*|\s+-\s+", clean_text(row), maxsplit=1)[0]
-        label_key = _actor_key(label)
-        if label_key and (subject_key == label_key or subject_key.endswith(f" {label_key}")):
-            return subject
+        for alias in structured_actor_aliases(label):
+            label_key = _actor_key(alias)
+            if label_key and (subject_key == label_key or subject_key.endswith(f" {label_key}")):
+                return subject
     return ""
 
 
@@ -627,7 +760,11 @@ def _actor_key(value: str) -> str:
 def _subject_prefix_match(value: str, subject: str) -> re.Match[str] | None:
     article = subject.split(maxsplit=1)[0].casefold()
     optional_article = "" if article in {"a", "an", "the", "one"} else r"(?:(?:a|an|the|one)\s+)?"
-    return re.match(rf"^(?P<subject>{optional_article}{re.escape(subject)})\s+", value, flags=re.IGNORECASE)
+    return re.match(
+        rf"^(?P<subject>{optional_article}{re.escape(subject)}),?\s+",
+        value,
+        flags=re.IGNORECASE,
+    )
 
 
 def _source_actor_mention_count(value: str, *, actor: str) -> int:
@@ -643,14 +780,40 @@ def _source_actor_mention_count(value: str, *, actor: str) -> int:
     )
 
 
-def _human_supported_system_row(*, action: str, actor: str, state_label: str) -> str:
-    leading_action = clean_text(action).split(",", 1)[0].strip(" .")
-    owned_action = leading_action if _starts_with_material_action(leading_action) else action
-    action_object = _compact_label(_action_object(owned_action), fallback=state_label, max_words=4)
+def _human_supported_system_row(
+    *,
+    action: str,
+    actor: str,
+    state_label: str,
+    source_first_path: str,
+    visible_result: str,
+) -> str:
+    raw_leading_action = clean_text(action).split(",", 1)[0].strip(" .")
+    leading_action = path_entry_action(raw_leading_action)
+    source_action = (
+        _before_coordinated_action(actor_owned_action_from_text(source_first_path, actor=actor))
+        if leading_action.casefold() != raw_leading_action.casefold()
+        else ""
+    )
+    owned_action = source_action or (leading_action if _starts_with_material_action(leading_action) else action)
+    action_object_source = _action_object(owned_action)
+    if action_object_source.casefold() in {"it", "that", "them", "this"} and visible_result:
+        action_object_source = visible_result
+    action_object = _compact_label(action_object_source, fallback=state_label, max_words=4)
     responsibilities = _responsibility_labels(owned_action, step=owned_action)
     actor_ref = _actor_key(actor) or "user"
-    actor_action = _human_actor_action(action, actor_ref=actor_ref)
-    action_note = f"; First-path action is the {actor_ref} {actor_action}"
+    actor_phrase = _actor_noun_phrase(actor, fallback=actor_ref)
+    decision_owner = _decision_owner_phrase(actor_phrase)
+    actor_action = _human_actor_action(source_action or action, actor_ref=actor_ref)
+    action_note = f"; First-path action is {actor_phrase} {actor_action}"
+    if base_action_verb((source_action or action).split(maxsplit=1)[0]) == "receive" and _same_result_object(
+        action_object,
+        visible_result,
+    ):
+        return (
+            f"{title_case_text(f'{action_object} Access')} — presents {action_object.casefold()} to {actor_phrase} "
+            f"with status, blockers, explanation, and review evidence{action_note}"
+        )
     if "Intake" in responsibilities:
         return (
             f"{title_case_text(f'{action_object} Intake')} — owns {action_object.casefold()} intake records, status, "
@@ -659,29 +822,40 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
     if "Delivery" in responsibilities:
         return (
             f"{title_case_text(f'{action_object} Delivery')} — presents {action_object.casefold()} as the visible result "
-            f"to the {actor_ref} with status, blockers, explanation, and review evidence{action_note}"
+            f"to {actor_phrase} with status, blockers, explanation, and review evidence{action_note}"
+        )
+    if "Publication" in responsibilities:
+        publication_object = _action_object_for_verb(owned_action, verb="publish") or action_object
+        return (
+            f"{title_case_text(f'{publication_object} Publication')} — publishes {publication_object.casefold()} with status, "
+            f"blockers, explanation, and review evidence{action_note}"
         )
     if "Decision" in responsibilities:
         decision_subject = _decision_subject_label(action_object)
         return (
-            f"{title_case_text(f'{decision_subject} Decision Record')} — records the {actor_ref} decision and keeps "
+            f"{title_case_text(f'{decision_subject} Decision Record')} — records {decision_owner} decision and keeps "
             f"status, rationale, blockers, evidence, and handoff context visible{action_note}"
         )
     if any(label in {"Approval", "Assignment", "Selection"} for label in responsibilities):
         suffix = _join_labels(responsibilities)
         decision_subject = singularize_last_word(action_object)
         return (
-            f"{title_case_text(f'{decision_subject} {suffix} Record')} — records the {actor_ref} decision and keeps "
+            f"{title_case_text(f'{decision_subject} {suffix} Record')} — records {decision_owner} decision and keeps "
             f"status, blockers, evidence, and handoff context visible{action_note}"
         )
     if "Proof" in responsibilities:
         return (
-            f"{title_case_text(f'{action_object} Proof')} — owns the {actor_ref} proof claim with source evidence, "
+            f"{title_case_text(f'{action_object} Proof')} — owns {actor_phrase}'s proof claim with source evidence, "
             f"failure reason, review status, and handoff context{action_note}"
         )
     if "Review" in responsibilities:
         return (
             f"{title_case_text(f'{action_object} Review Record')} — owns {action_object.casefold()} review records, "
+            f"status, blockers, evidence, and handoff context{action_note}"
+        )
+    if "Inspection" in responsibilities:
+        return (
+            f"{title_case_text(f'{action_object} Inspection')} — owns {action_object.casefold()} inspection records, "
             f"status, blockers, evidence, and handoff context{action_note}"
         )
     if "Recordkeeping" in responsibilities:
@@ -697,18 +871,68 @@ def _human_supported_system_row(*, action: str, actor: str, state_label: str) ->
     if "Validation" in responsibilities:
         return (
             f"{title_case_text(f'{action_object} Workflow Support')} — records {action_object.casefold()} validation "
-            f"performed by the {actor_ref} and keeps validation status, blockers, evidence, and handoff context visible{action_note}"
+            f"performed by {actor_phrase} and keeps validation status, blockers, evidence, and handoff context visible{action_note}"
         )
     if "Routing" in responsibilities:
         routing_subject = _routing_subject_label(action_object)
         return (
             f"{title_case_text(f'{routing_subject} Routing')} — records routing of {action_object.casefold()} "
-            f"performed by the {actor_ref} and keeps source, destination, status, blockers, and handoff evidence visible{action_note}"
+            f"performed by {actor_phrase} and keeps source, destination, status, blockers, and handoff evidence visible{action_note}"
         )
     return (
         f"{title_case_text(f'{action_object} Workflow Support')} — owns {action_object.casefold()} workflow status, "
         f"blockers, evidence, and handoff context{action_note}"
     )
+
+
+def _actor_noun_phrase(value: str, *, fallback: str) -> str:
+    actor = clean_text(value).strip(" .") or fallback
+    if not actor:
+        return "the user"
+    name, separator, _role = actor.partition(",")
+    if separator and name[:1].isupper():
+        return name.strip()
+    first = actor.split(maxsplit=1)[0].casefold()
+    if first in _LEADING_OBJECT_WORDS:
+        body = actor.split(maxsplit=1)[1] if len(actor.split(maxsplit=1)) > 1 else "user"
+        return f"the {body.casefold()}"
+    if len(actor.split()) == 1 and actor[:1].isupper():
+        return actor
+    return f"the {actor.casefold()}"
+
+
+def _decision_owner_phrase(actor_phrase: str) -> str:
+    """Render role actors as decision types and named actors as possessive owners."""
+
+    phrase = clean_text(actor_phrase).strip(" .") or "the user"
+    if phrase.casefold().startswith("the "):
+        return phrase
+    suffix = "'" if phrase.casefold().endswith("s") else "'s"
+    return f"{phrase}{suffix}"
+
+
+def _same_result_object(action_object: str, visible_result: str) -> bool:
+    action_terms = set(re.findall(r"[a-z0-9][a-z0-9'/-]*", clean_text(action_object).casefold()))
+    result_terms = set(re.findall(r"[a-z0-9][a-z0-9'/-]*", clean_text(visible_result).casefold()))
+    ignored = _LEADING_OBJECT_WORDS | {"receive", "receives", "result"}
+    action_terms -= ignored
+    result_terms -= ignored
+    return bool(action_terms and result_terms and (action_terms <= result_terms or result_terms <= action_terms))
+
+
+def _action_object_for_verb(value: str, *, verb: str) -> str:
+    for segment in re.split(r"\s*,\s*(?:and\s+)?|\s+(?:and|or|then)\s+", clean_text(value), flags=re.IGNORECASE):
+        words = segment.strip(" .").split()
+        if words and base_action_verb(words[0]) == verb:
+            return _compact_label(_action_object(segment), fallback="Result", max_words=5)
+    return ""
+
+
+def _human_actor_action(value: str, *, actor_ref: str) -> str:
+    actor_words = actor_ref.split()
+    if actor_words and looks_plural(actor_words[-1]):
+        return base_action_clause(value).strip(" .")
+    return _finite_action(value)
 
 
 def _decision_subject_label(value: str) -> str:
@@ -731,24 +955,23 @@ def _routing_subject_label(value: str) -> str:
     return singularize_last_word(subject) if subject else text
 
 
-def _human_actor_action(value: str, *, actor_ref: str) -> str:
-    actor_words = actor_ref.split()
-    if actor_words and looks_plural(actor_words[-1]):
-        return base_action_clause(value).strip(" .")
-    return _finite_action(value)
-
-
 def _before_coordinated_action(value: str) -> str:
     text = clean_text(value).strip(" .")
     for match in re.finditer(r"\s+(?:and|or|then)\s+", text, flags=re.IGNORECASE):
         tail = text[match.end() :].strip(" .")
         if _non_human_subject_prefix(tail):
             return text[: match.start()].strip(" .")
-        action = _action_without_subject(tail)
-        if action and (action.casefold() == tail.casefold() or _explicit_action_subject(tail)):
-            first = action.split(maxsplit=1)[0].casefold().strip(".,;:")
-            if looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first):
-                return text[: match.start()].strip(" .")
+        human_subject = _explicit_action_subject(tail)
+        if human_subject and has_actor_role_word(human_subject):
+            return text[: match.start()].strip(" .")
+        head_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text[: match.start()])
+        connector = re.search(r"(?:and|or|then)", match.group(0), flags=re.IGNORECASE)
+        tail_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", tail)
+        if connector and coordinated_action_form_after_connector(
+            [*head_tokens, connector.group(0), *tail_tokens],
+            len(head_tokens),
+        ):
+            return text[: match.start()].strip(" .")
     return text
 
 
@@ -756,12 +979,24 @@ def _ownership_steps(value: str, *, human_actors: Sequence[str]) -> list[str]:
     text = clean_text(value).strip(" .")
     if not text:
         return []
+    leading_human_subject = _matching_human_subject(text, human_actors=human_actors)
+    subject_end = len(leading_human_subject)
     for match in re.finditer(r"\s+(?:and|or|then)\s+", text, flags=re.IGNORECASE):
+        if match.start() < subject_end:
+            continue
         head = text[: match.start()].strip(" .")
         tail = text[match.end() :].strip(" .")
         if not head or not tail:
             continue
         if _matching_human_subject(tail, human_actors=human_actors) or _non_human_subject_prefix(tail):
+            return [head, tail]
+        prefix_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text[: match.start()])
+        connector = re.search(r"(?:and|or|then)", match.group(0), flags=re.IGNORECASE)
+        tail_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", tail)
+        if leading_human_subject and connector and coordinated_action_form_after_connector(
+            [*prefix_tokens, connector.group(0), *tail_tokens],
+            len(prefix_tokens),
+        ):
             return [head, tail]
     return [text]
 
@@ -770,17 +1005,35 @@ def _non_human_subject_prefix(value: str) -> str:
     gate_subject = _copular_gate_subject(value)
     if gate_subject:
         return gate_subject
+    explicit_subject = explicit_generic_product_subject_prefix(value)
+    if explicit_subject:
+        return explicit_subject
     words = clean_text(value).strip(" .").split()
     if not words:
         return ""
     first = words[0].casefold().strip(".,;:")
     if looks_like_base_action_token(base_action_verb(first)) or looks_like_finite_action_token(first):
         return ""
+    best_match = ""
     for end in range(1, min(5, len(words))):
         candidate = " ".join(words[:end]).strip(" ,.;:-")
-        if has_non_human_actor_signal(candidate):
-            return candidate
-    return ""
+        candidate_signal = re.sub(r"^(?:a|an|the)\s+", "", candidate, flags=re.IGNORECASE).strip(" ,.;:-")
+        if not candidate_signal:
+            continue
+        candidate_tokens = [token.casefold().strip(".,;:") for token in candidate_signal.split()]
+        if any(
+            looks_like_base_action_token(base_action_verb(token)) or looks_like_finite_action_token(token)
+            for token in candidate_tokens[1:]
+        ):
+            continue
+        tail = words[end:]
+        action = tail[0].casefold().strip(".,;:") if tail else ""
+        if has_non_human_actor_signal(candidate_signal) and (
+            looks_like_base_action_token(base_action_verb(action))
+            or looks_like_finite_action_token(action)
+        ):
+            best_match = candidate
+    return best_match
 
 
 def _copular_gate_subject(value: str) -> str:

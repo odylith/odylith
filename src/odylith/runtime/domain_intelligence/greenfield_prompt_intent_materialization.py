@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from odylith.runtime.common.prose_grammar import base_action_clause
-from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import PRECONFIRM_STAGING_MARKER
 from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import candidate_intent_stage_paths
@@ -57,6 +56,9 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality im
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     explicit_material_clarification,
+)
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
+    source_boundary_facts_from_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     incomplete_path_clarification,
@@ -128,6 +130,28 @@ def materialize_prompt_intent_hypothesis(
             required_fields=clarification.required_fields,
         )
     source = prompt_intent_source(prompt)
+    boundary_evidence = "\n".join(value for value in (prompt, raw_edit) if value.strip())
+    boundary_facts = source_boundary_facts_from_evidence(boundary_evidence)
+    product_owned_boundaries = tuple(
+        fact.label
+        for fact in boundary_facts
+        if fact.confidence == "ambiguous"
+        and _boundary_is_product_context(fact.label, evidence=boundary_evidence, source=source)
+    )
+    ambiguous_boundary = next(
+        (
+            fact
+            for fact in boundary_facts
+            if fact.confidence == "ambiguous"
+            and fact.label.casefold() not in {label.casefold() for label in product_owned_boundaries}
+        ),
+        None,
+    )
+    if ambiguous_boundary:
+        raise GreenfieldClarificationRequired(
+            ambiguous_boundary.ambiguity,
+            required_fields=("external_systems",),
+        )
     hypothesis = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
     if not source.title:
         outcome_title = recovered_title(first_path_model(source.first_path).visible_outcome)
@@ -154,6 +178,14 @@ def materialize_prompt_intent_hypothesis(
         prompt=prompt,
         edit_evidence=raw_edit,
         fallback_title=fallback_title,
+    )
+    _add_product_boundary_assumptions(
+        intent,
+        labels=tuple(
+            label
+            for label in product_owned_boundaries
+            if label.casefold() != source.title.casefold()
+        ),
     )
     if uses_title_only_first_path_hypothesis:
         _add_title_hypothesis_assumption(intent)
@@ -233,7 +265,11 @@ def materialize_prompt_intent_hypothesis(
 def _preferred_implicit_title(*, fallback_title: str, outcome_title: str) -> str:
     fallback = " ".join(str(fallback_title or "").split()).strip(" .")
     words = fallback.split()
-    if 1 <= len(words) <= 8 and not looks_like_action_clause(fallback):
+    if 1 <= len(words) <= 8 and not re.match(
+        r"^(?:build|create|design|develop|draft|generate|launch|make|plan|prepare|propose)\b",
+        fallback,
+        flags=re.IGNORECASE,
+    ):
         return title_case_text(fallback)
     return outcome_title if outcome_title != "Recovered Product Workspace" else fallback
 
@@ -420,6 +456,35 @@ def _add_first_user_assumption(intent: dict[str, Any]) -> None:
     assumptions = confirmed_text_values(intent.get("assumptions"))
     if assumption not in assumptions:
         intent["assumptions"] = [*assumptions, assumption]
+
+
+def _add_product_boundary_assumptions(intent: dict[str, Any], *, labels: tuple[str, ...]) -> None:
+    assumptions = confirmed_text_values(intent.get("assumptions"))
+    additions = [
+        f"Assumption: {label} is the product-owned workspace named by the first path; no external integration is assumed."
+        for label in labels
+        if str(label).strip()
+    ]
+    intent["assumptions"] = [*assumptions, *(row for row in additions if row not in assumptions)]
+
+
+def _boundary_is_product_context(label: str, *, evidence: str, source: Any) -> bool:
+    """Resolve a named workspace only when the accepted actor/path grammar owns it."""
+
+    label_key = clean_markdown_text(label).casefold()
+    if not label_key or not source.actor:
+        return False
+    if label_key in clean_markdown_text(source.first_path).casefold():
+        return True
+    product_request = re.compile(
+        r"\b(?:build|create|design|make)\b[^.!?]{0,100}\bproduct\b[^.!?]{0,120}\bfor\b"
+        r"[^.!?]{0,120}(?:\b(?:who|that)\s+(?:need|needs|want|wants)\s+to\b|\bto\b)",
+        flags=re.IGNORECASE,
+    )
+    return any(
+        label_key in clean_markdown_text(sentence).casefold() and product_request.search(sentence)
+        for sentence in sentence_fragments(evidence)
+    )
 
 
 def _has_usable_first_path_evidence(evidence: str) -> bool:

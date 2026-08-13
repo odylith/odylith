@@ -10,7 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_t
 
 _ACTION_VERB_PATTERN = action_verb_pattern()
 _GENERIC_PRODUCT_SUBJECT_PATTERN = (
-    r"app|application|dashboard|engine|platform|product|service|system|tool|view|workspace"
+    r"app|application|controller|dashboard|engine|map|platform|product|service|system|tool|view|workspace"
 )
 _GENERIC_PRODUCT_SUBJECT_QUALIFIER_PATTERN = r"(?:[a-z][a-z0-9']*(?:[-\s]+)){0,3}"
 _SYSTEM_ACTION_MODIFIER_PATTERN = r"(?:[a-z][a-z0-9'-]*ly|then|later|also|immediately|now)"
@@ -21,18 +21,23 @@ _FINITE_ACTION_PATTERN = rf"(?:{_ACTION_VERB_PATTERN}|[a-z][a-z'-]*(?:ed|s)|can|
 def has_explicit_generic_product_subject(value: str) -> bool:
     """Return true when a sentence explicitly assigns action to a product system."""
 
+    return bool(explicit_generic_product_subject_prefix(value))
+
+
+def explicit_generic_product_subject_prefix(value: str) -> str:
+    """Return the explicit product-system subject prefix when present."""
+
     text = clean_markdown_text(value).strip(" .,;:")
-    return bool(
-        re.search(
-            rf"(?:^|[,;]\s*|\bthen\s+)(?:the\s+)?"
-            rf"{_GENERIC_PRODUCT_SUBJECT_QUALIFIER_PATTERN}(?:{_GENERIC_PRODUCT_SUBJECT_PATTERN})\s+"
-            rf"(?!(?:{_HUMAN_ROLE_PATTERN})\b)"
-            rf"(?:{_SYSTEM_ACTION_MODIFIER_PATTERN}\s+){{0,2}}"
-            rf"{_FINITE_ACTION_PATTERN}\b",
-            text,
-            re.IGNORECASE,
-        )
+    match = re.search(
+        rf"(?:^|[,;]\s*|\bthen\s+)(?P<subject>(?:the\s+)?"
+        rf"{_GENERIC_PRODUCT_SUBJECT_QUALIFIER_PATTERN}(?:{_GENERIC_PRODUCT_SUBJECT_PATTERN}))\s+"
+        rf"(?!(?:{_HUMAN_ROLE_PATTERN})\b)"
+        rf"(?:{_SYSTEM_ACTION_MODIFIER_PATTERN}\s+){{0,2}}"
+        rf"{_FINITE_ACTION_PATTERN}\b",
+        text,
+        re.IGNORECASE,
     )
+    return match.group("subject").strip(" .,;:") if match else ""
 
 
 def preserve_system_subject_then_action(value: str) -> bool:
@@ -50,4 +55,8 @@ def preserve_system_subject_then_action(value: str) -> bool:
     )
 
 
-__all__ = ["has_explicit_generic_product_subject", "preserve_system_subject_then_action"]
+__all__ = [
+    "explicit_generic_product_subject_prefix",
+    "has_explicit_generic_product_subject",
+    "preserve_system_subject_then_action",
+]

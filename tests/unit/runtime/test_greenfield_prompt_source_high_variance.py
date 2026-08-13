@@ -1303,6 +1303,33 @@ def test_structured_multi_actor_rule_orders_the_grounded_handoff() -> None:
     )
 
 
+def test_temporal_rule_matches_the_unrendered_start_action() -> None:
+    prompt = """Pasted request
+**Actors:** quality reviewers, release coordinators.
+**Output:** a release receipt.
+**Rule:** a quality reviewer requests correction before a release coordinator issues a receipt.
+**First path:** starts with request review."""
+
+    source = prompt_intent_source(prompt)
+
+    assert "Quality reviewers request correction" in source.first_path
+    assert "Release coordinators issue a receipt" in source.first_path
+    assert "release receipt" in source.first_path
+
+
+def test_temporal_rule_does_not_repeat_an_output_already_issued_by_an_actor() -> None:
+    prompt = """Pasted request
+**Actors:** intake clerks, supervisors.
+**Output:** a receipt.
+**Rule:** an intake clerk submits a packet before a supervisor issues a receipt.
+**First path:** starts with submit a packet."""
+
+    source = prompt_intent_source(prompt)
+
+    assert source.first_path.casefold().count("receipt") == 1
+    assert "the product shows a receipt" not in source.first_path.casefold()
+
+
 def test_command_audience_owns_an_explicit_start_before_a_state_gate() -> None:
     prompt = (
         "Source notes say traveling organ tuners need routes for municipal instruments. "

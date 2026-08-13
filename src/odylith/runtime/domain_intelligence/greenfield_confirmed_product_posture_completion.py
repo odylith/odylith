@@ -230,13 +230,24 @@ def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) ->
         label = _clean(value).split(":", 1)[0].split("—", 1)[0].strip(" .")
         description = actor_row_description(value)
         if label and description:
-            rows.append(f"{label} {description}")
+            rows.append(f"{_sentence_actor_label(label)} {description}")
         elif label:
             rows.append(f"{label} participates in the product outcome")
     if rows:
         return "; ".join(rows)
     path = readable_action_chain_phrase(first_path, fallback=first_path_capability_phrase(first_path))
     return f"{focus_label(title)} users need to {path} and understand the outcome."
+
+
+def _sentence_actor_label(value: str) -> str:
+    """Close a named-role appositive when an actor label becomes a sentence subject."""
+
+    label = _clean(value).strip(" .")
+    head, separator, descriptor = label.partition(",")
+    descriptor_head = descriptor.strip().split(maxsplit=1)[0].casefold() if descriptor.strip() else ""
+    if separator and len(head.split()) == 1 and descriptor_head in {"a", "an", "the"}:
+        return f"{label},"
+    return label
 
 
 __all__ = ["complete_product_posture", "first_release_actor_labels"]

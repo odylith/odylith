@@ -279,6 +279,38 @@ def test_project_judgment_accepts_visible_result_inflection_in_scope_tail() -> N
     assert greenfield_project_judgment_issues(package) == ()
 
 
+def test_project_judgment_accepts_nominalized_outcome_after_complete_tail_events() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            **_proposal(),
+            "semantic_model": {
+                "first_path_contract": {
+                    "visible_result": "published release readiness proof",
+                    "events": [
+                        {"action": "receives", "text": "A council receives reports"},
+                        {"action": "coordinates", "text": "A council coordinates review"},
+                        {"action": "records", "text": "A council records evidence custody"},
+                        {"action": "decides", "text": "A council decides embargo status"},
+                        {"action": "publishes", "text": "A council publishes release readiness proof"},
+                    ],
+                }
+            },
+        },
+        project_brief_preview={
+            "customization_options": [
+                {
+                    "recommended": (
+                        "Do not expand beyond receive reports; coordinate review; record evidence custody; "
+                        "decide embargo status; outcome: Release readiness proof until the first outcome works."
+                    )
+                }
+            ]
+        },
+    )
+
+    assert greenfield_project_judgment_issues(package) == ()
+
+
 def test_project_judgment_accepts_past_tense_visible_result_in_scope_tail() -> None:
     package = GreenfieldCompletionPackage(
         proposal={

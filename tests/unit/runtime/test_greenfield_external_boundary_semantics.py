@@ -7,8 +7,11 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import external_boundary_facts
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import is_external_dependency_clause
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_facts_from_evidence
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import source_boundary_rows_from_evidence
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import ranked_first_path_evidence
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import GreenfieldClarificationRequired
+from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
 
 
 _FIRST_PATH = (
@@ -418,6 +421,58 @@ def test_source_boundary_rows_stop_before_conditional_or_relative_tail(connector
 )
 def test_source_boundary_rows_reject_capitalized_non_system_objects(evidence: str) -> None:
     assert source_boundary_rows_from_evidence(evidence) == []
+
+
+def test_source_boundary_rows_preserve_camelcase_system_location() -> None:
+    evidence = "An archive clerk stages accession crates in VaultLedger."
+
+    assert source_boundary_rows_from_evidence(evidence) == ["VaultLedger"]
+
+
+@pytest.mark.parametrize(
+    "evidence",
+    (
+        "An archive clerk stages accession crates in EastWing.",
+        "A clinic scheduler records a handoff in ER.",
+    ),
+)
+def test_source_boundary_rows_reject_named_locations_after_in(evidence: str) -> None:
+    assert source_boundary_rows_from_evidence(evidence) == []
+
+
+@pytest.mark.parametrize("label", ("Atlas", "BeaconOS", "SignalFlow", "EastWing", "ER"))
+def test_untyped_named_in_boundary_remains_an_explicit_ambiguity(label: str) -> None:
+    facts = source_boundary_facts_from_evidence(
+        f"An archive clerk stages accession crates in {label}."
+    )
+
+    assert [(fact.label, fact.confidence) for fact in facts] == [(label, "ambiguous")]
+
+
+def test_explicit_external_field_accepts_an_arbitrary_system_name() -> None:
+    facts = source_boundary_facts_from_evidence("External system: SignalFlow")
+
+    assert [(fact.label, fact.confidence) for fact in facts] == [("SignalFlow", "source")]
+
+
+def test_ambiguous_named_boundary_asks_one_focused_question_before_writes(tmp_path) -> None:
+    prompt = (
+        "Build an archive intake workspace. An archive clerk stages accession crates in SignalFlow. "
+        "The product generates an intake receipt."
+    )
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Archive Intake",
+        )
+
+    assert error.value.required_fields == ("external_systems",)
+    assert error.value.question == (
+        "Is SignalFlow an external system required by the first path, or is it a location or product-owned label?"
+    )
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 
 
 def test_source_boundary_rows_preserve_device_carriers() -> None:

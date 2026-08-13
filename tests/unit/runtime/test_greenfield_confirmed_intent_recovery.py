@@ -2297,18 +2297,30 @@ def test_confirmed_recovery_keeps_organization_actor_and_including_context_reada
     assert intent["human_actors"] == [
         "Research Lab: needs the product to process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation and keep the result visible and reviewable"
     ]
+    assert intent["state_object"] == "The primary state object is a mixed classified and unclassified file."
     assert (
         "a research lab can process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation"
         in rendered
     )
     assert (
-        "The accepted product story names the user problem: End-to-end Export Control and Data-handling Compliance Workflow Workspace helps a research lab complete a first path where a research lab can process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation."
+        "The accepted product story names the user problem: End-to-end Export Control and Data-handling Compliance Workflow Workspace helps a research lab process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation."
         in rendered
     )
+    assert "a research lab complete a first path where a research lab" not in rendered
     assert "Research Lab Processing Mixed Classified" not in rendered
     assert "Files Including" not in rendered
     assert "process mixed classified and keep" not in rendered
+    state_section = next(
+        row for row in completed["project_brief"]["blueprint_sections"] if row["section"] == "State and ownership"
+    )
+    assert state_section["must_capture"].startswith(
+        "a mixed classified and unclassified file changes through the first journey"
+    )
+    assert "primary state object is" not in state_section["must_capture"].casefold()
     assert greenfield_quality_issues(completed) == []
+
+    completed["intent"]["state_object"] = "The primary state object is a mixed classified."
+    assert "malformed canonical state object" in "\n".join(greenfield_quality_issues(completed))
 
 
 def test_confirmed_recovery_fallback_actor_does_not_emit_participant(tmp_path) -> None:

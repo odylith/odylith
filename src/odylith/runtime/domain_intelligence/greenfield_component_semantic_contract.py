@@ -1,9 +1,6 @@
-"""Derive component-local greenfield contracts from accepted product text.
+"""Derive domain-neutral component contracts from accepted intent.
 
-This module intentionally avoids a baked catalog of product domains. It
-extracts action/object language from the accepted intent and component
-description, then renders a generic ownership contract around state, inputs,
-outputs, blockers, handoff, and proof.
+Render ownership of state, inputs, outputs, blockers, handoff, and proof.
 """
 
 from __future__ import annotations
@@ -14,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
@@ -328,6 +326,8 @@ def derive_component_semantic_contract(
         else "built from the wrong inputs"
     )
     critical_noun = protected_focus or source_output_focus or _noun_slot_artifact_phrase(critical)
+    if modal_base_form_drift_phrases(f"{critical_noun} is missing"):
+        critical_noun = _noun_slot_artifact_phrase(critical_noun)
     fields = contract_support.sanitize_contract_fields(
         {
             "owned_state": _contract_list_text(*owned_seed),

@@ -19,6 +19,32 @@ from odylith.runtime.common.prose_tail import strip_dangling_word_tail
 
 ACTION_MODAL_WORDS = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
 _ACTION_MODAL_WORDS = ACTION_MODAL_WORDS
+_IRREGULAR_PAST_TO_BASE = {
+    "brought": "bring",
+    "built": "build",
+    "caught": "catch",
+    "chosen": "choose",
+    "done": "do",
+    "driven": "drive",
+    "found": "find",
+    "given": "give",
+    "got": "get",
+    "had": "have",
+    "held": "hold",
+    "kept": "keep",
+    "made": "make",
+    "paid": "pay",
+    "put": "put",
+    "read": "read",
+    "run": "run",
+    "seen": "see",
+    "sent": "send",
+    "set": "set",
+    "shown": "show",
+    "taken": "take",
+    "told": "tell",
+    "written": "write",
+}
 _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
     "acknowledge": "acknowledges",
@@ -30,6 +56,7 @@ _INFINITIVE_TO_FINITE = {
     "answer": "answers",
     "apply": "applies",
     "approve": "approves",
+    "archive": "archives",
     "adjudicate": "adjudicates",
     "analyse": "analyses",
     "analyze": "analyzes",
@@ -116,6 +143,7 @@ _INFINITIVE_TO_FINITE = {
     "finish": "finishes",
     "follow": "follows",
     "gather": "gathers",
+    "generate": "generates",
     "get": "gets",
     "give": "gives",
     "grant": "grants",
@@ -154,6 +182,7 @@ _INFINITIVE_TO_FINITE = {
     "open": "opens",
     "offer": "offers",
     "obtain": "obtains",
+    "occupy": "occupies",
     "organize": "organizes",
     "order": "orders",
     "optimize": "optimizes",
@@ -226,6 +255,7 @@ _INFINITIVE_TO_FINITE = {
     "share": "shares",
     "simulate": "simulates",
     "split": "splits",
+    "stage": "stages",
     "start": "starts",
     "store": "stores",
     "stop": "stops",
@@ -491,6 +521,25 @@ def base_action_verb(value: str) -> str:
     if token in _INFINITIVE_TO_FINITE:
         return token
     return _FINITE_TO_BASE.get(token, "")
+
+
+def past_action_verb(value: str) -> str:
+    """Return the registered base action for a past-tense or participle token."""
+
+    token = _clean_word_token(value)
+    irregular = _IRREGULAR_PAST_TO_BASE.get(token, "")
+    if irregular in _INFINITIVE_TO_FINITE:
+        return irregular
+    candidates: list[str] = []
+    if token.endswith("ied") and len(token) > 3:
+        candidates.append(f"{token[:-3]}y")
+    if token.endswith("ed") and len(token) > 2:
+        without_d = token[:-1]
+        without_ed = token[:-2]
+        candidates.extend((without_d, without_ed))
+        if len(without_ed) > 2 and without_ed[-1] == without_ed[-2]:
+            candidates.append(without_ed[:-1])
+    return next((candidate for candidate in candidates if candidate in _INFINITIVE_TO_FINITE), "")
 
 
 def coordinated_action_form_after_connector(tokens: tuple[str, ...] | list[str], connector_index: int) -> str:

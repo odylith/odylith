@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import past_action_verb
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -385,6 +386,10 @@ def _tail_events_covered(
     visible_covered = not visible_terms or len(visible_terms & body_terms) >= min(2, len(visible_terms))
     if not visible_covered:
         visible_covered = len(_terms_with_variants(visible_result) & body_terms) >= min(2, len(visible_terms))
+    if not visible_covered:
+        visible_words = normalize_string(visible_result).split()
+        outcome_terms = _terms(" ".join(visible_words[1:])) if visible_words and past_action_verb(visible_words[0]) else set()
+        visible_covered = bool(outcome_terms and outcome_terms <= body_terms)
     return visible_covered and covered_events >= max(1, len(tail_events) - 1)
 
 

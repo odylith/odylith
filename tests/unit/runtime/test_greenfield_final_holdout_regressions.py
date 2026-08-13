@@ -935,6 +935,7 @@ def test_inline_labeled_evidence_compiles_one_complete_path(tmp_path: Path) -> N
     assert "condition-note intake" in first_path
     assert "record conservation work" in first_path
     assert "intervention register" in first_path
+    assert "first path is fixed" not in first_path
     assert intent["internal_systems"]
 
 
@@ -991,6 +992,80 @@ def test_explicit_system_actor_still_requires_a_human_owner(tmp_path: Path) -> N
 
     assert error.value.required_fields == ("human_actors", "first_path")
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+def test_named_person_action_reaches_the_typed_first_path(tmp_path: Path) -> None:
+    prompt = (
+        "Domain label: archive intake. An archive clerk named Mara stages accession crates in VaultLedger. "
+        "The product generates an intake receipt. The first path starts with manifest review."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Archive Intake",
+    )
+
+    first_path = str(intent["first_path"]).casefold()
+    assert "mara" in first_path
+    assert "mara, an archive clerk" in first_path
+    assert "stage accession crates" in first_path
+    assert "manifest review" in first_path
+    assert "intake receipt" in first_path
+    actor_rows = tuple(str(row) for row in intent["human_actors"])
+    assert actor_rows == (
+        "Mara, an archive clerk: needs the product to complete manifest review and keep the result visible and reviewable",
+    )
+    assert intent["customer"] == (
+        "Mara, an archive clerk, needs the product to complete manifest review and keep the result visible and reviewable."
+    )
+    public_copy = " ".join(
+        (
+            str(intent["problem"]),
+            str(intent["product_story"]),
+            str(intent["product_view"]),
+            str(intent["state_object"]),
+            str(intent["proof_boundary"]),
+            *(str(metric) for metric in intent["success_metrics"]),
+        )
+    ).casefold()
+    assert "to mara" not in public_copy
+    assert "a mara" not in public_copy
+    assert "archive clerk mara" not in public_copy
+    assert "manifest review" in public_copy
+    assert "helps Mara, an archive clerk, complete manifest review" in str(intent["product_story"])
+    assert "stage accession crates" not in str(intent["product_story"])
+    assert "receive an intake receipt" not in str(intent["product_story"])
+    assert "where Mara" not in str(intent["product_story"])
+    assert "when Mara, an archive clerk," in str(intent["proof_boundary"])
+    assert str(intent["product_story"]).count("Mara, an archive clerk,") == 1
+    assert intent["state_object"] == "The primary state object is an accession crate."
+    assert intent["external_systems"] == ["VaultLedger"]
+    assert "accession crates in vaultledger" not in " ".join(intent["internal_systems"]).casefold()
+
+
+def test_named_actor_handoff_does_not_invent_a_system_actor(tmp_path: Path) -> None:
+    prompt = (
+        "Harbor Slate is for dock attendant Ivo. Ivo starts by entering a vessel tag. On a match, the product "
+        "records the berth as occupied and the berth map displays the placement. Tide Ledger supplies assignments; "
+        "Harbor Slate cannot edit it."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Harbor Slate",
+    )
+
+    assert intent["human_actors"] == [
+        "Ivo, a dock attendant: needs the product to enter a vessel tag and keep the result visible and reviewable"
+    ]
+    assert intent["state_object"] == "The primary state object is the berth."
+    rendered_systems = " ".join(str(row) for row in intent["internal_systems"]).casefold()
+    assert "vessel tag intake" in rendered_systems
+    assert "berth as occupied recordkeeping" in rendered_systems
+    assert "first-path action is ivo enters a vessel tag" in rendered_systems
+    assert "berth maps displays" not in rendered_systems
 
 
 def test_nominal_path_result_is_rendered_as_an_action_not_raw_meta_prose(tmp_path: Path) -> None:

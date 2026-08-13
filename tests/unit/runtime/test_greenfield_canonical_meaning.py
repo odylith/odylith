@@ -1,9 +1,20 @@
 from __future__ import annotations
 
+import pytest
+
 from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import (
+    _non_human_subject_prefix,
+    canonical_state_object_is_meaningful,
     internal_system_rows_from_first_path,
     state_object_from_first_path,
 )
+
+
+def test_canonical_state_object_requires_a_durable_terminal_noun() -> None:
+    assert not canonical_state_object_is_meaningful("The primary state object is a mixed classified.")
+    assert canonical_state_object_is_meaningful(
+        "The primary state object is a mixed classified and unclassified file."
+    )
 
 
 def test_human_actions_keep_domain_state_without_transferring_ownership_to_product() -> None:
@@ -55,6 +66,10 @@ def test_human_record_action_is_not_misclassified_as_a_nonhuman_record_subject()
 
     assert any(row.startswith("Conflict or Accepted Reservation Recordkeeping") for row in rows)
     assert any("lab operators record either a conflict" in row.casefold() for row in rows)
+
+
+def test_non_human_subject_prefix_keeps_the_full_article_led_system_subject() -> None:
+    assert _non_human_subject_prefix("the berth map displays the placement") == "the berth map"
 
 
 def test_external_source_access_does_not_become_an_internal_system() -> None:
@@ -304,5 +319,144 @@ def test_hyphenated_actor_label_keeps_its_full_identity() -> None:
         human_actors=("Multi-party council: coordinates the first path",),
     )
 
-    assert any("to the multi-party council with status" in row for row in rows)
+    assert any("First-path action is the multi-party council" in row for row in rows)
+    assert any(row.startswith("Readiness Publication — publishes readiness") for row in rows)
     assert all("Multi-party Council Coordinates" not in row for row in rows)
+
+
+def test_named_actor_handoff_keeps_state_and_system_responsibilities_distinct() -> None:
+    first_path = (
+        "Ivo starts by entering a vessel tag. On a match, the product records the berth as occupied "
+        "and the berth map displays the placement."
+    )
+
+    assert state_object_from_first_path(first_path, fallback="harbor slate") == (
+        "The primary state object is the berth."
+    )
+    rows = internal_system_rows_from_first_path(
+        title="Harbor Slate",
+        first_path=first_path,
+        state_object="The primary state object is the berth.",
+        visible_result="the placement",
+        human_actors=("Ivo, a dock attendant: enters a vessel tag",),
+    )
+
+    rendered = " ".join(rows).casefold()
+    assert "vessel tag intake" in rendered
+    assert "berth as occupied recordkeeping" in rendered
+    assert "first-path action is ivo enters a vessel tag" in rendered
+    assert "berth maps displays" not in rendered
+
+
+def test_passive_object_event_projects_specific_delivery_ownership() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="District Heat Outage Ledger",
+        first_path=(
+            "Service operators open an incident. "
+            "A restoration bulletin is published after a supervisor approves the reading."
+        ),
+        state_object="The primary state object is an incident.",
+        visible_result="a restoration bulletin",
+        human_actors=("Service operators: need the product to open an incident",),
+    )
+
+    assert any(row.startswith("Restoration Bulletin Publication — publishes a restoration bulletin") for row in rows)
+    assert all("Workflow Support" not in row for row in rows)
+
+
+def test_path_definition_does_not_create_a_duplicate_workflow_responsibility() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Outage Ledger",
+        first_path="Service operators open an incident. The first path is incident intake.",
+        state_object="The primary state object is an incident.",
+        visible_result="an incident record",
+        human_actors=("Service operators: need the product to open an incident",),
+    )
+
+    assert any(row.startswith("Incident Intake —") for row in rows)
+    assert all(not row.startswith("Incident Intake Workflow —") for row in rows)
+
+
+def test_actor_receiving_the_visible_result_projects_access_not_intake() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Outage Ledger",
+        first_path="Tenant liaisons receive a restoration bulletin.",
+        state_object="The primary state object is an incident.",
+        visible_result="a restoration bulletin",
+        human_actors=("Tenant liaisons: need the product to receive a restoration bulletin",),
+    )
+
+    assert any(row.startswith("Restoration Bulletin Access —") for row in rows)
+    assert all(not row.startswith("Restoration Bulletin Intake —") for row in rows)
+
+
+def test_carried_action_after_visible_result_keeps_a_distinct_responsibility() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Receipt Workspace",
+        first_path="Tenant liaisons receive a receipt and archive it.",
+        state_object="The primary state object is a request.",
+        visible_result="a receipt",
+        human_actors=("Tenant liaisons: receive a receipt and archive it",),
+    )
+
+    assert any(row.startswith("Receipt Access —") for row in rows)
+    assert any(row.startswith("Receipt Recordkeeping —") for row in rows)
+    assert all("Receipt And Archive It Access" not in row for row in rows)
+
+
+@pytest.mark.parametrize(
+    "first_path, rejected",
+    (
+        ("The product records a receipt as evidence and shows the receipt.", "a receipt"),
+        ("The product sets a release receipt to PDF and shows it.", "a release receipt"),
+    ),
+)
+def test_presentation_artifacts_are_not_promoted_to_state_transition_objects(
+    first_path: str,
+    rejected: str,
+) -> None:
+    assert state_object_from_first_path(first_path, fallback="request") != (
+        f"The primary state object is {rejected}."
+    )
+
+
+def test_human_work_inside_an_external_system_is_not_claimed_as_owned_topology() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Archive Intake",
+        first_path=(
+            "Mara, an archive clerk, can complete manifest review. "
+            "Mara stages accession crates in VaultLedger. The product generates an intake receipt."
+        ),
+        state_object="The primary state object is an accession crate.",
+        visible_result="an intake receipt",
+        human_actors=("Mara, an archive clerk: needs the product to complete manifest review",),
+        external_systems=("VaultLedger",),
+    )
+
+    rendered = " ".join(rows).casefold()
+    assert "manifest review" in rendered
+    assert "accession crates in vaultledger" not in rendered
+    assert "intake receipt" in rendered
+    assert any(row.startswith("Intake Receipt Generation —") for row in rows)
+    assert "the mara" not in rendered
+    assert "first-path action is mara completes manifest review" in rendered
+
+
+def test_coordinated_actor_label_is_not_split_into_fake_component_owners() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="Alpine Refuge Cache",
+        first_path=(
+            "Refuge wardens and rescue dispatchers can inspect a cache, "
+            "log emergency cache inspections, and receive a cache readiness slip."
+        ),
+        state_object="The primary state object is a cache.",
+        visible_result="a cache readiness slip",
+        human_actors=(
+            "Refuge Wardens and Rescue Dispatchers: need the product to inspect a cache",
+        ),
+    )
+
+    rendered = " ".join(rows).casefold()
+    assert "refuge wardens workflow" not in rendered
+    assert "cache inspection" in rendered
+    assert "cache readiness slip access" in rendered

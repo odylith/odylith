@@ -223,6 +223,7 @@ class ExternalBoundaryFact:
     label: str
     evidence: str
     confidence: str
+    question: str = ""
 
     @property
     def row(self) -> str:
@@ -230,6 +231,8 @@ class ExternalBoundaryFact:
 
     @property
     def ambiguity(self) -> str:
+        if self.question:
+            return self.question
         return (
             f"Whether {self.label[:1].lower()}{self.label[1:]} is manually entered or supplied by an "
             "external source for the accepted first path."
@@ -260,13 +263,30 @@ def source_boundary_rows_from_evidence(
 ) -> list[str]:
     """Extract named external sources without copying surrounding prompt prose."""
 
-    rows = list(prompt_field_values(value, names=_EXTERNAL_FIELD_NAMES))
-    text = clean_text(value)
+    return [
+        fact.label
+        for fact in source_boundary_facts_from_evidence(value, excluded_labels=excluded_labels)
+        if fact.confidence == "source"
+    ][:8]
+
+
+def source_boundary_facts_from_evidence(
+    value: Any,
+    *,
+    excluded_labels: Sequence[str] = (),
+) -> list[ExternalBoundaryFact]:
+    """Return source-backed boundaries and unresolved named-location hypotheses."""
+
+    facts = [
+        ExternalBoundaryFact(label=label, evidence=clean_text(row), confidence="source")
+        for row in prompt_field_values(value, names=_EXTERNAL_FIELD_NAMES)
+        if (label := _source_label(row))
+    ]
+    text = str(value or "")
     if text and not text.lstrip().startswith(("{", "[")):
-        rows.extend(_dependency_frame_sources(text))
+        facts.extend(_dependency_frame_facts(text))
     excluded = {_boundary_key(label) for label in excluded_labels if _boundary_key(label)}
-    normalized = [_source_label(row) for row in rows]
-    return list(unique_text(row for row in normalized if row and _boundary_key(row) not in excluded))[:8]
+    return [fact for fact in _unique_facts(facts) if _boundary_key(fact.label) not in excluded][:8]
 
 
 def is_external_dependency_clause(value: Any) -> bool:
@@ -311,10 +331,14 @@ def _external_supplier_only_clause(value: str) -> bool:
 
 
 def _dependency_frame_sources(value: str) -> list[str]:
-    rows: list[str] = []
-    text = clean_text(value)
+    return [fact.label for fact in _dependency_frame_facts(value) if fact.confidence == "source"]
+
+
+def _dependency_frame_facts(value: str) -> list[ExternalBoundaryFact]:
+    facts: list[ExternalBoundaryFact] = []
+    text = str(value or "")
     for sentence in re.split(r"[.;!?\n]+", text):
-        rows.extend(_declared_external_sources(sentence))
+        facts.extend(_source_facts(_declared_external_sources(sentence), evidence=sentence))
     for clause in re.split(r"[,.;:!?\n]+", text):
         tokens = _LEXEME_RE.findall(clause)
         lowered = [token.casefold() for token in tokens]
@@ -322,28 +346,67 @@ def _dependency_frame_sources(value: str) -> list[str]:
             continue
         for index, token in enumerate(lowered):
             if token in _SUPPLIER_ACTIONS:
-                rows.append(_supplier_subject(tokens[:index]))
+                facts.extend(_source_facts((_supplier_subject(tokens[:index]),), evidence=clause))
             if token in _SOURCE_PREPOSITIONS:
                 candidate = _source_object(tokens, start=index + 1)
                 if _system_boundary_candidate(candidate):
-                    rows.append(candidate)
+                    facts.extend(_source_facts((candidate,), evidence=clause))
+            if token == "in":
+                candidate = _source_object(tokens, start=index + 1)
+                if _in_scopes_dependency_system(lowered, index=index):
+                    facts.extend(_source_facts((candidate,), evidence=clause))
+                elif _named_in_system_boundary_candidate(candidate):
+                    facts.extend(_source_facts((candidate,), evidence=clause))
+                elif (label := _source_label(candidate)) and not has_human_actor_signal(label):
+                    facts.append(
+                        ExternalBoundaryFact(
+                            label=label,
+                            evidence=clean_text(clause),
+                            confidence="ambiguous",
+                            question=(
+                                f"Is {label} an external system required by the first path, or is it a location "
+                                "or product-owned label?"
+                            ),
+                        )
+                    )
             if token == "from":
                 if _from_starts_state_transition(lowered, start=index + 1):
                     continue
                 candidate = _source_object(tokens, start=index + 1)
                 if _named_system_boundary_candidate(candidate):
-                    rows.append(candidate)
+                    facts.extend(_source_facts((candidate,), evidence=clause))
             prior_actions = set(lowered[max(0, index - 8) : index])
             required_actions = _SOURCE_PREPOSITION_ACTIONS.get(token, frozenset())
             if required_actions and prior_actions & required_actions:
                 candidate = _source_object(tokens, start=index + 1)
                 if token not in {"against", "with"} or _system_boundary_candidate(candidate):
-                    rows.append(candidate)
+                    facts.extend(_source_facts((candidate,), evidence=clause))
             if token in _DIRECT_SOURCE_ACTIONS and (index + 1 >= len(tokens) or lowered[index + 1] != "from"):
                 candidate = _source_object(tokens, start=index + 1, stop_at_source_relation=True)
                 if _system_boundary_candidate(candidate):
-                    rows.append(candidate)
-    return [row for row in rows if row]
+                    facts.extend(_source_facts((candidate,), evidence=clause))
+    return _unique_facts(facts)
+
+
+def _in_scopes_dependency_system(tokens: Sequence[str], *, index: int) -> bool:
+    """Treat ``in <name>`` as sourced when it qualifies an explicit dependency."""
+
+    dependency_index = next(
+        (position for position in range(index - 1, -1, -1) if tokens[position] in _DEPENDENCY_ACTIONS),
+        -1,
+    )
+    return bool(
+        dependency_index >= 0
+        and "on" in tokens[dependency_index + 1 : index]
+    )
+
+
+def _source_facts(values: Sequence[str], *, evidence: str) -> list[ExternalBoundaryFact]:
+    return [
+        ExternalBoundaryFact(label=label, evidence=clean_text(evidence), confidence="source")
+        for value in values
+        if (label := _source_label(value))
+    ]
 
 
 def _from_starts_state_transition(tokens: Sequence[str], *, start: int) -> bool:
@@ -465,6 +528,26 @@ def _named_system_boundary_candidate(value: Any) -> bool:
     )
 
 
+def _named_in_system_boundary_candidate(value: Any) -> bool:
+    """Require a system-bearing name before treating ``in`` as a dependency relation."""
+
+    label = _source_label(value)
+    if not label or has_human_actor_signal(label):
+        return False
+    return bool(set(_identifier_terms(label)) & _DIRECT_BOUNDARY_CARRIERS)
+
+
+def _identifier_terms(value: str) -> tuple[str, ...]:
+    terms: list[str] = []
+    for token in _LEXEME_RE.findall(clean_text(value)):
+        for segment in re.split(r"[/_-]+", token):
+            terms.extend(
+                part.casefold()
+                for part in re.findall(r"[A-Z]+(?=[A-Z][a-z]|[0-9]|$)|[A-Z]?[a-z]+|[0-9]+", segment)
+            )
+    return tuple(terms)
+
+
 def external_boundary_facts(first_path: Any) -> list[ExternalBoundaryFact]:
     """Infer input-source boundary facts from typed first-path steps."""
 
@@ -537,15 +620,15 @@ def _starts_with_action_tail(value: str) -> bool:
 
 
 def _unique_facts(facts: Sequence[ExternalBoundaryFact]) -> list[ExternalBoundaryFact]:
-    result: list[ExternalBoundaryFact] = []
-    seen: set[str] = set()
+    result: dict[str, ExternalBoundaryFact] = {}
     for fact in facts:
         key = fact.label.casefold()
-        if key in seen:
+        if not key:
             continue
-        seen.add(key)
-        result.append(fact)
-    return result
+        current = result.get(key)
+        if current is None or (current.confidence != "source" and fact.confidence == "source"):
+            result[key] = fact
+    return list(result.values())
 
 
 __all__ = [
@@ -553,5 +636,6 @@ __all__ = [
     "completed_external_boundary_rows",
     "external_boundary_facts",
     "is_external_dependency_clause",
+    "source_boundary_facts_from_evidence",
     "source_boundary_rows_from_evidence",
 ]
