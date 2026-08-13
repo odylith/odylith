@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 207,
-    "mapped_workstream_evidence_count": 122,
+    "explicit_event_count": 208,
+    "mapped_workstream_evidence_count": 123,
     "recent_path_match_count": 0,
     "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 207
+    "timeline_event_count": 208
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -60,6 +60,45 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py",
+        "tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 1141,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-05T13:26:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

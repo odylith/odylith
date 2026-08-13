@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 540,
-    "mapped_workstream_evidence_count": 448,
+    "explicit_event_count": 541,
+    "mapped_workstream_evidence_count": 449,
     "recent_path_match_count": 0,
     "spec_history_event_count": 292,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 540
+    "timeline_event_count": 541
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -22,6 +22,39 @@
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1147,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-08-13T16:47:19-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifact_count": 3,
       "artifacts": [
         "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
@@ -29,7 +62,7 @@
         "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py"
       ],
       "confidence": "high",
-      "event_index": 1148,
+      "event_index": 1146,
       "explicit_components": [
         "atlas",
         "compass",
@@ -65,7 +98,7 @@
         "tests/integration/runtime/test_greenfield_component_contract_preconfirm.py"
       ],
       "confidence": "high",
-      "event_index": 1147,
+      "event_index": 1145,
       "explicit_components": [
         "atlas",
         "compass",
@@ -102,7 +135,7 @@
         "tests/unit/runtime/test_greenfield_code_hygiene.py"
       ],
       "confidence": "high",
-      "event_index": 1146,
+      "event_index": 1144,
       "explicit_components": [
         "atlas",
         "compass",
@@ -138,7 +171,7 @@
         "tests/unit/runtime/test_greenfield_transaction_intent_authority.py"
       ],
       "confidence": "high",
-      "event_index": 1145,
+      "event_index": 1143,
       "explicit_components": [
         "atlas",
         "compass",
@@ -175,7 +208,7 @@
         "tests/unit/runtime/test_greenfield_prompt_workflow_custody.py"
       ],
       "confidence": "high",
-      "event_index": 1144,
+      "event_index": 1142,
       "explicit_components": [
         "atlas",
         "compass",
@@ -212,7 +245,7 @@
         "tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json"
       ],
       "confidence": "high",
-      "event_index": 1143,
+      "event_index": 1141,
       "explicit_components": [
         "atlas",
         "compass",
@@ -251,7 +284,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py"
       ],
       "confidence": "high",
-      "event_index": 1142,
+      "event_index": 1140,
       "explicit_components": [
         "atlas",
         "compass",
