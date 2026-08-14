@@ -3164,6 +3164,22 @@ This section captures synchronized requirement and contract signals derived from
   P0/P1 findings. Full clean-runtime, exact-distribution, installed lifecycle,
   recovery, host-parity, browser/readback, and untouched one-shot holdout gates
   remain required.
+- Greenfield installed-matrix semantic reopen update: bounded article-led
+  collective actors are accepted only when the relative actor/action clause is
+  structurally complete; the public semantic compiler's coordinated-object-list
+  classifier satisfies visible-result materiality without promoting an ordinary
+  thin action; source-stated signoff satisfies the high-consequence proof gate;
+  and prompt confirmation keeps source non-goals in a typed visible section.
+  Canonical component responsibility joins an objectless leading action only to
+  the following object-bearing action with the same human owner. Prompt actor
+  ranking singularizes plural non-human field nouns for classification without
+  singularizing product-system terminals into false non-human roles, and a
+  grounded direct human workflow outranks a broader command audience. Fresh
+  source proof passes the exact disclosure and quantum packages, all `158`
+  disclosed regressions, the widened `287`-test owner gate, and the `223`-test
+  fast release suite with `8` intentional deselections. Clean exact-distribution,
+  installed matrix, lifecycle/recovery/host-parity, browser-state, and untouched
+  one-shot holdout proof remain required.
 
 ## Research Basis
 

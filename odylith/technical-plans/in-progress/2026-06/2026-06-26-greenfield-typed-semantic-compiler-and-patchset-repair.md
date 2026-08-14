@@ -4030,3 +4030,18 @@ above.
       recovery/idempotency/host-parity proof, desktop/mobile browser proof for
       normal/fallback/degraded states, then the verified one-shot untouched
       holdout and final governance settlement.
+    - 2026-08-13 installed-matrix semantic reopen: exact dist `3f52f4162`
+      passed clean lifecycle proof, recovery/rescue/readback proof, and `12/14`
+      maintained installed cases before failing closed on the disclosure-council
+      and quantum-lab cases. Shared prompt, materiality, confirmation, and
+      canonical-responsibility owners now preserve article-led collective
+      actors, coordinated object-list outcomes, inline non-goals, signoff proof
+      boundaries, and same-owner action compounds. Disclosed replay also closed
+      plural field-label actor impersonation and preserved direct human workflow
+      ownership over a broader command audience. Fresh source proof passes all
+      `158` disclosed regressions, a widened `287`-test semantic owner gate, and
+      the `223`-test fast release suite with `8` intentional deselections. The
+      next checkpoint must commit these bytes, rebuild a complete clean dist,
+      rerun lifecycle and the maintained matrix from case one, prove desktop and
+      mobile normal/fallback/degraded browser states, and complete installed
+      reviewer adjudication before the untouched one-shot holdout.

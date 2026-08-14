@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_explicit_decision_gap import explicit_decision_gap
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import has_explicit_visible_result
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality import (
     title_supports_conservative_first_path,
 )
@@ -70,6 +71,13 @@ def test_ordinary_title_assumptions_do_not_block_a_conservative_first_path() -> 
         title="collaborative request coordination system",
         evidence="Create collaborative request coordination system with a default starting view.",
     )
+
+
+def test_coordinated_result_objects_do_not_make_a_thin_action_look_complete() -> None:
+    assert has_explicit_visible_result(
+        "A disclosure council can coordinate reports, partner review, embargo decisions, evidence custody, and signoff"
+    )
+    assert not has_explicit_visible_result("A kiosk helper can log paper tokens")
 
 
 @pytest.mark.parametrize(

@@ -113,6 +113,12 @@ class GreenfieldSemanticCompilerReport:
         }
 
 
+def has_visible_object_list_result(value: Any) -> bool:
+    """Return whether source text carries a coordinated, reviewable result object list."""
+
+    return _is_visible_object_list_result(clean_first_path_text(value))
+
+
 def select_visible_result_candidate(
     first_path: Any,
     *,
@@ -1439,6 +1445,7 @@ __all__ = [
     "GreenfieldSemanticCompilerReport",
     "GreenfieldSemanticCounterexample",
     "compile_greenfield_semantics",
+    "has_visible_object_list_result",
     "projection_uses_proof_boundary_as_result",
     "repair_confirmed_intent_semantic_projections",
     "repair_greenfield_semantic_projections",

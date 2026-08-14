@@ -85,6 +85,25 @@ def test_inline_without_boundary_stays_out_of_path_and_does_not_fabricate_extern
     assert intent["non_goals"] == ["without sending public announcements in the first release."]
 
 
+def test_collective_relative_actor_keeps_a_complete_path_and_inline_non_goal(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a multi-party security disclosure council that coordinates "
+        "external vulnerability reports, affected partner review, embargo decisions, evidence custody, "
+        "legal signoff, and public advisory release readiness without personalized notification campaigns "
+        "in the first release."
+    )
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="",
+    )
+
+    assert intent["first_path"].startswith("A multi-party security disclosure council can coordinate")
+    assert "public advisory release readiness" in intent["first_path"].casefold()
+    assert intent["non_goals"] == ["without personalized notification campaigns in the first release."]
+
+
 @pytest.mark.parametrize(
     ("case", "annotation"),
     _COMMIT_EXAMPLES,

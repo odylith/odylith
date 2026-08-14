@@ -307,8 +307,22 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         if structured_facts.first_path_contract and structured_facts.first_path_contract.complete
         else ""
     )
+    direct_actor_owns_output_path = bool(
+        direct_actor
+        and (
+            has_human_actor_signal(direct_actor)
+            or _single_proper_person_actor(direct_actor)
+            or direct_actor.casefold() == explicit_actor.casefold()
+        )
+    )
     first_path_source = (
-        (direct_first_path if direct_actor and structured_facts.first_path_contract.output_only else "")
+        (
+            direct_first_path
+            if direct_actor_owns_output_path
+            and structured_facts.first_path_contract
+            and structured_facts.first_path_contract.output_only
+            else ""
+        )
         or complete_ranked_first_path
         or complete_structured_first_path
         or explicit_first_path
@@ -337,7 +351,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
                 workflow_actor,
                 multi_role_actor,
                 need_actor,
-                direct_actor,
+                direct_actor if direct_actor_owns_output_path else "",
                 release_actor,
                 explicit_actor,
                 purpose_actor,
@@ -1020,17 +1034,29 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
             tail_words = raw_tail_words
             if moved_action_words:
                 tail_words = [*moved_action_words, *tail_words]
-            if not actor_words or not tail_words or not _looks_like_actor_purpose_left(actor_words):
+            actor_source = " ".join(actor_words)
+            action_source = " ".join(tail_words)
+            role_context = _looks_like_actor_purpose_left(actor_words)
+            article_led_context = bool(
+                actor_words
+                and word_key(actor_words[0]) in {"a", "an", "the"}
+                and not any(word.rstrip().endswith((".", ",", ";", ":", "!", "?")) for word in actor_words)
+                and has_human_actor_action_context(actor_source, action_source)
+            )
+            if not actor_words or not tail_words or not (role_context or article_led_context):
                 continue
             use_actor, use_action = _use_to_actor_action(tail_words)
             if use_actor and use_action:
                 return use_actor, f"{use_actor} {use_action}".strip(" .")
-            action = base_action_clause(_smooth_request_first_path_clause(" ".join(tail_words)), force_leading_finite=True)
+            action = base_action_clause(_smooth_request_first_path_clause(action_source), force_leading_finite=True)
             if action:
-                actor = " ".join(actor_words).strip(" .")
+                article = word_key(actor_words[0]) if word_key(actor_words[0]) in {"a", "an", "the"} else ""
+                actor = _strip_leading_actor_article(actor_source)
                 connector = lowered[connector_index]
                 if connector == "who":
                     return actor, f"{actor} {connector} {action}".strip(" .")
+                if article_led_context and not role_context and article:
+                    return actor, f"{article.capitalize()} {actor} can {action}".strip(" .")
                 return actor, f"{actor} {action}".strip(" .")
     return "", ""
 
@@ -1107,13 +1133,17 @@ def _looks_like_non_human_subject(words: list[str]) -> bool:
     content = [word_key(word) for word in words if word_key(word)]
     if not content:
         return False
+    normalized = {
+        token[:-1] if token.endswith("s") and len(token) > 3 else token
+        for token in content
+    }
     if content[-1] in _NON_HUMAN_SUBJECT_TERMINALS:
         return True
-    if len(content) == 1 and content[0] in _NON_HUMAN_SUBJECT_TERMS:
+    if len(content) == 1 and (content[0] in _NON_HUMAN_SUBJECT_TERMS or normalized & _NON_HUMAN_SUBJECT_TERMS):
         return True
     if _looks_like_actor_purpose_left(words):
         return False
-    return bool(set(content) & _NON_HUMAN_SUBJECT_TERMS)
+    return bool((set(content) | normalized) & _NON_HUMAN_SUBJECT_TERMS)
 
 
 def _looks_like_bounded_workflow_actor_phrase(words: list[str]) -> bool:

@@ -489,6 +489,8 @@ def confirmation_from_operator_intent(
     )
     if evidence_requirements:
         sections.append("Evidence requirements\n" + "\n".join(f"- {row}" for row in evidence_requirements))
+    if non_goals:
+        sections.append("Non-goals\n" + "\n".join(f"- {row}" for row in non_goals))
     sections.extend(
         (
             "Ambiguities\n" + "\n".join(f"- {row}" for row in ambiguities),

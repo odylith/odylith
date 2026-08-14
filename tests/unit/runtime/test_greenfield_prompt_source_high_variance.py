@@ -1336,6 +1336,7 @@ def test_command_audience_owns_an_explicit_start_before_a_state_gate() -> None:
         "Build the service for tuning leads. "
         "A route becomes ready after the venue custodian accepts the access window, "
         "and it produces a tuning itinerary. "
+        "States are drafted, measured, awaiting access, ready, and completed. "
         "Begin by recording a reed measurement."
     )
 

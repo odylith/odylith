@@ -150,6 +150,26 @@ def test_chained_actions_choose_the_durable_object_after_the_final_verb() -> Non
     assert state_object == "The primary state object is an E91 communication run."
 
 
+def test_objectless_leading_action_stays_with_the_following_same_owner_action() -> None:
+    rows = internal_system_rows_from_first_path(
+        title="E91 Quantum Communication Run Workspace",
+        first_path=(
+            "Researchers configure and launch an E91 quantum communication run on real hardware, observe live "
+            "coincidence counts, Bell inequality checks, CHSH, QBER, and established key bits, then compare the "
+            "saved run against prior results."
+        ),
+        state_object="The primary state object is an E91 quantum communication run.",
+        visible_result="the saved run against prior results",
+        human_actors=("Researchers: configure and compare runs",),
+    )
+
+    labels = [row.split(" — ", 1)[0] for row in rows]
+    rendered = "\n".join(rows)
+    assert len(labels) == len(set(labels))
+    assert "Researchers configure and launch an E91 quantum communication run" in rendered
+    assert all("First-path Action Is" not in label for label in labels)
+
+
 def test_start_with_path_uses_the_started_item_as_durable_state() -> None:
     assert state_object_from_first_path(
         "Start with inspection tickets, then route a ticket to a mechanic, and produce a repair clearance.",

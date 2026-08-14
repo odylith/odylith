@@ -281,6 +281,7 @@ def internal_system_rows_from_first_path(
             external_systems=external_systems,
         )
     ]
+    owned_steps = _merge_objectless_human_actions(owned_steps)
     without_path_definitions = [row for row in owned_steps if not _path_definition_step(row[0])]
     if without_path_definitions:
         owned_steps = without_path_definitions
@@ -466,6 +467,32 @@ def _path_steps_with_human_owners(
             ):
                 current_owner = ""
             rows.append((step, current_owner))
+    return rows
+
+
+def _merge_objectless_human_actions(values: Sequence[tuple[str, str]]) -> list[tuple[str, str]]:
+    """Keep a leading verb with the following same-owner action that supplies its object."""
+
+    rows: list[tuple[str, str]] = []
+    index = 0
+    while index < len(values):
+        step, owner = values[index]
+        if owner and index + 1 < len(values):
+            next_step, next_owner = values[index + 1]
+            action = _action_after_subject(step, subject=owner) or _action_without_subject(step)
+            next_action = _action_after_subject(next_step, subject=owner) or _action_without_subject(next_step)
+            if (
+                next_owner == owner
+                and action
+                and next_action
+                and not _action_object(action)
+                and _action_object(next_action)
+            ):
+                rows.append((f"{step} and {next_action}".strip(" ."), owner))
+                index += 2
+                continue
+        rows.append((step, owner))
+        index += 1
     return rows
 
 

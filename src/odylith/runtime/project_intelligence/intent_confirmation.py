@@ -42,7 +42,7 @@ def build_product_intent_confirmation(
             "time_budget": "20_to_30_seconds_to_read",
             "format_contract": [
                 "Render the visible confirmation as sectioned Markdown, not as one long paragraph.",
-                "Use this order: Product story; State object; First complete path; Operational constraints when present; Human actors; External systems; Internal product systems; Critical assumptions; Evidence requirements when present; Ambiguities; Proof boundary.",
+                "Use this order: Product story; State object; First complete path; Operational constraints when present; Human actors; External systems; Internal product systems; Critical assumptions; Evidence requirements when present; Non-goals when present; Ambiguities; Proof boundary.",
                 "Keep Product story, State object, First complete path, and Proof boundary as short paragraphs.",
                 "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, and Ambiguities so the reader can scan the interpretation.",
                 "Do not render CONFIRM, EDIT, or REJECT in this preview. Odylith must compile and validate the complete transaction first, then render the sole command rail from that transaction.",
@@ -59,6 +59,7 @@ def build_product_intent_confirmation(
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
+                "source-stated non-goals kept visible and separate from the positive first path",
                 "any concrete evidence, measurement, method, vocabulary, safety, or reproducibility requirements stated by the user, kept as concise visible evidence requirements rather than hidden prompt text",
                 "when the request includes a paper, PRD, slide deck, memo, issue dump, or long pasted narrative: distill the source into product facts and evidence boundaries instead of mirroring document sections, citations, author metadata, report boilerplate, or implementation instructions",
                 "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",

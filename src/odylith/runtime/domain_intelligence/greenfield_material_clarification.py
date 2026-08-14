@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_explicit_decision_gap import
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import is_noncompleting_action_head
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import has_visible_object_list_result
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -24,7 +25,7 @@ class MaterialClarification:
 
 
 _PROOF_RE = re.compile(
-    r"\b(?:proof\s+boundar|claim|declare|diagnos|certif|safe\s+to|observation\s+record\s+only|"
+    r"\b(?:proof\s+boundar|claim|declare|diagnos|certif|sign[\s-]?off|safe\s+to|observation\s+record\s+only|"
     r"must\s+not\s+state|may\s+make)\b",
     flags=re.IGNORECASE,
 )
@@ -95,6 +96,7 @@ def incomplete_path_clarification(*, prompt: str, edit_evidence: str = "") -> Ma
         and not is_automated_actor(source.actor)
         and (
             has_human_actor_signal(source.actor)
+            or has_human_actor_signal(source.first_path)
             or explicit_actor.casefold() == source.actor.casefold()
         )
     )
@@ -152,7 +154,11 @@ def has_explicit_visible_result(first_path: str) -> bool:
     """Recognize an observed result or a terminal deliverable after prior work."""
 
     text = " ".join(str(first_path or "").split()).strip(" .")
-    return bool(text and (_VISIBLE_RE.search(text) or _TERMINAL_DELIVERABLE_RE.search(text)))
+    if not text:
+        return False
+    if _VISIBLE_RE.search(text) or _TERMINAL_DELIVERABLE_RE.search(text):
+        return True
+    return has_visible_object_list_result(text)
 
 
 __all__ = [

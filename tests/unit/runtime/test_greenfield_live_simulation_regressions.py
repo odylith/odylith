@@ -514,6 +514,25 @@ def test_security_disclosure_council_object_list_projection_stays_canonical(tmp_
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 
 
+def test_quantum_communication_package_keeps_component_labels_distinct_and_complete(tmp_path: Path) -> None:
+    prompt = (
+        "Draft a greenfield proposal for a lab app where researchers configure and launch an E91 quantum "
+        "communication run on real hardware, observe live coincidence counts, Bell inequality checks, CHSH, "
+        "QBER, and established key bits, then compare the saved run against prior results."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    report = build_greenfield_package_report(prewrite.package)
+    labels = [str(row.get("label") or "") for row in proposal["components"]]
+    brief = json.dumps(prewrite.package.project_brief_preview, sort_keys=True)
+
+    assert len(labels) == len(set(labels))
+    assert all("First-path Action Is" not in label for label in labels)
+    assert all(label in brief for label in labels)
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tmp_path: Path) -> None:
     prompt = (
         "Create a greenfield product for digestive health patients who log meals, symptoms, medications, "
