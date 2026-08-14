@@ -124,12 +124,13 @@ def test_failed_writer_does_not_supersede_or_expose_partial_live_tree(tmp_path: 
     ):
         greenfield_post_confirm_handoff.canonical_current_project_root(repo)
     reviewed = greenfield_post_confirm_handoff.post_confirm_navigation(repo, transaction_hash=TX_HASH)
+    assert reviewed["view_status"] == "reviewed_generation_fallback"
     assert reviewed["dashboard_path"] == str(
         (generation.repository_root / "odylith/index.html").resolve()
     )
 
 
-def test_reviewed_generation_link_remains_exact_after_later_success(tmp_path: Path) -> None:
+def test_reviewed_generation_link_remains_audit_metadata_after_later_success(tmp_path: Path) -> None:
     repo, generation = _active_repository(tmp_path)
 
     assert _run(
@@ -139,8 +140,9 @@ def test_reviewed_generation_link_remains_exact_after_later_success(tmp_path: Pa
 
     reviewed = greenfield_post_confirm_handoff.post_confirm_navigation(repo, transaction_hash=TX_HASH)
     current = greenfield_post_confirm_handoff.post_confirm_navigation(repo)
-    assert reviewed["view_status"] == "reviewed_generation"
-    assert reviewed["dashboard_path"] == str(
+    assert reviewed["view_status"] == "committed_repository"
+    assert reviewed["dashboard_path"] == str((repo / "odylith/index.html").resolve())
+    assert reviewed["reviewed_generation_dashboard_path"] == str(
         (generation.repository_root / "odylith/index.html").resolve()
     )
     assert current["view_status"] == "live_after_supersession"

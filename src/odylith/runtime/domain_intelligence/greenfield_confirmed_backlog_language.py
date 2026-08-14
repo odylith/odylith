@@ -185,7 +185,8 @@ def sentence_fragment(value: str) -> str:
     text = drop_adjacent_duplicate_words(_short_summary(value, limit=260).strip(" ."))
     if not text:
         return ""
-    if re.match(r"^[A-Z]{2,}\b", text):
+    first = text.split(maxsplit=1)[0]
+    if re.match(r"^[A-Z]{2,}\b", text) or any(character.isupper() for character in first[1:]):
         return text
     return text[:1].casefold() + text[1:]
 
@@ -402,7 +403,8 @@ def rationale_deferred_focus(*, value: str, label: str, fallback: str, deferred_
     """Return the explicit deferred scope without repeating the first-slice path."""
 
     for row in deferred_scope:
-        selected = _deferred_focus_sentence(row) or boundary_clause_item(str(row), limit=120)
+        raw_selected = _deferred_focus_sentence(row) or str(row)
+        selected = boundary_clause_item(raw_selected, limit=120) or raw_selected
         if selected and not _too_similar(selected, fallback):
             return selected[:1].upper() + selected[1:]
     text = _compact_text(value).strip(" .")

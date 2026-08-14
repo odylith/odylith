@@ -4045,3 +4045,21 @@ above.
       rerun lifecycle and the maintained matrix from case one, prove desktop and
       mobile normal/fallback/degraded browser states, and complete installed
       reviewer adjudication before the untouched one-shot holdout.
+    - 2026-08-14 source generalization checkpoint: explicit product-need,
+      grant-handoff, role-bound review, role-context gerund, and bounded
+      relative-clause actors now keep their accepted workflow without
+      displacing a richer same-actor typed path. Nominal path results and
+      explicit generated outputs therefore remain in the sealed first path;
+      prefix-related component directories produce deterministic after-image
+      fingerprints; and public brief, scope, traceability, component, and
+      handoff copy stays complete and differentiated. Generic proof behavior
+      moved behind a dedicated component-context scope policy, returning the
+      context extractor below its enforced 800-line boundary. Exact-source
+      proof passes `221` semantic-owner tests, `89` integrated CLI/live tests,
+      `94` changed-surface owner tests, all `28` maintained live simulations,
+      all `158` disclosed regressions, and `make greenfield-test-fast` with
+      `223` passes and `8` intentional lifecycle deselections. Static
+      compilation and diff hygiene pass. The final holdout remains untouched.
+      Next: sync governed projections, commit and push these bytes, rebuild the
+      exact distribution, then restart installed lifecycle, maintained matrix,
+      recovery/host-parity, and desktop/mobile browser proof from case one.

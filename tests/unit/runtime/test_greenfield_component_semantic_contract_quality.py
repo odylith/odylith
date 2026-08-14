@@ -37,6 +37,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import gene
 ROOT = Path(__file__).resolve().parents[3]
 SEMANTIC_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
 SEMANTIC_CONTEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py"
+CONTEXT_POLICY_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_context_policy.py"
 OWNED_STATE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py"
 COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
 
@@ -153,11 +154,13 @@ def test_component_io_repair_changes_only_the_placeholder_side() -> None:
 def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     contract_source = SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
     context_source = SEMANTIC_CONTEXT_PATH.read_text(encoding="utf-8")
+    context_policy_source = CONTEXT_POLICY_PATH.read_text(encoding="utf-8")
     owned_state_source = OWNED_STATE_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
 
     assert len(contract_source.splitlines()) < 800
     assert len(context_source.splitlines()) < 800
+    assert len(context_policy_source.splitlines()) < 200
     assert len(owned_state_source.splitlines()) < 200
     assert "greenfield_component_semantic_context as semantic_context" in contract_source
     assert "def owned_state_noun_phrase" in owned_state_source
@@ -171,6 +174,11 @@ def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
     assert "def _looks_actor_term" not in context_source
     assert "greenfield_actor_terms import looks_actor_term as _looks_actor_term" in context_source
+    assert "greenfield_component_context_policy import" in context_source
+    assert "def _is_deferred_or_outside_clause" not in context_source
+    assert "def _is_generic_proof_behavior_clause" not in context_source
+    assert "def is_deferred_or_outside_clause" in context_policy_source
+    assert "def is_generic_proof_behavior_clause" in context_policy_source
     assert "def context_object_phrases" in context_source
     assert "def context_required_phrases" in context_source
     assert "def needs_context_backfill" in context_source

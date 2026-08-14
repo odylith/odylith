@@ -1071,6 +1071,12 @@ def boundary_clause_item(value: str, *, limit: int = 180) -> str:
     text = short_summary(value, limit=limit).strip(" .")
     if not text:
         return ""
+    text = re.sub(
+        r"\bunless\s+([^.;!?]{1,100}?)\s+supports\s+that$",
+        r"unless \1 supports those claims",
+        text,
+        flags=re.IGNORECASE,
+    )
     if text.startswith("Whether "):
         rest = text[len("Whether ") :].strip(" .")
         lowered = rest.casefold()

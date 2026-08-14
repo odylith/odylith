@@ -99,3 +99,18 @@ def test_greenfield_traceability_why_now_starts_with_workstream_focus() -> None:
     assert text.startswith("Permit Packet Intake should land early")
     assert "accepted input and recovery behavior" in text
     assert not text.startswith("Do this before implementation expands")
+
+
+def test_greenfield_traceability_differentiates_long_scope_from_solution_copy() -> None:
+    first_slice = (
+        "One representative path where coordinators verify source evidence, coordinate reviewer decisions, "
+        "preserve custody history, and publish a signed disposition while the product explains missing information."
+    )
+
+    solution = greenfield_traceability._first_implementation_step_lines(first_slice)
+    scope = greenfield_traceability._bounded_scope_lines(first_slice)
+
+    assert solution != scope
+    assert all(first_slice not in row for row in (*solution, *scope))
+    assert scope[0].startswith("One representative path where coordinators verify source evidence")
+    assert scope[-1].startswith("Completion proof includes")

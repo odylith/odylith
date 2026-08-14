@@ -480,7 +480,10 @@ def _state_narrative(
             f"The next-step state is useful only when {handoff_state} "
             f"{_present_verb(handoff_state, singular='travels', plural='travel')} with enough context from {source_context}."
         )
-        second = "Raw input fields should remain with their owner; this component should carry the context another participant needs."
+        second = (
+            f"{label} should carry only {handoff_state} and the context its downstream participant needs; "
+            f"raw fields from {source_context} should remain with their owner."
+        )
     elif role == "read_model":
         first = f"The visible state should explain {owned} without pretending to own every source record."
         second = f"It can render {produced}, while stale, empty, or blocked states remain visible."
@@ -501,7 +504,7 @@ def _material_contract_sentence(*, label: str, view: ComponentNarrativeView) -> 
     rows = list(unique_text(rows))
     if not rows:
         return ""
-    return f"{label} also needs material checks for {'; '.join(rows[:4])}"
+    return f"Additional contract checks for {label} include {_human_join(rows[:4])}"
 
 
 def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str) -> str:
@@ -531,7 +534,13 @@ def _short_transition_summary(values: Sequence[str]) -> str:
     rows = [clean_text(value).strip(" .") for value in values if clean_text(value).strip(" .")]
     if not rows:
         return ""
-    selected = rows[:12]
+    selected = [
+        row
+        for row in rows
+        if row.casefold() not in {"described", "kept", "requested", "visible"}
+    ][:12]
+    if not selected:
+        selected = rows[:9]
     if sum(1 for row in selected if row.casefold().endswith(" state")) >= 2:
         return ""
     if any(len(row.split()) > 4 or len(row) > 48 for row in selected):

@@ -71,8 +71,16 @@ def post_confirm_navigation(repo_root: Path, *, transaction_hash: str = "") -> d
             repo_root=root,
             transaction_hash=transaction,
         )
-        repository_root = pinned.repository_root
-        view_status = "reviewed_generation"
+        try:
+            _current_root, current_status = canonical_current_project_root(root)
+        except GreenfieldCanonicalViewUnavailableError:
+            current_status = "unavailable_during_managed_write"
+        if current_status in {"active_generation_during_managed_write", "unavailable_during_managed_write"}:
+            repository_root = pinned.repository_root
+            view_status = "reviewed_generation_fallback"
+        else:
+            repository_root = root
+            view_status = "committed_repository"
     else:
         pinned = None
         repository_root, view_status = canonical_current_project_root(root)
@@ -83,8 +91,11 @@ def post_confirm_navigation(repo_root: Path, *, transaction_hash: str = "") -> d
     navigation["view_status"] = view_status
     navigation["compatibility_dashboard_path"] = str((root / "odylith" / "index.html").resolve())
     if pinned is not None:
+        reviewed_dashboard_path = (pinned.repository_root / "odylith" / "index.html").resolve()
         navigation["generation_transaction_hash"] = pinned.transaction_hash
         navigation["reviewed_generation_path"] = str(pinned.generation_root)
+        navigation["reviewed_generation_dashboard_path"] = str(reviewed_dashboard_path)
+        navigation["reviewed_generation_project_url"] = f"{reviewed_dashboard_path.as_uri()}?tab=project"
     return navigation
 
 

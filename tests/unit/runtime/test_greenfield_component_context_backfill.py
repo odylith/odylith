@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import needs_context_backfill
 
 
@@ -64,3 +65,18 @@ def test_measurement_component_keeps_context_needed_to_define_values() -> None:
         description_phrases=("measurement data", "measurement status", "source context"),
         context_required_phrases=("baseline measurement", "follow-up value", "unit source"),
     )
+
+
+def test_generic_proof_behavior_does_not_become_an_owned_object_phrase() -> None:
+    phrases = context_object_phrases(
+        (
+            "An operator records an incident report. The product explains missing or invalid input with a clear blocker "
+            "and keeps replayable evidence for review."
+        ),
+        label_terms=("incident", "report", "intake"),
+        description_terms=("incident", "report", "record"),
+    )
+
+    rendered = " ".join(phrases).casefold()
+    assert "invalid clear blocker" not in rendered
+    assert "clear blocker replayable" not in rendered

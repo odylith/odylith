@@ -177,16 +177,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-015": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-016": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-017": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-018": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-019": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -614,16 +614,16 @@
         "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
       ],
       "B-015": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-016": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-017": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-018": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-019": [
         "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
@@ -2029,19 +2029,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "a274dbd2cd05e162ef519246fd24ef7e4ce63e670b84b7e0bd822c7b7557829a",
+        "substrate_fingerprint": "a274dbd2cd05e162ef519246fd24ef7e4ce63e670b84b7e0bd822c7b7557829a",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Add explicit earned-depth and delegation-readiness posture to routed task assessment, use that posture to tighten Router profile selection; Subagent Reasoning Ladder and Grounded Spawn.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Subagent Reasoning Ladder and Grounded Spawn Defaults (B-015) so odylith's biggest compounding.",
+            "Watch: Primary watch item is closure discipline: 1 plan items remain open for Subagent Reasoning Ladder and Grounded Spawn Defaults (B-015)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -2049,19 +2053,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "99e21a770c72adbdeabbb3f8ea02267f82e5873044fc347b3c9cf288c39c0606",
+        "substrate_fingerprint": "99e21a770c72adbdeabbb3f8ea02267f82e5873044fc347b3c9cf288c39c0606",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land strengthen install-time repo-root AGENTS.md injection, sync consumer-safe Odylith guidelines and skills into the installed repo every time; Install-Time Agent Activation and Dogfood.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Install-Time Agent Activation and Dogfood Guidance Split (B-016) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Install-Time Agent Activation and Dogfood Guidance Split (B-016) is more than six hours old, so live momentum still needs."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -2069,19 +2077,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "8a6f726d3a2e0a58a22d3596b10e100bf9cc23ebe47328a1580ab9af54115358",
+        "substrate_fingerprint": "8a6f726d3a2e0a58a22d3596b10e100bf9cc23ebe47328a1580ab9af54115358",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Surface Browser Stability and End-to-End Hardening (B-017) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Surface Browser Stability and End-to-End Hardening (B-017) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Surface Browser Stability and End-to-End Hardening (B-017) is more than six hours old, so live momentum still needs another."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -2089,19 +2101,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "c6240b162741488ca65da6912f2ec69f70d7631cdea44ec95fc18ace9f9c91ff",
+        "substrate_fingerprint": "c6240b162741488ca65da6912f2ec69f70d7631cdea44ec95fc18ace9f9c91ff",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land extend the headless browser lane to cover direct shell query-state routes and reload restoration for each major surface, plus standalone; Query-State Reload and Standalone Surface.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Query-State Reload and Standalone Surface Browser Proof (B-018) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Query-State Reload and Standalone Surface Browser Proof (B-018) is more than six hours old, so live momentum still needs another."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4768,19 +4784,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "8f3667e207a9c2ed5edbecf06e028547c7949e2c0ac45893e2f64c772d26b99e",
+        "substrate_fingerprint": "8f3667e207a9c2ed5edbecf06e028547c7949e2c0ac45893e2f64c772d26b99e",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Add explicit earned-depth and delegation-readiness posture to routed task assessment, use that posture to tighten Router profile selection; Subagent Reasoning Ladder and Grounded Spawn.",
+            "Next: Immediate forcing function is to turn the next open checklist item into a named checkpoint for Subagent Reasoning Ladder and Grounded Spawn Defaults (B-015) so odylith's biggest compounding.",
+            "Watch: Primary watch item is closure discipline: 1 plan items remain open for Subagent Reasoning Ladder and Grounded Spawn Defaults (B-015)."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4788,19 +4808,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "bc1b6880b955d0eb23207637d4f5c92561dfa0cde73e0a20bc74dbdfb6cba3e4",
+        "substrate_fingerprint": "bc1b6880b955d0eb23207637d4f5c92561dfa0cde73e0a20bc74dbdfb6cba3e4",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land strengthen install-time repo-root AGENTS.md injection, sync consumer-safe Odylith guidelines and skills into the installed repo every time; Install-Time Agent Activation and Dogfood.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Install-Time Agent Activation and Dogfood Guidance Split (B-016) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Install-Time Agent Activation and Dogfood Guidance Split (B-016) is more than six hours old, so live momentum still needs."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4808,19 +4832,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "c2c8aae315dc6b657e09c9b8f8588aebaa4dbc6cfa3c45469f849cfa577ada2b",
+        "substrate_fingerprint": "c2c8aae315dc6b657e09c9b8f8588aebaa4dbc6cfa3c45469f849cfa577ada2b",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Surface Browser Stability and End-to-End Hardening (B-017) is completed.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Surface Browser Stability and End-to-End Hardening (B-017) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Surface Browser Stability and End-to-End Hardening (B-017) is more than six hours old, so live momentum still needs another."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4828,19 +4856,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "0b3bf9e35bfc772c4cc996564f42ec9c7661a6c07c414df9ad514d6edc8ce22b",
+        "substrate_fingerprint": "0b3bf9e35bfc772c4cc996564f42ec9c7661a6c07c414df9ad514d6edc8ce22b",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-08-14T23:28:56Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land extend the headless browser lane to cover direct shell query-state routes and reload restoration for each major surface, plus standalone; Query-State Reload and Standalone Surface.",
+            "Next: Immediate forcing function is to log the next concrete checkpoint for Query-State Reload and Standalone Surface Browser Proof (B-018) so Compass stops leaning on aging evidence.",
+            "Watch: Freshness signal is aging: latest linked execution proof for Query-State Reload and Standalone Surface Browser Proof (B-018) is more than six hours old, so live momentum still needs another."
+          ]
         },
         "evidence_lookup": {}
       },

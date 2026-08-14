@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 
 ## Overview
@@ -29,6 +29,9 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-14 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-142
+  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
 - **2026-08-10 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `src/odylith/runtime/domain_intelligence/greenfield_component_owned_state.py`, `tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
@@ -44,9 +47,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md`, `src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py`, `tests/unit/runtime/test_greenfield_prompt_workflow_custody.py`
-- **2026-08-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_prompt_evidence_interpretation.py`, `tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3180,6 +3180,21 @@ This section captures synchronized requirement and contract signals derived from
   fast release suite with `8` intentional deselections. Clean exact-distribution,
   installed matrix, lifecycle/recovery/host-parity, browser-state, and untouched
   one-shot holdout proof remain required.
+- Greenfield source generalization update: prompt-source precedence preserves
+  explicit owner forms while allowing a complete same-actor structured path to
+  retain nominal results and generated outputs. Relative-clause actor recovery
+  remains bounded by human grammar; unknown systems and non-human field nouns
+  cannot gain actor authority. Repository publication fingerprints order
+  after-image paths by path parts so prefix-related component directories stay
+  deterministic. Public Project, Radar, Registry, traceability, and completion
+  projections render distinct complete claims, and generic proof behavior is
+  excluded through a dedicated component-context scope policy rather than
+  becoming owned state. Exact-source proof passes `221` semantic-owner tests,
+  `89` integrated CLI/live tests, `94` changed-surface owner tests, all `28`
+  maintained live simulations, all `158` disclosed regressions, and the
+  `223`-test fast gate with `8` intentional lifecycle deselections. Exact
+  distribution, installed lifecycle/recovery/host-parity, browser-state,
+  reviewer, and untouched one-shot holdout gates remain required.
 
 ## Research Basis
 

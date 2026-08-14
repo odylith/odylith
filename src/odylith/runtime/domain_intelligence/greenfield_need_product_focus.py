@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
@@ -138,6 +139,42 @@ def product_focus_after_need_sentence(value: str) -> str:
         words = _request_words(focus)
         if 2 <= len(words) <= 6 and not _has_actor_action_infinitive(words) and not looks_like_action_clause(focus):
             return focus
+    return ""
+
+
+def workflow_object_title(value: str) -> str:
+    """Return the bounded object of a direct actor-led workflow sentence.
+
+    Some product requests establish the domain with ``<actor> is <actioning>
+    <object>`` and reserve ``the product must ...`` for contract details.  The
+    workflow object is stronger title evidence than the generic product noun,
+    but only when the leading subject is recognizably human and the object is
+    bounded before a contextual relation.
+    """
+
+    for sentence in _sentence_fragments(value):
+        match = re.match(
+            r"^(?P<actor>(?:a|an|the)\s+)?"
+            r"(?P<role>[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,4})\s+"
+            r"(?:is|are)\s+(?P<action>[A-Za-z][A-Za-z0-9'-]*ing)\s+(?P<object>.+)$",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            continue
+        actor_words = _request_words(match.group("role"))
+        action = match.group("action").strip(".,:;")
+        if not _looks_like_prompt_actor(actor_words) or not base_gerund_clause(f"{action} an item"):
+            continue
+        object_words: list[str] = []
+        for raw in _request_words(match.group("object")):
+            if _word_key(raw) in _TITLE_STOP_WORDS:
+                break
+            object_words.append(raw.strip(".,:;"))
+        while object_words and _word_key(object_words[0]) in {"a", "an", "one", "the"}:
+            object_words.pop(0)
+        if 1 <= len(object_words) <= 6:
+            return " ".join(object_words).strip(" .")
     return ""
 
 
@@ -296,4 +333,5 @@ __all__ = [
     "need_product_actor_action",
     "product_focus_after_command_sentence",
     "product_focus_after_need_sentence",
+    "workflow_object_title",
 ]

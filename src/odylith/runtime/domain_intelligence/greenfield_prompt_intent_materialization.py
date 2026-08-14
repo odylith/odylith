@@ -534,9 +534,28 @@ def _has_grounded_human_action_evidence(evidence: str) -> bool:
     product_evidence = product_intent_source_text(evidence)
     return any(
         _has_explicit_single_step_actor_action(clause)
+        or _has_prompt_source_human_action(clause)
         for sentence in sentence_fragments(product_evidence)
         for clause in sentence.split(";")
         if clause.strip()
+    )
+
+
+def _has_prompt_source_human_action(value: str) -> bool:
+    """Honor accepted role-relative actor grammar at the materiality boundary."""
+
+    source = prompt_intent_source(value)
+    actor = clean_markdown_text(source.actor)
+    action = clean_markdown_text(source.actor_action)
+    if not actor or not action:
+        return False
+    action_head = action.split(maxsplit=1)[0].casefold()
+    return bool(
+        explicit_actor_has_human_grammar(value)
+        and has_human_actor_signal(actor)
+        and not is_automated_actor(actor)
+        and not is_noncompleting_action_head(action_head)
+        and MATERIAL_ACTION_RE.match(action)
     )
 
 

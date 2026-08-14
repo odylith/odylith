@@ -526,6 +526,14 @@ def _clean_greenfield_backlog_override(value: Any) -> Any:
 def _greenfield_ordering_rationale(row: Mapping[str, Any]) -> str:
     first_slice = str(row.get("recommended_first_slice", "")).strip()
     opportunity = str(row.get("opportunity", "")).strip()
+    rationale_lines = list(row_text_tuple(row, "rationale_lines"))
+    for prefix in ("- ranking basis:", "ranking basis:", "- why now:", "why now:"):
+        for line in rationale_lines:
+            text = str(line).strip()
+            if text.casefold().startswith(prefix):
+                rationale = text[len(prefix) :].strip()
+                if rationale and rationale.casefold() != opportunity.casefold():
+                    return rationale
     return opportunity or first_slice
 
 

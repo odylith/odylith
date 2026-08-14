@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import workflow_object_title
 from odylith.runtime.domain_intelligence.greenfield_gerund_actions import GERUND_ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import REQUEST_COMMAND_WORDS
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import confirmed_direction_evidence_text
@@ -253,6 +254,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     workflow_actor, workflow_first_path = _workflow_where_actor_action(product_text)
     multi_role_actor, multi_role_first_path = _multi_role_modal_first_path(product_text)
     purpose_actor, purpose_first_path = _leading_role_purpose_action_path(product_text)
+    role_bound_actor, role_bound_first_path = _role_bound_review_actor_action(product_text)
     direct_actor, direct_first_path = _direct_actor_action_sentence(ranked_first_path)
     if not direct_actor:
         direct_actor, direct_first_path = _direct_actor_action_sentence(product_text)
@@ -315,6 +317,34 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             or direct_actor.casefold() == explicit_actor.casefold()
         )
     )
+    direct_actor_is_bounded = bool(direct_actor and _is_bounded_prompt_actor(direct_actor))
+    ranked_has_human_lead = _starts_with_explicit_human_actor(ranked_first_path)
+    preferred_role_context_path = context_first_path if context_actor and not ranked_has_human_lead else ""
+    preferred_who_relative_path = (
+        complete_actor_led_first_path
+        if re.search(r"\bwho\b", complete_actor_led_first_path, flags=re.IGNORECASE)
+        else ""
+    )
+    grant_handoff_first_path = direct_first_path if grant_actor and not grant_first_path and direct_first_path else ""
+    explicit_owner_actors = tuple(
+        candidate
+        for candidate, owned_path in (
+            (need_actor, need_first_path),
+            (grant_actor, grant_first_path or grant_handoff_first_path),
+            (role_bound_actor, role_bound_first_path),
+            (context_actor, preferred_role_context_path),
+            (actor, preferred_who_relative_path),
+        )
+        if candidate and owned_path
+    )
+    structured_actor = structured_facts.first_path_contract.actor if structured_facts.first_path_contract else ""
+    preferred_complete_structured_path = (
+        complete_structured_first_path
+        if complete_structured_first_path
+        and explicit_owner_actors
+        and any(structured_actor.casefold() == candidate.casefold() for candidate in explicit_owner_actors)
+        else ""
+    )
     first_path_source = (
         (
             direct_first_path
@@ -323,12 +353,17 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             and structured_facts.first_path_contract.output_only
             else ""
         )
+        or preferred_complete_structured_path
+        or need_first_path
+        or grant_handoff_first_path
+        or role_bound_first_path
+        or preferred_role_context_path
+        or preferred_who_relative_path
         or complete_ranked_first_path
         or complete_structured_first_path
         or explicit_first_path
         or grant_first_path
         or multi_role_first_path
-        or need_first_path
         or preferred_context_first_path
         or complete_actor_led_first_path
         or ranked_first_path
@@ -351,7 +386,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
                 workflow_actor,
                 multi_role_actor,
                 need_actor,
-                direct_actor if direct_actor_owns_output_path else "",
+                direct_actor if direct_actor_is_bounded else "",
                 release_actor,
                 explicit_actor,
                 purpose_actor,
@@ -392,6 +427,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         or command_title
         or explicit_title
         or ("" if has_structured_fields else product_focus_after_need_sentence(product_text))
+        or ("" if has_structured_fields else workflow_object_title(product_text))
         or ("" if has_structured_fields else contextual_product_title(product_text))
         or (
             ""
@@ -560,6 +596,9 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
         text = _without_leading_context_clause(clean_markdown_text(sentence).strip(" ."))
         if _is_release_boundary_statement(text) or is_non_path_evidence(text):
             continue
+        role_actor, role_first_path = _role_object_record_path(text)
+        if role_actor and role_first_path:
+            return role_actor, role_first_path
         explicit_actor, explicit_action, article = _explicit_human_actor_action(text)
         if _is_role_bound_review_statement(text):
             explicit_action = _strip_role_bound_review_requirement(explicit_action)
@@ -572,9 +611,6 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
                 return explicit_actor, f"{article.capitalize()} {explicit_actor} {explicit_action}"
             canonical_action = base_action_clause(explicit_action, force_leading_finite=True).strip(" .") or explicit_action
             return explicit_actor, f"{explicit_actor} can {canonical_action}"
-        role_actor, role_first_path = _role_object_record_path(text)
-        if role_actor and role_first_path:
-            return role_actor, role_first_path
         match = direct_actor_action_match(text)
         if not match:
             continue
@@ -596,6 +632,19 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
             action = f"{_base_direct_gerund(verb) or verb} {tail}".strip(" .")
             return actor, f"{actor} can {action}"
         return actor, f"{actor} {action}"
+    return "", ""
+
+
+def _role_bound_review_actor_action(value: str) -> tuple[str, str]:
+    """Recover the human owner of a role-object review requirement."""
+
+    for sentence in sentence_fragments(value):
+        text = _without_leading_context_clause(clean_markdown_text(sentence).strip(" ."))
+        if _is_release_boundary_statement(text) or is_non_path_evidence(text):
+            continue
+        actor, first_path = _role_object_record_path(text)
+        if actor and first_path:
+            return actor, first_path
     return "", ""
 
 
@@ -1036,14 +1085,20 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
                 tail_words = [*moved_action_words, *tail_words]
             actor_source = " ".join(actor_words)
             action_source = " ".join(tail_words)
+            connector = lowered[connector_index]
             role_context = _looks_like_actor_purpose_left(actor_words)
+            bounded_actor_context = bool(
+                connector == "who" and _looks_like_bounded_workflow_actor_phrase(actor_words)
+            )
             article_led_context = bool(
                 actor_words
                 and word_key(actor_words[0]) in {"a", "an", "the"}
                 and not any(word.rstrip().endswith((".", ",", ";", ":", "!", "?")) for word in actor_words)
                 and has_human_actor_action_context(actor_source, action_source)
             )
-            if not actor_words or not tail_words or not (role_context or article_led_context):
+            if not actor_words or not tail_words or not (
+                role_context or bounded_actor_context or article_led_context
+            ):
                 continue
             use_actor, use_action = _use_to_actor_action(tail_words)
             if use_actor and use_action:
@@ -1052,7 +1107,6 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
             if action:
                 article = word_key(actor_words[0]) if word_key(actor_words[0]) in {"a", "an", "the"} else ""
                 actor = _strip_leading_actor_article(actor_source)
-                connector = lowered[connector_index]
                 if connector == "who":
                     return actor, f"{actor} {connector} {action}".strip(" .")
                 if article_led_context and not role_context and article:
@@ -1688,18 +1742,22 @@ def _looks_like_recoverable_first_path(value: str) -> bool:
 
 
 def _starts_with_explicit_human_actor(value: str) -> bool:
-    if has_human_actor_signal(value):
+    text = clean_markdown_text(value).strip(" .")
+    actor = _first_path_actor_candidate(text)
+    if (
+        actor
+        and _is_bounded_prompt_actor(actor)
+        and not has_non_human_actor_signal(actor)
+    ):
         return True
-    words = [word.casefold().strip(".,:;") for word in request_words(clean_markdown_text(value))[:5]]
-    if words and words[0] in {"a", "an", "the"}:
-        words = words[1:]
-    actor_positions = [index for index, word in enumerate(words) if has_human_actor_signal(word)]
-    non_human_positions = [index for index, word in enumerate(words) if word in _NON_HUMAN_SUBJECT_TERMINALS]
-    if not actor_positions:
-        return False
-    if non_human_positions and max(non_human_positions) > max(actor_positions):
-        return False
-    return True
+    words = request_words(text)
+    return bool(
+        1 <= len(words) <= 6
+        and has_human_actor_signal(text)
+        and not has_non_human_actor_signal(text)
+        and not looks_like_action_clause(text)
+        and not first_path_model(text).material_action
+    )
 
 
 def _first_path_actor_candidate(value: str) -> str:
@@ -1707,9 +1765,9 @@ def _first_path_actor_candidate(value: str) -> str:
     labeled_path = re.search(r"\bfirst\s+complete\s+path\s*:\s*(?P<path>.+)$", text, flags=re.IGNORECASE)
     if labeled_path:
         text = labeled_path.group("path")
-    actor, _action = actor_led_action_parts(text)
+    actor, _action = modal_actor_action_parts(text)
     if not actor:
-        actor, _action = modal_actor_action_parts(text)
+        actor, _action = actor_led_action_parts(text)
     if not actor:
         leading = re.match(
             r"^(?:a|an|the)\s+(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"

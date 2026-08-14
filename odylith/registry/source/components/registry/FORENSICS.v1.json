@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 539,
-    "mapped_workstream_evidence_count": 492,
+    "explicit_event_count": 540,
+    "mapped_workstream_evidence_count": 493,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 539
+    "timeline_event_count": 540
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 1149,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-14T16:23:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

@@ -54,6 +54,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality
     validation_strategy_needs_repair as _validation_strategy_needs_repair,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_preflight_repair import (
     repair_preflight_issues,
 )
@@ -360,6 +361,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             if completion_text.row_is_release_proof(row):
                 if non_goal_rows:
                     deferred_scope = proof_limit or non_goal_rows[0]
+                    deferred_scope = boundary_clause_item(_clean(deferred_scope), limit=180) or _clean(deferred_scope)
                     metrics.append(
                         f"Deferred scope stays out of {label} validation evidence: {_clean(deferred_scope).rstrip('.')}."
                     )

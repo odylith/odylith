@@ -655,6 +655,7 @@ def _normalized_actor_tail(value: str) -> str:
     action = _clean(value).strip(" .")
     if not action:
         return ""
+    action = re.sub(r"^(?:who|that)\s+", "", action, count=1, flags=re.IGNORECASE)
     action = re.sub(r"^to\s+", "", action, count=1, flags=re.IGNORECASE)
     action = re.sub(
         r"^(?:can|could|may|might|must|should|will|would)\s+",

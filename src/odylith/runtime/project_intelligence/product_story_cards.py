@@ -457,6 +457,12 @@ def _subjectify_story_step(value: str) -> str:
 def _same_visible_outcome(previous: str, current: str) -> bool:
     if re.search(r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b", current, flags=re.IGNORECASE):
         return False
+    if not re.search(
+        r"\b(?:decision|disposition|outcome|packet|receipt|report|result|status|summary|view)\b",
+        current,
+        flags=re.IGNORECASE,
+    ):
+        return False
     previous_terms = set(_terms(previous))
     current_terms = set(_terms(current))
     return bool(current_terms and len(previous_terms & current_terms) >= min(3, len(current_terms)))

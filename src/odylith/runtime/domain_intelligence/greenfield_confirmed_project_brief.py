@@ -369,10 +369,31 @@ def _command_first_path_summary(value: str) -> str:
 
 
 def _release_scope_summary(*, first_path: str, first_slice: str, non_goal_summary: str) -> str:
-    path = _brief_clause(first_path or first_slice, limit=620).strip(" .")
+    boundary_source = _complete_release_boundary(non_goal_summary)
+    boundary = _brief_clause(boundary_source, limit=260).strip(" .")
+    if boundary:
+        return boundary
+    path = _command_first_path_summary(first_slice or first_path).strip(" .")
     if not path:
-        return non_goal_summary
-    return f"Do not expand beyond {inline_first_path_scope_fragment(path)} until the first outcome works"
+        return "Keep the release inside the accepted first path until its outcome works"
+    return f"Keep the release centered on {inline_first_path_scope_fragment(path)} until the first outcome works"
+
+
+def _complete_release_boundary(value: str) -> str:
+    """Prefer one complete non-goal clause over a clipped joined boundary."""
+
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    rows = [row.strip(" .") for row in re.split(r";\s+|(?<=[.!?])\s+", text) if row.strip(" .")]
+    candidate = next((row for row in rows if len(row) <= 260), rows[0] if rows else text)
+    candidate = re.sub(
+        r"\bunless\s+([^.;!?]{1,100}?)\s+supports\s+that$",
+        r"unless \1 supports those claims",
+        candidate,
+        flags=re.IGNORECASE,
+    )
+    return candidate
 
 
 def _state_reference_with_label(value: str, *, state_label: str) -> str:

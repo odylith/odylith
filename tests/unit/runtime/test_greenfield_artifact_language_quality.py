@@ -7,6 +7,8 @@ from odylith.runtime.artifact_quality.greenfield_project_judgment import project
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import program_problem
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_release_basis
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import sentence_fragment
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import rationale_deferred_focus
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
@@ -65,6 +67,21 @@ def test_release_basis_avoids_clipped_release_gate_wrapper() -> None:
     assert "succeeds when this first path is complete" not in release_basis.casefold()
     assert "municipal resilience grant reviewers" in release_basis.casefold()
     assert "before adjacent scope enters the release" in release_basis
+
+
+def test_sentence_fragment_preserves_a_mixed_case_product_name() -> None:
+    assert sentence_fragment("ArborCell repeatedly harvests measurable current") == (
+        "ArborCell repeatedly harvests measurable current"
+    )
+
+
+def test_deferred_rationale_repairs_a_terminal_claim_reference() -> None:
+    assert rationale_deferred_focus(
+        value="",
+        label="ArborCell",
+        fallback="first path",
+        deferred_scope=("Do not claim grid power unless later evidence supports that.",),
+    ) == "Do not claim grid power unless later evidence supports those claims"
 
 
 def test_component_transition_inflector_renders_handoff_as_handed_off() -> None:
@@ -342,6 +359,8 @@ def test_state_store_specs_do_not_render_as_configuration_policy() -> None:
     assert "product rules can change" not in spec
     assert "administrative policy" not in spec
     assert "keeps the product record together" in spec
+    assert "needs material checks for" not in spec
+    assert "correction marker" not in spec
     assert "boundary for holds" not in summary
     assert "boundary for the asset profile" in summary
 

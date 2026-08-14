@@ -542,6 +542,18 @@ def test_evidence_anchors_preserve_coordinated_action_objects() -> None:
     assert all("maintenance planner verifies" not in anchor for anchor in anchors)
 
 
+def test_relative_who_clause_recovers_an_open_vocabulary_human_role() -> None:
+    prompt = (
+        "Create a greenfield product for community sports organizers who schedule neighborhood tournaments, "
+        "register teams, publish fixtures, and show standings with dispute review."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.actor == "community sports organizers"
+    assert source.first_path.startswith("community sports organizers who schedule neighborhood tournaments")
+
+
 def test_evidence_anchors_do_not_promote_generic_coordinated_workflow_objects() -> None:
     prompt = (
         "Create a greenfield proposal for quality review. The analyst reviews the exception record, the supervisor "

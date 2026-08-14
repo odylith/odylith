@@ -56,6 +56,25 @@ def test_repository_write_set_applies_exact_staged_tree(tmp_path: Path) -> None:
     ).read_text(encoding="utf-8") == "new\n"
 
 
+def test_repository_after_image_matches_prefix_related_component_directories(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    stage = tmp_path / "stage"
+    source.mkdir()
+    _write(stage / "odylith/registry/source/components/community-sports-organizers/CURRENT_SPEC.md", "one\n")
+    _write(
+        stage
+        / "odylith/registry/source/components/community-sports-organizers-workspace-fixtures-publication/CURRENT_SPEC.md",
+        "two\n",
+    )
+
+    write_set = greenfield_repository_write_set.compile_greenfield_repository_write_set(
+        source_root=source,
+        staged_root=stage,
+    )
+
+    assert greenfield_repository_write_set.require_compiled_greenfield_repository_write_set(write_set) == write_set
+
+
 def test_repository_write_set_reports_changed_after_image_root(tmp_path: Path) -> None:
     source = tmp_path / "source"
     stage = tmp_path / "stage"

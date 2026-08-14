@@ -402,6 +402,8 @@ def supplemental_state_items(values: Sequence[str], *, existing: Sequence[str], 
         text = clean_text(value).strip(" .")
         if not text:
             continue
+        if text.casefold() in _LOW_SIGNAL_ITEMS:
+            continue
         if any(phrases_too_similar(text, row) and not _materially_distinct_state_item(text, row) for row in existing):
             continue
         score = state_material_score(text)

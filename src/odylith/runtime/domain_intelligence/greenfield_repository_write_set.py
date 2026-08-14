@@ -603,7 +603,8 @@ def _after_image_fingerprints(
             rows.append({"kind": "directory", "path": token})
             descendants = sorted(
                 set(path for path in directories if path.startswith(token + "/"))
-                | set(path for path in files if path.startswith(token + "/"))
+                | set(path for path in files if path.startswith(token + "/")),
+                key=lambda path: Path(path).parts,
             )
             for path in descendants:
                 if path in directories:

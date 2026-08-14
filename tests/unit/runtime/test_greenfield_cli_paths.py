@@ -570,23 +570,26 @@ def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, monkey
         / transaction_hash
         / "repository/odylith/index.html"
     ).resolve()
+    committed_dashboard = (tmp_path / "odylith/index.html").resolve()
     assert create_payload["post_confirm_navigation"] == {
         "project": "odylith/index.html?tab=project",
         "radar": "odylith/index.html?tab=radar",
         "registry": "odylith/index.html?tab=registry",
         "atlas": "odylith/index.html?tab=atlas",
         "compass": "odylith/index.html?tab=compass&date=live",
-        "dashboard_path": str(immutable_dashboard),
-        "project_url": f"{immutable_dashboard.as_uri()}?tab=project",
-        "compatibility_dashboard_path": str((tmp_path / "odylith/index.html").resolve()),
+        "dashboard_path": str(committed_dashboard),
+        "project_url": f"{committed_dashboard.as_uri()}?tab=project",
+        "compatibility_dashboard_path": str(committed_dashboard),
         "generation_transaction_hash": transaction_hash,
         "reviewed_generation_path": str(immutable_dashboard.parents[2]),
-        "view_status": "reviewed_generation",
+        "reviewed_generation_dashboard_path": str(immutable_dashboard),
+        "reviewed_generation_project_url": f"{immutable_dashboard.as_uri()}?tab=project",
+        "view_status": "committed_repository",
     }
     assert create_payload["post_confirm_browser"] == {
         "status": "not_attempted",
         "reason": "machine_readable_output",
-        "url": f"{immutable_dashboard.as_uri()}?tab=project",
+        "url": f"{committed_dashboard.as_uri()}?tab=project",
     }
     assert (tmp_path / "odylith/radar/source").is_dir()
     assert (tmp_path / "odylith/registry/source/components").is_dir()
@@ -1174,15 +1177,9 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert "Odylith committed the validated Greenfield package." in out
     assert "- validation gate: passed" in out
     assert "The package was committed, but Odylith could not open a browser automatically." in out
-    transaction_hash = str(compile_payload["product_create_transaction"]["transaction_hash"])
-    immutable_dashboard = (
-        tmp_path
-        / ".odylith/runtime/greenfield/generations"
-        / transaction_hash
-        / "repository/odylith/index.html"
-    ).resolve()
-    assert f"Open the committed Project dashboard: {immutable_dashboard.as_uri()}?tab=project" in out
-    assert f"Dashboard file: {immutable_dashboard}" in out
+    committed_dashboard = (tmp_path / "odylith/index.html").resolve()
+    assert f"Open the committed Project dashboard: {committed_dashboard.as_uri()}?tab=project" in out
+    assert f"Dashboard file: {committed_dashboard}" in out
     assert "Next: Review the Product Story and first workstream" in out
     assert "no application code has been built" in out
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))

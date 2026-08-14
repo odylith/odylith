@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import _first_path_readiness_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import _release_scope_summary
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import build_greenfield_package_report
@@ -307,6 +308,31 @@ def test_generic_setup_sentences_do_not_project_as_review_actions() -> None:
     assert "review a buffer" not in capability
     assert "Each gateway uses" not in readiness
     assert "review a buffer" not in readiness
+
+
+def test_release_ambition_prefers_the_non_goal_boundary_over_repeating_the_full_path() -> None:
+    first_path = (
+        "Coordinators receive reports, verify evidence, coordinate review, preserve custody history, "
+        "and publish a signed disposition."
+    )
+    summary = _release_scope_summary(
+        first_path=first_path,
+        first_slice=first_path,
+        non_goal_summary="Do not expand into adjacent workflows or operational scaling.",
+    )
+
+    assert summary == "Do not expand into adjacent workflows or operational scaling"
+    assert "verify evidence" not in summary
+
+
+def test_release_ambition_repairs_a_terminal_claim_reference() -> None:
+    summary = _release_scope_summary(
+        first_path="A lab team records a bounded result.",
+        first_slice="A lab team records a bounded result.",
+        non_goal_summary="Do not claim grid power unless later evidence supports that.",
+    )
+
+    assert summary == "Do not claim grid power unless later evidence supports those claims"
 
 
 def test_arborcell_preconfirm_package_does_not_repeat_setup_or_malformed_copy(tmp_path: Path) -> None:

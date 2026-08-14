@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_need_product_focus import is
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import need_product_actor_action
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_command_sentence
 from odylith.runtime.domain_intelligence.greenfield_need_product_focus import product_focus_after_need_sentence
+from odylith.runtime.domain_intelligence.greenfield_need_product_focus import workflow_object_title
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import confirmed_mapping_with_authority
@@ -32,6 +33,16 @@ def test_need_product_request_uses_action_object_not_requester_framing() -> None
     assert source.first_path.startswith("extension publishers can assemble release notes")
     assert "first release boundary" not in source.first_path.casefold()
     assert "marketplace publishing" not in source.first_path.casefold()
+
+
+def test_actor_led_transfer_uses_the_workflow_object_as_product_focus() -> None:
+    prompt = (
+        "A proteomics team is transferring a DIA mass spectrometry method between two laboratories. "
+        "The product must capture peptide library version, retention-time alignment, and iRT standards."
+    )
+
+    assert workflow_object_title(prompt) == "DIA mass spectrometry method"
+    assert prompt_intent_source(prompt).title == "DIA mass spectrometry method"
 
 
 def test_command_request_uses_action_object_not_generic_container_and_actor_title() -> None:

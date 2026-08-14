@@ -9,6 +9,12 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term, word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_component_context_policy import (
+    is_deferred_or_outside_clause as _is_deferred_or_outside_clause,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_context_policy import (
+    is_generic_proof_behavior_clause as _is_generic_proof_behavior_clause,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
@@ -61,7 +67,7 @@ def context_object_phrases(
     carry = 0
     carry_base: tuple[str, ...] = ()
     for clause in clauses(value):
-        if _is_reproducibility_proof_clause(clause):
+        if _is_generic_proof_behavior_clause(clause):
             continue
         if _is_deferred_or_outside_clause(clause):
             continue
@@ -263,7 +269,7 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
         return []
     rows: list[str] = []
     for clause in re.split(r"(?<=[.!?])\s+|[,;]", _clean(value)):
-        if _is_reproducibility_proof_clause(clause):
+        if _is_generic_proof_behavior_clause(clause):
             continue
         if _is_deferred_or_outside_clause(clause):
             continue
@@ -537,19 +543,6 @@ def preserved_scaffold_material(value: str) -> tuple[str, ...]:
             and {"boundary", "boundaries"} & set(phrase.casefold().split())
         )
     )
-
-
-def _is_deferred_or_outside_clause(value: str) -> bool:
-    text = _clean(value).casefold()
-    return bool(
-        re.search(r"\b(?:outside|beyond|not\s+in|not\s+part\s+of)\s+(?:the\s+)?(?:first|initial|release|proof|scope|boundary)\b", text)
-        or re.search(r"\b(?:deferred|out\s+of\s+scope|future\s+release|later\s+release)\b", text)
-    )
-
-
-def _is_reproducibility_proof_clause(value: str) -> bool:
-    text = _clean(value).casefold()
-    return bool(re.search(r"\b(?:can|must|should)\s+reproduc(?:e|es|ed|ing)\b", text))
 
 
 def _preserve_explicit_detail_carrier(terms: Sequence[str], phrase: str) -> list[str]:

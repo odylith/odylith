@@ -68,6 +68,21 @@ def _stub_rendered_surface_custody_for_legacy_proposal_units(monkeypatch: pytest
 
 def test_actor_label_detection_rejects_domain_objects_but_keeps_known_roles() -> None:
     assert _looks_like_actor_label("resident") is True
+
+
+def test_greenfield_ordering_rationale_prefers_ranking_basis_over_duplicate_opportunity() -> None:
+    row = {
+        "opportunity": "Prove a complete reviewer path with visible evidence.",
+        "recommended_first_slice": "Run one reviewer path.",
+        "rationale_lines": [
+            "- why now: Prove a complete reviewer path with visible evidence.",
+            "- ranking basis: Intake lands first because downstream review depends on accepted evidence.",
+        ],
+    }
+
+    assert greenfield_proposals._greenfield_ordering_rationale(row) == (
+        "Intake lands first because downstream review depends on accepted evidence."
+    )
     assert _looks_like_actor_label("incident") is False
 
 
