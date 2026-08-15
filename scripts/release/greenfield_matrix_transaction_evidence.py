@@ -178,30 +178,39 @@ def post_confirm_navigation_issues(
     repo_root: Path,
     transaction_hash: str,
 ) -> tuple[str, ...]:
-    """Require the commit response to lead a first-time user into the created workspace."""
+    """Require committed navigation plus hash-bound reviewed-generation audit routes."""
 
     navigation = _mapping(create_payload.get("post_confirm_navigation"))
     missing = [key for key, value in POST_CONFIRM_NAVIGATION.items() if navigation.get(key) != value]
     root = Path(repo_root).expanduser().resolve()
-    dashboard = (
+    committed_dashboard = (root / "odylith/index.html").resolve()
+    reviewed_generation = (
         root
         / ".odylith/runtime/greenfield/generations"
         / transaction_hash
+    ).resolve()
+    reviewed_dashboard = (
+        reviewed_generation
         / "repository/odylith/index.html"
     ).resolve()
     expected = {
-        "dashboard_path": str(dashboard),
-        "project_url": f"{dashboard.as_uri()}?tab=project",
-        "view_status": "reviewed_generation",
-        "compatibility_dashboard_path": str((root / "odylith/index.html").resolve()),
+        "dashboard_path": str(committed_dashboard),
+        "project_url": f"{committed_dashboard.as_uri()}?tab=project",
+        "view_status": "committed_repository",
+        "compatibility_dashboard_path": str(committed_dashboard),
         "generation_transaction_hash": transaction_hash,
+        "reviewed_generation_path": str(reviewed_generation),
+        "reviewed_generation_dashboard_path": str(reviewed_dashboard),
+        "reviewed_generation_project_url": f"{reviewed_dashboard.as_uri()}?tab=project",
     }
     missing.extend(key for key, value in expected.items() if navigation.get(key) != value)
-    if not dashboard.is_file():
+    if not committed_dashboard.is_file():
         missing.append("dashboard_target")
+    if not reviewed_dashboard.is_file():
+        missing.append("reviewed_generation_dashboard_target")
     if missing:
         return (
-            "post-confirm response does not expose the reviewed generation workspace routes: "
+            "post-confirm response does not expose committed workspace and reviewed-generation audit routes: "
             + ", ".join(dict.fromkeys(missing)),
         )
     return ()

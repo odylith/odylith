@@ -830,23 +830,26 @@ def _passing_create_payload() -> dict[str, object]:
 def _passing_create_payload_for_repo(repo_root: Path) -> dict[str, object]:
     payload = _passing_create_payload()
     transaction_hash = str(_passing_transaction_summary()["transaction_hash"])
-    dashboard = (
+    reviewed_generation = (
         repo_root
         / ".odylith/runtime/greenfield/generations"
         / transaction_hash
-        / "repository/odylith/index.html"
     ).resolve()
-    compatibility_dashboard = (repo_root / "odylith/index.html").resolve()
-    _write(dashboard, "<!doctype html><title>Reviewed generation</title>\n")
-    _write(compatibility_dashboard, "<!doctype html><title>Current project</title>\n")
+    reviewed_dashboard = (reviewed_generation / "repository/odylith/index.html").resolve()
+    committed_dashboard = (repo_root / "odylith/index.html").resolve()
+    _write(reviewed_dashboard, "<!doctype html><title>Reviewed generation</title>\n")
+    _write(committed_dashboard, "<!doctype html><title>Current project</title>\n")
     navigation = dict(payload["post_confirm_navigation"])
     navigation.update(
         {
-            "dashboard_path": str(dashboard),
-            "project_url": f"{dashboard.as_uri()}?tab=project",
-            "view_status": "reviewed_generation",
-            "compatibility_dashboard_path": str(compatibility_dashboard),
+            "dashboard_path": str(committed_dashboard),
+            "project_url": f"{committed_dashboard.as_uri()}?tab=project",
+            "view_status": "committed_repository",
+            "compatibility_dashboard_path": str(committed_dashboard),
             "generation_transaction_hash": transaction_hash,
+            "reviewed_generation_path": str(reviewed_generation),
+            "reviewed_generation_dashboard_path": str(reviewed_dashboard),
+            "reviewed_generation_project_url": f"{reviewed_dashboard.as_uri()}?tab=project",
         }
     )
     payload["post_confirm_navigation"] = navigation

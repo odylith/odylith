@@ -51,6 +51,15 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-14: Aligned installed Greenfield release evidence with the committed-dashboard handoff contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
+  The matrix requires the real committed Project dashboard as the primary
+  post-confirm destination and separately verifies the transaction hash plus
+  immutable reviewed-generation root, dashboard, and project URL as audit
+  metadata. This prevents a stale evaluator from rejecting successful
+  exact-byte publication while preserving the reviewed generation for audit.
+  The changed matrix owners pass 123 tests and the wider navigation and
+  confirmation selection passes 128.
+
 - 2026-08-12: Bound accepted component state to typed compiler custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   Semantic contracts carry their exact validated owned-state fragments through
   profile merge and differentiation. Unaccepted base fields and generated

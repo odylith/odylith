@@ -4063,3 +4063,16 @@ above.
       Next: sync governed projections, commit and push these bytes, rebuild the
       exact distribution, then restart installed lifecycle, maintained matrix,
       recovery/host-parity, and desktop/mobile browser proof from case one.
+    - 2026-08-14 committed-dashboard evidence correction: exact dist
+      `703af3cf9` passed artifact checksums, platform leakage, `81` lifecycle
+      tests, and the separately marked `8` lifecycle cases. The maintained
+      installed matrix completed all fourteen standard cases plus browser,
+      recovery, idempotency, rescue, provider-failure fallback, and cleanup,
+      but failed its aggregate verdict because the controller still required
+      the immutable generation copy as the primary post-confirm page. The
+      product correctly routes users to the real committed `odylith/index.html`
+      while retaining hash-bound reviewed-generation audit metadata. Release
+      evidence now requires both contracts. The changed matrix owners pass
+      `123` tests and the wider navigation/confirmation selection passes `128`.
+      Next: sync governance, commit and push the correction, rebuild an exact
+      distribution, and rerun the complete installed matrix from case one.

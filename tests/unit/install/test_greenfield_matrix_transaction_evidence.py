@@ -173,18 +173,20 @@ def test_confirmation_preview_requires_the_hash_bound_decision_rail() -> None:
     )
 
 
-def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_path: Path) -> None:
-    dashboard = (
+def test_post_confirm_navigation_requires_committed_workspace_and_reviewed_generation_audit(
+    tmp_path: Path,
+) -> None:
+    reviewed_generation = (
         tmp_path
         / ".odylith/runtime/greenfield/generations"
         / HASH
-        / "repository/odylith/index.html"
     ).resolve()
-    dashboard.parent.mkdir(parents=True)
-    dashboard.write_text("<html></html>", encoding="utf-8")
-    compatibility_dashboard = (tmp_path / "odylith/index.html").resolve()
-    compatibility_dashboard.parent.mkdir(parents=True)
-    compatibility_dashboard.write_text("<html></html>", encoding="utf-8")
+    reviewed_dashboard = (reviewed_generation / "repository/odylith/index.html").resolve()
+    reviewed_dashboard.parent.mkdir(parents=True)
+    reviewed_dashboard.write_text("<html></html>", encoding="utf-8")
+    committed_dashboard = (tmp_path / "odylith/index.html").resolve()
+    committed_dashboard.parent.mkdir(parents=True)
+    committed_dashboard.write_text("<html></html>", encoding="utf-8")
     payload = {
         "post_confirm_navigation": {
             "project": "odylith/index.html?tab=project",
@@ -192,11 +194,14 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
             "registry": "odylith/index.html?tab=registry",
             "atlas": "odylith/index.html?tab=atlas",
             "compass": "odylith/index.html?tab=compass&date=live",
-            "dashboard_path": str(dashboard),
-            "project_url": f"{dashboard.as_uri()}?tab=project",
-            "view_status": "reviewed_generation",
-            "compatibility_dashboard_path": str(compatibility_dashboard),
+            "dashboard_path": str(committed_dashboard),
+            "project_url": f"{committed_dashboard.as_uri()}?tab=project",
+            "view_status": "committed_repository",
+            "compatibility_dashboard_path": str(committed_dashboard),
             "generation_transaction_hash": HASH,
+            "reviewed_generation_path": str(reviewed_generation),
+            "reviewed_generation_dashboard_path": str(reviewed_dashboard),
+            "reviewed_generation_project_url": f"{reviewed_dashboard.as_uri()}?tab=project",
         }
     }
 
@@ -213,7 +218,20 @@ def test_post_confirm_navigation_requires_the_reviewed_generation_workspace(tmp_
         repo_root=tmp_path,
         transaction_hash=HASH,
     ) == (
-        "post-confirm response does not expose the reviewed generation workspace routes: project_url",
+        "post-confirm response does not expose committed workspace and reviewed-generation audit routes: "
+        "project_url",
+    )
+
+    payload["post_confirm_navigation"]["project_url"] = f"{committed_dashboard.as_uri()}?tab=project"
+    payload["post_confirm_navigation"].pop("reviewed_generation_project_url")
+
+    assert post_confirm_navigation_issues(
+        create_payload=payload,
+        repo_root=tmp_path,
+        transaction_hash=HASH,
+    ) == (
+        "post-confirm response does not expose committed workspace and reviewed-generation audit routes: "
+        "reviewed_generation_project_url",
     )
 
 
