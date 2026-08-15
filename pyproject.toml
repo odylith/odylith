@@ -74,6 +74,7 @@ dependencies = [
   "playwright>=1.53,<2.0",
   "Pygments==2.19.2",
   "pytest>=8.2,<9.0",
+  "PyYAML>=6.0,<7.0",
   "requests==2.33.0",
   "sigstore>=3.6,<4.0",
 ]

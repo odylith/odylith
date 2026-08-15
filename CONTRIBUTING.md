@@ -37,7 +37,7 @@ Odylith currently targets Python 3.13.
 python3.13 -m venv .venv
 ./.venv/bin/pip install --upgrade pip
 ./.venv/bin/pip install -e .
-./.venv/bin/pip install build pytest
+./.venv/bin/pip install build pytest PyYAML
 ```
 
 ## Expected Validation

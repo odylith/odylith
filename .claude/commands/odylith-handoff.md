@@ -1,6 +1,6 @@
 ---
 description: Prepare a bounded handoff for the active Odylith slice.
-argument-hint: [<slice-anchor>] (optional workstream id, component, or bug id)
+argument-hint: "[<slice-anchor>] (optional workstream id, component, or bug id)"
 ---
 
 Prepare a bounded handoff for the active Odylith slice.
