@@ -1,6 +1,6 @@
 - Bug ID: CB-319
 
-- Status: FixedPendingRelease
+- Status: InProgress
 
 - Created: 2026-08-04
 
@@ -58,3 +58,5 @@
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_material_clarification.py
 - tests/unit/runtime/test_greenfield_final_holdout_regressions.py
+
+- Replacement Blind Holdout Reopen (2026-08-16 UTC): Exact candidate `1ba7b4c0385ed36981c5d163439a49f3be703661` unnecessarily requested material clarification for three expected-commit controls: `gfhi-010`, whose edited evidence settles the queue-digest boundary; `gfhi-019`, whose thin request explicitly permits a bounded non-material assumption; and `gfhi-023`, whose remaining choice is a non-material label. Independent adjudication classified all three as product-side P0 and found no evaluator or oracle reversal. CB-319 returns to `InProgress`; the fix must distinguish unresolved material product authority from already-settled edits, bounded assumptions, and presentation-only choices without weakening the seven true clarification cases in the same disclosed corpus.

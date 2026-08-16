@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-08-15
+Last updated (UTC): 2026-08-16
 
 ## Open Bugs
 
@@ -18,7 +18,7 @@ Last updated (UTC): 2026-08-15
 | CB-317 | 2026-08-04 | Greenfield release proof imposes an arbitrary three component registry floor | P2 | domain-intelligence | FixedPendingRelease | [2026-08-04-greenfield-release-proof-imposes-an-arbitrary-three-component-registry-floor.md](2026-08-04-greenfield-release-proof-imposes-an-arbitrary-three-component-registry-floor.md) |
 | CB-311 | 2026-08-04 | Greenfield radar verification notes violate portable guidance contract | P2 | radar | FixedPendingRelease | [2026-08-04-greenfield-radar-verification-notes-violate-portable-guidance-contract.md](2026-08-04-greenfield-radar-verification-notes-violate-portable-guidance-contract.md) |
 | CB-315 | 2026-08-04 | Greenfield material contradictions can bypass typed clarification and stage writ | P1 | domain-intelligence | InProgress | [2026-08-04-greenfield-material-contradictions-can-bypass-typed-clarification-and-stage-writ.md](2026-08-04-greenfield-material-contradictions-can-bypass-typed-clarification-and-stage-writ.md) |
-| CB-319 | 2026-08-04 | Greenfield contradiction gate mistakes domain conflict outcomes for prompt ambig | P1 | domain-intelligence | FixedPendingRelease | [2026-08-04-greenfield-contradiction-gate-mistakes-domain-conflict-outcomes-for-prompt-ambig.md](2026-08-04-greenfield-contradiction-gate-mistakes-domain-conflict-outcomes-for-prompt-ambig.md) |
+| CB-319 | 2026-08-04 | Greenfield contradiction gate mistakes domain conflict outcomes for prompt ambig | P1 | domain-intelligence | InProgress | [2026-08-04-greenfield-contradiction-gate-mistakes-domain-conflict-outcomes-for-prompt-ambig.md](2026-08-04-greenfield-contradiction-gate-mistakes-domain-conflict-outcomes-for-prompt-ambig.md) |
 | CB-316 | 2026-08-04 | Greenfield clarification score can award 10 of 10 for the wrong material questio | P1 | domain-intelligence | FixedPendingRelease | [2026-08-04-greenfield-clarification-score-can-award-10-of-10-for-the-wrong-material-questio.md](2026-08-04-greenfield-clarification-score-can-award-10-of-10-for-the-wrong-material-questio.md) |
 | CB-314 | 2026-08-04 | Final holdout ledger revision is not bound to distribution provenance | P1 | release | Open | [2026-08-04-final-holdout-ledger-revision-is-not-bound-to-distribution-provenance.md](2026-08-04-final-holdout-ledger-revision-is-not-bound-to-distribution-provenance.md) |
 | CB-321 | 2026-08-04 | Final holdout consumes hidden cases before browser preflight and leaks children | P1 | release | FixedPendingRelease | [2026-08-04-final-holdout-consumes-hidden-cases-before-browser-preflight-and-leaks-children-.md](2026-08-04-final-holdout-consumes-hidden-cases-before-browser-preflight-and-leaks-children-.md) |
