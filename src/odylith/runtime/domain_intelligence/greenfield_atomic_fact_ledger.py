@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confir
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
     carried_subject_prefix,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    visible_result_object,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     coordinated_subjects,
@@ -113,7 +116,7 @@ _STOPWORDS = frozenset(
     }
 )
 _PROHIBITED_RE = re.compile(
-    r"\b(?:must\s+not|do\s+not|does\s+not|never|without)\b|"
+    r"\b(?:must\s+not|do\s+not|does\s+not|never|no|without)\b|"
     r"\b(?:is|are)\s+(?:forbidden|prohibited)\b|"
     r"(?<!-)\b(?:forbidden|prohibited)\s+(?:from|to)\b",
     flags=re.IGNORECASE,
@@ -472,6 +475,13 @@ def _projection_atoms(*, field: str, value: Any) -> tuple[tuple[str, str], ...]:
                 action = step[len(subject) :].strip() if subject and step.startswith(subject) else step
                 rows.append((f"{path}/steps/{step_index}", action))
                 seen_values.add(_normalized_token_text(action))
+            visible_outcome = clean_markdown_text(
+                visible_result_object(model.visible_outcome) or model.visible_outcome
+            ).strip(" .;:")
+            visible_outcome_key = _normalized_token_text(visible_outcome)
+            if visible_outcome_key and visible_outcome_key not in seen_values:
+                rows.append((f"{path}/visible_outcome", visible_outcome))
+                seen_values.add(visible_outcome_key)
             sentence_keys = {_normalized_token_text(unit) for unit in _sentence_units(item)}
             for unit_index, unit in enumerate(_source_atomic_units(item, source_section_key="first_path")):
                 unit_key = _normalized_token_text(unit)

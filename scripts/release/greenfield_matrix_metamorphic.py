@@ -117,12 +117,26 @@ def _group_issues(
     results_by_case_id: Mapping[str, GreenfieldMatrixResult],
 ) -> list[str]:
     issues: list[str] = []
+    corpus_tiers = {case.provenance.corpus_tier for case in members}
+    synthetic_identity = corpus_tiers == {"independent_synthetic_release_holdout"}
+    mixed_identity = "independent_synthetic_release_holdout" in corpus_tiers and not synthetic_identity
+    source_identity = not synthetic_identity and not mixed_identity
     expected_source_ids = {case.provenance.source_id for case in members}
     expected_artifact_hashes = {case.provenance.source_artifact_sha256 for case in members}
-    if len(expected_source_ids) != 1 or "" in expected_source_ids:
-        issues.append(f"metamorphic group {group} does not have one source identity")
-    if len(expected_artifact_hashes) != 1 or "" in expected_artifact_hashes:
-        issues.append(f"metamorphic group {group} does not have one source artifact hash")
+    if source_identity:
+        if len(expected_source_ids) != 1 or "" in expected_source_ids:
+            issues.append(f"metamorphic group {group} does not have one source identity")
+        if len(expected_artifact_hashes) != 1 or "" in expected_artifact_hashes:
+            issues.append(f"metamorphic group {group} does not have one source artifact hash")
+    elif synthetic_identity:
+        authors = {case.provenance.derivation_author for case in members}
+        methods = {case.provenance.derivation_method for case in members}
+        if len(authors) != 1 or "" in authors or len(methods) != 1 or "" in methods:
+            issues.append(f"metamorphic group {group} does not have one sealed authoring identity")
+        if any(not _is_sha256(case.provenance.derived_prompt_sha256) for case in members):
+            issues.append(f"metamorphic group {group} does not have sealed transform hashes")
+    else:
+        issues.append(f"metamorphic group {group} mixes or does not declare a supported corpus tier")
     for case in members:
         case_id = _case_id(case)
         result = results_by_case_id[case_id]
@@ -131,10 +145,19 @@ def _group_issues(
             continue
         evidence = _mapping(result.evidence)
         provenance = _mapping(_mapping(evidence.get("case")).get("provenance"))
-        if provenance.get("source_id") not in expected_source_ids:
-            issues.append(f"metamorphic group {group} case {case_id} lost its source identity")
-        if provenance.get("source_artifact_sha256") not in expected_artifact_hashes:
-            issues.append(f"metamorphic group {group} case {case_id} lost its source artifact identity")
+        if source_identity:
+            if provenance.get("source_id") not in expected_source_ids:
+                issues.append(f"metamorphic group {group} case {case_id} lost its source identity")
+            if provenance.get("source_artifact_sha256") not in expected_artifact_hashes:
+                issues.append(f"metamorphic group {group} case {case_id} lost its source artifact identity")
+        elif synthetic_identity:
+            prompt_hash = case.provenance.derived_prompt_sha256
+            if provenance.get("corpus_tier") != "independent_synthetic_release_holdout":
+                issues.append(f"metamorphic group {group} case {case_id} lost its synthetic corpus identity")
+            if provenance.get("derivation_method") != case.provenance.derivation_method:
+                issues.append(f"metamorphic group {group} case {case_id} lost its authoring method")
+            if provenance.get("derived_prompt_sha256") != prompt_hash or _mapping(evidence.get("case")).get("prompt_sha256") != prompt_hash:
+                issues.append(f"metamorphic group {group} case {case_id} lost its sealed transform identity")
         issues.extend(
             _completion_invariant_issues(
                 group=group,

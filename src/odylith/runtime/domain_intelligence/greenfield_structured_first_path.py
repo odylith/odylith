@@ -9,13 +9,13 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_token_form
-from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import base_action_clause, base_action_verb
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import past_action_verb
 from odylith.runtime.common.prose_grammar import strip_leading_action_modal
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal, word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
-from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import owned_disposition_workflow_actor_action, sentence_fragments
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
@@ -65,6 +65,38 @@ class StructuredPathEvent:
     valid: bool
     render: bool = True
     rendered_text: str = ""
+
+
+@dataclass(frozen=True)
+class SourceOwnedPathEvidence:
+    """Human-owned action and preferred path recovered from source grammar."""
+    actor: str = ""
+    action: str = ""
+    first_path: str = ""
+
+
+def source_owned_path_evidence(value: str, *, ranked_first_path: str) -> SourceOwnedPathEvidence:
+    """Recover product-helper or command-audience evidence without losing adjacent path facts."""
+    actor, action = owned_disposition_workflow_actor_action(value)
+    if actor:
+        model = first_path_model(action)
+        outcome = model.visible_outcome[:1].lower() + model.visible_outcome[1:]
+        path = f"{actor.capitalize()} can {action}. The product shows {outcome}" if (
+            not base_action_verb(action.split(maxsplit=1)[0])
+            and len(first_path_model(ranked_first_path).steps) < 2 and outcome
+        ) else ""
+        return SourceOwnedPathEvidence(actor=actor, action=action, first_path=path)
+    match = re.match(
+        r"^(?:build|create|design|make)\s+[^.!?]{1,120}\s+for\s+"
+        r"(?P<actor>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+to\s+"
+        r"(?P<action>[A-Za-z][^.!?]{2,160})$",
+        next(iter(sentence_fragments(value)), ""), flags=re.IGNORECASE)
+    if not match or not has_human_actor_role_signal(match.group("actor")):
+        return SourceOwnedPathEvidence()
+    actor = re.sub(r"^(?:a|an|the)\s+", "", match.group("actor"), flags=re.IGNORECASE)
+    action = match.group("action").strip(" .")
+    path = ranked_first_path if action.casefold() in ranked_first_path.casefold() else f"{actor.capitalize()} can {action}. {ranked_first_path}".strip(" .")
+    return SourceOwnedPathEvidence(actor=actor, action=action, first_path=path)
 
 
 @dataclass(frozen=True)
@@ -142,8 +174,16 @@ class StructuredFirstPathContract:
     def actor_handoff_path_from_rows(self, rows: Sequence[str], *, actor: str) -> str:
         """Preserve an actor entry followed by ordered product or system handoff rows."""
 
-        aliases = structured_actor_aliases(actor)
-        start = next(
+        inferred_actor = not bool(_clean(actor).strip(" ."))
+        aliases = structured_actor_aliases(actor) or _leading_human_actor_aliases(rows)
+        grant_aliases = tuple(
+            dict.fromkeys(
+                candidate.casefold()
+                for candidate in (actor, structured_actor_subject(actor).rstrip(" ,"))
+                if candidate
+            )
+        )
+        actor_start = next(
             (
                 index
                 for index, row in enumerate(rows)
@@ -151,20 +191,44 @@ class StructuredFirstPathContract:
             ),
             -1,
         )
+        grant_start = next(
+            (
+                index
+                for index, row in enumerate(rows)
+                if _named_product_grant_starts_with_actor(row, aliases=grant_aliases)
+            ),
+            -1,
+        )
+        starts = tuple(index for index in (actor_start, grant_start) if index >= 0)
+        start = min(starts, default=-1)
+        if inferred_actor and start > 0 and all(first_path_model(row).material_action for row in rows[:start]):
+            start = 0
         if start < 0:
             return ""
         required_events = tuple(event for event in self.events if event.render and event.valid)
+        action_events = tuple(
+            event for event in self.events if event.kind in {"action", "start"} and event.valid
+        )
         output_events = tuple(
             event
             for event in self.events
             if self.explicit_output and event.kind == "output" and event.valid
         )
+        grant_head = start == grant_start
+        head_terms = set(re.findall(r"[A-Za-z0-9][A-Za-z0-9'/-]*", rows[start].casefold()))
+        normalize_grant_head = bool(
+            grant_head and action_events and all(set(event.identity) <= head_terms for event in action_events)
+        )
         selected: list[str] = []
         candidate = ""
-        for row in rows[start:]:
+        for index, row in enumerate(rows[start:], start=start):
             path_row = row.strip(" .")
+            if index > start and _has_explicit_distinct_actor_scope(path_row):
+                continue
             if not path_row or not first_path_model(path_row).material_action:
                 continue
+            if index == start and normalize_grant_head:
+                path_row = self.text.strip(" .")
             if path_row not in selected:
                 selected.append(path_row)
             candidate = ". ".join(selected)
@@ -173,7 +237,7 @@ class StructuredFirstPathContract:
             output_covered = bool(output_events) and all(
                 set(event.identity) <= candidate_terms for event in output_events
             )
-            if output_covered:
+            if output_covered and not grant_head and not inferred_actor:
                 if all(set(event.identity) <= candidate_terms for event in required_events):
                     break
                 return ""
@@ -372,16 +436,24 @@ def structured_actor_subject(value: str) -> str:
             return f"{words[-1]}, {_indefinite_role(' '.join(words[:-1]))},"
         return actor[:1].upper() + actor[1:]
     name, role = (part.strip() for part in actor.split(",", 1))
-    role = re.sub(r"^(?:a|an|the)\s+", "", role, flags=re.IGNORECASE).strip()
-    return f"{name}, {_indefinite_role(role)}," if name and role else actor.replace(",", "")
+    named = named_actor_phrase(name=name, role=role)
+    return f"{named}," if named else actor.replace(",", "")
 
 
 def named_actor_phrase(*, name: str, role: str) -> str:
     """Return one grammatical named-person role phrase from explicit source fields."""
 
     person = _clean(name).strip(" .,")
-    role_text = re.sub(r"^(?:a|an|the)\s+", "", _clean(role), flags=re.IGNORECASE).strip(" .,")
-    return f"{person}, {_indefinite_role(role_text)}" if person and role_text else ""
+    role_text = _clean(role).strip(" .,")
+    if not person or not role_text:
+        return ""
+    article = re.match(r"^(a|an|the)\s+", role_text, flags=re.IGNORECASE)
+    role_text = (
+        f"{article.group(1).casefold()} {role_text[article.end():]}"
+        if article
+        else _indefinite_role(role_text)
+    )
+    return f"{person}, {role_text}"
 
 
 def path_entry_action(value: str) -> str:
@@ -492,6 +564,52 @@ def _row_starts_with_actor_alias(value: str, *, aliases: Sequence[str]) -> bool:
         for alias in aliases
         for candidate in (row, articleless_row)
     )
+
+
+def _named_product_grant_starts_with_actor(value: str, *, aliases: Sequence[str]) -> bool:
+    """Recognize a named-product grant only at an exact actor alias boundary."""
+
+    row = _clean(value).strip(" .")
+    for alias in sorted(aliases, key=len, reverse=True):
+        actor = re.search(
+            rf"(?<![A-Za-z0-9'/-]){re.escape(alias)}(?=$|[\s,.;:])",
+            row,
+            flags=re.IGNORECASE,
+        )
+        if not actor:
+            continue
+        prefix = row[: actor.start()].strip()
+        if re.fullmatch(r"(?:[A-Z][A-Za-z0-9'/-]*\s+){1,4}[a-z][a-z'-]*", prefix):
+            return True
+    return False
+
+
+def _leading_human_actor_aliases(rows: Sequence[str]) -> tuple[str, ...]:
+    """Recover a role-led handoff actor when an output-only contract has no typed actor."""
+
+    for row in rows:
+        words = re.findall(r"[A-Za-z][A-Za-z'/-]*", _clean(row).strip(" ."))
+        action_index = next(
+            (index for index, word in enumerate(words[:9]) if action_token_form(word)),
+            -1,
+        )
+        actor_words = words[1:action_index] if words and words[0].casefold() in _IDENTITY_ARTICLES else words[:action_index]
+        if action_index > 0 and any(word_has_actor_role_signal(word) for word in actor_words):
+            return structured_actor_aliases(" ".join(actor_words))
+    return ()
+
+
+def _has_explicit_distinct_actor_scope(value: str) -> bool:
+    """Exclude a continuation explicitly scoped to another human actor."""
+
+    for match in re.finditer(
+        r"\b(?:another|different|other)\s+(?P<actor>[A-Za-z][A-Za-z'/-]*(?:\s+[A-Za-z][A-Za-z'/-]*){0,4})",
+        _clean(value),
+        flags=re.IGNORECASE,
+    ):
+        if any(word_has_actor_role_signal(word) for word in match.group("actor").split()):
+            return True
+    return False
 
 
 def _event(
@@ -664,7 +782,7 @@ def _clean(value: object) -> str:
 
 
 __all__ = [
-    "StructuredFirstPathContract",
+    "SourceOwnedPathEvidence", "StructuredFirstPathContract",
     "StructuredPathEvent",
     "compile_structured_first_path",
     "compile_temporal_first_path",
@@ -676,6 +794,7 @@ __all__ = [
     "path_entry_action",
     "path_start_action",
     "path_start_source",
+    "source_owned_path_evidence",
     "structured_actor_aliases",
     "structured_actor_subject",
 ]

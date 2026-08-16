@@ -13,7 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import coordinated_subjects
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import authoritative_prompt_evidence_text
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import declaration_subject_predicate
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import is_discarded_evidence_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -214,6 +216,27 @@ _ARTIFACT_SOURCE_CARRIERS = frozenset(
     "report reports source sources submission submissions transcript transcripts upload uploads".split()
 )
 _DIRECT_BOUNDARY_CARRIERS = _SOURCE_LABEL_CARRIERS - _ARTIFACT_SOURCE_CARRIERS
+_EXPLICIT_DEPENDENCY_COMMAND_RE = re.compile(
+    r"^(?:read|use)\s+(?:only\s+from\s+|from\s+)?(?:a\s+|an\s+|the\s+)?"
+    r"(?P<label>[^.;!?]+)$",
+    flags=re.IGNORECASE,
+)
+_SOLE_DEPENDENCY_RE = re.compile(
+    r"^(?:keep|use)\s+(?:a\s+|an\s+|the\s+)?(?P<label>[^.;!?]+?)\s+"
+    r"as\s+(?:the\s+)?(?:only|sole)\s+dependency$",
+    flags=re.IGNORECASE,
+)
+_READ_ONLY_SOURCE_RE = re.compile(
+    r"^(?:a\s+|an\s+|the\s+)?(?P<label>[^.;!?]{2,120}?)\s+is\s+read[- ]only$",
+    flags=re.IGNORECASE,
+)
+_JSON_DEPENDENCY_FIELD_RE = re.compile(
+    r'"(?:dependency|dependencies|data_source|data_sources|external_system|external_systems)"\s*:\s*"(?P<label>[^"\\]+)"',
+    flags=re.IGNORECASE,
+)
+_GENERIC_DEPENDENCY_SUBJECTS = frozenset(
+    {"app", "application", "product", "report", "reports", "service", "system", "tool", "workspace"}
+)
 
 
 @dataclass(frozen=True)
@@ -277,16 +300,23 @@ def source_boundary_facts_from_evidence(
 ) -> list[ExternalBoundaryFact]:
     """Return source-backed boundaries and unresolved named-location hypotheses."""
 
-    facts = [
-        ExternalBoundaryFact(label=label, evidence=clean_text(row), confidence="source")
-        for row in prompt_field_values(value, names=_EXTERNAL_FIELD_NAMES)
-        if (label := _source_label(row))
-    ]
     text = str(value or "")
-    if text and not text.lstrip().startswith(("{", "[")):
-        facts.extend(_dependency_frame_facts(text))
+    final_text = authoritative_prompt_evidence_text(text)
+    facts = _boundary_facts_from_text(final_text)
+    if final_text != text.strip() and not facts:
+        facts = _boundary_facts_from_text(text)
     excluded = {_boundary_key(label) for label in excluded_labels if _boundary_key(label)}
     return [fact for fact in _unique_facts(facts) if _boundary_key(fact.label) not in excluded][:8]
+
+
+def _boundary_facts_from_text(text: str) -> list[ExternalBoundaryFact]:
+    facts = [
+        ExternalBoundaryFact(label=label, evidence=clean_text(row), confidence="source")
+        for row in prompt_field_values(text, names=_EXTERNAL_FIELD_NAMES)
+        if (label := _source_label(_bounded_dependency_text(row)))
+    ]
+    facts.extend(_dependency_frame_facts(text))
+    return _unique_facts(facts)
 
 
 def is_external_dependency_clause(value: Any) -> bool:
@@ -298,6 +328,9 @@ def is_external_dependency_clause(value: Any) -> bool:
     model = first_path_model(text)
     if not tokens or len(model.steps) > 1:
         return False
+    declarations = _explicit_dependency_declarations(text)
+    if declarations and not any(has_workflow_tail for _label, has_workflow_tail in declarations):
+        return True
     if _declared_external_sources(text):
         return True
     if _external_supplier_only_clause(text):
@@ -335,11 +368,18 @@ def _dependency_frame_sources(value: str) -> list[str]:
 
 
 def _dependency_frame_facts(value: str) -> list[ExternalBoundaryFact]:
-    facts: list[ExternalBoundaryFact] = []
+    facts = [
+        ExternalBoundaryFact(label=label, evidence=clean_text(value), confidence="source")
+        for label in _explicit_dependency_labels(value)
+    ]
     text = str(value or "")
     for sentence in re.split(r"[.;!?\n]+", text):
+        if is_discarded_evidence_clause(sentence):
+            continue
         facts.extend(_source_facts(_declared_external_sources(sentence), evidence=sentence))
     for clause in re.split(r"[,.;:!?\n]+", text):
+        if is_discarded_evidence_clause(clause):
+            continue
         tokens = _LEXEME_RE.findall(clause)
         lowered = [token.casefold() for token in tokens]
         if not tokens or lowered[0] in {"if", "unless", "when", "while"}:
@@ -386,6 +426,68 @@ def _dependency_frame_facts(value: str) -> list[ExternalBoundaryFact]:
                 if _system_boundary_candidate(candidate):
                     facts.extend(_source_facts((candidate,), evidence=clause))
     return _unique_facts(facts)
+
+
+def _explicit_dependency_labels(value: str) -> tuple[str, ...]:
+    """Recover bounded noun phrases from explicit dependency grammar."""
+
+    return tuple(label for label, _has_workflow_tail in _explicit_dependency_declarations(value))
+
+
+def _explicit_dependency_declarations(value: str) -> tuple[tuple[str, bool], ...]:
+    declarations: dict[str, bool] = {}
+    text = str(value or "")
+    for raw in re.split(r"[.!?\n]+", text):
+        clause = clean_text(raw).strip(" .")
+        if not clause or is_discarded_evidence_clause(clause):
+            continue
+        clause = re.sub(r"^(?:edit|final\s+(?:edit|request))\s*:\s*", "", clause, flags=re.IGNORECASE)
+        clause = clause.partition(",")[0]
+        command = _SOLE_DEPENDENCY_RE.match(clause) or _EXPLICIT_DEPENDENCY_COMMAND_RE.match(clause)
+        read_only = _READ_ONLY_SOURCE_RE.match(clause)
+        candidate = (command or read_only).group("label") if command or read_only else ""
+        candidate, has_workflow_tail = _dependency_label_and_workflow_tail(candidate)
+        if label := _explicit_dependency_label(candidate):
+            declarations[label] = declarations.get(label, False) or has_workflow_tail
+    for match in _JSON_DEPENDENCY_FIELD_RE.finditer(text):
+        if label := _explicit_dependency_label(match.group("label")):
+            declarations.setdefault(label, False)
+    return tuple(declarations.items())
+
+
+def _dependency_label_and_workflow_tail(value: str) -> tuple[str, bool]:
+    text = clean_text(value).strip(" .,:;")
+    words = tuple(_LEXEME_RE.finditer(text))
+    for index, word in enumerate(words[:-1]):
+        if word.group(0).casefold() == "to" and action_token_form(words[index + 1].group(0)):
+            return text[: word.start()].strip(" .,:;"), True
+    return text, False
+
+
+def _explicit_dependency_label(value: Any) -> str:
+    text = _bounded_dependency_text(value)
+    words = _LEXEME_RE.findall(text)
+    lowered = {word.casefold() for word in words}
+    if not 1 <= len(words) <= 12:
+        return ""
+    if len(words) == 1 and not _source_label(text):
+        return ""
+    if has_human_actor_signal(text) or lowered <= _NON_SYSTEM_SOURCE_LABELS:
+        return ""
+    if words[0].casefold() in _GENERIC_DEPENDENCY_SUBJECTS:
+        return ""
+    return text
+
+
+def _bounded_dependency_text(value: Any) -> str:
+    text = clean_text(value).strip(" .,:;\"'")
+    text = re.split(
+        r"\s+as\s+(?:the\s+)?(?:only|sole)\s+dependency\b|\s+for\s+|\s*;",
+        text,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0].strip(" .,:;\"'")
+    return re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
 
 
 def _in_scopes_dependency_system(tokens: Sequence[str], *, index: int) -> bool:
@@ -625,6 +727,12 @@ def _unique_facts(facts: Sequence[ExternalBoundaryFact]) -> list[ExternalBoundar
         key = fact.label.casefold()
         if not key:
             continue
+        wider = next((known for known in result if f" {key} " in f" {known} "), "")
+        if wider:
+            continue
+        narrower = next((known for known in result if f" {known} " in f" {key} "), "")
+        if narrower:
+            result.pop(narrower)
         current = result.get(key)
         if current is None or (current.confidence != "source" and fact.confidence == "source"):
             result[key] = fact

@@ -194,7 +194,7 @@ def _contract_misses_local_axis(*, row: Mapping[str, Any], contract: Mapping[str
     if axis.key.startswith("fallback_"):
         return False
     label_text = _component_label(row, 0)
-    description_text = _clean(row.get("source_system_description"))
+    description_text = _clean(f"{row.get('source_system_description', '')} {row.get('responsibility', '')}")
     local_score = _axis_local_score(axis, label_text=label_text, description_text=description_text)
     if local_score < 24:
         return False
@@ -387,7 +387,7 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
     if not isinstance(row, Mapping):
         return _fallback_axis("sibling", _proposal_context(proposal))
     label_text = _component_label(row, 0)
-    description_text = _clean(row.get("source_system_description"))
+    description_text = _clean(f"{row.get('source_system_description', '')} {row.get('responsibility', '')}")
     axis = derive_component_axis(
         label_text=label_text,
         context_text=" ".join(

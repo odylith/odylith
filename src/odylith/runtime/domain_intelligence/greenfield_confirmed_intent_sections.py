@@ -160,6 +160,15 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
         heading = explicit_heading or confirmed_intent_heading_key(line)
         if (
             heading
+            and _is_operator_evidence_section(current)
+            and is_confirmed_intent_supporting_section(heading)
+        ):
+            # A pasted brief may begin with its own document title. Keep the
+            # body under the operator-evidence owner so its exact rows remain
+            # eligible for atom-level source custody.
+            return current
+        if (
+            heading
             and is_confirmed_intent_supporting_section(current)
             and not is_confirmed_intent_ignored_section(heading)
             and (not explicit_heading or _explicit_markdown_heading_depth(line) > 2)
@@ -221,6 +230,12 @@ def _consume_confirmed_intent_line(line: str, *, current: str, sections: dict[st
         return current
     sections.setdefault(current, []).append(line)
     return current
+
+
+def _is_operator_evidence_section(key: str) -> bool:
+    return str(key or "").endswith(
+        ("operator_prompt_evidence", "operator_edit_evidence")
+    )
 
 
 def _is_product_requirements_draft_root(current: str) -> bool:

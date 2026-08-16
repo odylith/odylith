@@ -33,9 +33,9 @@ from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics 
     source_boundary_rows_from_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import is_source_obligation_clause
-from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import confirmed_direction_evidence_text
-from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    confirmed_direction_evidence_text, contiguous_ordered_list_steps, is_discarded_evidence_clause,
+    owned_disposition_workflow_actor_action, rankable_prompt_evidence_text, sentence_fragments,
     without_confirmation_evidence_label,
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_key
@@ -72,7 +72,7 @@ class StructuredPromptFacts:
 
 
 _TITLE_FIELDS = ("product", "product name", "title", "domain label")
-_ACTOR_FIELDS = ("actor", "actors", "operator", "user", "users", "first user")
+_ACTOR_FIELDS = ("actor", "actors", "operator", "owner", "user", "users", "first user")
 _PATH_FIELDS = (
     "first complete path",
     "first path",
@@ -99,9 +99,10 @@ _HARD_NON_PATH_RE = re.compile(
     r"\b(?:out\s+of\s+scope|unrelated|proof(?:\s+boundary)?|prove|success\s+means|"
     r"demonstrate|must\s+not|may\s+not|cannot|can't|do\s+not|never|boundary|"
     r"distinctive\s+project\s+vocabulary|"
-    r"(?:the\s+)?(?:request|prompt|source)\s+(?:says|states|mentions|describes)|"
+    r"(?:(?:the\s+)?(?:request|prompt|source)|document\s+\w+)\s+"
+    r"(?:says|states|mentions|describes|reports|confirms)|"
     r"comes?\s+from|suppl(?:y|ies|ied)\s+by?|provid(?:e|es|ed)\s+by?|"
-    r"read\s+from|imports?\b|visible\s+only|staff\s+paste)\b",
+    r"imports?\b|visible\s+only|staff\s+paste)\b",
     flags=re.IGNORECASE,
 )
 _VISIBLE_RESULT_RE = re.compile(
@@ -151,7 +152,7 @@ _PRODUCT_TITLE_TERMINALS = frozenset(
 )
 _PRODUCT_IDENTITY_DECLARATION_RE = re.compile(rf"^(?:{_TITLE_PHRASE})\s+is\s+for\b")
 _CREATE_REQUEST_WRAPPER_RE = re.compile(
-    r"^(?:build|create|design|draft|generate|make|prepare|propose)\b",
+    r"^(?:(?:build|create|design|draft|generate|make|propose)\b|prepare\s+(?:a|an|the)\b)",
     flags=re.IGNORECASE,
 )
 _FINITE_ACTION_PATTERN = action_verb_pattern(include_base=False, include_finite=True)
@@ -183,25 +184,25 @@ _NAMED_PRODUCT_HELPER_TAIL_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _NAMED_ROLE_RE = re.compile(
-    r"\b(?:[Aa]|[Aa]n|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
+    r"\b(?P<article>[Aa]n?|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
     r"(?:named\s+)?(?P<name>[A-Z][A-Za-z0-9'/-]*)\s+"
     rf"(?:{_FINITE_ACTION_PATTERN})\b",
 )
 _ROLE_NAMED_PERSON_RE = re.compile(
-    r"\b(?:[Aa]|[Aa]n|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+named\s+"
+    r"\b(?P<article>[Aa]n?|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+named\s+"
     r"(?P<name>[A-Z][A-Za-z0-9'/-]*)\b",
 )
 _ROLE_COMMA_PERSON_RE = re.compile(
-    r"\b(?:[Aa]|[Aa]n|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?),\s+"
+    r"\b(?P<article>[Aa]n?|[Tt]he)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?),\s+"
     r"(?P<name>[A-Z][A-Za-z0-9'/-]*),\s+"
     rf"(?:{_FINITE_ACTION_PATTERN})\b",
 )
 _PERSON_ROLE_RE = re.compile(
-    r"\b(?P<name>[A-Z][A-Za-z0-9'/-]*)\s+(?:works\s+as|is)\s+(?:[Aa]|[Aa]n|[Tt]he)\s+"
+    r"\b(?P<name>[A-Z][A-Za-z0-9'/-]*)\s+(?:works\s+as|is)\s+(?P<article>[Aa]n?|[Tt]he)\s+"
     r"(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)(?:\s+(?:in|using)\b|[.!?:])",
 )
 _FOR_ROLE_PERSON_RE = re.compile(
-    r"\bfor\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
+    r"\bfor\s+(?!(?:example|instance)\b)(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
     r"(?P<name>[A-Z][A-Za-z0-9'/-]*)\b",
 )
 _INVALID_ROLE_TRAILING_RE = re.compile(r"\b(?:at|for|from|in|on|to|with|within)$", flags=re.IGNORECASE)
@@ -249,14 +250,14 @@ _DOMAIN_LABEL_RE = re.compile(
 def structured_prompt_facts(value: str) -> StructuredPromptFacts:
     """Recover explicit facts from JSON, Markdown tables, or labeled rows."""
 
-    text = str(value or "").strip()
+    text = rankable_prompt_evidence_text(value)
     if not text:
         return StructuredPromptFacts()
     mapping = prompt_field_mapping(text)
     natural_actor, natural_action, natural_actor_is_human, actor_owned_action = _natural_actor_action(text)
     title = _explicit_domain_label(text) or _first_field(mapping, _TITLE_FIELDS)
     actors = _structured_actor_values(mapping)
-    actor = (actors[0] if actors else "") or natural_actor
+    actor = (actors[0] if actors else _named_product_helper_actor(text) or _explicit_person_actor(text)) or natural_actor
     actor_is_human = _structured_actor_is_human(
         actor=actor,
         natural_actor_is_human=natural_actor_is_human,
@@ -297,11 +298,23 @@ def structured_prompt_facts(value: str) -> StructuredPromptFacts:
 def ranked_first_path_evidence(value: str) -> str:
     """Return the complete ordered workflow evidence, not one high-scoring sentence."""
 
+    value = rankable_prompt_evidence_text(value)
+    numbered_steps = contiguous_ordered_list_steps(value)
+    numbered_path = ". ".join(numbered_steps)
+    numbered_model = first_path_model(numbered_path)
+    if len(numbered_steps) >= 2 and numbered_model.material_action and numbered_model.visible_outcome:
+        return numbered_path
     structured = structured_prompt_facts(value)
     rows = _narrative_rows(value)
     if not rows:
         return structured.first_path
+    evidence_steps = tuple(clause for row in rows for clause in _embedded_evidence_clauses(row))
+    evidence_path = ". ".join(evidence_steps)
+    evidence_model = first_path_model(evidence_path)
+    if len(evidence_steps) >= 2 and evidence_model.material_action and evidence_model.visible_outcome:
+        return evidence_path
     ordered: list[str] = []
+    ordered_indices: list[int] = []
     candidates: list[tuple[int, int, str]] = []
     for index, row in enumerate(rows):
         workflow_row = _without_external_dependency_steps(
@@ -312,6 +325,7 @@ def ranked_first_path_evidence(value: str) -> str:
             candidates.append((score, -index, workflow_row))
             if score >= 12 and _is_ordered_workflow_row(workflow_row):
                 ordered.append(workflow_row)
+                ordered_indices.append(index)
         for workflow in _embedded_workflow_clauses(row):
             workflow = _without_external_dependency_steps(workflow)
             if workflow:
@@ -332,34 +346,39 @@ def ranked_first_path_evidence(value: str) -> str:
             elif not _hard_non_path(rows[index + 1]):
                 combined = f"{workflow_row}. {rows[index + 1]}"
                 candidates.append((_path_score(combined), -index, combined))
+    ordered_candidate = ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
+    ordered_model = first_path_model(ordered_candidate)
     if structured.first_path:
         contract = structured.first_path_contract
+        person_actor = _explicit_person_actor(value)
+        handoff_actor = structured.actor if prompt_field_mapping(value) else person_actor or structured.actor
         if contract and contract.complete:
             candidate = (
-                contract.actor_handoff_path_from_rows(ordered, actor=structured.actor)
+                contract.actor_handoff_path_from_rows(ordered, actor=handoff_actor)
                 or contract.actor_owned_path_from_rows(ordered)
                 or structured.first_path
             )
             return _command_audience_path(value, candidate=candidate) or candidate
-        person_actor = _explicit_person_actor(value)
-        handoff_candidate = (
-            contract.actor_handoff_path_from_rows(ordered, actor=person_actor)
-            if contract and person_actor
-            else ""
-        )
+        handoff_candidate = contract.actor_handoff_path_from_rows(ordered, actor=person_actor) if contract else ""
         if handoff_candidate:
             return _command_audience_path(value, candidate=handoff_candidate) or handoff_candidate
-        anchor_terms = set(ordered_terms(structured.first_path, minimum=3, stopwords=("first", "path")))
         structured_has_action = bool(
-            structured.first_path_contract
-            and any(
-                event.kind in {"action", "start"}
-                for event in structured.first_path_contract.events
-            )
+            contract and any(event.kind in {"action", "start"} for event in contract.events)
         )
+        if (
+            len(ordered) >= 2
+            and ordered_indices == list(range(ordered_indices[0], ordered_indices[-1] + 1))
+            and not structured_has_action
+            and ordered_model.material_action
+            and ordered_model.visible_outcome
+        ):
+            return _command_audience_path(value, candidate=ordered_candidate) or ordered_candidate
+        anchor_terms = set(ordered_terms(structured.first_path, minimum=3, stopwords=("first", "path")))
         minimum_steps = 2 if structured_has_action else 1
         richer_rows: list[str] = []
-        for row in ordered:
+        structured_source = (structured.first_path,) if structured.actor else ()
+        richer_sources = dict.fromkeys([*structured_source, *ordered, *(candidate[2] for candidate in candidates)])
+        for row in richer_sources:
             row_model = first_path_model(row)
             if (
                 len(row_model.steps) >= minimum_steps
@@ -370,8 +389,7 @@ def ranked_first_path_evidence(value: str) -> str:
         candidate = max(richer_rows, key=_path_score) if richer_rows else structured.first_path
         return _command_audience_path(value, candidate=candidate) or candidate
     if ordered:
-        candidate = ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
-        return _command_audience_path(value, candidate=candidate) or candidate
+        return _command_audience_path(value, candidate=ordered_candidate) or ordered_candidate
     score, _position, candidate = max(candidates, default=(0, 0, ""))
     if score < 12:
         return ""
@@ -402,7 +420,9 @@ def _command_audience_actor(value: str) -> str:
             sentence.strip(" ."),
             flags=re.IGNORECASE,
         )
-        actor = match.group("actor").strip(" .") if match else ""
+        actor = re.sub(
+            r"^(?:a|an|the)\s+", "", match.group("actor"), flags=re.IGNORECASE
+        ).strip(" .") if match else ""
         if actor and _credible_structured_actor(actor):
             return actor
     return ""
@@ -630,7 +650,8 @@ def explicit_actor_evidence(value: str) -> str:
     if command_actor:
         return command_actor
     ranked = ranked_first_path_evidence(value)
-    for source in tuple(dict.fromkeys(item for item in (ranked, str(value or "")) if item)):
+    rankable = rankable_prompt_evidence_text(value)
+    for source in tuple(dict.fromkeys(item for item in (ranked, rankable) if item)):
         person_actor = _explicit_person_actor(source)
         if person_actor:
             return person_actor
@@ -659,12 +680,8 @@ def _explicit_person_actor(value: str) -> str:
 
 
 def _person_actor_candidate(*, pattern: re.Pattern[str], match: re.Match[str]) -> str:
-    role = re.sub(
-        r"^(?:a|an|the)\s+",
-        "",
-        match.group("role"),
-        flags=re.IGNORECASE,
-    ).strip(" ,")
+    article = str(match.groupdict().get("article") or "").casefold()
+    role = f"{article} {match.group('role')}".strip(" ,")
     if _INVALID_ROLE_TRAILING_RE.search(role):
         return ""
     candidate = named_actor_phrase(name=match.group("name"), role=role)
@@ -709,6 +726,9 @@ def _pattern_actor_is_human(*, match: re.Match[str], candidate: str) -> bool:
 
 
 def _named_product_helper_actor(value: str) -> str:
+    owned_actor, _action = owned_disposition_workflow_actor_action(value)
+    if owned_actor:
+        return owned_actor
     match = _NAMED_PRODUCT_HELPER_TAIL_RE.search(value)
     if not match:
         return ""
@@ -730,8 +750,7 @@ def _named_product_helper_actor(value: str) -> str:
 def _has_actor_label_signal(value: str) -> bool:
     words = re.findall(r"[A-Za-z][A-Za-z'/-]*", value)
     return bool(
-        words
-        and not has_non_human_actor_signal(value)
+        words and not has_non_human_actor_signal(value)
         and (has_human_actor_role_signal(value) or looks_actor_term(words[-1]))
     )
 
@@ -893,9 +912,7 @@ def _natural_actor_action(value: str) -> tuple[str, str, bool, bool]:
             actor = match.group("actor").strip(" ,")
             explicit_human = bool(match.groupdict().get("human_connector"))
             actor_is_human = bool(
-                explicit_human
-                or has_human_actor_signal(actor)
-                or has_human_actor_role_signal(actor)
+                explicit_human or has_human_actor_signal(actor) or has_human_actor_role_signal(actor)
             )
             return actor, match.group("action").strip(" ,"), actor_is_human, False
     actor, action = _explicit_person_actor_action(value)
@@ -974,7 +991,8 @@ def _narrative_rows(value: str) -> list[str]:
 
 def is_labeled_non_path_evidence(value: str) -> bool:
     label, separator, _body = str(value or "").partition(":")
-    return bool(separator and prompt_field_key(label) in _NON_PATH_NARRATIVE_LABELS)
+    excluded = _NON_PATH_NARRATIVE_LABELS | set(_ACTOR_FIELDS) | set(_TITLE_FIELDS)
+    return bool(separator and prompt_field_key(label) in excluded)
 
 
 def _without_confirmed_direction_title(value: str) -> str:
@@ -1029,10 +1047,11 @@ def _embedded_workflow_clauses(value: str) -> tuple[str, ...]:
 
 
 def _embedded_evidence_clauses(value: str) -> tuple[str, ...]:
-    if contains_word_sense_metadata_clause(value):
+    if contains_word_sense_metadata_clause(value) and not re.match(r"^document\s+\w+\s+", value, re.I):
         return ()
     pattern = re.compile(
-        r"\b(?:the\s+)?(?:request|prompt|source)\s+(?:says|states|mentions|describes)"
+        r"\b(?:(?:the\s+)?(?:request|prompt|source)|document\s+\w+)\s+"
+        r"(?:says|states|mentions|describes|reports|confirms)"
         r"(?:\s+that)?\s+(?P<clause>.+)$",
         flags=re.IGNORECASE,
     )
@@ -1041,8 +1060,7 @@ def _embedded_evidence_clauses(value: str) -> tuple[str, ...]:
         clause = _without_word_sense_comparison_tail(match.group("clause").strip(" ."))
         has_subject_action = bool(
             _VISIBLE_RESULT_RE.search(clause)
-            or _APPOSITIVE_ACTOR_RE.search(clause)
-            or _NAMED_ROLE_RE.search(clause)
+            or has_human_actor_signal(clause)
             or leading_actor_action_match(clause)
         )
         if clause and has_subject_action and not _hard_non_path(clause):
@@ -1112,6 +1130,7 @@ def _hard_non_path(value: str) -> bool:
         or contains_requirement_control_clause(value)
         or contains_word_sense_metadata_clause(value)
         or _is_historical_revision_clause(value)
+        or is_discarded_evidence_clause(value)
         or _is_descriptive_state_clause(value)
     )
 

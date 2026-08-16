@@ -15,6 +15,7 @@ PROMPT_FIELD_NAMES = (
     "action",
     "actor",
     "actors",
+    "access boundary",
     "assumption",
     "assumptions",
     "constraint",
@@ -30,6 +31,7 @@ PROMPT_FIELD_NAMES = (
     "external system",
     "external systems",
     "first complete path",
+    "first action",
     "first path",
     "first path is fixed",
     "first user",
@@ -42,6 +44,7 @@ PROMPT_FIELD_NAMES = (
     "operator",
     "operator role",
     "output",
+    "owner",
     "path",
     "product",
     "product name",
@@ -56,6 +59,7 @@ PROMPT_FIELD_NAMES = (
     "source",
     "sources",
     "state",
+    "state change",
     "state model",
     "system",
     "systems",
@@ -70,7 +74,15 @@ PROMPT_FIELD_NAMES = (
     "users",
     "visible result",
     "workflow",
+    "boundary",
 )
+_PROMPT_FIELD_ALIASES = {
+    "access boundary": "constraint",
+    "boundary": "constraint",
+    "first action": "action",
+    "owner": "actor",
+    "state change": "state",
+}
 _INLINE_FIELD_RE = re.compile(
     r"(?<![A-Za-z0-9])(?:\*\*)?(?P<key>"
     + "|".join(re.escape(field) for field in sorted(PROMPT_FIELD_NAMES, key=len, reverse=True))
@@ -85,10 +97,11 @@ def prompt_field_mapping(value: Any) -> dict[str, Any]:
     text = str(value or "").strip()
     if not text:
         return {}
-    structured, is_json = _json_payload(text)
+    structured, trailing_text, is_json = _json_payload(text)
     if is_json:
         fields: dict[str, Any] = {}
         _collect_json_fields(structured, fields)
+        _merge_text_fields(trailing_text, fields)
         return fields
     fields = _markdown_field_mapping(text)
     for key, item in _inline_field_mapping(text).items():
@@ -114,17 +127,29 @@ def prompt_field_values(value: Any, *, names: Sequence[str]) -> tuple[str, ...]:
 
 
 def prompt_field_key(value: Any) -> str:
-    return " ".join(str(value or "").casefold().replace("_", " ").split())
+    key = " ".join(str(value or "").casefold().replace("_", " ").split())
+    return _PROMPT_FIELD_ALIASES.get(key, key)
 
 
-def _json_payload(value: str) -> tuple[Any, bool]:
+def _json_payload(value: str) -> tuple[Any, str, bool]:
     if not value.startswith(("{", "[")):
-        return None, False
+        return None, value, False
     try:
-        payload = json.loads(value)
+        payload, end = json.JSONDecoder().raw_decode(value)
     except (TypeError, ValueError, json.JSONDecodeError):
-        return None, False
-    return payload, isinstance(payload, (Mapping, list, tuple))
+        return None, value, False
+    structured = isinstance(payload, (Mapping, list, tuple))
+    return payload, value[end:].strip(), structured
+
+
+def _merge_text_fields(value: str, fields: dict[str, Any]) -> None:
+    if not value:
+        return
+    trailing_fields = _markdown_field_mapping(value)
+    for key, item in _inline_field_mapping(value).items():
+        trailing_fields.setdefault(key, item)
+    for key, item in trailing_fields.items():
+        _merge_field_value(fields, key=key, value=item)
 
 
 def _collect_json_fields(value: Any, fields: dict[str, Any]) -> None:

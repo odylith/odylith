@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     preserve_first_path_signal_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
@@ -151,6 +152,13 @@ def _confirmed_system_components(
     for index, system in enumerate(internal_systems, start=1):
         name = system_component_name(confirmed_system_name(system))
         description = confirmed_system_description(system).replace("/", " and ")
+        responsibility = _transition_support_axis_responsibility(
+            name=name,
+            description=description,
+            first_path=first_path,
+            state_object=state_object,
+            dependencies=external_systems or [],
+        ) or _responsibility(name=name, description=description)
         name = _enriched_component_name(name=name, description=description, state_object=state_object)
         component_slug = slugify(name) or f"{label_slug}-component-{index}"
         if not component_slug.startswith(label_slug) and len(component_slug.split("-")) <= 2:
@@ -159,7 +167,6 @@ def _confirmed_system_components(
             component_id = component_slug
         component_id = _dedupe_slug_tokens(component_id)
         kind = system_kind(name, description, external_systems=external_systems or [])
-        responsibility = _responsibility(name=name, description=description)
         row: dict[str, Any] = {
             "component_id": _unique_component_id(component_id, rows, index),
             "label": _component_label(name, kind),
@@ -267,6 +274,29 @@ def _differentiate_duplicate_component_labels(
         row["intended_path"] = f"src/{path_slug}/{_path_slug(row['component_id'])}"
         used_labels.add(_label_key(replacement))
         rewritten.append(row)
+
+
+def _transition_support_axis_responsibility(
+    *, name: str, description: str, first_path: str, state_object: str, dependencies: list[str]
+) -> str:
+    if "support" not in name.casefold():
+        return ""
+    transition = re.search(
+        r"\b(?:move|moves|change|changes|transition|transitions)\s+from\b[^.;]{1,100}\bto\b[^.;]{1,80}",
+        description,
+        flags=re.IGNORECASE,
+    )
+    if not transition:
+        return ""
+    model = first_path_model(first_path)
+    state = _domain_object_label(state_object, fallback="")
+    clauses = [f"Owns {state} state while it {transition.group(0)}"] if state else []
+    if model.visible_outcome:
+        clauses.append(f"keeps evidence that {model.visible_outcome.casefold()} visible")
+    dependency_text = ", ".join(str(item).strip(" .") for item in dependencies if str(item).strip(" ."))
+    if dependency_text:
+        clauses.append(f"depends on {dependency_text}")
+    return "; ".join(clauses).strip(" ;")
 
 
 def _local_component_label(row: Mapping[str, Any]) -> str:

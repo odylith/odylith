@@ -644,6 +644,15 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-08-15: Separated independent synthetic holdout identity from source-provenanced metamorphic identity. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-323`, `CB-325`; Diagram: D-043)
+  Source-provenanced pairs still require one source ID and artifact hash.
+  Independently authored synthetic pairs instead prove a single sealed author,
+  derivation method, prompt hash, group, and transform identity; mixed tiers
+  fail closed and provenance is never fabricated. The consumed 24-case v3
+  holdout is retired as disclosed regression evidence, not reusable release
+  proof. Release readiness now requires a newly frozen, independently reviewed,
+  untouched one-shot holdout after exact installed-candidate proof is green.
+
 - 2026-08-03: Moved canonical full-suite pytest execution behind deterministic fresh-process shards after a long-lived Python 3.13 process emitted order-dependent failures and terminated with `SIGBUS`. The runner preserves collected order, reports every failed or signaled shard, continues the remaining corpus, and returns one fail-closed aggregate verdict. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-308`)
 - 2026-07-05: Proved the retained final local-installable dist through strict installed release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
   Release proof for

@@ -41,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import markdown_section_text
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import operator_context_from_product_text
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import product_intent_source_text
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import rankable_prompt_evidence_text
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import request_words
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import strip_leading_contextual_gerund_sentence
@@ -57,6 +58,7 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretati
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_values
 from odylith.runtime.domain_intelligence.greenfield_request_context_title import contextual_product_title
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import source_owned_path_evidence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import REQUEST_REPORTING_VERBS
 from odylith.runtime.domain_intelligence.greenfield_word_sense_metadata import WORD_SENSE_REPORTING_CONTENT_VERBS
@@ -222,7 +224,7 @@ def prompt_project_title_source(value: str) -> str:
 def prompt_intent_source(value: str) -> PromptIntentSource:
     """Return shared title and first-path sources for thin prompt recovery."""
 
-    original_intent = product_intent_source_text(value)
+    original_intent = rankable_prompt_evidence_text(product_intent_source_text(value))
     structured_facts = structured_prompt_facts(original_intent)
     has_structured_fields = bool(prompt_field_mapping(original_intent))
     explicit_first_path = markdown_section_text(
@@ -234,10 +236,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     )
     text = without_leading_explicit_intent_label(text)
     product_text = without_source_metadata_clauses(text)
-    ranked_first_path = strip_trailing_operator_instruction_sentences(
-        ranked_first_path_evidence(original_intent)
-    )
+    ranked_first_path = strip_trailing_operator_instruction_sentences(ranked_first_path_evidence(original_intent))
     explicit_actor = explicit_actor_evidence(original_intent)
+    source_owned = source_owned_path_evidence(product_text, ranked_first_path=ranked_first_path)
     explicit_title = explicit_product_title_evidence(original_intent)
     operator_context = operator_context_from_product_text(product_text)
     words = request_words(product_text)
@@ -247,7 +248,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     need_actor, need_action = need_product_actor_action(product_text)
     need_first_path = f"{need_actor} can {need_action}" if need_actor and need_action else ""
     grant_actor, grant_first_path = _path_grant_actor_action(product_text)
-    if grant_actor and not grant_first_path:
+    if grant_actor and not grant_first_path and not _first_path_actor_candidate(ranked_first_path):
         ranked_rows = sentence_fragments(ranked_first_path)
         if len(ranked_rows) > 1:
             ranked_first_path = ". ".join(ranked_rows[1:])
@@ -351,15 +352,17 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             if direct_actor_owns_output_path
             and structured_facts.first_path_contract
             and structured_facts.first_path_contract.output_only
+            and direct_step_count >= ranked_step_count
             else ""
         )
+        or source_owned.first_path
+        or complete_ranked_first_path
         or preferred_complete_structured_path
         or need_first_path
         or grant_handoff_first_path
         or role_bound_first_path
         or preferred_role_context_path
         or preferred_who_relative_path
-        or complete_ranked_first_path
         or complete_structured_first_path
         or explicit_first_path
         or grant_first_path
@@ -382,6 +385,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             candidate
             for candidate in (
                 grant_actor,
+                source_owned.actor,
                 structured_facts.actor,
                 workflow_actor,
                 multi_role_actor,
@@ -413,6 +417,47 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             resolved_actor = recovered_actor
             if first_path_action and _actor_recovery_needs_canonical_path(first_path, recovery_kind=recovery_kind):
                 first_path = f"{recovered_actor} can {first_path_action}".strip(" .")
+    path_actor = _first_path_actor_candidate(first_path)
+    if not path_actor and (pronoun := re.match(r"^(?:he|she|they)\b", first_path, flags=re.IGNORECASE)):
+        path_actor = pronoun.group(0)
+    resolved_key = _strip_leading_actor_article(resolved_actor).casefold()
+    explicit_key = _strip_leading_actor_article(explicit_actor).casefold()
+    if resolved_key and "," not in explicit_actor and explicit_key.endswith(f" {resolved_key}"):
+        resolved_actor = _strip_leading_actor_article(explicit_actor)
+        resolved_key = resolved_actor.casefold()
+    path_actor_key = _strip_leading_actor_article(path_actor).casefold()
+    actor_is_shorthand = bool(
+        path_actor_key
+        and resolved_key
+        and (
+            path_actor_key in {"he", "she", "they"}
+            or resolved_key == path_actor_key
+            or resolved_key.endswith(f" {path_actor_key}")
+        )
+    )
+    if actor_is_shorthand and resolved_key != path_actor_key:
+        qualified_actor = _strip_leading_actor_article(resolved_actor)
+        pronoun_actor = path_actor_key in {"he", "she", "they"}
+        replacement = f"The {qualified_actor} can" if pronoun_actor else f"The {qualified_actor}"
+        actor_pattern = (
+            rf"^(?:(?:a|an|the)\s+)?{re.escape(path_actor)}(?:\s+can)?\b"
+            if pronoun_actor
+            else rf"^(?:(?:a|an|the)\s+)?{re.escape(path_actor)}\b"
+        )
+        first_path = re.sub(
+            actor_pattern,
+            replacement,
+            first_path,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    elif (
+        resolved_key
+        and not path_actor
+        and not has_human_actor_signal(first_path.partition(".")[0])
+        and looks_like_action_clause(first_path)
+    ):
+        first_path = f"The {_strip_leading_actor_article(resolved_actor)} can {first_path}"
     structured_contract = structured_facts.first_path_contract
     structured_actor_owns_path = bool(
         structured_contract
@@ -437,7 +482,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         first_path=first_path,
         command_led=command_led,
         actor=resolved_actor,
-        actor_action=(structured_contract.primary_actor_action if structured_actor_owns_path else ""),
+        actor_action=structured_contract.primary_actor_action if structured_actor_owns_path else source_owned.action if resolved_actor.casefold() == source_owned.actor.casefold() else "",
         actor_label=(structured_contract.actor_label if structured_actor_owns_path else ""),
         actor_subject=(structured_contract.actor_subject if structured_actor_owns_path else ""),
         state_action=(structured_contract.primary_state_action if structured_actor_owns_path else ""),
@@ -722,6 +767,13 @@ def _explicit_human_actor_action(value: str) -> tuple[str, str, str]:
             maxsplit=1,
             flags=re.IGNORECASE,
         )[0]
+        owned_words = request_words(owned_action)
+        if (
+            len(owned_words) >= 2
+            and word_key(owned_words[0]).endswith("ly")
+            and looks_like_action_clause(" ".join(owned_words[1:]))
+        ):
+            owned_action = " ".join(owned_words[1:])
         actor_source = " ".join(actor_words)
         actor = _strip_leading_actor_article(actor_source)
         if not has_human_actor_action_context(actor_source, owned_action):
@@ -1007,6 +1059,14 @@ def _non_human_subject_relative_action(value: str) -> str:
 
 
 def _path_grant_actor_action(value: str) -> tuple[str, str]:
+    audience = re.match(
+        r"^(?:give|provide)\s+(?P<actor>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9'/-]*)\s+"
+        r"(?:a|an|the)\s+",
+        clean_markdown_text(value).strip(),
+        flags=re.IGNORECASE,
+    )
+    if audience and has_human_actor_role_signal(audience.group("actor")):
+        return _strip_leading_actor_article(audience.group("actor")), ""
     words = request_words(value)
     lowered = [word_key(word) for word in words]
     actor_candidate = ""

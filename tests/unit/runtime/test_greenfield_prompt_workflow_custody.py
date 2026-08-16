@@ -43,6 +43,11 @@ def test_prompt_source_preserves_complete_workflow_and_separates_prohibition() -
 
     assert source.title == "Northstar"
     assert source.actor == "Mina, the quality lead"
+    assert source.first_path.startswith("Mina, the quality lead, can receive inspection alerts")
+    assert hypothesis["human_actors"] == (
+        "Mina, the quality lead: needs the product to receive inspection alerts and attach field evidence "
+        "and keep the result visible and reviewable",
+    )
     assert "receive inspection alerts" in source.first_path
     assert "routes a review request" in source.first_path
     assert "blocked state" in source.first_path
@@ -50,6 +55,40 @@ def test_prompt_source_preserves_complete_workflow_and_separates_prohibition() -
     assert "requests owner approval" in source.first_path
     assert "activate equipment remotely" not in source.first_path
     assert hypothesis["non_goals"] == ("It must not activate equipment remotely",)
+
+
+def test_prompt_source_excludes_a_continuation_scoped_to_another_actor() -> None:
+    prompt = (
+        "FieldDesk helps Talia, an inventory steward, receive stock alerts. "
+        "The product records a stock alert for another steward. "
+        "The routine path publishes a signed decision."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.first_path.startswith("Talia, an inventory steward, can receive stock alerts")
+    assert "another steward" not in source.first_path
+    assert "routine path publishes a signed decision" in source.first_path
+
+
+@pytest.mark.parametrize(
+    ("prompt", "expected_actor"),
+    (
+        ("Mina, the quality lead, reviews an inspection and sees a signed report.", "Mina, the quality lead"),
+        ("Mara, a hatchery technician, records an inspection and sees a shift report.", "Mara, a hatchery technician"),
+        ("Nia, an operations analyst, reviews an exception and sees an audit report.", "Nia, an operations analyst"),
+    ),
+)
+def test_explicit_appositive_actor_article_survives_every_workflow_projection(
+    prompt: str,
+    expected_actor: str,
+) -> None:
+    source = prompt_intent_source(prompt)
+    hypothesis = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
+
+    assert source.actor == expected_actor
+    assert source.first_path.startswith(f"{expected_actor}, can ")
+    assert tuple(str(row).partition(":")[0] for row in hypothesis["human_actors"]) == (expected_actor,)
 
 
 def test_terminal_deliverable_completes_a_multi_action_first_path(tmp_path: Path) -> None:

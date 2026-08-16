@@ -57,6 +57,10 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materiality im
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     explicit_material_clarification,
 )
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import boundary_is_product_context
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
+    boundary_source_identity_clarification,
+)
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
     source_boundary_facts_from_evidence,
 )
@@ -66,6 +70,7 @@ from odylith.runtime.domain_intelligence.greenfield_material_clarification impor
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     material_clarification_for_fields,
 )
+from odylith.runtime.domain_intelligence.greenfield_material_clarification import materialization_evidence_text
 from odylith.runtime.domain_intelligence.greenfield_material_clarification import (
     has_explicit_visible_result,
 )
@@ -115,28 +120,57 @@ def materialize_prompt_intent_hypothesis(
     if not prompt.strip():
         raise prompt_only_material_decision_error()
     raw_edit = _without_edit_command(edit_evidence)
-    material_clarification = explicit_material_clarification(prompt=prompt, edit_evidence=raw_edit)
+    interpretation_prompt = materialization_evidence_text(prompt)
+    interpretation_edit = materialization_evidence_text(raw_edit)
+    material_clarification = explicit_material_clarification(
+        prompt=interpretation_prompt,
+        edit_evidence=interpretation_edit,
+    )
     if material_clarification:
         raise GreenfieldClarificationRequired(
             material_clarification.question,
             required_fields=material_clarification.required_fields,
         )
-    if _requires_actor_clarification(prompt=prompt, edit_evidence=raw_edit):
+    if _requires_actor_clarification(prompt=interpretation_prompt, edit_evidence=interpretation_edit):
         raise prompt_actor_material_decision_error()
-    if _requires_first_path_clarification(prompt=prompt, edit_evidence=raw_edit):
-        clarification = incomplete_path_clarification(prompt=prompt, edit_evidence=raw_edit)
+    if _requires_first_path_clarification(prompt=interpretation_prompt, edit_evidence=interpretation_edit):
+        clarification = incomplete_path_clarification(
+            prompt=interpretation_prompt,
+            edit_evidence=interpretation_edit,
+        )
         raise GreenfieldClarificationRequired(
             clarification.question,
             required_fields=clarification.required_fields,
         )
-    source = prompt_intent_source(prompt)
-    boundary_evidence = "\n".join(value for value in (prompt, raw_edit) if value.strip())
+    source = prompt_intent_source(interpretation_prompt)
+    boundary_evidence = "\n".join(
+        value for value in (interpretation_prompt, interpretation_edit) if value.strip()
+    )
     boundary_facts = source_boundary_facts_from_evidence(boundary_evidence)
+    source_identity_clarification = next(
+        (
+            clarification
+            for fact in boundary_facts
+            if fact.confidence == "source"
+            and (
+                clarification := boundary_source_identity_clarification(
+                    fact.label,
+                    evidence=boundary_evidence,
+                )
+            )
+        ),
+        None,
+    )
+    if source_identity_clarification:
+        raise GreenfieldClarificationRequired(
+            source_identity_clarification.question,
+            required_fields=source_identity_clarification.required_fields,
+        )
     product_owned_boundaries = tuple(
         fact.label
         for fact in boundary_facts
         if fact.confidence == "ambiguous"
-        and _boundary_is_product_context(fact.label, evidence=boundary_evidence, source=source)
+        and boundary_is_product_context(fact.label, evidence=boundary_evidence)
     )
     ambiguous_boundary = next(
         (
@@ -152,7 +186,7 @@ def materialize_prompt_intent_hypothesis(
             ambiguous_boundary.ambiguity,
             required_fields=("external_systems",),
         )
-    hypothesis = intent_hypothesis_from_operator_evidence(prompt, prefer_product_title=True)
+    hypothesis = intent_hypothesis_from_operator_evidence(interpretation_prompt, prefer_product_title=True)
     if not source.title:
         outcome_title = recovered_title(first_path_model(source.first_path).visible_outcome)
         recovered_fallback = _preferred_implicit_title(
@@ -162,21 +196,21 @@ def materialize_prompt_intent_hypothesis(
         hypothesis = _retitle_recompiled_intent(hypothesis, title=recovered_fallback)
     baseline = normalize_confirmed_intent(
         hypothesis,
-        prompt=prompt,
+        prompt=interpretation_prompt,
         fallback_title=fallback_title,
         allow_prompt_validation_recovery=False,
     )
     uses_title_only_first_path_hypothesis = _uses_title_only_first_path_hypothesis(
-        prompt=prompt,
-        edit_evidence=raw_edit,
+        prompt=interpretation_prompt,
+        edit_evidence=interpretation_edit,
     )
     if uses_title_only_first_path_hypothesis:
         _add_title_hypothesis_assumption(baseline)
     root = Path(repo_root).expanduser().resolve()
     intent = _merge_edit_evidence(
         baseline=baseline,
-        prompt=prompt,
-        edit_evidence=raw_edit,
+        prompt=interpretation_prompt,
+        edit_evidence=interpretation_edit,
         fallback_title=fallback_title,
     )
     _add_product_boundary_assumptions(
@@ -189,7 +223,10 @@ def materialize_prompt_intent_hypothesis(
     )
     if uses_title_only_first_path_hypothesis:
         _add_title_hypothesis_assumption(intent)
-    if _uses_actorless_workflow_assumption(prompt=prompt, edit_evidence=raw_edit):
+    if _uses_actorless_workflow_assumption(
+        prompt=interpretation_prompt,
+        edit_evidence=interpretation_edit,
+    ):
         _add_first_user_assumption(intent)
     evidence_source = combined_prompt_evidence_source(prompt=prompt, edit_evidence=raw_edit)
     intent = restore_source_casing_in_public_copy(intent, source_text=evidence_source)
@@ -205,7 +242,7 @@ def materialize_prompt_intent_hypothesis(
             rows=actor_rows,
         )
         intent["human_actors"] = canonical_actor_rows
-        source_first_path = prompt_intent_source(prompt).first_path if not raw_edit else ""
+        source_first_path = prompt_intent_source(interpretation_prompt).first_path if not raw_edit else ""
         if source_first_path and len(first_path_model(source_first_path).steps) >= 2:
             intent["first_path"] = _sentence_start(source_first_path).rstrip(" .") + "."
         else:
@@ -348,6 +385,15 @@ def _requires_actor_clarification(*, prompt: str, edit_evidence: str) -> bool:
     source = prompt_intent_source(evidence)
     explicit_actor = explicit_actor_evidence(evidence)
     explicit_human_grammar = explicit_actor_has_human_grammar(evidence)
+    if (
+        explicit_actor
+        and source.actor
+        and set(re.findall(r"[a-z0-9]+", source.actor.casefold()))
+        <= set(re.findall(r"[a-z0-9]+", explicit_actor.casefold()))
+        and first_path_model(source.first_path).material_action
+        and has_explicit_visible_result(source.first_path)
+    ):
+        return False
     if starts_with_automated_actor(prompt) and not (
         explicit_actor
         and (has_human_actor_signal(explicit_actor) or explicit_human_grammar)
@@ -439,7 +485,10 @@ def _uses_actorless_workflow_assumption(*, prompt: str, edit_evidence: str) -> b
 
 def _title_supports_first_path_hypothesis(evidence: str) -> bool:
     source = prompt_intent_source(evidence)
-    return title_supports_conservative_first_path(title=source.title, evidence=evidence)
+    return bool(
+        not first_path_model(source.first_path).material_action
+        and title_supports_conservative_first_path(title=source.title, evidence=evidence)
+    )
 
 
 def _add_title_hypothesis_assumption(intent: dict[str, Any]) -> None:
@@ -468,25 +517,6 @@ def _add_product_boundary_assumptions(intent: dict[str, Any], *, labels: tuple[s
     intent["assumptions"] = [*assumptions, *(row for row in additions if row not in assumptions)]
 
 
-def _boundary_is_product_context(label: str, *, evidence: str, source: Any) -> bool:
-    """Resolve a named workspace only when the accepted actor/path grammar owns it."""
-
-    label_key = clean_markdown_text(label).casefold()
-    if not label_key or not source.actor:
-        return False
-    if label_key in clean_markdown_text(source.first_path).casefold():
-        return True
-    product_request = re.compile(
-        r"\b(?:build|create|design|make)\b[^.!?]{0,100}\bproduct\b[^.!?]{0,120}\bfor\b"
-        r"[^.!?]{0,120}(?:\b(?:who|that)\s+(?:need|needs|want|wants)\s+to\b|\bto\b)",
-        flags=re.IGNORECASE,
-    )
-    return any(
-        label_key in clean_markdown_text(sentence).casefold() and product_request.search(sentence)
-        for sentence in sentence_fragments(evidence)
-    )
-
-
 def _has_usable_first_path_evidence(evidence: str) -> bool:
     sections = confirmed_intent_sections(evidence)
     source = prompt_intent_source(evidence)
@@ -496,6 +526,8 @@ def _has_usable_first_path_evidence(evidence: str) -> bool:
         return True
     if _has_complete_path_evidence(evidence, primary=path, recovered=first_path_model(source.first_path)):
         return True
+    if not has_explicit_visible_result(path_source):
+        return False
     return bool(
         len(path.steps) >= 2
         or _has_explicit_single_step_actor_action(path_source)
@@ -1134,9 +1166,17 @@ def _without_edit_command(value: str) -> str:
 def combined_prompt_evidence_source(*, prompt: str, edit_evidence: str) -> str:
     """Render the exact staged evidence that pre-confirm authority seals."""
 
-    rows = [PRECONFIRM_STAGING_MARKER, "", "# Operator prompt evidence", "", prompt.strip()]
+    rows = [
+        PRECONFIRM_STAGING_MARKER,
+        "",
+        "# Operator prompt evidence",
+        "",
+        materialization_evidence_text(prompt, preserve_ignored=True),
+    ]
     if edit_evidence:
-        rows.extend(("", "# Operator edit evidence", "", edit_evidence.strip()))
+        rows.extend(
+            ("", "# Operator edit evidence", "", materialization_evidence_text(edit_evidence, preserve_ignored=True))
+        )
     return "\n".join(rows).rstrip() + "\n"
 
 

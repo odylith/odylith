@@ -20,6 +20,8 @@ _MODAL_GRAMMAR_SKIP_KEYS = frozenset(
         "link_state",
         "owner",
         "path",
+        "intended_path",
+        "intended_paths",
         "prompt",
         "prompt_source",
         "raw_prompt",
@@ -27,6 +29,7 @@ _MODAL_GRAMMAR_SKIP_KEYS = frozenset(
         "slug",
         "source",
         "source_path",
+        "source_paths",
         "source_text",
         "target_workstream_titles",
         "title",
@@ -85,7 +88,7 @@ def _skip_modal_grammar_repair_key(key: str) -> bool:
     text = key.casefold().strip()
     if text in _MODAL_GRAMMAR_SKIP_KEYS:
         return True
-    return text.endswith(("_id", "_ids", "_slug", "_path", "_paths"))
+    return text.endswith(("_id", "_ids", "_slug"))
 
 
 def _repair_modal_grammar_text(value: str) -> str:

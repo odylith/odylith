@@ -169,6 +169,64 @@ def test_output_contract_preserves_a_named_actor_to_product_handoff() -> None:
     assert "retain source notes" not in merged
 
 
+def test_named_product_grant_normalizes_only_an_exact_event_covered_actor_head() -> None:
+    contract = compile_structured_first_path(
+        actor="Talia, an inventory steward",
+        actor_is_human=True,
+        path_value="",
+        action_value="receive stock alerts",
+        output_value="a signed decision",
+        actor_owned_action=True,
+    )
+
+    covered = contract.actor_handoff_path_from_rows(
+        (
+            "FieldDesk helps Talia, an inventory steward, receive stock alerts",
+            "Talia routes a review request",
+            "The routine path publishes a signed decision",
+        ),
+        actor=contract.actor,
+    )
+    uncovered = contract.actor_handoff_path_from_rows(
+        (
+            "FieldDesk helps Talia, an inventory steward, route a review request",
+            "The product receives stock alerts and publishes a signed decision",
+        ),
+        actor=contract.actor,
+    )
+
+    assert covered.startswith("Talia, an inventory steward, can receive stock alerts")
+    assert "Talia routes a review request" in covered
+    assert uncovered.startswith("FieldDesk helps Talia, an inventory steward, route a review request")
+    assert contract.actor_handoff_path_from_rows(
+        ("FieldDesk helps Talia's inventory team receive stock alerts",),
+        actor=contract.actor,
+    ) == ""
+
+
+def test_named_product_grant_excludes_a_continuation_scoped_to_another_actor() -> None:
+    contract = compile_structured_first_path(
+        actor="Talia, an inventory steward",
+        actor_is_human=True,
+        path_value="",
+        action_value="receive stock alerts",
+        output_value="a signed decision",
+        actor_owned_action=True,
+    )
+
+    merged = contract.actor_handoff_path_from_rows(
+        (
+            "FieldDesk helps Talia, an inventory steward, receive stock alerts",
+            "The product records a stock alert for another steward",
+            "The routine path publishes a signed decision",
+        ),
+        actor=contract.actor,
+    )
+
+    assert "another steward" not in merged
+    assert "routine path publishes a signed decision" in merged
+
+
 def test_handoff_does_not_consume_required_path_control_after_the_visible_outcome() -> None:
     contract = compile_structured_first_path(
         actor="Mara, an archive clerk",
@@ -369,7 +427,7 @@ def test_malformed_start_asks_one_plain_material_question(tmp_path: Path) -> Non
             fallback_title="Intake Reconciliation",
         )
 
-    assert str(error.value) == "What should the user complete first, and what result should they see?"
+    assert str(error.value) == "What first complete task should the user finish?"
     assert error.value.required_fields == ("first_path",)
     assert not (tmp_path / ".odylith/runtime/greenfield").exists()
 

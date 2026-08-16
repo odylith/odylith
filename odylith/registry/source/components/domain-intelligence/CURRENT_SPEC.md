@@ -51,6 +51,18 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-08-15: Repaired the semantic custody failures exposed by the retired independent Greenfield holdout. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-315`, `CB-319`, `CB-323`; Diagram: D-043)
+  Prompt and edit evidence now preserve section-local and atomic custody,
+  ordered same-actor paths, explicit dependency boundaries, actor articles,
+  material clarification decisions, and observable terminal results before
+  staging. Structured first-path owns source action/path composition through a
+  typed `SourceOwnedPathEvidence` result; prompt-source orchestration consumes
+  that result without duplicating its parser. Modal repair reaches semantic
+  path fields, transition components retain local state/output/dependency
+  terms, and quality/clarification gates remain fail-closed. The final source
+  acceptance matrix recorded 499 passes plus one wording-only failure; the
+  corrected clarification contract then passed all 145 owner tests.
+
 - 2026-08-14: Aligned installed Greenfield release evidence with the committed-dashboard handoff contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-303`; Diagram: D-043)
   The matrix requires the real committed Project dashboard as the primary
   post-confirm destination and separately verifies the transaction hash plus

@@ -1560,7 +1560,14 @@ def _human_actor_row(actor: str, action: str, *, preserve_full_action: bool = Fa
         else _primary_actor_action_segment(action)
     )
     action_text = _base_actor_action_clause(action_source)
-    if _starts_with_relation_word(actor_label) or _starts_with_relation_word(action_text):
+    if (
+        _starts_with_relation_word(actor_label)
+        or _starts_with_relation_word(action_text)
+        or (
+            not (has_human_actor_signal(actor_label) or has_human_actor_role_signal(actor_label))
+            and re.search(r"\b(?:state|status)\b", action_text, flags=re.IGNORECASE)
+        )
+    ):
         return ""
     if not actor_label or not action_text or _looks_like_non_human_actor(actor_label):
         return ""

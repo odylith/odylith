@@ -4076,3 +4076,24 @@ above.
       `123` tests and the wider navigation/confirmation selection passes `128`.
       Next: sync governance, commit and push the correction, rebuild an exact
       distribution, and rerun the complete installed matrix from case one.
+    - 2026-08-15 replacement-holdout adjudication and source repair: the
+      independently authored 24-case v3 holdout was frozen, reviewed, executed
+      exactly once, and failed closed at `2/24`; adjudication assigned all 22
+      failures to product behavior (`18` P0, `4` P1) with no evaluator/oracle
+      reversal. The corpus and exact cases are now retired and disclosed for
+      regression use. Source repairs preserve section-local and atomic custody,
+      ordered actor/path semantics, explicit boundaries, clarification-before-
+      write materiality, semantic modal grammar, component-local terms, and
+      corpus-tier-correct metamorphic identity without fixture vocabulary or
+      scorer/gate weakening. The final 500-case acceptance run passed 499 cases
+      and exposed only a redundant clarification-question wording mismatch; the
+      focused post-fix owner pack then passed `145/145`, including all one-step
+      clarification variants, and static compilation, diff hygiene, source-size
+      ceilings, and production fixture-leakage scans passed. Next: independent
+      exact-diff review, commit these bytes, rebuild the exact installable
+      candidate, rerun disclosed/lifecycle/recovery/host/browser proof, then
+      freeze and execute one newly authored untouched holdout. The consumed v3
+      run cannot be reused as release evidence. Retained v3 browser evidence has
+      status metadata but no screenshot paths, and retained telemetry has no
+      token or currency fields, so those proof gaps remain explicit rather than
+      inferred.

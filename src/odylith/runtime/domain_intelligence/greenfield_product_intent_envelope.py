@@ -76,6 +76,12 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_t
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import (
+    PROMPT_FIELD_NAMES,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import (
+    prompt_field_mapping,
+)
 from odylith.runtime.domain_intelligence.greenfield_typed_source_spans import (
     append_typed_source_spans,
 )
@@ -511,11 +517,54 @@ def _source_spans(
                     "text": unit_text,
                 }
                 spans.append(span)
+                spans.extend(
+                    _operator_field_source_spans(
+                        unit_text,
+                        parent_span_id=span_id,
+                        section_key=section_key,
+                        row_index=index,
+                    )
+                )
                 if section_key in PRODUCT_FACT_KEYS:
                     source_span_ids_by_field.setdefault(section_key, []).append(span_id)
                     if classification == "product_claim":
                         product_claim_span_ids_by_field.setdefault(section_key, []).append(span_id)
     return spans, source_span_ids_by_field, product_claim_span_ids_by_field
+
+
+def _operator_field_source_spans(
+    value: str,
+    *,
+    parent_span_id: str,
+    section_key: str,
+    row_index: int,
+) -> list[dict[str, Any]]:
+    """Keep explicit prompt-field values as clause-local evidence spans."""
+
+    if not str(section_key or "").endswith(
+        ("operator_prompt_evidence", "operator_edit_evidence")
+    ):
+        return []
+    rows: list[dict[str, Any]] = []
+    mapping = prompt_field_mapping(value)
+    for field, field_value in mapping.items():
+        if field not in PROMPT_FIELD_NAMES:
+            continue
+        for index, text in enumerate(confirmed_text_values(field_value), start=1):
+            if not text:
+                continue
+            rows.append(
+                {
+                    "span_id": f"{parent_span_id}:field:{field.replace(' ', '_')}:{index}",
+                    "section_key": section_key,
+                    "source_section_key": section_key,
+                    "row_index": row_index,
+                    "classification": "supporting_evidence",
+                    "parent_span_id": parent_span_id,
+                    "text": text,
+                }
+            )
+    return rows
 
 
 def _canonical_source_units(text: str, *, section_key: str) -> list[tuple[str, str]]:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -60,6 +61,48 @@ _MARKDOWN_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}(?:\s+|$)")
 _DECLARATION_COPULA_RE = re.compile(r"\b(?:is|are)\b", flags=re.IGNORECASE)
 _SUBJECT_CONJUNCTION_RE = re.compile(r"\s*(?:,|\band\b|\bor\b)\s*", flags=re.IGNORECASE)
 _CONFIRMATION_EVIDENCE_LABELS = frozenset({"changed", "keep"})
+_FINAL_REVISION_RE = re.compile(
+    r"(?:^[ \t]*(?:(?:[-*]|#{1,6}|>)[ \t]+)?|(?<=[.!?])[ \t]+)"
+    r"final\s+edit\s*:\s*",
+    flags=re.IGNORECASE | re.MULTILINE,
+)
+_DISCARDED_EVIDENCE_MARKER_RE = re.compile(
+    r"\b(?:abandoned|brainstorm|discarded|obsolete|placeholder|prototype|retired|scratch|superseded|trial)\b",
+    flags=re.IGNORECASE,
+)
+_DISCARDED_EVIDENCE_ARTIFACT_RE = re.compile(
+    r"\b(?:alias|concept|label|marker|mock(?:up)?|name|phrase|title|token)\b",
+    flags=re.IGNORECASE,
+)
+_DISCARDED_EVIDENCE_DISPOSITION_RE = re.compile(
+    r"\b(?:delete|discard|drop|exclude|omit|remove|retire|supersede)\w*\b|"
+    r"\b(?:disappear|evidence\s+noise|not\s+part\s+of\s+(?:the\s+)?(?:intent|product|request)|"
+    r"must\s+not\s+enter)\b",
+    flags=re.IGNORECASE,
+)
+_DISCARDED_EVIDENCE_CONTROL_RE = re.compile(
+    r"^(?:please\s+)?(?:delete|discard|drop|exclude|omit|remove|retire|supersede)\w*\b|"
+    r"\b(?:evidence\s+noise|not\s+part\s+of\s+(?:the\s+)?(?:intent|product|request)|"
+    r"must\s+not\s+enter)\b|"
+    r"\b(?:is|are|must|should)\s+(?:not\s+)?(?:be\s+)?"
+    r"(?:deleted|discarded|dropped|excluded|omitted|removed|retired|superseded)\b|"
+    r"\bmust\s+disappear\b",
+    flags=re.IGNORECASE,
+)
+_DISCARDED_PRODUCT_WORKFLOW_RE = re.compile(
+    r"^(?:(?:the\s+)?(?:app|application|platform|product|service|system|tool|workspace)|"
+    r"[A-Z][A-Za-z0-9'/-]*(?:\s+[A-Z][A-Za-z0-9'/-]*){0,3})\s+"
+    r"(?:allows|enables|helps|lets)\s+(?P<actor>(?:a|an|the)\s+"
+    r"[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
+    r"(?P<action>(?:delete|discard|drop|exclude|omit|remove|retire|supersede)\w*\b.*)$",
+    flags=re.IGNORECASE,
+)
+_DISCARDED_ACTOR_WORKFLOW_RE = re.compile(
+    r"^(?P<actor>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+"
+    r"(?P<action>(?:delete|discard|drop|exclude|omit|remove|retire|supersede)\w*\b.*)$",
+    flags=re.IGNORECASE,
+)
+_ORDERED_LIST_STEP_RE = re.compile(r"^\s*\d+[.)]\s+(?P<step>\S.*)$")
 _MATERIAL_TERM_STOPWORDS = frozenset(
     {
         "accepted", "action", "artifact", "complete", "evidence", "first", "greenfield", "intent", "path",
@@ -67,6 +110,69 @@ _MATERIAL_TERM_STOPWORDS = frozenset(
         "system", "user", "workspace",
     }
 )
+
+
+def authoritative_prompt_evidence_text(value: str) -> str:
+    """Prefer an explicit final edit over preceding draft evidence."""
+
+    text = str(value or "")
+    revisions = tuple(_FINAL_REVISION_RE.finditer(text))
+    return text[revisions[-1].end() :].strip() if revisions else text.strip()
+
+
+def is_discarded_evidence_clause(value: str) -> bool:
+    """Identify negative-custody labels that must never become actors or path steps."""
+
+    text = clean_markdown_text(value).strip(" .")
+    if owned_disposition_workflow_actor_action(text)[0]:
+        return False
+    marker = bool(_DISCARDED_EVIDENCE_MARKER_RE.search(text))
+    artifact = bool(_DISCARDED_EVIDENCE_ARTIFACT_RE.search(text))
+    disposition = bool(_DISCARDED_EVIDENCE_DISPOSITION_RE.search(text))
+    candidate = (marker and (artifact or disposition)) or (artifact and disposition)
+    return bool(candidate and _DISCARDED_EVIDENCE_CONTROL_RE.search(text))
+
+
+def owned_disposition_workflow_actor_action(value: str) -> tuple[str, str]:
+    """Return an explicit human owner and disposition action from product workflow evidence."""
+
+    for pattern in (_DISCARDED_PRODUCT_WORKFLOW_RE, _DISCARDED_ACTOR_WORKFLOW_RE):
+        match = pattern.match(value)
+        if match and has_human_actor_role_signal(match.group("actor")):
+            actor = re.sub(r"^(?:a|an|the)\s+", "", match.group("actor"), flags=re.IGNORECASE)
+            return actor, match.group("action").strip(" .")
+    return "", ""
+
+
+def rankable_prompt_evidence_text(value: str) -> str:
+    """Return authoritative positive evidence while leaving raw negative custody intact."""
+
+    text = authoritative_prompt_evidence_text(value)
+    rows: list[str] = []
+    for raw_line in text.splitlines() or [text]:
+        fragments = re.split(r"(?<=[.!?])\s+", raw_line)
+        kept = [fragment for fragment in fragments if not is_discarded_evidence_clause(fragment)]
+        if kept:
+            rows.append(" ".join(kept))
+    return "\n".join(rows).strip()
+
+
+def contiguous_ordered_list_steps(value: str) -> tuple[str, ...]:
+    """Return the longest contiguous numbered workflow in source order."""
+
+    groups: list[tuple[str, ...]] = []
+    current: list[str] = []
+    for row in str(value or "").splitlines():
+        match = _ORDERED_LIST_STEP_RE.match(row)
+        if match:
+            current.append(clean_markdown_text(match.group("step")).strip(" ."))
+            continue
+        if current:
+            groups.append(tuple(current))
+            current = []
+    if current:
+        groups.append(tuple(current))
+    return max(groups, key=len, default=())
 
 
 def product_intent_source_text(value: str) -> str:
@@ -346,15 +452,20 @@ def _source_metadata_labels(value: str) -> list[re.Match[str]]:
 
 __all__ = [
     "REQUEST_COMMAND_WORDS",
+    "authoritative_prompt_evidence_text",
     "coordinated_subjects",
     "confirmed_direction_evidence_text",
+    "contiguous_ordered_list_steps",
     "declaration_subject_predicate",
+    "is_discarded_evidence_clause",
     "is_source_metadata_clause",
     "looks_like_trailing_operator_instruction",
     "material_prompt_terms",
     "markdown_section_text",
     "operator_context_from_product_text",
+    "owned_disposition_workflow_actor_action",
     "product_intent_source_text",
+    "rankable_prompt_evidence_text",
     "request_words",
     "sentence_fragments",
     "strip_leading_contextual_gerund_sentence",

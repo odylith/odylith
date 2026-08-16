@@ -5,8 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 import re
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -63,6 +65,48 @@ _DECLARED_UNCERTAINTY_PREDICATES = frozenset(
         "is not specified",
     }
 )
+_PRESENTATION_DETAIL_TERMS = frozenset(
+    {
+        "color",
+        "colour",
+        "copy",
+        "font",
+        "icon",
+        "symbol",
+        "theme",
+        "typography",
+        "visual",
+        "wording",
+    }
+)
+_PRESENTATION_CONNECTOR_TERMS = frozenset(
+    {"and", "choice", "detail", "details", "or", "presentation", "scheme", "style"}
+)
+_STATE_TRANSITION_RE = re.compile(
+    r"\b(?:from\s+[A-Za-z][A-Za-z0-9_-]{0,60}\s+to\s+[A-Za-z][A-Za-z0-9_-]{0,60}|"
+    r"[A-Za-z][A-Za-z0-9_-]{0,60}\s+to\s+[A-Za-z][A-Za-z0-9_-]{0,60})\b",
+    flags=re.IGNORECASE,
+)
+_REPORTED_CLAIM_RE = re.compile(
+    r"\b(?:one|another|a\s+second|the\s+other)\b[^.!?]{0,80}?"
+    r"\b(?:says?|states?|reports?|requires?|directs?)\b\s+(?P<claim>.+)$",
+    flags=re.IGNORECASE,
+)
+_IDENTIFIED_OWNER_RE = re.compile(
+    r"\bidentif(?:y|ies)\s+(?:the\s+)?(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+"
+    r"as\s+(?:the\s+)?(?P<relation>[A-Za-z][A-Za-z0-9 /&'()-]{0,60}?)\s+owner\b",
+    flags=re.IGNORECASE,
+)
+_BELONGS_TO_ROLE_RE = re.compile(
+    r"\b(?P<relation>[A-Za-z][A-Za-z0-9_-]{2,50})\s+belongs?\s+only\s+to\s+"
+    r"(?:the\s+)?(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80})$",
+    flags=re.IGNORECASE,
+)
+_PRESERVED_ASSERTIONS_RE = re.compile(
+    r"\bboth\s+(?:accounts|claims|sources|statements|versions)\b[^.!?]{0,80}"
+    r"\b(?:are|remain|stay)\b[^.!?]{0,40}\b(?:asserted|preserved|retained|true)\b",
+    flags=re.IGNORECASE,
+)
 
 
 def explicit_decision_gap(evidence: str) -> ExplicitDecisionGap | None:
@@ -82,6 +126,14 @@ def explicit_decision_gap(evidence: str) -> ExplicitDecisionGap | None:
         return authority_gap
 
     sentences = sentence_fragments(text)
+    relation_gap = _relation_level_decision_gap(sentences)
+    if relation_gap:
+        return relation_gap
+    if _actorless_state_transition_requires_role(text, sentences=sentences):
+        return ExplicitDecisionGap(
+            question="Which role should own this state-changing first path?",
+            required_fields=("role",),
+        )
     labels = _declared_missing_fields(sentences)
     if "age policy" in lowered and "guardian approval" in lowered and "not specified" in lowered:
         labels.append("guardian approval rule")
@@ -95,6 +147,80 @@ def explicit_decision_gap(evidence: str) -> ExplicitDecisionGap | None:
         if decision:
             return decision
     return None
+
+
+def _relation_level_decision_gap(sentences: tuple[str, ...] | list[str]) -> ExplicitDecisionGap | None:
+    """Recognize conflicting assignments and paths even when no sentence says `conflict`."""
+
+    owners_by_relation: dict[str, set[str]] = {}
+    belongs_claims: list[tuple[str, str]] = []
+    for sentence in sentences:
+        identified = _IDENTIFIED_OWNER_RE.search(sentence)
+        if identified:
+            relation = _relation_key(identified.group("relation"))
+            owners_by_relation.setdefault(relation, set()).add(_actor_key(identified.group("actor")))
+        belongs = _BELONGS_TO_ROLE_RE.search(sentence)
+        if belongs:
+            claim = (_relation_key(belongs.group("relation")), _actor_key(belongs.group("actor")))
+            belongs_claims.append(claim)
+            owners_by_relation.setdefault(claim[0], set()).add(claim[1])
+    if any(len(actors) > 1 for actors in owners_by_relation.values()):
+        return ExplicitDecisionGap(
+            question="Which role should own the disputed first-path decision?",
+            required_fields=("role",),
+        )
+    if belongs_claims and any(_PRESERVED_ASSERTIONS_RE.search(sentence) for sentence in sentences):
+        for relation, assigned_actor in belongs_claims:
+            for sentence in sentences:
+                source = prompt_intent_source(sentence)
+                if (
+                    source.actor
+                    and _actor_key(source.actor) != assigned_actor
+                    and relation in _relation_key(sentence)
+                ):
+                    return ExplicitDecisionGap(
+                        question="Which role should own the disputed first-path decision?",
+                        required_fields=("role",),
+                    )
+
+    reported_claims = [
+        match.group("claim").strip(" .")
+        for sentence in sentences
+        if (match := _REPORTED_CLAIM_RE.search(sentence))
+    ]
+    if len(reported_claims) >= 2:
+        claims = " ".join(reported_claims).casefold()
+        distinct = len({_field_key(claim) for claim in reported_claims if _field_key(claim)}) >= 2
+        path_relation = all(re.search(r"\bfirst\b", claim, flags=re.IGNORECASE) for claim in reported_claims)
+        same_action_authority = "same action" in claims and "only" in claims
+        if distinct and (path_relation or same_action_authority):
+            return ExplicitDecisionGap(
+                question="Which asserted behavior should define the first complete path?",
+                required_fields=("first_path",),
+            )
+    return None
+
+
+def _actorless_state_transition_requires_role(text: str, *, sentences: tuple[str, ...] | list[str]) -> bool:
+    if explicit_actor_evidence(text):
+        return False
+    for sentence in sentences:
+        if not _STATE_TRANSITION_RE.search(sentence):
+            continue
+        source = prompt_intent_source(sentence)
+        if source.command_led and not source.actor:
+            return True
+    return False
+
+
+def _actor_key(value: str) -> str:
+    return "_".join(_FIELD_TOKEN_RE.findall(value.casefold()))
+
+
+def _relation_key(value: str) -> str:
+    words = _FIELD_TOKEN_RE.findall(value.casefold())
+    normalized = ["approv" if word.startswith("approv") else word for word in words]
+    return "_".join(normalized)
 
 
 def _first_approval_changes_path(lowered: str) -> bool:
@@ -387,7 +513,7 @@ def _dedupe_labels(labels: list[str]) -> list[str]:
     kept: list[str] = []
     for label in labels:
         key = _field_key(label)
-        if not key:
+        if not key or _is_presentation_only_gap(key):
             continue
         tokens = frozenset(key.split("_"))
         existing = [frozenset(_field_key(item).split("_")) for item in kept]
@@ -396,6 +522,12 @@ def _dedupe_labels(labels: list[str]) -> list[str]:
         kept = [item for item, item_tokens in zip(kept, existing, strict=True) if not item_tokens < tokens]
         kept.append(_display_label(label))
     return kept
+
+
+def _is_presentation_only_gap(key: str) -> bool:
+    tokens = set(str(key or "").split("_"))
+    details = tokens - _PRESENTATION_CONNECTOR_TERMS
+    return bool(details and details <= _PRESENTATION_DETAIL_TERMS)
 
 
 def _question_for_labels(labels: list[str]) -> ExplicitDecisionGap:
