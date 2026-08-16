@@ -1,0 +1,3689 @@
+{
+  "version": "odylith.greenfield.retired-holdout-regression.v1",
+  "claim_class": "blinded-independent-synthetic-holdout",
+  "disclosed": true,
+  "retired_from": {
+    "product_revision": "1ba7b4c0385ed36981c5d163439a49f3be703661",
+    "holdout_sha256": "082a92fe9aea18a5ea2b88eefa5aae7853277119b8aa600251c24a4a4bfc45d9",
+    "evaluation_manifest_sha256": "40538d4100d9b2b8685c81c6680046ab179f971909db053c975841c66d8d2cb5",
+    "result_sha256": "180437fd4000e8c46eefe19b1e44c0fce14fb53e6666bf18838a1894d7a2a988",
+    "run_ledger_sha256": "f55dae956631f50474c2b8c6e99a91e8719a3998fbe22965934c7f8b8e40a09f",
+    "evaluated_on": "2026-08-16"
+  },
+  "retirement_reason": "The consumed replacement holdout failed 22 of 24 terminal cases and is now disclosed; it is retained only as tracked regression evidence.",
+  "provenance": {
+    "source_version": "odylith.greenfield.final-holdout.v1",
+    "authoring_method": "deterministic-independent-synthetic-v3",
+    "source_policy_at_authoring": {
+      "retired_holdout_contents_inspected": false,
+      "tracked_prompt_contents_inspected": false,
+      "product_executions": 0,
+      "contains_pii_or_secrets": false
+    },
+    "disclosure_status": "disclosed_failed_retired",
+    "implementation_execution_status": "executed_once_failed",
+    "retired_usage": "tracked_regression_evidence_only"
+  },
+  "coverage": {
+    "case_count": 24,
+    "annotation_count": 24,
+    "outcome_counts": {
+      "clarification_required": 7,
+      "transaction_committed": 17
+    },
+    "input_style_counts": {
+      "direct_request": 6,
+      "edited_confirmation": 4,
+      "pasted_brief": 6,
+      "research_evidence": 5,
+      "thin_request": 3
+    },
+    "metamorphic_group_count": 8
+  },
+  "terminal_status": "failed",
+  "release_case_passed_count": 2,
+  "release_case_failed_count": 22,
+  "cases": [
+    {
+      "case_id": "gfhi-001",
+      "name": "Claimed handoff card",
+      "prompt": "Build a repo-local handoff board for a shift coordinator. The coordinator selects one ready intake card and marks it claimed. The card moves from ready to claimed, and the coordinator sees a claim receipt. Use the local duty roster as the only dependency. Never reassign a card automatically. The obsolete scratch label Juniper Comet must not enter the governed package.",
+      "required_terms": [
+        "shift coordinator",
+        "ready intake card",
+        "claim receipt",
+        "local duty roster"
+      ],
+      "leakage_terms": [
+        "Juniper Comet"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "first-path",
+        "local-only"
+      ],
+      "stressors": [
+        "explicit-prohibition-a"
+      ],
+      "metamorphic_group": "handoff-claim-semantic",
+      "metamorphic_transform": "plain-request"
+    },
+    {
+      "case_id": "gfhi-002",
+      "name": "Handoff brief reordered",
+      "prompt": "# Handoff brief\n- Visible result: a claim receipt.\n- State change: one intake card goes from ready to claimed.\n- Owner and first action: the shift coordinator selects the card and marks it claimed.\n- Dependency: only the local duty roster.\n- Boundary: do not reassign cards automatically.\nDiscard the superseded note-name Quartz Ferry.",
+      "required_terms": [
+        "claim receipt",
+        "ready to claimed",
+        "shift coordinator",
+        "local duty roster"
+      ],
+      "leakage_terms": [
+        "Quartz Ferry"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "first-path",
+        "reordered-evidence"
+      ],
+      "stressors": [
+        "markdown-reordering-a"
+      ],
+      "metamorphic_group": "handoff-claim-semantic",
+      "metamorphic_transform": "markdown-reorder"
+    },
+    {
+      "case_id": "gfhi-003",
+      "name": "Observation marker synthesis",
+      "prompt": "Three workshop observations converge on one need: a review analyst should group selected observation markers into a review set. The set changes from open to grouped and displays a decision ribbon. The marker catalog is the sole dependency. The product must not rank people and must not infer individual performance. A discarded experiment called Nickel Orchard is not part of the intent.",
+      "required_terms": [
+        "review analyst",
+        "observation markers",
+        "decision ribbon",
+        "marker catalog"
+      ],
+      "leakage_terms": [
+        "Nickel Orchard"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "research-synthesis",
+        "people-boundary"
+      ],
+      "stressors": [
+        "negative-capability-a"
+      ],
+      "metamorphic_group": "marker-review-semantic",
+      "metamorphic_transform": "synthesis-prose"
+    },
+    {
+      "case_id": "gfhi-004",
+      "name": "Observation marker correction",
+      "prompt": "Initial note: a review analyst groups selected observation markers into a review set and sees a decision ribbon. Edit: keep the marker catalog as the sole dependency. Do not rank people. Do not infer individual performance. The review set moves from open to grouped. The abandoned mockup title Cobalt Thimble must be omitted.",
+      "required_terms": [
+        "review analyst",
+        "observation markers",
+        "decision ribbon",
+        "marker catalog"
+      ],
+      "leakage_terms": [
+        "Cobalt Thimble"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "edit",
+        "people-boundary"
+      ],
+      "stressors": [
+        "correction-overrides-draft-a"
+      ],
+      "metamorphic_group": "marker-review-semantic",
+      "metamorphic_transform": "explicit-correction"
+    },
+    {
+      "case_id": "gfhi-005",
+      "name": "Workshop route missing result",
+      "prompt": "I need a small repo-local tool where a facilitator routes one reviewed workshop note into the follow-up lane. The facilitator owns the route, and the local lane index is available. Workshop notes may use either a compact or expanded layout. Ignore the old sketch name Linen Meteor.",
+      "required_terms": [
+        "facilitator",
+        "reviewed workshop note",
+        "follow-up lane",
+        "local lane index"
+      ],
+      "leakage_terms": [
+        "Linen Meteor"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "tags": [
+        "material-gap",
+        "visible-result"
+      ],
+      "stressors": [
+        "thin-material-omission-a"
+      ],
+      "metamorphic_group": "route-result-gap-semantic",
+      "metamorphic_transform": "thin-prose"
+    },
+    {
+      "case_id": "gfhi-006",
+      "name": "Route confirmation unspecified",
+      "prompt": "Create a local follow-up lane for reviewed workshop notes. A facilitator chooses a reviewed note and routes it into that lane using the local lane index. The note enters the follow-up lane. Keep all evidence inside the local repository. Exclude the retired label Velvet Sprocket.",
+      "required_terms": [
+        "facilitator",
+        "reviewed note",
+        "follow-up lane",
+        "local lane index"
+      ],
+      "leakage_terms": [
+        "Velvet Sprocket"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "direct_request",
+      "tags": [
+        "material-gap",
+        "visible-result"
+      ],
+      "stressors": [
+        "missing-success-signal-a"
+      ],
+      "metamorphic_group": "route-result-gap-semantic",
+      "metamorphic_transform": "expanded-prose"
+    },
+    {
+      "case_id": "gfhi-007",
+      "name": "Packet shelf boundary",
+      "prompt": "Create a packet shelf for a release clerk. The clerk selects a prepared packet, places it on the reviewed shelf, and sees a shelf receipt. The packet moves from prepared to reviewed. Read only from the repo packet index. Do not send email. Do not copy packets to an external service. Remove the obsolete alias Scarlet Anvil.",
+      "required_terms": [
+        "release clerk",
+        "prepared packet",
+        "shelf receipt",
+        "repo packet index"
+      ],
+      "leakage_terms": [
+        "Scarlet Anvil"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "boundary",
+        "repo-custody"
+      ],
+      "stressors": [
+        "multiple-prohibitions-a"
+      ],
+      "metamorphic_group": "packet-shelf-semantic",
+      "metamorphic_transform": "plain-boundary"
+    },
+    {
+      "case_id": "gfhi-008",
+      "name": "Packet shelf structured brief",
+      "prompt": "## Packet shelf\nOwner: release clerk\nFirst path: choose one prepared packet, place it on the reviewed shelf, then display a shelf receipt.\nState: prepared -> reviewed.\nDependency: repo packet index.\nAccess boundary: read-only.\nExcluded behavior: never email a packet. Never copy one to an external service.\nThe placeholder Copper Parasol is superseded.",
+      "required_terms": [
+        "release clerk",
+        "prepared packet",
+        "shelf receipt",
+        "repo packet index"
+      ],
+      "leakage_terms": [
+        "Copper Parasol"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "boundary",
+        "structured-brief"
+      ],
+      "stressors": [
+        "structured-negation-a"
+      ],
+      "metamorphic_group": "packet-shelf-semantic",
+      "metamorphic_transform": "markdown-fields"
+    },
+    {
+      "case_id": "gfhi-009",
+      "name": "Queue digest evidence merge",
+      "prompt": "Document one reports that a digest editor repeatedly gathers chosen queue entries into a draft digest. Document two confirms that the draft becomes reviewed when the editor accepts it and that a review seal is the visible result. Use the local queue history. Use the glossary index. Do not publish the digest. Do not contact subscribers. The discarded concept phrase Indigo Trellis is evidence noise.",
+      "required_terms": [
+        "digest editor",
+        "queue entries",
+        "review seal",
+        "local queue history",
+        "glossary index"
+      ],
+      "leakage_terms": [
+        "Indigo Trellis"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "multi-document",
+        "synthesis"
+      ],
+      "stressors": [
+        "two-document-merge-a"
+      ],
+      "metamorphic_group": "digest-review-semantic",
+      "metamorphic_transform": "two-document-synthesis"
+    },
+    {
+      "case_id": "gfhi-010",
+      "name": "Queue digest edit settles boundary",
+      "prompt": "Original request: a digest editor gathers chosen queue entries into a draft digest and accepts it as reviewed, producing a review seal. The digest moves from draft to reviewed when accepted. Correction: depend on the local queue history. Also use the glossary index. Do not publish the digest. Do not contact subscribers. The old campaign term Saffron Rudder is not product truth.",
+      "required_terms": [
+        "digest editor",
+        "queue entries",
+        "review seal",
+        "local queue history",
+        "glossary index"
+      ],
+      "leakage_terms": [
+        "Saffron Rudder"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "edit",
+        "resolved-boundary"
+      ],
+      "stressors": [
+        "edit-precedence-a"
+      ],
+      "metamorphic_group": "digest-review-semantic",
+      "metamorphic_transform": "correction-condense"
+    },
+    {
+      "case_id": "gfhi-011",
+      "name": "Unicode résumé review",
+      "prompt": "Build a café résumé board for a curator. The curator attaches one résumé note to a café entry and marks the entry reviewed. The entry moves from unreviewed to reviewed. A blue review badge confirms success. Preserve accents by reading the local naïve-text index. Do not translate the text. Do not export the text. Delete the obsolete codename Brisk Lantern.",
+      "required_terms": [
+        "café résumé board",
+        "curator",
+        "review badge",
+        "naïve-text index"
+      ],
+      "leakage_terms": [
+        "Brisk Lantern"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "unicode",
+        "utf8-span"
+      ],
+      "stressors": [
+        "multibyte-offset-a"
+      ],
+      "metamorphic_group": "accent-review-semantic",
+      "metamorphic_transform": "unicode-prose"
+    },
+    {
+      "case_id": "gfhi-012",
+      "name": "Unicode review checklist",
+      "prompt": "# Café résumé checklist\n1. Curator chooses a café entry.\n2. Attach one résumé note and mark the entry reviewed.\n3. Show a blue review badge.\nState: unreviewed -> reviewed.\nSource: local naïve-text index; accents must be preserved.\nBoundary: never translate the text. Never export the text.\nDiscard the retired phrase Marble Kite.",
+      "required_terms": [
+        "Curator",
+        "résumé note",
+        "review badge",
+        "naïve-text index"
+      ],
+      "leakage_terms": [
+        "Marble Kite"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "unicode",
+        "structured-brief"
+      ],
+      "stressors": [
+        "multibyte-offset-b"
+      ],
+      "metamorphic_group": "accent-review-semantic",
+      "metamorphic_transform": "unicode-checklist"
+    },
+    {
+      "case_id": "gfhi-013",
+      "name": "Approval owner conflict",
+      "prompt": "Interview notes agree on the action: approve one reviewed tile. The tile moves from reviewed to approved and then displays an approval pennant. Note A identifies the facilitator as the approval owner. Note B identifies the session coordinator as the approval owner. The local tile ledger is available. Approval stays inside the local repository. The obsolete heading Ashen Violin must be dropped.",
+      "required_terms": [
+        "reviewed tile",
+        "approval pennant",
+        "facilitator",
+        "session coordinator",
+        "local tile ledger"
+      ],
+      "leakage_terms": [
+        "Ashen Violin"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "tags": [
+        "contradiction",
+        "actor-ownership"
+      ],
+      "stressors": [
+        "cross-source-conflict-a"
+      ],
+      "metamorphic_group": "approval-owner-conflict-semantic",
+      "metamorphic_transform": "interview-conflict"
+    },
+    {
+      "case_id": "gfhi-014",
+      "name": "Approval edit preserves conflict",
+      "prompt": "Draft: a facilitator approves one reviewed tile and sees an approval pennant. The tile moves from reviewed to approved. Edit from the second source: approval belongs only to the session coordinator. Both statements remain asserted. Use the local tile ledger. Keep approval inside the local repository. Remove the unused label Bronze Nimbus.",
+      "required_terms": [
+        "facilitator",
+        "reviewed tile",
+        "approval pennant",
+        "session coordinator",
+        "local tile ledger"
+      ],
+      "leakage_terms": [
+        "Bronze Nimbus"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "contradiction",
+        "edit"
+      ],
+      "stressors": [
+        "edit-does-not-resolve-conflict-a"
+      ],
+      "metamorphic_group": "approval-owner-conflict-semantic",
+      "metamorphic_transform": "conflicting-edit"
+    },
+    {
+      "case_id": "gfhi-015",
+      "name": "Dry-run sequence brief",
+      "prompt": "## Sequence preview\nThe planner selects one staged itinerary and generates a simulated sequence. The itinerary remains staged, and a dry-run preview is the visible result. Read the sandbox calendar snapshot. Never issue production commands. Never reserve capacity. Never contact participants. The trial label Mossy Compass is excluded.",
+      "required_terms": [
+        "planner",
+        "staged itinerary",
+        "simulated sequence",
+        "dry-run preview",
+        "sandbox calendar snapshot"
+      ],
+      "leakage_terms": [
+        "Mossy Compass"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "simulation",
+        "production-boundary"
+      ],
+      "stressors": [
+        "authority-boundary-a"
+      ],
+      "metamorphic_group": "dry-run-sequence-semantic",
+      "metamorphic_transform": "brief-form"
+    },
+    {
+      "case_id": "gfhi-016",
+      "name": "Dry-run sequence request",
+      "prompt": "Give a planner a local sequence preview. They choose one staged itinerary, generate only a simulated sequence, and see a dry-run preview while the itinerary stays staged. The sandbox calendar snapshot is read-only. The product cannot issue production commands. It cannot reserve capacity. It cannot contact participants. Omit the prototype marker Ivory Crank.",
+      "required_terms": [
+        "planner",
+        "staged itinerary",
+        "simulated sequence",
+        "dry-run preview",
+        "sandbox calendar snapshot"
+      ],
+      "leakage_terms": [
+        "Ivory Crank"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "simulation",
+        "production-boundary"
+      ],
+      "stressors": [
+        "authority-boundary-b"
+      ],
+      "metamorphic_group": "dry-run-sequence-semantic",
+      "metamorphic_transform": "pronoun-paraphrase"
+    },
+    {
+      "case_id": "gfhi-017",
+      "name": "Assembly map bounded complexity",
+      "prompt": "# Assembly map\nSix roles exist: collector, verifier, mapper, reviewer, coordinator, and observer. The mapper owns the first release path: select one verified fragment, attach it to the draft map, and mark the map reviewable. The draft map becomes reviewable and shows a map seal. Read the fragment shelf. Read the role roster. Read the local glossary. Read the decision log. External references may be named but never fetched. Do not notify roles. Do not modify source fragments. Do not publish the map. Retire the brainstorm phrase Plum Sextant.",
+      "required_terms": [
+        "mapper",
+        "verified fragment",
+        "reviewable",
+        "map seal",
+        "fragment shelf",
+        "decision log"
+      ],
+      "leakage_terms": [
+        "Plum Sextant"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "pasted_brief",
+      "tags": [
+        "high-complexity",
+        "many-actors"
+      ],
+      "stressors": [
+        "bounded-cardinality-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-018",
+      "name": "Typed intent envelope",
+      "prompt": "{\"product_intent\":{\"actor\":\"index steward\",\"first_action\":\"choose one candidate heading and accept it\",\"state_change\":\"candidate to accepted\",\"visible_result\":\"acceptance glyph\",\"dependency\":\"repo heading index\",\"boundary\":\"no remote lookup; no automatic rewrite\"}}\nResearch note: the superseded token Silver Oar is not part of the product.",
+      "required_terms": [
+        "index steward",
+        "candidate heading",
+        "candidate to accepted",
+        "acceptance glyph",
+        "repo heading index"
+      ],
+      "leakage_terms": [
+        "Silver Oar"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "research_evidence",
+      "tags": [
+        "json-intent",
+        "typed-envelope"
+      ],
+      "stressors": [
+        "machine-shaped-evidence-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-019",
+      "name": "Thin request with bounded assumption",
+      "prompt": "Let a reviewer select one draft proposal, mark it ready, and see a ready marker. The proposal moves from draft to ready. Use the local proposal list. Do not notify anyone automatically. No color or symbol scheme is provided for the marker. The abandoned label Faded Pulley must not survive.",
+      "required_terms": [
+        "reviewer",
+        "draft proposal",
+        "ready marker",
+        "local proposal list"
+      ],
+      "leakage_terms": [
+        "Faded Pulley"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "thin_request",
+      "tags": [
+        "thin-complete",
+        "non-material-gap"
+      ],
+      "stressors": [
+        "conservative-assumption-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-020",
+      "name": "Queue action missing owner",
+      "prompt": "Create a local view that turns one selected draft from draft to queued and shows a queue stamp. Use the local draft list. Never dispatch the draft. Entries may be ordered by their last modified time. Drop the placeholder phrase Golden Hinge.",
+      "required_terms": [
+        "selected draft",
+        "draft to queued",
+        "queue stamp",
+        "local draft list"
+      ],
+      "leakage_terms": [
+        "Golden Hinge"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "thin_request",
+      "tags": [
+        "material-gap",
+        "missing-owner"
+      ],
+      "stressors": [
+        "owner-omission-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-021",
+      "name": "Broadcast removed by edit",
+      "prompt": "Draft request suggested broadcasting after acceptance. Final edit: a board keeper accepts one pending panel. The panel moves from pending to accepted and shows a local acceptance token. Do not broadcast the acceptance. Do not call any messaging service. Read the repo panel register. The discarded mock name Woven Eclipse must be excluded.",
+      "required_terms": [
+        "board keeper",
+        "pending panel",
+        "pending to accepted",
+        "acceptance token",
+        "repo panel register"
+      ],
+      "leakage_terms": [
+        "Woven Eclipse"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "edited_confirmation",
+      "tags": [
+        "edit",
+        "resolved-contradiction"
+      ],
+      "stressors": [
+        "final-edit-authority-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-022",
+      "name": "First-step order unresolved",
+      "prompt": "# Review strip\nOwner: review guide.\nResult: a completion notch after one source slip is registered.\nState: unregistered to registered.\nDependency: local slip cabinet.\nOne section says to select an existing slip first. Another section says to import a new slip first. All evidence stays inside the local repository. Remove the draft title Paper Glacier.",
+      "required_terms": [
+        "review guide",
+        "completion notch",
+        "unregistered to registered",
+        "local slip cabinet"
+      ],
+      "leakage_terms": [
+        "Paper Glacier"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "pasted_brief",
+      "tags": [
+        "path-conflict",
+        "material-gap"
+      ],
+      "stressors": [
+        "alternative-first-actions-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-023",
+      "name": "Non-material label choice",
+      "prompt": "Build a local checkpoint list for a note keeper. The keeper selects one open checkpoint, marks it complete, and sees a completion marker. The checkpoint moves from open to complete. Read the repo checkpoint ledger. No wording or icon scheme is provided for the marker. Never alter the original note text. The superseded codename Misty Ratchet must disappear.",
+      "required_terms": [
+        "note keeper",
+        "open checkpoint",
+        "completion marker",
+        "repo checkpoint ledger"
+      ],
+      "leakage_terms": [
+        "Misty Ratchet"
+      ],
+      "expectation": "transaction_committed",
+      "input_style": "direct_request",
+      "tags": [
+        "non-material-gap",
+        "assumption"
+      ],
+      "stressors": [
+        "question-suppression-a"
+      ]
+    },
+    {
+      "case_id": "gfhi-024",
+      "name": "Preview versus release authority",
+      "prompt": "Evidence agrees that an operations reader selects one staged bundle and sees an action summary using the local bundle ledger. One observation says the action only previews release. Another says the same action releases the bundle immediately. The bundle remains staged during onboarding. No release behavior is executed during onboarding. Exclude the survey alias Distant Spindle.",
+      "required_terms": [
+        "operations reader",
+        "staged bundle",
+        "action summary",
+        "local bundle ledger"
+      ],
+      "leakage_terms": [
+        "Distant Spindle"
+      ],
+      "expectation": "clarification_required",
+      "input_style": "research_evidence",
+      "tags": [
+        "authority-ambiguity",
+        "material-gap"
+      ],
+      "stressors": [
+        "production-authority-conflict-a"
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "case_id": "gfhi-001",
+      "prompt_sha256": "0ea7c82b80946d50e474c2fdda8fbddf3c0f93072134d4072f3d81248a84f45d",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1,
+        "evidence_bytes": 370
+      },
+      "critical_constraints": [
+        {
+          "value": "Never reassign a card automatically"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local duty roster"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "shift coordinator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 57,
+          "source_quote": "Build a repo-local handoff board for a shift coordinator."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "selects one ready intake card and marks it claimed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 58,
+          "source_end": 125,
+          "source_quote": "The coordinator selects one ready intake card and marks it claimed."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "ready to claimed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 126,
+          "source_end": 205,
+          "source_quote": "The card moves from ready to claimed, and the coordinator sees a claim receipt."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "claim receipt",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 126,
+          "source_end": 205,
+          "source_quote": "The card moves from ready to claimed, and the coordinator sees a claim receipt."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Never reassign a card automatically",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 256,
+          "source_end": 292,
+          "source_quote": "Never reassign a card automatically.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local duty roster",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 206,
+          "source_end": 255,
+          "source_quote": "Use the local duty roster as the only dependency."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-002",
+      "prompt_sha256": "1232819926dddeb0c9d82f14bae5adefc5086f338acce3cff95b7fe95b85eb45",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1,
+        "evidence_bytes": 335
+      },
+      "critical_constraints": [
+        {
+          "value": "do not reassign cards automatically"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local duty roster"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "shift coordinator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 111,
+          "source_end": 197,
+          "source_quote": "- Owner and first action: the shift coordinator selects the card and marks it claimed."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "selects the card and marks it claimed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 111,
+          "source_end": 197,
+          "source_quote": "- Owner and first action: the shift coordinator selects the card and marks it claimed."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "ready to claimed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 51,
+          "source_end": 110,
+          "source_quote": "- State change: one intake card goes from ready to claimed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "claim receipt",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 16,
+          "source_end": 50,
+          "source_quote": "- Visible result: a claim receipt."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "do not reassign cards automatically",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 240,
+          "source_end": 288,
+          "source_quote": "- Boundary: do not reassign cards automatically.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local duty roster",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 198,
+          "source_end": 239,
+          "source_quote": "- Dependency: only the local duty roster."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-003",
+      "prompt_sha256": "c43eb79b53373fe208a4e61f60d78bed643daf9a082a41727953b1a419bf2632",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1,
+        "evidence_bytes": 387
+      },
+      "critical_constraints": [
+        {
+          "value": "must not rank people"
+        },
+        {
+          "value": "must not infer individual performance"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "marker catalog"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "review analyst",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 127,
+          "source_quote": "Three workshop observations converge on one need: a review analyst should group selected observation markers into a review set."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "group selected observation markers into a review set",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 127,
+          "source_quote": "Three workshop observations converge on one need: a review analyst should group selected observation markers into a review set."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "open to grouped",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 128,
+          "source_end": 196,
+          "source_quote": "The set changes from open to grouped and displays a decision ribbon."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "decision ribbon",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 128,
+          "source_end": 196,
+          "source_quote": "The set changes from open to grouped and displays a decision ribbon."
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "marker catalog",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 197,
+          "source_end": 239,
+          "source_quote": "The marker catalog is the sole dependency."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non_goals-1",
+          "category": "non_goals",
+          "value": "must not rank people",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 240,
+          "source_end": 315,
+          "source_quote": "The product must not rank people and must not infer individual performance.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "non_goals-2",
+          "category": "non_goals",
+          "value": "must not infer individual performance",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 240,
+          "source_end": 315,
+          "source_quote": "The product must not rank people and must not infer individual performance.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-004",
+      "prompt_sha256": "7ffdbe742bbe364caf633874a05bdb155c3cb4ef4c9935e8bd50c1d744813cd3",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 2,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 1,
+        "evidence_bytes": 325
+      },
+      "critical_constraints": [
+        {
+          "value": "Do not rank people"
+        },
+        {
+          "value": "Do not infer individual performance"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "marker catalog"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "review analyst",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 112,
+          "source_quote": "Initial note: a review analyst groups selected observation markers into a review set and sees a decision ribbon."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "groups selected observation markers into a review set",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 112,
+          "source_quote": "Initial note: a review analyst groups selected observation markers into a review set and sees a decision ribbon."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "open to grouped",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 224,
+          "source_end": 266,
+          "source_quote": "The review set moves from open to grouped."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "decision ribbon",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 112,
+          "source_quote": "Initial note: a review analyst groups selected observation markers into a review set and sees a decision ribbon."
+        }
+      ],
+      "constraints": [],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "marker catalog",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 113,
+          "source_end": 166,
+          "source_quote": "Edit: keep the marker catalog as the sole dependency."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non_goals-1",
+          "category": "non_goals",
+          "value": "Do not rank people",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 167,
+          "source_end": 186,
+          "source_quote": "Do not rank people.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "non_goals-2",
+          "category": "non_goals",
+          "value": "Do not infer individual performance",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 187,
+          "source_end": 223,
+          "source_quote": "Do not infer individual performance.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-005",
+      "prompt_sha256": "8d1656532c675f79c46706335de057d9e40983ea2d6c61e7056477149996a386",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "visible_result"
+      ],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 281
+      },
+      "critical_constraints": [
+        {
+          "value": "repo-local"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local lane index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "facilitator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 109,
+          "source_quote": "I need a small repo-local tool where a facilitator routes one reviewed workshop note into the follow-up lane."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "routes one reviewed workshop note into the follow-up lane",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 109,
+          "source_quote": "I need a small repo-local tool where a facilitator routes one reviewed workshop note into the follow-up lane."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "reviewed workshop note into the follow-up lane",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 109,
+          "source_quote": "I need a small repo-local tool where a facilitator routes one reviewed workshop note into the follow-up lane."
+        }
+      ],
+      "outputs": [],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "repo-local",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 109,
+          "source_quote": "I need a small repo-local tool where a facilitator routes one reviewed workshop note into the follow-up lane.",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local lane index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 110,
+          "source_end": 180,
+          "source_quote": "The facilitator owns the route, and the local lane index is available."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "visible result after routing is unspecified",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 110,
+          "source_end": 180,
+          "source_quote": "The facilitator owns the route, and the local lane index is available."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "visible result after routing",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 110,
+          "source_end": 180,
+          "source_quote": "The facilitator owns the route, and the local lane index is available."
+        }
+      ]
+    },
+    {
+      "case_id": "gfhi-006",
+      "prompt_sha256": "1029e89e78644ebec580634dfe8a2f03459901c14a0a7bdba59b6bee12047a33",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "visible_result"
+      ],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 279
+      },
+      "critical_constraints": [
+        {
+          "value": "Keep all evidence inside the local repository"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local lane index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "facilitator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 59,
+          "source_end": 153,
+          "source_quote": "A facilitator chooses a reviewed note and routes it into that lane using the local lane index."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "chooses a reviewed note and routes it into that lane",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 59,
+          "source_end": 153,
+          "source_quote": "A facilitator chooses a reviewed note and routes it into that lane using the local lane index."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "note enters the follow-up lane",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 154,
+          "source_end": 189,
+          "source_quote": "The note enters the follow-up lane."
+        }
+      ],
+      "outputs": [],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Keep all evidence inside the local repository",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 190,
+          "source_end": 236,
+          "source_quote": "Keep all evidence inside the local repository.",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local lane index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 59,
+          "source_end": 153,
+          "source_quote": "A facilitator chooses a reviewed note and routes it into that lane using the local lane index."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "visible confirmation for the route is unspecified",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 59,
+          "source_end": 153,
+          "source_quote": "A facilitator chooses a reviewed note and routes it into that lane using the local lane index."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "visible result for the route",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 59,
+          "source_end": 153,
+          "source_quote": "A facilitator chooses a reviewed note and routes it into that lane using the local lane index."
+        }
+      ]
+    },
+    {
+      "case_id": "gfhi-007",
+      "prompt_sha256": "3af9493634d66ec2f4ba3286cc520704ce004d69fd5326a025f6d94d1b20d2fc",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 324
+      },
+      "critical_constraints": [
+        {
+          "value": "Read only from the repo packet index"
+        },
+        {
+          "value": "Do not send email"
+        },
+        {
+          "value": "Do not copy packets to an external service"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "repo packet index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "release clerk",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 42,
+          "source_quote": "Create a packet shelf for a release clerk."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "selects a prepared packet, places it on the reviewed shelf",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 43,
+          "source_end": 138,
+          "source_quote": "The clerk selects a prepared packet, places it on the reviewed shelf, and sees a shelf receipt."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "prepared to reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 139,
+          "source_end": 182,
+          "source_quote": "The packet moves from prepared to reviewed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "shelf receipt",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 43,
+          "source_end": 138,
+          "source_quote": "The clerk selects a prepared packet, places it on the reviewed shelf, and sees a shelf receipt."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Read only from the repo packet index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 183,
+          "source_end": 220,
+          "source_quote": "Read only from the repo packet index.",
+          "expected_polarity": "affirmative"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Do not send email",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 221,
+          "source_end": 239,
+          "source_quote": "Do not send email.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-3",
+          "category": "constraints",
+          "value": "Do not copy packets to an external service",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 240,
+          "source_end": 283,
+          "source_quote": "Do not copy packets to an external service.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "repo packet index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 183,
+          "source_end": 220,
+          "source_quote": "Read only from the repo packet index."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-008",
+      "prompt_sha256": "a4e4aa44e6b2a139142f2b15ca5185521a679b6334987a93e041fb3d3c4e02c6",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 352
+      },
+      "critical_constraints": [
+        {
+          "value": "read-only"
+        },
+        {
+          "value": "never email a packet"
+        },
+        {
+          "value": "Never copy one to an external service"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "repo packet index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "release clerk",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 16,
+          "source_end": 36,
+          "source_quote": "Owner: release clerk"
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "choose one prepared packet, place it on the reviewed shelf",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 37,
+          "source_end": 138,
+          "source_quote": "First path: choose one prepared packet, place it on the reviewed shelf, then display a shelf receipt."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "prepared -> reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 139,
+          "source_end": 167,
+          "source_quote": "State: prepared -> reviewed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "shelf receipt",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 37,
+          "source_end": 138,
+          "source_quote": "First path: choose one prepared packet, place it on the reviewed shelf, then display a shelf receipt."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "read-only",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 199,
+          "source_end": 226,
+          "source_quote": "Access boundary: read-only.",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "repo packet index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 168,
+          "source_end": 198,
+          "source_quote": "Dependency: repo packet index."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non_goals-1",
+          "category": "non_goals",
+          "value": "never email a packet",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 227,
+          "source_end": 267,
+          "source_quote": "Excluded behavior: never email a packet.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "non_goals-2",
+          "category": "non_goals",
+          "value": "Never copy one to an external service",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 268,
+          "source_end": 306,
+          "source_quote": "Never copy one to an external service.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-009",
+      "prompt_sha256": "c4da17cc919e9315f215332a7eecf72ad9ed48399a7a1d832953b52870cd628d",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 2,
+        "actors": 1,
+        "state_objects": 2,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 400
+      },
+      "critical_constraints": [
+        {
+          "value": "Do not publish the digest"
+        },
+        {
+          "value": "Do not contact subscribers"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local queue history"
+        },
+        {
+          "value": "glossary index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "digest editor",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 102,
+          "source_quote": "Document one reports that a digest editor repeatedly gathers chosen queue entries into a draft digest."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "gathers chosen queue entries into a draft digest",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 102,
+          "source_quote": "Document one reports that a digest editor repeatedly gathers chosen queue entries into a draft digest."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "draft becomes reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 103,
+          "source_end": 229,
+          "source_quote": "Document two confirms that the draft becomes reviewed when the editor accepts it and that a review seal is the visible result."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "review seal",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 103,
+          "source_end": 229,
+          "source_quote": "Document two confirms that the draft becomes reviewed when the editor accepts it and that a review seal is the visible result."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Do not publish the digest",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 283,
+          "source_end": 309,
+          "source_quote": "Do not publish the digest.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Do not contact subscribers",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 310,
+          "source_end": 337,
+          "source_quote": "Do not contact subscribers.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local queue history",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 230,
+          "source_end": 258,
+          "source_quote": "Use the local queue history."
+        },
+        {
+          "id": "dependencies-2",
+          "category": "dependencies",
+          "value": "glossary index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 259,
+          "source_end": 282,
+          "source_quote": "Use the glossary index."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-010",
+      "prompt_sha256": "452f6e1130d804beec0302813badedd146521bdad632dcf04f6aa76bcc6d3655",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 2,
+        "actors": 1,
+        "state_objects": 2,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 380
+      },
+      "critical_constraints": [
+        {
+          "value": "Do not publish the digest"
+        },
+        {
+          "value": "Do not contact subscribers"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local queue history"
+        },
+        {
+          "value": "glossary index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "digest editor",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 135,
+          "source_quote": "Original request: a digest editor gathers chosen queue entries into a draft digest and accepts it as reviewed, producing a review seal."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "gathers chosen queue entries into a draft digest and accepts it as reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 135,
+          "source_quote": "Original request: a digest editor gathers chosen queue entries into a draft digest and accepts it as reviewed, producing a review seal."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "digest moves from draft to reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 136,
+          "source_end": 190,
+          "source_quote": "The digest moves from draft to reviewed when accepted."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "review seal",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 135,
+          "source_quote": "Original request: a digest editor gathers chosen queue entries into a draft digest and accepts it as reviewed, producing a review seal."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Do not publish the digest",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 267,
+          "source_end": 293,
+          "source_quote": "Do not publish the digest.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Do not contact subscribers",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 294,
+          "source_end": 321,
+          "source_quote": "Do not contact subscribers.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local queue history",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 191,
+          "source_end": 237,
+          "source_quote": "Correction: depend on the local queue history."
+        },
+        {
+          "id": "dependencies-2",
+          "category": "dependencies",
+          "value": "glossary index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 238,
+          "source_end": 266,
+          "source_quote": "Also use the glossary index."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-011",
+      "prompt_sha256": "bc3df9dbc609d82bcebc155f8cbde5a0d38dde65c3a56bcfa060defcaceb2c4d",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 364
+      },
+      "critical_constraints": [
+        {
+          "value": "Do not translate the text"
+        },
+        {
+          "value": "Do not export the text"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local naïve-text index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "curator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 43,
+          "source_quote": "Build a café résumé board for a curator."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "attaches one résumé note to a café entry and marks the entry reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 44,
+          "source_end": 129,
+          "source_quote": "The curator attaches one résumé note to a café entry and marks the entry reviewed."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "entry moves from unreviewed to reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 130,
+          "source_end": 174,
+          "source_quote": "The entry moves from unreviewed to reviewed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "review badge",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 175,
+          "source_end": 212,
+          "source_quote": "A blue review badge confirms success."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Do not translate the text",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 270,
+          "source_end": 296,
+          "source_quote": "Do not translate the text.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Do not export the text",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 297,
+          "source_end": 320,
+          "source_quote": "Do not export the text.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local naïve-text index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 213,
+          "source_end": 269,
+          "source_quote": "Preserve accents by reading the local naïve-text index."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-012",
+      "prompt_sha256": "a78324457a8cd5daf2a6de0c11759d7351c9ef765d140abd598e2c8693aba3fc",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 336
+      },
+      "critical_constraints": [
+        {
+          "value": "never translate the text"
+        },
+        {
+          "value": "Never export the text"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local naïve-text index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "Curator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 27,
+          "source_end": 60,
+          "source_quote": "1. Curator chooses a café entry."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "Attach one résumé note and mark the entry reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 61,
+          "source_end": 117,
+          "source_quote": "2. Attach one résumé note and mark the entry reviewed."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "unreviewed -> reviewed",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 147,
+          "source_end": 177,
+          "source_quote": "State: unreviewed -> reviewed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "review badge",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 118,
+          "source_end": 146,
+          "source_quote": "3. Show a blue review badge."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "never translate the text",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 238,
+          "source_end": 273,
+          "source_quote": "Boundary: never translate the text.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Never export the text",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 274,
+          "source_end": 296,
+          "source_quote": "Never export the text.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local naïve-text index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 178,
+          "source_end": 237,
+          "source_quote": "Source: local naïve-text index; accents must be preserved."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-013",
+      "prompt_sha256": "289966a72eae365aae88d1ab919a4d9d215cc9840009ed513ff7dff53ea48941",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "role"
+      ],
+      "complexity": {
+        "documents": 2,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 396
+      },
+      "critical_constraints": [
+        {
+          "value": "Approval stays inside the local repository"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local tile ledger"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "facilitator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 144,
+          "source_end": 200,
+          "source_quote": "Note A identifies the facilitator as the approval owner."
+        },
+        {
+          "id": "actors-2",
+          "category": "actors",
+          "value": "session coordinator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 201,
+          "source_end": 265,
+          "source_quote": "Note B identifies the session coordinator as the approval owner."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "approve one reviewed tile",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 63,
+          "source_quote": "Interview notes agree on the action: approve one reviewed tile."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "tile moves from reviewed to approved",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 64,
+          "source_end": 143,
+          "source_quote": "The tile moves from reviewed to approved and then displays an approval pennant."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "approval pennant",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 64,
+          "source_end": 143,
+          "source_quote": "The tile moves from reviewed to approved and then displays an approval pennant."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Approval stays inside the local repository",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 302,
+          "source_end": 345,
+          "source_quote": "Approval stays inside the local repository.",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local tile ledger",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 266,
+          "source_end": 301,
+          "source_quote": "The local tile ledger is available."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "approval ownership conflicts between facilitator and session coordinator",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 144,
+          "source_end": 265,
+          "source_quote": "Note A identifies the facilitator as the approval owner. Note B identifies the session coordinator as the approval owner."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "role owning approval",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 144,
+          "source_end": 265,
+          "source_quote": "Note A identifies the facilitator as the approval owner. Note B identifies the session coordinator as the approval owner."
+        }
+      ]
+    },
+    {
+      "case_id": "gfhi-014",
+      "prompt_sha256": "7a9109099f6382dd99c06f7031ef3adb7cd583ae1ec539ce20b7aa3c4e2bc983",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "role"
+      ],
+      "complexity": {
+        "documents": 2,
+        "actors": 2,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 340
+      },
+      "critical_constraints": [
+        {
+          "value": "Keep approval inside the local repository"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local tile ledger"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "facilitator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 77,
+          "source_quote": "Draft: a facilitator approves one reviewed tile and sees an approval pennant."
+        },
+        {
+          "id": "actors-2",
+          "category": "actors",
+          "value": "session coordinator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 120,
+          "source_end": 198,
+          "source_quote": "Edit from the second source: approval belongs only to the session coordinator."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "approves one reviewed tile",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 77,
+          "source_quote": "Draft: a facilitator approves one reviewed tile and sees an approval pennant."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "tile moves from reviewed to approved",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 78,
+          "source_end": 119,
+          "source_quote": "The tile moves from reviewed to approved."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "approval pennant",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 77,
+          "source_quote": "Draft: a facilitator approves one reviewed tile and sees an approval pennant."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Keep approval inside the local repository",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 259,
+          "source_end": 301,
+          "source_quote": "Keep approval inside the local repository.",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local tile ledger",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 232,
+          "source_end": 258,
+          "source_quote": "Use the local tile ledger."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "approval ownership conflicts between facilitator and session coordinator",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 0,
+          "source_end": 198,
+          "source_quote": "Draft: a facilitator approves one reviewed tile and sees an approval pennant. The tile moves from reviewed to approved. Edit from the second source: approval belongs only to the session coordinator."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "role owning approval",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 120,
+          "source_end": 231,
+          "source_quote": "Edit from the second source: approval belongs only to the session coordinator. Both statements remain asserted."
+        }
+      ]
+    },
+    {
+      "case_id": "gfhi-015",
+      "prompt_sha256": "f25e5df852e6f6b73ea6d84545b883886fb1c78b3356e3ea8eb053ca10045146",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 3,
+        "evidence_bytes": 335
+      },
+      "critical_constraints": [
+        {
+          "value": "Never issue production commands"
+        },
+        {
+          "value": "Never reserve capacity"
+        },
+        {
+          "value": "Never contact participants"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "sandbox calendar snapshot"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "planner",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 20,
+          "source_end": 96,
+          "source_quote": "The planner selects one staged itinerary and generates a simulated sequence."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "selects one staged itinerary and generates a simulated sequence",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 20,
+          "source_end": 96,
+          "source_quote": "The planner selects one staged itinerary and generates a simulated sequence."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "itinerary remains staged",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 97,
+          "source_end": 171,
+          "source_quote": "The itinerary remains staged, and a dry-run preview is the visible result."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "dry-run preview",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 97,
+          "source_end": 171,
+          "source_quote": "The itinerary remains staged, and a dry-run preview is the visible result."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Never issue production commands",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 208,
+          "source_end": 240,
+          "source_quote": "Never issue production commands.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Never reserve capacity",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 241,
+          "source_end": 264,
+          "source_quote": "Never reserve capacity.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-3",
+          "category": "constraints",
+          "value": "Never contact participants",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 265,
+          "source_end": 292,
+          "source_quote": "Never contact participants.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "sandbox calendar snapshot",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 172,
+          "source_end": 207,
+          "source_quote": "Read the sandbox calendar snapshot."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-016",
+      "prompt_sha256": "25ff156110080556aca79e9e765bc57e7c504fc05179659031420b5b6f0c03ee",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 2,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 3,
+        "evidence_bytes": 359
+      },
+      "critical_constraints": [
+        {
+          "value": "cannot issue production commands"
+        },
+        {
+          "value": "cannot reserve capacity"
+        },
+        {
+          "value": "cannot contact participants"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "sandbox calendar snapshot"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "planner",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 40,
+          "source_quote": "Give a planner a local sequence preview."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "choose one staged itinerary, generate only a simulated sequence",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 41,
+          "source_end": 170,
+          "source_quote": "They choose one staged itinerary, generate only a simulated sequence, and see a dry-run preview while the itinerary stays staged."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "itinerary stays staged",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 41,
+          "source_end": 170,
+          "source_quote": "They choose one staged itinerary, generate only a simulated sequence, and see a dry-run preview while the itinerary stays staged."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "dry-run preview",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 41,
+          "source_end": 170,
+          "source_quote": "They choose one staged itinerary, generate only a simulated sequence, and see a dry-run preview while the itinerary stays staged."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "cannot issue production commands",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 215,
+          "source_end": 260,
+          "source_quote": "The product cannot issue production commands.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "cannot reserve capacity",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 261,
+          "source_end": 288,
+          "source_quote": "It cannot reserve capacity.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-3",
+          "category": "constraints",
+          "value": "cannot contact participants",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 289,
+          "source_end": 320,
+          "source_quote": "It cannot contact participants.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "sandbox calendar snapshot",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 171,
+          "source_end": 214,
+          "source_quote": "The sandbox calendar snapshot is read-only."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-017",
+      "prompt_sha256": "4915ef2a433bfc4f1295c9838f51fd63c710949f9a1dbe8ccce1af3b71e744aa",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 6,
+        "state_objects": 4,
+        "paths": 1,
+        "external_systems": 4,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 4,
+        "evidence_bytes": 546
+      },
+      "critical_constraints": [
+        {
+          "value": "External references may be named but never fetched"
+        },
+        {
+          "value": "Do not notify roles"
+        },
+        {
+          "value": "Do not modify source fragments"
+        },
+        {
+          "value": "Do not publish the map"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "fragment shelf"
+        },
+        {
+          "value": "role roster"
+        },
+        {
+          "value": "local glossary"
+        },
+        {
+          "value": "decision log"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "collector",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 97,
+          "source_quote": "Six roles exist: collector, verifier, mapper, reviewer, coordinator, and observer."
+        },
+        {
+          "id": "actors-2",
+          "category": "actors",
+          "value": "verifier",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 97,
+          "source_quote": "Six roles exist: collector, verifier, mapper, reviewer, coordinator, and observer."
+        },
+        {
+          "id": "actors-3",
+          "category": "actors",
+          "value": "mapper",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 97,
+          "source_quote": "Six roles exist: collector, verifier, mapper, reviewer, coordinator, and observer."
+        },
+        {
+          "id": "actors-4",
+          "category": "actors",
+          "value": "reviewer",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 97,
+          "source_quote": "Six roles exist: collector, verifier, mapper, reviewer, coordinator, and observer."
+        },
+        {
+          "id": "actors-5",
+          "category": "actors",
+          "value": "coordinator",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 97,
+          "source_quote": "Six roles exist: collector, verifier, mapper, reviewer, coordinator, and observer."
+        },
+        {
+          "id": "actors-6",
+          "category": "actors",
+          "value": "observer",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 97,
+          "source_quote": "Six roles exist: collector, verifier, mapper, reviewer, coordinator, and observer."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "select one verified fragment, attach it to the draft map, and mark the map reviewable",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 98,
+          "source_end": 224,
+          "source_quote": "The mapper owns the first release path: select one verified fragment, attach it to the draft map, and mark the map reviewable."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "draft map becomes reviewable",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 225,
+          "source_end": 279,
+          "source_quote": "The draft map becomes reviewable and shows a map seal."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "map seal",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 225,
+          "source_end": 279,
+          "source_quote": "The draft map becomes reviewable and shows a map seal."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "External references may be named but never fetched",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 375,
+          "source_end": 426,
+          "source_quote": "External references may be named but never fetched.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "fragment shelf",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 280,
+          "source_end": 304,
+          "source_quote": "Read the fragment shelf."
+        },
+        {
+          "id": "dependencies-2",
+          "category": "dependencies",
+          "value": "role roster",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 305,
+          "source_end": 326,
+          "source_quote": "Read the role roster."
+        },
+        {
+          "id": "dependencies-3",
+          "category": "dependencies",
+          "value": "local glossary",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 327,
+          "source_end": 351,
+          "source_quote": "Read the local glossary."
+        },
+        {
+          "id": "dependencies-4",
+          "category": "dependencies",
+          "value": "decision log",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 352,
+          "source_end": 374,
+          "source_quote": "Read the decision log."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [
+        {
+          "id": "non_goals-1",
+          "category": "non_goals",
+          "value": "Do not notify roles",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 427,
+          "source_end": 447,
+          "source_quote": "Do not notify roles.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "non_goals-2",
+          "category": "non_goals",
+          "value": "Do not modify source fragments",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 448,
+          "source_end": 479,
+          "source_quote": "Do not modify source fragments.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "non_goals-3",
+          "category": "non_goals",
+          "value": "Do not publish the map",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 480,
+          "source_end": 503,
+          "source_quote": "Do not publish the map.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-018",
+      "prompt_sha256": "b829bb4cab1ce2b1e441158e1bcd1a2da884d99c4e617882f3dd8df5459e2304",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 2,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 340
+      },
+      "critical_constraints": [
+        {
+          "value": "no remote lookup"
+        },
+        {
+          "value": "no automatic rewrite"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "repo heading index"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "index steward",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 19,
+          "source_end": 42,
+          "source_quote": "\"actor\":\"index steward\""
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "choose one candidate heading and accept it",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 43,
+          "source_end": 102,
+          "source_quote": "\"first_action\":\"choose one candidate heading and accept it\""
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "candidate to accepted",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 103,
+          "source_end": 141,
+          "source_quote": "\"state_change\":\"candidate to accepted\""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "acceptance glyph",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 142,
+          "source_end": 177,
+          "source_quote": "\"visible_result\":\"acceptance glyph\""
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "no remote lookup",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 212,
+          "source_end": 263,
+          "source_quote": "\"boundary\":\"no remote lookup; no automatic rewrite\"",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "no automatic rewrite",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 212,
+          "source_end": 263,
+          "source_quote": "\"boundary\":\"no remote lookup; no automatic rewrite\"",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "repo heading index",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 178,
+          "source_end": 211,
+          "source_quote": "\"dependency\":\"repo heading index\""
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-019",
+      "prompt_sha256": "26224761c6955a894e12b7ad6dcc471b028334259dc3f338d8e26ea8c37e0a65",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 290
+      },
+      "critical_constraints": [
+        {
+          "value": "Do not notify anyone automatically"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local proposal list"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "reviewer",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 80,
+          "source_quote": "Let a reviewer select one draft proposal, mark it ready, and see a ready marker."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "select one draft proposal, mark it ready",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 80,
+          "source_quote": "Let a reviewer select one draft proposal, mark it ready, and see a ready marker."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "proposal moves from draft to ready",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 81,
+          "source_end": 120,
+          "source_quote": "The proposal moves from draft to ready."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "ready marker",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 80,
+          "source_quote": "Let a reviewer select one draft proposal, mark it ready, and see a ready marker."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Do not notify anyone automatically",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 150,
+          "source_end": 185,
+          "source_quote": "Do not notify anyone automatically.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local proposal list",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 121,
+          "source_end": 149,
+          "source_quote": "Use the local proposal list."
+        }
+      ],
+      "assumptions": [
+        {
+          "id": "assumptions-1",
+          "category": "assumptions",
+          "value": "ready marker may use a plain text presentation",
+          "materiality": "non_material",
+          "expected_custody": "assumption",
+          "source_start": 186,
+          "source_end": 239,
+          "source_quote": "No color or symbol scheme is provided for the marker."
+        }
+      ],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-020",
+      "prompt_sha256": "a2dcd00abd1ca301bda207f36850a5eee1d98f687db474be2ae00ee3195da7bc",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "role"
+      ],
+      "complexity": {
+        "documents": 1,
+        "actors": 0,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 241
+      },
+      "critical_constraints": [
+        {
+          "value": "Never dispatch the draft"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local draft list"
+        }
+      ],
+      "actors": [],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "turns one selected draft from draft to queued",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 95,
+          "source_quote": "Create a local view that turns one selected draft from draft to queued and shows a queue stamp."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "draft to queued",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 95,
+          "source_quote": "Create a local view that turns one selected draft from draft to queued and shows a queue stamp."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "queue stamp",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 95,
+          "source_quote": "Create a local view that turns one selected draft from draft to queued and shows a queue stamp."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Never dispatch the draft",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 122,
+          "source_end": 147,
+          "source_quote": "Never dispatch the draft.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local draft list",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 96,
+          "source_end": 121,
+          "source_quote": "Use the local draft list."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "role owning the queue action is unspecified",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 0,
+          "source_end": 95,
+          "source_quote": "Create a local view that turns one selected draft from draft to queued and shows a queue stamp."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "role owning the queue action",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 0,
+          "source_end": 95,
+          "source_quote": "Create a local view that turns one selected draft from draft to queued and shows a queue stamp."
+        }
+      ]
+    },
+    {
+      "case_id": "gfhi-021",
+      "prompt_sha256": "e757748c6ed9dfc2da565f07763127a76097eb20bbaf69cf39c609d6c0a32a68",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 2,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 1,
+        "contradictions": 1,
+        "ambiguities": 0,
+        "safety_boundaries": 2,
+        "evidence_bytes": 339
+      },
+      "critical_constraints": [
+        {
+          "value": "Do not broadcast the acceptance"
+        },
+        {
+          "value": "Do not call any messaging service"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "repo panel register"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "board keeper",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 55,
+          "source_end": 108,
+          "source_quote": "Final edit: a board keeper accepts one pending panel."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "accepts one pending panel",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 55,
+          "source_end": 108,
+          "source_quote": "Final edit: a board keeper accepts one pending panel."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "panel moves from pending to accepted",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 109,
+          "source_end": 185,
+          "source_quote": "The panel moves from pending to accepted and shows a local acceptance token."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "local acceptance token",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 109,
+          "source_end": 185,
+          "source_quote": "The panel moves from pending to accepted and shows a local acceptance token."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Do not broadcast the acceptance",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 186,
+          "source_end": 218,
+          "source_quote": "Do not broadcast the acceptance.",
+          "expected_polarity": "prohibited"
+        },
+        {
+          "id": "constraints-2",
+          "category": "constraints",
+          "value": "Do not call any messaging service",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 219,
+          "source_end": 253,
+          "source_quote": "Do not call any messaging service.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "repo panel register",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 254,
+          "source_end": 283,
+          "source_quote": "Read the repo panel register."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-022",
+      "prompt_sha256": "dda585c0de7f8167345e5c83d81dbaa10b5d4c1c91c74fb4f08305552631d2cd",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "first_path"
+      ],
+      "complexity": {
+        "documents": 2,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 0,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 352
+      },
+      "critical_constraints": [
+        {
+          "value": "All evidence stays inside the local repository"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local slip cabinet"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "review guide",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 15,
+          "source_end": 35,
+          "source_quote": "Owner: review guide."
+        }
+      ],
+      "actions": [],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "unregistered to registered",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 100,
+          "source_end": 134,
+          "source_quote": "State: unregistered to registered."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "completion notch",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 36,
+          "source_end": 99,
+          "source_quote": "Result: a completion notch after one source slip is registered."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "All evidence stays inside the local repository",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 267,
+          "source_end": 314,
+          "source_quote": "All evidence stays inside the local repository.",
+          "expected_polarity": "affirmative"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local slip cabinet",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 135,
+          "source_end": 166,
+          "source_quote": "Dependency: local slip cabinet."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "first action conflicts between selecting an existing slip and importing a new slip",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 167,
+          "source_end": 266,
+          "source_quote": "One section says to select an existing slip first. Another section says to import a new slip first."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "first action defining the release path",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 167,
+          "source_end": 266,
+          "source_quote": "One section says to select an existing slip first. Another section says to import a new slip first."
+        }
+      ]
+    },
+    {
+      "case_id": "gfhi-023",
+      "prompt_sha256": "27184fb61ee48587db5b9f188ad57da22514762be19af5ca48c76dbc186c015c",
+      "expected_outcome": "commit",
+      "expected_question_fields": [],
+      "complexity": {
+        "documents": 1,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 1,
+        "external_systems": 0,
+        "contradictions": 0,
+        "ambiguities": 1,
+        "safety_boundaries": 1,
+        "evidence_bytes": 358
+      },
+      "critical_constraints": [
+        {
+          "value": "Never alter the original note text"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "repo checkpoint ledger"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "note keeper",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 48,
+          "source_quote": "Build a local checkpoint list for a note keeper."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "selects one open checkpoint, marks it complete",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 49,
+          "source_end": 137,
+          "source_quote": "The keeper selects one open checkpoint, marks it complete, and sees a completion marker."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "checkpoint moves from open to complete",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 138,
+          "source_end": 181,
+          "source_quote": "The checkpoint moves from open to complete."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "completion marker",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 49,
+          "source_end": 137,
+          "source_quote": "The keeper selects one open checkpoint, marks it complete, and sees a completion marker."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "Never alter the original note text",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 269,
+          "source_end": 304,
+          "source_quote": "Never alter the original note text.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "repo checkpoint ledger",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 182,
+          "source_end": 214,
+          "source_quote": "Read the repo checkpoint ledger."
+        }
+      ],
+      "assumptions": [
+        {
+          "id": "assumptions-1",
+          "category": "assumptions",
+          "value": "completion marker may use a plain text label",
+          "materiality": "non_material",
+          "expected_custody": "assumption",
+          "source_start": 215,
+          "source_end": 268,
+          "source_quote": "No wording or icon scheme is provided for the marker."
+        }
+      ],
+      "ambiguities": [],
+      "non_goals": [],
+      "material_questions": []
+    },
+    {
+      "case_id": "gfhi-024",
+      "prompt_sha256": "981f257ba8e8ed993d8de37c4d26b1bc429dbc6fed798097d4c2336a004b2492",
+      "expected_outcome": "clarify",
+      "expected_question_fields": [
+        "first_path"
+      ],
+      "complexity": {
+        "documents": 2,
+        "actors": 1,
+        "state_objects": 1,
+        "paths": 2,
+        "external_systems": 0,
+        "contradictions": 1,
+        "ambiguities": 1,
+        "safety_boundaries": 2,
+        "evidence_bytes": 380
+      },
+      "critical_constraints": [
+        {
+          "value": "No release behavior is executed during onboarding"
+        }
+      ],
+      "explicit_systems": [
+        {
+          "value": "local bundle ledger"
+        }
+      ],
+      "actors": [
+        {
+          "id": "actors-1",
+          "category": "actors",
+          "value": "operations reader",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 125,
+          "source_quote": "Evidence agrees that an operations reader selects one staged bundle and sees an action summary using the local bundle ledger."
+        }
+      ],
+      "actions": [
+        {
+          "id": "actions-1",
+          "category": "actions",
+          "value": "selects one staged bundle",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 125,
+          "source_quote": "Evidence agrees that an operations reader selects one staged bundle and sees an action summary using the local bundle ledger."
+        }
+      ],
+      "states": [
+        {
+          "id": "states-1",
+          "category": "states",
+          "value": "bundle remains staged during onboarding",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 243,
+          "source_end": 287,
+          "source_quote": "The bundle remains staged during onboarding."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "outputs-1",
+          "category": "outputs",
+          "value": "action summary",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 125,
+          "source_quote": "Evidence agrees that an operations reader selects one staged bundle and sees an action summary using the local bundle ledger."
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraints-1",
+          "category": "constraints",
+          "value": "No release behavior is executed during onboarding",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 288,
+          "source_end": 338,
+          "source_quote": "No release behavior is executed during onboarding.",
+          "expected_polarity": "prohibited"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "dependencies-1",
+          "category": "dependencies",
+          "value": "local bundle ledger",
+          "materiality": "material",
+          "expected_custody": "accepted_fact",
+          "source_start": 0,
+          "source_end": 125,
+          "source_quote": "Evidence agrees that an operations reader selects one staged bundle and sees an action summary using the local bundle ledger."
+        }
+      ],
+      "assumptions": [],
+      "ambiguities": [
+        {
+          "id": "ambiguities-1",
+          "category": "ambiguities",
+          "value": "first path conflicts between previewing release and releasing the bundle",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 126,
+          "source_end": 242,
+          "source_quote": "One observation says the action only previews release. Another says the same action releases the bundle immediately."
+        }
+      ],
+      "non_goals": [],
+      "material_questions": [
+        {
+          "id": "material_questions-1",
+          "category": "material_questions",
+          "value": "first path behavior for release",
+          "materiality": "material",
+          "expected_custody": "ambiguity",
+          "source_start": 126,
+          "source_end": 242,
+          "source_quote": "One observation says the action only previews release. Another says the same action releases the bundle immediately."
+        }
+      ]
+    }
+  ]
+}
