@@ -421,7 +421,7 @@ def description_compound_phrases(value: str) -> tuple[str, ...]:
                 phrase = _preserved_compound_phrase(candidate)
                 if phrase:
                     rows.append(phrase)
-            carry_object = (owns_action or carry_object) and len(rows) > row_count
+            carry_object = owns_action or (carry_object and len(rows) > row_count)
     return tuple(unique_text(rows))
 def _preserved_compound_phrase(value: str) -> str:
     text = clean_artifact_text(value, split_parentheses=True).casefold().strip(" .,;:")

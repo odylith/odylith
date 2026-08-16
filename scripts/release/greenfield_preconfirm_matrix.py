@@ -42,6 +42,7 @@ from greenfield_matrix_leakage import source_evidence_custody_issues as _source_
 from greenfield_matrix_leakage import term_present as _term_present  # noqa: E402
 from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
 from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_case_file import required_term_present as _required_term_present  # noqa: E402
 from greenfield_matrix_case_file import ungrounded_required_terms  # noqa: E402
 from greenfield_matrix_clarification import clarification_contract_issues, clarification_quality_verdict, run_expected_clarification  # noqa: E402
 from greenfield_matrix_write_audit import begin_installed_write_audit  # noqa: E402
@@ -50,6 +51,7 @@ from greenfield_matrix_corpus_provenance import discovery_corpus_summary  # noqa
 from greenfield_matrix_corpus_provenance import evaluate_release_corpus  # noqa: E402
 from greenfield_matrix_corpus_provenance import load_release_audit_file  # noqa: E402
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract  # noqa: E402
+from greenfield_evaluation_contract import prepare_frozen_evaluation_cases  # noqa: E402
 from greenfield_evaluation_contract import validate_atomic_annotations  # noqa: E402
 from greenfield_final_holdout_guard import claim_final_holdout_run  # noqa: E402
 from greenfield_final_holdout_guard import complete_final_holdout_run  # noqa: E402
@@ -106,6 +108,8 @@ from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
 from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
+from greenfield_matrix_terminal_reporting import build_upstream_stop_result  # noqa: E402
+from greenfield_matrix_terminal_reporting import upstream_stop_status  # noqa: E402
 from greenfield_matrix_transaction_evidence import CompiledCreateExecution  # noqa: E402
 from greenfield_matrix_transaction_evidence import commit_precompiled_transaction  # noqa: E402
 from greenfield_matrix_transaction_evidence import confirmation_preview_issues  # noqa: E402
@@ -884,6 +888,34 @@ def _run_case(
     manifest = _as_mapping(payload.get("commit_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    stopped_status = upstream_stop_status(execution.dry_run_receipt)
+    if stopped_status:
+        return build_upstream_stop_result(
+            case=case,
+            create=create,
+            create_seconds=create_seconds,
+            create_payload=payload,
+            receipt=execution.dry_run_receipt,
+            counts=counts,
+            evidence_builder=lambda quality: _case_evidence_manifest(
+                case=case,
+                repo_root=repo_root,
+                package=package,
+                create_payload=payload,
+                quality=quality,
+                install_script=install_script,
+                version=version,
+                install_mode=install_mode,
+                browser_surface_proof_attempted=False,
+                browser_surface_proof_required=include_browser_proof,
+                browser_surface_issues=(),
+            ),
+            model_profile=model_profile_evidence(profile, env),
+        )
+    browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
+    browser_surface_issues = (
+        browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
+    )
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
     generated_text = _generated_text(repo_root=repo_root, package=package)
     leakage_terms = _case_generated_leakage_terms(
@@ -893,10 +925,6 @@ def _run_case(
     )
     source_custody_issues = _source_evidence_custody_issues(case=case, generated_text=generated_text)
     source_custody_issues += _source_evidence_content_custody_issues(case=case, generated_text=generated_text)
-    browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
-    browser_surface_issues = (
-        browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
-    )
     receipt_issues = dry_run_commit_issues(
         receipt=execution.dry_run_receipt,
         create_payload=payload,
@@ -1335,7 +1363,7 @@ def _required_term_grounding(
                 "excerpt": _excerpt(str(artifact.get("text", "") or artifact.get("excerpt", ""))),
             }
             for artifact in artifacts
-            if _term_present(str(artifact.get("text", "") or artifact.get("excerpt", "")), term)
+            if _required_term_present(str(artifact.get("text", "") or artifact.get("excerpt", "")), term)
         ]
         grounding.append(
             {
@@ -1697,7 +1725,7 @@ def collect_artifact_counts(
         rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
         rendered_surface_payloads=rendered_surface_payload_count(repo_root),
         atlas_rendered_assets=atlas_rendered_asset_count(repo_root),
-        domain_term_hits=sum(1 for term in required_terms if _term_present(rendered_text, term)),
+        domain_term_hits=sum(1 for term in required_terms if _required_term_present(rendered_text, term)),
         required_domain_terms=len(tuple(dict.fromkeys(term.casefold() for term in required_terms if str(term).strip()))),
         project_implementation_prompts=len(
             _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts"))
@@ -2254,7 +2282,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     final_holdout_run = _final_holdout_run_from_args(args, sealed_input_root=sealed_input_root)
     selected_cases = _load_cli_case_files(args.case_file or ())
-    planned_cases = selected_cases or default_cases()
     release_audits = (
         load_release_audit_file(
             Path(str(args.release_audit_file)),
@@ -2263,14 +2290,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         if str(args.release_audit_file or "").strip()
         else ()
     )
-    if campaign_config.proof_tier == "release":
-        corpus_provenance = evaluate_frozen_evaluation_contract(
-            repo_root=Path(sealed_input_root),
-            manifest_path=Path(str(args.evaluation_split_manifest)),
-            final_holdout_path=Path(str(args.semantic_annotations_file)),
-        )
-    else:
-        corpus_provenance = discovery_corpus_summary(planned_cases)
+    annotation_path = (
+        Path(str(args.semantic_annotations_file))
+        if str(args.semantic_annotations_file or "").strip()
+        else None
+    )
+    manifest_path = (
+        Path(str(args.evaluation_split_manifest))
+        if str(args.evaluation_split_manifest or "").strip()
+        else None
+    )
+    selected_cases, evaluation_contract = prepare_frozen_evaluation_cases(
+        cases=selected_cases,
+        repo_root=Path(sealed_input_root) if sealed_input_root else REPO_ROOT,
+        manifest_path=manifest_path,
+        final_holdout_path=annotation_path,
+    )
+    planned_cases = selected_cases or default_cases()
+    corpus_provenance = (
+        evaluation_contract
+        if campaign_config.proof_tier == "release"
+        else discovery_corpus_summary(planned_cases)
+    )
     _raise_for_invalid_campaign_policy(
         config=campaign_config,
         install_mode=str(args.install_mode),

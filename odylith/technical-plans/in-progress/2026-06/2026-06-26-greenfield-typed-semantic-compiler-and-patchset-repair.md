@@ -4111,3 +4111,19 @@ above.
       committed, independently revalidated, rebuilt as an exact distribution,
       and exercised through disclosed, lifecycle, recovery, host, and browser
       gates. No consumed holdout was rerun.
+    - 2026-08-16 disclosed-v3 regression closure: the retired replacement
+      corpus now scores strict accepted-fact custody at `80/80`, with ordered
+      actor/action ownership, state, dependency, constraint, and proof-span
+      custody intact. Materiality proves both focused no-write clarification
+      and expected-commit avoidance; semantic projection keeps source terms,
+      component-local contracts, and three distinct Atlas flow events. The
+      final cross-owner runtime matrix passed `396/396`; evaluator and
+      security/proof suites passed `193/193` and `46/46`; transaction closure
+      passed its compiled-receipt failure and proof-normalization controls; and
+      a fresh independent closure pack passed `211/211` with no P0/P1. Frozen
+      provenance is externally validated before synthetic identity binding,
+      and evaluator composition is polarity-, owner-, projection-family-, and
+      order-sensitive. This closes the disclosed repair phase only. Next:
+      commit and push the governed checkpoint, rebuild an exact distribution,
+      rerun disclosed/lifecycle/recovery/host/browser proof, then authorize one
+      newly authored untouched holdout. No consumed holdout was rerun.

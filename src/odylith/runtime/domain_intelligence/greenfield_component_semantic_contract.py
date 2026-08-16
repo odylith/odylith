@@ -55,6 +55,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_outputs import (
     produced_output_artifact_phrases as _produced_output_artifact_phrases,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
+    anchored_context_identity_phrases as _anchored_context_identity_phrases,
     literal_label_terms as _literal_label_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import (
@@ -140,10 +141,11 @@ def derive_component_semantic_contract(
         description_terms=description_terms,
         limit=14,
     )
-    context_identity_phrases = _context_identity_phrases(
+    context_identity_phrases = _anchored_context_identity_phrases(
         context_required_phrases,
-        label_terms=label_terms,
-        description_terms=description_terms,
+        anchor_terms=tuple(
+            semantic_context.expanded_context_anchors(set([*label_terms, *description_terms]))
+        ),
     )
     context_compound_phrases = semantic_context.context_anchor_compounds(
         proposal_context,
@@ -734,29 +736,6 @@ def _summary_object_phrases(
             result.append(phrase)
     result = semantic_context.prefer_richer_relation_phrases(result, values)
     return _drop_subsumed_singletons(result[:limit])
-
-
-def _context_identity_phrases(
-    values: Sequence[str],
-    *,
-    label_terms: Sequence[str],
-    description_terms: Sequence[str],
-) -> tuple[str, ...]:
-    """Keep qualified context objects needed to understand component ownership."""
-
-    anchors = set(label_terms) | set(description_terms)
-    rows: list[str] = []
-    for value in values:
-        words = [word.casefold().strip(".,;:") for word in _clean(value).split() if word.strip(".,;:")]
-        for index, word in enumerate(words[:-1]):
-            if word not in {"active", "candidate", "current", "ranked", "selected"}:
-                continue
-            right = words[index + 1]
-            terms = set(_content_terms(right))
-            if not terms or (anchors and not terms & semantic_context.expanded_context_anchors(anchors)):
-                continue
-            rows.append(f"{word} {right}")
-    return tuple(unique_text(rows))
 
 
 def _preserve_summary_phrases(

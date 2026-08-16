@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import re
 from typing import Any
 
@@ -13,11 +12,10 @@ from odylith.runtime.common.prose_grammar import base_action_clause, base_action
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import past_action_verb
 from odylith.runtime.common.prose_grammar import strip_leading_action_modal
-from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal, word_has_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_action_context, has_human_actor_role_signal, word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import owned_disposition_workflow_actor_action, sentence_fragments
-from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text, clean_text
 
 
 _PATH_START_RE = re.compile(
@@ -42,7 +40,7 @@ _NEGATED_SCOPE_RE = re.compile(
 _OUTPUT_ACTION_RE = re.compile(
     r"^(?:create|creates|export|exports|generate|generates|issue|issues|prepare|prepares|"
     r"produce|produces|provide|provides|publish|publishes|receive|receives|record|records|"
-    r"release|releases|return|returns|save|saves|show|shows|display|displays|get|gets)\b",
+    r"release|releases|return|returns|save|saves|see|sees|show|shows|view|views|display|displays|get|gets)\b",
     flags=re.IGNORECASE,
 )
 _STRUCTURED_LABEL_RE = re.compile(
@@ -52,7 +50,6 @@ _STRUCTURED_LABEL_RE = re.compile(
 _IDENTITY_ARTICLES = frozenset({"a", "an", "the"})
 _IDENTITY_CONNECTORS = frozenset({"and", "finally", "then", "they"})
 _PASSIVE_AUXILIARIES = frozenset({"are", "be", "been", "being", "is", "was", "were"})
-
 
 @dataclass(frozen=True)
 class StructuredPathEvent:
@@ -87,15 +84,19 @@ def source_owned_path_evidence(value: str, *, ranked_first_path: str) -> SourceO
         ) else ""
         return SourceOwnedPathEvidence(actor=actor, action=action, first_path=path)
     match = re.match(
-        r"^(?:build|create|design|make)\s+[^.!?]{1,120}\s+for\s+"
-        r"(?P<actor>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+to\s+"
-        r"(?P<action>[A-Za-z][^.!?]{2,160})$",
-        next(iter(sentence_fragments(value)), ""), flags=re.IGNORECASE)
-    if not match or not has_human_actor_role_signal(match.group("actor")):
+        r"^(?:(?:(?:build|create|design|make)\s+[^.!?]{1,120}\s+for|allow|enable)\s+"
+        r"(?P<to_actor>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+to|let\s+"
+        r"(?P<let_actor>(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?))\s+"
+        r"(?P<action>[A-Za-z][^.!?]{2,160})$", next(iter(sentence_fragments(value)), ""), flags=re.IGNORECASE)
+    source_actor = (match.group("to_actor") or match.group("let_actor")) if match else ""
+    definite_unknown_actor = source_actor.casefold().startswith("the ") and not has_human_actor_role_signal(source_actor)
+    if not match or definite_unknown_actor or not has_human_actor_action_context(source_actor, match.group("action")):
         return SourceOwnedPathEvidence()
-    actor = re.sub(r"^(?:a|an|the)\s+", "", match.group("actor"), flags=re.IGNORECASE)
+    actor = re.sub(r"^(?:a|an|the)\s+", "", source_actor, flags=re.IGNORECASE)
     action = match.group("action").strip(" .")
-    path = ranked_first_path if action.casefold() in ranked_first_path.casefold() else f"{actor.capitalize()} can {action}. {ranked_first_path}".strip(" .")
+    helper_grant = re.match(r"^(?:allow|enable|let)\b", value, flags=re.IGNORECASE)
+    complete_action = any(_OUTPUT_ACTION_RE.match(clause) for clause in _coordinated_action_clauses(action))
+    path = f"{actor.capitalize()} can {action}" if helper_grant or complete_action else ranked_first_path if action.casefold() in ranked_first_path.casefold() else f"{actor.capitalize()} can {action}. {ranked_first_path}".strip(" .")
     return SourceOwnedPathEvidence(actor=actor, action=action, first_path=path)
 
 
@@ -658,7 +659,7 @@ def _action_event_covers_output(
 def _coordinated_action_clauses(value: str) -> tuple[str, ...]:
     return tuple(
         strip_leading_action_modal(clause).strip(" .")
-        for clause in re.split(r"\s*,\s*(?:and\s+)?|\s+(?:and|then)\s+", _clean(value), flags=re.IGNORECASE)
+        for clause in re.split(r"\s*,\s*(?:(?:and|then)\s+)?|\s+(?:and|then)\s+", _clean(value), flags=re.IGNORECASE)
         if clause.strip(" .")
     )
 
@@ -782,8 +783,7 @@ def _clean(value: object) -> str:
 
 
 __all__ = [
-    "SourceOwnedPathEvidence", "StructuredFirstPathContract",
-    "StructuredPathEvent",
+    "SourceOwnedPathEvidence", "StructuredFirstPathContract", "StructuredPathEvent",
     "compile_structured_first_path",
     "compile_temporal_first_path",
     "explicit_path_start_value",

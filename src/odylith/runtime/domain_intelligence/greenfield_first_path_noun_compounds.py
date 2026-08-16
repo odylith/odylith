@@ -87,10 +87,25 @@ def action_homonym_result_object(value: str) -> bool:
 def action_word_inside_compound_noun(value: str, action_start: int) -> bool:
     """Return true when a matched action word is actually inside a compound noun."""
 
-    words = _word_spans(value)
+    text = clean_first_path_text(value)
+    words = _word_spans(text)
     for index, (_word, start, end) in enumerate(words):
         if start <= action_start < end:
-            return _compound_noun_index(value, required_index=index) is not None
+            if _compound_noun_index(value, required_index=index) is not None:
+                return True
+            if index + 1 >= len(words):
+                return False
+            article_modifier = re.search(r"(?:^|\s)(?:a|an|the)\s+$", text[:start], flags=re.IGNORECASE)
+            next_word = words[index + 1][0]
+            return bool(
+                article_modifier
+                and (
+                    index + 2 == len(words)
+                    or not looks_like_base_action_token(base_action_verb(next_word))
+                    and not looks_like_finite_action_token(next_word)
+                )
+                and not text[end : words[index + 1][1]].strip()
+            )
     return False
 
 

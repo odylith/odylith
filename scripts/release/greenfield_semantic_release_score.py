@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 import hashlib
+import json
 import re
 from typing import Any
 
@@ -14,41 +15,14 @@ from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import at
 from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import require_atomic_fact_ledger
 
 from greenfield_matrix_statistics import wilson_interval
+from greenfield_matrix_semantic_text import semantic_is_negated as _is_negated
+from greenfield_matrix_semantic_text import semantic_ordered_coverage
+from greenfield_matrix_semantic_text import semantic_sequence as _semantic_sequence
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_clarification import question_field_key
 
 
 SEMANTIC_RELEASE_SCORE_VERSION = "odylith.greenfield.semantic-release-score.v1"
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
-_STOPWORDS = frozenset(
-    {
-        "a",
-        "an",
-        "and",
-        "as",
-        "at",
-        "be",
-        "before",
-        "by",
-        "can",
-        "for",
-        "from",
-        "in",
-        "into",
-        "is",
-        "it",
-        "of",
-        "on",
-        "one",
-        "or",
-        "that",
-        "the",
-        "their",
-        "this",
-        "to",
-        "with",
-    }
-)
 _VALID_MATERIAL_CUSTODY = frozenset({"accepted_fact", "bounded_interpretation"})
 _INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS = frozenset(
     {
@@ -78,6 +52,16 @@ _INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS = frozenset(
         "state object",
         "success metrics",
         "title",
+    }
+)
+_INDEPENDENT_SUPPORTING_EVIDENCE_HEADINGS = frozenset(
+    {
+        "background research",
+        "reference material",
+        "research notes",
+        "source evidence",
+        "source material",
+        "supporting evidence",
     }
 )
 _SOURCE_METADATA_LABEL_RE = re.compile(
@@ -591,19 +575,121 @@ def _claim_has_custody(
     atomic_facts: Sequence[Mapping[str, Any]],
 ) -> bool:
     allowed_fields = set(ATOMIC_CATEGORY_FIELDS.get(category, ()))
-    for atom in atomic_facts:
+    atoms_by_family: dict[tuple[str, tuple[Any, ...]], list[tuple[tuple[Any, ...], str]]] = (
+        defaultdict(list)
+    )
+    owners_by_family: dict[tuple[str, tuple[Any, ...]], set[tuple[str, ...]]] = defaultdict(set)
+    expected_negated = _is_negated(value)
+    expected_sequence = _semantic_sequence(value)
+    for atom_index, atom in enumerate(atomic_facts):
         if category not in _strings(atom.get("categories")):
             continue
         custody_state = str(atom.get("custody_state") or "")
         if custody_state != expected_custody or custody_state not in _VALID_MATERIAL_CUSTODY:
             continue
-        if not _claim_recalled(value, str(atom.get("normalized_value") or "")):
-            continue
-        for link in _items(atom.get("projection_links")):
+        atom_value = str(atom.get("normalized_value") or "")
+        atom_negated = str(atom.get("polarity") or "").strip() == "prohibited" or _is_negated(atom_value)
+        for link_index, link in enumerate(_items(atom.get("projection_links"))):
             field = str(link.get("field") or "")
-            if field in allowed_fields and _claim_recalled(value, _flatten_text(facts.get(field))):
+            if field not in allowed_fields or atom_negated != expected_negated:
+                continue
+            fact_value = _flatten_text(facts.get(field))
+            if category == "actions":
+                atom_recalled = semantic_ordered_coverage(value, atom_value)
+                fact_recalled = semantic_ordered_coverage(value, fact_value)
+            else:
+                atom_recalled = _claim_recalled(value, atom_value)
+                fact_recalled = _claim_recalled(value, fact_value)
+            if atom_recalled and fact_recalled:
                 return True
-    return False
+            composable, owner = _composition_owner(
+                expected_sequence,
+                _semantic_sequence(atom_value),
+                canonical_action_fragment=(
+                    category == "actions" and _is_canonical_action_step(link)
+                ),
+            )
+            if composable:
+                family = (field, _composition_family(atom, link))
+                atoms_by_family[family].append(
+                    (_composition_order_key(atom, link, atom_index, link_index), atom_value)
+                )
+                if owner:
+                    owners_by_family[family].add(owner)
+    return any(
+        len(owners_by_family[family]) <= 1
+        and semantic_ordered_coverage(
+            value,
+            " ".join(atom_value for _order, atom_value in sorted(ordered_atoms)),
+        )
+        and _claim_recalled(value, _flatten_text(facts.get(family[0])))
+        for family, ordered_atoms in atoms_by_family.items()
+    )
+
+
+def _composition_order_key(
+    atom: Mapping[str, Any],
+    link: Mapping[str, Any],
+    atom_index: int,
+    link_index: int,
+) -> tuple[Any, ...]:
+    path = str(link.get("path") or "").strip()
+    if path:
+        return 0, _natural_order_key(path), atom_index, link_index
+    source_spans = _strings(atom.get("source_span_ids"))
+    if source_spans:
+        return 1, min((_natural_order_key(span) for span in source_spans)), atom_index, link_index
+    return 2, (), atom_index, link_index
+
+
+def _is_canonical_action_step(link: Mapping[str, Any]) -> bool:
+    return "steps" in str(link.get("path") or "").strip().split("/")
+
+
+def _composition_family(atom: Mapping[str, Any], link: Mapping[str, Any]) -> tuple[Any, ...]:
+    path = str(link.get("path") or "").strip()
+    if path:
+        parts = tuple(part for part in path.split("/") if part)
+        family = parts[:-1] if parts and parts[-1].isdigit() else parts
+        return "projection", family
+    source_spans = tuple(
+        sorted(
+            {
+                re.sub(r":atom:\d+$", "", span)
+                for span in _strings(atom.get("source_span_ids"))
+                if span
+            }
+        )
+    )
+    return ("source_span", source_spans) if source_spans else ("ledger",)
+
+
+def _natural_order_key(value: Any) -> tuple[tuple[int, Any], ...]:
+    return tuple(
+        (0, int(part)) if part.isdigit() else (1, part.casefold())
+        for part in re.findall(r"\d+|\D+", str(value or ""))
+    )
+
+
+def _composition_owner(
+    expected: tuple[str, ...],
+    observed: tuple[str, ...],
+    *,
+    canonical_action_fragment: bool = False,
+) -> tuple[bool, tuple[str, ...]]:
+    if not expected or not observed:
+        return False, ()
+    expected_tokens = set(expected)
+    if set(observed) <= expected_tokens:
+        owner = (expected[0],) if observed[0] == expected[0] else ()
+        return True, () if canonical_action_fragment else owner
+    first_overlap = next(
+        (index for index, token in enumerate(observed) if token in expected_tokens),
+        -1,
+    )
+    if first_overlap <= 0 or not set(observed[first_overlap:]) <= expected_tokens:
+        return False, ()
+    return True, observed[:first_overlap]
 
 
 def _validated_atomic_facts(
@@ -659,11 +745,13 @@ def _independent_source_units(
             if not cleaned_line or cleaned_line.startswith(("```", "<!--")):
                 continue
             units.append(cleaned_line)
-            for sentence in re.split(r"(?<=[.!?])\s+|;\s*", cleaned_line):
-                sentence = sentence.strip(" .;:")
-                if not sentence:
+            units.extend(_json_string_units(cleaned_line))
+            for raw_sentence in re.split(r"(?<=[.!?])\s+|;\s*", cleaned_line):
+                raw_sentence = raw_sentence.strip()
+                sentence = raw_sentence.strip(" .;:")
+                if not raw_sentence:
                     continue
-                units.append(sentence)
+                units.extend((raw_sentence, sentence))
                 units.extend(
                     clause
                     for row in re.split(r"[,:]\s*", sentence)
@@ -672,18 +760,51 @@ def _independent_source_units(
     return tuple(dict.fromkeys(units))
 
 
+def _json_string_units(value: str) -> tuple[str, ...]:
+    try:
+        decoded, _ = json.JSONDecoder().raw_decode(str(value or "").lstrip())
+    except (json.JSONDecodeError, TypeError):
+        return ()
+    units: list[str] = []
+
+    def visit(item: Any) -> None:
+        if isinstance(item, str):
+            text = " ".join(item.strip().split())
+            if text:
+                units.append(text)
+            return
+        if isinstance(item, Mapping):
+            for child in item.values():
+                visit(child)
+            return
+        if isinstance(item, Sequence) and not isinstance(item, (str, bytes, bytearray)):
+            for child in item:
+                visit(child)
+
+    visit(decoded)
+    return tuple(dict.fromkeys(units))
+
+
 def _independent_product_evidence_text(value: str) -> str:
     rows: list[str] = []
     source = str(value or "")
-    has_markdown_heading = any(_independent_heading_key(row) for row in source.splitlines())
-    collecting = not has_markdown_heading
+    collecting = True
+    saw_content = False
+    saw_heading = False
     for row in source.splitlines():
         heading = _independent_heading_key(row)
         if heading:
-            collecting = heading in _INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS
+            if heading in _INDEPENDENT_SUPPORTING_EVIDENCE_HEADINGS:
+                collecting = False
+            elif heading in _INDEPENDENT_PRODUCT_EVIDENCE_HEADINGS:
+                collecting = True
+            else:
+                collecting = not saw_content and not saw_heading and _independent_heading_level(row) == 1
+            saw_heading = True
             continue
         if collecting:
             rows.append(row)
+        saw_content = saw_content or bool(row.strip())
     text = "\n".join(rows).strip()
     for label in _SOURCE_METADATA_LABEL_RE.finditer(text):
         prefix = text[: label.start()]
@@ -699,6 +820,11 @@ def _independent_heading_key(value: str) -> str:
     return " ".join(match.group("label").strip().rstrip(":").casefold().split())
 
 
+def _independent_heading_level(value: str) -> int:
+    match = re.match(r"^\s{0,3}(?P<marker>#{1,6})\s+", str(value or ""))
+    return len(match.group("marker")) if match else 0
+
+
 def _ordered_source_entailment(*, source: str, claim: str) -> bool:
     source_tokens = _semantic_sequence(source)
     claim_tokens = _semantic_sequence(claim)
@@ -706,32 +832,6 @@ def _ordered_source_entailment(*, source: str, claim: str) -> bool:
         return False
     size = len(claim_tokens)
     return any(source_tokens[index : index + size] == claim_tokens for index in range(len(source_tokens) - size + 1))
-
-
-def _semantic_sequence(value: Any) -> tuple[str, ...]:
-    return tuple(
-        _stem_token(token)
-        for token in _TOKEN_RE.findall(str(value or "").casefold())
-        if token not in _STOPWORDS
-    )
-
-
-def _stem_token(value: str) -> str:
-    if len(value) > 5 and value.endswith("ies"):
-        return value[:-3] + "y"
-    if len(value) > 5 and value.endswith("ing"):
-        stem = value[:-3]
-        return stem[:-1] if len(stem) > 3 and stem[-1:] == stem[-2:-1] else stem
-    if len(value) > 4 and value.endswith("ed"):
-        stem = value[:-2]
-        return stem[:-1] if len(stem) > 3 and stem[-1:] == stem[-2:-1] else stem
-    if len(value) > 4 and value.endswith("es") and value[:-2].endswith(("ch", "o", "s", "sh", "x", "z")):
-        value = value[:-2]
-    elif len(value) > 3 and value.endswith("s") and not value.endswith("ss"):
-        value = value[:-1]
-    if len(value) > 5 and value.endswith("e"):
-        return value[:-1]
-    return value
 
 
 def _sha256_text(value: str) -> str:
@@ -801,17 +901,8 @@ def _value_claims(value: Any) -> tuple[str, ...]:
     return (claim,) if claim else ()
 
 
-def _is_negated(value: Any) -> bool:
-    tokens = set(_TOKEN_RE.findall(str(value or "").casefold()))
-    return bool(tokens & {"no", "not", "never", "without"})
-
-
 def _tokens(value: Any) -> frozenset[str]:
-    return frozenset(
-        token
-        for token in _TOKEN_RE.findall(str(value or "").casefold())
-        if token not in _STOPWORDS
-    )
+    return frozenset(_semantic_sequence(value))
 
 
 def _flatten_text(value: Any) -> str:

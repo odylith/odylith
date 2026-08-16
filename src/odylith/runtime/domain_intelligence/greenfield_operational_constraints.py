@@ -12,7 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import is_external_dependency_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import is_source_metadata_clause
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import is_discarded_evidence_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     looks_like_trailing_operator_instruction,
 )
@@ -42,6 +44,10 @@ _TIME_WINDOW_RE = re.compile(
 )
 _DEADLINE_RE = re.compile(
     r"\b(?P<deadline>before\s+(?:noon|midnight|[0-9]{1,2}(?::[0-9]{2})?\s*(?:a\.m\.|p\.m\.|am|pm)))\b",
+    flags=re.IGNORECASE,
+)
+_READ_ONLY_SOURCE_RE = re.compile(
+    r"\bread\s+only\s+from\s+(?:the\s+)?[^.!?;]{1,120}",
     flags=re.IGNORECASE,
 )
 _PROHIBITED_CLAUSE_RE = re.compile(
@@ -81,6 +87,7 @@ def operational_constraint_phrases(value: Any) -> tuple[str, ...]:
         matches.extend(
             (match.start(), match.group("deadline")) for match in _DEADLINE_RE.finditer(text)
         )
+        matches.extend((match.start(), match.group(0)) for match in _READ_ONLY_SOURCE_RE.finditer(text))
         matches.extend(
             (max(0, text.casefold().find(constraint.casefold())), constraint)
             for constraint in _positive_source_obligations(text)
@@ -204,7 +211,11 @@ def _positive_source_obligations(value: str) -> tuple[str, ...]:
         if any(field in mapping for field in PROMPT_FIELD_NAMES):
             continue
         text = clean_text(without_confirmation_evidence_label(sentence)).strip(" .")
-        if _is_non_product_context_sentence(text):
+        if (
+            _is_non_product_context_sentence(text)
+            or is_discarded_evidence_clause(text)
+            or is_external_dependency_clause(text)
+        ):
             continue
         units = atomic_claim_units(text)
         atomic_units = units[1:] if units and clean_text(units[0]) == text else units
@@ -258,7 +269,12 @@ def _constraint_words(value: str) -> tuple[str, ...]:
 
 def _leading_no_obligation(value: str) -> bool:
     words = _constraint_words(value)
-    return bool(words and words[0] == "no" and set(words) & {"can", "cannot", "may", "must", "shall"})
+    conditional_supply = re.search(
+        r"\b(?:is|are)\s+(?:provided|specified|supplied)\s+(?:after|before|unless|until|when)\b",
+        value,
+        flags=re.IGNORECASE,
+    )
+    return bool(words and words[0] == "no" and (set(words) & {"can", "cannot", "may", "must", "shall"} or conditional_supply))
 
 
 def _is_nominal_clause(value: str) -> bool:

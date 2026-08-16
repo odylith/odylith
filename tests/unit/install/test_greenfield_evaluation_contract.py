@@ -16,7 +16,9 @@ from greenfield_evaluation_contract import assign_tracked_splits
 from greenfield_evaluation_contract import cross_split_leakage_issues
 from greenfield_evaluation_contract import evaluate_frozen_evaluation_contract
 from greenfield_evaluation_contract import final_holdout_term_contract_issues
+from greenfield_evaluation_contract import prepare_frozen_evaluation_cases
 from greenfield_evaluation_contract import validate_atomic_annotations
+from greenfield_matrix_case_file import load_case_file
 from greenfield_model_profiles import MODEL_PROFILES
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_SEED
 from greenfield_model_profiles import MODEL_PROFILE_ASSIGNMENT_VERSION
@@ -266,6 +268,7 @@ def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_p
     holdout = {
         "version": "odylith.greenfield.final-holdout.v1",
         "claim_class": "blinded-independent-synthetic-holdout",
+        "authoring_method": "independently-authored test holdout",
         "cases": [
             {
                 "case_id": case.case_id,
@@ -326,6 +329,23 @@ def test_frozen_contract_verifies_hashes_counts_annotations_and_no_leakage(tmp_p
     assert report["final_holdout"]["model_profile_counts"] == {
         profile: 1 for profile in MODEL_PROFILES
     }
+    bound_cases, prepared_contract = prepare_frozen_evaluation_cases(
+        cases=load_case_file(holdout_path),
+        repo_root=repo_root,
+        manifest_path=manifest_path,
+        final_holdout_path=holdout_path,
+    )
+    assert prepared_contract == report
+    assert {case.provenance.corpus_tier for case in bound_cases} == {
+        "independent_synthetic_release_holdout"
+    }
+    assert {case.provenance.derivation_method for case in bound_cases} == {
+        "independently-authored test holdout"
+    }
+    assert all(
+        case.provenance.derived_prompt_sha256 == hashlib.sha256(case.prompt.encode("utf-8")).hexdigest()
+        for case in bound_cases
+    )
 
 
 def test_frozen_contract_rejects_byte_size_or_declared_style_without_cases(tmp_path: Path) -> None:

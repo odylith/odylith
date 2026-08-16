@@ -9,8 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_terms import canonical_action
-from odylith.runtime.domain_intelligence.greenfield_component_terms import finite_action_clause
-from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import finite_action_clause, trim_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_term_constants import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import transformation_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
@@ -29,6 +28,7 @@ _ACTION_KINDS = {
     "hand": "process",
     "handle": "process",
     "issue": "direct",
+    "keep": "process",
     "pass": "process",
     "present": "presentation",
     "produce": "direct",

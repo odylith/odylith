@@ -42,6 +42,7 @@ _PRESENTATION_ONLY_TERMS = {
     "gfhi-019": ("color or symbol scheme",),
     "gfhi-023": ("wording or icon scheme",),
 }
+_UNICODE_COMMIT_IDS = ("gfhi-011", "gfhi-012")
 
 
 @pytest.mark.parametrize("case_id", _CLARIFICATION_IDS)
@@ -123,6 +124,40 @@ def test_observable_verification_status_supplies_a_visible_result() -> None:
         "and verifies a publication status."
     )
     assert not has_explicit_visible_result("A program lead verifies an identifier before intake.")
+    assert not has_explicit_visible_result("A reviewer selects one candidate and verifies success.")
+
+
+def test_abstract_success_verification_requires_a_visible_result_before_writes(tmp_path: Path) -> None:
+    prompt = "Create Candidate Desk for a reviewer who selects one candidate and verifies success."
+
+    with pytest.raises(GreenfieldClarificationRequired) as error:
+        materialize_prompt_intent_hypothesis(
+            prompt=prompt,
+            repo_root=tmp_path,
+            fallback_title="Candidate Desk",
+        )
+
+    assert error.value.required_fields == ("visible_result",)
+    assert error.value.question.count("?") == 1
+    assert not (tmp_path / ".odylith/runtime/greenfield").exists()
+
+
+@pytest.mark.parametrize("case_id", _UNICODE_COMMIT_IDS)
+def test_unicode_visible_result_variants_materialize_without_clarification(
+    tmp_path: Path,
+    case_id: str,
+) -> None:
+    case = _CASES[case_id]
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path,
+        fallback_title=str(case["name"]),
+    )
+
+    rendered = json.dumps(intent, ensure_ascii=False, sort_keys=True).casefold()
+    assert intent["product_intent_authority"]["materiality_status"] == "passed"
+    assert "review badge" in str(intent["first_path"]).casefold()
+    assert "naïve-text index" in rendered
 
 
 def test_named_product_workspace_in_an_accepted_path_is_not_an_external_gap(tmp_path: Path) -> None:

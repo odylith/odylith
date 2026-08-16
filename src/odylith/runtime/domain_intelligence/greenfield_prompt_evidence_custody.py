@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.common.prose_grammar import action_token_form
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
@@ -69,23 +70,23 @@ _FINAL_REVISION_RE = re.compile(
     flags=re.IGNORECASE | re.MULTILINE,
 )
 _DISCARDED_EVIDENCE_MARKER_RE = re.compile(
-    r"\b(?:abandoned|brainstorm|discarded|obsolete|placeholder|prototype|retired|scratch|superseded|trial)\b",
+    r"\b(?:abandoned|brainstorm|discarded|obsolete|old|placeholder|prototype|retired|scratch|superseded|trial)\b",
     flags=re.IGNORECASE,
 )
 _DISCARDED_EVIDENCE_ARTIFACT_RE = re.compile(
-    r"\b(?:alias|concept|label|marker|mock(?:up)?|name|phrase|title|token)\b",
+    r"\b(?:alias|concept|label|marker|mock(?:up)?|name|phrase|term|title|token)\b",
     flags=re.IGNORECASE,
 )
 _DISCARDED_EVIDENCE_DISPOSITION_RE = re.compile(
     r"\b(?:delete|discard|drop|exclude|omit|remove|retire|supersede)\w*\b|"
     r"\b(?:disappear|evidence\s+noise|not\s+part\s+of\s+(?:the\s+)?(?:intent|product|request)|"
-    r"must\s+not\s+enter)\b",
+    r"not\s+(?:part\s+of\s+)?product\s+truth|must\s+not\s+enter)\b",
     flags=re.IGNORECASE,
 )
 _DISCARDED_EVIDENCE_CONTROL_RE = re.compile(
     r"^(?:please\s+)?(?:delete|discard|drop|exclude|omit|remove|retire|supersede)\w*\b|"
     r"\b(?:evidence\s+noise|not\s+part\s+of\s+(?:the\s+)?(?:intent|product|request)|"
-    r"must\s+not\s+enter)\b|"
+    r"not\s+(?:part\s+of\s+)?product\s+truth|must\s+not\s+enter)\b|"
     r"\b(?:is|are|must|should)\s+(?:not\s+)?(?:be\s+)?"
     r"(?:deleted|discarded|dropped|excluded|omitted|removed|retired|superseded)\b|"
     r"\bmust\s+disappear\b",
@@ -105,6 +106,17 @@ _DISCARDED_ACTOR_WORKFLOW_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _ORDERED_LIST_STEP_RE = re.compile(r"^\s*\d+[.)]\s+(?P<step>\S.*)$")
+_NEGATIVE_SUPPLY_EVIDENCE_RE = re.compile(
+    r"^(?:no|neither)\s+[^.!?]{1,180}?\s+(?:is|are|was|were)\s+(?:provided|specified|supplied)\b"
+    r"(?!\s+(?:after|before|unless|until|when)\b)",
+    flags=re.IGNORECASE,
+)
+_INPUT_ACQUISITION_BEFORE_ACTION_RE = re.compile(
+    r"\b(?:get|gets|receive|receives|view|views)\s+(?:(?:a|an|the|one)\s+)?"
+    r"[^,;.!?]{1,100}?(?:,\s*(?:and\s+)?|\s+(?:and|then)\s+)(?P<action>[A-Za-z][A-Za-z'-]*)\s+"
+    r"(?P<object_ref>it|them|this|that)\b",
+    flags=re.IGNORECASE,
+)
 _WORKFLOW_REPLACEMENT_FIELDS = frozenset(
     {"action", "first action", "first complete path", "first path", "need", "objective", "task", "user task", "workflow"}
 )
@@ -195,6 +207,22 @@ def contiguous_ordered_list_steps(value: str) -> tuple[str, ...]:
     if current:
         groups.append(tuple(current))
     return max(groups, key=len, default=())
+
+
+def is_negative_supply_evidence_clause(value: str) -> bool:
+    """Return whether a clause records absent configuration rather than a product event."""
+
+    return bool(_NEGATIVE_SUPPLY_EVIDENCE_RE.match(clean_markdown_text(value).strip(" .")))
+
+
+def without_pre_action_input_acquisition(value: str) -> str:
+    """Remove directional input acquisition from visible-output consideration."""
+
+    def replace(match: re.Match[str]) -> str:
+        action = match.group("action")
+        return f"{action} {match.group('object_ref')}" if action_token_form(action) else match.group(0)
+
+    return _INPUT_ACQUISITION_BEFORE_ACTION_RE.sub(replace, clean_markdown_text(value))
 
 
 def product_intent_source_text(value: str) -> str:
@@ -480,6 +508,7 @@ __all__ = [
     "contiguous_ordered_list_steps",
     "declaration_subject_predicate",
     "is_discarded_evidence_clause",
+    "is_negative_supply_evidence_clause",
     "is_source_metadata_clause",
     "looks_like_trailing_operator_instruction",
     "material_prompt_terms",
@@ -492,6 +521,7 @@ __all__ = [
     "sentence_fragments",
     "strip_leading_contextual_gerund_sentence",
     "strip_trailing_operator_instruction_sentences",
+    "without_pre_action_input_acquisition",
     "without_leading_explicit_intent_label",
     "without_confirmation_evidence_label",
     "without_source_metadata_clauses",

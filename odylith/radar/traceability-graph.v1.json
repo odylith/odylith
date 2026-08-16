@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "043497d85930ad0c9f87d916a285410f6df4f94dac31381847f7d010e7682913",
-    "file_count": 315,
+    "digest": "ee6c36acf4ff52ae9b4f327ade20649f3917abe14bbeeacbe677f11f51d2bc8d",
+    "file_count": 316,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -193,6 +193,7 @@
       "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
       "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
       "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
       "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
       "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md",
@@ -8438,7 +8439,8 @@
         ],
         "active_workstreams": [
           "B-141",
-          "B-142"
+          "B-142",
+          "B-144"
         ],
         "completed_workstreams": [
           "B-140",
@@ -8446,7 +8448,7 @@
         ],
         "source_path": "/private/tmp/odylith-release-f78169eac/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 2,
+        "active_workstream_count": 3,
         "completed_workstream_count": 2
       },
       "release_history": [
@@ -8547,7 +8549,8 @@
         ],
         "active_workstreams": [
           "B-141",
-          "B-142"
+          "B-142",
+          "B-144"
         ],
         "completed_workstreams": [
           "B-140",
@@ -8555,7 +8558,7 @@
         ],
         "source_path": "/private/tmp/odylith-release-f78169eac/odylith/radar/source/releases/releases.v1.json",
         "terminal": false,
-        "active_workstream_count": 2,
+        "active_workstream_count": 3,
         "completed_workstream_count": 2
       },
       "release_history": [
@@ -8649,7 +8652,7 @@
     {
       "idea_id": "B-144",
       "title": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -8663,18 +8666,60 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [],
       "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
-      "promoted_to_plan": "",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
         "code_references": []
       },
-      "active_release_id": "",
-      "active_release": {},
-      "release_history": [],
-      "release_history_summary": "",
+      "active_release_id": "release-0-1-15",
+      "active_release": {
+        "release_id": "release-0-1-15",
+        "status": "active",
+        "version": "0.1.15",
+        "tag": "v0.1.15",
+        "name": "",
+        "inherited_name": "Greenfield Governance and Consumer Trust Hardening",
+        "effective_name": "0.1.15",
+        "display_label": "0.1.15",
+        "notes": "",
+        "created_utc": "2026-05-05",
+        "shipped_utc": "",
+        "closed_utc": "",
+        "aliases": [
+          "current"
+        ],
+        "active_workstreams": [
+          "B-141",
+          "B-142",
+          "B-144"
+        ],
+        "completed_workstreams": [
+          "B-140",
+          "B-145"
+        ],
+        "source_path": "/private/tmp/odylith-release-f78169eac/odylith/radar/source/releases/releases.v1.json",
+        "terminal": false,
+        "active_workstream_count": 3,
+        "completed_workstream_count": 2
+      },
+      "release_history": [
+        {
+          "action": "add",
+          "workstream_id": "B-144",
+          "release_id": "release-0-1-15",
+          "from_release_id": "",
+          "to_release_id": "",
+          "recorded_at": "2026-08-16T09:41:41Z",
+          "note": "",
+          "release_label": "0.1.15",
+          "from_release_label": "",
+          "to_release_label": ""
+        }
+      ],
+      "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
-        "linked_plan_count": 0,
+        "linked_plan_count": 1,
         "linked_diagram_count": 0,
         "runbook_count": 0,
         "developer_doc_count": 0,
@@ -8909,7 +8954,8 @@
       ],
       "active_workstreams": [
         "B-141",
-        "B-142"
+        "B-142",
+        "B-144"
       ],
       "completed_workstreams": [
         "B-140",
@@ -8917,7 +8963,7 @@
       ],
       "source_path": "/private/tmp/odylith-release-f78169eac/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 2,
+      "active_workstream_count": 3,
       "completed_workstream_count": 2
     }
   ],
@@ -8940,7 +8986,8 @@
       ],
       "active_workstreams": [
         "B-141",
-        "B-142"
+        "B-142",
+        "B-144"
       ],
       "completed_workstreams": [
         "B-140",
@@ -8948,7 +8995,7 @@
       ],
       "source_path": "/private/tmp/odylith-release-f78169eac/odylith/radar/source/releases/releases.v1.json",
       "terminal": false,
-      "active_workstream_count": 2,
+      "active_workstream_count": 3,
       "completed_workstream_count": 2
     }
   },
@@ -8970,7 +9017,8 @@
     ],
     "active_workstreams": [
       "B-141",
-      "B-142"
+      "B-142",
+      "B-144"
     ],
     "completed_workstreams": [
       "B-140",
@@ -8978,14 +9026,14 @@
     ],
     "source_path": "/private/tmp/odylith-release-f78169eac/odylith/radar/source/releases/releases.v1.json",
     "terminal": false,
-    "active_workstream_count": 2,
+    "active_workstream_count": 3,
     "completed_workstream_count": 2
   },
   "next_release": {},
   "release_summary": {
     "release_count": 5,
     "alias_count": 1,
-    "active_assignment_count": 20
+    "active_assignment_count": 21
   },
   "execution_programs": [
     {
@@ -10825,7 +10873,7 @@
       "id": "B-144",
       "type": "workstream",
       "label": "Decompose Greenfield Semantic Compiler Into Result and Projection Owners",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md"
     },
@@ -14358,6 +14406,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "file": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
+      "file": "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md"
     },
     {
       "id": "program:B-072",
@@ -20779,6 +20833,16 @@
       "edge_type": "component_linkage"
     },
     {
+      "source": "B-144",
+      "target": "plan:odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
+      "edge_type": "promoted_to_plan"
+    },
+    {
+      "source": "B-144",
+      "target": "release:release-0-1-15",
+      "edge_type": "active_release"
+    },
+    {
       "source": "B-145",
       "target": "component:odylith",
       "edge_type": "component_linkage"
@@ -24832,7 +24896,7 @@
       "code_reference_count": 0
     },
     "B-144": {
-      "linked_plan_count": 0,
+      "linked_plan_count": 1,
       "linked_diagram_count": 0,
       "runbook_count": 0,
       "developer_doc_count": 0,
@@ -24939,7 +25003,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1714,
+      "structural_edge_count": 1715,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -24954,15 +25018,15 @@
     "workstream_count": 145,
     "release_count": 5,
     "component_count": 30,
-    "active_release_assignment_count": 20,
+    "active_release_assignment_count": 21,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 354,
-    "edge_count": 1819,
+    "node_count": 355,
+    "edge_count": 1821,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-15 00:44:49Z"
+  "generated_utc": "2026-08-16 10:51:30Z"
 }

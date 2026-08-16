@@ -3279,3 +3279,15 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/integration/runtime/test_surface_browser_smoke.py`
 - `tests/integration/runtime/test_compass_browser_regression_matrix.py`
 - `tests/unit/runtime/test_compass_transaction_runtime.py`
+- Greenfield disclosed-v3 closure preserves canonical meaning across actor,
+  action, state, output, constraint, dependency, and non-goal custody. Typed
+  first-path composition keeps actor/action relations ordered, rejects
+  automated definite subjects as human owners, preserves unfamiliar humans
+  introduced by human grammar, and keeps proof-ranking wrappers out of derived
+  metadata while retaining exact source spans and hashes. Materiality decides
+  visible-result, actor, ownership, path, and presentation-only gaps before any
+  candidate or pending-transaction write. Component and Atlas projections use
+  the same typed meaning without repeated result copy. Current source proof is
+  `396/396` runtime compatibility and `80/80` strict disclosed custody; exact
+  distribution, installed lifecycle/recovery/host/browser, and newly untouched
+  holdout proof remain required.

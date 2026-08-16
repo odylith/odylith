@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Any
 
 from greenfield_matrix_leakage import term_present
+from greenfield_matrix_semantic_text import semantic_is_negated
+from greenfield_matrix_semantic_text import semantic_sequence
+from greenfield_matrix_semantic_text import semantic_token_spans
 from greenfield_matrix_corpus_provenance import case_provenance_from_mapping
 from greenfield_matrix_input_axes import normalize_axis_token
 from greenfield_matrix_input_axes import normalize_input_style
@@ -188,6 +191,38 @@ def ungrounded_leakage_terms(
     )
 
 
+def required_term_present(text: str, term: str) -> bool:
+    """Match a required phrase through bounded, polarity-preserving normalization."""
+
+    expected = semantic_sequence(term)
+    if len(expected) < 2:
+        return term_present(text, term)
+    observed = semantic_token_spans(text)
+    if len(expected) > len(observed):
+        return False
+    expected_negated = semantic_is_negated(term)
+    for start, (observed_token, _token_start, _token_end) in enumerate(observed):
+        if observed_token != expected[0]:
+            continue
+        cursor = start + 1
+        previous = start
+        for token in expected[1:]:
+            limit = min(len(observed), previous + 5)
+            found = next(
+                (index for index in range(cursor, limit) if observed[index][0] == token),
+                -1,
+            )
+            if found < 0:
+                break
+            previous = found
+            cursor = found + 1
+        else:
+            fragment = text[observed[start][1] : observed[previous][2]]
+            if semantic_is_negated(fragment) == expected_negated:
+                return True
+    return False
+
+
 def _required_text(row: Mapping[str, Any], field: str, *, index: int, source: Path) -> str:
     value = _optional_text(row.get(field))
     if not value:
@@ -247,6 +282,7 @@ __all__ = [
     "canonical_case_text",
     "load_case_file",
     "normalize_input_style",
+    "required_term_present",
     "ungrounded_leakage_terms",
     "ungrounded_required_terms",
 ]

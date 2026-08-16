@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_o
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import has_terminal_deferral_predicate
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_proof_boundary_text import strip_proof_claim_intro
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text as _clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values as _text_values
@@ -136,11 +137,9 @@ _OPEN_CONNECTOR_INTERRUPTER_RE = re.compile(
     r"\b(?:and|or),\s+(?:after|although|as|before|because|if|once|until|when|where|while)\b[^,.;]*$",
     re.IGNORECASE,
 )
-
-
 def proof_claim_summary(value: str, *, limit: int = 260) -> str:
     raw_text = _compact_text(value).strip(" .")
-    text = _strip_proof_claim_intro(raw_text)
+    text = strip_proof_claim_intro(raw_text)
     text = _drop_secondary_ranking_claims(text)
     text = _short_summary(text, limit=limit).strip(" .")
     text = _trim_incomplete_terminal_phrase(text)
@@ -468,25 +467,6 @@ def shares_product_terms(left: str, right: str) -> bool:
     if not left_terms or not right_terms:
         return False
     return len(left_terms & right_terms) >= min(3, len(right_terms))
-
-
-def _strip_proof_claim_intro(value: str) -> str:
-    text = _compact_text(value).strip(" .")
-    patterns = (
-        r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+",
-        r"^(?:the\s+)?product\s+is\s+proven\s+when\s+",
-        r"^(?:release\s+[0-9.]+\s+)?(?:(?:is\s+)?(?:proven|trusted)|succeeds|works)\s+when\s+",
-        r"^(?:the\s+)?proof\s+boundary\s+(?:is|means)\s*:?\s*",
-        r"^(?:the\s+)?first\s+thing\s+(?:the\s+)?product\s+must\s+prove\s+(?:is\s+)?(?:that\s+)?",
-        r"^(?:the\s+)?first\s+complete\s+path\s+(?:the\s+)?product\s+must\s+prove\s+(?:is\s+)?(?:that\s+)?",
-        r"^(?:the\s+)?first\s+release\s+must\s+prove\s+(?:that\s+)?",
-    )
-    previous = ""
-    while text and text != previous:
-        previous = text
-        for pattern in patterns:
-            text = re.sub(pattern, "", text, count=1, flags=re.IGNORECASE).strip(" .")
-    return text
 
 
 def _drop_secondary_ranking_claims(value: str) -> str:

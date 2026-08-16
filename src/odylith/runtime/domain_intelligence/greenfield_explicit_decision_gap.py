@@ -418,6 +418,8 @@ def _negative_supply_subjects(sentence: str) -> list[str]:
     for predicate in _SUPPLY_PREDICATES:
         index = lowered.find(predicate)
         if index >= 0:
+            if re.search(r"\b(?:after|before|unless|until|when)\b", lowered[index + len(predicate) :]):
+                return []
             return _labels(sentence[3:index])
     return []
 

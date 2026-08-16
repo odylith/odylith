@@ -28,22 +28,21 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps imp
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_operator_review_lens_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import retain_ordered_path_row
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
     is_external_dependency_clause,
     source_boundary_rows_from_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import is_source_obligation_clause
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
-    confirmed_direction_evidence_text, contiguous_ordered_list_steps, is_discarded_evidence_clause,
-    owned_disposition_workflow_actor_action, rankable_prompt_evidence_text, sentence_fragments,
+    confirmed_direction_evidence_text, contiguous_ordered_list_steps, is_discarded_evidence_clause, is_negative_supply_evidence_clause,
+    owned_disposition_workflow_actor_action, rankable_prompt_evidence_text, sentence_fragments, without_pre_action_input_acquisition,
     without_confirmation_evidence_label,
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_key
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
-from odylith.runtime.domain_intelligence.greenfield_structured_first_path import (
-    StructuredFirstPathContract,
-)
+from odylith.runtime.domain_intelligence.greenfield_structured_first_path import StructuredFirstPathContract
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import named_actor_phrase
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import (
     compile_structured_first_path,
@@ -51,7 +50,6 @@ from odylith.runtime.domain_intelligence.greenfield_structured_first_path import
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import compile_temporal_first_path
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import explicit_path_start_value
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import is_negated_output_scope
-from odylith.runtime.domain_intelligence.greenfield_structured_first_path import path_start_action
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import path_start_source
 from odylith.runtime.domain_intelligence.greenfield_structured_first_path import structured_actor_subject
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -231,7 +229,8 @@ _IMPLEMENTATION_REQUEST_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _VISIBLE_OUTPUT_ACTION_RE = re.compile(
-    r"\b(?:produce|produces|generate|generates|return|returns|show|shows|display|displays|provide|provides)\s+"
+    r"\b(?:produce|produces|generate|generates|return|returns|show|shows|display|displays|provide|provides|"
+    r"see|sees|receive|receives|view|views|get|gets)\s+"
     r"(?P<output>(?:a|an|the)\s+[^,;.!?]{1,100})",
     flags=re.IGNORECASE,
 )
@@ -323,7 +322,7 @@ def ranked_first_path_evidence(value: str) -> str:
         if workflow_row and not _hard_non_path(workflow_row):
             score = _path_score(workflow_row)
             candidates.append((score, -index, workflow_row))
-            if score >= 12 and _is_ordered_workflow_row(workflow_row):
+            if score >= 12 and _is_ordered_workflow_row(workflow_row) and retain_ordered_path_row(ordered, workflow_row):
                 ordered.append(workflow_row)
                 ordered_indices.append(index)
         for workflow in _embedded_workflow_clauses(row):
@@ -343,7 +342,7 @@ def ranked_first_path_evidence(value: str) -> str:
             if release_result:
                 combined = f"{workflow_row}, and {release_result}"
                 candidates.append((_path_score(combined), -index, combined))
-            elif not _hard_non_path(rows[index + 1]):
+            elif not _hard_non_path(rows[index + 1]) and retain_ordered_path_row((workflow_row,), rows[index + 1]):
                 combined = f"{workflow_row}. {rows[index + 1]}"
                 candidates.append((_path_score(combined), -index, combined))
     ordered_candidate = ". ".join(dict.fromkeys(row.rstrip(" .") for row in ordered))
@@ -920,7 +919,7 @@ def _natural_actor_action(value: str) -> tuple[str, str, bool, bool]:
 
 
 def _natural_visible_output(value: str) -> str:
-    text = clean_markdown_text(value)
+    text = without_pre_action_input_acquisition(". ".join(row for row in sentence_fragments(value) if not is_operator_review_lens_step(row)))
     for match in _VISIBLE_OUTPUT_ACTION_RE.finditer(text):
         clause_start = max(
             text.rfind(boundary, 0, match.start())
@@ -1126,11 +1125,12 @@ def _hard_non_path(value: str) -> bool:
         or _CREATE_REQUEST_WRAPPER_RE.search(_clean(value))
         or is_external_dependency_clause(value)
         or is_release_evidence_requirement(value)
-        or _is_policy_only_obligation(value)
+        or _is_policy_only_obligation(value) or is_operator_review_lens_step(value)
         or contains_requirement_control_clause(value)
         or contains_word_sense_metadata_clause(value)
         or _is_historical_revision_clause(value)
         or is_discarded_evidence_clause(value)
+        or is_negative_supply_evidence_clause(value)
         or _is_descriptive_state_clause(value)
     )
 

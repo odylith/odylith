@@ -166,7 +166,7 @@ def _explicit_first_path_actor_label(row: str, intent: Mapping[str, Any], *, tit
         if value_starts_with_generic_actor_label(label):
             preserve_explicit_person = bool(
                 _actor_row_has_usable_description(row)
-                and _actor_reference(label) in _GENERIC_CONFIRMED_ACTOR_LABELS
+                and has_human_actor_role_signal(label)
             )
             if not preserve_explicit_person:
                 return _actor_label(row, title=title)

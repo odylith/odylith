@@ -9,13 +9,11 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
-from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
-    carried_subject_prefix,
-)
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     visible_result_object,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_subjects import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     coordinated_subjects,
 )
@@ -24,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 )
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
     without_source_metadata_clauses,
+)
+from odylith.runtime.domain_intelligence.greenfield_proof_boundary_text import (
+    derived_proof_boundary_text,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
@@ -167,7 +168,12 @@ def build_atomic_fact_ledger(
         if field not in facts:
             continue
         categories = _categories_for_field(field)
-        for path, value in _projection_atoms(field=field, value=facts.get(field)):
+        for path, value in _projection_atoms(
+            field=field,
+            value=facts.get(field),
+            human_actors=confirmed_text_values(facts.get("human_actors")),
+            first_path=facts.get("first_path"),
+        ):
             normalized_value = clean_markdown_text(value).strip(" .;:")
             if not normalized_value:
                 continue
@@ -176,6 +182,7 @@ def build_atomic_fact_ledger(
                 value=normalized_value,
                 polarity=polarity,
                 spans=source_spans,
+                field=field,
             )
             custody_state = "accepted_fact" if refs else (
                 "assumption" if field == "assumptions" else "bounded_interpretation"
@@ -361,6 +368,11 @@ def _require_accepted_entailment(
     value = str(row.get("normalized_value") or "")
     polarity = str(row.get("polarity") or "")
     refs = row.get("source_span_refs", ())
+    linked_fields = {
+        str(link.get("field") or "")
+        for link in row.get("projection_links", ())
+        if isinstance(link, Mapping)
+    }
     for span_id, ref in zip(row.get("source_span_ids", ()), refs, strict=True):
         span = spans_by_id.get(str(span_id))
         if span is None:
@@ -373,7 +385,7 @@ def _require_accepted_entailment(
             or ref.get("span_id") != span_id
             or ref.get("text_sha256") != text_sha256
             or span.get("text_sha256") != text_sha256
-            or _polarity(text) != polarity
+            or not any(_source_polarity(text, field=field) == polarity for field in linked_fields)
             or not _ordered_entailment(source=text, claim=value)
         ):
             raise ValueError("ProductCreateTransaction accepted atomic fact lacks source entailment custody")
@@ -431,11 +443,12 @@ def _entailed_source_refs(
     value: str,
     polarity: str,
     spans: Sequence[Mapping[str, Any]],
+    field: str,
 ) -> list[dict[str, str]]:
     refs: list[dict[str, str]] = []
     for span in spans:
         text = clean_markdown_text(span.get("text"))
-        if _polarity(text) != polarity or not _ordered_entailment(source=text, claim=value):
+        if _source_polarity(text, field=field) != polarity or not _ordered_entailment(source=text, claim=value):
             continue
         refs.append(
             {
@@ -447,13 +460,23 @@ def _entailed_source_refs(
     return refs
 
 
-def _projection_atoms(*, field: str, value: Any) -> tuple[tuple[str, str], ...]:
+def _projection_atoms(
+    *,
+    field: str,
+    value: Any,
+    human_actors: Sequence[str] = (),
+    first_path: Any = "",
+) -> tuple[tuple[str, str], ...]:
     values = confirmed_text_values(value)
     rows: list[tuple[str, str]] = []
     for index, item in enumerate(values):
         path = f"/{field}/{index}" if isinstance(value, Sequence) and not isinstance(value, str) else f"/{field}"
         if field == "human_actors":
-            rows.append((path, item.split(":", 1)[0]))
+            label = item.split(":", 1)[0]
+            rows.append((path, label))
+            source_actor = clean_markdown_text(actor_signature(first_path)).strip(" .;:")
+            if source_actor and label.casefold().endswith(source_actor.casefold()) and label.casefold() != source_actor.casefold():
+                rows.append((f"{path}/source_actor", source_actor))
             continue
         if field in {"external_systems", "internal_systems"}:
             rows.append((path, re.split(r"\s+[\u2013\u2014-]\s+|:\s+", item, maxsplit=1)[0]))
@@ -465,14 +488,24 @@ def _projection_atoms(*, field: str, value: Any) -> tuple[tuple[str, str], ...]:
                 flags=re.IGNORECASE,
             )
             rows.append((path, match.group("value") if match else item))
+            if transition := _relative_state_transition_atom(item):
+                rows.append((f"{path}/transitions/0", transition))
+                if transition_range := _state_transition_range_atom(transition):
+                    rows.append((f"{path}/transition_ranges/0", transition_range))
+            rows.extend(
+                (f"{path}/transitions/{unit_index}", transition)
+                for unit_index, unit in enumerate(_sentence_units(item)[1:], start=1)
+                if (transition := _state_transition_atom(unit))
+            )
             continue
         if field == "first_path":
             model = first_path_model(item)
             steps = list(model.steps) or [item]
             seen_values: set[str] = set()
+            preserve_action_owners = _has_multiple_action_owners(human_actors)
             for step_index, step in enumerate(steps):
-                subject = carried_subject_prefix(step)
-                action = step[len(subject) :].strip() if subject and step.startswith(subject) else step
+                subject = _typed_actor_prefix(step, human_actors=human_actors)
+                action = step if preserve_action_owners or not subject else step[len(subject) :].strip()
                 rows.append((f"{path}/steps/{step_index}", action))
                 seen_values.add(_normalized_token_text(action))
             visible_outcome = clean_markdown_text(
@@ -493,8 +526,29 @@ def _projection_atoms(*, field: str, value: Any) -> tuple[tuple[str, str], ...]:
                 seen_values.add(unit_key)
             continue
         units = _sentence_units(item)
-        rows.extend((f"{path}/units/{unit_index}", unit) for unit_index, unit in enumerate(units))
+        rows.extend(
+            (f"{path}/units/{unit_index}", _derived_unit_atom(field=field, value=unit))
+            for unit_index, unit in enumerate(units)
+        )
+        if field in {"product_story", "proof_boundary", "success_metrics"}:
+            rows.extend(
+                (f"{path}/visible_outputs/{unit_index}", output)
+                for unit_index, unit in enumerate(units)
+                if (output := clean_markdown_text(visible_result_object(unit)).strip(" .;:"))
+                and _normalized_token_text(output) != _normalized_token_text(unit)
+            )
     return tuple(rows)
+
+
+def _derived_unit_atom(*, field: str, value: str) -> str:
+    if field != "proof_boundary":
+        return value
+    return derived_proof_boundary_text(value)
+
+
+def _source_polarity(value: str, *, field: str) -> str:
+    semantic_value = _derived_unit_atom(field=field, value=value)
+    return _polarity(semantic_value)
 
 
 def _projection_value_index(facts: Mapping[str, Any]) -> dict[tuple[str, str], str]:
@@ -502,11 +556,89 @@ def _projection_value_index(facts: Mapping[str, Any]) -> dict[tuple[str, str], s
     for field in sorted(ATOMIC_PROJECTION_FIELDS):
         if field not in facts:
             continue
-        for path, value in _projection_atoms(field=field, value=facts.get(field)):
+        for path, value in _projection_atoms(
+            field=field,
+            value=facts.get(field),
+            human_actors=confirmed_text_values(facts.get("human_actors")),
+            first_path=facts.get("first_path"),
+        ):
             normalized_value = clean_markdown_text(value).strip(" .;:")
             if normalized_value:
                 values[(field, path)] = normalized_value
     return values
+
+
+def _typed_actor_prefix(value: str, *, human_actors: Sequence[str]) -> str:
+    signature = clean_markdown_text(actor_signature(value)).strip(" .;:")
+    actor_labels = tuple(
+        clean_markdown_text(actor).partition(":")[0].strip(" .;:")
+        for actor in human_actors
+    )
+    if signature and not any(
+        label.casefold() == signature.casefold()
+        or label.casefold().endswith(f" {signature.casefold()}")
+        for label in actor_labels
+    ):
+        return ""
+    candidates = (signature,) if signature else actor_labels
+    for candidate in sorted(candidates, key=len, reverse=True):
+        match = re.match(
+            rf"^(?:a|an|the)?\s*(?P<actor>{re.escape(candidate)})\b",
+            clean_markdown_text(value),
+            flags=re.IGNORECASE,
+        )
+        if match:
+            return match.group(0).strip()
+    return ""
+
+
+def _has_multiple_action_owners(human_actors: Sequence[str]) -> bool:
+    owners = 0
+    for row in human_actors:
+        _label, separator, responsibility = clean_markdown_text(row).partition(":")
+        if not separator:
+            continue
+        action = re.sub(
+            r"^needs\s+the\s+product\s+to\s+|\s+and\s+keep\s+the\s+result\b.*$",
+            "",
+            responsibility.strip(),
+            flags=re.IGNORECASE,
+        )
+        if re.fullmatch(r"(?:changes?|moves?|transitions?)\s+from\s+.+?\s+to\s+.+", action, re.IGNORECASE):
+            continue
+        owners += 1
+    return owners > 1
+
+
+def _state_transition_atom(value: str) -> str:
+    text = clean_markdown_text(value).strip(" .;:")
+    pronoun = re.match(
+        r"^(?:it|they|them)\s+(?:changes?|moves?|transitions?)\s+from\s+"
+        r"(?P<before>.+?)\s+to\s+(?P<after>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if pronoun:
+        return f"{pronoun.group('before')} to {pronoun.group('after')}"
+    return text if re.search(r"\b(?:changes?|moves?|transitions?)\s+from\s+.+\s+to\s+", text, flags=re.IGNORECASE) else ""
+
+
+def _relative_state_transition_atom(value: str) -> str:
+    match = re.search(
+        r"\bprimary\s+state\s+object\s+is\s+(?:(?:a|an|the|one)\s+)?"
+        r"(?P<object>[^.;]+?)\s+that\s+(?P<predicate>(?:changes?|moves?|transitions?)\s+from\s+.+?\s+to\s+[^.;]+)",
+        clean_markdown_text(value),
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    subject = match.group("object").strip().rsplit(maxsplit=1)[-1]
+    return f"{subject} {match.group('predicate').strip()}"
+
+
+def _state_transition_range_atom(value: str) -> str:
+    match = re.search(r"\bfrom\s+(?P<before>.+?)\s+to\s+(?P<after>.+)$", value, flags=re.IGNORECASE)
+    return f"{match.group('before')} to {match.group('after')}" if match else ""
 
 
 def _categories_for_field(field: str) -> tuple[str, ...]:

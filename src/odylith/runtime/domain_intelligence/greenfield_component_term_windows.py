@@ -5,7 +5,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import past_action_verb
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
+from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -70,6 +72,32 @@ def nearby_domain_terms(label_terms: Sequence[str], context: Any, *, noise_terms
     return list(unique_text(result))
 
 
+def anchored_context_identity_phrases(
+    values: Sequence[str],
+    *,
+    anchor_terms: Sequence[str],
+) -> tuple[str, ...]:
+    """Keep compact qualified objects and participial states near component terms."""
+
+    anchors = set(anchor_terms)
+    rows: list[str] = []
+    for value in values:
+        words = [word.casefold().strip(".,;:") for word in _clean(value).split() if word.strip(".,;:")]
+        for index, word in enumerate(words[:-1]):
+            if word not in {"active", "candidate", "current", "ranked", "selected"}:
+                continue
+            right_terms = set(content_terms(words[index + 1]))
+            if right_terms and (not anchors or right_terms & anchors):
+                rows.append(f"{word} {words[index + 1]}")
+        if (
+            2 <= len(words) <= 5
+            and (past_action_verb(words[-1]) or words[-1].endswith(("ed", "en")))
+            and set(content_terms(" ".join(words[:-1]))) & anchors
+        ):
+            rows.append(" ".join(words))
+    return tuple(unique_text(rows))
+
+
 def _domain_token_stream(value: Any, *, noise_terms: set[str]) -> list[str]:
     tokens: list[str] = []
     for raw in label_terms(_clean(value)):
@@ -90,4 +118,9 @@ def _clean(value: Any) -> str:
     return clean_markdown_text(value)
 
 
-__all__ = ["literal_label_compounds", "literal_label_terms", "nearby_domain_terms"]
+__all__ = [
+    "anchored_context_identity_phrases",
+    "literal_label_compounds",
+    "literal_label_terms",
+    "nearby_domain_terms",
+]

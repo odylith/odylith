@@ -6,6 +6,10 @@ import re
 
 import pytest
 
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     component_spec_preflight_issues,
 )
@@ -16,6 +20,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_modal_grammar_repa
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     materialize_prompt_intent_hypothesis,
 )
+from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
+from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
 _RETIRED_PATH = (
@@ -24,6 +34,48 @@ _RETIRED_PATH = (
 )
 _RETIRED = json.loads(_RETIRED_PATH.read_text(encoding="utf-8"))
 _CASES = {str(case["case_id"]): case for case in _RETIRED["cases"]}
+
+
+@pytest.fixture(autouse=True)
+def _preconfirm_surface_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
+    stub_preconfirm_surface_refresh(monkeypatch)
+
+
+def _proposal_for_case(tmp_path: Path, case_id: str) -> dict[str, object]:
+    case = _CASES[case_id]
+    prompt = str(case["prompt"])
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path / case_id,
+        fallback_title=str(case["name"]),
+    )
+    return build_greenfield_proposal(
+        repo_root=tmp_path / case_id,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+
+
+@pytest.mark.parametrize("case_id", ("gfhi-001", "gfhi-002"))
+def test_handoff_pair_preserves_declared_visible_result_and_atomic_custody(
+    tmp_path: Path,
+    case_id: str,
+) -> None:
+    case = _CASES[case_id]
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path / case_id,
+        fallback_title=str(case["name"]),
+    )
+
+    assert "The product shows a claim receipt." in str(intent["proof_boundary"])
+    assert any(
+        atom.get("custody_state") == "accepted_fact"
+        and str(atom.get("normalized_value")).casefold() == "a claim receipt"
+        for atom in intent["product_intent_authority"]["atomic_facts"]
+    )
 
 
 @pytest.mark.parametrize("case_id", ("gfhi-003", "gfhi-004"))
@@ -39,7 +91,43 @@ def test_retired_marker_pair_repairs_modal_grammar_before_sealing(tmp_path: Path
 
     assert not re.search(r"\b(?:can|should)\s+(?:a|an|the)\s+", first_path, flags=re.IGNORECASE)
     assert not re.search(r"\bcan\s+[^.!?]{0,80}\bshould\b", first_path, flags=re.IGNORECASE)
-    assert all(term in first_path.casefold() for term in ("review analyst", "observation markers", "decision ribbon", "grouped"))
+    assert all(term in first_path.casefold() for term in ("review analyst", "observation markers", "decision ribbon"))
+    assert re.search(r"\bgroups?\b", first_path, flags=re.IGNORECASE)
+    components = [
+        {
+            "component_id": "review-set",
+            "label": "Review Set Workflow Support",
+            "release_scope": "first_path_required",
+        }
+    ]
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title=str(intent["title"]),
+            state_object=str(intent["state_object"]),
+            first_path=first_path,
+            proof_boundary=str(intent["proof_boundary"]),
+            visible_result="a decision ribbon",
+            human_actors=intent["human_actors"],
+            components=components,
+        )
+    )
+    flowchart = first_path_flowchart_mermaid(
+        label=str(intent["title"]),
+        actors=[str(actor) for actor in intent["human_actors"]],
+        components=components,
+        first_path=first_path,
+        semantic_model=semantic_model,
+    )
+
+    step_labels = [
+        match.group("label").replace("<br/>", " ").casefold()
+        for match in re.finditer(r'^\s*S\d+\["(?P<label>[^"]+)"\]$', flowchart, flags=re.MULTILINE)
+    ]
+
+    assert len(step_labels) >= 3
+    assert len(step_labels) == len(set(step_labels))
+    assert sum("decision ribbon" in label for label in step_labels) == 1
+    assert "decision ribbon" in flowchart.replace("<br/>", " ")
 
 
 def test_semantic_path_keys_are_repaired_while_repository_paths_remain_identity() -> None:
@@ -100,3 +188,39 @@ def test_retired_unicode_pair_projects_typed_transition_support_axis(
     transition = next(row for row in components if str(row["label"]).startswith("From Unreviewed"))
     assert "moves from unreviewed to reviewed" in str(transition["responsibility"])
     assert "local naïve-text index" in str(transition["responsibility"])
+
+
+@pytest.mark.parametrize("case_id", ("gfhi-016", "gfhi-017", "gfhi-019"))
+def test_retired_component_package_residuals_compile_cleanly(
+    tmp_path: Path,
+    case_id: str,
+) -> None:
+    proposal = _proposal_for_case(tmp_path, case_id)
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    assert tribunal.passed, tribunal.issues
+    assert not component_spec_preflight_issues(proposal)
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path / case_id,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    assert not greenfield_rendered_package_quality_issues(prewrite.package)
+
+    rendered_brief = json.dumps(proposal["project_brief"], ensure_ascii=False)
+    components = proposal["components"]
+    if case_id == "gfhi-016":
+        assert "While Itinerary Stays Staged Delivery Service" in rendered_brief
+    elif case_id == "gfhi-017":
+        assert all(
+            not str(row["component_contract"]["produced_outputs"]).casefold().rstrip(" .").endswith(" the")
+            for row in components
+        )
+    else:
+        assert all(
+            "draft state" not in str(row["component_contract"]["owned_state"]).casefold()
+            for row in components
+        )

@@ -91,6 +91,8 @@ def build_confirmed_greenfield_proposal(
     human_actors = canonical_human_actor_rows(
         project_label=label,
         rows=canonical_product_actor_rows(confirmed_intent_list(confirmed_intent, "human_actors")),
+        first_path=first_path,
+        state_object=state_object,
     )
     first_path = canonical_first_path_actor_reference(
         project_label=label,

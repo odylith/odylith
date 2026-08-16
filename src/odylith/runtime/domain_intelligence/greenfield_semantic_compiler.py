@@ -262,7 +262,12 @@ def compile_greenfield_semantics(proposal: Mapping[str, Any]) -> GreenfieldSeman
     )
     counterexamples: list[GreenfieldSemanticCounterexample] = []
     counterexamples.extend(_intent_fact_counterexamples(first_path=first_path, proof_boundary=proof))
-    counterexamples.extend(_first_path_subject_counterexamples(first_path))
+    counterexamples.extend(
+        _first_path_subject_counterexamples(
+            first_path,
+            human_actors=text_values(intent.get("human_actors")),
+        )
+    )
     counterexamples.extend(_visible_result_counterexamples(semantic, visible, proof=proof))
     counterexamples.extend(_projection_counterexamples(proposal, visible, proof=proof))
     counterexamples = list(_unique_counterexamples(counterexamples))
@@ -1090,9 +1095,13 @@ def _contains_proof_control_claim(value: Any) -> bool:
     return bool(re.match(r"^release\s+readiness\s+(?:depends|fails|passes|requires?|when|is\s+blocked)\b", lowered))
 
 
-def _first_path_subject_counterexamples(first_path: Any) -> list[GreenfieldSemanticCounterexample]:
+def _first_path_subject_counterexamples(
+    first_path: Any,
+    *,
+    human_actors: Sequence[Any] = (),
+) -> list[GreenfieldSemanticCounterexample]:
     text = clean_first_path_text(first_path)
-    if not text or _first_path_has_human_actor(text):
+    if not text or _first_path_has_human_actor(text, human_actors=human_actors):
         return []
     model = first_path_model(text)
     for index, step in enumerate(model.steps, start=1):
@@ -1131,11 +1140,27 @@ def _intent_fact_counterexamples(*, first_path: str, proof_boundary: str) -> lis
     return issues
 
 
-def _first_path_has_human_actor(value: str) -> bool:
-    if _actor_text_has_human_signal(actor_signature(value)):
+def _first_path_has_human_actor(value: str, *, human_actors: Sequence[Any] = ()) -> bool:
+    if _actor_is_confirmed_human(actor_signature(value), human_actors=human_actors):
         return True
     model = first_path_model(value)
-    return any(_actor_text_has_human_signal(actor_signature(step)) for step in model.steps)
+    return any(
+        _actor_is_confirmed_human(actor_signature(step), human_actors=human_actors)
+        for step in model.steps
+    )
+
+
+def _actor_is_confirmed_human(value: str, *, human_actors: Sequence[Any]) -> bool:
+    if _actor_text_has_human_signal(value):
+        return True
+    actor_terms = _terms(value)
+    return bool(
+        actor_terms
+        and any(
+            actor_terms == _terms(clean_text(row).partition(":")[0])
+            for row in human_actors
+        )
+    )
 
 
 def _step_starts_with_non_human_workflow_subject(value: Any) -> bool:

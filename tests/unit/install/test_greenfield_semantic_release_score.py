@@ -12,6 +12,8 @@ from tests.greenfield_matrix_campaign_test_support import SCRIPTS_ROOT
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
 
+from greenfield_semantic_release_score import _independent_source_units
+from greenfield_semantic_release_score import _claim_has_custody
 from greenfield_semantic_release_score import evaluate_semantic_release
 from greenfield_matrix_types import GreenfieldArtifactCounts
 from greenfield_matrix_types import GreenfieldMatrixResult
@@ -207,6 +209,299 @@ def test_semantic_release_does_not_treat_field_custody_as_atomic_proof() -> None
     assert report["p0_findings"] == [
         {"case_id": "field-only", "category": "atomic_custody_invalid"}
     ]
+
+
+def test_semantic_release_consumes_valid_atomic_custody_under_a_product_title_heading() -> None:
+    case = replace(
+        _case("titled-product", expectation="transaction_committed", input_style="pasted_brief"),
+        prompt=f"# Permit review workspace\n{PROMPT}",
+    )
+
+    report = evaluate_semantic_release(
+        cases=(case,),
+        annotations={"titled-product": _commit_annotation()},
+        results=(_commit_result(case),),
+        floors=FLOORS,
+    )
+
+    assert report["metrics"]["accepted_fact_custody"]["rate"] == 1.0
+    assert report["p0_findings"] == []
+
+
+def test_independent_source_units_include_typed_json_values_but_exclude_research_notes() -> None:
+    units = _independent_source_units(
+        prompt_text=(
+            '{"intent":{"actor":"Reviewer","action":"accept one candidate record"}}\n'
+            "## Research Notes\nA remote archive may retain unrelated records."
+        ),
+        confirmed_intent_markdown="",
+    )
+
+    assert "Reviewer" in units
+    assert "accept one candidate record" in units
+    assert not any("remote archive" in unit for unit in units)
+
+
+def test_independent_source_units_exclude_unknown_markdown_sections_after_a_product_title() -> None:
+    units = _independent_source_units(
+        prompt_text=(
+            "# Permit review workspace\n"
+            "A reviewer chooses one candidate permit.\n"
+            "## Deployment Notes\n"
+            "A supervisor accepts the production release."
+        ),
+        confirmed_intent_markdown="",
+    )
+
+    assert any("reviewer chooses" in unit.casefold() for unit in units)
+    assert not any("production release" in unit.casefold() for unit in units)
+    deployment_only = _independent_source_units(
+        prompt_text="## Deployment Notes\nA supervisor accepts the production release.",
+        confirmed_intent_markdown="",
+    )
+    assert not any("production release" in unit.casefold() for unit in deployment_only)
+
+
+def test_accepted_custody_composes_split_atoms_on_one_valid_projection_field() -> None:
+    atoms = (
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "reviewer chooses one candidate record",
+            "projection_links": [{"field": "first_path"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "accepts it",
+            "projection_links": [{"field": "first_path"}],
+        },
+    )
+
+    assert _claim_has_custody(
+        category="actions",
+        value="choose one candidate record and accept it",
+        expected_custody="accepted_fact",
+        facts={"first_path": "The reviewer chooses one candidate record and accepts it."},
+        atomic_facts=atoms,
+    ) is True
+
+
+def test_accepted_custody_ignores_ownerless_step_duplicates_for_one_actor() -> None:
+    atoms = (
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "chooses one candidate record",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/0"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "accepts it",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/1"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Reviewer chooses one candidate record",
+            "projection_links": [
+                {"field": "first_path", "path": "/first_path/source_units/0"}
+            ],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Reviewer accepts it",
+            "projection_links": [
+                {"field": "first_path", "path": "/first_path/source_units/1"}
+            ],
+        },
+    )
+
+    assert _claim_has_custody(
+        category="actions",
+        value="choose one candidate record and accept it",
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer chooses one candidate record and accepts it."},
+        atomic_facts=atoms,
+    ) is True
+
+
+def test_accepted_custody_does_not_weave_reversed_projection_families() -> None:
+    atoms = (
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "accepts it",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/0"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "chooses one candidate record",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/1"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Reviewer accepts it",
+            "projection_links": [
+                {"field": "first_path", "path": "/first_path/source_units/0"}
+            ],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Reviewer chooses one candidate record",
+            "projection_links": [
+                {"field": "first_path", "path": "/first_path/source_units/1"}
+            ],
+        },
+    )
+
+    assert _claim_has_custody(
+        category="actions",
+        value="choose one candidate record and accept it",
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer accepts it, then chooses one candidate record."},
+        atomic_facts=atoms,
+    ) is False
+
+
+def test_accepted_custody_composition_requires_canonical_action_order() -> None:
+    expected = "Reviewer chooses one candidate record and accepts it"
+    reversed_atoms = (
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Reviewer accepts it",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/0"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "chooses one candidate record",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/1"}],
+        },
+    )
+    ordered_atoms = (
+        {
+            **reversed_atoms[1],
+            "normalized_value": "Reviewer chooses one candidate record",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/0"}],
+        },
+        {
+            **reversed_atoms[0],
+            "normalized_value": "accepts it",
+            "projection_links": [{"field": "first_path", "path": "/first_path/steps/1"}],
+        },
+    )
+
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer accepts it, then chooses one candidate record."},
+        atomic_facts=reversed_atoms,
+    ) is False
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer chooses one candidate record and accepts it."},
+        atomic_facts=ordered_atoms,
+    ) is True
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer chooses one candidate record and accepts it."},
+        atomic_facts=(
+            {
+                **ordered_atoms[0],
+                "normalized_value": "Reviewer chooses one candidate record and accepts it",
+            },
+        ),
+    ) is True
+
+
+def test_accepted_custody_direct_action_atom_requires_canonical_order() -> None:
+    expected = "Reviewer chooses one candidate record and accepts it"
+    reversed_atom = {
+        "categories": ["actions"],
+        "custody_state": "accepted_fact",
+        "polarity": "affirmed",
+        "normalized_value": "Reviewer accepts it, then chooses one candidate record",
+        "projection_links": [{"field": "first_path", "path": "/first_path/source_units/0"}],
+    }
+    ordered_atom = {
+        **reversed_atom,
+        "normalized_value": "Reviewer chooses one candidate record and accepts it",
+    }
+
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer accepts it, then chooses one candidate record."},
+        atomic_facts=(reversed_atom,),
+    ) is False
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer chooses one candidate record and accepts it."},
+        atomic_facts=(ordered_atom,),
+    ) is True
+
+
+def test_accepted_custody_does_not_compose_atoms_with_an_extra_actor_owner() -> None:
+    atoms = (
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Reviewer chooses one candidate record",
+            "projection_links": [{"field": "first_path"}],
+        },
+        {
+            "categories": ["actions"],
+            "custody_state": "accepted_fact",
+            "polarity": "affirmed",
+            "normalized_value": "Supervisor accepts it",
+            "projection_links": [{"field": "first_path"}],
+        },
+    )
+    expected = "Reviewer chooses one candidate record and accepts it"
+    facts = {"first_path": "Reviewer chooses one candidate record. Supervisor accepts it."}
+
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts=facts,
+        atomic_facts=atoms,
+    ) is False
+    assert _claim_has_custody(
+        category="actions",
+        value=expected,
+        expected_custody="accepted_fact",
+        facts={"first_path": "Reviewer chooses one candidate record and accepts it."},
+        atomic_facts=(atoms[0], {**atoms[1], "normalized_value": "accepts it"}),
+    ) is True
 
 
 @pytest.mark.parametrize("damage", ("projection", "source_ref"))

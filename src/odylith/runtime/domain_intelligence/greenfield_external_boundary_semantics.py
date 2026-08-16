@@ -217,13 +217,15 @@ _ARTIFACT_SOURCE_CARRIERS = frozenset(
 )
 _DIRECT_BOUNDARY_CARRIERS = _SOURCE_LABEL_CARRIERS - _ARTIFACT_SOURCE_CARRIERS
 _EXPLICIT_DEPENDENCY_COMMAND_RE = re.compile(
-    r"^(?:read|use)\s+(?:only\s+from\s+|from\s+)?(?:a\s+|an\s+|the\s+)?"
+    r"^(?:also\s+)?(?:(?:depend|rely)\s+on\s+|(?:read|use)\s+(?:only\s+from\s+|from\s+)?)"
+    r"(?:a\s+|an\s+|the\s+)?"
     r"(?P<label>[^.;!?]+)$",
     flags=re.IGNORECASE,
 )
 _SOLE_DEPENDENCY_RE = re.compile(
-    r"^(?:keep|use)\s+(?:a\s+|an\s+|the\s+)?(?P<label>[^.;!?]+?)\s+"
-    r"as\s+(?:the\s+)?(?:only|sole)\s+dependency$",
+    r"^(?:(?:keep|use)\s+(?:a\s+|an\s+|the\s+)?(?P<label>[^.;!?]+?)\s+as|"
+    r"(?:a\s+|an\s+|the\s+)?(?P<declared_label>[^.;!?]+?)\s+is)\s+"
+    r"(?:the\s+)?(?:only|sole)\s+dependency$",
     flags=re.IGNORECASE,
 )
 _READ_ONLY_SOURCE_RE = re.compile(
@@ -441,11 +443,15 @@ def _explicit_dependency_declarations(value: str) -> tuple[tuple[str, bool], ...
         clause = clean_text(raw).strip(" .")
         if not clause or is_discarded_evidence_clause(clause):
             continue
-        clause = re.sub(r"^(?:edit|final\s+(?:edit|request))\s*:\s*", "", clause, flags=re.IGNORECASE)
+        clause = re.sub(r"^(?:correction|edit|final\s+edit)\s*:\s*", "", clause, flags=re.IGNORECASE)
         clause = clause.partition(",")[0]
         command = _SOLE_DEPENDENCY_RE.match(clause) or _EXPLICIT_DEPENDENCY_COMMAND_RE.match(clause)
         read_only = _READ_ONLY_SOURCE_RE.match(clause)
-        candidate = (command or read_only).group("label") if command or read_only else ""
+        candidate = (
+            command.groupdict().get("label") or command.groupdict().get("declared_label", "")
+            if command
+            else read_only.group("label") if read_only else ""
+        )
         candidate, has_workflow_tail = _dependency_label_and_workflow_tail(candidate)
         if label := _explicit_dependency_label(candidate):
             declarations[label] = declarations.get(label, False) or has_workflow_tail

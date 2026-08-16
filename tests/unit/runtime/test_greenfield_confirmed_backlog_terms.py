@@ -6,9 +6,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import (
     confirmed_backlog_rows,
     confirmed_workstream_titles,
 )
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import (
-    proof_focus_summary,
-)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import proof_focus_summary
+from odylith.runtime.domain_intelligence.greenfield_proof_boundary_text import derived_proof_boundary_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     looks_mechanical_summary,
 )
@@ -318,6 +317,23 @@ def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:
         "SunRecover must prove the intake-to-first-plan path produces a safe, evidence-grounded recovery plan"
         in rationale
     )
+
+
+def test_derived_proof_boundary_removes_ranking_wrappers_without_dropping_claims() -> None:
+    raw = (
+        "The first thing the product must prove is that one review produces a signed receipt. "
+        "A close second is that an auditor can inspect the receipt."
+    )
+
+    assert derived_proof_boundary_text(raw) == (
+        "One review produces a signed receipt. An auditor can inspect the receipt."
+    )
+
+
+def test_derived_proof_boundary_preserves_actor_led_visible_result_sentence() -> None:
+    proof = "The first thing the reviewer sees is a signed badge."
+
+    assert derived_proof_boundary_text(proof) == proof
 
 
 def test_proof_claim_summary_removes_a_clipped_output_verb_and_connector() -> None:

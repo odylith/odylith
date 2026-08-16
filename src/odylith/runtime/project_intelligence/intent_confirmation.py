@@ -20,7 +20,7 @@ def build_product_intent_confirmation(
 ) -> dict[str, Any]:
     """Return a no-write host preview contract for precompiled product intent."""
 
-    clean_prompt = _clean(prompt) or "new project"
+    clean_prompt = str(prompt or "").strip() or "new project"
     evidence = dict(observed_source or {})
     source_posture = _clean(evidence.get("source_posture")) or "unknown"
     return {
@@ -112,7 +112,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
     """Render the typed intent preview; the transaction owns the command rail."""
 
     intent = _mapping(confirmation.get("intent"))
-    prompt = _clean(intent.get("prompt"))
+    prompt = str(intent.get("prompt") or "").strip()
     try:
         from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
             confirmation_from_operator_intent,

@@ -1,4 +1,4 @@
-status: queued
+status: implementation
 
 idea_id: B-144
 
@@ -28,7 +28,7 @@ confidence: High
 
 founder_override: no
 
-promoted_to_plan:
+promoted_to_plan: odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md
 
 execution_model: standard
 
@@ -73,8 +73,14 @@ Split result selection and projection repair into dedicated owners while preserv
 Create the workstream for Decompose Greenfield Semantic Compiler Into Result and Projection Owners and refine the exact implementation plan during execution.
 
 ## Scope
-- Define and land the bounded work for Decompose Greenfield Semantic Compiler Into Result and Projection Owners.
-- Keep the first implementation wave narrow and test-backed.
+- Extract result selection and projection repair from the semantic compiler into
+  cohesive typed owners, reducing the compiler to at most 1,200 lines.
+- Characterize and then decompose the adjacent red-zone prompt-source,
+  intent-recovery, and matrix-runner phases touched by Greenfield release
+  hardening. Safety-critical fixes may land first, but unrelated feature growth
+  is blocked until those owners are below their applicable limits.
+- Keep each implementation wave narrow, contract-tested, and free of private
+  host shims or duplicate semantic normalizers.
 
 ## Non-Goals
 - Do not widen this queued workstream into unrelated product cleanup.
@@ -90,10 +96,15 @@ Create the workstream for Decompose Greenfield Semantic Compiler Into Result and
 The root compiler is at or below 1,200 LOC; extracted owners have focused regression tests; the full greenfield prewrite and commit-only authority suites remain green.
 
 ## Validation
-- Run focused validation for the touched paths once implementation begins.
+- Run focused characterization tests for every extracted owner.
+- Run the full Greenfield runtime and release-evaluator suites after each
+  ownership move.
+- Enforce source-size and structural scans alongside compile and diff checks.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Execute through the linked in-progress technical plan in the active release.
+- Preserve the pre-confirm-only semantic repair and commit-only confirmation
+  boundary throughout the decomposition.
 
 ## Why Now
 This slice is active enough that it should exist as explicit backlog truth now.

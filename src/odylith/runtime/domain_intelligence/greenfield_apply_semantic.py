@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
+from odylith.runtime.domain_intelligence.greenfield_proof_boundary_text import (
+    derived_proof_boundary_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import completed_external_boundary_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
@@ -216,7 +219,7 @@ def _proof_boundary_text(
         for value in text_values(proposal.get("validation_strategy"))
         if clean_text(value)
     )
-    return _first_text_with_source(
+    proof_boundary, source = _first_text_with_source(
         ("intent.proof_boundary", intent.get("proof_boundary")),
         ("project_brief.proof", brief.get("proof")),
         ("release_plan.promotion_criteria", release_plan.get("promotion_criteria")),
@@ -226,6 +229,7 @@ def _proof_boundary_text(
             f"{title} proof links state, visible result, validation, and release evidence",
         ),
     )
+    return derived_proof_boundary_text(proof_boundary), source
 
 
 def _first_text_with_source(

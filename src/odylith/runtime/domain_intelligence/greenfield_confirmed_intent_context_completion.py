@@ -32,6 +32,7 @@ def normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> 
 
     actor_rows = confirmed_text_values(intent.get("human_actors"))
     first_path = _clean(intent.get("first_path"))
+    explicit_path_actor = any(_row_is_explicit_first_path_actor(row, first_path) for row in actor_rows)
     if actor_rows:
         intent["human_actors"] = [
             row.rstrip(" .")
@@ -42,7 +43,7 @@ def normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> 
         ]
     if first_path:
         intent["first_path"] = _sentence(
-            localize_leading_actor_reference(
+            first_path if explicit_path_actor else localize_leading_actor_reference(
                 first_path,
                 actor_rows=confirmed_text_values(intent.get("human_actors")),
                 project_focus=title,

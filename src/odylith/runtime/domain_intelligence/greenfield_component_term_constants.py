@@ -140,6 +140,8 @@ ARTIFACT_CARRIER_TERMS = {
     "preferences",
     "profile",
     "profiles",
+    "question",
+    "questions",
     "readiness",
     "recommendation",
     "recommendations",

@@ -4,13 +4,15 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from greenfield_matrix_case_file import load_case_file
+from greenfield_matrix_corpus_provenance import GreenfieldCaseProvenance
+from greenfield_matrix_semantic_text import TOKEN_RE as _TOKEN_RE
 from greenfield_matrix_release_artifacts import is_sha256
 from greenfield_matrix_release_artifacts import sha256_file
 from greenfield_matrix_input_axes import RELEASE_INPUT_STYLES
@@ -54,7 +56,6 @@ COMPLEXITY_DIMENSIONS = (
     "ambiguities",
     "safety_boundaries",
 )
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
 _POLARITY_TOKENS = frozenset(
     {
         "avoid",
@@ -72,6 +73,8 @@ _POLARITY_TOKENS = frozenset(
         "without",
     }
 )
+_INDEPENDENT_SYNTHETIC_CLAIM = "blinded-independent-synthetic-holdout"
+_INDEPENDENT_SYNTHETIC_TIER = "independent_synthetic_release_holdout"
 
 
 def evaluate_frozen_evaluation_contract(
@@ -136,6 +139,11 @@ def evaluate_frozen_evaluation_contract(
             issues.append(f"final holdout must declare {FINAL_HOLDOUT_VERSION}")
         if holdout_payload.get("claim_class") != final_ref.get("claim_class"):
             issues.append("final holdout claim_class does not match the frozen manifest")
+        if (
+            final_ref.get("claim_class") == _INDEPENDENT_SYNTHETIC_CLAIM
+            and not str(holdout_payload.get("authoring_method") or "").strip()
+        ):
+            issues.append("independent synthetic final holdout must declare its authoring method")
         annotations, annotation_issues = validate_atomic_annotations(
             cases=holdout_cases,
             rows=holdout_payload.get("annotations"),
@@ -201,6 +209,7 @@ def evaluate_frozen_evaluation_contract(
             "annotation_count": len(annotations),
             "sha256": str(final_ref.get("sha256") or ""),
             "claim_class": str(final_ref.get("claim_class") or ""),
+            "authoring_method": str(holdout_payload.get("authoring_method") or ""),
             "outcome_counts": _outcome_counts(holdout_cases),
             "input_style_counts": dict(sorted(input_style_counts.items())),
             "model_profile_counts": model_counts,
@@ -216,6 +225,93 @@ def evaluate_frozen_evaluation_contract(
         "frozen_floors": dict(_mapping(manifest.get("frozen_floors"))),
         "profiles": dict(profiles),
     }
+
+
+def bind_validated_final_holdout_provenance(
+    *,
+    cases: Sequence[GreenfieldMatrixCase],
+    evaluation_contract: Mapping[str, Any],
+    final_holdout_path: Path,
+) -> tuple[GreenfieldMatrixCase, ...]:
+    """Bind synthetic provenance only to the exact manifest-validated holdout bytes."""
+
+    if evaluation_contract.get("passed") is not True:
+        raise RuntimeError("cannot bind final holdout provenance before contract validation passes")
+    summary = _mapping(evaluation_contract.get("final_holdout"))
+    if summary.get("claim_class") != _INDEPENDENT_SYNTHETIC_CLAIM:
+        return tuple(cases)
+    expected_hash = str(summary.get("sha256") or "").strip()
+    holdout_path = Path(final_holdout_path).expanduser().resolve()
+    if not is_sha256(expected_hash) or sha256_file(holdout_path) != expected_hash:
+        raise RuntimeError("validated final holdout bytes no longer match the frozen contract")
+    payload = _json_object(holdout_path, label="final holdout")
+    if payload.get("version") != FINAL_HOLDOUT_VERSION:
+        raise RuntimeError("validated final holdout schema changed after contract validation")
+    if payload.get("claim_class") != _INDEPENDENT_SYNTHETIC_CLAIM:
+        raise RuntimeError("validated final holdout claim changed after contract validation")
+    authoring_method = str(payload.get("authoring_method") or "").strip()
+    if not authoring_method or authoring_method != str(summary.get("authoring_method") or "").strip():
+        raise RuntimeError("validated final holdout authoring method is not contract-bound")
+    trusted_cases = load_case_file(holdout_path)
+    if _case_prompt_identities(cases) != _case_prompt_identities(trusted_cases):
+        raise RuntimeError("selected cases do not match the validated final holdout")
+    if any(Path(case.source_file).expanduser().resolve() != holdout_path for case in cases):
+        raise RuntimeError("selected cases were not loaded from the validated final holdout")
+    default_provenance = GreenfieldCaseProvenance()
+    return tuple(
+        replace(
+            case,
+            provenance=GreenfieldCaseProvenance(
+                corpus_tier=_INDEPENDENT_SYNTHETIC_TIER,
+                schema_version=FINAL_HOLDOUT_VERSION,
+                derivation_method=authoring_method,
+                derived_prompt_sha256=hashlib.sha256(case.prompt.encode("utf-8")).hexdigest(),
+            ),
+        )
+        if case.provenance == default_provenance
+        else case
+        for case in trusted_cases
+    )
+
+
+def prepare_frozen_evaluation_cases(
+    *,
+    cases: Sequence[GreenfieldMatrixCase],
+    repo_root: Path,
+    manifest_path: Path | None,
+    final_holdout_path: Path | None,
+) -> tuple[tuple[GreenfieldMatrixCase, ...], Mapping[str, Any] | None]:
+    """Return synthetic-bound cases only when the external frozen contract passes."""
+
+    if manifest_path is None or final_holdout_path is None:
+        return tuple(cases), None
+    contract = evaluate_frozen_evaluation_contract(
+        repo_root=repo_root,
+        manifest_path=manifest_path,
+        final_holdout_path=final_holdout_path,
+    )
+    if contract.get("passed") is not True:
+        return tuple(cases), contract
+    return (
+        bind_validated_final_holdout_provenance(
+            cases=cases,
+            evaluation_contract=contract,
+            final_holdout_path=final_holdout_path,
+        ),
+        contract,
+    )
+
+
+def _case_prompt_identities(cases: Sequence[GreenfieldMatrixCase]) -> tuple[tuple[str, str], ...]:
+    return tuple(
+        sorted(
+            (
+                _case_id(case),
+                hashlib.sha256(str(case.prompt or "").encode("utf-8")).hexdigest(),
+            )
+            for case in cases
+        )
+    )
 
 
 def final_holdout_term_contract_issues(
@@ -617,8 +713,10 @@ __all__ = [
     "FINAL_HOLDOUT_VERSION",
     "POLARITY_VALUES",
     "assign_tracked_splits",
+    "bind_validated_final_holdout_provenance",
     "cross_split_leakage_issues",
     "evaluate_frozen_evaluation_contract",
     "final_holdout_term_contract_issues",
+    "prepare_frozen_evaluation_cases",
     "validate_atomic_annotations",
 ]

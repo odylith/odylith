@@ -519,6 +519,27 @@ def test_apply_semantic_input_keeps_raw_first_path_and_derives_typed_visible_res
     assert persisted_input["source_paths"]["visible_result"] == "intent.state_object"
 
 
+def test_apply_semantic_input_derives_ranked_proof_claims_without_changing_source_path() -> None:
+    proposal = {
+        "intent": {
+            "title": "Review Desk",
+            "state_object": "Review packet",
+            "first_path": "A reviewer checks one packet and sees a signed receipt.",
+            "proof_boundary": (
+                "The first thing the product must prove is that one review produces a signed receipt. "
+                "A close second is that an auditor can inspect the receipt."
+            ),
+        }
+    }
+
+    compiler_input = greenfield_apply_semantic_input(proposal)
+
+    assert compiler_input.proof_boundary == (
+        "One review produces a signed receipt. An auditor can inspect the receipt."
+    )
+    assert dict(compiler_input.source_paths)["proof_boundary"] == "intent.proof_boundary"
+
+
 def test_apply_semantic_input_trusts_terminal_handoff_visible_result() -> None:
     proposal = {
         "intent": {

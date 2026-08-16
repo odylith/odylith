@@ -352,7 +352,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
             if direct_actor_owns_output_path
             and structured_facts.first_path_contract
             and structured_facts.first_path_contract.output_only
-            and direct_step_count >= ranked_step_count
+            and direct_step_count >= ranked_step_count and not ranked_has_human_lead
             else ""
         )
         or source_owned.first_path
@@ -415,7 +415,7 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
         recovered_actor = _strip_leading_actor_article(first_path_actor)
         if _is_bounded_prompt_actor(recovered_actor):
             resolved_actor = recovered_actor
-            if first_path_action and _actor_recovery_needs_canonical_path(first_path, recovery_kind=recovery_kind):
+            if first_path_action and not _REQUEST_HELPER_WORDS.intersection(request_words(first_path_actor)) and _actor_recovery_needs_canonical_path(first_path, recovery_kind=recovery_kind):
                 first_path = f"{recovered_actor} can {first_path_action}".strip(" .")
     path_actor = _first_path_actor_candidate(first_path)
     if not path_actor and (pronoun := re.match(r"^(?:he|she|they)\b", first_path, flags=re.IGNORECASE)):
@@ -650,7 +650,7 @@ def _direct_actor_action_sentence(value: str) -> tuple[str, str]:
         if (
             explicit_actor
             and explicit_action
-            and explicit_actor.casefold() != product_title
+            and explicit_actor.casefold() != product_title and not _REQUEST_HELPER_WORDS.intersection(request_words(explicit_actor))
         ):
             if article:
                 return explicit_actor, f"{article.capitalize()} {explicit_actor} {explicit_action}"

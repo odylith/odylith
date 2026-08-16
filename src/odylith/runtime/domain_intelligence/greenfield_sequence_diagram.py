@@ -160,7 +160,11 @@ def first_path_flowchart_mermaid(
     if not steps:
         steps = ["Start the accepted path", "Record product state and evidence", "Review the outcome and blockers"]
     terminal_outcome = _semantic_visible_result(semantic_model)
-    visible_steps = _ensure_flowchart_event_floor(_flowchart_visible_steps(steps), terminal_outcome)
+    visible_steps = _ensure_flowchart_event_floor(
+        _flowchart_visible_steps(steps),
+        terminal_outcome,
+        semantic_model=semantic_model,
+    )
     actor_label = _actor_role_label((actors or [f"{label} user"])[0])
     previous = "actor"
     used_components: set[str] = set()
@@ -212,16 +216,50 @@ def _flowchart_visible_steps(steps: list[str], *, limit: int = 10) -> list[str]:
         return list(steps)
     return [*steps[: max(0, limit - 1)], steps[-1]]
 
-def _ensure_flowchart_event_floor(steps: list[str], visible_result: str) -> list[str]:
+def _ensure_flowchart_event_floor(
+    steps: list[str],
+    visible_result: str,
+    *,
+    semantic_model: Mapping[str, Any] | None,
+) -> list[str]:
     rows = [_compact_text(step).strip(" .") for step in steps if _compact_text(step).strip(" .")]
     if len(rows) >= 3:
         return rows
     outcome = _compact_text(visible_result).strip(" .")
     if outcome and not any(_sequence_terms(outcome) <= _sequence_terms(step) for step in rows if _sequence_terms(step)):
         rows.append(f"Review {outcome[:1].lower()}{outcome[1:]}")
-    while len(rows) < 3:
-        rows.append("Review blockers, evidence, and next step")
+    candidates = (
+        _typed_replay_proof_step(semantic_model),
+        "Record state change evidence",
+        "Review blockers and recovery path",
+        "Confirm next action and owner",
+    )
+    outcome_terms = _sequence_terms(outcome)
+    existing = {_compact_text(row).casefold().strip(" .") for row in rows}
+    for candidate in candidates:
+        normalized = _compact_text(candidate).strip(" .")
+        if not normalized or normalized.casefold() in existing:
+            continue
+        if outcome_terms and outcome_terms <= _sequence_terms(normalized):
+            continue
+        rows.append(normalized)
+        existing.add(normalized.casefold())
+        if len(rows) >= 3:
+            break
     return rows
+
+
+def _typed_replay_proof_step(semantic_model: Mapping[str, Any] | None) -> str:
+    if not isinstance(semantic_model, Mapping):
+        return ""
+    contract = semantic_model.get("first_path_contract")
+    if not isinstance(contract, Mapping):
+        return ""
+    entity = _compact_text(str(contract.get("entity") or "")).strip(" .")
+    persistence = _compact_text(str(contract.get("persistence") or "")).strip(" .")
+    if not entity or not re.search(r"\breplay(?:able)?\b", persistence, flags=re.IGNORECASE):
+        return ""
+    return f"Preserve replayable state for {entity}"
 
 def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
     if not isinstance(semantic_model, Mapping):

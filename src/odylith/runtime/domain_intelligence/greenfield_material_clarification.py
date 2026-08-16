@@ -11,7 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_explicit_decision_gap import explicit_decision_gap
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import is_noncompleting_action_head
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
-from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import sentence_fragments, without_pre_action_input_acquisition
 from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import explicit_actor_evidence
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import has_visible_object_list_result
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -46,6 +46,11 @@ _TERMINAL_DELIVERABLE_RE = re.compile(
 _OBSERVABLE_VERIFICATION_RE = re.compile(
     r"\b(?:confirm|confirms|inspect|inspects|review|reviews|verify|verifies)\b[^.!?]{0,100}"
     r"\b(?:decision|notice|outcome|proof|receipt|report|result|state|status|summary)\b",
+    flags=re.IGNORECASE,
+)
+_OBSERVABLE_SUCCESS_SIGNAL_RE = re.compile(
+    r"\b(?:badge|banner|indicator|marker|notice|receipt|report|result|state|status|summary)\b"
+    r"[^.!?]{0,60}\b(?:confirms?|indicates?|signals?)\s+(?:completion|success)\b",
     flags=re.IGNORECASE,
 )
 _IDENTITY_SOURCE_RE = re.compile(r"\b(?:codes?|identifiers?|ids?|tags?|tokens?)\b", re.IGNORECASE)
@@ -247,13 +252,16 @@ def incomplete_path_clarification(*, prompt: str, edit_evidence: str = "") -> Ma
 def has_explicit_visible_result(first_path: str) -> bool:
     """Recognize an observed result or a terminal deliverable after prior work."""
 
-    text = " ".join(str(first_path or "").split()).strip(" .")
+    text = without_pre_action_input_acquisition(" ".join(str(first_path or "").split())).strip(" .")
     if not text:
         return False
     if _VISIBLE_RE.search(text) or _TERMINAL_DELIVERABLE_RE.search(text):
         return True
     visible_outcome = first_path_model(text).visible_outcome
-    if visible_outcome and _OBSERVABLE_VERIFICATION_RE.search(visible_outcome):
+    if visible_outcome and (
+        _OBSERVABLE_VERIFICATION_RE.search(visible_outcome)
+        or _OBSERVABLE_SUCCESS_SIGNAL_RE.search(visible_outcome)
+    ):
         return True
     return has_visible_object_list_result(text)
 

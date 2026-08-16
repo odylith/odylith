@@ -34,6 +34,20 @@ def test_source_provenanced_pair_still_requires_source_identity_and_hash() -> No
     assert any("does not have one source artifact hash" in issue for issue in evaluation["issues"])
 
 
+def test_synthetic_schema_version_cannot_substitute_for_prompt_hash() -> None:
+    provenance = GreenfieldCaseProvenance(
+        corpus_tier="independent_synthetic_release_holdout",
+        schema_version="odylith.greenfield.final-holdout.v1",
+        derivation_method="independently-authored holdout transform",
+    )
+    cases = _pair(provenance, provenance)
+
+    evaluation = evaluate_metamorphic_outputs(cases=cases, results=tuple(_result(case) for case in cases))
+
+    assert evaluation["status"] == "failed"
+    assert any("sealed transform hashes" in issue for issue in evaluation["issues"])
+
+
 def _synthetic_cases() -> tuple[GreenfieldMatrixCase, GreenfieldMatrixCase]:
     prompts = ("A curator groups observation markers.", "Group observation markers for a curator.")
     provenances = tuple(

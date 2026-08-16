@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import hashlib
 
 import pytest
 
@@ -65,6 +66,62 @@ def test_atomic_fact_ledger_keeps_unsupported_projection_bounded() -> None:
     assert email_atom["custody_state"] == "bounded_interpretation"
     assert email_atom["source_span_ids"] == []
     assert email_atom["source_span_refs"] == []
+
+
+def test_atomic_fact_ledger_preserves_multi_actor_action_ownership() -> None:
+    source = "Reviewer chooses one candidate. Approver accepts the candidate."
+    shared_facts = {
+        **_FACTS,
+        "human_actors": [
+            "Reviewer: chooses one candidate.",
+            "Approver: accepts the candidate.",
+        ],
+    }
+    correct = _authority(
+        facts={**shared_facts, "first_path": source},
+        source=source,
+    )["atomic_facts"]
+    swapped = _authority(
+        facts={
+            **shared_facts,
+            "first_path": "Approver chooses one candidate. Reviewer accepts the candidate.",
+        },
+        source=source,
+    )["atomic_facts"]
+
+    assert _atom(correct, "Reviewer chooses one candidate")["custody_state"] == "accepted_fact"
+    assert _atom(correct, "Approver accepts the candidate")["custody_state"] == "accepted_fact"
+    assert _atom(swapped, "Approver chooses one candidate")["custody_state"] == (
+        "bounded_interpretation"
+    )
+    assert _atom(swapped, "Reviewer accepts the candidate")["custody_state"] == (
+        "bounded_interpretation"
+    )
+
+
+def test_atomic_fact_ledger_strips_proof_ranking_wrappers_from_derived_atoms() -> None:
+    first = "The first thing the product must prove is that a reviewer sees a signed receipt."
+    second = "A close second is that an auditor can inspect the receipt."
+    proof = f"{first} {second}"
+    atoms = _authority(
+        facts={**_FACTS, "proof_boundary": proof},
+        source=proof,
+    )["atomic_facts"]
+    reviewer = _atom(atoms, "a reviewer sees a signed receipt")
+    auditor = _atom(atoms, "an auditor can inspect the receipt")
+
+    assert reviewer["normalized_value"] == "A reviewer sees a signed receipt"
+    assert auditor["normalized_value"] == "An auditor can inspect the receipt"
+    assert reviewer["custody_state"] == auditor["custody_state"] == "accepted_fact"
+    whole_hash = hashlib.sha256(proof.encode("utf-8")).hexdigest()
+    assert {ref["text_sha256"] for ref in reviewer["source_span_refs"]} == {
+        whole_hash,
+        hashlib.sha256(first.rstrip(".").encode("utf-8")).hexdigest(),
+    }
+    assert {ref["text_sha256"] for ref in auditor["source_span_refs"]} == {
+        whole_hash,
+        hashlib.sha256(second.rstrip(".").encode("utf-8")).hexdigest(),
+    }
 
 
 def test_atomic_fact_ledger_does_not_promote_supporting_evidence_to_product_truth() -> None:

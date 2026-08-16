@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_te
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import actor_reference as _actor_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import actor_verb as _actor_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import clean_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import indefinite_phrase as _indefinite_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import lower_leading_word as _lower_leading_word
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import object_result_phrase as _object_result_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import recovered_title as _recovered_title
@@ -53,6 +54,7 @@ from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_word_sense_metadata_clause
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import operational_constraint_phrases
 from odylith.runtime.domain_intelligence.greenfield_operational_constraints import prohibited_product_phrases
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_interpretation import structured_prompt_facts
 from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import assumptions_with_reviewer_obligations
 from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import localize_direct_actor
 from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context import proof_with_reviewer_obligations
@@ -61,6 +63,8 @@ from odylith.runtime.domain_intelligence.greenfield_recovered_intent_context imp
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import source_state_transition
+from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import source_state_transition_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
@@ -325,8 +329,14 @@ def confirmation_from_operator_intent(
         localized=lead_actor,
     )
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
+    structured_contract = structured_prompt_facts(source).first_path_contract
+    declared_visible_result = (
+        next((event.source_text for event in structured_contract.events if event.kind == "output" and event.valid), "")
+        if structured_contract and structured_contract.explicit_output
+        else ""
+    )
     outcome = _stable_outcome_phrase(
-        first_path_outcome_phrase(first_path_source, fallback=""),
+        declared_visible_result or first_path_outcome_phrase(first_path_source, fallback=""),
         title=title,
     )
     outcome_object = _object_result_phrase(outcome)
@@ -400,6 +410,25 @@ def confirmation_from_operator_intent(
     story = story_with_operator_context(story, context=prompt_source.operator_context)
     if evaluation.state_object:
         state = evaluation.state_object
+    transition = source_state_transition(source)
+    transition_subject = source_state_transition_subject(source)
+    if transition_subject and re.search(
+        r"\bstate\s+object\s+is\s+(?:a|an|the)\s+(?:it|them|they)(?:\s|\.)",
+        state,
+        flags=re.IGNORECASE,
+    ):
+        state = state_object_from_first_path(first_path, fallback=title)
+        if re.search(r"\bstate\s+object\s+is\s+(?:a|an|the)\s+(?:it|them|they)(?:\s|\.)", state, flags=re.IGNORECASE):
+            state = f"The primary state object is {_indefinite_phrase(transition_subject)}."
+    if transition and transition.casefold() not in state.casefold():
+        arrow = re.fullmatch(r"(?P<before>.+?)\s*->\s*(?P<after>.+)", transition)
+        relative = f"that moves from {arrow.group('before')} to {arrow.group('after')}" if arrow else re.sub(
+            rf"^(?:a|an|the)\s+{re.escape(transition_subject)}\s+",
+            "that ",
+            transition,
+            flags=re.IGNORECASE,
+        )
+        state = f"{state.rstrip('.')} {relative.strip(' .')}."
     if evaluation.proof_boundary:
         proof = evaluation.proof_boundary
     proof = proof_with_reviewer_obligations(proof, reviewer_obligations)
@@ -466,6 +495,9 @@ def confirmation_from_operator_intent(
     if as_mapping:
         return hypothesis
     actor_lines = "\n".join(f"- {row}" for row in actor_rows)
+    external_lines = "\n".join(f"- {row}" for row in external_systems) or (
+        "- No external systems are required for the first proof path unless the operator adds one during edit."
+    )
     system_lines = "\n".join(f"- {row}" for row in internal_systems)
     sections = [
         f"# {title} - Product Intent Confirmation",
@@ -478,7 +510,7 @@ def confirmation_from_operator_intent(
     sections.extend(
         (
         "Human actors\n" + actor_lines,
-        "External systems\n- No external systems are required for the first proof path unless the operator adds one during edit.",
+        "External systems\n" + external_lines,
         "Internal product systems\n" + system_lines,
         "Problem\n" + problem,
         "Opportunity\n" + f"Prove the smallest complete {title.lower()} path before broader automation expands.",

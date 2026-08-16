@@ -60,6 +60,8 @@ _PREVIEW_SUBORDINATE_TAIL_VERBS = frozenset(
         "have",
         "is",
         "passes",
+        "remains",
+        "stays",
         "was",
         "were",
         "will",

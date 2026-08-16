@@ -240,6 +240,8 @@ def materialize_prompt_intent_hypothesis(
         canonical_actor_rows = canonical_human_actor_rows(
             project_label=domain_label(str(intent.get("title") or fallback_title), ""),
             rows=actor_rows,
+            first_path=intent.get("first_path"),
+            state_object=intent.get("state_object"),
         )
         intent["human_actors"] = canonical_actor_rows
         source_first_path = prompt_intent_source(interpretation_prompt).first_path if not raw_edit else ""
@@ -485,8 +487,11 @@ def _uses_actorless_workflow_assumption(*, prompt: str, edit_evidence: str) -> b
 
 def _title_supports_first_path_hypothesis(evidence: str) -> bool:
     source = prompt_intent_source(evidence)
+    title_key = re.sub(r"^(?:a|an|the)\s+", "", clean_markdown_text(source.title).casefold())
+    path_key = re.sub(r"^(?:a|an|the)\s+", "", clean_markdown_text(source.first_path).casefold())
     return bool(
-        not first_path_model(source.first_path).material_action
+        title_key
+        and path_key == title_key
         and title_supports_conservative_first_path(title=source.title, evidence=evidence)
     )
 

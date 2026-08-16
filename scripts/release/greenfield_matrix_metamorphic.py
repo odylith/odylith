@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-import re
+import hashlib
 from typing import Any
 
+from greenfield_matrix_semantic_text import TOKEN_RE as _TOKEN_RE
 from greenfield_matrix_types import GreenfieldMatrixResult
 from greenfield_matrix_clarification import focused_material_question
 from greenfield_matrix_clarification import material_question_field_issues
@@ -26,7 +27,6 @@ INVARIANT_FACT_FLOORS = {
     "non_goals": 0.70,
     "operational_constraints": 0.70,
 }
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
 _NON_SEMANTIC_TOKENS = frozenset(
     {
         "a",
@@ -131,9 +131,9 @@ def _group_issues(
     elif synthetic_identity:
         authors = {case.provenance.derivation_author for case in members}
         methods = {case.provenance.derivation_method for case in members}
-        if len(authors) != 1 or "" in authors or len(methods) != 1 or "" in methods:
+        if (authors != {""} and (len(authors) != 1 or "" in authors)) or len(methods) != 1 or "" in methods:
             issues.append(f"metamorphic group {group} does not have one sealed authoring identity")
-        if any(not _is_sha256(case.provenance.derived_prompt_sha256) for case in members):
+        if any(not _synthetic_transform_identity_is_valid(case) for case in members):
             issues.append(f"metamorphic group {group} does not have sealed transform hashes")
     else:
         issues.append(f"metamorphic group {group} mixes or does not declare a supported corpus tier")
@@ -151,12 +151,15 @@ def _group_issues(
             if provenance.get("source_artifact_sha256") not in expected_artifact_hashes:
                 issues.append(f"metamorphic group {group} case {case_id} lost its source artifact identity")
         elif synthetic_identity:
-            prompt_hash = case.provenance.derived_prompt_sha256
+            prompt_hash = _synthetic_prompt_hash(case)
             if provenance.get("corpus_tier") != "independent_synthetic_release_holdout":
                 issues.append(f"metamorphic group {group} case {case_id} lost its synthetic corpus identity")
             if provenance.get("derivation_method") != case.provenance.derivation_method:
                 issues.append(f"metamorphic group {group} case {case_id} lost its authoring method")
-            if provenance.get("derived_prompt_sha256") != prompt_hash or _mapping(evidence.get("case")).get("prompt_sha256") != prompt_hash:
+            if (
+                provenance.get("derived_prompt_sha256") != prompt_hash
+                or _mapping(evidence.get("case")).get("prompt_sha256") != prompt_hash
+            ):
                 issues.append(f"metamorphic group {group} case {case_id} lost its sealed transform identity")
         issues.extend(
             _completion_invariant_issues(
@@ -176,6 +179,16 @@ def _group_issues(
             )
         )
     return issues
+
+
+def _synthetic_transform_identity_is_valid(case: GreenfieldMatrixCase) -> bool:
+    prompt_hash = _synthetic_prompt_hash(case)
+    declared = str(case.provenance.derived_prompt_sha256 or "").strip()
+    return _is_sha256(declared) and declared == prompt_hash
+
+
+def _synthetic_prompt_hash(case: GreenfieldMatrixCase) -> str:
+    return hashlib.sha256(str(case.prompt or "").encode("utf-8")).hexdigest()
 
 
 def _invariant_meaning_issues(
