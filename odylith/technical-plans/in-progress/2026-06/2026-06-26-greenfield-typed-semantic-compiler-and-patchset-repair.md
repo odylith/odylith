@@ -4127,3 +4127,21 @@ above.
       commit and push the governed checkpoint, rebuild an exact distribution,
       rerun disclosed/lifecycle/recovery/host/browser proof, then authorize one
       newly authored untouched holdout. No consumed holdout was rerun.
+    - 2026-08-16 exact-distribution disclosed replay reopen: exact pushed
+      checkpoint `725ebb3c9` and wheel
+      `a0738d884e77ffe35655a28123dc7fb13e59d917dfbaf21a0f7d3cb704f4767d`
+      passed the maintained installed matrix but the retired 24-case v3 replay
+      failed closed at `15/24` (result
+      `555e19c2cb84510925a38fadcd97708793aa865ae6f6d8ff719c2dfe0abe9397`).
+      Six cases carried valid relative state transitions that the canonical
+      quality guard mistook for dangling past-form actions; two cases exposed
+      sentence-shaped Atlas labels or a dropped typed confirmation tail; one
+      case found retired literal copy in shipped diagram source. The generic
+      repairs validate the durable noun head of complete relative transitions,
+      stop diagram labels before relative clauses, retain a distinct typed
+      confirmation event, and remove the literal source phrase. Source proof
+      passes `147` canonical/path/compiler tests, `13` projection tests, `24`
+      confirmed-diagram tests, `27` package/copy tests, and focused structural
+      leakage checks. Next: independent delta review, commit and push these
+      bytes, rebuild the exact distribution, and rerun the retired installed
+      corpus from case one. The untouched holdout remains sealed.

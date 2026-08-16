@@ -57,6 +57,7 @@ _INFINITIVE_TO_FINITE = {
     "apply": "applies",
     "approve": "approves",
     "archive": "archives",
+    "arrive": "arrives",
     "adjudicate": "adjudicates",
     "analyse": "analyses",
     "analyze": "analyzes",
@@ -96,6 +97,7 @@ _INFINITIVE_TO_FINITE = {
     "configure": "configures",
     "connect": "connects",
     "contain": "contains",
+    "continue": "continues",
     "control": "controls",
     "convert": "converts",
     "coordinate": "coordinates",
@@ -246,6 +248,7 @@ _INFINITIVE_TO_FINITE = {
     "screen": "screens",
     "serve": "serves",
     "show": "shows",
+    "sign": "signs",
     "save": "saves",
     "see": "sees",
     "select": "selects",
@@ -292,6 +295,10 @@ _FINITE_ACTION_VERBS = set(_INFINITIVE_TO_FINITE.values()) | {
     "has",
     "is",
 }
+_INTRANSITIVE_FINITE_ACTION_VERBS = frozenset({"arrives", "continues"})
+_FINITE_ACTION_SUBJECT_FILLERS = DEFAULT_DANGLING_TAIL_WORDS | frozenset(
+    {"after", "because", "if", "once", "then", "when", "while", "without"}
+)
 _FINITE_TO_BASE = {finite: base for base, finite in _INFINITIVE_TO_FINITE.items()}
 _FINITE_TO_BASE.update(
     {
@@ -605,6 +612,27 @@ def contains_finite_action(value: str) -> bool:
         if looks_like_finite_action(" ".join(words[index:])):
             return True
     return False
+
+
+def contains_subject_finite_action(value: str) -> bool:
+    """Return true when a substantive subject owns a complete finite action."""
+
+    text = re.sub(r"[^A-Za-z0-9'-]+", " ", str(value or " ")).strip()
+    words = text.split()
+    for index in range(1, len(words)):
+        if not _finite_action_has_subject(words[:index]):
+            continue
+        finite = words[index].casefold() in _INTRANSITIVE_FINITE_ACTION_VERBS
+        if finite or (
+            index < len(words) - 1
+            and looks_like_finite_action(" ".join(words[index:]))
+        ):
+            return True
+    return False
+
+
+def _finite_action_has_subject(words: list[str]) -> bool:
+    return any(word.casefold() not in _FINITE_ACTION_SUBJECT_FILLERS for word in words)
 
 
 def looks_like_action_clause(value: str) -> bool:

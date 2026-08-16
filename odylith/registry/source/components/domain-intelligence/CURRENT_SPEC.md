@@ -3291,3 +3291,11 @@ confirmation gates, topology requirements, apply schema, and durable memory.
   `396/396` runtime compatibility and `80/80` strict disclosed custody; exact
   distribution, installed lifecycle/recovery/host/browser, and newly untouched
   holdout proof remain required.
+- Exact-distribution disclosed replay keeps complete relative state predicates
+  valid by judging their durable noun head rather than the destination state's
+  past-form spelling; pronoun-led and dangling action fragments remain invalid.
+  Atlas state/evidence labels are nominal heads, replay-proof events retain a
+  distinct typed confirmation action, and shipped diagram summaries contain no
+  retired corpus copy. Source proof covers `147` canonical/path/compiler tests,
+  `13` projection tests, `24` confirmed-diagram tests, and `27` package/copy
+  tests. A rebuilt installed replay is still required before release credit.

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import ast
+import json
 from pathlib import Path
+import re
 
 
 _ROOT = Path(__file__).resolve().parents[3]
@@ -58,6 +61,37 @@ def test_greenfield_tail_cleanup_has_no_regex_word_towers() -> None:
     assert "an|and|as|at|because|by|for|from" not in mermaid
     assert "accepted|actionable|an|and|as|at|because" not in sequence_labels
     assert "a|an|and|as|at|because|before|by|can" not in semantic_model
+
+
+def test_greenfield_atlas_sources_do_not_embed_case_transition_copy() -> None:
+    atlas_sources = (
+        _source("src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py"),
+        _source("src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py"),
+        _source("src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"),
+    )
+    corpus = json.loads(
+        _source(
+            "tests/fixtures/greenfield-release-corpus/retired-1ba7-v3-final-holdout-regressions.v1.json"
+        )
+    )
+    public_literals = " ".join(
+        str(node.value)
+        for source in atlas_sources
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+    ).casefold()
+    transition_phrases = {
+        match.group(0).casefold()
+        for case in corpus["cases"]
+        for match in re.finditer(
+            r"\b(?:becomes?|changes?|moves?|shifts?|transitions?)\s+(?:from\s+)?[a-z][a-z0-9'-]*",
+            str(case["prompt"]),
+            flags=re.IGNORECASE,
+        )
+    }
+
+    assert transition_phrases
+    assert not {phrase for phrase in transition_phrases if phrase in public_literals}
 
 
 def test_greenfield_materiality_has_one_prewrite_owner() -> None:

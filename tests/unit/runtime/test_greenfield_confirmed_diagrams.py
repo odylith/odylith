@@ -6,6 +6,7 @@ from pathlib import Path
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import brief_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import brief_proof_boundary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import proof_checkpoint_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import semantic_proof_checkpoint
@@ -101,6 +102,125 @@ def test_diagram_guides_do_not_repeat_articles_for_product_titles() -> None:
 
     assert "the the" not in guides.casefold()
     assert generated_public_copy_issues("Atlas catalog rows", guides) == ()
+
+
+def test_state_evidence_summary_uses_nominal_heads_not_input_clauses() -> None:
+    diagrams = confirmed_diagrams(
+        label="Signal Ledger Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {
+                "component_id": "signal-ledger",
+                "label": "Signal Ledger Service",
+                "kind": "service",
+            },
+        ],
+        product_story="Operators need one traceable signal decision path.",
+        first_path="An operator records a signal and sees its decision.",
+        proof_boundary="The first release proves the signal decision is visible.",
+        state_object="A signal ledger becomes approved and exposes a cobalt verdict.",
+        evidence_record="A verification bundle which records a violet checksum.",
+        human_actors=["Operator"],
+    )
+    summary = str(next(row["summary"] for row in diagrams if row["title"] == "State and Evidence View"))
+
+    assert "Signal Ledger" in summary
+    assert "Verification Bundle" in summary
+    assert not re.search(r"\b(?:becomes|exposes|which|records|cobalt|violet)\b", summary, flags=re.IGNORECASE)
+    assert generated_public_copy_issues("State and Evidence View", summary) == ()
+
+
+def test_unicode_object_labels_stop_before_transition_and_relative_clauses() -> None:
+    assert brief_object_label("A résumé note becomes reviewed.", fallback="State") == "Résumé Note"
+    assert brief_object_label("A café entry that moves from open to reviewed.", fallback="State") == "Café Entry"
+    assert (
+        brief_object_label("The primary state object is a résumé note that becomes reviewed.", fallback="State")
+        == "Résumé Note"
+    )
+
+
+def test_standalone_labels_with_action_homonyms_remain_intact() -> None:
+    expected_labels = {
+        "Policy Changes Register": "Policy Changes Register",
+        "The Policy Changes Register.": "Policy Changes Register",
+        "State Transitions Catalog": "State Transitions Catalog",
+        "The State Transitions Catalog": "State Transitions Catalog",
+        "Route Moves Archive": "Route Moves Archive",
+        "The primary state object is a route moves archive.": "Route Moves Archive",
+    }
+
+    for source, expected in expected_labels.items():
+        assert brief_object_label(source, fallback="State") == expected
+
+
+def test_standalone_action_homonym_labels_render_intact_in_atlas() -> None:
+    expected_labels = {
+        "Policy Changes Register": "Policy Changes Register",
+        "The Policy Changes Register.": "Policy Changes Register",
+        "State Transitions Catalog": "State Transitions Catalog",
+        "The State Transitions Catalog": "State Transitions Catalog",
+        "Route Moves Archive": "Route Moves Archive",
+        "The primary state object is a route moves archive.": "Route Moves Archive",
+    }
+
+    for source, expected in expected_labels.items():
+        diagrams = confirmed_diagrams(
+            label="Policy Review Workspace",
+            diagram_slugs=_diagram_slugs(),
+            components=[
+                {
+                    "component_id": "policy-review",
+                    "label": "Policy Review Service",
+                    "kind": "service",
+                },
+            ],
+            product_story="Reviewers need one traceable policy decision path.",
+            first_path="A reviewer records a policy and sees the decision.",
+            proof_boundary="The first release proves the policy decision is visible.",
+            state_object=source,
+            evidence_record="Policy Evidence Ledger",
+            human_actors=["Reviewer"],
+        )
+        state_view = next(row for row in diagrams if row["title"] == "State and Evidence View")
+        rendered = "\n".join(
+            str(row["mermaid_source"])
+            for row in diagrams
+            if row["title"] in {"State and Evidence View", "Release Proof Review"}
+        )
+
+        assert expected in str(state_view["summary"])
+        assert generated_public_copy_issues(f"{expected} Atlas diagrams", rendered) == ()
+
+
+def test_unicode_state_evidence_atlas_copy_keeps_only_nominal_heads() -> None:
+    diagrams = confirmed_diagrams(
+        label="Accent Review Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {
+                "component_id": "accent-review",
+                "label": "Accent Review Service",
+                "kind": "service",
+            },
+        ],
+        product_story="Editors need one traceable review path.",
+        first_path="An editor attaches a note and sees the review result.",
+        proof_boundary="The first release proves the review result is visible.",
+        state_object="A résumé note becomes reviewed.",
+        evidence_record="A café entry that moves from open to reviewed.",
+        human_actors=["Editor"],
+    )
+    state_view = next(row for row in diagrams if row["title"] == "State and Evidence View")
+    rendered = "\n".join(
+        str(row["mermaid_source"])
+        for row in diagrams
+        if row["title"] in {"State and Evidence View", "Release Proof Review"}
+    )
+
+    assert "Résumé Note" in str(state_view["summary"])
+    assert "Café Entry" in str(state_view["summary"])
+    assert not re.search(r"\b(?:becomes|that|moves)\b", str(state_view["summary"]), flags=re.IGNORECASE)
+    assert generated_public_copy_issues("Unicode Atlas diagrams", rendered) == ()
 
 
 def test_sequence_event_steps_split_result_led_follow_on_finite_actions() -> None:

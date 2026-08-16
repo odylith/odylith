@@ -7,6 +7,7 @@ import re
 import pytest
 
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -25,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from odylith.runtime.domain_intelligence.proposal_tribunal_substance import check_confirmed_artifact_substance
 from tests.unit.runtime.greenfield_proposal_fixtures import stub_preconfirm_surface_refresh
 
 
@@ -56,6 +58,25 @@ def _proposal_for_case(tmp_path: Path, case_id: str) -> dict[str, object]:
         confirmed_intent=intent,
         require_completion_ready=False,
     )
+
+
+def _prewrite_quality_issues(
+    *,
+    root: Path,
+    proposal: dict[str, object],
+) -> list[str]:
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    assert tribunal.passed, tribunal.issues
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=root,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    return greenfield_rendered_package_quality_issues(prewrite.package)
 
 
 @pytest.mark.parametrize("case_id", ("gfhi-001", "gfhi-002"))
@@ -127,7 +148,46 @@ def test_retired_marker_pair_repairs_modal_grammar_before_sealing(tmp_path: Path
     assert len(step_labels) >= 3
     assert len(step_labels) == len(set(step_labels))
     assert sum("decision ribbon" in label for label in step_labels) == 1
+    if case_id == "gfhi-004":
+        assert any(label.startswith("confirm ") for label in step_labels)
     assert "decision ribbon" in flowchart.replace("<br/>", " ")
+    substance_issues: list[str] = []
+    check_confirmed_artifact_substance(
+        proposal={
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "first_path": first_path,
+            },
+            "semantic_model": semantic_model,
+        },
+        backlog=[],
+        components=[],
+        diagrams=[
+            {
+                "title": "First Path Sequence",
+                "summary": str(intent["product_story"]),
+                "read_guide": str(intent["proof_boundary"]),
+                "mermaid_source": flowchart,
+            }
+        ],
+        issues=substance_issues,
+    )
+    assert not [issue for issue in substance_issues if "omits the tail" in issue]
+
+
+@pytest.mark.parametrize("case_id", ("gfhi-003", "gfhi-004", "gfhi-021"))
+def test_disclosed_atlas_state_labels_are_nominal_and_complete(tmp_path: Path, case_id: str) -> None:
+    proposal = _proposal_for_case(tmp_path, case_id)
+    diagrams = {
+        str(row["title"]): str(row["mermaid_source"])
+        for row in proposal["diagrams"]
+        if str(row["title"]) in {"State and Evidence View", "Release Proof Review"}
+    }
+
+    assert set(diagrams) == {"State and Evidence View", "Release Proof Review"}
+    for title, source in diagrams.items():
+        assert generated_public_copy_issues(f"{case_id} {title}", source) == ()
+    assert not _prewrite_quality_issues(root=tmp_path / case_id, proposal=proposal)
 
 
 def test_semantic_path_keys_are_repaired_while_repository_paths_remain_identity() -> None:
@@ -196,19 +256,9 @@ def test_retired_component_package_residuals_compile_cleanly(
     case_id: str,
 ) -> None:
     proposal = _proposal_for_case(tmp_path, case_id)
-    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
 
-    assert tribunal.passed, tribunal.issues
     assert not component_spec_preflight_issues(proposal)
-    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
-        root=tmp_path / case_id,
-        proposal=proposal,
-        release_selector="0.0.1",
-        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
-        validation_gate=tribunal.to_dict(),
-        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
-    )
-    assert not greenfield_rendered_package_quality_issues(prewrite.package)
+    assert not _prewrite_quality_issues(root=tmp_path / case_id, proposal=proposal)
 
     rendered_brief = json.dumps(proposal["project_brief"], ensure_ascii=False)
     components = proposal["components"]

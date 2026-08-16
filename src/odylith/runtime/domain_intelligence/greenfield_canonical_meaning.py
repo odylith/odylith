@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import strip
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import indefinite_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery_text import looks_plural
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_canonical_state_quality import canonical_state_object_is_meaningful
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import source_list_item_is_nominal
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -88,9 +89,6 @@ _WEAK_STATE_OBJECTS = frozenset(
         "information",
         "status",
     }
-)
-_GENERIC_CANONICAL_STATE_TERMS = frozenset(
-    {"detail", "details", "information", "item", "object", "record", "state", "status", "thing"}
 )
 _CONTEXTUAL_ON_RE = r"on(?!\s+(?:file|hand|hold|record)\b)"
 
@@ -236,27 +234,6 @@ def _recorded_state_assignment(value: str) -> tuple[str, str]:
 def _unaccepted_recorded_state_assignment(value: str) -> bool:
     recorded_object, recorded_predicate = _recorded_state_assignment(value)
     return bool(recorded_object and not past_action_verb(recorded_predicate))
-
-
-def canonical_state_object_is_meaningful(value: str) -> bool:
-    """Return whether a bounded canonical state sentence names a concrete object."""
-
-    match = re.fullmatch(
-        r"the primary state object is\s+(?:(?:a|an|the|one)\s+)?(?P<object>[^.;]+)\.?",
-        clean_text(value).strip(),
-        flags=re.IGNORECASE,
-    )
-    if not match:
-        return False
-    object_words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", match.group("object"))
-    if object_words and object_words[-1].casefold().endswith("ed") and past_action_verb(object_words[-1]):
-        return False
-    terms = {
-        token.casefold()
-        for token in object_words
-        if token.casefold() not in _GENERIC_CANONICAL_STATE_TERMS
-    }
-    return bool(terms)
 
 
 def internal_system_rows_from_first_path(

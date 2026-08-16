@@ -9,6 +9,9 @@ import pytest
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import (
     prompt_intent_source,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import (
+    complete_confirmed_intent,
+)
 from odylith.runtime.domain_intelligence.greenfield_actor_row_projection import (
     canonical_human_actor_rows,
 )
@@ -30,6 +33,9 @@ from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody impo
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     GreenfieldClarificationRequired,
     materialize_prompt_intent_hypothesis,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
+    generated_semantic_slop_issues,
 )
 
 
@@ -554,3 +560,27 @@ def test_unqualified_negative_supply_still_requests_missing_authority(
         )
 
     assert error.value.required_fields == ("approval_authority",)
+
+
+@pytest.mark.parametrize(
+    "case_id",
+    ("gfhi-004", "gfhi-007", "gfhi-008", "gfhi-010", "gfhi-011", "gfhi-012"),
+)
+def test_disclosed_relative_state_transitions_survive_semantic_completion(
+    tmp_path: Path,
+    case_id: str,
+) -> None:
+    case = _CASES[case_id]
+    staged = materialize_prompt_intent_hypothesis(
+        prompt=str(case["prompt"]),
+        repo_root=tmp_path / case_id,
+        fallback_title=str(case["name"]),
+    )
+    completed = complete_confirmed_intent(staged)
+    completed["reasoning_mode"] = "odylith_confirmed_governed_proposal"
+
+    assert completed["state_object"] == staged["state_object"]
+    assert not any(
+        "malformed canonical state object" in issue
+        for issue in generated_semantic_slop_issues({"intent": completed}, root="proposal")
+    )

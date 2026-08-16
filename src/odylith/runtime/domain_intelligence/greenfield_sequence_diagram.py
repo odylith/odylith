@@ -259,7 +259,7 @@ def _typed_replay_proof_step(semantic_model: Mapping[str, Any] | None) -> str:
     persistence = _compact_text(str(contract.get("persistence") or "")).strip(" .")
     if not entity or not re.search(r"\breplay(?:able)?\b", persistence, flags=re.IGNORECASE):
         return ""
-    return f"Preserve replayable state for {entity}"
+    return f"Confirm replayable state for {entity}"
 
 def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
     if not isinstance(semantic_model, Mapping):

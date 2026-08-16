@@ -302,20 +302,28 @@ def brief_object_label(value: str, *, fallback: str) -> str:
     text = compact_text(value)
     if not text:
         return fallback
-    shared_label = domain_object_label(text, fallback="")
-    if shared_label:
-        return trim(shared_label, 72)
     first = text.split("—", 1)[0].split(". ", 1)[0].strip(" .:")
-    patterns = (
-        r"\b(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+?)(?:\s+(?:that|which|who|where|tracks?|records?|stores?|captures?|moves?|starts?)\b|$)",
-        r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _/-]{2,80}?)\s+(?:tracks?|records?|stores?|captures?|moves?|starts?|keeps?)\b",
-    )
+    patterns = [
+        r"\b(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+?)(?:\s+(?:that|which|who|where)\b|$)",
+        r"^(?:(?:the|an|a|one)\s+)?(?P<label>.+?)\s+(?:that|which|who|where)\b",
+    ]
+    articleless_first = re.sub(r"^(?:a|an|the|one)\s+", "", first, flags=re.IGNORECASE)
+    if articleless_first != title_label(articleless_first):
+        patterns.extend(
+            (
+                r"^(?:the|an|a|one)\s+(?P<label>.+?)\s+(?:becomes?|changes?|moves?|shifts?|transitions?)\b",
+                r"^(?:the|an|a|one)\s+(?P<label>.+?)\s+(?:tracks?|records?|stores?|captures?|starts?|keeps?)\b",
+            )
+        )
     for pattern in patterns:
         match = re.search(pattern, first, flags=re.IGNORECASE)
         if match:
             candidate = compact_text(match.group("label")).strip(" .:")
             if candidate:
-                return trim(candidate, 72)
+                return trim(domain_object_label(candidate, fallback=candidate), 72)
+    shared_label = domain_object_label(text, fallback="")
+    if shared_label:
+        return trim(shared_label, 72)
     first = re.sub(r"^(?:a|an|the)\s+", "", first, flags=re.IGNORECASE)
     return trim(first or fallback, 72)
 

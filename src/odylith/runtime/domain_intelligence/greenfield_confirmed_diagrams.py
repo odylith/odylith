@@ -133,7 +133,7 @@ def confirmed_diagrams(
             "title": "State and Evidence View",
             "kind": "flowchart",
             "summary": (
-                f"Show how {state_label} becomes reviewable evidence for {label_display} in the first release. "
+                f"Trace {state_label} into first-release evidence for {label_display}. "
                 f"The evidence record is {evidence_label}."
             ),
             "read_guide": (

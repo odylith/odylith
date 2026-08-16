@@ -1,11 +1,39 @@
 from __future__ import annotations
 
+import pytest
+
+from odylith.runtime.common.prose_grammar import contains_finite_action
+from odylith.runtime.common.prose_grammar import contains_subject_finite_action
 from odylith.runtime.common.prose_grammar import strip_leading_action_modal
 from odylith.runtime.common.prose_grammar import strip_trailing_subject_modal
 from odylith.runtime.common.prose_grammar import past_action_verb
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.common.prose_tail import has_incomplete_public_tail
 from odylith.runtime.common.prose_tail import strip_incomplete_public_tail
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    (
+        ("processing continues", True),
+        ("the clerk signs it", True),
+        ("approval arrives", True),
+        ("operations team records status", True),
+        ("it arrives", True),
+        ("signs it", False),
+        ("records team", False),
+        ("the records team", False),
+        ("the operations team", False),
+        ("customer success team", False),
+    ),
+)
+def test_contains_subject_finite_action_requires_a_complete_clause(value: str, expected: bool) -> None:
+    assert contains_subject_finite_action(value) is expected
+
+
+@pytest.mark.parametrize("value", ("signs it", "adds peptide"))
+def test_contains_finite_action_preserves_legacy_fragment_detection(value: str) -> None:
+    assert contains_finite_action(value)
 
 
 def test_third_person_action_verb_handles_irregular_base_forms() -> None:

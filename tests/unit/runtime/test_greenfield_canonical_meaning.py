@@ -1,12 +1,29 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
+from odylith.runtime.domain_intelligence import greenfield_canonical_meaning
+from odylith.runtime.domain_intelligence import greenfield_canonical_state_quality
 from odylith.runtime.domain_intelligence.greenfield_canonical_meaning import (
     _non_human_subject_prefix,
-    canonical_state_object_is_meaningful,
+    canonical_state_object_is_meaningful as compatible_canonical_state_object_is_meaningful,
     internal_system_rows_from_first_path,
     state_object_from_first_path,
+)
+from odylith.runtime.domain_intelligence.greenfield_canonical_state_quality import (
+    canonical_state_object_is_meaningful,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
+    generated_semantic_slop_issues,
+)
+
+
+_FOURTH_REVIEW_CONDITION_NEGATIVES = tuple(
+    f"The primary state object is a packet that moves from open to reviewed {marker} {tail}."
+    for marker in ("after", "before", "when", "if", "while", "until", "once")
+    for tail in ("the records team", "signs it")
 )
 
 
@@ -15,6 +32,148 @@ def test_canonical_state_object_requires_a_durable_terminal_noun() -> None:
     assert canonical_state_object_is_meaningful(
         "The primary state object is a mixed classified and unclassified file."
     )
+
+
+def test_canonical_meaning_reexports_state_quality_contract() -> None:
+    assert compatible_canonical_state_object_is_meaningful is canonical_state_object_is_meaningful
+
+
+def test_canonical_state_validation_stays_in_dedicated_owner() -> None:
+    compatibility_source = Path(greenfield_canonical_meaning.__file__).read_text(encoding="utf-8")
+    quality_source = Path(greenfield_canonical_state_quality.__file__).read_text(encoding="utf-8")
+
+    assert len(compatibility_source.splitlines()) < 1200
+    assert "def canonical_state_object_is_meaningful" not in compatibility_source
+    assert "greenfield_canonical_state_quality import canonical_state_object_is_meaningful" in compatibility_source
+    assert "def canonical_state_object_is_meaningful" in quality_source
+    assert "def _state_endpoint_has_meaning" in quality_source
+    assert "def _condition_tail_has_meaning" in quality_source
+    assert "looks_like_finite_action_token" not in quality_source
+    assert "contains_subject_finite_action(value)" in quality_source
+    assert "contains_finite_action(value)" not in quality_source
+
+
+@pytest.mark.parametrize(
+    "state_object",
+    (
+        "The primary state object is a review set that moves from open to grouped.",
+        "The primary state object is a prepared packet that moves from prepared to reviewed.",
+        "The primary state object is a draft digest that moves from draft to reviewed when accepted.",
+        "The primary state object is a résumé note that moves from unreviewed to reviewed.",
+        "The primary state object is a packet that moves from on hold to in review.",
+        "The primary state object is a packet that moves from under review to over quota.",
+        "The primary state object is a packet that moves from open to reviewed when the clerk signs it.",
+        "The primary state object is a packet that moves from open to reviewed when accepted.",
+        "The primary state object is a packet that moves from open to reviewed after manual review.",
+        "The primary state object is a packet that moves from open to reviewed after approval.",
+        "The primary state object is a packet that moves from open to reviewed before deployment.",
+        "The primary state object is a packet that moves from open to reviewed while processing continues.",
+        "The primary state object is a packet that moves from open to reviewed when approval arrives.",
+        "The primary state object is a packet that moves from open to reviewed when operations team records status.",
+        "The primary state object is a packet that moves from open to reviewed when it arrives.",
+    ),
+)
+def test_canonical_state_object_accepts_complete_relative_transitions(state_object: str) -> None:
+    assert canonical_state_object_is_meaningful(state_object)
+
+
+@pytest.mark.parametrize(
+    "state_object",
+    (
+        "The primary state object is an it ready.",
+        "The primary state object is a packet reviewed.",
+        "The primary state object is a packet reviewed that moves from open to grouped.",
+        "The primary state object is a packet that moves from to reviewed.",
+        "The primary state object is a packet that moves from and to reviewed.",
+        "The primary state object is a packet that moves from from to reviewed.",
+        "The primary state object is a packet that moves from the to reviewed.",
+        "The primary state object is a packet that moves from via to reviewed.",
+        "The primary state object is a packet that moves from under to reviewed.",
+        "The primary state object is a packet that moves from over to reviewed.",
+        "The primary state object is a packet that moves from open to via.",
+        "The primary state object is a packet that moves from after to reviewed.",
+        "The primary state object is a packet that moves from open to after.",
+        "The primary state object is a packet that moves from before to reviewed.",
+        "The primary state object is a packet that moves from open by to reviewed.",
+        "The primary state object is a packet that moves from open to reviewed by.",
+        "The primary state object is a packet that moves from open to reviewed when the.",
+        "The primary state object is a packet that moves from open to reviewed when clerk.",
+        "The primary state object is a packet that moves from open to reviewed when the clerk.",
+        "The primary state object is a packet that moves from open to reviewed when quality lead.",
+        "The primary state object is a packet that moves from open to reviewed when the quality lead.",
+        "The primary state object is a packet that moves from open to reviewed when the operations team.",
+        "The primary state object is a packet that moves from open to reviewed after the operations team.",
+        "The primary state object is a packet that moves from open to reviewed before the operations team.",
+        "The primary state object is a packet that moves from open to reviewed if the operations team.",
+        "The primary state object is a packet that moves from open to reviewed while the operations team.",
+        "The primary state object is a packet that moves from open to reviewed until the operations team.",
+        "The primary state object is a packet that moves from open to reviewed once the operations team.",
+        "The primary state object is a packet that moves from open to reviewed when customer success team.",
+        "The primary state object is a packet that moves from open to reviewed after customer success team.",
+        "The primary state object is a packet that moves from open to reviewed before customer success team.",
+        "The primary state object is a packet that moves from open to reviewed if customer success team.",
+        "The primary state object is a packet that moves from open to reviewed while customer success team.",
+        "The primary state object is a packet that moves from open to reviewed until customer success team.",
+        "The primary state object is a packet that moves from open to reviewed once customer success team.",
+        "The primary state object is a packet that moves from open to reviewed after.",
+        "The primary state object is a packet that moves from open to reviewed before.",
+        *_FOURTH_REVIEW_CONDITION_NEGATIVES,
+    ),
+)
+def test_canonical_state_object_rejects_pronoun_and_action_fragments(state_object: str) -> None:
+    assert not canonical_state_object_is_meaningful(state_object)
+
+
+@pytest.mark.parametrize(
+    "state_object",
+    (
+        "The primary state object is a packet that moves from and to reviewed.",
+        "The primary state object is a packet that moves from from to reviewed.",
+        "The primary state object is a packet that moves from the to reviewed.",
+        "The primary state object is a packet that moves from via to reviewed.",
+        "The primary state object is a packet that moves from under to reviewed.",
+        "The primary state object is a packet that moves from over to reviewed.",
+        "The primary state object is a packet that moves from open to via.",
+        "The primary state object is a packet that moves from after to reviewed.",
+        "The primary state object is a packet that moves from open to after.",
+        "The primary state object is a packet that moves from before to reviewed.",
+        "The primary state object is a packet that moves from open by to reviewed.",
+        "The primary state object is a packet that moves from open to reviewed by.",
+        "The primary state object is a packet that moves from open to reviewed when the.",
+        "The primary state object is a packet that moves from open to reviewed when clerk.",
+        "The primary state object is a packet that moves from open to reviewed when the clerk.",
+        "The primary state object is a packet that moves from open to reviewed when quality lead.",
+        "The primary state object is a packet that moves from open to reviewed when the quality lead.",
+        "The primary state object is a packet that moves from open to reviewed when the operations team.",
+        "The primary state object is a packet that moves from open to reviewed after the operations team.",
+        "The primary state object is a packet that moves from open to reviewed before the operations team.",
+        "The primary state object is a packet that moves from open to reviewed if the operations team.",
+        "The primary state object is a packet that moves from open to reviewed while the operations team.",
+        "The primary state object is a packet that moves from open to reviewed until the operations team.",
+        "The primary state object is a packet that moves from open to reviewed once the operations team.",
+        "The primary state object is a packet that moves from open to reviewed when customer success team.",
+        "The primary state object is a packet that moves from open to reviewed after customer success team.",
+        "The primary state object is a packet that moves from open to reviewed before customer success team.",
+        "The primary state object is a packet that moves from open to reviewed if customer success team.",
+        "The primary state object is a packet that moves from open to reviewed while customer success team.",
+        "The primary state object is a packet that moves from open to reviewed until customer success team.",
+        "The primary state object is a packet that moves from open to reviewed once customer success team.",
+        "The primary state object is a packet that moves from open to reviewed after.",
+        "The primary state object is a packet that moves from open to reviewed before.",
+        *_FOURTH_REVIEW_CONDITION_NEGATIVES,
+    ),
+)
+def test_semantic_quality_rejects_control_only_state_endpoints(state_object: str) -> None:
+    proposal = {
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "state_object": state_object,
+        }
+    }
+
+    assert generated_semantic_slop_issues(proposal, root="proposal") == [
+        "malformed canonical state object leaked at proposal.intent.state_object"
+    ]
 
 
 def test_human_actions_keep_domain_state_without_transferring_ownership_to_product() -> None:
