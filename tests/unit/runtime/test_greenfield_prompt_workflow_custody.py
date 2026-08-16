@@ -10,6 +10,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery im
     intent_hypothesis_from_operator_evidence,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import (
+    source_boundary_rows_from_evidence,
+)
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_custody import (
+    rankable_prompt_evidence_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
     materialize_prompt_intent_hypothesis,
 )
@@ -28,6 +34,58 @@ _COMMIT_EXAMPLES = [
     for annotation in _CORPUS["annotations"]
     if annotation["expected_outcome"] == "commit"
 ]
+
+
+def test_title_only_final_edit_preserves_accepted_workflow_and_source_custody(
+    tmp_path: Path,
+) -> None:
+    prompt = (
+        "Create Northstar for a quality lead to review one inspection and see a signed decision. "
+        "Read from the Hall Calendar. Final edit: Title: Northstar."
+    )
+
+    source = prompt_intent_source(prompt)
+    assert source.actor == "quality lead"
+    assert source.first_path == "Quality lead can review one inspection and see a signed decision"
+    assert source_boundary_rows_from_evidence(prompt) == ["Hall Calendar"]
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Fallback",
+    )
+    assert intent["human_actors"] == [
+        "Quality lead: needs the product to review one inspection and see a signed decision and keep the result visible and reviewable"
+    ]
+    assert intent["first_path"] == "Quality lead can review one inspection and see a signed decision."
+    assert intent["external_systems"] == ["Hall Calendar"]
+
+
+def test_explicit_final_workflow_edit_replaces_earlier_workflow_only(tmp_path: Path) -> None:
+    prompt = """Create Northstar for a quality lead to review one inspection and see a signed decision.
+Read from the Hall Calendar.
+Final edit:
+Actor: release clerk
+First path: approve one request and see an approval receipt."""
+
+    ranked = rankable_prompt_evidence_text(prompt)
+    assert "quality lead" not in ranked.casefold()
+    assert "one inspection" not in ranked.casefold()
+    assert ranked == (
+        "Actor: release clerk\nFirst path: approve one request and see an approval receipt."
+    )
+    assert source_boundary_rows_from_evidence(prompt) == ["Hall Calendar"]
+
+    intent = materialize_prompt_intent_hypothesis(
+        prompt=prompt,
+        repo_root=tmp_path,
+        fallback_title="Fallback",
+    )
+    assert intent["human_actors"] == [
+        "Release clerk: needs the product to approve one request and see an approval receipt and keep the result visible and reviewable"
+    ]
+    assert intent["first_path"] == "Release clerk can approve one request and see an approval receipt."
+    assert intent["external_systems"] == ["Hall Calendar"]
 
 
 def test_prompt_source_preserves_complete_workflow_and_separates_prohibition() -> None:

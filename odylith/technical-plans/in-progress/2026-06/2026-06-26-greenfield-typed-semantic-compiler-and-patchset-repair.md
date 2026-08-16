@@ -4097,3 +4097,17 @@ above.
       status metadata but no screenshot paths, and retained telemetry has no
       token or currency fields, so those proof gaps remain explicit rather than
       inferred.
+    - 2026-08-16 exact-commit review reopen and closure: independent review of
+      checkpoint `0663a48f4` reproduced one P1 where a title-only `Final edit:`
+      left external-boundary custody intact but erased the earlier accepted
+      actor and first path before materialization, permitting representative-
+      user fallback truth. Revision authority is now field-local: explicit
+      workflow fields or actor-owned workflow replace the earlier path, while
+      title-only and other non-workflow edits retain prior accepted workflow
+      evidence. The exact preservation and explicit-replacement controls pass,
+      and the combined workflow-custody, high-variance, structured-first-path,
+      and external-boundary pack passed `231/231` in `402.44s`; compilation and
+      diff hygiene also pass. Release proof remains paused until these bytes are
+      committed, independently revalidated, rebuilt as an exact distribution,
+      and exercised through disclosed, lifecycle, recovery, host, and browser
+      gates. No consumed holdout was rerun.

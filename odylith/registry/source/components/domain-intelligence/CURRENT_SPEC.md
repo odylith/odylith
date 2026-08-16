@@ -3216,6 +3216,16 @@ This section captures synchronized requirement and contract signals derived from
   `223`-test fast gate with `8` intentional lifecycle deselections. Exact
   distribution, installed lifecycle/recovery/host-parity, browser-state,
   reviewer, and untouched one-shot holdout gates remain required.
+- Greenfield revision custody is field-local. A final evidence revision that
+  supplies actor-owned workflow or an explicit workflow field replaces the
+  earlier workflow; title-only and other non-workflow edits cannot erase an
+  already accepted actor/action/result contract. External-boundary custody
+  remains category-local across either form. This prevents representative-user
+  fallback truth from replacing a source-grounded first path after a narrow
+  edit while preserving deliberate workflow replacement. Exact preservation
+  and replacement controls pass, and the widened compatibility pack passes
+  `231/231`; exact-distribution, installed lifecycle/recovery/host/browser, and
+  newly untouched holdout proof remain required.
 
 ## Research Basis
 

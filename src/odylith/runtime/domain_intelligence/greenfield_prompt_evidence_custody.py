@@ -5,8 +5,10 @@ from __future__ import annotations
 import re
 
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import has_human_actor_role_signal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_patterns import leading_actor_action_match
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import is_contextual_gerund_phrase
+from odylith.runtime.domain_intelligence.greenfield_prompt_evidence_fields import prompt_field_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -103,6 +105,9 @@ _DISCARDED_ACTOR_WORKFLOW_RE = re.compile(
     flags=re.IGNORECASE,
 )
 _ORDERED_LIST_STEP_RE = re.compile(r"^\s*\d+[.)]\s+(?P<step>\S.*)$")
+_WORKFLOW_REPLACEMENT_FIELDS = frozenset(
+    {"action", "first action", "first complete path", "first path", "need", "objective", "task", "user task", "workflow"}
+)
 _MATERIAL_TERM_STOPWORDS = frozenset(
     {
         "accepted", "action", "artifact", "complete", "evidence", "first", "greenfield", "intent", "path",
@@ -147,7 +152,15 @@ def owned_disposition_workflow_actor_action(value: str) -> tuple[str, str]:
 def rankable_prompt_evidence_text(value: str) -> str:
     """Return authoritative positive evidence while leaving raw negative custody intact."""
 
-    text = authoritative_prompt_evidence_text(value)
+    raw_text = str(value or "")
+    revisions = tuple(_FINAL_REVISION_RE.finditer(raw_text))
+    text = raw_text.strip()
+    if revisions:
+        revision = revisions[-1]
+        final_evidence = raw_text[revision.end() :].strip()
+        text = final_evidence if _revision_replaces_workflow(final_evidence) else (
+            f"{raw_text[:revision.start()].strip()}\n{final_evidence}".strip()
+        )
     rows: list[str] = []
     for raw_line in text.splitlines() or [text]:
         fragments = re.split(r"(?<=[.!?])\s+", raw_line)
@@ -155,6 +168,15 @@ def rankable_prompt_evidence_text(value: str) -> str:
         if kept:
             rows.append(" ".join(kept))
     return "\n".join(rows).strip()
+
+
+def _revision_replaces_workflow(value: str) -> bool:
+    if _WORKFLOW_REPLACEMENT_FIELDS.intersection(prompt_field_mapping(value)):
+        return True
+    return any(
+        leading_actor_action_match(fragment) or owned_disposition_workflow_actor_action(fragment)[0]
+        for fragment in sentence_fragments(value)
+    )
 
 
 def contiguous_ordered_list_steps(value: str) -> tuple[str, ...]:
