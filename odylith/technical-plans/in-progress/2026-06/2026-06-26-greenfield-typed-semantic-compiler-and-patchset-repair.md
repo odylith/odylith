@@ -4145,3 +4145,22 @@ above.
       leakage checks. Next: independent delta review, commit and push these
       bytes, rebuild the exact distribution, and rerun the retired installed
       corpus from case one. The untouched holdout remains sealed.
+    - 2026-08-16 exact-distribution leakage-baseline reopen: pushed checkpoint
+      `8c05f7421` and wheel
+      `df4f9a618c7354ee3e7b7a60592daea950070ebded5590f653cf550128699006`
+      closed every disclosed product regression, but the full installed replay
+      stopped at `23/24` solely because the evaluator treated source phrase
+      `confirms success` as newly leaked even though it already existed in a
+      shipped migration runbook before product execution (result
+      `fa02b1f48702a034fc68ff11641fad154a0a4819979acdea3404275d8e710962`).
+      CB-326 records the release-blocking P1. The root was candidate-space
+      asymmetry: generated scoring could emit all source-grounded leakage
+      candidates while the pre-execution platform baseline scanned only the
+      narrower authoritative sentinel set. Baseline custody now scans the same
+      emittable candidate set, preserves exact-term suppression and genuine
+      leakage failures, and removes the orphaned raw-required-term helper.
+      Focused leakage controls pass `10/10`, the evaluator suite passes
+      `206/206`, and security/proof passes `46/46`. Next: commit this evaluator
+      correction, rerun the exact installed disclosed corpus from case one,
+      then continue the remaining release gates. The replacement holdout
+      remains sealed.

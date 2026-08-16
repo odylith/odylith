@@ -24,15 +24,6 @@ def case_declared_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
     return platform_domain_leakage.domain_leakage_terms_from_terms(raw_terms)
 
 
-def case_required_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
-    value = getattr(case, "required_terms", ())
-    if isinstance(value, (str, bytes)):
-        raw_terms = (str(value),)
-    else:
-        raw_terms = tuple(str(term) for term in value) if isinstance(value, Sequence) else ()
-    return platform_domain_leakage.domain_leakage_terms_from_terms(raw_terms)
-
-
 def case_generated_leakage_terms(
     *,
     case: GreenfieldMatrixCase,
@@ -88,7 +79,7 @@ def platform_baseline_required_terms(
             {
                 term
                 for case in cases
-                for term in platform_domain_leakage.case_leakage_terms(case)
+                for term in platform_domain_leakage.case_leakage_term_candidates(case)
             }
         )
     )

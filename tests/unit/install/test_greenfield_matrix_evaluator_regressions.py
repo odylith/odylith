@@ -36,6 +36,67 @@ def test_required_term_matching_accepts_bounded_inflection_without_accepting_an_
     assert required_term_present("A claim receipt remains visible.", "claim receipt") is True
 
 
+def test_platform_baseline_filters_native_supplemental_candidates_with_declared_sentinel(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    module = _module()
+    case = module.GreenfieldMatrixCase(
+        name="review badge confirmation",
+        prompt=(
+            "Build a review board. A blue review badge confirms success. "
+            "Delete the obsolete codename Brisk Lantern."
+        ),
+        required_terms=("review badge",),
+        leakage_terms=("Brisk Lantern",),
+    )
+    scanned_terms: list[tuple[str, ...]] = []
+
+    def fake_scan_platform_custody(*, repo_root, dist_dir, terms):  # noqa: ANN001
+        scanned_terms.append(terms)
+        return (
+            module.platform_domain_leakage.LeakageFinding(
+                location="docs/runbooks/migration.md",
+                term="confirms success",
+                line=11,
+            ),
+        )
+
+    monkeypatch.setattr(
+        module.platform_domain_leakage,
+        "scan_platform_custody",
+        fake_scan_platform_custody,
+    )
+    baseline = module._platform_baseline_required_terms(  # noqa: SLF001
+        repo_root=module.REPO_ROOT,
+        release_dir=tmp_path,
+        cases=(case,),
+    )
+    generated = "A blue review badge confirms success."
+
+    assert "confirms success" in scanned_terms[0]
+    assert "confirms success" in baseline
+    assert "confirms success" not in module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text=generated,
+        platform_baseline_terms=baseline,
+    )
+    assert "confirms success" in module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text=generated,
+    )
+    assert "confirms success" in module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text=generated,
+        platform_baseline_terms=("badge confirms success",),
+    )
+    assert module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        generated_text=f"{generated} Brisk Lantern.",
+        platform_baseline_terms=baseline,
+    ) == ("brisk lantern",)
+
+
 def test_untrusted_file_header_does_not_self_attest_synthetic_provenance(tmp_path) -> None:  # noqa: ANN001
     case_file = tmp_path / "sealed-cases.json"
     case_file.write_text(
