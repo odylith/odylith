@@ -347,16 +347,6 @@ if bad:
 print(f"release preflight wheel ok: {wheel}")
 PY
 
-  "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"
-  local matrix_temp_parent
-  matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
-  ensure_playwright_chromium
-  "$odylith_python" scripts/release/greenfield_preconfirm_matrix.py \
-    --version "$resolved_version" \
-    --dist-dir "$dist_dir" \
-    --temp-parent "$matrix_temp_parent" \
-    --proof-tier release \
-    --include-natural-rescue-proof \
-    --include-browser-proof \
-    --output-json "$dist_dir/greenfield-preconfirm-matrix.v1.json"
+  TEMP_PARENT="${ODYLITH_GREENFIELD_PROOF_TEMP_PARENT:-$(dirname "$dist_dir")}" \
+    "$odylith_host_repo_root/bin/greenfield-graph-release-proof" "$resolved_version" "$dist_dir"
 }

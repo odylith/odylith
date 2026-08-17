@@ -11,10 +11,8 @@ from typing import Any
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_acceptance_identity
-from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_create_baseline
-from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import ensure_greenfield_create_baseline
 from odylith.runtime.domain_intelligence.greenfield_prewrite_stage_root import staged_greenfield_prewrite_root
 from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup import (
@@ -30,22 +28,30 @@ from odylith.runtime.domain_intelligence.greenfield_prewrite_stale_cleanup impor
     remove_stale_workstream_artifacts,
 )
 from odylith.runtime.domain_intelligence import greenfield_prewrite_transaction_seal
-from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_release_commit
-from odylith.runtime.domain_intelligence import greenfield_source_casing
-from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_traceability_commit
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_completion_types import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_semantic_component_package import (
+    preview_semantic_components,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_component_package import (
+    render_semantic_component_specs,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_delivery import (
+    semantic_first_release_workstream_ids,
+    semantic_next_steps,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_traceability import (
+    apply_semantic_backlog_traceability,
+    build_semantic_traceability_plan,
+    require_persisted_semantic_projection_plan,
+    semantic_projection_diagram_rows,
+)
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
-from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
-from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
-from odylith.runtime.domain_intelligence.proposal_memory import build_project_brief_source_markdown
-from odylith.runtime.domain_intelligence.proposal_memory import compiled_project_brief_record_text
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
-from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from odylith.runtime.surfaces import brand_assets
 
 
@@ -66,30 +72,25 @@ def build_prewrite_completion_package(
 ) -> GreenfieldPrewriteBuild:
     """Render the full confirmed-create package in a staged repo before writes."""
 
-    source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
     accepted_at = _compiled_acceptance_timestamp()
     baseline_writes = greenfield_create_baseline.precompiled_greenfield_create_baseline_writes(root)
     brand_asset_writes = brand_assets.precompiled_brand_asset_writes(repo_root=root)
-    if source_text:
-        restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
-            proposal,
-            source_text=source_text,
-        )
-        if isinstance(restored_proposal, Mapping):
-            proposal = restored_proposal
-    backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     previous_greenfield_ids = accepted_greenfield_workstream_ids(root)
     with staged_greenfield_prewrite_root(root) as prewrite_root:
         brand_assets.materialize_precompiled_brand_assets(
             repo_root=prewrite_root,
             brand_asset_writes=brand_asset_writes,
         )
-        staged_backlog_result = backlog_authoring.create_queued_backlog_items(
+        from odylith.runtime.domain_intelligence.greenfield_semantic_radar_write import (
+            compile_semantic_radar_prewrite,
+        )
+
+        staged_backlog_result = compile_semantic_radar_prewrite(
             repo_root=prewrite_root,
             backlog_index_path=prewrite_root / "odylith/radar/source/INDEX.md",
             ideas_root=prewrite_root / "odylith/radar/source/ideas",
-            titles=[str(row.get("title", "")).strip() for row in backlog_rows if str(row.get("title", "")).strip()],
-            args=backlog_args,
+            proposal=proposal,
+            policy=backlog_args,
         )
         staged_backlog_result = mark_previous_greenfield_workstreams_stale(
             staged_backlog_result,
@@ -100,17 +101,24 @@ def build_prewrite_completion_package(
             root=prewrite_root,
             stale_ids=staged_backlog_result.get("stale_idea_ids", ()),
         )
-        rendered_component_specs = greenfield_apply_components.render_prewrite_component_specs(
-            root=prewrite_root,
-            proposal=proposal,
-            release_selector=release_selector,
-            backlog_result=staged_backlog_result,
+        diagram_rows = list(semantic_projection_diagram_rows(proposal))
+        diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids(
+            prewrite_root,
+            len(diagram_rows),
+            rows=diagram_rows,
         )
-        staged_component_registry_preview = greenfield_apply_components.preview_prewrite_components(
+        rendered_component_specs = render_semantic_component_specs(
+            proposal=proposal,
+            release_selector=release_selector,
+            backlog_result=staged_backlog_result,
+            diagram_ids=diagram_ids,
+        )
+        staged_component_registry_preview = preview_semantic_components(
             root=prewrite_root,
             proposal=proposal,
             release_selector=release_selector,
             backlog_result=staged_backlog_result,
+            diagram_ids=diagram_ids,
         )
         component_registry_preview = remap_prewrite_component_items(
             staged_component_registry_preview,
@@ -120,15 +128,13 @@ def build_prewrite_completion_package(
         rendered_atlas_sources = greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
         atlas_review_date = dt.date.today().isoformat()
         materialize_prewrite_backlog_result(staged_backlog_result)
-        diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-        diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids(prewrite_root, len(diagram_rows), rows=diagram_rows)
-        traceability_plan = greenfield_traceability.build_traceability_plan(
+        traceability_plan = build_semantic_traceability_plan(
             proposal=proposal,
             created_backlog=staged_backlog_result["created"],
             diagram_ids=diagram_ids,
         )
         staged_traceability_plan = traceability_plan
-        greenfield_traceability.apply_backlog_traceability(
+        apply_semantic_backlog_traceability(
             repo_root=prewrite_root,
             proposal=proposal,
             plan=traceability_plan,
@@ -150,7 +156,7 @@ def build_prewrite_completion_package(
             traceability_plan=traceability_plan,
             review_date=atlas_review_date,
         )
-        first_release_workstreams = greenfield_programs.first_release_workstream_ids(
+        first_release_workstreams = semantic_first_release_workstream_ids(
             proposal=proposal,
             created_backlog=backlog_result["created"],
         )
@@ -199,7 +205,7 @@ def build_prewrite_completion_package(
         )
         package_proposal = proposal_with_component_brief_gate(proposal)
         project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
-        next_steps_preview = greenfield_experience.build_next_steps(
+        next_steps_preview = semantic_next_steps(
             proposal=package_proposal,
             backlog_result=backlog_result,
             first_release_workstreams=first_release_workstreams,
@@ -229,7 +235,11 @@ def build_prewrite_completion_package(
             release_assignment_result=preview_release_assignment,
             accepted_at=accepted_at,
         )
-        project_brief_record_text = build_project_brief_source_markdown(
+        from odylith.runtime.domain_intelligence.greenfield_semantic_memory import (
+            semantic_project_brief_markdown,
+        )
+
+        project_brief_record_text = semantic_project_brief_markdown(
             proposal=package_proposal,
             backlog_items=mapping_rows(backlog_result.get("created")),
             component_items=component_registry_preview,
@@ -252,7 +262,11 @@ def build_prewrite_completion_package(
             accepted_project_preview["accepted_at"] = accepted_at
             compass_memory_preview = dict(compass_memory_preview)
             compass_memory_preview["ts_iso"] = accepted_at
-            project_brief_record_text = compiled_project_brief_record_text(
+            from odylith.runtime.domain_intelligence.greenfield_semantic_memory import (
+                semantic_project_brief_with_accepted_at,
+            )
+
+            project_brief_record_text = semantic_project_brief_with_accepted_at(
                 project_brief_record_text,
                 accepted_at=accepted_at,
             )
@@ -262,6 +276,8 @@ def build_prewrite_completion_package(
             accepted_project_preview=accepted_project_preview,
             source_launch_context=next_steps_preview,
         )
+        accepted_project_preview = dict(accepted_project_preview)
+        accepted_project_preview["project_dashboard"] = project_dashboard_preview
         transaction_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
             greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
                 prewrite_root=prewrite_root,
@@ -272,11 +288,8 @@ def build_prewrite_completion_package(
                 target_backlog_result=backlog_result,
                 staged_component_registry_preview=staged_component_registry_preview,
                 rendered_component_specs=rendered_component_specs,
-                diagram_rows=diagram_rows,
                 diagram_ids=diagram_ids,
-                staged_traceability_plan=staged_traceability_plan,
                 rendered_atlas_sources=rendered_atlas_sources,
-                atlas_review_date=atlas_review_date,
                 compiled_atlas_catalog_rows=atlas_catalog_rows,
                 accepted_project_preview=accepted_project_preview,
                 project_brief_record_text=project_brief_record_text,
@@ -316,8 +329,7 @@ def build_prewrite_completion_package(
             repository_write_set=transaction_seal.repository_write_set,
             commit_result_preview=transaction_seal.commit_result_preview,
         )
-        package = greenfield_source_casing.package_with_source_casing(package)
-        source_cased_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
+        final_seal = greenfield_prewrite_transaction_seal.seal_staged_greenfield_create(
             greenfield_prewrite_transaction_seal.GreenfieldPrewriteSealRequest(
                 prewrite_root=prewrite_root,
                 target_root=root,
@@ -327,11 +339,8 @@ def build_prewrite_completion_package(
                 target_backlog_result=package.backlog_result,
                 staged_component_registry_preview=package.component_registry_preview,
                 rendered_component_specs=package.rendered_component_specs,
-                diagram_rows=diagram_rows,
                 diagram_ids=package.atlas_diagram_ids,
-                staged_traceability_plan=staged_traceability_plan,
                 rendered_atlas_sources=package.rendered_atlas_sources,
-                atlas_review_date=package.atlas_review_date,
                 compiled_atlas_catalog_rows=package.atlas_catalog_rows,
                 accepted_project_preview=package.accepted_project_preview,
                 project_brief_record_text=package.project_brief_record_text,
@@ -348,9 +357,9 @@ def build_prewrite_completion_package(
         )
         package = replace(
             package,
-            surface_refresh_preview=source_cased_seal.surface_refresh_preview,
-            repository_write_set=source_cased_seal.repository_write_set,
-            commit_result_preview=source_cased_seal.commit_result_preview,
+            surface_refresh_preview=final_seal.surface_refresh_preview,
+            repository_write_set=final_seal.repository_write_set,
+            commit_result_preview=final_seal.commit_result_preview,
         )
         return GreenfieldPrewriteBuild(
             backlog_result=package.backlog_result or backlog_result,
@@ -391,31 +400,10 @@ def _safety_evidence_subset(source: Mapping[str, Any], *, keys: Sequence[str]) -
 
 
 def proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str, Any]:
-    result = dict(proposal)
-    labels = [
-        str(row.get("label", "")).strip()
-        for row in greenfield_apply_components.first_release_component_rows(result)
-        if str(row.get("label", "")).strip()
-    ]
-    if not labels:
-        return result
-    brief = dict(result.get("project_brief")) if isinstance(result.get("project_brief"), Mapping) else {}
-    gates = [str(item).strip() for item in brief.get("coding_readiness_gates", []) if str(item).strip()] if isinstance(brief.get("coding_readiness_gates"), list) else []
-    summary = ", ".join(labels)
-    gate = f"The first-release components come from product systems named in the accepted product direction: {summary}."
-    replaced = False
-    updated: list[str] = []
-    for item in gates:
-        if "components come from product systems named in the accepted product direction" in item.casefold():
-            updated.append(gate)
-            replaced = True
-        else:
-            updated.append(item)
-    if not replaced:
-        updated.append(gate)
-    brief["coding_readiness_gates"] = updated
-    result["project_brief"] = brief
-    return result
+    """Return the already graph-compiled proposal without a legacy repair gate."""
+
+    semantic_projection_diagram_rows(proposal)
+    return dict(proposal)
 
 
 def remap_prewrite_backlog_result(
@@ -529,10 +517,10 @@ def release_id_for_proposal(proposal: Mapping[str, Any], *, selector: str) -> st
     release_id = str(release_plan.get("provisional_release_id", "")).strip()
     if release_id:
         return slugify(release_id)
+    projection_plan = require_persisted_semantic_projection_plan(proposal)
+    project_slug = str(projection_plan.get("project_slug") or "").strip()
     if selector:
-        return slugify(f"release-{selector}")
-    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    project_slug = slugify(str(intent.get("project_slug", "")).strip() or str(intent.get("title", "")).strip())
+        return slugify(f"release-{project_slug}-{selector}")
     return slugify(f"release-{project_slug}-first") if project_slug else "release-greenfield-first"
 
 
@@ -545,17 +533,33 @@ def ensure_release_target(
 ) -> dict[str, Any]:
     """Create or preview the release selector needed by confirmed greenfield apply."""
 
-    intent = proposal.get("intent", {}) if isinstance(proposal.get("intent"), Mapping) else {}
-    title = str(intent.get("title", "Greenfield Project")).strip() or "Greenfield Project"
+    projection_plan = require_persisted_semantic_projection_plan(proposal)
+    identity_id = str(projection_plan.get("identity_fact_id") or "").strip()
+    identity = next(
+        (
+            row
+            for row in projection_plan.get("nodes", ())
+            if isinstance(row, Mapping) and row.get("fact_id") == identity_id
+        ),
+        {},
+    )
+    title = str(identity.get("label") or "").strip()
+    if not title:
+        raise ValueError("persisted semantic projection plan lacks an identity label")
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
-    version, tag = greenfield_programs.semver_release_metadata(selector=selector, release_plan=release_plan)
+    from odylith.runtime.domain_intelligence.greenfield_release_contract import (
+        semantic_release_label,
+        semantic_release_metadata,
+    )
+
+    version, tag = semantic_release_metadata(selector=selector, release_plan=release_plan)
+    release_name = semantic_release_label(version or selector)
     registry_path = release_planning_contract.releases_registry_path(repo_root=repo_root)
     registry_document, _errors = release_planning_contract.load_registry_document(path=registry_path)
     aliases = dict(registry_document.get("aliases", {})) if isinstance(registry_document.get("aliases"), Mapping) else {}
     release_aliases = [selector]
     if release_planning_contract.canonical_alias_token("current") not in aliases:
         release_aliases.append("current")
-    release_name = greenfield_programs.compact_release_target_label(version or selector)
     return release_planning_authoring.ensure_release_selector(
         repo_root=repo_root,
         selector=selector,
@@ -586,8 +590,12 @@ def preview_accepted_project_memory(
 ) -> dict[str, Any]:
     """Build the accepted-project memory record before target writes begin."""
 
-    diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    return build_accepted_project_source_payload(
+    diagram_rows = list(semantic_projection_diagram_rows(proposal))
+    from odylith.runtime.domain_intelligence.greenfield_semantic_memory import (
+        semantic_accepted_project_payload,
+    )
+
+    return semantic_accepted_project_payload(
         proposal=proposal,
         backlog_items=mapping_rows(backlog_result.get("created")),
         component_items=tuple(row for row in component_items if isinstance(row, Mapping)),
@@ -610,27 +618,22 @@ def preview_project_dashboard_payload(
 ) -> dict[str, Any]:
     """Build the accepted Project tab preview before target writes begin."""
 
-    dashboard_proposal = dict(proposal)
-    dashboard_proposal["_accepted_project"] = {
-        "accepted_at": str(accepted_project_preview.get("accepted_at") or "prewrite"),
-        "origin": str(accepted_project_preview.get("origin") or "greenfield"),
-        "evidence_tier": str(accepted_project_preview.get("evidence_tier") or "user_intent"),
-        "created": dict(accepted_project_preview.get("created") or {})
-        if isinstance(accepted_project_preview.get("created"), Mapping)
-        else {},
-        "source_path": "odylith/runtime/source/accepted-project.v1.json",
-        "validation_gate": dict(accepted_project_preview.get("validation_gate") or {})
-        if isinstance(accepted_project_preview.get("validation_gate"), Mapping)
-        else {},
-    }
-    dashboard_proposal["_source_launch"] = (
+    resolved_source_launch = (
         dict(source_launch_context)
         if isinstance(source_launch_context, Mapping)
         else dict(accepted_project_preview.get("source_launch") or {})
         if isinstance(accepted_project_preview.get("source_launch"), Mapping)
         else {}
     )
-    return build_greenfield_payload(proposal=dashboard_proposal, repo_root=root)
+    from odylith.runtime.domain_intelligence.greenfield_semantic_memory import (
+        semantic_project_dashboard_payload,
+    )
+
+    return semantic_project_dashboard_payload(
+        proposal=proposal,
+        accepted_project=accepted_project_preview,
+        source_launch=resolved_source_launch,
+    )
 
 
 def preview_compass_acceptance_event(
@@ -647,8 +650,12 @@ def preview_compass_acceptance_event(
 ) -> dict[str, Any]:
     """Build the Compass acceptance event before the target stream is appended."""
 
-    diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
-    return build_greenfield_acceptance_event_preview(
+    diagram_rows = list(semantic_projection_diagram_rows(proposal))
+    from odylith.runtime.domain_intelligence.greenfield_semantic_memory import (
+        semantic_acceptance_event_preview,
+    )
+
+    return semantic_acceptance_event_preview(
         proposal=proposal,
         backlog_items=mapping_rows(backlog_result.get("created")),
         component_items=tuple(row for row in component_items if isinstance(row, Mapping)),

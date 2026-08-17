@@ -18,8 +18,12 @@ from odylith.runtime.domain_intelligence import greenfield_repository_write_set
 from odylith.runtime.domain_intelligence.greenfield_commit_journal import GreenfieldCommitJournal
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldCommitInterrupted
-from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from tests.unit.runtime.greenfield_proposal_fixtures import compiled_graph_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
+
+
+def _transaction(*, repo_root: Path):
+    return compiled_graph_transaction(repo_root)
 
 
 def _write(path: Path, text: str) -> None:

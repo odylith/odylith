@@ -7,12 +7,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
-    capitalize_sentence_start_preserving_source_terms,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract_support import present_verb
+from odylith.runtime.common.subject_grammar import present_verb
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import atlas_box_terms
 from odylith.runtime.surfaces import display_text
@@ -223,7 +219,6 @@ def clean_component_description(*, name: str, description: str) -> str:
         text,
         flags=re.IGNORECASE,
     ).strip(" ;,")
-    text = normalize_action_target_language(text)
     text = re.sub(r";\s*serve\s+as\b", "; serves as", text, flags=re.IGNORECASE)
     text = _OWNED_ACTION_RE.sub(lambda match: str(match.group(1)), text).strip()
     text = re.sub(r"^owns?\s+owns?\s+", "owns ", text, flags=re.IGNORECASE).strip()
@@ -232,7 +227,7 @@ def clean_component_description(*, name: str, description: str) -> str:
     if re.match(r"^owns?\b", text, flags=re.IGNORECASE):
         text = "Owns " + re.sub(r"^owns?\s+", "", text, flags=re.IGNORECASE).strip()
     else:
-        text = capitalize_sentence_start_preserving_source_terms(text)
+        text = _sentence_start(text)
     return _first_sentence(text)
 
 
@@ -705,7 +700,14 @@ def _join_list(values: Sequence[str]) -> str:
 def _sentence_subject(label: str) -> str:
     text = _clean_label(label).strip().rstrip(".")
     text = re.sub(r"\s*\([^)]*\)\s*$", "", text).strip()
-    return capitalize_sentence_start_preserving_source_terms(text) if text else "This step"
+    return _sentence_start(text) if text else "This step"
+
+
+def _sentence_start(value: str) -> str:
+    text = str(value or "")
+    if len(text) > 1 and text[0].islower() and text[1].isupper():
+        return text
+    return text[:1].upper() + text[1:]
 
 
 def _has_any(value: str, markers: Sequence[str]) -> bool:

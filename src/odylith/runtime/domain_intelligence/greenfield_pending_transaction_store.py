@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 import shutil
 import tempfile
 
 from odylith.install.fs import fsync_directory
 from odylith.runtime.domain_intelligence import greenfield_create_transaction
+from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
 PENDING_TRANSACTION_FILENAME = "product-create-transaction.v1.json"
-_DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
 def pending_transaction_directory(repo_root: Path, transaction_hash: str) -> Path:
@@ -98,7 +97,7 @@ def discard_pending_transaction(*, repo_root: Path, transaction_hash: str) -> No
 
 def _require_digest(value: object) -> str:
     token = str(value or "").strip()
-    if not _DIGEST.fullmatch(token):
+    if not is_sha256_digest(token):
         raise ValueError("Greenfield pending transaction hash must be a SHA-256 value")
     return token
 

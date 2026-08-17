@@ -24,11 +24,8 @@ class GreenfieldPrewriteSealRequest:
     target_backlog_result: Mapping[str, Any]
     staged_component_registry_preview: Sequence[Mapping[str, Any]]
     rendered_component_specs: Mapping[str, str]
-    diagram_rows: Sequence[Mapping[str, Any]]
     diagram_ids: Sequence[str]
-    staged_traceability_plan: Any
     rendered_atlas_sources: Mapping[str, str]
-    atlas_review_date: str
     compiled_atlas_catalog_rows: Sequence[Mapping[str, Any]]
     accepted_project_preview: Mapping[str, Any]
     project_brief_record_text: str
@@ -56,11 +53,8 @@ def seal_staged_greenfield_create(request: GreenfieldPrewriteSealRequest) -> Gre
             proposal=request.proposal,
             staged_component_registry_preview=request.staged_component_registry_preview,
             rendered_component_specs=request.rendered_component_specs,
-            diagram_rows=request.diagram_rows,
             diagram_ids=request.diagram_ids,
-            staged_traceability_plan=request.staged_traceability_plan,
             rendered_atlas_sources=request.rendered_atlas_sources,
-            atlas_review_date=request.atlas_review_date,
             compiled_atlas_catalog_rows=request.compiled_atlas_catalog_rows,
             accepted_project_preview=request.accepted_project_preview,
             project_brief_record_text=request.project_brief_record_text,

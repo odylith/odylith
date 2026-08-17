@@ -9,8 +9,12 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_create_commit
 from odylith.runtime.domain_intelligence import greenfield_transaction
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
-from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from tests.unit.runtime.greenfield_proposal_fixtures import compiled_graph_transaction
 from tests.unit.runtime.greenfield_proposal_fixtures import seal_compiled_greenfield_transaction
+
+
+def _transaction(*, repo_root: Path):
+    return compiled_graph_transaction(repo_root)
 
 
 def test_greenfield_apply_transaction_rolls_back_tooling_shell_outputs(tmp_path) -> None:

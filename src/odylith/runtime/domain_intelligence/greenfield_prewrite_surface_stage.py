@@ -7,12 +7,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
-from odylith.runtime.domain_intelligence import greenfield_component_commit
 from odylith.runtime.domain_intelligence import greenfield_surface_refresh_proof
-from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.proposal_memory import record_compiled_greenfield_acceptance
+from odylith.runtime.domain_intelligence.greenfield_compiled_memory_write import (
+    record_compiled_greenfield_acceptance,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_component_package import (
+    materialize_semantic_component_from_preview,
+)
+from odylith.runtime.domain_intelligence.greenfield_traceability_contract import component_key
 
 
 @dataclass(frozen=True)
@@ -33,11 +36,8 @@ def build_staged_surface_refresh_preview(
     proposal: Mapping[str, Any],
     staged_component_registry_preview: Sequence[Mapping[str, Any]],
     rendered_component_specs: Mapping[str, str],
-    diagram_rows: Sequence[Mapping[str, Any]],
     diagram_ids: Sequence[str],
-    staged_traceability_plan: Any,
     rendered_atlas_sources: Mapping[str, str],
-    atlas_review_date: str,
     compiled_atlas_catalog_rows: Sequence[Mapping[str, Any]],
     accepted_project_preview: Mapping[str, Any],
     project_brief_record_text: str,
@@ -51,11 +51,8 @@ def build_staged_surface_refresh_preview(
             proposal=proposal,
             staged_component_registry_preview=staged_component_registry_preview,
             rendered_component_specs=rendered_component_specs,
-            diagram_rows=diagram_rows,
             diagram_ids=diagram_ids,
-            staged_traceability_plan=staged_traceability_plan,
             rendered_atlas_sources=rendered_atlas_sources,
-            atlas_review_date=atlas_review_date,
             compiled_atlas_catalog_rows=compiled_atlas_catalog_rows,
             accepted_project_preview=accepted_project_preview,
             project_brief_record_text=project_brief_record_text,
@@ -70,11 +67,8 @@ def materialize_staged_greenfield_surfaces(
     proposal: Mapping[str, Any],
     staged_component_registry_preview: Sequence[Mapping[str, Any]],
     rendered_component_specs: Mapping[str, str],
-    diagram_rows: Sequence[Mapping[str, Any]],
     diagram_ids: Sequence[str],
-    staged_traceability_plan: Any,
     rendered_atlas_sources: Mapping[str, str],
-    atlas_review_date: str,
     compiled_atlas_catalog_rows: Sequence[Mapping[str, Any]],
     accepted_project_preview: Mapping[str, Any],
     project_brief_record_text: str,
@@ -91,12 +85,8 @@ def materialize_staged_greenfield_surfaces(
     )
     diagram_write = greenfield_apply_diagrams.materialize_apply_diagrams(
         root=staged_root,
-        rows=diagram_rows,
         diagram_ids=diagram_ids,
-        traceability_plan=staged_traceability_plan,
         rendered_atlas_sources=rendered_atlas_sources,
-        review_date=atlas_review_date,
-        require_compiled_sources=True,
         compiled_catalog_rows=compiled_atlas_catalog_rows,
     )
     memory_record = record_compiled_greenfield_acceptance(
@@ -130,21 +120,26 @@ def _materialize_staged_component_previews(
     rendered_component_specs: Mapping[str, str],
 ) -> tuple[Mapping[str, Any], ...]:
     preview_by_key = {
-        greenfield_traceability.component_key(
+        component_key(
             row.get("authoring_input") if isinstance(row.get("authoring_input"), Mapping) else row,
         ): row
         for row in staged_component_registry_preview
         if isinstance(row, Mapping)
     }
     created: list[Mapping[str, Any]] = []
-    for row in greenfield_apply_components.first_release_component_rows(proposal):
+    component_rows = [
+        row
+        for row in proposal.get("components", ())
+        if isinstance(row, Mapping) and row.get("release_scope") != "deferred"
+    ]
+    for row in component_rows:
         if not isinstance(row, Mapping):
             continue
-        key = greenfield_traceability.component_key(row)
+        key = component_key(row)
         preview = preview_by_key.get(key)
         if not preview:
             raise ValueError(f"staged component registry preview missing for {key or '<unknown component>'}")
-        result = greenfield_component_commit.materialize_compiled_component_from_preview(
+        result = materialize_semantic_component_from_preview(
             root=prewrite_root,
             preview=preview,
             rendered_component_specs=rendered_component_specs,

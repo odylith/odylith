@@ -8,9 +8,6 @@ from typing import Any
 
 from odylith.runtime.common import display_text as shared_display_text
 from odylith.runtime.common.prose_grammar import strip_clipped_terminal_fragment
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
-    capitalize_sentence_start_preserving_source_terms,
-)
 
 
 def dict_value(value: object) -> dict[str, Any]:
@@ -43,6 +40,12 @@ def display_text(value: object, fallback: str = "") -> str:
     if not token:
         return fallback
     return sentence(token, fallback)
+
+
+def capitalize_sentence_start(value: object) -> str:
+    """Capitalize presentation copy without altering mixed-case source terms."""
+
+    return shared_display_text.capitalize_sentence_start(value)
 
 
 def repeat_key(value: object) -> str:
@@ -134,7 +137,7 @@ def tidy_fragment(value: object) -> str:
         flags=re.IGNORECASE,
     ).strip(" ,;:.")
     text = _remove_dangling_tail(text).strip(" .")
-    return capitalize_sentence_start_preserving_source_terms(text)
+    return capitalize_sentence_start(text)
 
 
 def _remove_dangling_tail(value: str) -> str:

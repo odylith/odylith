@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 209,
-    "mapped_workstream_evidence_count": 124,
+    "explicit_event_count": 210,
+    "mapped_workstream_evidence_count": 125,
     "recent_path_match_count": 0,
     "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 209
+    "timeline_event_count": 210
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -60,6 +60,31 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 1158,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-08-17T01:42:13-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

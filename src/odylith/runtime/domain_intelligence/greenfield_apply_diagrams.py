@@ -4,16 +4,19 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import dedupe_strings
-from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
-from odylith.runtime.surfaces import scaffold_mermaid_diagram
+from odylith.runtime.domain_intelligence.greenfield_semantic_atlas_materialization import (
+    render_verified_semantic_diagram_assets,
+    semantic_catalog_entry,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_traceability import (
+    semantic_projection_diagram_rows,
+)
 
 
 @dataclass(frozen=True)
@@ -22,6 +25,14 @@ class GreenfieldDiagramWriteResult:
 
     diagram_ids: tuple[str, ...]
     scaffold_logs: tuple[str, ...]
+
+
+def _diagram_id_number(value: str) -> int | None:
+    token = str(value).strip()
+    suffix = token[2:] if token.startswith("D-") else ""
+    if len(suffix) < 3 or not suffix.isdecimal():
+        return None
+    return int(suffix)
 
 
 def allocated_diagram_ids(
@@ -58,13 +69,14 @@ def render_prewrite_atlas_sources(proposal: Mapping[str, Any]) -> dict[str, str]
     """Render Atlas Mermaid source files in memory for the completion gate."""
 
     sources: dict[str, str] = {}
-    for row in proposal.get("diagrams", []):
-        if not isinstance(row, Mapping):
-            continue
-        slug = str(row.get("slug", "")).strip() or slugify(str(row.get("title", "")).strip())
+    for row in semantic_projection_diagram_rows(proposal):
+        slug = str(row.get("slug", "")).strip()
         if not slug:
-            continue
-        sources[f"odylith/atlas/source/{slug}.mmd"] = validated_mermaid_source(row).rstrip() + "\n"
+            raise ValueError("verified semantic diagram is missing its planned slug")
+        source = str(row.get("mermaid_source", "")).strip()
+        if not source:
+            raise ValueError(f"verified semantic diagram `{slug}` is missing mermaid_source")
+        sources[f"odylith/atlas/source/{slug}.mmd"] = source.rstrip() + "\n"
     return sources
 
 
@@ -89,7 +101,7 @@ def compiled_atlas_diagram_ids(
             "compiled greenfield Atlas diagram ids missing or incomplete "
             f"(expected {expected_count}, found {len(diagram_ids)})"
         )
-    invalid = next((item for item in diagram_ids if not re.fullmatch(r"D-\d{3,}", item)), "")
+    invalid = next((item for item in diagram_ids if _diagram_id_number(item) is None), "")
     if invalid:
         raise ValueError(f"compiled greenfield Atlas diagram id is invalid: {invalid}")
     return diagram_ids
@@ -103,7 +115,7 @@ def render_prewrite_atlas_catalog_rows(
     traceability_plan: Any,
     review_date: str,
 ) -> tuple[dict[str, Any], ...]:
-    """Compile Atlas catalog rows before confirmation."""
+    """Compile exact graph-native Atlas catalog rows before confirmation."""
 
     if len(diagram_ids) != len(rows):
         raise ValueError(
@@ -115,24 +127,42 @@ def render_prewrite_atlas_catalog_rows(
         slug = str(row.get("slug", "")).strip()
         if not slug:
             raise ValueError("compiled greenfield Atlas catalog row missing slug")
-        entry = scaffold_mermaid_diagram.build_catalog_entry(
-            diagram_id=str(diagram_id).strip().upper(),
-            slug=slug,
-            title=str(row.get("title", "")).strip(),
-            kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
-            owner=str(row.get("owner", "repo")).strip() or "repo",
-            summary=str(row.get("summary", "")).strip(),
-            read_guide=str(row.get("read_guide", "")).strip(),
-            components=_proposal_diagram_components(row),
-            related_backlog=_repo_relative_backlog_paths(
+        if row.get("projection_origin") != "verified_semantic_intent_graph":
+            raise ValueError(f"compiled Atlas diagram `{slug}` lacks semantic projection custody")
+        fact_ids = row.get("semantic_fact_ids")
+        relation_ids = row.get("semantic_relation_ids")
+        if (
+            not isinstance(fact_ids, Sequence)
+            or isinstance(fact_ids, (str, bytes, bytearray))
+            or not fact_ids
+            or not isinstance(relation_ids, Sequence)
+            or isinstance(relation_ids, (str, bytes, bytearray))
+        ):
+            raise ValueError(f"compiled Atlas diagram `{slug}` lacks exact graph bindings")
+        values = {
+            "diagram_id": str(diagram_id).strip().upper(),
+            "slug": slug,
+            "title": str(row.get("title", "")).strip(),
+            "kind": str(row.get("kind", "flowchart")).strip() or "flowchart",
+            "owner": str(row.get("owner", "repo")).strip() or "repo",
+            "summary": str(row.get("summary", "")).strip(),
+            "read_guide": str(row.get("read_guide", "")).strip(),
+            "components": _proposal_diagram_components(row),
+            "related_backlog": _repo_relative_backlog_paths(
                 root=root,
                 paths=_diagram_related_backlog(traceability_plan, str(diagram_id).strip().upper()),
             ),
-            related_plans=[],
-            related_docs=[],
-            related_code=[],
-            watch_paths=_existing_watch_paths(root, row),
-            review_date=review_date,
+            "watch_paths": _existing_watch_paths(root, row),
+            "review_date": review_date,
+        }
+        entry = semantic_catalog_entry(
+            **values,
+            diagram_boxes=(
+                row.get("diagram_boxes", ())
+                if isinstance(row.get("diagram_boxes"), Sequence)
+                and not isinstance(row.get("diagram_boxes"), (str, bytes, bytearray))
+                else ()
+            ),
         )
         link_state = str(row.get("link_state", "")).strip()
         if link_state:
@@ -156,52 +186,34 @@ def compiled_atlas_catalog_rows(
 def materialize_apply_diagrams(
     *,
     root: Path,
-    rows: Sequence[Mapping[str, Any]],
     diagram_ids: Sequence[str],
-    traceability_plan: Any,
     rendered_atlas_sources: Mapping[str, str],
-    review_date: str,
-    require_compiled_sources: bool,
-    compiled_catalog_rows: Sequence[Mapping[str, Any]] | None = None,
+    compiled_catalog_rows: Sequence[Mapping[str, Any]],
 ) -> GreenfieldDiagramWriteResult:
-    """Materialize Atlas source and catalog rows for greenfield apply/create."""
+    """Materialize only hash-bound graph-native Atlas rows and Mermaid sources."""
 
     atlas_scaffold_logs: list[str] = []
     diagrams_created: list[str] = []
-    if require_compiled_sources:
-        catalog_rows = _compiled_atlas_catalog_rows_for_ids(compiled_catalog_rows or (), diagram_ids)
-        for catalog_row in catalog_rows:
-            _materialize_compiled_proposal_diagram(
-                root=root,
-                catalog_row=catalog_row,
-                atlas_scaffold_logs=atlas_scaffold_logs,
-                starter_source=compiled_atlas_source(
-                    catalog_row,
-                    rendered_atlas_sources,
-                    required=True,
-                ),
-            )
-            diagrams_created.append(str(catalog_row.get("diagram_id", "")).strip().upper())
-        return GreenfieldDiagramWriteResult(
-            diagram_ids=tuple(diagrams_created),
-            scaffold_logs=tuple(atlas_scaffold_logs),
-        )
-
-    for row, diagram_id in zip(rows, diagram_ids, strict=False):
-        _scaffold_proposal_diagram(
+    catalog_rows = _compiled_atlas_catalog_rows_for_ids(
+        compiled_catalog_rows,
+        diagram_ids,
+    )
+    for catalog_row in catalog_rows:
+        if catalog_row.get("projection_origin") != "verified_semantic_intent_graph":
+            raise ValueError("compiled Atlas row lacks verified semantic projection custody")
+        _materialize_compiled_proposal_diagram(
             root=root,
-            row=row,
-            diagram_id=diagram_id,
-            traceability_plan=traceability_plan,
+            catalog_row=catalog_row,
             atlas_scaffold_logs=atlas_scaffold_logs,
-            starter_source=prewrite_atlas_source(
-                row,
+            starter_source=compiled_atlas_source(
+                catalog_row,
                 rendered_atlas_sources,
-                required=require_compiled_sources,
             ),
-            review_date=review_date,
         )
-        diagrams_created.append(diagram_id)
+        diagrams_created.append(
+            str(catalog_row.get("diagram_id", "")).strip().upper()
+        )
+    render_verified_semantic_diagram_assets(root=root, rows=catalog_rows)
     return GreenfieldDiagramWriteResult(
         diagram_ids=tuple(diagrams_created),
         scaffold_logs=tuple(atlas_scaffold_logs),
@@ -267,36 +279,15 @@ def actual_atlas_sources(*, root: Path, rows: Sequence[Mapping[str, Any]]) -> di
     return sources
 
 
-def prewrite_atlas_source(
-    row: Mapping[str, Any],
-    rendered_atlas_sources: Mapping[str, str],
-    *,
-    required: bool = False,
-) -> str:
-    path = atlas_source_path_for_row(row)
-    if not path:
-        if required:
-            raise ValueError("compiled greenfield Atlas source missing source path")
-        return ""
-    source = str(rendered_atlas_sources.get(path, "")).strip()
-    if required and not source:
-        raise ValueError(f"compiled greenfield Atlas source missing for {path}")
-    return source
-
-
 def compiled_atlas_source(
     catalog_row: Mapping[str, Any],
     rendered_atlas_sources: Mapping[str, str],
-    *,
-    required: bool = False,
 ) -> str:
     source_mmd = str(catalog_row.get("source_mmd", "")).strip()
     if not source_mmd:
-        if required:
-            raise ValueError("compiled greenfield Atlas catalog row missing source_mmd")
-        return ""
+        raise ValueError("compiled greenfield Atlas catalog row missing source_mmd")
     source = str(rendered_atlas_sources.get(source_mmd, "")).strip()
-    if required and not source:
+    if not source:
         raise ValueError(f"compiled greenfield Atlas source missing for {source_mmd}")
     return source
 
@@ -317,9 +308,9 @@ def _next_diagram_id(repo_root: Path) -> str:
         except json.JSONDecodeError:
             payload = {}
         for row in payload.get("diagrams", []) if isinstance(payload, Mapping) else []:
-            match = re.fullmatch(r"D-(\d{3,})", str(row.get("diagram_id", "")).strip())
-            if match:
-                max_id = max(max_id, int(match.group(1)))
+            number = _diagram_id_number(str(row.get("diagram_id", "")).strip())
+            if number is not None:
+                max_id = max(max_id, number)
     return f"D-{max_id + 1:03d}"
 
 
@@ -340,7 +331,7 @@ def _catalog_diagram_ids_by_slug(repo_root: Path) -> dict[str, str]:
             continue
         slug = str(row.get("slug", "")).strip()
         diagram_id = str(row.get("diagram_id", "")).strip()
-        if slug and re.fullmatch(r"D-\d{3,}", diagram_id):
+        if slug and _diagram_id_number(diagram_id) is not None:
             result.setdefault(slug, diagram_id)
     return result
 
@@ -505,167 +496,6 @@ def _existing_watch_paths(root: Path, row: Mapping[str, Any]) -> list[str]:
     return watch_paths
 
 
-def _scaffold_proposal_diagram(
-    *,
-    root: Path,
-    row: Mapping[str, Any],
-    diagram_id: str,
-    traceability_plan: Any,
-    atlas_scaffold_logs: list[str],
-    review_date: str,
-    starter_source: str = "",
-) -> None:
-    components = _proposal_diagram_components(row)
-    related_backlog = _diagram_related_backlog(traceability_plan, diagram_id)
-    watch_paths = _existing_watch_paths(root, row)
-    rc, log_lines = scaffold_mermaid_diagram.scaffold_diagram(
-        repo_root=root,
-        catalog="odylith/atlas/source/catalog/diagrams.v1.json",
-        diagram_id=diagram_id,
-        slug=str(row.get("slug", "")).strip(),
-        title=str(row.get("title", "")).strip(),
-        kind=str(row.get("kind", "flowchart")).strip() or "flowchart",
-        owner=str(row.get("owner", "repo")).strip() or "repo",
-        summary=str(row.get("summary", "")).strip(),
-        read_guide=str(row.get("read_guide", "")).strip(),
-        components=components,
-        related_backlog=related_backlog,
-        related_plans=[],
-        related_docs=[],
-        related_code=[],
-        watch_paths=watch_paths,
-        review_date=review_date,
-        starter_source=starter_source or validated_mermaid_source(row),
-        refresh=False,
-    )
-    log_text = "\n".join(log_lines).strip()
-    if log_text:
-        atlas_scaffold_logs.append(log_text)
-    if rc != 0:
-        if _upsert_existing_proposal_diagram(
-            root=root,
-            row=row,
-            diagram_id=diagram_id,
-            components=components,
-            related_backlog=related_backlog,
-            watch_paths=watch_paths,
-            review_date=review_date,
-            log_text=log_text,
-            atlas_scaffold_logs=atlas_scaffold_logs,
-            starter_source=starter_source,
-        ):
-            _update_scaffolded_diagram_link_state(
-                root=root,
-                slug=str(row.get("slug", "")).strip(),
-                link_state=str(row.get("link_state", "")).strip(),
-            )
-            return
-        detail = f": {log_text}" if log_text else ""
-        raise RuntimeError(f"atlas scaffold failed for {row.get('slug')}{detail}")
-    _update_scaffolded_diagram_link_state(
-        root=root,
-        slug=str(row.get("slug", "")).strip(),
-        link_state=str(row.get("link_state", "")).strip(),
-    )
-
-
-def _upsert_existing_proposal_diagram(
-    *,
-    root: Path,
-    row: Mapping[str, Any],
-    diagram_id: str,
-    components: list[dict[str, str]],
-    related_backlog: list[str],
-    watch_paths: list[str],
-    review_date: str,
-    log_text: str,
-    atlas_scaffold_logs: list[str],
-    starter_source: str = "",
-) -> bool:
-    if "already exists" not in log_text:
-        return False
-    slug = str(row.get("slug", "")).strip()
-    if not slug and not diagram_id:
-        return False
-    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    if not catalog_path.is_file():
-        return False
-    try:
-        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return False
-    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
-    if not isinstance(diagrams, list):
-        return False
-    entry = next(
-        (
-            item
-            for item in diagrams
-            if isinstance(item, dict)
-            and (
-                (slug and str(item.get("slug", "")).strip() == slug)
-                or (diagram_id and str(item.get("diagram_id", "")).strip() == diagram_id)
-            )
-        ),
-        None,
-    )
-    if entry is None:
-        return False
-    source_mmd = str(entry.get("source_mmd") or f"odylith/atlas/source/{slug}.mmd").strip()
-    source_svg = str(entry.get("source_svg") or f"odylith/atlas/source/{slug}.svg").strip()
-    source_png = str(entry.get("source_png") or f"odylith/atlas/source/{slug}.png").strip()
-    entry.update(
-        {
-            "diagram_id": str(entry.get("diagram_id") or diagram_id).strip(),
-            "slug": str(entry.get("slug") or slug).strip(),
-            "title": str(row.get("title", "")).strip(),
-            "kind": str(row.get("kind", "flowchart")).strip() or "flowchart",
-            "owner": str(row.get("owner", "repo")).strip() or "repo",
-            "last_reviewed_utc": review_date,
-            "source_mmd": source_mmd,
-            "source_svg": source_svg,
-            "source_png": source_png,
-            "summary": str(row.get("summary", "")).strip(),
-            "read_guide": str(row.get("read_guide", "")).strip(),
-            "components": components,
-            "related_backlog": dedupe_strings(related_backlog),
-            "change_watch_paths": dedupe_strings(watch_paths) or [source_mmd],
-        }
-    )
-    catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
-    source_path = root / source_mmd
-    source_path.parent.mkdir(parents=True, exist_ok=True)
-    source_path.write_text((starter_source or validated_mermaid_source(row)).rstrip() + "\n", encoding="utf-8")
-    atlas_scaffold_logs.append(f"updated existing diagram: {entry['slug']}")
-    return True
-
-
-def _update_scaffolded_diagram_link_state(*, root: Path, slug: str, link_state: str) -> None:
-    if not slug or not link_state:
-        return
-    catalog_path = root / "odylith" / "atlas" / "source" / "catalog" / "diagrams.v1.json"
-    if not catalog_path.is_file():
-        return
-    try:
-        payload = json.loads(catalog_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return
-    diagrams = payload.get("diagrams") if isinstance(payload, Mapping) else None
-    if not isinstance(diagrams, list):
-        return
-    changed = False
-    for item in diagrams:
-        if not isinstance(item, dict):
-            continue
-        if str(item.get("slug", "")).strip() != slug:
-            continue
-        if str(item.get("link_state", "")).strip() != link_state:
-            item["link_state"] = link_state
-            changed = True
-    if changed:
-        catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
-
-
 __all__ = [
     "GreenfieldDiagramWriteResult",
     "actual_atlas_sources",
@@ -676,7 +506,6 @@ __all__ = [
     "compiled_atlas_diagram_ids",
     "compiled_atlas_source",
     "materialize_apply_diagrams",
-    "prewrite_atlas_source",
     "raise_for_greenfield_rendered_surface_custody",
     "render_prewrite_atlas_catalog_rows",
     "render_prewrite_atlas_sources",

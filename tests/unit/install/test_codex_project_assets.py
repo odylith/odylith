@@ -270,6 +270,7 @@ def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
         assert "--transaction-file" in compact_text, path
         assert "--transaction-hash" in compact_text, path
         assert "--confirm" in text, path
+        assert "semantic-intent-request" in text, path
         assert "--intent-file" not in text, path
         assert "--confirm-intent" not in text, path
         assert all(command in text for command in ("CONFIRM", "EDIT", "REJECT")), path
@@ -278,7 +279,7 @@ def test_greenfield_guidance_uses_precompiled_transaction_create_path() -> None:
             assert token not in text, f"{path} still carries stale greenfield guidance: {token}"
 
 
-def test_greenfield_guidance_keeps_internal_intent_flags_off_user_path() -> None:
+def test_greenfield_guidance_uses_the_public_host_semantic_handoff() -> None:
     guidance_paths = (
         REPO_ROOT / "AGENTS.md",
         REPO_ROOT / "odylith" / "AGENTS.md",
@@ -315,6 +316,7 @@ def test_greenfield_guidance_keeps_internal_intent_flags_off_user_path() -> None
         assert "--transaction-file" in normalized, path
         assert "--transaction-hash" in normalized, path
         assert "--confirm" in normalized, path
+        assert "semantic-intent-request" in normalized, path
         assert "--intent-file" not in normalized, path
         assert "--confirm-intent" not in normalized, path
         assert ".odylith/runtime/greenfield/confirmed-intent.md" not in normalized, path

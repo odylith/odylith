@@ -27,7 +27,10 @@ GREENFIELD_REQUIRED_SURFACE_ARTIFACTS = (
 )
 
 
-def build_prewrite_surface_refresh_preview(*, repo_root: Path) -> dict[str, Any]:
+def build_prewrite_surface_refresh_preview(
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
     """Run the staged refresh and return the sealed proof copied into the transaction."""
 
     root = Path(repo_root).expanduser().resolve()
@@ -35,6 +38,7 @@ def build_prewrite_surface_refresh_preview(*, repo_root: Path) -> dict[str, Any]
         repo_root=root,
         surfaces=GREENFIELD_VISIBLE_SURFACES,
         operation_label="Greenfield pre-confirm staged surface refresh",
+        atlas_sync=False,
     )
     missing = [path for path in GREENFIELD_REQUIRED_SURFACE_ARTIFACTS if _missing_or_empty(root / path)]
     if missing:

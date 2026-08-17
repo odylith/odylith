@@ -7,15 +7,16 @@ import copy
 import datetime as dt
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from odylith.runtime.common import agent_runtime_contract
-from odylith.runtime.domain_intelligence.proposal_memory import ACCEPTED_PROJECT_SOURCE_PATH
-from odylith.runtime.domain_intelligence.proposal_memory import PROJECT_BRIEF_SOURCE_PATH
+from odylith.runtime.domain_intelligence.greenfield_acceptance_contract import (
+    ACCEPTED_PROJECT_SOURCE_PATH,
+    PROJECT_BRIEF_SOURCE_PATH,
+)
 
 
-_ACCEPTED_AT_LINE = re.compile(r"(?m)^- accepted_at: ([^\r\n]+)$")
+_ACCEPTED_AT_PREFIX = "- accepted_at: "
 _ACCEPTED_PROJECT_CREATED_PATH_FIELDS = {
     "components": frozenset({"registry_path", "spec_path"}),
     "workstreams": frozenset({"idea_path"}),
@@ -121,8 +122,12 @@ def _read_compass_events(path: Path) -> tuple[dict[str, Any], ...] | None:
 
 
 def _brief_accepted_at(text: str) -> str:
-    matches = _ACCEPTED_AT_LINE.findall(str(text or ""))
-    return matches[0].strip() if len(matches) == 1 else ""
+    matches = [
+        line.removeprefix(_ACCEPTED_AT_PREFIX).strip()
+        for line in str(text or "").splitlines()
+        if line.startswith(_ACCEPTED_AT_PREFIX)
+    ]
+    return matches[0] if len(matches) == 1 else ""
 
 
 def _strict_json_loads(text: str) -> Any:
@@ -138,9 +143,13 @@ def _strict_json_loads(text: str) -> Any:
 
 
 def _brief_with_accepted_at(text: str, *, accepted_at: str) -> str | None:
-    if len(_ACCEPTED_AT_LINE.findall(str(text or ""))) != 1:
+    lines = str(text or "").splitlines()
+    matches = [index for index, line in enumerate(lines) if line.startswith(_ACCEPTED_AT_PREFIX)]
+    if len(matches) != 1:
         return None
-    return _ACCEPTED_AT_LINE.sub(f"- accepted_at: {accepted_at}", str(text), count=1)
+    lines[matches[0]] = f"{_ACCEPTED_AT_PREFIX}{accepted_at}"
+    suffix = "\n" if str(text or "").endswith("\n") else ""
+    return "\n".join(lines) + suffix
 
 
 def _valid_accepted_at(value: str) -> bool:

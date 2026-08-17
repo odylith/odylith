@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import errno
 import importlib.util
+import json
 import shutil
 import socket
 import subprocess
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.error import HTTPError
 
 
@@ -223,6 +225,7 @@ def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch,
     repo_root.mkdir()
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     commands: list[tuple[str, ...]] = []
+    browser_roots: list[Path] = []
 
     for relative_path in (
         "odylith/radar/radar.html",
@@ -267,8 +270,22 @@ def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch,
         return Result()
 
     monkeypatch.setattr(module, "_run", fake_run)
+    monkeypatch.setitem(
+        sys.modules,
+        "greenfield_browser_surface_proof",
+        SimpleNamespace(
+            browser_surface_proof_issues=lambda *, repo_root: browser_roots.append(repo_root) or (),
+        ),
+    )
 
-    module._greenfield_propose_apply_smoke(repo_root=repo_root, odylith=odylith, env={"ODYLITH_VERSION": "0.1.15"})
+    module._greenfield_propose_apply_smoke(
+        repo_root=repo_root,
+        odylith=odylith,
+        env={"ODYLITH_VERSION": "0.1.15"},
+        include_browser_proof=True,
+    )
+    release_case = json.loads(module._GREENFIELD_SEMANTIC_SMOKE_CASE.read_text(encoding="utf-8"))
+    semantic_intent_path = repo_root / "semantic-intent-smoke.v3.json"
 
     assert commands == [
         (str(odylith), "show", "--repo-root", "."),
@@ -279,7 +296,9 @@ def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch,
             "--repo-root",
             ".",
             "--prompt",
-            "warehouse dispatch planning app",
+            release_case["prompt"],
+            "--semantic-intent-file",
+            str(semantic_intent_path),
             "--format",
             "json",
         ),
@@ -297,35 +316,36 @@ def test_greenfield_propose_create_smoke_runs_exact_release_journey(monkeypatch,
             "--json",
         ),
     ]
+    assert json.loads(semantic_intent_path.read_text(encoding="utf-8")) == release_case["packet"]
+    assert browser_roots == [repo_root]
 
 
-def _write_greenfield_guidance(repo_root: Path, text: str) -> None:
+def _write_greenfield_guidance(repo_root: Path) -> None:
     module = _module()
     for relative_path in module._GREENFIELD_GUIDANCE_FILES:
         path = repo_root / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
+        expected = module._expected_greenfield_guidance(relative_path=relative_path)
+        text = f"# Existing repo guidance\n\n{expected}" if relative_path == "AGENTS.md" else expected
         path.write_text(text, encoding="utf-8")
 
 
-def test_release_smoke_requires_installed_greenfield_guidance_uses_proposal_first_confirm(tmp_path: Path) -> None:
+def test_release_smoke_requires_exact_installed_greenfield_guidance_custody(tmp_path: Path) -> None:
     module = _module()
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
-    _write_greenfield_guidance(
-        repo_root,
-        "Use a project-first greenfield proposal. Include a sectioned Product story, State object, First complete path, and Proof boundary; never collapse the proposal into a wall of prose. Run odylith greenfield propose --repo-root . --prompt '<request>'. Odylith compiles and validates typed prompt evidence and the full ProductCreateTransaction before showing the only hash-bound CONFIRM rail. EDIT supplies new evidence and rebuilds the proposal; REJECT writes nothing. Run odylith greenfield create --repo-root . --transaction-file .odylith/runtime/greenfield/pending/<hash>/product-create-transaction.v1.json --transaction-hash <hash> --confirm to commit. Create verifies the compiler receipt, hash, and repo preconditions, writes only sealed bytes under a rollback guard, validates readback, and performs no product reinterpretation, repair, or generation after CONFIRM. Do not inspect Odylith source after confirmation. Do not narrate parser/schema retries. Do not ask the operator to inspect proposal JSON.\n",
-    )
+    _write_greenfield_guidance(repo_root)
 
-    module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
+    module._require_greenfield_guidance_custody(repo_root=repo_root, label="unit")
 
     (repo_root / "AGENTS.md").write_text(
-        "Use Product Intent Confirmation before proposal expansion. Include the product story. The host authors an internal proposal payload and uses odylith greenfield apply from the same confirmation. Do not inspect Odylith source after confirmation. Do not ask the operator to inspect proposal JSON. host model drafts\n",
+        "# Existing repo guidance\n\n<!-- odylith-scope:start -->\nchanged contract\n<!-- odylith-scope:end -->\n",
         encoding="utf-8",
     )
     try:
-        module._require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="unit")
+        module._require_greenfield_guidance_custody(repo_root=repo_root, label="unit")
     except RuntimeError as exc:
-        assert "stale greenfield schema-repair flow" in str(exc)
+        assert "installed greenfield guidance bytes drift" in str(exc)
     else:  # pragma: no cover - assertion branch
         raise AssertionError("stale installed guidance should fail release smoke")
 

@@ -1,0 +1,42 @@
+{
+  "floors": {
+    "maximum_deterministic_law_failures": 0,
+    "maximum_p0_findings": 0,
+    "maximum_p1_findings": 0,
+    "maximum_unnecessary_question_rate": 0.05,
+    "minimum_accepted_fact_custody": 1.0,
+    "minimum_constraint_recall": 1.0,
+    "minimum_equivalent_source_convergence": 1.0,
+    "minimum_explicit_system_recall": 1.0,
+    "minimum_fact_precision": 1.0,
+    "minimum_first_path_comprehension": 0.9,
+    "minimum_material_question_recall": 0.95,
+    "minimum_overall_success": 0.95,
+    "minimum_package_utility": 0.9,
+    "minimum_worst_slice_success": 0.8
+  },
+  "mechanism_id": "prompt_only_materiality_gate_then_independent_graph_author",
+  "minimum_independent_reviews": 2,
+  "required_auxiliary_reports": {
+    "host_parity": "odylith.greenfield.host-parity-report.v1",
+    "lower_capability_safety": "odylith.greenfield.lower-capability-safety-evaluation.v1"
+  },
+  "required_host_profiles": [
+    "codex",
+    "claude"
+  ],
+  "required_model_profiles": [
+    "frontier_semantic_reasoning"
+  ],
+  "resource_ceilings": {
+    "maximum_case_model_calls": 2,
+    "maximum_case_restarts": 0,
+    "maximum_case_total_tokens": 100000,
+    "maximum_case_total_wall_ms": 600000,
+    "maximum_cohort_model_calls": 48,
+    "maximum_cohort_restarts": 0,
+    "maximum_cohort_total_tokens": 2400000,
+    "maximum_cohort_total_wall_ms": 14400000
+  },
+  "version": "odylith.greenfield.semantic-release-evaluation-contract.v2"
+}

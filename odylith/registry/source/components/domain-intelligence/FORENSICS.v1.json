@@ -8,12 +8,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 549,
-    "mapped_workstream_evidence_count": 457,
+    "explicit_event_count": 551,
+    "mapped_workstream_evidence_count": 459,
     "recent_path_match_count": 0,
     "spec_history_event_count": 294,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 549
+    "timeline_event_count": 551
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +21,58 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_atlas_materialization.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_package_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 1157,
+      "explicit_components": [
+        "atlas",
+        "domain-intelligence",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "domain-intelligence",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-16T20:32:47-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_component_package.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_traceability.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 1156,
+      "explicit_components": [
+        "domain-intelligence",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-16T18:51:19-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

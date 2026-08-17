@@ -101,6 +101,8 @@ def test_atlas_state_assertion_rejects_heading_only_or_unloaded_state() -> None:
 
 def test_project_state_assertion_requires_persisted_prompt_state() -> None:
     module = _module()
+    story_rows = _graph_story_rows()
+    prompt_rows = _graph_prompt_rows()
 
     assert (
         module._project_state_assertion_issues(
@@ -110,12 +112,13 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
             rendered_prompt_count=5,
             has_prompt_grid=True,
             has_blank_state=False,
-            has_implementation_prompts=True,
             max_prompt_overflow=0,
             pane_overflow=0,
-            rendered_story_body_count=5,
-            distinct_story_body_count=5,
             clipped_text_count=0,
+            rendered_story_rows=story_rows,
+            payload_story_rows=story_rows,
+            rendered_prompt_rows=prompt_rows,
+            payload_prompt_rows=prompt_rows,
         )
         == ()
     )
@@ -127,20 +130,20 @@ def test_project_state_assertion_requires_persisted_prompt_state() -> None:
         rendered_prompt_count=2,
         has_prompt_grid=False,
         has_blank_state=True,
-        has_implementation_prompts=False,
         max_prompt_overflow=20,
         pane_overflow=16,
-        rendered_story_body_count=5,
-        distinct_story_body_count=2,
         clipped_text_count=3,
+        rendered_story_rows=story_rows[:1],
+        payload_story_rows=story_rows,
+        rendered_prompt_rows=prompt_rows[:1],
+        payload_prompt_rows=prompt_rows,
     )
 
     assert "browser surface project payload is not accepted greenfield project state" in issues
-    assert "browser surface project payload exposes fewer than five implementation prompts" in issues
     assert "browser surface project payload contains empty implementation prompt text" in issues
-    assert "browser surface project rendered fewer than five implementation prompt cards" in issues
+    assert "browser surface project handoff prompts drift from the accepted typed dashboard" in issues
     assert "browser surface project rendered the blank project state after commit-only create" in issues
-    assert "browser surface project repeated Product Story body copy" in issues
+    assert "browser surface project story cards drift from the accepted typed dashboard" in issues
     assert "browser surface project clips visible text" in issues
 
 
@@ -154,23 +157,21 @@ def test_project_state_assertion_rejects_wrong_semantic_story_slot() -> None:
         rendered_prompt_count=5,
         has_prompt_grid=True,
         has_blank_state=False,
-        has_implementation_prompts=True,
         max_prompt_overflow=0,
         pane_overflow=0,
-        story_rows=[
+        rendered_story_rows=[
             {
                 "label": "Product Boundary",
                 "semantic_slot": "first_path",
                 "body": "A clerk submits one request and the workspace returns one reviewed result.",
             }
         ],
+        payload_story_rows=_graph_story_rows(),
+        rendered_prompt_rows=_graph_prompt_rows(),
+        payload_prompt_rows=_graph_prompt_rows(),
     )
 
-    assert (
-        "greenfield Project Product Story card is bound to the wrong semantic slot: "
-        "`Product Boundary` uses `first_path` instead of `product_boundary`"
-        in issues
-    )
+    assert "browser surface project story cards drift from the accepted typed dashboard" in issues
 
 
 def test_project_state_assertion_accepts_css_transformed_story_labels() -> None:
@@ -183,27 +184,15 @@ def test_project_state_assertion_accepts_css_transformed_story_labels() -> None:
         rendered_prompt_count=5,
         has_prompt_grid=True,
         has_blank_state=False,
-        has_implementation_prompts=True,
         max_prompt_overflow=0,
         pane_overflow=0,
-        rendered_story_body_count=5,
-        distinct_story_body_count=5,
         clipped_text_count=0,
-        story_rows=[
-            {"label": "USER PROBLEM", "semantic_slot": "user_problem", "body": "A reviewer needs a decision."},
-            {"label": "FIRST PATH", "semantic_slot": "first_path", "body": "A reviewer submits one packet."},
-            {
-                "label": "PRODUCT BOUNDARY",
-                "semantic_slot": "product_boundary",
-                "body": "The product owns packet review but not the external archive.",
-            },
-            {
-                "label": "OWNED CAPABILITIES",
-                "semantic_slot": "owned_capabilities",
-                "body": "The product validates, records, and displays the decision.",
-            },
-            {"label": "PROOF", "semantic_slot": "proof", "body": "A receipt proves the reviewed result."},
+        rendered_story_rows=[
+            {**row, "label": row["label"].upper()} for row in _graph_story_rows()
         ],
+        payload_story_rows=_graph_story_rows(),
+        rendered_prompt_rows=_graph_prompt_rows(),
+        payload_prompt_rows=_graph_prompt_rows(),
     )
 
     assert issues == ()
@@ -219,13 +208,56 @@ def test_project_state_assertion_rejects_confusable_uppercase_story_label() -> N
         rendered_prompt_count=5,
         has_prompt_grid=True,
         has_blank_state=False,
-        has_implementation_prompts=True,
         max_prompt_overflow=0,
         pane_overflow=0,
-        story_rows=[
-            {"label": "PROOFS", "semantic_slot": "proof", "body": "A receipt proves the reviewed result."}
+        rendered_story_rows=[
+            {**_graph_story_rows()[0], "label": "WORKFLOW FACT"},
+            *_graph_story_rows()[1:],
         ],
+        payload_story_rows=_graph_story_rows(),
+        rendered_prompt_rows=_graph_prompt_rows(),
+        payload_prompt_rows=_graph_prompt_rows(),
     )
 
-    assert "greenfield Project Product Story card has an unexpected semantic label: `PROOFS`" in issues
-    assert "greenfield Project Product Story is missing its `Proof` card" in issues
+    assert "browser surface project story cards drift from the accepted typed dashboard" in issues
+
+
+def _graph_story_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "label": "Workflow Facts",
+            "semantic_slot": "workflow_facts",
+            "body": "Submit request; review request",
+        },
+        {
+            "label": "Visible Outputs",
+            "semantic_slot": "visible_outputs",
+            "body": "Decision notice",
+        },
+        {
+            "label": "Component Boundaries",
+            "semantic_slot": "component_boundaries",
+            "body": "Review Service",
+        },
+    ]
+
+
+def _graph_prompt_rows() -> list[dict[str, str]]:
+    return [
+        {
+            "step_id": "review_project",
+            "label": "Review accepted project",
+            "when": "Use this step only after the preceding graph-bound gate passes.",
+            "prompt": "Review the accepted graph and release scope.",
+            "result": "Evidence for the next graph-bound decision.",
+            "stop": "Stop on contradiction, missing evidence, or scope drift.",
+        },
+        {
+            "step_id": "create_plan",
+            "label": "Create first implementation plan",
+            "when": "Use this step only after the preceding graph-bound gate passes.",
+            "prompt": "Create the first implementation plan from the accepted graph.",
+            "result": "Evidence for the next graph-bound decision.",
+            "stop": "Stop on contradiction, missing evidence, or scope drift.",
+        },
+    ]

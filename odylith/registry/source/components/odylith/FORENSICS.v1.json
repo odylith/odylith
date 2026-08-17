@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 781,
-    "mapped_workstream_evidence_count": 558,
+    "explicit_event_count": 785,
+    "mapped_workstream_evidence_count": 562,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 781
+    "timeline_event_count": 785
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,104 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "src/odylith/runtime/surfaces/greenfield_host_confirmation.py"
+      ],
+      "confidence": "high",
+      "event_index": 1159,
+      "explicit_components": [
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-08-17T02:07:06-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 1158,
+      "explicit_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "dashboard",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 verifiable artifact reference.",
+      "ts_iso": "2026-08-17T01:42:13-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_atlas_materialization.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_package_validation.py"
+      ],
+      "confidence": "high",
+      "event_index": 1157,
+      "explicit_components": [
+        "atlas",
+        "domain-intelligence",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "domain-intelligence",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-16T20:32:47-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_component_package.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_traceability.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability_contract.py"
+      ],
+      "confidence": "high",
+      "event_index": 1156,
+      "explicit_components": [
+        "domain-intelligence",
+        "odylith"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "odylith"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 verifiable artifact references.",
+      "ts_iso": "2026-08-16T18:51:19-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [

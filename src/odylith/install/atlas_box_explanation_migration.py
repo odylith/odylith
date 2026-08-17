@@ -13,7 +13,6 @@ from odylith.install.fs import atomic_write_text, display_path
 from odylith.install.versioning import is_at_least, is_before, normalize_version
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import topology_integrity
-from odylith.runtime.surfaces import atlas_box_explanations
 from odylith.runtime.surfaces import render_mermaid_catalog
 
 MIGRATION_ID = "v0.1.15-atlas-box-explanation-contract"
@@ -196,6 +195,8 @@ def _diagram_items(payload: Mapping[str, Any] | None) -> tuple[dict[str, Any], .
 
 
 def _expected_boxes_by_diagram(*, repo_root: Path, items: Iterable[Mapping[str, Any]]) -> tuple[dict[str, Any], ...]:
+    from odylith.runtime.surfaces import atlas_box_explanations
+
     expected: list[dict[str, Any]] = []
     for item in items:
         diagram_id = str(item.get("diagram_id") or item.get("slug") or "unknown-diagram").strip()
@@ -219,6 +220,8 @@ def _expected_boxes_by_diagram(*, repo_root: Path, items: Iterable[Mapping[str, 
 
 
 def _catalog_box_inventory_violations(*, repo_root: Path, items: Iterable[Mapping[str, Any]]) -> tuple[str, ...]:
+    from odylith.runtime.surfaces import atlas_box_explanations
+
     violations: list[str] = []
     for idx, item in enumerate(items):
         context = f"{display_path(repo_root=repo_root, path=repo_root / CATALOG_RELATIVE_PATH)}: diagrams[{idx}]"
@@ -259,6 +262,8 @@ def _generated_surface_violations(
     catalog_exists: bool,
     expected_boxes: Iterable[Mapping[str, Any]],
 ) -> tuple[str, ...]:
+    from odylith.runtime.surfaces import atlas_box_explanations
+
     if not catalog_exists:
         return ()
     violations = [

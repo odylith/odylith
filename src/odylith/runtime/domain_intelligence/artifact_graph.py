@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.common.text_values import clean_text
+from odylith.runtime.common.text_values import text_values
+from odylith.runtime.common.text_values import unique_text
 
 
 @dataclass(frozen=True)

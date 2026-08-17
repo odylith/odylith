@@ -5,29 +5,23 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    SEMANTIC_INTENT_PACKET_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+    SEMANTIC_REASONING_CAPABILITY_PROFILE,
+)
 
-GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v2"
+GREENFIELD_OPERATING_ENVELOPE_VERSION = "odylith.greenfield-operating-envelope.v4"
 GREENFIELD_OPERATING_PROFILE = "single-product-governance-onboarding"
 
-SUPPORTED_EVIDENCE_FORMATS = frozenset(
-    {
-        "compiled_proposal_intent",
-        "in_memory_confirmed_intent",
-        "json",
-        "legacy_json",
-        "markdown",
-        "operator_prompt",
-        "operator_prompt_with_edit_evidence",
-        "typed_envelope_json",
-    }
-)
+SUPPORTED_EVIDENCE_FORMATS = frozenset({"semantic_intent_packet"})
+SUPPORTED_SEMANTIC_INTENT_PACKET_VERSIONS = (SEMANTIC_INTENT_PACKET_VERSION,)
 SUPPORTED_EVIDENCE_LANGUAGES = ("en",)
 SUPPORTED_CONFIRMATION_HOSTS = ("codex", "claude")
-SUPPORTED_MODEL_PROFILES = (
-    "provider-free-standard-v1",
-    "bounded-reasoning-standard-v1",
-    "lower-capability-safe-v1",
-)
+SUPPORTED_SEMANTIC_AUTHORITY_PROFILES = (SEMANTIC_REASONING_CAPABILITY_PROFILE,)
+LOWER_CAPABILITY_SAFETY_PROFILE = "lower-capability-safe-v1"
+SUPPORTED_NON_AUTHORITY_SAFETY_PROFILES = (LOWER_CAPABILITY_SAFETY_PROFILE,)
 
 MAX_EVIDENCE_BYTES = 8 * 1024 * 1024
 MAX_EVIDENCE_DOCUMENTS = 2
@@ -80,6 +74,7 @@ def greenfield_operating_envelope_receipt(
         "issues": issues,
         "evidence_contract": {
             "formats": sorted(SUPPORTED_EVIDENCE_FORMATS),
+            "semantic_intent_packet_versions": list(SUPPORTED_SEMANTIC_INTENT_PACKET_VERSIONS),
             "languages": list(SUPPORTED_EVIDENCE_LANGUAGES),
             "language_verification": "english_required_operator_and_evaluation_contract",
             "minimum_bytes": 1,
@@ -117,11 +112,7 @@ def greenfield_operating_envelope_receipt(
             "confirmation_hosts": list(SUPPORTED_CONFIRMATION_HOSTS),
             "other_hosts": "proposal_only_unless_deterministic_callback_proven",
         },
-        "model_contract": {
-            "profiles": list(SUPPORTED_MODEL_PROFILES),
-            "authority": "candidate_hypothesis_only",
-            "lower_capability_behavior": "clarify_or_fail_safe_without_invention",
-        },
+        "model_contract": _model_contract(),
     }
 
 
@@ -139,13 +130,19 @@ def require_supported_greenfield_operating_envelope(value: Mapping[str, Any]) ->
     if value.get("evidence_format") not in SUPPORTED_EVIDENCE_FORMATS:
         raise ValueError("Greenfield operating envelope evidence format is unsupported")
     evidence = value.get("evidence_contract")
-    if not isinstance(evidence, Mapping) or evidence.get("languages") != list(SUPPORTED_EVIDENCE_LANGUAGES):
+    if not isinstance(evidence, Mapping):
+        raise ValueError("Greenfield operating envelope evidence contract is unsupported")
+    if evidence.get("formats") != sorted(SUPPORTED_EVIDENCE_FORMATS):
+        raise ValueError("Greenfield operating envelope evidence formats are unsupported")
+    if evidence.get("semantic_intent_packet_versions") != list(SUPPORTED_SEMANTIC_INTENT_PACKET_VERSIONS):
+        raise ValueError("Greenfield operating envelope Semantic Intent packet version is unsupported")
+    if evidence.get("languages") != list(SUPPORTED_EVIDENCE_LANGUAGES):
         raise ValueError("Greenfield operating envelope language contract is unsupported")
     host = value.get("host_contract")
     if not isinstance(host, Mapping) or host.get("confirmation_hosts") != list(SUPPORTED_CONFIRMATION_HOSTS):
         raise ValueError("Greenfield operating envelope host contract is unsupported")
     model = value.get("model_contract")
-    if not isinstance(model, Mapping) or model.get("profiles") != list(SUPPORTED_MODEL_PROFILES):
+    if not isinstance(model, Mapping) or dict(model) != _model_contract():
         raise ValueError("Greenfield operating envelope model contract is unsupported")
     filesystem = value.get("filesystem_contract")
     if not isinstance(filesystem, Mapping) or filesystem.get("package_visibility") != (
@@ -164,13 +161,29 @@ def _complexity_dimensions(
         "evidence_bytes": max(0, int(evidence_bytes)),
         "documents": max(0, int(documents)),
         "actors": _count(facts.get("human_actors")),
-        "state_objects": _declared_count(facts.get("state_objects"), fallback=facts.get("state_object")),
+        "state_objects": _count(facts.get("state_objects")),
         "paths": _declared_count(facts.get("first_paths"), fallback=facts.get("first_path")),
         "external_systems": _count(facts.get("external_systems")),
         "internal_systems": _count(facts.get("internal_systems")),
         "contradictions": _count(facts.get("contradictions")),
         "ambiguities": _count(facts.get("ambiguities")),
         "safety_boundaries": _count(facts.get("operational_constraints")),
+    }
+
+
+def _model_contract() -> dict[str, Any]:
+    return {
+        "semantic_authority_profiles": list(SUPPORTED_SEMANTIC_AUTHORITY_PROFILES),
+        "non_authority_safety_profiles": list(SUPPORTED_NON_AUTHORITY_SAFETY_PROFILES),
+        "semantic_authority": "frontier_prompt_reasoning_then_typed_graph",
+        "host_output_status": "candidate_hypothesis_only",
+        "lower_capability_probe": {
+            "profile": LOWER_CAPABILITY_SAFETY_PROFILE,
+            "authority_eligible": False,
+            "prompt_only": True,
+            "allowed_outcomes": ["clarify", "fail_safe"],
+            "proof_contract": "runner_bound_independently_reviewed_safety_report_v1",
+        },
     }
 
 
@@ -225,7 +238,10 @@ __all__ = [
     "SUPPORTED_CONFIRMATION_HOSTS",
     "SUPPORTED_EVIDENCE_FORMATS",
     "SUPPORTED_EVIDENCE_LANGUAGES",
-    "SUPPORTED_MODEL_PROFILES",
+    "SUPPORTED_SEMANTIC_INTENT_PACKET_VERSIONS",
+    "SUPPORTED_SEMANTIC_AUTHORITY_PROFILES",
+    "LOWER_CAPABILITY_SAFETY_PROFILE",
+    "SUPPORTED_NON_AUTHORITY_SAFETY_PROFILES",
     "greenfield_operating_envelope_receipt",
     "require_supported_greenfield_operating_envelope",
 ]

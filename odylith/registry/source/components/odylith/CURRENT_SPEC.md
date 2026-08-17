@@ -17,7 +17,7 @@
   are first-class host families, dev/dogfood/consumer are first-class lanes,
   and host model aliases resolve to adapter families without turning Odylith Discipline
   classification into a model-consuming path.
-Last updated: 2026-08-03
+Last updated: 2026-08-17
 
 
 ## Purpose
@@ -645,6 +645,9 @@ Public docs should describe these commands, not direct module entrypoints.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-17 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-144
+  - Evidence: `src/odylith/runtime/surfaces/greenfield_host_confirmation.py`
 - **2026-08-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-145
   - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `odylith/casebook/bugs/2026-08-01-fresh-install-compact-guidance-omitted-greenfield-commit-only-boundary.md`, `src/odylith/install/agents.py`, `tests/unit/install/test_agents.py`
@@ -657,8 +660,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: `sha256:a54ff182c7e8acf56acfd6e4b9c3ff41e2c41a31c9b211b2deb9df75d9a478f9`, `sha256:2578ef93b5dac059562561a3d24005fb9dd0a8771590dff49d56bb173d616627`, `sha256:61a82c8db99693b7a2b3de56c6e2ff31e6679544c761fa414231280d0b8dfb8e`, `src/odylith/install/casebook_metadata_migration.py`
 - **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
   - Scope: B-090
-- **2026-04-11 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved.
-  - Scope: B-089
 <!-- registry-requirements:end -->
 
 ## Feature History

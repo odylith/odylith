@@ -17,10 +17,15 @@ import threading
 import time
 from urllib import error as urllib_error
 
+from odylith.install.agents import managed_block
+from odylith.install.bootstrap_assets import customer_bootstrap_guidance
 from odylith.install.release_assets import fetch_release
 from odylith.install.state import AUTHORITATIVE_RELEASE_REPO
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+_GREENFIELD_SEMANTIC_SMOKE_CASE = (
+    REPO_ROOT / "scripts/release/fixtures/greenfield-semantic-smoke.v3.json"
+)
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
 _TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS = 0.2
 _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPTY, errno.EPERM}
@@ -246,31 +251,6 @@ _CONSUMER_SURFACE_SKIP_DIRS = {
     ".git",
     "__pycache__",
 }
-_STALE_GREENFIELD_GUIDANCE_TOKENS = (
-    "host drafts backlog",
-    "host model drafts",
-    "active host model authors the project-specific proposal in chat",
-    "greenfield apply --repo-root . --proposal-file <proposal.json>",
-    "host-authored proposal JSON is reviewed",
-    "host authors an internal proposal payload",
-    "the host authors the proposal",
-    ".odylith/runtime/greenfield/active-proposal.v1.json",
-)
-_GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS = (
-    ("proposal command", ("greenfield propose",)),
-    ("sealed transaction", ("ProductCreateTransaction",)),
-    ("commit command", ("greenfield create",)),
-    ("transaction file", ("--transaction-file",)),
-    ("confirmation hash", ("--transaction-hash", "transaction-hash", "hash-bound")),
-    ("explicit confirmation", ("--confirm",)),
-    ("atomic readback", ("rollback guard", "readback")),
-    (
-        "commit-only no-work boundary",
-        ("no product reinterpretation", "does not parse", "does not generate", "commit-only", "only verifies", "verifies receipt"),
-    ),
-    ("proposal JSON boundary", ("proposal JSON",)),
-    ("schema-loop silence", ("parser/schema retries", "parser retries", "schema retries")),
-)
 _FORBIDDEN_CONSUMER_MAINTAINER_RESTRICTION_TOKENS = (
     "freedom-research",
     "sole canonical contributor identity",
@@ -323,22 +303,26 @@ def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
             raise RuntimeError(f"{label} did not render {relative_path}")
 
 
-def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label: str) -> None:
+def _expected_greenfield_guidance(*, relative_path: str) -> str:
+    if relative_path == "AGENTS.md":
+        return managed_block(repo_role="consumer_repo")
+    if relative_path == "odylith/AGENTS.md":
+        return customer_bootstrap_guidance()
+    return (REPO_ROOT / "src" / "odylith" / "bundle" / "assets" / relative_path).read_text(
+        encoding="utf-8"
+    )
+
+
+def _require_greenfield_guidance_custody(*, repo_root: Path, label: str) -> None:
     for relative_path in _GREENFIELD_GUIDANCE_FILES:
         path = repo_root / relative_path
         if not path.is_file():
             raise RuntimeError(f"{label} did not install greenfield guidance file: {relative_path}")
         text = path.read_text(encoding="utf-8")
-        compact_text = " ".join(text.split())
-        for token in _STALE_GREENFIELD_GUIDANCE_TOKENS:
-            if token in text:
-                raise RuntimeError(f"{label} guidance still teaches stale greenfield schema-repair flow: {relative_path}: {token}")
-        for concept, alternatives in _GREENFIELD_PROPOSAL_FIRST_GUIDANCE_CONCEPTS:
-            if not any(token in compact_text for token in alternatives):
-                expected = " or ".join(alternatives)
-                raise RuntimeError(
-                    f"{label} guidance omits proposal-first create {concept}: {relative_path}: {expected}"
-                )
+        expected = _expected_greenfield_guidance(relative_path=relative_path)
+        matches = expected.rstrip() in text if relative_path == "AGENTS.md" else text == expected
+        if not matches:
+            raise RuntimeError(f"{label} installed greenfield guidance bytes drift: {relative_path}")
 
 
 def _iter_consumer_guidance_files(repo_root: Path) -> tuple[Path, ...]:
@@ -502,9 +486,15 @@ def _require_compass_history_layout(*, repo_root: Path) -> None:
         raise RuntimeError("legacy Compass restore pins still exist")
 
 
-def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, str]) -> None:
+def _install_and_smoke(
+    *,
+    repo_root: Path,
+    install_script: Path,
+    env: dict[str, str],
+    include_greenfield_browser_proof: bool = False,
+) -> None:
     _run(cwd=_install_cwd(repo_root), env=env, command=["bash", str(install_script)])
-    _require_greenfield_guidance_uses_confirmed_create(repo_root=repo_root, label="fresh install")
+    _require_greenfield_guidance_custody(repo_root=repo_root, label="fresh install")
     _require_no_maintainer_restrictions_in_consumer_guidance(repo_root=repo_root, label="fresh install")
     odylith = repo_root / ".odylith" / "bin" / "odylith"
     version = _run(cwd=repo_root, env=env, command=[str(odylith), "version", "--repo-root", "."]).stdout
@@ -513,13 +503,31 @@ def _install_and_smoke(*, repo_root: Path, install_script: Path, env: dict[str, 
     doctor = _run(cwd=repo_root, env=env, command=[str(odylith), "doctor", "--repo-root", "."]).stdout
     _require_output_contains(output=doctor, expected="Context engine mode: full_local_memory", label="odylith doctor")
     _require_output_contains(output=doctor, expected="Context engine pack: installed", label="odylith doctor")
-    _greenfield_propose_apply_smoke(repo_root=repo_root, odylith=odylith, env=env)
+    _greenfield_propose_apply_smoke(
+        repo_root=repo_root,
+        odylith=odylith,
+        env=env,
+        include_browser_proof=include_greenfield_browser_proof,
+    )
     _run(cwd=repo_root, env=env, command=[str(odylith), "sync", "--repo-root", ".", "--force"])
 
 
-def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict[str, str]) -> None:
+def _greenfield_propose_apply_smoke(
+    *,
+    repo_root: Path,
+    odylith: Path,
+    env: dict[str, str],
+    include_browser_proof: bool = False,
+) -> None:
     show = _run(cwd=repo_root, env=env, command=[str(odylith), "show", "--repo-root", "."]).stdout
     _require_output_contains(output=show, expected="Odylith read this repo", label="odylith show")
+    release_case = json.loads(_GREENFIELD_SEMANTIC_SMOKE_CASE.read_text(encoding="utf-8"))
+    prompt = str(release_case["prompt"])
+    semantic_intent_path = repo_root / "semantic-intent-smoke.v3.json"
+    semantic_intent_path.write_text(
+        json.dumps(release_case["packet"], indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     proposal = _run(
         cwd=repo_root,
         env=env,
@@ -530,7 +538,9 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
             "--repo-root",
             ".",
             "--prompt",
-            "warehouse dispatch planning app",
+            prompt,
+            "--semantic-intent-file",
+            str(semantic_intent_path),
             "--format",
             "json",
         ],
@@ -594,6 +604,14 @@ def _greenfield_propose_apply_smoke(*, repo_root: Path, odylith: Path, env: dict
     ):
         if not (repo_root / relative_path).is_file():
             raise RuntimeError(f"greenfield create smoke did not write {relative_path}")
+    if include_browser_proof:
+        from greenfield_browser_surface_proof import browser_surface_proof_issues
+
+        browser_issues = browser_surface_proof_issues(repo_root=repo_root)
+        if browser_issues:
+            raise RuntimeError(
+                "installed Greenfield browser surface proof failed: " + "; ".join(browser_issues)
+            )
 def _install_previous_release(*, repo_root: Path, install_script: Path, previous_version: str) -> None:
     hosted_previous_env = _force_deterministic_reasoning_env(dict(os.environ))
     hosted_previous_env["ODYLITH_VERSION"] = previous_version
@@ -740,6 +758,11 @@ def build_parser() -> argparse.ArgumentParser:
             "May be repeated; defaults to the immediate semver predecessor."
         ),
     )
+    parser.add_argument(
+        "--greenfield-browser-proof",
+        action="store_true",
+        help="Require normal, empty, fallback, degraded, and error-state browser proof for the generated graph surfaces.",
+    )
     return parser
 
 
@@ -755,7 +778,12 @@ def main(argv: list[str] | None = None) -> int:
     try:
         local_env = _local_release_env(base_url=base_url, version=args.version)
         fresh_repo = _repo_root(temp_root, "fresh-install")
-        _install_and_smoke(repo_root=fresh_repo, install_script=install_script, env=local_env)
+        _install_and_smoke(
+            repo_root=fresh_repo,
+            install_script=install_script,
+            env=local_env,
+            include_greenfield_browser_proof=args.greenfield_browser_proof,
+        )
         # Prompt-only create is intentionally disabled; the install smoke covers
         # the no-write intent and proposal-contract path.
 

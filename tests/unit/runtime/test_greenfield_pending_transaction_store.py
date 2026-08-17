@@ -6,7 +6,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
-from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from tests.unit.runtime.test_greenfield_transaction_provenance import _transaction
 
 
 def test_pending_transaction_is_immutable_and_hash_addressed(tmp_path: Path) -> None:

@@ -1,0 +1,790 @@
+{
+  "case_id": "claim-desk-installed-smoke",
+  "packet": {
+    "author_run": {
+      "author_run_id": "fixture-semantic-author-run",
+      "capability_profile": "frontier_semantic_reasoning"
+    },
+    "authoring_contract_sha256": "373d226c1f6e6654955eba7ef682a7b2f55fe6e1cf006bdd7cdbfcb9df67e6df",
+    "critic_run": {
+      "capability_profile": "frontier_semantic_reasoning",
+      "critic_run_id": "fixture-materiality-critic-run",
+      "host_profile": "codex",
+      "independent_context": true
+    },
+    "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
+    "materiality_assessment": {
+      "assessment_basis": "prompt_only_pre_graph",
+      "authoring_contract_sha256": "373d226c1f6e6654955eba7ef682a7b2f55fe6e1cf006bdd7cdbfcb9df67e6df",
+      "clarification": {
+        "field": "",
+        "question": ""
+      },
+      "decision": "authorize_graph",
+      "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
+      "fields": [
+        {
+          "alternatives": [],
+          "field": "identity",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Build a claim desk.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "role",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "first_path",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "state_object",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "The card moves from ready to claimed.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "visible_result",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "dependency",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "constraint",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "non_goal",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Never reassign a card automatically.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "explicit"
+        },
+        {
+          "alternatives": [],
+          "field": "component_boundary",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            },
+            {
+              "occurrence": 1,
+              "quote": "The card moves from ready to claimed.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "status": "source_entailable"
+        }
+      ],
+      "version": "odylith.greenfield.semantic-materiality-assessment.v1"
+    },
+    "materiality_assessment_sha256": "b37b7470b711f10e405b12f35550167b7b2333bb741a5f8d917ab7edf9fafd80",
+    "semantic_intent": {
+      "clarification": {
+        "fields": [],
+        "question": "",
+        "source_refs": []
+      },
+      "facts": [
+        {
+          "attributes": [
+            {
+              "name": "source_title",
+              "value": "claim desk"
+            }
+          ],
+          "custody": "source_fact",
+          "fact_id": "identity.0",
+          "kind": "identity",
+          "label": "Claim Desk",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Build a claim desk.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Claim Desk"
+        },
+        {
+          "attributes": [
+            {
+              "name": "responsibility",
+              "value": "claim a ready card and receive a receipt"
+            }
+          ],
+          "custody": "source_fact",
+          "fact_id": "actor.0",
+          "kind": "actor",
+          "label": "Shift coordinator",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Claims a ready card and receives a receipt."
+        },
+        {
+          "attributes": [
+            {
+              "name": "action",
+              "value": "claim"
+            },
+            {
+              "name": "action_phrase",
+              "value": "claim one ready card"
+            },
+            {
+              "name": "object",
+              "value": "one ready card"
+            }
+          ],
+          "custody": "source_fact",
+          "fact_id": "step.0",
+          "kind": "workflow_step",
+          "label": "Claim ready card",
+          "order": 0,
+          "owner_kind": "actor",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Shift coordinator claims one ready card."
+        },
+        {
+          "attributes": [
+            {
+              "name": "action",
+              "value": "receive"
+            },
+            {
+              "name": "action_phrase",
+              "value": "receive a claim receipt"
+            },
+            {
+              "name": "object",
+              "value": "claim receipt"
+            }
+          ],
+          "custody": "source_fact",
+          "fact_id": "step.1",
+          "kind": "workflow_step",
+          "label": "Receive receipt",
+          "order": 1,
+          "owner_kind": "actor",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Shift coordinator receives a claim receipt."
+        },
+        {
+          "attributes": [
+            {
+              "name": "object",
+              "value": "card"
+            },
+            {
+              "name": "from_state",
+              "value": "ready"
+            },
+            {
+              "name": "to_state",
+              "value": "claimed"
+            }
+          ],
+          "custody": "source_fact",
+          "fact_id": "state.0",
+          "kind": "state_object",
+          "label": "Card",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "The card moves from ready to claimed.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "The card moves from ready to claimed."
+        },
+        {
+          "attributes": [],
+          "custody": "source_fact",
+          "fact_id": "output.0",
+          "kind": "visible_output",
+          "label": "Claim receipt",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "A claim receipt is visible."
+        },
+        {
+          "attributes": [
+            {
+              "name": "access_mode",
+              "value": "read-only"
+            }
+          ],
+          "custody": "source_fact",
+          "fact_id": "dependency.0",
+          "kind": "external_system",
+          "label": "Local duty roster",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Read the local duty roster."
+        },
+        {
+          "attributes": [],
+          "custody": "source_fact",
+          "fact_id": "constraint.0",
+          "kind": "operational_constraint",
+          "label": "Read local duty roster",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Read the local duty roster."
+        },
+        {
+          "attributes": [],
+          "custody": "source_fact",
+          "fact_id": "non-goal.0",
+          "kind": "non_goal",
+          "label": "No automatic reassignment",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Never reassign a card automatically.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Never reassign a card automatically."
+        },
+        {
+          "attributes": [
+            {
+              "name": "responsibility",
+              "value": "Own ready-card selection and the claimed-card transition."
+            },
+            {
+              "name": "component_kind",
+              "value": "service"
+            },
+            {
+              "name": "boundary",
+              "value": "Own card-claim decisions and the ready-to-claimed state change."
+            },
+            {
+              "name": "outside_boundary",
+              "value": "Receipt delivery and automatic card reassignment."
+            },
+            {
+              "name": "proof",
+              "value": "Prove that one ready card becomes claimed with its source evidence intact."
+            },
+            {
+              "name": "risk",
+              "value": "A wrong or stale card could be claimed without reviewable evidence."
+            },
+            {
+              "name": "release_scope",
+              "value": "first_path_required"
+            }
+          ],
+          "custody": "bounded_interpretation",
+          "fact_id": "system.0",
+          "kind": "internal_system",
+          "label": "Card Claim Service",
+          "order": 0,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Card Claim Service \u2014 owns ready-card selection and claimed-card state."
+        },
+        {
+          "attributes": [
+            {
+              "name": "responsibility",
+              "value": "Deliver the claim receipt after a successful card claim."
+            },
+            {
+              "name": "component_kind",
+              "value": "service"
+            },
+            {
+              "name": "boundary",
+              "value": "Own visible receipt delivery after a successful card claim."
+            },
+            {
+              "name": "outside_boundary",
+              "value": "Card selection and the decision to claim a card."
+            },
+            {
+              "name": "proof",
+              "value": "Prove that the visible receipt identifies the successfully claimed card."
+            },
+            {
+              "name": "risk",
+              "value": "A missing or mismatched receipt could conceal the accepted claim result."
+            },
+            {
+              "name": "release_scope",
+              "value": "first_path_required"
+            }
+          ],
+          "custody": "bounded_interpretation",
+          "fact_id": "system.1",
+          "kind": "internal_system",
+          "label": "Claim Receipt Delivery",
+          "order": 1,
+          "owner_kind": "none",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "statement": "Claim Receipt Delivery \u2014 owns the visible claim receipt."
+        }
+      ],
+      "narratives": [
+        {
+          "fact_ids": [
+            "identity.0",
+            "actor.0",
+            "state.0",
+            "output.0"
+          ],
+          "field": "product_story",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "Claim Desk helps a shift coordinator claim one ready card and receive a claim receipt."
+        },
+        {
+          "fact_ids": [
+            "actor.0",
+            "state.0"
+          ],
+          "field": "problem",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "Shift coordinators need a reviewable card-claim path."
+        },
+        {
+          "fact_ids": [
+            "actor.0"
+          ],
+          "field": "customer",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "The first customer is a shift coordinator."
+        },
+        {
+          "fact_ids": [
+            "state.0",
+            "non-goal.0"
+          ],
+          "field": "opportunity",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Never reassign a card automatically.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "Make one card claim visible without automatic reassignment."
+        },
+        {
+          "fact_ids": [
+            "identity.0",
+            "step.0",
+            "output.0"
+          ],
+          "field": "product_view",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "A claim desk for claiming one ready card and receiving a claim receipt."
+        },
+        {
+          "fact_ids": [
+            "step.0",
+            "step.1",
+            "output.0"
+          ],
+          "field": "proof_boundary",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "A shift coordinator can claim one ready card and receive a claim receipt."
+        },
+        {
+          "fact_ids": [
+            "state.0",
+            "output.0"
+          ],
+          "field": "success_metric",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "A claimed card and its receipt are visible."
+        },
+        {
+          "fact_ids": [
+            "dependency.0",
+            "non-goal.0"
+          ],
+          "field": "success_metric",
+          "order": 1,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            },
+            {
+              "occurrence": 1,
+              "quote": "Never reassign a card automatically.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "The local duty roster is read, and automatic reassignment stays excluded."
+        },
+        {
+          "fact_ids": [
+            "state.0",
+            "output.0"
+          ],
+          "field": "evidence_requirement",
+          "order": 0,
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "text": "Retain the claimed-card transition and claim receipt."
+        }
+      ],
+      "relations": [
+        {
+          "kind": "owned_by",
+          "object_id": "actor.0",
+          "order": 0,
+          "relation_id": "relation.owned_by.0",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "step.0"
+        },
+        {
+          "kind": "owned_by",
+          "object_id": "actor.0",
+          "order": 1,
+          "relation_id": "relation.owned_by.1",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "step.1"
+        },
+        {
+          "kind": "changes",
+          "object_id": "state.0",
+          "order": 0,
+          "relation_id": "relation.changes.0",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "The card moves from ready to claimed.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "step.0"
+        },
+        {
+          "kind": "produces",
+          "object_id": "output.0",
+          "order": 0,
+          "relation_id": "relation.produces.0",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "step.1"
+        },
+        {
+          "kind": "depends_on",
+          "object_id": "dependency.0",
+          "order": 0,
+          "relation_id": "relation.depends_on.0",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "identity.0"
+        },
+        {
+          "kind": "depends_on",
+          "object_id": "dependency.0",
+          "order": 1,
+          "relation_id": "relation.depends_on.1",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Read the local duty roster.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "system.0"
+        },
+        {
+          "kind": "depends_on",
+          "object_id": "system.0",
+          "order": 2,
+          "relation_id": "relation.depends_on.2",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "system.1"
+        },
+        {
+          "kind": "excludes",
+          "object_id": "non-goal.0",
+          "order": 0,
+          "relation_id": "relation.excludes.0",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "Never reassign a card automatically.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "identity.0"
+        },
+        {
+          "kind": "implements",
+          "object_id": "step.0",
+          "order": 0,
+          "relation_id": "relation.implements.0",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "system.0"
+        },
+        {
+          "kind": "implements",
+          "object_id": "step.1",
+          "order": 1,
+          "relation_id": "relation.implements.1",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "system.1"
+        },
+        {
+          "kind": "implements",
+          "object_id": "output.0",
+          "order": 2,
+          "relation_id": "relation.implements.2",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "A shift coordinator claims one ready card and receives a claim receipt.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "system.1"
+        },
+        {
+          "kind": "implements",
+          "object_id": "state.0",
+          "order": 3,
+          "relation_id": "relation.implements.3",
+          "source_refs": [
+            {
+              "occurrence": 1,
+              "quote": "The card moves from ready to claimed.",
+              "source_id": "operator_prompt"
+            }
+          ],
+          "subject_id": "system.0"
+        }
+      ],
+      "status": "complete",
+      "version": "odylith.greenfield.semantic-intent-ir.v2"
+    },
+    "version": "odylith.greenfield.semantic-intent-packet.v3"
+  },
+  "platform_custody_sentinels": [
+    "Claim Desk",
+    "Shift coordinator",
+    "Claim ready card",
+    "Claim receipt",
+    "Local duty roster",
+    "Card Claim Service",
+    "Claim Receipt Delivery"
+  ],
+  "prompt": "Build a claim desk. A shift coordinator claims one ready card and receives a claim receipt. The card moves from ready to claimed. Read the local duty roster. Never reassign a card automatically.",
+  "version": "odylith.greenfield.semantic-release-case.v1"
+}

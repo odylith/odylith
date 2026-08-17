@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-08-14
+Last updated: 2026-08-17
 
 
 ## Overview
@@ -29,6 +29,12 @@ truth and no product interpretation or artifact generation runs after confirmati
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-144
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_semantic_atlas_materialization.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_package_validation.py`
+- **2026-08-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
+  - Scope: B-144
+  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_semantic_component_package.py`, `src/odylith/runtime/domain_intelligence/greenfield_semantic_traceability.py`, `src/odylith/runtime/domain_intelligence/greenfield_traceability_contract.py`
 - **2026-08-14 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-project-surfaces-repeated-and-clipped-canonical-meaning.md`, `odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md`, `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`
@@ -41,12 +47,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-08 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `src/odylith/runtime/common/prose_tail.py`, `src/odylith/runtime/domain_intelligence/greenfield_component_outputs.py`, `tests/unit/runtime/test_greenfield_code_hygiene.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `src/odylith/runtime/domain_intelligence/greenfield_prompt_intent_materialization.py`, `tests/unit/runtime/test_greenfield_transaction_intent_authority.py`
-- **2026-08-06 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
-  - Scope: B-142
-  - Evidence: `odylith/casebook/bugs/2026-08-06-greenfield-sealed-intent-cannot-prove-atomic-accepted-fact-custody.md`, `src/odylith/runtime/domain_intelligence/greenfield_atomic_fact_ledger.py`, `tests/unit/runtime/test_greenfield_prompt_workflow_custody.py`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -3299,3 +3299,12 @@ confirmation gates, topology requirements, apply schema, and durable memory.
   retired corpus copy. Source proof covers `147` canonical/path/compiler tests,
   `13` projection tests, `24` confirmed-diagram tests, and `27` package/copy
   tests. A rebuilt installed replay is still required before release credit.
+- Equivalent Greenfield evidence styles must compile to stable canonical
+  actor, action, state-transition subject, visible-result, dependency,
+  constraint, non-goal, and internal-system axes before rendering. Per-case
+  term presence and accepted-atom custody are necessary but do not prove this
+  metamorphic contract: the exact `987814a75` disclosed replay passed all
+  `24/24` cases while retained snapshots still exposed 16 genuine pre-render
+  divergences in accent, handoff, digest, dry-run, and system-axis projection.
+  CB-328 keeps those differences release-blocking until exact paired canonical
+  fact tests and a fresh installed campaign pass.

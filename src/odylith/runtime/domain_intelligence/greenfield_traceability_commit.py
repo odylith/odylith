@@ -8,20 +8,21 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence import greenfield_traceability_contract
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 
 
 def compiled_traceability_plan(
     raw_plan: Any,
     *,
     required: bool = True,
-) -> greenfield_traceability.GreenfieldTraceabilityPlan | None:
+) -> greenfield_traceability_contract.GreenfieldTraceabilityPlan | None:
     """Return a precompiled traceability plan without rebuilding product topology."""
 
-    if isinstance(raw_plan, greenfield_traceability.GreenfieldTraceabilityPlan):
+    if isinstance(raw_plan, greenfield_traceability_contract.GreenfieldTraceabilityPlan):
         plan = raw_plan
     elif isinstance(raw_plan, Mapping):
-        plan = greenfield_traceability.traceability_plan_from_payload(raw_plan)
+        plan = greenfield_traceability_contract.traceability_plan_from_payload(raw_plan)
     else:
         plan = None
     if plan is not None and plan.workstreams:
@@ -38,7 +39,7 @@ def compiled_traceability_plan(
 
 def compiled_traceability_diagram_issues(
     *,
-    traceability_plan: greenfield_traceability.GreenfieldTraceabilityPlan,
+    traceability_plan: greenfield_traceability_contract.GreenfieldTraceabilityPlan,
     diagram_ids: Sequence[str],
 ) -> list[str]:
     """Return issues for compiled Atlas links that lost backlog topology."""
@@ -63,15 +64,15 @@ def compiled_traceability_diagram_issues(
 
 
 def rebase_compiled_traceability_plan(
-    plan: greenfield_traceability.GreenfieldTraceabilityPlan,
+    plan: greenfield_traceability_contract.GreenfieldTraceabilityPlan,
     *,
     backlog_result: Mapping[str, Any],
-) -> greenfield_traceability.GreenfieldTraceabilityPlan:
+) -> greenfield_traceability_contract.GreenfieldTraceabilityPlan:
     """Point compiled links at final backlog paths instead of the dry-run root."""
 
     paths_by_id = {
         str(row.get("idea_id", "")).strip().upper(): str(row.get("idea_path", "")).strip()
-        for row in _mapping_rows(backlog_result.get("created"))
+        for row in mapping_rows(backlog_result.get("created"))
         if str(row.get("idea_id", "")).strip() and str(row.get("idea_path", "")).strip()
     }
     if not paths_by_id:
@@ -87,14 +88,9 @@ def rebase_compiled_traceability_plan(
 
 
 def _rebased_diagram_link(
-    link: greenfield_traceability.DiagramLink,
+    link: greenfield_traceability_contract.DiagramLink,
     *,
     paths_by_id: Mapping[str, str],
-) -> greenfield_traceability.DiagramLink:
+) -> greenfield_traceability_contract.DiagramLink:
     paths = [paths_by_id[idea_id] for idea_id in link.related_workstream_ids if idea_id in paths_by_id]
     return replace(link, related_backlog_paths=tuple(paths) if paths else link.related_backlog_paths)
-
-
-def _mapping_rows(value: Any) -> tuple[Mapping[str, Any], ...]:
-    rows = value if isinstance(value, list | tuple) else ()
-    return tuple(row for row in rows if isinstance(row, Mapping))

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 import hashlib
@@ -9,17 +10,11 @@ import json
 from pathlib import Path
 import shutil
 import signal
+import sys
 from typing import Any
 import uuid
 
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import (
-    combined_prompt_evidence_source,
-)
-
 from greenfield_process import run_command_with_group_timeout as _run
-from greenfield_commit_recovery_cases import RECOVERY_CASE_SCOPE
-from greenfield_commit_recovery_cases import recovery_case_evidence
-from greenfield_commit_recovery_cases import select_recovery_case
 from greenfield_commit_recovery_generation import FSYNC_FAILURE_FAULT as _FSYNC_FAILURE_FAULT
 from greenfield_commit_recovery_generation import GENERATION_OBSERVATION_SCRIPT as _GENERATION_OBSERVATION_SCRIPT
 from greenfield_commit_recovery_generation import SIGKILL_FAULT as _SIGKILL_FAULT
@@ -32,8 +27,6 @@ from greenfield_commit_recovery_generation import (
 from greenfield_commit_recovery_generation import (
     require_published_generation_boundary as _require_published_generation_boundary,
 )
-from greenfield_matrix_release_artifacts import is_sha256
-from greenfield_preconfirm_matrix_cases import GreenfieldMatrixCase
 from local_release_smoke import _cleanup_smoke_temp_root
 from local_release_smoke import _local_release_env
 from local_release_smoke import _serve_directory
@@ -41,7 +34,56 @@ from local_release_smoke import _serve_directory
 
 COMMAND_TIMEOUT_SECONDS = 300
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
+RECOVERY_CASE_SCOPE = "semantic-intent-v3-release-fixture"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
+_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v3.json"
+
+
+@dataclass(frozen=True)
+class SemanticRecoveryCase:
+    """One source-controlled graph packet used only to exercise transaction laws."""
+
+    case_id: str
+    prompt: str
+    packet: Mapping[str, Any]
+
+
+def load_semantic_recovery_case(
+    fixture_path: Path = _DEFAULT_SEMANTIC_FIXTURE,
+) -> SemanticRecoveryCase:
+    """Load the same graph packet used by the installed release smoke."""
+
+    path = Path(fixture_path).expanduser().resolve()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"installed recovery semantic fixture is unreadable: {path}: {exc}") from exc
+    if not isinstance(payload, Mapping):
+        raise RuntimeError("installed recovery semantic fixture must be a JSON object")
+    case_id = str(payload.get("case_id") or "").strip()
+    prompt = str(payload.get("prompt") or "").strip()
+    packet = payload.get("packet")
+    if not case_id or not prompt or not isinstance(packet, Mapping):
+        raise RuntimeError("installed recovery semantic fixture is incomplete")
+    if packet.get("version") != "odylith.greenfield.semantic-intent-packet.v3":
+        raise RuntimeError("installed recovery semantic fixture must use Semantic Intent packet v3")
+    semantic_intent = packet.get("semantic_intent")
+    if not isinstance(semantic_intent, Mapping) or semantic_intent.get("status") != "complete":
+        raise RuntimeError("installed recovery semantic fixture must contain a complete Semantic Intent graph")
+    return SemanticRecoveryCase(case_id=case_id, prompt=prompt, packet=dict(packet))
+
+
+def semantic_recovery_case_evidence(case: SemanticRecoveryCase) -> dict[str, str]:
+    semantic_intent = _mapping(case.packet.get("semantic_intent"))
+    return {
+        "id": case.case_id,
+        "binding_scope": RECOVERY_CASE_SCOPE,
+        "prompt_sha256": hashlib.sha256(case.prompt.encode("utf-8")).hexdigest(),
+        "evidence_sha256": str(case.packet.get("evidence_sha256") or ""),
+        "semantic_intent_sha256": hashlib.sha256(
+            json.dumps(semantic_intent, ensure_ascii=True, separators=(",", ":"), sort_keys=True).encode("ascii")
+        ).hexdigest(),
+    }
 
 
 @dataclass(frozen=True)
@@ -136,23 +178,17 @@ def run_installed_commit_recovery_proof(
     dist_dir: Path,
     version: str,
     temp_parent: Path,
-    recovery_case: GreenfieldMatrixCase,
-    require_release_binding: bool = False,
-    release_audit_binding: Mapping[str, Any] | None = None,
+    recovery_case: SemanticRecoveryCase | None = None,
 ) -> GreenfieldInstalledCommitRecoveryProof:
-    """Prove installed recovery against one deterministic campaign case."""
+    """Prove installed recovery against one validated Semantic Intent packet."""
 
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-commit-recovery-{uuid.uuid4().hex}"
     server = None
     issues: list[str] = []
     facts: dict[str, Any] = {}
     try:
-        case_binding = recovery_case_evidence(
-            recovery_case,
-            require_release_binding=require_release_binding,
-            release_audit_binding=release_audit_binding,
-        )
-        facts["recovery_case"] = case_binding
+        selected_case = recovery_case or load_semantic_recovery_case()
+        facts["recovery_case"] = semantic_recovery_case_evidence(selected_case)
         release_dir = Path(dist_dir).expanduser().resolve()
         install_script = release_dir / "install.sh"
         if not install_script.is_file():
@@ -165,21 +201,21 @@ def run_installed_commit_recovery_proof(
             install_script=install_script,
             env=env,
             version=version,
-            case=recovery_case,
+            case=selected_case,
         )
         facts.update(sigkill_facts)
         operator_conflict_facts = _run_operator_conflict_recovery_phase(
             run_root=run_root,
             install_script=install_script,
             env=env,
-            case=recovery_case,
+            case=selected_case,
         )
         facts.update(operator_conflict_facts)
         fsync_facts = _run_fsync_rollback_phase(
             run_root=run_root,
             install_script=install_script,
             env=env,
-            case=recovery_case,
+            case=selected_case,
         )
         facts.update(fsync_facts)
         product_facts_hashes_by_phase = {
@@ -308,32 +344,11 @@ def _missing_required_evidence(facts: Mapping[str, Any]) -> list[str]:
     for key in ("id", "prompt_sha256"):
         if not str(recovery_case.get(key) or "").strip():
             missing.append(f"installed recovery proof did not record required recovery_case.{key}")
-    binding_scope = str(recovery_case.get("binding_scope") or "")
-    if binding_scope not in {"campaign-case-v1", "release-confirmed-intent-v1"}:
-        missing.append("installed recovery proof did not record a recognized recovery_case.binding_scope")
-    if binding_scope == "release-confirmed-intent-v1":
-        for key in ("confirmed_intent_sha256",):
-            if not str(recovery_case.get(key) or "").strip():
-                missing.append(f"installed recovery proof did not record required recovery_case.{key}")
-        provenance = _mapping(recovery_case.get("provenance"))
-        for key in (
-            "corpus_tier",
-            "source_id",
-            "source_family",
-            "source_artifact_sha256",
-            "source_excerpt_sha256",
-            "derived_prompt_sha256",
-        ):
-            if not str(provenance.get(key) or "").strip():
-                missing.append(f"installed recovery proof did not record required recovery_case.provenance.{key}")
-        if provenance.get("derived_prompt_sha256") != recovery_case.get("prompt_sha256"):
-            missing.append("installed recovery proof did not retain a recovery_case prompt hash bound to provenance")
-        audit_binding = _mapping(recovery_case.get("release_audit_binding"))
-        audit_request_sha256 = str(audit_binding.get("audit_request_sha256") or "")
-        if not is_sha256(audit_request_sha256):
-            missing.append("installed recovery proof did not retain a valid release audit request hash")
-        if audit_binding.get("confirmed_intent_sha256") != recovery_case.get("confirmed_intent_sha256"):
-            missing.append("installed recovery proof did not retain a release audit binding for the confirmed intent")
+    if recovery_case.get("binding_scope") != RECOVERY_CASE_SCOPE:
+        missing.append("installed recovery proof did not bind the Semantic Intent release fixture")
+    for key in ("evidence_sha256", "semantic_intent_sha256"):
+        if not is_sha256(recovery_case.get(key)):
+            missing.append(f"installed recovery proof did not record required recovery_case.{key}")
     return missing
 
 
@@ -343,7 +358,7 @@ def _run_sigkill_recovery_phase(
     install_script: Path,
     env: Mapping[str, str],
     version: str,
-    case: GreenfieldMatrixCase,
+    case: SemanticRecoveryCase,
 ) -> dict[str, Any]:
     repo_root = run_root / "sigkill-same-hash"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
@@ -455,7 +470,7 @@ def _run_operator_conflict_recovery_phase(
     run_root: Path,
     install_script: Path,
     env: Mapping[str, str],
-    case: GreenfieldMatrixCase,
+    case: SemanticRecoveryCase,
 ) -> dict[str, Any]:
     """Prove recovery preserves a later operator mutation instead of restoring over it."""
 
@@ -568,7 +583,7 @@ def _run_fsync_rollback_phase(
     run_root: Path,
     install_script: Path,
     env: Mapping[str, str],
-    case: GreenfieldMatrixCase,
+    case: SemanticRecoveryCase,
 ) -> dict[str, Any]:
     repo_root = run_root / "fsync-rollback"
     _install_repo(repo_root=repo_root, install_script=install_script, env=env)
@@ -691,8 +706,13 @@ def _compile_transaction(
     *,
     repo_root: Path,
     env: Mapping[str, str],
-    case: GreenfieldMatrixCase,
+    case: SemanticRecoveryCase,
 ) -> _CompiledRecoveryTransaction:
+    semantic_intent_path = repo_root / "semantic-intent-recovery.v3.json"
+    semantic_intent_path.write_text(
+        json.dumps(case.packet, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     command = [
         "./.odylith/bin/odylith",
         "greenfield",
@@ -701,12 +721,11 @@ def _compile_transaction(
         ".",
         "--prompt",
         case.prompt,
+        "--semantic-intent-file",
+        str(semantic_intent_path),
         "--format",
         "json",
     ]
-    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
-    if confirmed_intent:
-        command.extend(["--edit", confirmed_intent])
     proposed = _run(
         cwd=repo_root,
         env=dict(env),
@@ -748,22 +767,40 @@ def _compile_transaction(
 
 def _require_case_evidence_bound_to_transaction(
     *,
-    case: GreenfieldMatrixCase,
+    case: SemanticRecoveryCase,
     intent_authority: Mapping[str, Any],
 ) -> None:
-    """Prove the sealed transaction authority contains the exact recovery inputs."""
+    """Prove the sealed v8 authority contains the exact assessed graph packet."""
 
-    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
-    expected_source_format = "operator_prompt_with_edit_evidence" if confirmed_intent else "operator_prompt"
-    if str(intent_authority.get("source_format") or "").strip() != expected_source_format:
-        raise RuntimeError("installed greenfield transaction authority did not record the expected input format")
-    expected_evidence = combined_prompt_evidence_source(
-        prompt=case.prompt,
-        edit_evidence=confirmed_intent,
-    )
-    expected_hash = hashlib.sha256(expected_evidence.encode("utf-8")).hexdigest()
-    if str(intent_authority.get("markdown_source_sha256") or "").strip() != expected_hash:
-        raise RuntimeError("installed greenfield transaction authority did not bind the exact prompt and edit evidence")
+    expected = {
+        "version": "odylith.product-intent-authority.v8",
+        "origin": "verified_semantic_intent_packet",
+        "source_format": "semantic_intent_packet",
+        "evidence_sha256": str(case.packet.get("evidence_sha256") or ""),
+        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v3",
+        "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v2",
+        "semantic_intent_authoring_request_version": (
+            "odylith.greenfield.semantic-intent-authoring-request.v3"
+        ),
+        "semantic_intent_authoring_contract_sha256": str(
+            case.packet.get("authoring_contract_sha256") or ""
+        ),
+        "semantic_materiality_assessment": case.packet.get("materiality_assessment"),
+        "semantic_materiality_assessment_sha256": str(
+            case.packet.get("materiality_assessment_sha256") or ""
+        ),
+        "semantic_materiality_critic_run": case.packet.get("critic_run"),
+        "semantic_intent_author_run": case.packet.get("author_run"),
+    }
+    if any(intent_authority.get(key) != value for key, value in expected.items()):
+        raise RuntimeError(
+            "installed Greenfield transaction authority did not bind the v3 assessed Semantic Intent packet"
+        )
+    if intent_authority.get("semantic_intent") != case.packet.get("semantic_intent"):
+        raise RuntimeError("installed Greenfield transaction authority changed the Semantic Intent graph")
+    evidence_sources = _mapping(intent_authority.get("evidence_sources"))
+    if evidence_sources != {"operator_prompt": case.prompt, "operator_edit": ""}:
+        raise RuntimeError("installed Greenfield transaction authority changed the operator evidence")
 
 
 def _run_faulted_create(*, repo_root: Path, env: Mapping[str, str], command: list[str], fault_script: str):
@@ -1016,8 +1053,50 @@ def _mapping(value: object) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
+def is_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and value == value.casefold()
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 def _command_detail(result: Any) -> str:
     stdout = str(getattr(result, "stdout", "") or "").strip()
     stderr = str(getattr(result, "stderr", "") or "").strip()
     output = "\n".join(part for part in (stdout, stderr) if part)
     return f"returncode={result.returncode}; output={output[-1000:]!r}"
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dist-dir", type=Path, required=True)
+    parser.add_argument("--version", required=True)
+    parser.add_argument("--temp-parent", type=Path, required=True)
+    parser.add_argument("--semantic-fixture", type=Path, default=_DEFAULT_SEMANTIC_FIXTURE)
+    parser.add_argument("--output-json", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        case = load_semantic_recovery_case(args.semantic_fixture)
+        proof = run_installed_commit_recovery_proof(
+            dist_dir=args.dist_dir,
+            version=args.version,
+            temp_parent=args.temp_parent,
+            recovery_case=case,
+        )
+    except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
+        print(f"installed Greenfield transaction recovery proof failed: {exc}", file=sys.stderr)
+        return 1
+    payload = proof.to_dict()
+    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if args.output_json is not None:
+        output_path = args.output_json.expanduser().resolve()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(rendered, encoding="utf-8")
+    print(rendered, end="")
+    return 0 if proof.passed else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

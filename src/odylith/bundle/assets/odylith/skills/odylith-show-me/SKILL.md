@@ -43,7 +43,10 @@ placeholder products in response to a show-me request.
 5. If the operator names a new project, architecture, research goal, or
    feature after an empty/thin show result, do not refuse because source is
    absent. Run the project-first proposal path instead:
-   `./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<their request>"`.
+   `./.odylith/bin/odylith greenfield semantic-intent-request --repo-root . --prompt "<their request>"`.
+   The active host then authors and challenges the returned source-cited typed
+   packet and runs its exact next invocation; Odylith does not parse product
+   meaning from the prompt.
    `propose` compiles typed evidence, repairs and quality-gates the full staged
    ProductCreateTransaction, then renders the single visible confirmation view.
    Show the preview directly in chat, including Product story, State object, First

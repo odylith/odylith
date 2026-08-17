@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
-import re
 import shutil
 import tempfile
 from typing import Any
@@ -16,10 +15,10 @@ from odylith.install.fs import atomic_write_text
 from odylith.install.fs import fsync_directory
 from odylith.runtime.domain_intelligence import greenfield_generation_state
 from odylith.runtime.domain_intelligence import greenfield_repository_write_set
+from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
 GREENFIELD_GENERATION_MANIFEST_VERSION = "odylith.greenfield.immutable-generation.v1"
-_DIGEST = re.compile(r"[0-9a-f]{64}")
 
 
 @dataclass(frozen=True)
@@ -227,7 +226,7 @@ def _require_generation_manifest(manifest: Mapping[str, Any], *, transaction_has
         greenfield_repository_write_set.GREENFIELD_REPOSITORY_WRITE_PATHS
     ):
         raise RuntimeError("Greenfield immutable generation fingerprints are incomplete")
-    if any(not _DIGEST.fullmatch(str(value or "")) for value in fingerprints.values()):
+    if any(not is_sha256_digest(value) for value in fingerprints.values()):
         raise RuntimeError("Greenfield immutable generation fingerprints are invalid")
 
 
@@ -237,7 +236,7 @@ def _canonical_manifest_bytes(manifest: Mapping[str, Any]) -> bytes:
 
 def _require_digest(value: Any, *, label: str) -> str:
     token = str(value or "").strip()
-    if not _DIGEST.fullmatch(token):
+    if not is_sha256_digest(token):
         raise ValueError(f"Greenfield {label} must be a SHA-256 value")
     return token
 

@@ -1,59 +1,71 @@
-"""Shared parser-free Product Intent authority contract and sealed-byte checks."""
+"""Parser-free v8 Semantic Intent authority and sealed-byte checks."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 import hashlib
 import hmac
 import json
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
-    ATOMIC_FACT_LEDGER_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
-    atomic_fact_ledger_hash,
-)
-from odylith.runtime.domain_intelligence.greenfield_atomic_fact_ledger import (
-    require_atomic_fact_ledger,
-)
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     require_supported_greenfield_operating_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
+    SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION,
+    semantic_intent_authoring_contract_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    SEMANTIC_INTENT_IR_VERSION,
+    SEMANTIC_INTENT_PACKET_VERSION,
+    require_semantic_intent_ir,
+    semantic_evidence_sha256,
+    semantic_intent_meaning_sha256,
+    semantic_intent_product_facts_sha256,
+    semantic_intent_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+    require_materiality_intent_alignment,
+    require_semantic_materiality_assessment,
+    require_semantic_reasoning_runs,
+    semantic_materiality_assessment_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
+    resolved_semantic_source_refs,
 )
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v5"
-PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION = "odylith.product-intent-envelope.v5"
-PRODUCT_INTENT_LEDGER_VERSION = "odylith.product-intent-custody-ledger.v4"
-_AUTHORITY_VERSION_CONTRACTS = {
-    PRODUCT_INTENT_AUTHORITY_VERSION: (
-        PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION,
-        PRODUCT_INTENT_LEDGER_VERSION,
-    ),
-    "odylith.product-intent-authority.v4": (
-        "odylith.product-intent-envelope.v4",
-        "odylith.product-intent-custody-ledger.v3",
-    ),
-}
-MATERIAL_FACT_KEYS = (
-    "product_story",
-    "state_object",
-    "first_path",
-    "proof_boundary",
-    "human_actors",
-)
-TYPED_SOURCE_FORMATS = frozenset(
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v8"
+_SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
-        "compiled_proposal_intent",
-        "in_memory_confirmed_intent",
-        "legacy_json",
-        "typed_envelope_json",
+        "version",
+        "origin",
+        "decision",
+        "fact_authority",
+        "markdown_authority",
+        "product_facts_sha256",
+        "source_format",
+        "materiality_status",
+        "blocked_material_fields",
+        "operating_envelope",
+        "semantic_intent_packet_version",
+        "semantic_intent_ir_version",
+        "semantic_intent_authoring_request_version",
+        "semantic_intent_authoring_contract_sha256",
+        "semantic_materiality_assessment",
+        "semantic_materiality_assessment_sha256",
+        "semantic_materiality_critic_run",
+        "semantic_intent_author_run",
+        "evidence_sources",
+        "evidence_sha256",
+        "semantic_intent",
+        "semantic_intent_sha256",
+        "semantic_meaning_sha256",
+        "semantic_source_refs",
+        "authority_snapshot_sha256",
     }
 )
-# Compatibility export for callers that still use the older name. Raw operator
-# prompts are evidence, never structured product truth.
-STRUCTURED_SOURCE_FORMATS = TYPED_SOURCE_FORMATS
 
 
 def require_sealed_product_intent_authority_bytes(
@@ -78,69 +90,101 @@ def require_sealed_product_intent_authority_bytes(
 
 
 def require_product_intent_authority_structure(authority: Mapping[str, Any]) -> None:
-    """Verify canonical Product Intent authority fields without inspecting source prose."""
+    """Verify the sole supported v8 graph authority without inspecting source prose."""
 
     if not isinstance(authority, Mapping):
         raise ValueError("ProductCreateTransaction sealed Product Intent authority is malformed")
-    _require_exact_authority_fields(authority)
-    _require_operating_envelope(authority.get("operating_envelope"))
-    material_fields = authority.get("material_fields")
-    if not isinstance(material_fields, Mapping):
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority is malformed")
-    _require_material_custody(authority, material_fields)
-    atomic_facts = authority.get("atomic_facts")
-    require_atomic_fact_ledger(atomic_facts)
-
-    expected_material_custody_sha256 = product_intent_material_custody_hash(material_fields)
-    if not _matches_sha256(authority.get("material_custody_sha256"), expected_material_custody_sha256):
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority custody hash mismatch")
-    expected_atomic_custody_sha256 = atomic_fact_ledger_hash(atomic_facts)
-    if not _matches_sha256(authority.get("atomic_custody_sha256"), expected_atomic_custody_sha256):
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority atomic custody hash mismatch")
-    expected_snapshot_sha256 = product_intent_authority_snapshot_hash(authority)
-    if not _matches_sha256(authority.get("authority_snapshot_sha256"), expected_snapshot_sha256):
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority snapshot hash mismatch")
-
-
-def _require_exact_authority_fields(authority: Mapping[str, Any]) -> None:
-    version = authority.get("version")
-    version_contract = _AUTHORITY_VERSION_CONTRACTS.get(version)
-    if version_contract is None:
+    if authority.get("version") != PRODUCT_INTENT_AUTHORITY_VERSION:
         raise ValueError(
             "ProductCreateTransaction sealed Product Intent authority uses an unsupported version; "
             "rebuild the proposal before confirmation"
         )
-    envelope_version, ledger_version = version_contract
+    _require_semantic_intent_authority(authority)
+
+
+def _require_semantic_intent_authority(authority: Mapping[str, Any]) -> None:
+    if set(authority) != _SEMANTIC_AUTHORITY_FIELDS:
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent authority is malformed")
     expected = {
-        "version": version,
-        "origin": "verified_typed_envelope",
-        "envelope_schema_version": envelope_version,
-        "ledger_version": ledger_version,
+        "version": PRODUCT_INTENT_AUTHORITY_VERSION,
+        "origin": "verified_semantic_intent_packet",
         "decision": "confirmed_intent_accepted",
-        "fact_authority": "product_facts",
+        "fact_authority": "semantic_intent",
         "markdown_authority": "ingest_only",
+        "source_format": "semantic_intent_packet",
+        "materiality_status": "passed",
+        "blocked_material_fields": [],
+        "semantic_intent_packet_version": SEMANTIC_INTENT_PACKET_VERSION,
+        "semantic_intent_ir_version": SEMANTIC_INTENT_IR_VERSION,
+        "semantic_intent_authoring_request_version": (
+            SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION
+        ),
+        "semantic_intent_authoring_contract_sha256": (
+            semantic_intent_authoring_contract_sha256()
+        ),
     }
     if any(authority.get(key) != value for key, value in expected.items()):
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority is invalid")
-    if authority.get("atomic_ledger_version") != ATOMIC_FACT_LEDGER_VERSION:
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority is invalid")
-    for key in (
-        "structured_intent_path",
-        "markdown_source_path",
-        "product_facts_sha256",
-        "markdown_source_sha256",
-        "source_format",
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent authority is invalid")
+    evidence_sources = authority.get("evidence_sources")
+    if not isinstance(evidence_sources, Mapping) or set(evidence_sources) != {
+        "operator_prompt", "operator_edit",
+    }:
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent evidence is malformed")
+    prompt = evidence_sources.get("operator_prompt")
+    edit = evidence_sources.get("operator_edit")
+    if not isinstance(prompt, str) or not prompt or not isinstance(edit, str):
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent evidence is malformed")
+    if not _matches_sha256(
+        authority.get("evidence_sha256"),
+        semantic_evidence_sha256(evidence_sources),
     ):
-        if not _is_nonempty_string(authority.get(key)):
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority is missing required custody")
-    for key in ("product_facts_sha256", "markdown_source_sha256"):
-        if not _is_sha256(authority.get(key)):
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority custody hash mismatch")
-    if authority.get("materiality_status") != "passed":
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority did not pass materiality")
-    blocked_fields = authority.get("blocked_material_fields")
-    if not isinstance(blocked_fields, list) or blocked_fields:
-        raise ValueError("ProductCreateTransaction sealed Product Intent authority still has blocked material fields")
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent evidence hash mismatch")
+    assessment = require_semantic_materiality_assessment(
+        authority.get("semantic_materiality_assessment"),
+        evidence_sources=evidence_sources,
+        evidence_sha256=str(authority.get("evidence_sha256") or ""),
+        authoring_contract_sha256=semantic_intent_authoring_contract_sha256(),
+    )
+    assessment_sha256 = semantic_materiality_assessment_sha256(assessment)
+    if not _matches_sha256(
+        authority.get("semantic_materiality_assessment_sha256"),
+        assessment_sha256,
+    ):
+        raise ValueError("ProductCreateTransaction sealed materiality assessment hash mismatch")
+    critic_run, author_run = require_semantic_reasoning_runs(
+        authority.get("semantic_materiality_critic_run"),
+        authority.get("semantic_intent_author_run"),
+    )
+    if (
+        authority.get("semantic_materiality_critic_run") != critic_run
+        or authority.get("semantic_intent_author_run") != author_run
+    ):
+        raise ValueError("ProductCreateTransaction sealed semantic run evidence is noncanonical")
+    semantic_intent = require_semantic_intent_ir(
+        authority.get("semantic_intent"),
+        evidence_sources=evidence_sources,
+    )
+    if semantic_intent.get("status") != "complete":
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent is clarification-bound")
+    require_materiality_intent_alignment(assessment, semantic_intent)
+    hashes = {
+        "semantic_intent_sha256": semantic_intent_sha256(semantic_intent),
+        "semantic_meaning_sha256": semantic_intent_meaning_sha256(semantic_intent),
+        "product_facts_sha256": semantic_intent_product_facts_sha256(semantic_intent),
+    }
+    for key, expected_hash in hashes.items():
+        if not _matches_sha256(authority.get(key), expected_hash):
+            raise ValueError(f"ProductCreateTransaction sealed Semantic Intent {key} mismatch")
+    expected_refs = resolved_semantic_source_refs(
+        semantic_intent,
+        evidence_sources=evidence_sources,
+    )
+    if authority.get("semantic_source_refs") != expected_refs:
+        raise ValueError("ProductCreateTransaction sealed Semantic Intent source custody mismatch")
+    _require_operating_envelope(authority.get("operating_envelope"))
+    expected_snapshot_sha256 = product_intent_authority_snapshot_hash(authority)
+    if not _matches_sha256(authority.get("authority_snapshot_sha256"), expected_snapshot_sha256):
+        raise ValueError("ProductCreateTransaction sealed Product Intent authority snapshot hash mismatch")
 
 
 def _require_operating_envelope(value: Any) -> None:
@@ -152,53 +196,10 @@ def _require_operating_envelope(value: Any) -> None:
         ) from error
 
 
-def _require_material_custody(authority: Mapping[str, Any], material_fields: Mapping[str, Any]) -> None:
-    for key in MATERIAL_FACT_KEYS:
-        field = material_fields.get(key)
-        if not isinstance(field, Mapping):
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority has unresolved material custody")
-        state = field.get("custody_state")
-        relationship = field.get("entailment_relationship")
-        if state not in {"accepted_fact", "bounded_interpretation"}:
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority has unresolved material custody")
-        if not _is_nonempty_string_sequence(field.get("source_span_ids")):
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority is missing material source custody")
-        if not _valid_span_refs(field.get("source_span_refs"), field.get("source_span_ids")):
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid material source spans")
-        if state == "accepted_fact":
-            if relationship not in {"direct_product_claim", "normalized_product_claim"}:
-                raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid fact entailment")
-            if not _is_nonempty_string_sequence(field.get("product_claim_span_ids")):
-                raise ValueError(
-                    "ProductCreateTransaction sealed Product Intent authority is missing material product-claim custody"
-                )
-        elif relationship != "bounded_interpretation_of":
-            raise ValueError("ProductCreateTransaction sealed Product Intent authority has invalid interpretation custody")
-
-
 def _authority_snapshot_payload(authority: Mapping[str, Any]) -> dict[str, Any]:
     return {
-        "version": authority.get("version"),
-        "origin": authority.get("origin"),
-        "structured_intent_path": authority.get("structured_intent_path"),
-        "markdown_source_path": authority.get("markdown_source_path"),
-        "envelope_schema_version": authority.get("envelope_schema_version"),
-        "ledger_version": authority.get("ledger_version"),
-        "decision": authority.get("decision"),
-        "fact_authority": authority.get("fact_authority"),
-        "markdown_authority": authority.get("markdown_authority"),
-        "product_facts_sha256": authority.get("product_facts_sha256"),
-        "markdown_source_sha256": authority.get("markdown_source_sha256"),
-        "source_format": authority.get("source_format"),
-        "materiality_status": authority.get("materiality_status"),
-        "blocked_material_fields": authority.get("blocked_material_fields"),
-        "clarification_policy": authority.get("clarification_policy"),
-        "operating_envelope": authority.get("operating_envelope"),
-        "material_fields": authority.get("material_fields"),
-        "material_custody_sha256": authority.get("material_custody_sha256"),
-        "atomic_ledger_version": authority.get("atomic_ledger_version"),
-        "atomic_facts": authority.get("atomic_facts"),
-        "atomic_custody_sha256": authority.get("atomic_custody_sha256"),
+        key: authority.get(key)
+        for key in sorted(_SEMANTIC_AUTHORITY_FIELDS - {"authority_snapshot_sha256"})
     }
 
 
@@ -206,12 +207,6 @@ def product_intent_authority_snapshot_hash(authority: Mapping[str, Any]) -> str:
     """Return the stable hash over authority fields, excluding the hash itself."""
 
     return _sha256_json(_authority_snapshot_payload(authority))
-
-
-def product_intent_material_custody_hash(material_fields: Mapping[str, Any]) -> str:
-    """Return the stable hash over the bounded material-custody fields."""
-
-    return _sha256_json({key: material_fields.get(key) for key in MATERIAL_FACT_KEYS})
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
@@ -235,53 +230,10 @@ def _is_sha256(value: Any) -> bool:
     )
 
 
-def _is_nonempty_string(value: Any) -> bool:
-    return isinstance(value, str) and bool(value)
-
-
-def _is_nonempty_string_sequence(value: Any) -> bool:
-    return (
-        isinstance(value, Sequence)
-        and not isinstance(value, (str, bytes, bytearray))
-        and bool(value)
-        and all(_is_nonempty_string(item) for item in value)
-    )
-
-
-def _valid_span_refs(value: Any, span_ids: Any) -> bool:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)) or not value:
-        return False
-    expected_ids = list(span_ids) if _is_nonempty_string_sequence(span_ids) else []
-    actual_ids: list[str] = []
-    for row in value:
-        if not isinstance(row, Mapping):
-            return False
-        if not set(row) <= {"span_id", "classification", "text_sha256", "evidence_text"}:
-            return False
-        span_id = row.get("span_id")
-        digest = row.get("text_sha256")
-        if not _is_nonempty_string(span_id) or not _is_sha256(digest):
-            return False
-        evidence_text = row.get("evidence_text")
-        if evidence_text is not None and (
-            not _is_nonempty_string(evidence_text)
-            or hashlib.sha256(evidence_text.encode("utf-8")).hexdigest() != digest
-        ):
-            return False
-        actual_ids.append(span_id)
-    return actual_ids == expected_ids
-
-
 __all__ = [
-    "MATERIAL_FACT_KEYS",
     "PRODUCT_INTENT_AUTHORITY_KEY",
     "PRODUCT_INTENT_AUTHORITY_VERSION",
-    "PRODUCT_INTENT_ENVELOPE_SCHEMA_VERSION",
-    "PRODUCT_INTENT_LEDGER_VERSION",
-    "STRUCTURED_SOURCE_FORMATS",
-    "TYPED_SOURCE_FORMATS",
     "product_intent_authority_snapshot_hash",
-    "product_intent_material_custody_hash",
     "require_product_intent_authority_structure",
     "require_sealed_product_intent_authority_bytes",
 ]

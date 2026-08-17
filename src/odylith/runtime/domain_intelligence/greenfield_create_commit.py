@@ -64,7 +64,7 @@ def commit_greenfield_create_transaction(
     confirm: bool,
     started_at: float | None = None,
 ) -> dict[str, Any]:
-    """Hash-check and atomically commit the user-confirmed precompiled package."""
+    """Hash-check and publish one journaled user-confirmed sealed generation."""
 
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")

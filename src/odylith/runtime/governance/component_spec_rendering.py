@@ -8,14 +8,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import finite_action_clause
-from odylith.runtime.domain_intelligence.greenfield_component_contract import (
-    dependencies_from_contract,
-    interfaces_from_contract,
-    responsibility_from_contract,
-    risks_from_contract,
-    validation_from_contract,
-)
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.common.text_values import text_values
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 
 
@@ -84,52 +77,42 @@ def build_component_spec(
     handoff_validation = _handoff_list(handoff, "validation_gates")
     handoff_commands = _handoff_list(handoff, "verification_commands")
 
-    responsibility_source = responsibility_from_contract(label, contract) if has_contract else responsibility
-    responsibility_text = sentence_fragment(responsibility_source)
-    responsibility_line = responsibility_text if has_contract else _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
-    boundary_source = _contract_boundary_intro(label=label, profile=profile, contract=contract) if has_contract else boundary
-    boundary_text = sentence_fragment(boundary_source) or responsibility_text
+    responsibility_text = sentence_fragment(responsibility)
+    responsibility_line = _responsibility_sentence(responsibility_text, default_verb=profile["default_verb"])
+    boundary_text = sentence_fragment(boundary) or responsibility_text
     evidence_text = _evidence_text(normalized_sources=normalized_sources, path=path)
     plan_link = _plan_link(first_workstream)
     related_workstreams = ", ".join(f"`{item}`" for item in workstream_ids) if workstream_ids else "none yet"
     related_diagrams = ", ".join(f"`{item}`" for item in diagram_ids) if diagram_ids else "none yet"
     proof_lines = _component_proof_lines(
-        validation=validation_from_contract(contract) if has_contract else validation,
+        validation=validation,
         handoff_validation=handoff_validation,
         label=label,
         boundary=boundary_text,
         responsibility=responsibility_line or responsibility_text,
     )
-    interface_lines = _unique_lines(interfaces_from_contract(contract) if has_contract else interfaces or (profile["default_interface"],))
-    dependency_lines = _dependency_lines(dependencies_from_contract(contract) if has_contract else dependencies or (profile["default_dependency"],))
-    risk_lines = _unique_lines(risks_from_contract(label, contract) if has_contract else risks or (profile["default_risk"],))
-    outside_boundary = _contract_outside_boundary_lines(contract) if has_contract else _outside_boundary_lines(boundary=boundary_text, profile=profile)
-    owns_lines = _contract_field_lines(contract, "owned_state") if has_contract else ((responsibility_line,) if responsibility_line else (profile["default_owns"],))
-    accepts_lines = _contract_field_lines(contract, "accepted_inputs") if has_contract else ()
-    produces_lines = _contract_field_lines(contract, "produced_outputs") if has_contract else ()
-    contract_summary = (
-        _contract_summary_from_contract(label=label, contract=contract)
-        if has_contract
-        else _contract_summary(
-            label=label,
-            responsibility=responsibility_line or responsibility_text,
-            boundary=boundary_text,
-            profile=profile,
-            interfaces=interface_lines,
-            dependencies=dependency_lines,
-            proof_lines=proof_lines,
-        )
+    interface_lines = _unique_lines(interfaces or (profile["default_interface"],))
+    dependency_lines = _dependency_lines(dependencies or (profile["default_dependency"],))
+    risk_lines = _unique_lines(risks or (profile["default_risk"],))
+    outside_boundary = _outside_boundary_lines(boundary=boundary_text, profile=profile)
+    owns_lines = (responsibility_line,) if responsibility_line else (profile["default_owns"],)
+    accepts_lines: tuple[str, ...] = ()
+    produces_lines: tuple[str, ...] = ()
+    contract_summary = _contract_summary(
+        label=label,
+        responsibility=responsibility_line or responsibility_text,
+        boundary=boundary_text,
+        profile=profile,
+        interfaces=interface_lines,
+        dependencies=dependency_lines,
+        proof_lines=proof_lines,
     )
-    role_paragraphs = (
-        _component_contract_role_paragraphs(label=label, profile=profile, contract=contract)
-        if has_contract
-        else _component_role_paragraphs(
-            label=label,
-            profile=profile,
-            responsibility=responsibility_line or responsibility_text,
-            dependencies=dependency_lines,
-            validation=proof_lines,
-        )
+    role_paragraphs = _component_role_paragraphs(
+        label=label,
+        profile=profile,
+        responsibility=responsibility_line or responsibility_text,
+        dependencies=dependency_lines,
+        validation=proof_lines,
     )
 
     return "\n".join(
@@ -196,7 +179,7 @@ def build_component_spec(
                 proof_lines or (profile["default_validation"],),
                 commands=handoff_commands,
                 label=label,
-                contract=contract if has_contract else {},
+                contract={},
             ),
             "",
             f"## {profile['risk_heading']}",
@@ -1094,46 +1077,15 @@ def _fallback_narrative_contract(
     validation: Sequence[str],
     risks: Sequence[str],
 ) -> Mapping[str, Any]:
-    """Build a readable planned contract for older greenfield proposals without semantic contracts."""
+    """Carry explicit authoring fields into the typed presentation contract."""
 
-    responsibility_text = sentence_fragment(responsibility)
-    boundary_text = sentence_fragment(boundary)
-    dependency_text = _unique_lines(tuple(dependencies))
-    validation_text = _unique_lines(tuple(validation))
-    risk_text = _unique_lines(tuple(risks))
-    focus = responsibility_text or boundary_text or f"{label} planned state"
-    local_focus = _fallback_focus_phrase(focus, fallback=label)
     return {
-        "owned_state": (local_focus, "blocker state", "handoff evidence"),
-        "accepted_inputs": (f"{local_focus} command", "source evidence", "validation context"),
-        "produced_outputs": (f"{local_focus} state", "blocked-state evidence", "handoff record"),
-        "states_or_transitions": ("draft", "validated", "blocked", "revised", "handed-off"),
-        "outside_boundary": dependency_text or ("adjacent component state", "upstream source truth", "release approval"),
-        "local_proof": validation_text
-        or (f"{label} proves one accepted path, one blocked path, and one replayable handoff before promotion.",),
-        "upstream_truth": dependency_text[:1],
-        "downstream_consumers": dependency_text[1:2] or ("release proof review",),
-        "unique_failure": risk_text[0] if risk_text else f"{label} can appear ready without local proof or handoff evidence.",
+        "boundary": _unique_lines((boundary,)),
+        "dependencies": _unique_lines(tuple(dependencies)),
+        "interfaces": _unique_lines(tuple(interfaces)),
+        "local_proof": _unique_lines(tuple(validation)),
+        "risks": _unique_lines(tuple(risks)),
     }
-
-
-def _fallback_focus_phrase(value: str, *, fallback: str) -> str:
-    text = sentence_fragment(value).casefold()
-    text = re.sub(r"^(?:owns?|records?|captures?|validates?|keeps?|maintains?|handles?|coordinates?\s+with)\s+", "", text)
-    text = re.sub(r"\b(?:until|before|after|while|because|unless|without)\b.+$", "", text)
-    text = re.sub(r"\b(?:includes?|including)\b.+$", "", text)
-    text = re.sub(r"\s+and\s+(?:recovery|review|handoff|validation)\s+behavior\b.*$", "", text)
-    text = re.sub(r"\s+", " ", text).strip(" .;:,")
-    candidates = [part.strip(" .") for part in re.split(r",\s+|\s+and\s+", text) if part.strip(" .")]
-    for candidate in candidates:
-        words = candidate.split()
-        if 2 <= len(words) <= 7:
-            return candidate
-    words = text.split()
-    if 2 <= len(words) <= 7:
-        return text
-    fallback_text = sentence_fragment(fallback).casefold()
-    return fallback_text or "local state"
 
 
 def _unique_lines(values: Sequence[str]) -> tuple[str, ...]:

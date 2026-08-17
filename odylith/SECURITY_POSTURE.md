@@ -109,18 +109,28 @@ Odylith does not claim full protection against:
 - Greenfield Domain Intelligence proposals separate observed source, user
   intent, and Odylith assumptions; missing source cannot become a source-backed
   governance claim.
-- `odylith greenfield propose` builds and quality-gates the full
+- `odylith greenfield semantic-intent-request` gives the active host a
+  schema-constrained authoring request. The host reasons axis-first, assembles
+  one source-cited Semantic Intent graph, and independently challenges it for
+  contradictions before submission. A matching citation proves custody, not
+  entailment; the host remains responsible for semantic support.
+- `odylith greenfield propose` deterministically verifies graph shape, typed
+  relation endpoints, source custody, canonical meaning, and the complete
   ProductCreateTransaction before it renders the sole confirmation rail.
+  Prompt and EDIT prose never become parser-derived product authority.
 - `odylith greenfield create` only verifies the compiler receipt, transaction
   hash, compiler identity, and unchanged repo preconditions; applies the sealed
   write set under rollback guard; validates exact readback; and reports success.
-- Legacy proposal `apply` is not a confirmed write path; edited intent must be
-  treated as new evidence and compiled into a new transaction.
+- Legacy proposal `apply` is not a confirmed write path. EDIT produces a new
+  authoring request bound to the exact superseded transaction and compiles a
+  new transaction; it never repairs or mutates confirmed meaning in place.
 - The greenfield proposal Tribunal rejects disconnected child topology, shallow
   component ownership, and invisible release/program structures before durable
   source truth changes.
-- Supported host routes stay thin; the Odylith runtime owns
-  validation, confirmation, topology hygiene, and durable memory boundaries.
+- Supported host routes own semantic judgment but not validation or writes; the
+  Odylith runtime owns deterministic validation, confirmation, topology
+  hygiene, and durable memory boundaries without becoming a second semantic
+  authority.
 
 ### Product Governed Harness safety
 

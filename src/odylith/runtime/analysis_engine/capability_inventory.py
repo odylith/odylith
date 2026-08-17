@@ -57,7 +57,8 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 activation=(
                     "greenfield propose compiles and quality-gates the governed package before it shows the sole "
                     "hash-bound CONFIRM, EDIT, and REJECT rail; confirmed create verifies the transaction hash, "
-                    "commits records atomically, validates readback, and refreshes surfaces"
+                    "publishes a journaled sealed generation, switches the canonical-reader pointer, "
+                    "validates readback, and refreshes surfaces"
                 ),
             ),
             InventoryItem(
@@ -291,14 +292,13 @@ _ENGINE_GROUPS: tuple[tuple[str, tuple[InventoryItem, ...]], ...] = (
                 owns=(
                     "controlled product vocabularies and lifecycle state machines, including "
                     "Casebook status transitions, broad bug-type taxonomy, benchmark family "
-                    "taxonomy, proposal state vocabulary, and migration-normalized legacy tokens"
+                    "taxonomy, and migration-normalized legacy tokens"
                 ),
                 commands=("odylith casebook validate", "odylith validate guidance-behavior"),
                 anchors=(
                     "src/odylith/runtime/common/casebook_metadata.py",
                     "src/odylith/runtime/governance/casebook_source_validation.py",
                     "src/odylith/runtime/evaluation/odylith_benchmark_taxonomy.py",
-                    "src/odylith/runtime/domain_intelligence/proposal_contract.py",
                 ),
                 activation=(
                     "casebook and guidance validators normalize controlled vocabularies and lifecycle FSMs "

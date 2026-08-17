@@ -17,43 +17,16 @@ def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
     assert not (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_rows.py").exists()
 
     for path in (
-        DOMAIN_INTELLIGENCE / "greenfield_preconfirm_completion.py",
-        DOMAIN_INTELLIGENCE / "greenfield_preconfirm_semantic_drift.py",
-        DOMAIN_INTELLIGENCE / "greenfield_preconfirm_semantic_alignment.py",
-        DOMAIN_INTELLIGENCE / "greenfield_confirmed_prewrite_gate.py",
-        DOMAIN_INTELLIGENCE / "proposal_tribunal.py",
-        DOMAIN_INTELLIGENCE / "greenfield_confirmed_title_repair.py",
         DOMAIN_INTELLIGENCE / "greenfield_apply_prewrite.py",
-        DOMAIN_INTELLIGENCE / "greenfield_backlog_impact.py",
-        DOMAIN_INTELLIGENCE / "greenfield_experience.py",
+        DOMAIN_INTELLIGENCE / "greenfield_prewrite_stale_cleanup.py",
+        DOMAIN_INTELLIGENCE / "greenfield_semantic_component_package.py",
+        DOMAIN_INTELLIGENCE / "greenfield_semantic_delivery.py",
+        DOMAIN_INTELLIGENCE / "greenfield_semantic_memory.py",
+        DOMAIN_INTELLIGENCE / "greenfield_semantic_package_validation.py",
+        DOMAIN_INTELLIGENCE / "greenfield_semantic_traceability.py",
+        DOMAIN_INTELLIGENCE / "greenfield_release_commit.py",
+        DOMAIN_INTELLIGENCE / "greenfield_traceability_commit.py",
     ):
         source = path.read_text(encoding="utf-8")
         assert "def _mapping_rows" not in source
         assert "from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows" in source
-
-    for path in (
-        DOMAIN_INTELLIGENCE / "greenfield_confirmed_completion.py",
-        DOMAIN_INTELLIGENCE / "greenfield_confirmed_prewrite_gate.py",
-        DOMAIN_INTELLIGENCE / "greenfield_confirmed_component_completion.py",
-        DOMAIN_INTELLIGENCE / "greenfield_component_contract_differentiation.py",
-    ):
-        source = path.read_text(encoding="utf-8")
-        assert "def _dict_rows" not in source
-        assert "from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows" in source
-
-    for path in (
-        DOMAIN_INTELLIGENCE / "greenfield_backlog_impact.py",
-        DOMAIN_INTELLIGENCE / "greenfield_confirmed_component_completion.py",
-        DOMAIN_INTELLIGENCE / "greenfield_component_contract_differentiation.py",
-    ):
-        source = path.read_text(encoding="utf-8")
-        assert "def _component_rows" not in source
-
-    experience_source = (DOMAIN_INTELLIGENCE / "greenfield_experience.py").read_text(encoding="utf-8")
-    assert "def _created_rows" not in experience_source
-
-    post_confirm_source = (DOMAIN_INTELLIGENCE / "greenfield_preconfirm_completion.py").read_text(encoding="utf-8")
-    assert "def _row_count" not in post_confirm_source
-    assert "def _mapping_count" not in post_confirm_source
-    assert "from odylith.runtime.domain_intelligence.greenfield_rows import row_count" in post_confirm_source
-    assert "from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count" in post_confirm_source

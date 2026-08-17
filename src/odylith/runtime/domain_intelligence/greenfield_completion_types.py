@@ -3,35 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict
 from dataclasses import dataclass
 from typing import Any
-
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import GreenfieldReviewFinding
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_review import review_report_from_findings
-
-
-@dataclass(frozen=True)
-class GreenfieldCompletionReport:
-    """Deterministic result for the staged pre-confirm package."""
-
-    status: str
-    version: str
-    semantic_model: bool
-    artifact_counts: dict[str, int]
-    tribunal_status: str
-    issues: tuple[str, ...]
-    findings: tuple[GreenfieldReviewFinding, ...] = ()
-
-    @property
-    def passed(self) -> bool:
-        return self.status == "passed"
-
-    def to_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["review_report"] = review_report_from_findings(self.findings).to_dict()
-        return payload
-
 
 @dataclass(frozen=True)
 class GreenfieldCompletionPackage:
@@ -65,4 +38,4 @@ class GreenfieldCompletionPackage:
     commit_result_preview: Mapping[str, Any] | None = None
 
 
-__all__ = ["GreenfieldCompletionPackage", "GreenfieldCompletionReport"]
+__all__ = ["GreenfieldCompletionPackage"]

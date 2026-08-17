@@ -1,809 +1,92 @@
 from __future__ import annotations
 
+import io
 import json
+from pathlib import Path
 import tarfile
 import zipfile
-from pathlib import Path
-from types import SimpleNamespace
-
-import pytest
 
 from scripts.release import platform_domain_leakage_check as leakage
 
 
-def test_domain_leakage_terms_use_distinctive_matrix_vocabulary() -> None:
-    terms = set(leakage.domain_leakage_terms())
-
-    assert {
-        "quantum communication",
-        "bell inequality",
-        "qber",
-        "chsh",
-        "wafer lot",
-        "carbon tariff",
-        "pediatric therapy",
-        "supply chain exception desk",
-        "developer incident runbook",
-        "anger management",
-        "digestive health",
-        "fifa tracker",
-        "quantum tunneling",
-        "wearable app",
-    } <= terms
-    assert "source" not in terms
-    assert "project" not in terms
-    assert "security" not in terms
-    assert "evidence" not in terms
+def _fixture(path: Path, *, sentinels: list[str] | None = None) -> Path:
+    payload = {
+        "version": "fixture.v1",
+        "prompt": "Build a Lunar Relay Console for Orbital Clerks.",
+        "packet": {"facts": [{"label": "Lunar Relay Console"}, {"label": "Orbital Clerks"}]},
+        "platform_custody_sentinels": sentinels or ["Lunar Relay Console", "Orbital Clerks"],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
 
 
-def test_domain_leakage_terms_can_exclude_historical_sentinels() -> None:
-    terms = set(leakage.domain_leakage_terms(include_historical=False))
-
-    assert "quantum communication" in terms
-    assert "wearable app" not in terms
-
-
-def test_default_matrix_cases_each_contribute_distinctive_leakage_terms() -> None:
-    cases = leakage.default_cases()
-
-    assert leakage.cases_missing_leakage_terms(cases) == ()
-    assert all(leakage.case_leakage_terms(case) for case in cases)
-
-
-def test_declared_leakage_terms_are_not_padded_with_required_quality_anchors() -> None:
-    terms = leakage.case_leakage_terms(
-        SimpleNamespace(
-            required_terms=("wafer", "reliability", "agent"),
-            leakage_terms=("wafer lot", "chamber exposure"),
-        )
+def test_loads_only_explicit_source_grounded_sentinels(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path / "fixture.json")
+    assert leakage.load_custody_sentinels(repo_root=tmp_path, fixture_paths=[fixture]) == (
+        "Lunar Relay Console",
+        "Orbital Clerks",
     )
 
-    assert terms == ("chamber exposure", "wafer lot")
+
+def test_rejects_ungrounded_or_duplicate_sentinels(tmp_path: Path) -> None:
+    ungrounded = _fixture(tmp_path / "ungrounded.json", sentinels=["Invented Vocabulary"])
+    try:
+        leakage.load_custody_sentinels(repo_root=tmp_path, fixture_paths=[ungrounded])
+    except RuntimeError as exc:
+        assert "not grounded" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("ungrounded custody sentinel should fail")
+
+    duplicate = _fixture(tmp_path / "duplicate.json", sentinels=["Lunar Relay Console", "lunar-relay_console"])
+    try:
+        leakage.load_custody_sentinels(repo_root=tmp_path, fixture_paths=[duplicate])
+    except RuntimeError as exc:
+        assert "duplicate" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("normalized duplicate custody sentinel should fail")
 
 
-def test_declared_leakage_terms_are_authoritative_when_present() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                name="quantum communication lab",
-                prompt=(
-                    "Create a greenfield proposal for a quantum communication lab that records "
-                    "entangled photon pairs, Bell inequality checks, QBER thresholds, and CHSH "
-                    "review evidence."
-                ),
-                required_terms=("quantum", "qber"),
-                leakage_terms=("bell inequality",),
-            )
-        )
+def test_repo_scan_matches_exact_semantic_sentinel_across_code_separators(tmp_path: Path) -> None:
+    source = tmp_path / "src" / "odylith" / "runtime" / "bad.py"
+    source.parent.mkdir(parents=True)
+    source.write_text("LUNAR_RELAY_CONSOLE = True\n", encoding="utf-8")
+    assert leakage.scan_repo(tmp_path, sentinels=("Lunar Relay Console",)) == (
+        leakage.LeakageFinding(location="src/odylith/runtime/bad.py", sentinel="Lunar Relay Console", line=1),
     )
 
-    assert any(term.startswith("bell inequality") for term in terms)
-    assert "entangled photon" not in terms
-    assert "quantum communication" not in terms
-    assert "quantum" not in terms
-    assert "create" not in terms
-    assert "greenfield proposal" not in terms
+
+def test_repo_scan_excludes_fixture_tests_and_governance_evidence(tmp_path: Path) -> None:
+    for relative in (
+        "scripts/release/fixtures/semantic.json",
+        "tests/unit/test_fixture.py",
+        "odylith/radar/source/history.md",
+    ):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Lunar Relay Console\n", encoding="utf-8")
+    assert leakage.scan_repo(tmp_path, sentinels=("Lunar Relay Console",)) == ()
 
 
-def test_candidate_terms_include_source_fallback_for_platform_native_declared_terms() -> None:
-    terms = set(
-        leakage.case_leakage_term_candidates(
-            SimpleNamespace(
-                name="sepsis early warning calibration",
-                prompt=(
-                    "Create a greenfield proposal for a sepsis early warning calibration workspace "
-                    "that compares vitals streams, lab results, model thresholds, calibration drift, "
-                    "false-positive reviews, clinician overrides, and fairness evidence before deployment readiness review."
-                ),
-                required_terms=("sepsis", "calibration", "false-positive", "clinician"),
-                leakage_terms=("calibration drift",),
-            )
-        )
-    )
-
-    assert "calibration drift" in terms
-    assert "early warning calibration" in terms
-    assert "greenfield proposal" not in terms
+def test_distribution_scan_reads_wheel_and_source_archive(tmp_path: Path) -> None:
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    with zipfile.ZipFile(dist / "odylith.whl", "w") as archive:
+        archive.writestr("odylith/runtime/bad.py", "ORBITAL_CLERKS = True\n")
+    tar_bytes = b"Lunar Relay Console\n"
+    with tarfile.open(dist / "odylith.tar.gz", "w:gz") as archive:
+        info = tarfile.TarInfo("odylith/runtime/bad.txt")
+        info.size = len(tar_bytes)
+        archive.addfile(info, io.BytesIO(tar_bytes))
+    findings = leakage.scan_dist(dist, sentinels=("Orbital Clerks", "Lunar Relay Console"))
+    assert {(finding.sentinel, finding.location.split(":", 1)[0]) for finding in findings} == {
+        ("Orbital Clerks", "wheel"),
+        ("Lunar Relay Console", "tar"),
+    }
 
 
-def test_source_candidate_terms_exclude_generic_quality_obligation_tail() -> None:
-    terms = set(
-        leakage.case_leakage_term_candidates(
-            SimpleNamespace(
-                name="industrial catalyst sintering monitor field evidence operations desk",
-                prompt=(
-                    "Create a greenfield proposal for a industrial catalyst sintering monitor "
-                    "field evidence operations desk that helps a chemical engineer ingest field "
-                    "observations, normalize measurements, link calibration evidence, flag "
-                    "anomalies, request expert review, and reopen the saved record with the same inputs. "
-                    "The first release must preserve catalyst sintering, reaction monitor, "
-                    "particle growth, conversion curve, temperature ramp, and deactivation signal evidence. "
-                    "Distinctive project vocabulary includes industrial catalyst sintering monitor "
-                    "temperature ramp evidence and industrial catalyst sintering monitor deactivation "
-                    "signal review. It must capture measurement unit, calibration source, quality limit, "
-                    "reproducibility note, avoid unsupported operational claims, show uncertainty or "
-                    "confidence limits, and make the saved result reproducible for product, architecture, "
-                    "engineering, and domain-expert review."
-                ),
-                required_terms=(
-                    "catalyst sintering",
-                    "reaction monitor",
-                    "particle growth",
-                    "conversion curve",
-                ),
-                leakage_terms=(
-                    "industrial catalyst sintering monitor field evidence operations desk",
-                    "industrial catalyst sintering monitor temperature ramp",
-                    "industrial catalyst sintering monitor deactivation signal",
-                ),
-            )
-        )
-    )
-
-    assert "industrial catalyst sintering" in terms
-    assert "catalyst sintering" in terms
-    assert "industrial catalyst sintering monitor temperature ramp" in terms
-    assert "unsupported operational claims" not in terms
-    assert "operational claims" not in terms
-    assert "uncertainty or confidence" not in terms
-
-
-def test_source_provenanced_candidates_exclude_product_path_but_keep_source_evidence() -> None:
-    case = SimpleNamespace(
-        name="accessibility source case",
-        prompt=(
-            "Create an accessibility product. An accessibility operator reviews one evidence item, "
-            "records a decision, and verifies the visible outcome. Source repository: leongersen/noUiSlider. "
-            "Source evidence: noUiSlider is a lightweight, ARIA-accessible JavaScript range slider. "
-            "It also fits wonderfully in responsive designs and has no dependencies."
-        ),
-        required_terms=("accessibility",),
-        leakage_terms=("leongersen/noUiSlider",),
-        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
-    )
-
-    terms = set(leakage.case_leakage_term_candidates(case))
-
-    assert "leongersen no ui slider" in terms
-    assert "responsive designs" in terms
-    assert "visible outcome" not in terms
-
-
-@pytest.mark.parametrize("intent_label", ("User intent", "Product intent"))
-def test_source_provenanced_candidates_stop_before_explicit_user_intent(intent_label: str) -> None:
-    case = SimpleNamespace(
-        name="accessibility source case",
-        prompt=(
-            "Project brief for an accessibility team. Source repository: radix-ui/primitives. "
-            "Source evidence: Radix Primitives is an open-source UI component library for building high-quality, "
-            f"accessible design systems and web apps. Maintained by @workos.\n\n{intent_label}: A program lead registers "
-            "a readiness dossier, selects a review disposition, and verifies a publication status."
-        ),
-        required_terms=("accessibility",),
-        leakage_terms=("radix-ui/primitives",),
-        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
-    )
-
-    terms = set(leakage.case_leakage_term_candidates(case))
-
-    assert "radix primitives" in terms
-    assert "publication status" not in terms
-    assert "review disposition" not in terms
-
-
-def test_shipped_source_case_does_not_report_platform_custody_from_user_intent() -> None:
+def test_default_release_fixture_is_explicit_and_current_repo_is_clean() -> None:
     repo_root = Path(__file__).resolve().parents[3]
-    payload = json.loads(
-        (
-            repo_root
-            / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json"
-        ).read_text(encoding="utf-8")
-    )
-    source_case = next(case for case in payload["cases"] if case["case_id"] == "release-accessibility-003-description")
-    case = SimpleNamespace(
-        **{
-            **source_case,
-            "provenance": SimpleNamespace(**source_case["provenance"]),
-        }
-    )
-
-    findings = leakage.scan_repo(repo_root, terms=leakage.case_leakage_term_candidates(case))
-
-    assert findings == ()
-
-
-def test_source_provenanced_mixed_identifier_survives_normalization_and_matching() -> None:
-    raw_identifier = "jsx-eslint/eslint-plugin-jsx-a11y"
-    normalized_identifier = "jsx eslint eslint plugin jsx a 11 y a11y"
-    case = SimpleNamespace(
-        name="accessibility source case",
-        prompt=(
-            "Create an accessibility product. Source repository: "
-            f"{raw_identifier}. Source evidence: Static AST checker for a11y rules on JSX elements."
-        ),
-        required_terms=("accessibility",),
-        leakage_terms=(raw_identifier,),
-        provenance=SimpleNamespace(corpus_tier="source_provenanced"),
-    )
-
-    assert normalized_identifier in leakage.case_leakage_term_candidates(case)
-    findings = leakage._scan_text(  # noqa: SLF001
-        f"Source repository: {raw_identifier}",
-        location="fixture",
-        terms=(normalized_identifier,),
-    )
-    assert [(finding.location, finding.term) for finding in findings] == [("fixture", normalized_identifier)]
-
-
-def test_raw_multiword_identifier_terms_still_tokenize_before_scanning() -> None:
-    findings = leakage._scan_text(  # noqa: SLF001
-        "acme/widget source",
-        location="fixture",
-        terms=("acme/widget source",),
-    )
-
-    assert [(finding.location, finding.term) for finding in findings] == [("fixture", "acme/widget source")]
-
-
-def test_shipped_source_corpus_retains_every_declared_leakage_identifier() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
-    payload = json.loads(
-        (repo_root / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json").read_text(
-            encoding="utf-8"
-        )
-    )
-
-    missing = []
-    for source_case in payload["cases"]:
-        case = SimpleNamespace(
-            **{
-                **source_case,
-                "provenance": SimpleNamespace(**source_case["provenance"]),
-            }
-        )
-        candidates = set(leakage.case_leakage_term_candidates(case))
-        declared = set(leakage.domain_leakage_terms_from_terms(source_case["leakage_terms"]))
-        if not declared <= candidates:
-            missing.append(source_case["case_id"])
-
-    assert missing == []
-
-
-def test_release_source_fixture_excludes_template_path_from_custody_candidates() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
-    payload = json.loads(
-        (repo_root / "tests/fixtures/greenfield-release-corpus/greenfield-release-source-provenanced.v3.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    source_case = next(case for case in payload["cases"] if case["case_id"] == "release-accessibility-001-description")
-    case = SimpleNamespace(
-        **{
-            **source_case,
-            "provenance": SimpleNamespace(**source_case["provenance"]),
-        }
-    )
-
-    terms = set(leakage.case_leakage_term_candidates(case))
-
-    assert "tailwindlabs headlessui" in terms
-    assert "completely unstyled" in terms
-    assert "visible outcome" not in terms
-    assert "verifies the visible outcome" not in terms
-    assert "outcome source repository" not in terms
-    assert "repository tailwindlabs" not in terms
-
-
-def test_candidate_terms_include_confirmed_intent_source_when_prompt_is_sparse() -> None:
-    terms = set(
-        leakage.case_leakage_term_candidates(
-            SimpleNamespace(
-                name="",
-                prompt="Create a greenfield proposal.",
-                confirmed_intent_markdown=(
-                    "# Product Intent Confirmation\n"
-                    "## Product story\n"
-                    "A quantum communication lab tracks entangled photon pairs and Bell inequality evidence.\n"
-                    "## Proof boundary\n"
-                    "It must avoid unsupported operational claims and show uncertainty or confidence limits.\n"
-                ),
-                required_terms=("bell inequality",),
-                leakage_terms=(),
-            )
-        )
-    )
-
-    assert "quantum communication" in terms
-    assert "entangled photon" in terms
-    assert any("bell inequality" in term for term in terms)
-    assert "unsupported operational claims" not in terms
-    assert "operational claims" not in terms
-    assert "uncertainty or confidence" not in terms
-
-
-def test_stale_declared_leakage_terms_do_not_mask_source_domain_terms() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                name="quantum communication lab",
-                prompt=(
-                    "Create a greenfield proposal for a quantum communication lab that records "
-                    "entangled photon pairs, Bell inequality checks, QBER thresholds, and CHSH "
-                    "review evidence."
-                ),
-                required_terms=("quantum", "qber"),
-                leakage_terms=("court interpreter",),
-            )
-        )
-    )
-
-    assert "court interpreter" not in terms
-    assert "quantum communication" in terms
-    assert any(term.startswith("bell inequality") for term in terms)
-
-
-def test_declared_leakage_terms_do_not_absorb_platform_native_governance_phrases() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                prompt=(
-                    "Create a ventilator event review workspace for ICU operators that preserves handoff evidence, "
-                    "tracks manual override exceptions, lets operators request review, "
-                    "and publishes readiness for the support team."
-                ),
-                required_terms=("icu", "override"),
-                leakage_terms=("ventilator event review",),
-            )
-        )
-    )
-
-    assert "ventilator event review" in terms
-    assert "handoff evidence" not in terms
-    assert "manual override" not in terms
-    assert "operators request" not in terms
-    assert "support team" not in terms
-
-
-def test_source_text_terms_skip_matrix_proof_vocabulary_that_is_not_domain_signal() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                prompt=(
-                    "Create a radio astronomy classifier for dispersion measure review where observers review telescope candidate events "
-                    "and compare finite-element simulations against bench-test controls."
-                ),
-                required_terms=("radio", "classifier", "finite"),
-                leakage_terms=("dispersion measure",),
-            )
-        )
-    )
-
-    assert "dispersion measure" in terms
-    assert "candidate events" not in terms
-    assert "simulations against" not in terms
-    assert "telescope candidate events" not in terms
-
-
-def test_source_text_terms_derive_distinctive_prompt_vocabulary_without_declared_terms() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                name="quantum communication lab",
-                prompt=(
-                    "Create a greenfield proposal for a quantum communication lab that records "
-                    "entangled photon pairs, Bell inequality checks, QBER thresholds, and CHSH "
-                    "review evidence."
-                ),
-                required_terms=("quantum", "qber"),
-                leakage_terms=(),
-            )
-        )
-    )
-
-    assert any(term.startswith("bell inequality") for term in terms)
-    assert "entangled photon" in terms
-    assert "quantum communication" in terms
-    assert "quantum" not in terms
-
-
-def test_source_text_terms_keep_domain_rich_phrases_without_declared_terms() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                prompt=(
-                    "Plan a tokamak experiment desk for plasma physicists to verify coil "
-                    "configuration, diagnostic calibration, interlock exceptions, and "
-                    "countdown telemetry evidence."
-                ),
-                required_terms=("tokamak", "plasma", "interlock"),
-                leakage_terms=(),
-            )
-        )
-    )
-
-    assert "diagnostic calibration" in terms
-    assert "calibration interlock" in terms
-    assert "plasma physicists" in terms
-    assert "countdown telemetry" in terms
-    assert "a tokamak experiment" not in terms
-
-
-def test_generic_required_anchors_do_not_reenter_leakage_custody_noise() -> None:
-    terms = leakage.case_leakage_terms(
-        SimpleNamespace(
-            required_terms=("artifact", "protocol", "sample", "interpreter", "model"),
-            leakage_terms=("lab sample custody",),
-        )
-    )
-
-    assert terms == ("lab sample custody",)
-
-
-def test_declared_low_entropy_evidence_phrases_do_not_become_platform_leak_sentinels() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                required_terms=("radio", "channel", "coverage", "inventory"),
-                leakage_terms=(
-                    "emergency radio channel",
-                    "court interpreter",
-                    "assignment confirmation",
-                    "coverage evidence",
-                    "inventory evidence",
-                    "delivery evidence",
-                    "manifest evidence",
-                    "session evidence",
-                ),
-            )
-        )
-    )
-
-    assert "emergency radio channel" in terms
-    assert "court interpreter" in terms
-    assert "assignment confirmation" in terms
-    assert "coverage evidence" not in terms
-    assert "inventory evidence" not in terms
-    assert "delivery evidence" not in terms
-    assert "manifest evidence" not in terms
-    assert "session evidence" not in terms
-
-
-def test_declared_short_platform_generic_phrases_do_not_become_leakage_sentinels() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                required_terms=("data", "flow", "lineage", "retention"),
-                leakage_terms=(
-                    "data flow",
-                    "artifact custody",
-                    "data retention policy",
-                    "feature store lineage",
-                    "court interpreter",
-                ),
-            )
-        )
-    )
-
-    assert "data flow" not in terms
-    assert "artifact custody" not in terms
-    assert "data retention policy" in terms
-    assert "feature store lineage" in terms
-    assert "court interpreter" in terms
-
-
-def test_domain_leakage_terms_accept_custom_matrix_cases_without_required_anchor_noise() -> None:
-    terms = set(
-        leakage.domain_leakage_terms(
-            (
-                SimpleNamespace(
-                    prompt="Coordinate xenobot culture transfer and organoid chamber evidence.",
-                    required_terms=("xenobot", "tribunal", "agent", "casebook"),
-                ),
-                SimpleNamespace(
-                    prompt="Compare neutrino observatory exposure logs before detector recalibration.",
-                    required_terms=("neutrino observatory", "release"),
-                ),
-            ),
-            include_historical=False,
-        )
-    )
-
-    assert "xenobot culture" in terms
-    assert "neutrino observatory" in terms
-    assert "tribunal" not in terms
-    assert "agent" not in terms
-    assert "casebook" not in terms
-    assert "release" not in terms
-
-
-def test_required_terms_do_not_create_platform_custody_false_positives() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                prompt=(
-                    "Plan wildfire evacuation review with smoke window forecasts, subtitle evidence notes, "
-                    "ballast crew timing, and ingredient substitution approvals."
-                ),
-                required_terms=("smoke", "subtitle", "ballast", "substitution"),
-                leakage_terms=(),
-            )
-        )
-    )
-
-    assert "smoke" not in terms
-    assert "subtitle" not in terms
-    assert "ballast" not in terms
-    assert "substitution" not in terms
-    assert any("wildfire" in term for term in terms)
-
-
-def test_source_text_terms_do_not_cross_case_field_boundaries() -> None:
-    terms = set(
-        leakage.case_leakage_terms(
-            SimpleNamespace(
-                name="geothermal drilling window planner",
-                prompt="Plan a new geothermal drilling board for borehole approval.",
-                required_terms=("geothermal", "drilling"),
-                leakage_terms=(),
-            )
-        )
-    )
-
-    assert "planner plan" not in terms
-    assert "geothermal drilling" in terms
-
-
-def test_explicit_leakage_terms_can_use_platform_words_inside_project_phrase() -> None:
-    terms = leakage.case_leakage_terms(
-        SimpleNamespace(
-            required_terms=("agent", "tool", "tribunal"),
-            leakage_terms=("agent tool permission tribunal",),
-        )
-    )
-
-    assert terms == ("agent tool permission tribunal",)
-
-
-def test_scan_repo_blocks_fixture_terms_in_platform_code(tmp_path: Path) -> None:
-    platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
-    platform_file.parent.mkdir(parents=True)
-    platform_file.write_text('PROMPT = "quantum onboarding should never live here"\\n', encoding="utf-8")
-
-    findings = leakage.scan_repo(tmp_path, terms=("quantum",))
-
-    assert findings == (
-        leakage.LeakageFinding(location="src/odylith/runtime/example.py", term="quantum", line=1),
-    )
-
-
-def test_current_platform_source_does_not_carry_historical_conflict_domain_phrase() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
-
-    assert leakage.scan_repo(repo_root, terms=("conflict of interest",)) == ()
-
-
-def test_current_platform_source_does_not_carry_recent_replay_domain_phrase() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
-
-    assert leakage.scan_repo(repo_root, terms=("single cell perturbation",)) == ()
-
-
-def test_current_platform_source_does_not_carry_request_meta_replay_phrase() -> None:
-    repo_root = Path(__file__).resolve().parents[3]
-
-    assert (
-        leakage.scan_repo(
-            repo_root,
-            terms=(
-                "request uses record both as an action and as a governed object",
-                "request uses record as both a verb and a governed object",
-                "request uses record as both a noun and a governed object",
-                "request says record is both a noun and a governed object",
-            ),
-        )
-        == ()
-    )
-
-
-def test_scan_repo_allows_fixture_terms_in_governance_evidence(tmp_path: Path) -> None:
-    evidence_file = tmp_path / "odylith" / "casebook" / "bugs" / "repro.md"
-    evidence_file.parent.mkdir(parents=True)
-    evidence_file.write_text("quantum failure reproduced here\\n", encoding="utf-8")
-
-    assert leakage.scan_repo(tmp_path, terms=("quantum",)) == ()
-
-
-def test_scan_repo_blocks_fixture_terms_in_component_forensics(tmp_path: Path) -> None:
-    forensics_file = (
-        tmp_path
-        / "odylith"
-        / "registry"
-        / "source"
-        / "components"
-        / "release"
-        / "FORENSICS.v1.json"
-    )
-    forensics_file.parent.mkdir(parents=True)
-    forensics_file.write_text(
-        '{"timeline":[{"summary":"quantum scenario copied into Registry"}]}\\n',
-        encoding="utf-8",
-    )
-
-    findings = leakage.scan_repo(tmp_path, terms=("quantum",))
-
-    assert findings == (
-        leakage.LeakageFinding(
-            location="odylith/registry/source/components/release/FORENSICS.v1.json",
-            term="quantum",
-            line=1,
-        ),
-    )
-
-
-def test_scan_repo_blocks_fixture_terms_in_root_codex_guidance(tmp_path: Path) -> None:
-    guidance_file = tmp_path / ".codex" / "agents" / "example.toml"
-    guidance_file.parent.mkdir(parents=True)
-    guidance_file.write_text('description = "digestive health must not live here"\\n', encoding="utf-8")
-
-    findings = leakage.scan_repo(tmp_path, terms=("digestive health",))
-
-    assert findings == (
-        leakage.LeakageFinding(location=".codex/agents/example.toml", term="digestive health", line=1),
-    )
-
-
-def test_scan_repo_blocks_fixture_terms_in_docs(tmp_path: Path) -> None:
-    docs_file = tmp_path / "docs" / "operator.md"
-    docs_file.parent.mkdir(parents=True)
-    docs_file.write_text("wearable app should stay out of platform docs\\n", encoding="utf-8")
-
-    findings = leakage.scan_repo(tmp_path, terms=("wearable app",))
-
-    assert findings == (
-        leakage.LeakageFinding(location="docs/operator.md", term="wearable app", line=1),
-    )
-
-
-def test_scan_repo_blocks_fixture_terms_in_release_scripts(tmp_path: Path) -> None:
-    script = tmp_path / "scripts" / "release" / "proof.py"
-    script.parent.mkdir(parents=True)
-    script.write_text('PROMPT = "quantum onboarding should never live here"\\n', encoding="utf-8")
-
-    findings = leakage.scan_repo(tmp_path, terms=("quantum",))
-
-    assert findings == (
-        leakage.LeakageFinding(location="scripts/release/proof.py", term="quantum", line=1),
-    )
-
-
-def test_scan_repo_allows_release_fixture_catalog_vocabulary(tmp_path: Path) -> None:
-    fixture = tmp_path / "scripts" / "release" / "greenfield_preconfirm_matrix_cases.py"
-    fixture.parent.mkdir(parents=True)
-    fixture.write_text('PROMPT = "quantum communication fixture lives here"\\n', encoding="utf-8")
-
-    assert leakage.scan_repo(tmp_path, terms=("quantum communication",)) == ()
-
-
-def test_scan_repo_blocks_wrapped_phrase_leakage(tmp_path: Path) -> None:
-    platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
-    platform_file.parent.mkdir(parents=True)
-    platform_file.write_text('VALUE = "personalized\nnotification delivery"\\n', encoding="utf-8")
-
-    findings = leakage.scan_repo(tmp_path, terms=("personalized notification delivery",))
-
-    assert findings == (
-        leakage.LeakageFinding(
-            location="src/odylith/runtime/example.py",
-            term="personalized notification delivery",
-            line=1,
-        ),
-    )
-
-
-def test_scan_repo_blocks_identifier_shaped_phrase_leakage(tmp_path: Path) -> None:
-    platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
-    platform_file.parent.mkdir(parents=True)
-    platform_file.write_text(
-        "securityDisclosureCouncilPrompt = True\n"
-        "securitydisclosurecouncilprompt = True\n",
-        encoding="utf-8",
-    )
-
-    findings = leakage.scan_repo(tmp_path, terms=("security disclosure council",))
-
-    assert findings == (
-        leakage.LeakageFinding(
-            location="src/odylith/runtime/example.py",
-            term="security disclosure council",
-            line=1,
-        ),
-        leakage.LeakageFinding(
-            location="src/odylith/runtime/example.py",
-            term="security disclosure council",
-            line=2,
-        ),
-    )
-
-
-def test_scan_dist_blocks_fixture_terms_inside_runtime_wheel(tmp_path: Path) -> None:
-    wheel = tmp_path / "odylith-0.1.15-py3-none-any.whl"
-    with zipfile.ZipFile(wheel, "w") as zf:
-        zf.writestr("odylith/runtime/example.py", 'VALUE = "wafer custody"\\n')
-        zf.writestr("tests/test_fixture.py", 'VALUE = "wafer custody"\\n')
-
-    findings = leakage.scan_dist(tmp_path, terms=("wafer",))
-
-    assert findings == (
-        leakage.LeakageFinding(
-            location="wheel:odylith-0.1.15-py3-none-any.whl:odylith/runtime/example.py",
-            term="wafer",
-            line=1,
-        ),
-    )
-
-
-def test_scan_dist_blocks_fixture_terms_inside_runtime_tarball(tmp_path: Path) -> None:
-    archive = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
-    payload = tmp_path / "payload" / "runtime" / "lib" / "python3.13" / "site-packages" / "odylith"
-    runtime_file = payload / "runtime" / "example.py"
-    runtime_file.parent.mkdir(parents=True)
-    runtime_file.write_text('VALUE = "fifa tracker must not be shipped"\\n', encoding="utf-8")
-    with tarfile.open(archive, "w:gz") as tf:
-        tf.add(tmp_path / "payload" / "runtime", arcname="runtime")
-
-    findings = leakage.scan_dist(tmp_path, terms=("fifa tracker",))
-
-    assert findings == (
-        leakage.LeakageFinding(
-            location=(
-                "tar:odylith-runtime-linux-x86_64.tar.gz:"
-                "runtime/lib/python3.13/site-packages/odylith/runtime/example.py"
-            ),
-            term="fifa tracker",
-            line=1,
-        ),
-    )
-
-
-def test_scan_dist_ignores_third_party_runtime_tarball_files(tmp_path: Path) -> None:
-    archive = tmp_path / "odylith-runtime-linux-x86_64.tar.gz"
-    payload = tmp_path / "payload" / "runtime" / "lib" / "python3.13" / "site-packages" / "third_party"
-    third_party_file = payload / "example.py"
-    third_party_file.parent.mkdir(parents=True)
-    third_party_file.write_text('VALUE = "fifa tracker in dependency fixture"\\n', encoding="utf-8")
-    with tarfile.open(archive, "w:gz") as tf:
-        tf.add(tmp_path / "payload" / "runtime", arcname="runtime")
-
-    assert leakage.scan_dist(tmp_path, terms=("fifa tracker",)) == ()
-
-
-def test_scan_dist_allows_matrix_proof_json_as_evidence(tmp_path: Path) -> None:
-    proof = tmp_path / "greenfield-preconfirm-matrix-20260629.v1.json"
-    proof.write_text('{"case": "quantum communication lab"}\\n', encoding="utf-8")
-
-    assert leakage.scan_dist(tmp_path, terms=("quantum",)) == ()
-
-
-def test_scan_dist_allows_matrix_campaign_json_as_evidence(tmp_path: Path) -> None:
-    proof = tmp_path / "greenfield-matrix-campaign.v1.json"
-    proof.write_text('{"stdout_excerpt": "water rights drought allocation passed"}\\n', encoding="utf-8")
-
-    assert leakage.scan_dist(tmp_path, terms=("drought allocation",)) == ()
-
-
-def test_scan_dist_allows_rescue_proof_json_as_evidence(tmp_path: Path) -> None:
-    proof = tmp_path / "greenfield-rescue-proof-20260630.v1.json"
-    proof.write_text('{"case": "cross organization disclosure council"}\\n', encoding="utf-8")
-
-    assert leakage.scan_dist(tmp_path, terms=("cross organization disclosure council",)) == ()
-
-
-def test_main_returns_failed_status_for_platform_leak(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
-    platform_file.parent.mkdir(parents=True)
-    platform_file.write_text('PROMPT = "qber must not be hardcoded"\\n', encoding="utf-8")
-
-    exit_code = leakage.main(["--repo-root", str(tmp_path)])
-
-    assert exit_code == 1
-    assert "platform domain leakage check failed" in capsys.readouterr().err
+    sentinels = leakage.load_custody_sentinels(repo_root=repo_root)
+    assert "Claim Desk" in sentinels
+    assert leakage.scan_platform_custody(repo_root=repo_root, sentinels=sentinels) == ()

@@ -13,8 +13,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.common.prose_grammar import finite_action_clause
-from odylith.runtime.domain_intelligence.greenfield_phrase_quality import reference_relation_description
 from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import component_spec_rendering
 from odylith.runtime.governance import owned_surface_refresh
@@ -22,41 +20,8 @@ from odylith.runtime.governance import owned_surface_refresh
 _REGISTRY_PATH_RELATIVE = Path("odylith/registry/source/component_registry.v1.json")
 _COMPONENTS_ROOT_RELATIVE = Path("odylith/registry/source/components")
 _SLUGIFY_RE = re.compile(r"[^a-z0-9]+")
-_FINITE_ACTION_LEADS = frozenset(
-    {
-        "accept",
-        "accepts",
-        "apply",
-        "applies",
-        "block",
-        "blocks",
-        "calculate",
-        "calculates",
-        "capture",
-        "captures",
-        "combine",
-        "combines",
-        "compute",
-        "computes",
-        "evaluate",
-        "evaluates",
-        "maintain",
-        "maintains",
-        "own",
-        "owns",
-        "present",
-        "presents",
-        "produce",
-        "produces",
-        "record",
-        "records",
-        "show",
-        "shows",
-        "store",
-        "stores",
-        "track",
-        "tracks",
-    }
+_COMPONENT_KIND_SUFFIXES = frozenset(
+    {"adapter", "client", "component", "engine", "module", "service", "surface", "system"}
 )
 
 
@@ -118,80 +83,13 @@ def _clean_sequence(values: Sequence[str] | str) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
 
-def _responsibility_clause(value: str) -> str:
-    text = component_spec_rendering.sentence_fragment(value)
-    if not text:
-        return ""
-    clauses = [
-        _finite_responsibility_clause(part)
-        for part in re.split(r"\s*;\s*", text)
-        if part.strip()
-    ]
-    clauses = [clause for clause in clauses if clause]
-    if not clauses:
-        return ""
-    if len(clauses) == 1:
-        return clauses[0]
-    if len(clauses) == 2:
-        return f"{clauses[0]} and {clauses[1]}"
-    return f"{', '.join(clauses[:-1])}, and {clauses[-1]}"
-
-
-def _finite_responsibility_clause(value: str) -> str:
-    text = component_spec_rendering.sentence_fragment(value)
-    if not text:
-        return ""
-    return finite_action_clause(text, default_verb="owns", default_single_token=False)
-
-
 def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
+    del responsibility
     label_text = component_spec_rendering.sentence_fragment(label)
-    label_focus = re.sub(
-        r"\b(?:adapter|service|engine|surface|client|module|system|component)\b$",
-        "",
-        label_text,
-        flags=re.IGNORECASE,
-    ).strip(" .")
-    text = component_spec_rendering.sentence_fragment(responsibility)
-    first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
-    relation = reference_relation_description(first_clause)
-    if relation:
-        return relation
-    if label_focus and _starts_with_finite_action(first_clause):
-        action_object = _finite_action_object(first_clause)
-        if action_object:
-            return reference_relation_description(action_object) or action_object
-        return label_focus
-    first_clause = re.split(r"\b(?:accepts?|produces?|prevents?|blocks?)\b", first_clause, maxsplit=1, flags=re.IGNORECASE)[0]
-    first_clause = re.sub(
-        r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|holds?|tracks?|keeps?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
-        "",
-        first_clause,
-        flags=re.IGNORECASE,
-    ).strip(" .,:;")
-    relation = reference_relation_description(first_clause)
-    if relation:
-        return relation
-    if first_clause and 2 <= len(first_clause.split()) <= 16 and not re.search(r"\b(?:actor identity|validation context|upstream handoff|blocker signal|downstream handoff)\b", first_clause, re.IGNORECASE):
-        return first_clause
-    return label_focus or label_text or "this boundary"
-
-
-def _starts_with_finite_action(value: str) -> bool:
-    words = component_spec_rendering.sentence_fragment(value).split()
-    return bool(words and words[0].strip(" .,;:").casefold() in _FINITE_ACTION_LEADS)
-
-
-def _finite_action_object(value: str) -> str:
-    words = component_spec_rendering.sentence_fragment(value).split()
-    if len(words) < 3 or words[0].strip(" .,;:").casefold() not in _FINITE_ACTION_LEADS:
-        return ""
-    text = " ".join(words[1:]).strip(" .,:;")
-    if not (2 <= len(text.split()) <= 16):
-        return ""
-    if re.search(r"\b(?:actor identity|validation context|upstream handoff|blocker signal|downstream handoff)\b", text, re.IGNORECASE):
-        return ""
-    return text
+    words = label_text.strip(" .").split()
+    if words and words[-1].casefold() in _COMPONENT_KIND_SUFFIXES:
+        words.pop()
+    return " ".join(words).strip() or label_text or "this boundary"
 
 
 def _public_what_it_is(*, label: str, kind: str, responsibility: str) -> str:

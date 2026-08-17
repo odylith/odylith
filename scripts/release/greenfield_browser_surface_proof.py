@@ -8,7 +8,6 @@ from urllib.parse import quote
 from urllib.parse import urlparse
 
 from local_release_smoke import _serve_directory
-from odylith.runtime.artifact_quality.greenfield_project_judgment import project_story_semantic_issues
 
 
 BROWSER_SURFACE_PROOF_SCOPE = "per_case_headless_generated_surface_state_matrix"
@@ -169,6 +168,18 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
         project_state = page.locator("#pane-project").evaluate(
             """(node) => {
                 const prompts = Array.from(node.querySelectorAll(".project-host-prompt"));
+                const promptRows = prompts.map((item) => ({
+                  step_id: String(item.dataset.stepId || "").trim(),
+                  label: String(item.querySelector("h4")?.innerText || "").trim(),
+                  when: String(item.querySelector("p")?.innerText || "").trim(),
+                  prompt: String(item.querySelector("code")?.innerText || "").trim(),
+                  result: String(
+                    item.querySelector(".project-host-prompt-result")?.innerText || ""
+                  ).replace(/^Produces:\\s*/, "").trim(),
+                  stop: String(
+                    item.querySelector(".project-host-prompt-stop")?.innerText || ""
+                  ).replace(/^Stops:\\s*/, "").trim()
+                }));
                 const storyBodies = Array.from(node.querySelectorAll(".project-story-contract-card p"))
                   .map((item) => String(item.innerText || "").trim())
                   .filter(Boolean);
@@ -199,6 +210,7 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 const text = String(node.innerText || "");
                 return {
                   promptCount: prompts.length,
+                  promptRows,
                   storyBodyCount: storyBodies.length,
                   distinctStoryBodyCount: new Set(
                     storyBodies.map((body) => body.toLocaleLowerCase())
@@ -207,13 +219,6 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                   clippedTextCount: clippedText.length,
                   hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
                   hasBlankState: text.includes("Project not defined yet"),
-                  hasImplementationPrompts: [
-                    "Choose implementation language",
-                    "Create first implementation plan",
-                    "Build smallest runnable slice",
-                    "Add tests and proof",
-                    "Refresh governed records"
-                  ].every((label) => text.includes(label)),
                   maxPromptOverflow: prompts.reduce(
                     (max, card) => Math.max(max, card.scrollWidth - card.clientWidth),
                     0
@@ -229,10 +234,16 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 const prompts = Array.isArray(project.host_handoff_prompts)
                   ? project.host_handoff_prompts
                   : [];
+                const storyRows = project && project.product_story
+                  && Array.isArray(project.product_story.release_contract)
+                  ? project.product_story.release_contract
+                  : [];
                 return {
                   origin: project && project.projection && project.projection.origin || "",
                   promptCount: prompts.length,
-                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length
+                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length,
+                  promptRows: prompts,
+                  storyRows
                 };
             }"""
         )
@@ -244,22 +255,22 @@ def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: 
                 rendered_prompt_count=int(project_state.get("promptCount", 0) if isinstance(project_state, dict) else 0),
                 has_prompt_grid=bool(project_state.get("hasPromptGrid", False) if isinstance(project_state, dict) else False),
                 has_blank_state=bool(project_state.get("hasBlankState", False) if isinstance(project_state, dict) else False),
-                has_implementation_prompts=bool(
-                    project_state.get("hasImplementationPrompts", False) if isinstance(project_state, dict) else False
-                ),
                 max_prompt_overflow=int(project_state.get("maxPromptOverflow", 0) if isinstance(project_state, dict) else 0),
                 pane_overflow=int(project_state.get("paneOverflow", 0) if isinstance(project_state, dict) else 0),
-                rendered_story_body_count=int(
-                    project_state.get("storyBodyCount", 0) if isinstance(project_state, dict) else 0
-                ),
-                distinct_story_body_count=int(
-                    project_state.get("distinctStoryBodyCount", 0) if isinstance(project_state, dict) else 0
-                ),
                 clipped_text_count=int(
                     project_state.get("clippedTextCount", 0) if isinstance(project_state, dict) else 0
                 ),
-                story_rows=(
+                rendered_story_rows=(
                     project_state.get("storyRows", ()) if isinstance(project_state, dict) else ()
+                ),
+                payload_story_rows=(
+                    payload_state.get("storyRows", ()) if isinstance(payload_state, dict) else ()
+                ),
+                rendered_prompt_rows=(
+                    project_state.get("promptRows", ()) if isinstance(project_state, dict) else ()
+                ),
+                payload_prompt_rows=(
+                    payload_state.get("promptRows", ()) if isinstance(payload_state, dict) else ()
                 ),
             )
         )
@@ -279,42 +290,84 @@ def _project_state_assertion_issues(
     rendered_prompt_count: int,
     has_prompt_grid: bool,
     has_blank_state: bool,
-    has_implementation_prompts: bool,
     max_prompt_overflow: int,
     pane_overflow: int,
-    rendered_story_body_count: int = 5,
-    distinct_story_body_count: int = 5,
     clipped_text_count: int = 0,
-    story_rows: Any = (),
+    rendered_story_rows: Any = (),
+    payload_story_rows: Any = (),
+    rendered_prompt_rows: Any = (),
+    payload_prompt_rows: Any = (),
 ) -> tuple[str, ...]:
     issues: list[str] = []
     if payload_origin != "accepted greenfield project":
         issues.append("browser surface project payload is not accepted greenfield project state")
-    if payload_prompt_count < 5:
-        issues.append("browser surface project payload exposes fewer than five implementation prompts")
+    if payload_prompt_count < 1:
+        issues.append("browser surface project payload exposes no graph-bound handoff prompts")
     if empty_payload_prompts:
         issues.append("browser surface project payload contains empty implementation prompt text")
-    if rendered_prompt_count < 5:
-        issues.append("browser surface project rendered fewer than five implementation prompt cards")
+    if rendered_prompt_count < 1:
+        issues.append("browser surface project rendered no graph-bound handoff prompt cards")
     if not has_prompt_grid:
         issues.append("browser surface project did not render the implementation prompt grid")
     if has_blank_state:
         issues.append("browser surface project rendered the blank project state after commit-only create")
-    if not has_implementation_prompts:
-        issues.append("browser surface project did not render the expected implementation prompt labels")
+    rendered_prompts = _typed_prompt_rows(rendered_prompt_rows)
+    payload_prompts = _typed_prompt_rows(payload_prompt_rows)
+    if rendered_prompts != payload_prompts:
+        issues.append("browser surface project handoff prompts drift from the accepted typed dashboard")
+    prompt_ids = [row[0] for row in payload_prompts]
+    if len(set(prompt_ids)) != len(prompt_ids):
+        issues.append("browser surface project repeats a typed handoff prompt step")
+    if any(not field for row in payload_prompts for field in row):
+        issues.append("browser surface project contains an incomplete typed handoff prompt")
     if max_prompt_overflow > 4:
         issues.append("browser surface project implementation prompt cards overflow their containers")
     if pane_overflow > 4:
         issues.append("browser surface project pane overflows horizontally")
-    if rendered_story_body_count != 5:
-        issues.append("browser surface project did not render all five Product Story bodies")
-    if distinct_story_body_count != rendered_story_body_count:
-        issues.append("browser surface project repeated Product Story body copy")
-    rows = [row for row in story_rows if isinstance(row, dict)] if isinstance(story_rows, (list, tuple)) else []
-    issues.extend(project_story_semantic_issues(rows))
+    rendered = _typed_story_rows(rendered_story_rows)
+    payload = _typed_story_rows(payload_story_rows)
+    if rendered != payload:
+        issues.append("browser surface project story cards drift from the accepted typed dashboard")
+    required_slots = {"workflow_facts", "visible_outputs", "component_boundaries"}
+    observed_slots = {row[1] for row in payload}
+    if not required_slots <= observed_slots:
+        issues.append("browser surface project omits required typed graph story cards")
+    if len(observed_slots) != len(payload):
+        issues.append("browser surface project repeats a typed graph story card")
+    if any(not row[2] for row in payload):
+        issues.append("browser surface project contains an empty typed graph story card")
     if clipped_text_count:
         issues.append("browser surface project clips visible text")
     return tuple(issues)
+
+
+def _typed_story_rows(value: Any) -> tuple[tuple[str, str, str], ...]:
+    rows = value if isinstance(value, (list, tuple)) else ()
+    return tuple(
+        (
+            str(row.get("label") or "").strip().casefold(),
+            str(row.get("semantic_slot") or "").strip(),
+            str(row.get("body") or "").strip(),
+        )
+        for row in rows
+        if isinstance(row, dict)
+    )
+
+
+def _typed_prompt_rows(value: Any) -> tuple[tuple[str, str, str, str, str, str], ...]:
+    rows = value if isinstance(value, (list, tuple)) else ()
+    return tuple(
+        (
+            str(row.get("step_id") or "").strip(),
+            str(row.get("label") or "").strip(),
+            str(row.get("when") or "").strip(),
+            str(row.get("prompt") or "").strip(),
+            str(row.get("result") or "").strip(),
+            str(row.get("stop") or row.get("stop_condition") or "").strip(),
+        )
+        for row in rows
+        if isinstance(row, dict)
+    )
 
 
 def _invalid_route_recovery_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:

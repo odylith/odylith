@@ -101,10 +101,18 @@ For an empty or thin repo where the project exists mostly as intent, use the
 greenfield proposal lane before source-backed governance exists:
 
 ```bash
-./.odylith/bin/odylith greenfield propose --repo-root . --prompt "<project intent>"
+./.odylith/bin/odylith greenfield semantic-intent-request --repo-root . --prompt "<project intent>"
+# Author the returned source-cited packet, then run its exact next invocation.
 ```
 
-`propose` compiles a typed ProductCreateTransaction before it shows the final command rail.
+The active Codex or Claude host uses the simplest evidence-supported reasoning mechanism on
+the exact evidence, assembles the temporary typed graph, and independently challenges it for unsupported additions, polarity,
+ownership, endpoint, and component-boundary errors. A citation proves custody, not
+entailment. The outcome and proof laws are fixed; the authoring mechanism remains provisional.
+Odylith treats that packet as an
+untrusted handoff, deterministically verifies its typed graph, and compiles a
+ProductCreateTransaction before it shows the final command rail. The runtime does not infer
+product meaning from prose or repair the host packet with regexes or retry loops.
 The visible preview is a sectioned view of the transaction-bound facts: Product story,
 State object, First complete path, Human actors, systems, assumptions, ambiguities, and
 proof boundary. It ends with one clear `## Choose one command` block:
@@ -121,8 +129,10 @@ not change governed product records. After **`CONFIRM <hash>`**, create only ver
 compiler identity, and unchanged repo preconditions; applies the sealed write set under a
 rollback guard; validates exact readback; and reports success or an environment/IO failure.
 It does not parse product Markdown, call a host model, generate artifacts, or repair prose
-after confirmation. Do not inspect Odylith source files, `.odylith`, bundle files, Python
-modules, or local examples to discover schema fields. Do not hand-author or repair proposal
+after confirmation. Use `semantic-intent-request`, not Odylith source files, `.odylith`,
+bundle files, Python modules, or local examples, to discover packet fields, exact evidence,
+and the next invocation. For EDIT, use `semantic-intent-request --supersedes-hash <hash>
+--edit "<corrections>"` so sealed prior evidence is preserved. Do not hand-author or repair proposal
 JSON, narrate parser/schema retries, or request a second confirmation.
 
 ```bash

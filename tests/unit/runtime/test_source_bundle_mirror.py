@@ -614,3 +614,30 @@ def test_github_issue_pipeline_guidance_stays_maintainer_only() -> None:
     assert "Do not mirror this guideline into consumer-safe" in maintainer_guideline.read_text(encoding="utf-8")
     assert "maintainer-only skill" in maintainer_triage.read_text(encoding="utf-8")
     assert "maintainer-only skill" in maintainer_closeout.read_text(encoding="utf-8")
+
+
+def test_greenfield_skill_requires_prompt_only_critic_before_graph_author() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    source = repo_root / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md"
+    bundle = (
+        repo_root
+        / "src"
+        / "odylith"
+        / "bundle"
+        / "assets"
+        / "odylith"
+        / "skills"
+        / "odylith-greenfield-governance"
+        / "SKILL.md"
+    )
+
+    assert source.read_bytes() == bundle.read_bytes()
+    text = source.read_text(encoding="utf-8")
+    normalized = " ".join(text.split())
+    critic = normalized.index("prompt-only materiality critic")
+    author = normalized.index("distinct graph author")
+    assert critic < author
+    assert "The author may not rewrite the critic's assessment." in normalized
+    assert "never repair from a validator error" in normalized
+    assert "not a permanent architectural commitment" in normalized
+    assert "Use axis-first host reasoning" not in normalized

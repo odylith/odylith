@@ -6,20 +6,17 @@ from collections.abc import Mapping
 import hashlib
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from odylith.install.fs import atomic_write_text
 from odylith.install.fs import fsync_directory
+from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
 ACTIVE_GENERATION_STATE_VERSION = "odylith.greenfield.active-generation.v1"
 ACTIVE = "active"
 SUPERSEDED = "superseded"
 NONE = "none"
-_DIGEST = re.compile(r"[0-9a-f]{64}")
-
-
 def active_generation_state_path(repo_root: Path) -> Path:
     return Path(repo_root).expanduser().resolve() / ".odylith/runtime/greenfield/active-generation.v1.json"
 
@@ -182,7 +179,7 @@ def _record_hash(state: Mapping[str, Any]) -> str:
 
 def _require_digest(value: Any, *, label: str) -> str:
     token = str(value or "").strip()
-    if not _DIGEST.fullmatch(token):
+    if not is_sha256_digest(token):
         raise ValueError(f"Greenfield {label} must be a SHA-256 value")
     return token
 

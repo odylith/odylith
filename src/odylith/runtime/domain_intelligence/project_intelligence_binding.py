@@ -8,7 +8,7 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import mapping_copy
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.common.text_values import clean_text
 
 PROJECT_INTELLIGENCE_BINDING_KEY = "project_intelligence_binding"
 ARTIFACT_DERIVATION_KEY = "artifact_derivation"

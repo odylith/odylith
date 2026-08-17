@@ -47,6 +47,37 @@ def _receipt_payload(*, transaction_hash: str, product_facts_hash: str, write_se
     }
 
 
+def _semantic_case(module):  # noqa: ANN001
+    return module.load_semantic_recovery_case()
+
+
+def _semantic_authority(case, *, semantic_intent=None, evidence_sha256=None):  # noqa: ANN001
+    packet = case.packet
+    return {
+        "version": "odylith.product-intent-authority.v8",
+        "origin": "verified_semantic_intent_packet",
+        "source_format": "semantic_intent_packet",
+        "product_facts_sha256": "c" * 64,
+        "evidence_sha256": evidence_sha256 or packet["evidence_sha256"],
+        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v3",
+        "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v2",
+        "semantic_intent_authoring_request_version": (
+            "odylith.greenfield.semantic-intent-authoring-request.v3"
+        ),
+        "semantic_intent_authoring_contract_sha256": packet[
+            "authoring_contract_sha256"
+        ],
+        "semantic_materiality_assessment": packet["materiality_assessment"],
+        "semantic_materiality_assessment_sha256": packet[
+            "materiality_assessment_sha256"
+        ],
+        "semantic_materiality_critic_run": packet["critic_run"],
+        "semantic_intent_author_run": packet["author_run"],
+        "semantic_intent": semantic_intent or packet["semantic_intent"],
+        "evidence_sources": {"operator_prompt": case.prompt, "operator_edit": ""},
+    }
+
+
 def _generation_observation(
     *,
     transaction_hash: str = "a" * 64,
@@ -332,8 +363,9 @@ def test_journal_receipt_identity_requires_a_bound_durable_receipt() -> None:
         raise AssertionError("journal receipt identity should fail without the durable commit receipt")
 
 
-def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp_path: Path, monkeypatch) -> None:
+def test_compile_transaction_uses_the_exact_prompt_and_semantic_packet(tmp_path: Path, monkeypatch) -> None:
     module = _module()
+    case = _semantic_case(module)
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     transaction_path = tmp_path / transaction_file
     transaction_path.parent.mkdir(parents=True)
@@ -341,16 +373,7 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
         json.dumps(
             {
                 "transaction_hash": "a" * 64,
-                "intent_authority": {
-                    "source_format": "operator_prompt_with_edit_evidence",
-                    "product_facts_sha256": "c" * 64,
-                    "markdown_source_sha256": module.hashlib.sha256(
-                        module.combined_prompt_evidence_source(
-                            prompt="Create the exact recovery-bound product.",
-                            edit_evidence="# Confirmed Recovery Intent\n\n## State\nA durable record.",
-                        ).encode("utf-8")
-                    ).hexdigest(),
-                },
+                    "intent_authority": _semantic_authority(case),
                 "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
             }
         ),
@@ -375,13 +398,6 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
             stderr="",
         ),
     )
-    case = module.GreenfieldMatrixCase(
-        name="bound recovery case",
-        prompt="Create the exact recovery-bound product.",
-        required_terms=("recovery",),
-        confirmed_intent_markdown="# Confirmed Recovery Intent\n\n## State\nA durable record.",
-    )
-
     compiled = module._compile_transaction(  # noqa: SLF001
         repo_root=tmp_path,
         env={"PATH": "/usr/bin"},
@@ -391,11 +407,14 @@ def test_compile_transaction_uses_the_exact_case_prompt_and_confirmed_intent(tmp
     assert compiled.product_facts_hash == "c" * 64
     command = captured["command"]
     assert command[command.index("--prompt") + 1] == case.prompt
-    assert command[command.index("--edit") + 1] == case.confirmed_intent_markdown
+    packet_path = Path(command[command.index("--semantic-intent-file") + 1])
+    assert json.loads(packet_path.read_text(encoding="utf-8")) == case.packet
+    assert "--edit" not in command
 
 
-def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_evidence(tmp_path: Path, monkeypatch) -> None:
+def test_compile_transaction_rejects_an_authority_that_changes_the_graph(tmp_path: Path, monkeypatch) -> None:
     module = _module()
+    case = _semantic_case(module)
     transaction_file = ".odylith/runtime/greenfield/product-create-transaction.v1.json"
     transaction_path = tmp_path / transaction_file
     transaction_path.parent.mkdir(parents=True)
@@ -403,11 +422,10 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
         json.dumps(
             {
                 "transaction_hash": "a" * 64,
-                "intent_authority": {
-                    "source_format": "operator_prompt_with_edit_evidence",
-                    "product_facts_sha256": "c" * 64,
-                    "markdown_source_sha256": "f" * 64,
-                },
+                    "intent_authority": _semantic_authority(
+                        case,
+                        semantic_intent={**case.packet["semantic_intent"], "status": "clarification_required"},
+                    ),
                 "prewrite_package": {"repository_write_set": {"write_set_hash": "b" * 64}},
             }
         ),
@@ -430,30 +448,18 @@ def test_compile_transaction_rejects_an_authority_that_does_not_bind_edit_eviden
             stderr="",
         ),
     )
-    case = module.GreenfieldMatrixCase(
-        name="bound recovery case",
-        prompt="Create the exact recovery-bound product.",
-        required_terms=("recovery",),
-        confirmed_intent_markdown="# Confirmed Recovery Intent\n\n## State\nA durable record.",
-    )
-
     try:
         module._compile_transaction(repo_root=tmp_path, env={"PATH": "/usr/bin"}, case=case)  # noqa: SLF001
     except RuntimeError as exc:
-        assert "did not bind the exact prompt and edit evidence" in str(exc)
+        assert "changed the Semantic Intent graph" in str(exc)
     else:
-        raise AssertionError("unbound edit evidence should fail installed recovery compilation")
+        raise AssertionError("changed Semantic Intent graph should fail installed recovery compilation")
 
 
 def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
     module = _module()
-    case = module.GreenfieldMatrixCase(
-        name="bound recovery case",
-        prompt="Create the exact recovery-bound product.",
-        required_terms=("recovery",),
-        case_id="release-bound-recovery",
-    )
-    recovery_case = module.recovery_case_evidence(case)
+    case = _semantic_case(module)
+    recovery_case = module.semantic_recovery_case_evidence(case)
     proof = module.GreenfieldInstalledCommitRecoveryProof(
         status="passed",
         issues=(),
@@ -511,7 +517,7 @@ def test_recovery_proof_payload_is_a_falsifiable_release_record() -> None:
     assert proof.to_dict() == {
         "status": "passed",
         "scope": "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback",
-        "recovery_case_scope": "one_selected_campaign_case_all_recovery_phases",
+        "recovery_case_scope": "semantic-intent-v3-release-fixture",
         "issues": [],
         "sigkill_returncode": -9,
         "recovery_returncode": 0,
@@ -605,12 +611,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     install_script = dist_dir / "install.sh"
     install_script.parent.mkdir()
     install_script.write_text("#!/usr/bin/env bash\n", encoding="utf-8")
-    case = module.GreenfieldMatrixCase(
-        name="bound recovery case",
-        prompt="Create the exact recovery-bound product.",
-        required_terms=("recovery",),
-        case_id="campaign-recovery-case",
-    )
+    case = _semantic_case(module)
     captured_cases: list[object] = []
 
     class _Server:
@@ -741,7 +742,7 @@ def test_recovery_proof_passes_the_same_case_to_every_recovery_phase(tmp_path: P
     assert "installed recovery phases did not retain the same sealed Product Intent facts hash" in mismatch.issues
     assert all(captured is case for captured in captured_cases)
     assert proof.recovery_case["id"] == case.case_id
-    assert proof.recovery_case["binding_scope"] == "campaign-case-v1"
+    assert proof.recovery_case["binding_scope"] == "semantic-intent-v3-release-fixture"
 
 
 def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_path: Path, monkeypatch) -> None:
@@ -817,11 +818,7 @@ def test_installed_conflict_phase_preserves_operator_mutation_and_snapshot(tmp_p
         run_root=tmp_path,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
-        case=module.GreenfieldMatrixCase(
-            name="bound recovery case",
-            prompt="Create the exact recovery-bound product.",
-            required_terms=("recovery",),
-        ),
+        case=_semantic_case(module),
     )
 
     assert facts == {
@@ -901,11 +898,7 @@ def test_sigkill_phase_reports_the_observed_success_receipt_hash(tmp_path: Path,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
         version="0.1.15",
-        case=module.GreenfieldMatrixCase(
-            name="bound recovery case",
-            prompt="Create the exact recovery-bound product.",
-            required_terms=("recovery",),
-        ),
+        case=_semantic_case(module),
     )
 
     assert facts["product_facts_sha256"] == "d" * 64
@@ -970,11 +963,7 @@ def test_fsync_phase_reports_the_observed_retry_receipt_hash(tmp_path: Path, mon
         run_root=tmp_path,
         install_script=tmp_path / "install.sh",
         env={"PATH": "/usr/bin"},
-        case=module.GreenfieldMatrixCase(
-            name="bound recovery case",
-            prompt="Create the exact recovery-bound product.",
-            required_terms=("recovery",),
-        ),
+        case=_semantic_case(module),
     )
 
     assert facts["product_facts_sha256"] == "d" * 64

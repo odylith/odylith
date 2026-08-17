@@ -62,14 +62,18 @@ shows you the component boundaries, workstreams, architecture diagrams, and
 issues it can create. Each suggestion comes with the command to run it.
 
 If the repo is still empty or too thin for source-backed boundaries, Odylith
-switches to greenfield mode instead of dead-ending. Odylith compiles untrusted
-evidence into typed product facts, the complete governed package, and a clear
-sectioned preview before it offers a decision.
+switches to greenfield mode instead of dead-ending. The active Codex or Claude
+host reasons over an exact, source-cited Semantic Intent request; Odylith
+deterministically verifies the typed graph and compiles the complete governed
+package before it offers a decision. A citation proves custody, not semantic
+entailment, so the host challenges the draft for unsupported claims before
+staging.
 
 For example:
 
 ```bash
-odylith greenfield propose --repo-root . --prompt "build an ecommerce site"
+odylith greenfield semantic-intent-request --repo-root . --prompt "build an ecommerce site"
+# Author the returned packet, then run its exact next invocation.
 ```
 
 Before confirmation, Odylith stores each compiled package at an immutable,

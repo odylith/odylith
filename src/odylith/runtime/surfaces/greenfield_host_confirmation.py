@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 import json
 from pathlib import Path
-import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
@@ -17,7 +16,8 @@ from odylith.runtime.domain_intelligence import greenfield_repository_lock
 HOST_CONFIRMATION_CALLBACK_VERSION = "odylith.greenfield.host-confirmation-callback.v1"
 SUPPORTED_HOSTS = frozenset({"codex", "claude"})
 PENDING_ROOT_RELATIVE_PATH = Path(".odylith/runtime/greenfield/pending")
-_DECISION_PATTERN = re.compile(r"^(CONFIRM|EDIT|REJECT)\s+([0-9a-f]{64})(?:\s+(.+))?$", re.DOTALL)
+_DECISION_COMMANDS = frozenset({"CONFIRM", "EDIT", "REJECT"})
+_LOWER_HEX = frozenset("0123456789abcdef")
 
 
 def maybe_handle_greenfield_decision(
@@ -33,9 +33,9 @@ def maybe_handle_greenfield_decision(
         return None
     root = Path(repo_root).expanduser().resolve()
     command_text = str(prompt or "").strip()
-    match = _DECISION_PATTERN.fullmatch(command_text)
-    if match is None:
-        if command_text in {"CONFIRM", "EDIT", "REJECT"} and _has_pending_transactions(root):
+    parsed = _parse_decision_command(command_text)
+    if parsed is None:
+        if command_text in _DECISION_COMMANDS and _has_pending_transactions(root):
             return _decision(
                 status="DECISION_HASH_REQUIRED",
                 command=command_text,
@@ -47,7 +47,7 @@ def maybe_handle_greenfield_decision(
                 developer_context="Do not infer a pending package from a mutable current pointer. Ask for the exact displayed command.",
             )
         return None
-    command, transaction_hash, edit_evidence = match.groups()
+    command, transaction_hash, edit_evidence = parsed
     try:
         transaction_path = greenfield_pending_transaction_store.resolve_pending_transaction(
             repo_root=root,
@@ -65,6 +65,32 @@ def maybe_handle_greenfield_decision(
             developer_context=f"Report STALE_TRANSACTION without product-intent failure language. Detail: {error}",
         )
     if command == "EDIT":
+        authoring_request: Mapping[str, Any] | None = None
+        if edit_evidence:
+            try:
+                from odylith.runtime.domain_intelligence.greenfield_semantic_intent_request import (
+                    semantic_intent_revision_request,
+                )
+
+                authoring_request = semantic_intent_revision_request(
+                    repo_root=root,
+                    transaction_hash=transaction_hash,
+                    correction=edit_evidence,
+                )
+            except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as error:
+                return _decision(
+                    status="RECOVERY_REQUIRED",
+                    command=command,
+                    transaction_hash=transaction_hash,
+                    visible_markdown=(
+                        "**Odylith Greenfield could not prepare the edit**\n\n"
+                        "No governed records were written. The reviewed pending transaction remains unchanged."
+                    ),
+                    developer_context=(
+                        "Report the evidence-recovery failure without reconstructing prompt bytes from chat. "
+                        f"Detail: {error}"
+                    ),
+                )
         return _decision(
             status="edit_evidence_received" if edit_evidence else "edit_evidence_required",
             command=command,
@@ -78,10 +104,13 @@ def maybe_handle_greenfield_decision(
                 )
             ),
             developer_context=(
-                "No transaction was committed. Rebuild from the supplied correction as new evidence; do not mutate the reviewed package."
+                "No transaction was committed. Author and challenge the replacement Semantic Intent packet from the "
+                "attached exact authoring request, write it only to packet_destination, then run next_invocation. "
+                "Do not reconstruct evidence from chat or mutate the reviewed package."
                 if edit_evidence
                 else "No transaction was committed. Ask only for the user's correction; do not reinterpret or write artifacts."
             ),
+            authoring_request=authoring_request,
         )
     if command == "REJECT":
         return _reject_pending_transaction(root=root, transaction_hash=transaction_hash)
@@ -97,6 +126,12 @@ def host_hook_payload(decision: Mapping[str, Any]) -> dict[str, Any]:
 
     visible = str(decision.get("visible_markdown") or "").strip()
     context = str(decision.get("developer_context") or "").strip()
+    authoring_request = decision.get("authoring_request")
+    if isinstance(authoring_request, Mapping):
+        context = (
+            f"{context}\n\nSemanticIntentAuthoringRequest:\n"
+            f"{json.dumps(authoring_request, ensure_ascii=False, sort_keys=True)}"
+        ).strip()
     payload: dict[str, Any] = {}
     if visible:
         payload["systemMessage"] = visible
@@ -110,6 +145,23 @@ def host_hook_payload(decision: Mapping[str, Any]) -> dict[str, Any]:
 
 def confirmation_supported(host_family: str) -> bool:
     return str(host_family or "").strip().casefold() in SUPPORTED_HOSTS
+
+
+def _parse_decision_command(value: str) -> tuple[str, str, str | None] | None:
+    """Parse the small hash-bound decision protocol without prose inference."""
+
+    fields = str(value or "").split(maxsplit=2)
+    if len(fields) < 2:
+        return None
+    command, transaction_hash = fields[:2]
+    if command not in _DECISION_COMMANDS:
+        return None
+    if len(transaction_hash) != 64 or any(character not in _LOWER_HEX for character in transaction_hash):
+        return None
+    correction = fields[2].strip() if len(fields) == 3 else ""
+    if command != "EDIT" and correction:
+        return None
+    return command, transaction_hash, correction or None
 
 
 def _confirm_pending_transaction(
@@ -294,8 +346,9 @@ def _decision(
     visible_markdown: str,
     developer_context: str,
     transaction_hash: str = "",
+    authoring_request: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    result: dict[str, Any] = {
         "version": HOST_CONFIRMATION_CALLBACK_VERSION,
         "status": status,
         "command": command,
@@ -303,6 +356,9 @@ def _decision(
         "visible_markdown": visible_markdown,
         "developer_context": developer_context,
     }
+    if authoring_request is not None:
+        result["authoring_request"] = dict(authoring_request)
+    return result
 
 
 __all__ = [

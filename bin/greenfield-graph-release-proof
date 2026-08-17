@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+requested_version="${1:-${VERSION:-$(current_source_version)}}"
+dist_arg="${2:-${DIST:-}}"
+temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"
+require_version "$requested_version"
+
+require_final_holdout_input() {
+  local variable_name="$1"
+  local value="${!variable_name-}"
+  [[ -n "$value" ]] || die "final Greenfield holdout requires $variable_name"
+}
+
+run_final_holdout_rail() {
+  local release_mode="${GREENFIELD_FINAL_RELEASE_MODE:-preflight}"
+  local action="${GREENFIELD_FINAL_HOLDOUT_ACTION:-}"
+  case "$release_mode" in
+    preflight)
+      [[ -z "$action" ]] || die \
+        "GREENFIELD_FINAL_HOLDOUT_ACTION is forbidden unless GREENFIELD_FINAL_RELEASE_MODE=final"
+      return
+      ;;
+    final)
+      [[ "$action" == "prepare" || "$action" == "score" ]] || die \
+        "final release mode requires GREENFIELD_FINAL_HOLDOUT_ACTION=prepare or score"
+      ;;
+    *)
+      die "GREENFIELD_FINAL_RELEASE_MODE must be preflight or final"
+      ;;
+  esac
+
+  if [[ "$action" == "prepare" ]]; then
+    local variable_name
+    for variable_name in \
+      GREENFIELD_FINAL_HOLDOUT_LEDGER \
+      GREENFIELD_FINAL_HOLDOUT_PATH \
+      GREENFIELD_FINAL_HOLDOUT_MANIFEST \
+      GREENFIELD_FINAL_HOLDOUT_CONTRACT \
+      GREENFIELD_FINAL_HOLDOUT_WORK \
+      GREENFIELD_FINAL_HOLDOUT_REVISION \
+      GREENFIELD_FINAL_HOLDOUT_EXPECTED_SHA256 \
+      GREENFIELD_FINAL_HOLDOUT_EXPECTED_MANIFEST_SHA256 \
+      GREENFIELD_FINAL_HOLDOUT_EXPECTED_CORPUS_SHA256
+    do
+      require_final_holdout_input "$variable_name"
+    done
+    "$odylith_python" scripts/release/greenfield_final_holdout_run.py prepare \
+      --repo-root "$odylith_repo_root" \
+      --ledger "$GREENFIELD_FINAL_HOLDOUT_LEDGER" \
+      --holdout "$GREENFIELD_FINAL_HOLDOUT_PATH" \
+      --manifest "$GREENFIELD_FINAL_HOLDOUT_MANIFEST" \
+      --contract "$GREENFIELD_FINAL_HOLDOUT_CONTRACT" \
+      --work "$GREENFIELD_FINAL_HOLDOUT_WORK" \
+      --revision "$GREENFIELD_FINAL_HOLDOUT_REVISION" \
+      --expected-holdout-sha256 "$GREENFIELD_FINAL_HOLDOUT_EXPECTED_SHA256" \
+      --expected-manifest-sha256 "$GREENFIELD_FINAL_HOLDOUT_EXPECTED_MANIFEST_SHA256" \
+      --expected-corpus-sha256 "$GREENFIELD_FINAL_HOLDOUT_EXPECTED_CORPUS_SHA256"
+    return
+  fi
+
+  local variable_name
+  for variable_name in \
+    GREENFIELD_FINAL_HOLDOUT_LEDGER \
+    GREENFIELD_FINAL_HOLDOUT_PATH \
+    GREENFIELD_FINAL_HOLDOUT_CONTRACT \
+    GREENFIELD_FINAL_HOLDOUT_CANDIDATES \
+    GREENFIELD_FINAL_HOLDOUT_REVIEW_A \
+    GREENFIELD_FINAL_HOLDOUT_REVIEW_B \
+    GREENFIELD_FINAL_HOLDOUT_ADJUDICATION \
+    GREENFIELD_FINAL_HOLDOUT_RESULT
+  do
+    require_final_holdout_input "$variable_name"
+  done
+  "$odylith_python" scripts/release/greenfield_final_holdout_run.py score \
+    --ledger "$GREENFIELD_FINAL_HOLDOUT_LEDGER" \
+    --holdout "$GREENFIELD_FINAL_HOLDOUT_PATH" \
+    --contract "$GREENFIELD_FINAL_HOLDOUT_CONTRACT" \
+    --candidates "$GREENFIELD_FINAL_HOLDOUT_CANDIDATES" \
+    --review "$GREENFIELD_FINAL_HOLDOUT_REVIEW_A" \
+    --review "$GREENFIELD_FINAL_HOLDOUT_REVIEW_B" \
+    --adjudication "$GREENFIELD_FINAL_HOLDOUT_ADJUDICATION" \
+    --result "$GREENFIELD_FINAL_HOLDOUT_RESULT"
+}
+
+if [[ -z "$dist_arg" ]]; then
+  dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"
+elif [[ "$dist_arg" == /* ]]; then
+  dist_dir="$dist_arg"
+else
+  dist_dir="$odylith_repo_root/$dist_arg"
+fi
+[[ -f "$dist_dir/install.sh" ]] || die "local release dist is missing install.sh: $dist_dir"
+mkdir -p "$temp_parent"
+recovery_output="${RECOVERY_OUTPUT:-${dist_dir%/}-greenfield-transaction-recovery.v1.json}"
+case "$recovery_output" in
+  "$dist_dir"|"$dist_dir"/*)
+    die "recovery proof evidence must remain outside distributable assets: $recovery_output"
+    ;;
+esac
+mkdir -p "$(dirname "$recovery_output")"
+
+"$odylith_python" scripts/release/platform_domain_leakage_check.py \
+  --repo-root "$odylith_repo_root" \
+  --dist-dir "$dist_dir"
+ensure_playwright_chromium
+"$odylith_python" scripts/release/local_release_smoke.py \
+  --version "$requested_version" \
+  --dist-dir "$dist_dir" \
+  --greenfield-browser-proof
+"$odylith_python" scripts/release/greenfield_commit_recovery_proof.py \
+  --version "$requested_version" \
+  --dist-dir "$dist_dir" \
+  --temp-parent "$temp_parent" \
+  --output-json "$recovery_output"
+"$odylith_python" scripts/release/platform_domain_leakage_check.py \
+  --repo-root "$odylith_repo_root" \
+  --dist-dir "$dist_dir"
+run_final_holdout_rail
+printf 'greenfield recovery proof: %s\n' "$recovery_output"

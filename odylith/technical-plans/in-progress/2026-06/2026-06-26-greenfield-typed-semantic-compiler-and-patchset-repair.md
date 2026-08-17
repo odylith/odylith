@@ -4164,3 +4164,22 @@ above.
       correction, rerun the exact installed disclosed corpus from case one,
       then continue the remaining release gates. The replacement holdout
       remains sealed.
+    - 2026-08-16 aggregate metamorphic reopen: exact pushed checkpoint
+      `987814a75` and wheel
+      `a4315abb0e8e86400dd5659c6cb1b7721787b995fdae43ccf7a85780d031533a`
+      passed all `24/24` disclosed cases at `10/10`, including every
+      clarification no-write contract, but the aggregate result remained
+      failed (result
+      `fabbdff4a673c9948dc40b633e5539ecf4fcb75ed24c2778f0f94ce618fda0fc`).
+      Independent adjudication split the 45 metamorphic findings into 18
+      evaluator/campaign errors, 11 semantic-equivalence false positives, and
+      16 real pre-render intent-projection inconsistencies. CB-327 owns the
+      tracked-corpus authority, discovery-synthetic identity, role-grounding,
+      and typed-comparison repairs. CB-328 owns the real accent, handoff,
+      digest, dry-run, and component-axis drift. The product and evaluator
+      fixes must preserve this split: evaluator normalization may close only
+      the 11 proven equivalences, while the 16 real findings remain release
+      blockers until canonical typed custody is stable. Next: close both P1s,
+      re-evaluate retained evidence, rebuild the exact distribution, and rerun
+      the full disclosed campaign from case one. The authorized replacement
+      holdout remains sealed and unexecuted.

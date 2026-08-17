@@ -8,12 +8,10 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import re
 from typing import Any
 
 
 FINAL_HOLDOUT_RUN_LEDGER_VERSION = "odylith.greenfield.final-holdout-run.v1"
-_REVISION_RE = re.compile(r"[0-9a-f]{40}")
 
 
 def claim_final_holdout_run(
@@ -22,28 +20,61 @@ def claim_final_holdout_run(
     holdout_path: Path,
     evaluation_manifest_path: Path,
     implementation_revision: str,
+    expected_holdout_sha256: str,
+    expected_evaluation_manifest_sha256: str,
+    evaluation_contract_sha256: str,
+    authoring_contract_sha256: str,
 ) -> dict[str, Any]:
-    """Atomically consume one holdout hash before product execution starts."""
+    """Consume the one-shot run before reading either protected input."""
 
     revision = str(implementation_revision or "").strip().casefold()
-    if not _REVISION_RE.fullmatch(revision):
+    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
         raise RuntimeError("final holdout run requires a full implementation Git revision")
+    expected_holdout = _sha256(expected_holdout_sha256, label="expected final holdout hash")
+    expected_manifest = _sha256(
+        expected_evaluation_manifest_sha256,
+        label="expected evaluation manifest hash",
+    )
+    contract_hash = _sha256(evaluation_contract_sha256, label="evaluation contract hash")
+    authoring_hash = _sha256(authoring_contract_sha256, label="authoring contract hash")
     ledger = Path(ledger_path).expanduser().resolve()
-    holdout = _safe_file(holdout_path, label="final holdout")
-    manifest = _safe_file(evaluation_manifest_path, label="evaluation manifest")
     payload = {
         "version": FINAL_HOLDOUT_RUN_LEDGER_VERSION,
-        "status": "claimed",
+        "status": "claiming",
         "disclosed": True,
-        "holdout_sha256": _sha256_file(holdout),
-        "evaluation_manifest_sha256": _sha256_file(manifest),
+        "holdout_sha256": expected_holdout,
+        "evaluation_manifest_sha256": expected_manifest,
+        "evaluation_contract_sha256": contract_hash,
+        "authoring_contract_sha256": authoring_hash,
         "implementation_revision": revision,
-        "claimed_at_utc": _now_utc(),
+        "claim_started_at_utc": _now_utc(),
     }
     ledger.parent.mkdir(parents=True, exist_ok=True)
     _exclusive_write_json(ledger, payload)
     _fsync_directory(ledger.parent)
-    return payload
+    try:
+        holdout = _safe_file(holdout_path, label="final holdout")
+        manifest = _safe_file(evaluation_manifest_path, label="evaluation manifest")
+        if _sha256_file(holdout) != expected_holdout:
+            raise RuntimeError("final holdout bytes do not match the frozen expected hash")
+        if _sha256_file(manifest) != expected_manifest:
+            raise RuntimeError("evaluation manifest bytes do not match the frozen expected hash")
+    except BaseException as error:
+        failed = {
+            **payload,
+            "status": "failed",
+            "claim_error": str(error),
+            "completed_at_utc": _now_utc(),
+        }
+        _replace_json(ledger, failed)
+        raise
+    claimed = {
+        **payload,
+        "status": "claimed",
+        "claimed_at_utc": _now_utc(),
+    }
+    _replace_json(ledger, claimed)
+    return claimed
 
 
 def complete_final_holdout_run(
@@ -65,6 +96,7 @@ def complete_final_holdout_run(
     completed = {
         **payload,
         "status": terminal,
+        "result_path": str(result),
         "result_sha256": _sha256_file(result),
         "completed_at_utc": _now_utc(),
     }
@@ -136,6 +168,13 @@ def _sha256_file(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _sha256(value: object, *, label: str) -> str:
+    digest = str(value or "").strip().casefold()
+    if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+        raise RuntimeError(f"{label} must be a full lowercase SHA-256 digest")
+    return digest
 
 
 def _fsync_directory(path: Path) -> None:

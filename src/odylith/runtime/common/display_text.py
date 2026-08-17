@@ -23,6 +23,15 @@ def strip_inline_markdown_emphasis(value: object) -> str:
     return " ".join(cleaned.split())
 
 
+def capitalize_sentence_start(value: object) -> str:
+    """Capitalize plain display copy without rewriting source-owned casing."""
+
+    text = str(value or "")
+    if len(text) > 1 and text[0].islower() and text[1].isupper():
+        return text
+    return f"{text[:1].upper()}{text[1:]}" if text else ""
+
+
 def strip_inline_markdown_emphasis_tree(value: object) -> Any:
     """Return ``value`` with inline emphasis tokens stripped from nested strings."""
 

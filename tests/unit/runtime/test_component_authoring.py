@@ -47,9 +47,9 @@ def test_component_spec_template_does_not_claim_source_for_user_intent() -> None
     assert "## Component Brief" not in text
     assert "## Boundary Narrative" not in text
     assert "## First Release Proof" not in text
-    assert "Planned from user-stated intent" in text
+    assert "Evidence: user_intent" in text
     assert "Source boundary: src/solver" in text
-    assert "[B-200](odylith/radar/radar.html?view=plan&workstream=B-200)" in text
+    assert "workstream `B-200`" in text
 
 
 def test_component_spec_template_uses_greenfield_responsibility_and_links() -> None:
@@ -82,18 +82,18 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
 
     assert "payment handoff" in text
     assert "order draft" in text
-    assert "Trace links for Checkout Boundary: workstreams B-200, B-201; diagrams D-200" in text
+    assert "Trace: workstream `B-200`, workstream `B-201`, diagram `D-200`." in text
     assert "## Component Brief" not in text
     assert "## Boundary Narrative" not in text
     assert "## First Release Proof" not in text
     assert "## Checkout Boundary Runtime Boundary" not in text
-    assert "This boundary for Checkout Boundary receives its trusted context from Payment sandbox and prepares work for Order ledger." in text
+    assert "- Payment sandbox." in text
+    assert "- Order ledger." in text
     assert "Payment failure recovery proof." in text
     assert "Provider-specific behavior may change the boundary." in text
-    assert "[B-201](odylith/radar/radar.html?view=plan&workstream=B-201)" in text
-    assert "Implementation anchor for Checkout Boundary: B-201 (Checkout first slice)" in text
-    assert "Release wave: Checkout spine." in text
-    assert "Release target: 0.0.1." in text
+    assert "Workstream: B-201." in text
+    assert "Workstream title: Checkout first slice." in text
+    assert "Release: 0.0.1." in text
     assert "Implement browse-to-checkout with payment sandbox failure recovery." in text
 
 
@@ -123,7 +123,16 @@ def test_component_spec_template_avoids_duplicate_attached_clause() -> None:
     )
 
     assert "attached attached" not in text
-    assert "document attachment in the record instead of leaving those facts implicit" in text
+    for fact in (
+        "record status",
+        "review timeline",
+        "access history",
+        "retention detail",
+        "document attachment attached",
+    ):
+        assert f"- {fact}." in text
+    assert "- review history attached." in text
+    assert "instead of leaving those facts implicit" not in text
 
 
 def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
@@ -172,8 +181,10 @@ def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
     assert "Release 0.0.1 contribution:" not in text
     assert "Product context:" not in text
     assert "Project outcome:" not in text
-    assert "Accepted intent says Field Intake Service records field intake with attribution, review state, and recovery outcome." in text
-    assert "field intake with attribution command" in text
+    assert (
+        "Responsibility: Records field intake with attribution, review state, and recovery outcome."
+        in text
+    )
     assert "Contract proof covers accepted intake, rejected input, and reviewer-visible recovery state." in text
     assert "Intake must stay attributable" in text
     assert "…" not in text

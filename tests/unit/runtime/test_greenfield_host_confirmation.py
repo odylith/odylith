@@ -7,12 +7,17 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_create_commit
+from odylith.runtime.domain_intelligence import greenfield_create_transaction
 from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
 from odylith.runtime.domain_intelligence import greenfield_repository_lock
 from odylith.runtime.surfaces import claude_host_prompt_bundle
 from odylith.runtime.surfaces import codex_host_prompt_context
 from odylith.runtime.surfaces import greenfield_host_confirmation
-from tests.unit.runtime.test_greenfield_create_transaction import _transaction
+from tests.unit.runtime.greenfield_proposal_fixtures import compiled_graph_transaction
+
+
+def _transaction(*, repo_root: Path):
+    return compiled_graph_transaction(repo_root)
 
 
 def _stage_pending_transaction(repo_root: Path) -> tuple[Path, Path, str]:
@@ -154,7 +159,15 @@ def test_codex_and_claude_hooks_short_circuit_to_identical_confirmation_payload(
 def test_decision_callback_is_exact_and_proposal_only_for_unknown_hosts(tmp_path: Path) -> None:
     _transaction_path, _receipt, transaction_hash = _stage_pending_transaction(tmp_path)
 
-    for prompt in ("confirm", "CONFIRM please", "EDIT correction", "REJECT now"):
+    for prompt in (
+        "confirm",
+        "CONFIRM please",
+        "EDIT correction",
+        "REJECT now",
+        f"CONFIRM {transaction_hash} unexpected",
+        f"REJECT {transaction_hash} unexpected",
+        f"CONFIRM {transaction_hash.upper()}",
+    ):
         assert greenfield_host_confirmation.maybe_handle_greenfield_decision(
             repo_root=tmp_path,
             host_family="codex",
@@ -190,6 +203,41 @@ def test_edit_requests_new_evidence_without_mutating_staging(tmp_path: Path) -> 
     assert decision is not None
     assert decision["status"] == "edit_evidence_required"
     assert "new evidence" in str(decision["visible_markdown"])
+    assert transaction.is_file()
+    assert receipt.is_file()
+
+
+@pytest.mark.parametrize("host", ["codex", "claude"])
+def test_edit_returns_exact_resumable_semantic_authoring_request(
+    tmp_path: Path,
+    host: str,
+) -> None:
+    transaction, receipt, transaction_hash = _stage_pending_transaction(tmp_path)
+    sealed = greenfield_create_transaction.load_compiled_product_create_transaction_file(transaction)
+    original_evidence = dict(sealed.intent_authority["evidence_sources"])
+
+    decision = greenfield_host_confirmation.maybe_handle_greenfield_decision(
+        repo_root=tmp_path,
+        host_family=host,
+        prompt=f"EDIT {transaction_hash} The receipt must show the source card id.",
+    )
+
+    assert decision is not None
+    assert decision["status"] == "edit_evidence_received"
+    request = decision["authoring_request"]
+    assert request["supersedes_transaction_hash"] == transaction_hash
+    assert request["evidence_sources"]["operator_prompt"] == original_evidence[
+        "operator_prompt"
+    ]
+    assert request["revision_evidence"] == {
+        "prior_operator_edit": original_evidence["operator_edit"],
+        "new_operator_correction": "The receipt must show the source card id.",
+        "canonical_separator": "\n\n--- next operator correction ---\n\n",
+    }
+    hook = greenfield_host_confirmation.host_hook_payload(decision)
+    assert "SemanticIntentAuthoringRequest:" in hook["hookSpecificOutput"][
+        "additionalContext"
+    ]
     assert transaction.is_file()
     assert receipt.is_file()
 

@@ -12,6 +12,9 @@ from typing import Any
 from odylith import __version__
 from odylith.runtime.common import derivation_provenance
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
+    PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_create_contract import (
     PRODUCT_CREATE_TRANSACTION_COMMIT_POLICY,
 )
 from odylith.runtime.domain_intelligence.greenfield_create_contract import (
@@ -47,11 +50,9 @@ _POSTCONFIRM_RUNTIME_SOURCE_FILES = (
     "runtime/domain_intelligence/greenfield_create_manifest.py",
     "runtime/domain_intelligence/greenfield_post_confirm_handoff.py",
     "runtime/domain_intelligence/greenfield_pending_transaction_store.py",
-    "runtime/domain_intelligence/greenfield_proposals_cli.py",
     "runtime/domain_intelligence/greenfield_repository_lock.py",
     "runtime/domain_intelligence/greenfield_repository_write_set.py",
     "runtime/domain_intelligence/greenfield_transaction.py",
-    "runtime/surfaces/greenfield_host_confirmation.py",
 )
 _VOLATILE_HASH_KEYS = frozenset({"elapsed_seconds", "whole_project_elapsed_seconds"})
 _SEALED_COMMIT_ATTESTATION = object()
@@ -181,6 +182,15 @@ def load_sealed_product_create_commit(
         raise ValueError("ProductCreateTransaction hash does not match its pre-confirm compiler receipt")
     if str(payload.get("version", "")).strip() != PRODUCT_CREATE_TRANSACTION_VERSION:
         raise ValueError("ProductCreateTransaction has an unsupported version")
+    intent_authority = payload.get("intent_authority")
+    if (
+        not isinstance(intent_authority, Mapping)
+        or intent_authority.get("version") != PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION
+    ):
+        raise ValueError(
+            "ProductCreateTransaction uses an unsupported Product Intent authority version; "
+            "rebuild the transaction before committing governed records"
+        )
     package = payload.get("prewrite_package")
     if not isinstance(package, Mapping):
         raise ValueError("ProductCreateTransaction is missing its sealed prewrite package")
@@ -196,6 +206,14 @@ def load_sealed_product_create_commit(
         or not isinstance(transaction_summary, Mapping)
     ):
         raise ValueError("ProductCreateTransaction is missing its sealed commit package")
+    if (
+        transaction_summary.get("intent_authority_version")
+        != PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION
+    ):
+        raise ValueError(
+            "ProductCreateTransaction summary does not match its accepted Product Intent authority version; "
+            "rebuild the transaction before committing governed records"
+        )
     compiler_provenance = payload.get("compiler_provenance")
     if not isinstance(compiler_provenance, Mapping):
         raise ValueError("ProductCreateTransaction is missing compiler provenance")

@@ -17,7 +17,7 @@ from typing import Any
 from odylith.install.fs import atomic_write_text
 from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence import greenfield_compiled_package_contract
-from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence import greenfield_traceability_contract
 from odylith.runtime.domain_intelligence.greenfield_commit_transaction import (
     canonical_product_create_transaction_receipt_bytes,
 )
@@ -40,15 +40,15 @@ from odylith.runtime.domain_intelligence.greenfield_create_contract import (
 from odylith.runtime.domain_intelligence.greenfield_create_contract import PRODUCT_CREATE_TRANSACTION_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_ALLOWED_OPERATIONS
 from odylith.runtime.domain_intelligence.greenfield_create_contract import POST_CONFIRM_FORBIDDEN_OPERATIONS
+from odylith.runtime.domain_intelligence.greenfield_create_contract import product_intent_authorities_match
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_ENGINE_VERSION
 from odylith.runtime.domain_intelligence.greenfield_create_manifest import PRECONFIRM_QUALITY_MANIFEST_VERSION
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_completion import GreenfieldCompletionPackage
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+from odylith.runtime.domain_intelligence.greenfield_completion_types import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
     PRODUCT_INTENT_AUTHORITY_KEY,
 )
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import PRODUCT_FACTS_HASH_KEY
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import product_facts_hash
-from odylith.runtime.domain_intelligence.greenfield_product_intent_envelope import (
+from odylith.runtime.domain_intelligence.greenfield_product_intent_binding import (
+    require_authoritative_intent_binding,
     require_product_intent_authority,
 )
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
@@ -223,18 +223,18 @@ def _require_proposal_intent_authority_binding(
     proposal: Mapping[str, Any],
     authority: Mapping[str, Any],
 ) -> None:
-    """Require the sealed facts hash to describe the transaction's typed intent."""
+    """Require one exact authority for the proposal and transaction."""
 
     intent = proposal.get("intent") if isinstance(proposal, Mapping) else None
     if not isinstance(intent, Mapping):
         raise ValueError("ProductCreateTransaction proposal is missing typed Product Intent")
-    expected = product_facts_hash(intent)
-    actual = str(authority.get(PRODUCT_FACTS_HASH_KEY, "")).strip()
-    if actual != expected:
+    proposal_authority = proposal.get(PRODUCT_INTENT_AUTHORITY_KEY)
+    if not product_intent_authorities_match(proposal_authority, authority):
         raise ValueError(
-            "ProductCreateTransaction proposal facts do not match its sealed Product Intent authority; "
+            "ProductCreateTransaction proposal authority bytes do not match its sealed transaction authority; "
             "rebuild the transaction before showing CONFIRM"
         )
+    require_authoritative_intent_binding(intent, authority)
 
 
 def build_product_create_transaction_provenance(
@@ -483,7 +483,7 @@ def _completion_package_from_payload(payload: Mapping[str, Any]) -> GreenfieldCo
         if tuple_key in kwargs and isinstance(kwargs[tuple_key], list):
             kwargs[tuple_key] = tuple(kwargs[tuple_key])
     if isinstance(kwargs.get("traceability_plan"), Mapping):
-        kwargs["traceability_plan"] = greenfield_traceability.traceability_plan_from_payload(
+        kwargs["traceability_plan"] = greenfield_traceability_contract.traceability_plan_from_payload(
             kwargs["traceability_plan"]
         )
     if isinstance(kwargs.get("backlog_result"), Mapping):

@@ -7,7 +7,6 @@ from collections.abc import Mapping, Sequence
 import hashlib
 import json
 from pathlib import Path
-import re
 import stat
 from typing import Any
 
@@ -15,6 +14,7 @@ from odylith.install.fs import atomic_write_bytes
 from odylith.install.fs import fsync_directory
 from odylith.install.fs import fsync_file
 from odylith.runtime.domain_intelligence import greenfield_generation_state
+from odylith.runtime.domain_intelligence.greenfield_create_contract import is_sha256_digest
 
 
 GREENFIELD_REPOSITORY_WRITE_SET_VERSION = "odylith.greenfield.repository_write_set.v3"
@@ -35,9 +35,6 @@ GREENFIELD_REPOSITORY_WRITE_PATHS = (
     "odylith/tooling-app.v1.js",
     "src/odylith/bundle/assets/odylith",
 )
-_DIGEST_PATTERN = re.compile(r"[0-9a-f]{64}")
-
-
 def compile_greenfield_repository_write_set(*, source_root: Path, staged_root: Path) -> dict[str, Any]:
     """Capture exact staged bytes, deletions, and source-tree preconditions."""
 
@@ -147,13 +144,13 @@ def require_compiled_greenfield_repository_write_set(value: object) -> dict[str,
         if row.get("mode") != after_row.get("mode"):
             raise ValueError("ProductCreateTransaction repository write mode differs from its sealed after-image")
         previous = str(row.get("previous_sha256", "")).strip()
-        if previous and previous != "missing" and not _DIGEST_PATTERN.fullmatch(previous):
+        if previous and previous != "missing" and not is_sha256_digest(previous):
             raise ValueError("ProductCreateTransaction repository write has an invalid previous digest")
         mode = row.get("mode")
         if not isinstance(mode, int) or mode < 0 or mode > 0o777:
             raise ValueError("ProductCreateTransaction repository write has an invalid file mode")
     for row in deletes:
-        if not _DIGEST_PATTERN.fullmatch(str(row.get("previous_sha256", "")).strip()):
+        if not is_sha256_digest(row.get("previous_sha256")):
             raise ValueError("ProductCreateTransaction repository delete has an invalid previous digest")
     if directory_paths != sorted(directory_paths, key=lambda item: (len(Path(item).parts), item)):
         raise ValueError("ProductCreateTransaction repository directories are not in deterministic order")
@@ -639,7 +636,7 @@ def _fingerprint_mapping(value: object, *, label: str) -> dict[str, str]:
     if not isinstance(value, Mapping):
         raise ValueError(f"ProductCreateTransaction repository {label} fingerprints are missing")
     result = {str(key): str(item).strip() for key, item in value.items()}
-    if any(not _DIGEST_PATTERN.fullmatch(item) for item in result.values()):
+    if any(not is_sha256_digest(item) for item in result.values()):
         raise ValueError(f"ProductCreateTransaction repository {label} fingerprints are invalid")
     return result
 

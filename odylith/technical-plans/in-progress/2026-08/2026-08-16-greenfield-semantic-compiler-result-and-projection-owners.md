@@ -6,9 +6,96 @@ Updated: 2026-08-16
 
 Backlog: B-144
 
-Goal: Decompose the Greenfield semantic pipeline into explicit result,
-projection, and reporting owners without changing the sealed pre-confirm
-transaction or commit-only confirmation contracts.
+Goal: Replace Greenfield's overlapping prose-pattern interpreters with one
+source-cited Semantic Intent authority, then project all governance objects
+from that authority without changing the commit-only confirmation contract.
+
+## Mechanism Decision — 2026-08-16
+
+The prior extraction strategy did not converge. It reduced some file sizes but
+left product meaning distributed across regexes, token sets, score thresholds,
+vocabulary signals, and downstream prose recomposition. New failures repeatedly
+appeared as adjacent grammatical variants: a fixed `without <gerund>` form
+failed with an intervening adverb, and a fixed anaphoric state form failed when
+the source used a linker. This is evidence against the mechanism, not a request
+for more patterns.
+
+The first replacement hypothesis—a single model call that directly populated a
+wide nested IR—timed out after 120 seconds. A compact generic fact/relation
+graph then failed two real medium-effort trials after 61.4 and 84.9 seconds:
+the model omitted a required identity attribute and then assigned ownership to
+a non-workflow fact. Deterministic validation correctly rejected both. The
+single-call schema is therefore retired rather than surrounded by retries,
+repair prompts, coercion, or compatibility parsing.
+
+The concern-separated generic graph remained too permissive. Medium-effort
+trials varied between false clarification, invented product/system actions, and
+misidentified product identity; an independently reviewed ensemble failed
+closed in 52.4 seconds. A high-effort ensemble completed in 184.5 seconds but
+promoted ordinary facts to constraints, invented five non-material ambiguities,
+and produced weak public proof text. It is also retired.
+
+A four-axis micro-extraction trial completed in 17.7 seconds and correctly
+isolated product identity, the three source-owned human actions, state/output
+links, dependency, and non-goal. Its residuals were explicit candidates: one
+invented unspecified-human action and two non-material ambiguity candidates.
+This evidence supports candidate adjudication rather than model-authored truth.
+
+The provider-call variants above are retired. The active host already has the
+reasoning context, whereas nested provider ensembles added 18–185 seconds,
+failed structurally, or invented material semantics. The current replacement
+boundary is therefore:
+
+1. The active host authors one Semantic Intent packet through the public JSON
+   Schema exposed by `odylith greenfield semantic-intent-schema`. It supplies
+   typed facts, explicit relations, canonical narratives, and exact citations
+   to prompt or EDIT evidence. Plain prose is evidence only.
+2. Deterministic code validates exact citation bytes, schema shape, graph
+   references, ownership, polarity, material completeness, operating limits,
+   and stable hashes. It does not infer actors, actions, state, output,
+   dependencies, constraints, or components from prose.
+3. Material uncertainty produces one focused clarification before authority is
+   sealed. Independent model critique is advisory evidence; it cannot silently
+   rewrite the active host's packet or become a second semantic authority.
+4. The verified graph is sealed as Product Intent authority v7. Components,
+   backlog, semantic events, evaluator evidence, and transaction snapshots
+   project from fact ids and relation coordinates rather than lexical overlap.
+5. A v7 proposal receives one read-only pre-confirm projection pass. Invalid
+   output fails closed at its graph projector; no fixpoint, rescue prompt,
+   regex repair, or prose normalization may change sealed meaning.
+6. CONFIRM remains model-free and publishes the exact sealed transaction bytes.
+7. Legacy parser and repair mechanisms remain only for explicitly versioned
+   compatibility inputs while the cutover proceeds. They are not reachable
+   from the public v7 propose path and are deleted as their final callers move.
+
+Product outcome, source fidelity, clarification policy, transaction laws,
+operating envelope, and proof standards remain fixed. Provider choice, model
+profile, prompts, schema layout, and projection architecture remain provisional
+and must earn continued use through fresh evidence.
+
+## Convergence Method
+
+This work uses **outcome-anchored, mechanism-adaptive convergence**. The goal is
+the simplest reliable regime that repeatedly produces useful, source-grounded
+governance objects—not the survival of any chosen parser, model, schema, or
+architecture.
+
+- Fixed: consumer outcome, semantic fidelity, transaction laws, operating
+  envelope, safety invariants, and completion evidence.
+- Provisional: algorithms, parsing approaches, model roles, schemas, ownership
+  boundaries, repair strategy, module layout, and architecture.
+- After every wave, measure consumer utility, new failure classes, semantic
+  drift, complexity, latency, cost, and whether a proxy displaced the product.
+- Replace a mechanism when independent examples repeat a failure class, fixes
+  regress elsewhere, or downstream code continues to reinterpret canonical
+  meaning.
+- Before replacement, state a falsifiable prediction and compare bounded
+  alternatives on positive, negative, equivalent-source, and human-quality
+  evidence. Remove the losing path after the winner is proved.
+- Passing tests alone is not progress. Progress means fewer failure classes,
+  less duplicate authority, simpler execution, and stronger independent proof.
+- The replacement holdout remains untouched until development and equivalence
+  evidence are clean; it never trains the mechanism.
 
 ## Scope
 
@@ -43,16 +130,18 @@ this plan as active until the size and ownership targets are met.
 
 ## Ownership Waves
 
-1. Seal evaluator semantic text, frozen-contract provenance preparation, and
-   early-stop reporting behind dedicated owners; keep the matrix runner as an
-   orchestrator.
-2. Extract semantic result selection and projection repair behind typed result
-   contracts; reduce the compiler root below 1,200 lines.
-3. Extract prompt-source composition and intent-recovery phases with their
-   characterization tests; remove obsolete local parsing and normalization.
-4. Run structural inventory, full runtime/install proof, and close the
-   temporary safety-critical exception only after every named owner meets its
-   contract.
+1. Define the Semantic Intent IR, exact citation contract, clarification
+   contract, JSON schemas, and deterministic verifier.
+2. Add bounded provider-backed extraction and independent critique with pinned
+   model profiles, call/time/token budgets, and fail-closed provider errors.
+3. Seal the verified IR into Product Intent authority and transaction hashes;
+   preserve byte-exact, model-free commit-only execution.
+4. Cut proposal, semantic model, components, systems, backlog, Registry, Atlas,
+   and public views to typed IR nodes.
+5. Delete live semantic regex/token/scoring interpreters and downstream
+   prose-reparse paths; add structural enforcement against their return.
+6. Run metamorphic, adversarial, model-profile, latency/cost, transaction,
+   install, browser, and structural proof before any new final holdout.
 
 ## Proof Gates
 
@@ -65,6 +154,25 @@ this plan as active until the size and ownership targets are met.
 - No product or campaign execution is used as decomposition proof.
 
 ## Implementation Checkpoint — 2026-08-16
+
+- The public host packet, JSON Schema, exact citation verifier, Semantic Intent
+  graph, and authority v7 are implemented. The graph-authority kernel and its
+  component, backlog, projection-validation, and transaction compiler modules
+  contain no regex interpretation.
+- The active v7 compile path is one pass and does not load the legacy prompt
+  materializer, pre-confirm fixpoint, rescue planner, or patch-apply repair
+  module. A structural test makes any legacy repair call fail.
+- Graph-native components and backlog replace repeated prose inference. The
+  first one-pass package run exposed repeated boilerplate; the projector was
+  corrected with component-specific proof and workstream-specific rationale
+  rather than weakening the quality gate.
+- Equivalent prompt wording with independent exact citations produces the same
+  semantic-meaning hash and byte-equal components, backlog, semantic model,
+  diagrams, and project brief.
+- Current focused proof: Semantic Intent/proposal/transaction `11/11`, graph
+  drift negatives and one-pass transaction `2/2`, transaction provenance
+  `36/36`, and equivalent-source projection `1/1`. Full development proof and
+  final holdout remain pending.
 
 - Evaluator semantic text and action-order normalization now have one shared
   owner. Frozen synthetic identity is bound only after external manifest and

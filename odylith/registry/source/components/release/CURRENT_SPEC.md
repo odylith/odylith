@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-08-14
+Last updated: 2026-08-17
 
 
 ## Purpose
@@ -624,6 +624,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-08-17 · Decision:** Decision evidence linked this component to governed work with workstream scope preserved; 1 verifiable artifact reference.
+  - Scope: B-144
+  - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`
 - **2026-08-14 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `tests/unit/install/test_greenfield_matrix_transaction_evidence.py`, `tests/unit/install/test_greenfield_preconfirm_matrix.py`
@@ -639,8 +642,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 verifiable artifact references.
   - Scope: B-142
   - Evidence: `odylith/registry/source/components/release/CURRENT_SPEC.md`, `src/odylith/runtime/domain_intelligence/greenfield_canonical_meaning.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py`, `src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py`
-- **2026-08-02 · Implementation:** Implementation evidence linked this component to governed work with 2 verifiable artifact references.
-  - Evidence: `odylith/casebook/bugs/2026-08-02-greenfield-model-profile-claimed-unobserved-provider-failure.md`, `odylith/registry/source/components/release/CURRENT_SPEC.md`
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -1191,3 +1192,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-28: Closed the release-proof custody gap where `release-candidate` and `release-preflight` ran local release smoke but did not require the installed greenfield matrix. The shared release proof lane now runs the matrix after smoke and writes `greenfield-post-confirm-matrix.v1.json` into the dist directory. The default standard catalog expanded from eight to thirteen domains and the score contract now requires every case-declared domain anchor, not merely three keyword hits. The c6286f0a package passed the earlier twelve-case matrix in 19.834-22.057s with zero issues and 10/10 scores before this release-gate metadata change; final release proof requires a rebuilt dist from the post-fix commit. Installed CLI auto-rescue remains explicitly wiring-only unless a natural non-internal repairable failure is proven under the 90s rescue tier. `RESCUE_SMOKE=0` is debug-only and not release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
 - 2026-08-16: Hardened replacement-holdout evaluation after disclosed replay. Frozen synthetic cases receive release-tier identity only after the external manifest and holdout bytes, selected case IDs, prompt hashes, authoring method, and source path validate. Required-term matching is polarity-aware; accepted-fact composition is category-, field-, owner-, projection-family-, and action-order-bound; unknown support sections cannot contribute product evidence. A non-compiled upstream stop reports downstream transaction, artifact, navigation, browser, and confirmation stages as not applicable, while a compiled receipt followed by create failure remains normal attempted-transaction evidence. Evaluator proof passes `193/193`, security/proof passes `46/46`, and independent closure passes `211/211` with no P0/P1. A rebuilt exact distribution and untouched holdout remain required. (Plans: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142), [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bugs: `CB-316`, `CB-323`)
 - 2026-08-16: Aligned pre-execution platform leakage baselining with the complete source-grounded candidate set that installed generated-artifact scoring may emit. Platform-native exact phrases are filtered before product execution even when a case also declares an authoritative obsolete sentinel; declared non-native sentinels, source-provenance custody, exact-term boundaries, and genuine post-baseline findings remain strict. This closes CB-326's `23/24` false release stop without deleting platform prose or weakening the scanner. Focused leakage proof passes `10/10`, the full evaluator pack passes `206/206`, and security/proof passes `46/46`; the exact installed disclosed replay remains required from case one. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-326`)
+- 2026-08-16: Aggregate metamorphic proof is fail-closed independently of per-case success. The exact `987814a75` disclosed replay passed `24/24` cases at `10/10` but still failed because its frozen-contract authority, synthetic discovery identity, role grounding, and raw-field comparator mixed 18 evaluator findings and 11 false positives with 16 genuine product drifts. Release evaluation must keep the tracked corpus repo-rooted, sealed inputs separately contained and hash-bound, unclaimed discovery synthetic cases free of invented release provenance, and equivalence normalization unable to hide real typed actor/state/result/dependency/component changes. A fresh exact installed rerun remains required after CB-327 and CB-328 close. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-327`, `CB-328`)

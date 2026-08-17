@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
 
@@ -84,7 +85,7 @@ def materialize_compiled_release_assignment(
 
     root = Path(repo_root).resolve()
     result = dict(release_assignment_result or {})
-    compiled_events = [_event_payload(row) for row in _mapping_rows(result.get("events"))]
+    compiled_events = [_event_payload(row) for row in mapping_rows(result.get("events"))]
     registry_document, event_documents, idea_specs = release_planning_authoring._load_governed_documents(  # noqa: SLF001
         repo_root=root,
     )
@@ -202,12 +203,6 @@ def _event_payload(row: Mapping[str, Any]) -> dict[str, str]:
 
 def _mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
-
-
-def _mapping_rows(value: Any) -> tuple[Mapping[str, Any], ...]:
-    if not isinstance(value, (list, tuple)):
-        return ()
-    return tuple(row for row in value if isinstance(row, Mapping))
 
 
 def _text_list(value: Any) -> tuple[str, ...]:

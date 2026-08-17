@@ -170,10 +170,12 @@ _CODEX_HOST_COMMAND_MODULES = {
     "intervention-status": "odylith.runtime.surfaces.codex_host_intervention_status",
 }
 _SHOW_CAPABILITIES_MODULE = "odylith.runtime.analysis_engine.show_capabilities"
-_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals"
+_GREENFIELD_PROPOSALS_MODULE = "odylith.runtime.domain_intelligence.greenfield_proposals_cli"
 _GREENFIELD_CREATE_MODULE = "odylith.runtime.domain_intelligence.greenfield_create_cli"
 _GREENFIELD_COMMANDS = (
-    ("propose", "Draft a provider-free greenfield governance proposal."),
+    ("semantic-intent-schema", "Print the host-authored Semantic Intent packet schema."),
+    ("semantic-intent-request", "Build a deterministic Semantic Intent authoring request."),
+    ("propose", "Verify and stage a host-authored Semantic Intent proposal."),
     ("apply", "Disabled legacy command; confirmed writes use create."),
     ("create", "Commit a compiled ProductCreateTransaction."),
     ("compile-transaction", "Compile and quality-gate a ProductCreateTransaction without governed writes."),

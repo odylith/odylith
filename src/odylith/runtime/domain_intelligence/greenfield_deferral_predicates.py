@@ -1,17 +1,17 @@
-"""Shared grammar predicates for deferred greenfield scope clauses."""
+"""Structural presentation helpers for explicitly deferred scope rows."""
 
 from __future__ import annotations
 
-import re
-
-
 def _compact_text(value: str) -> str:
-    return re.sub(r"\s+", " ", str(value or "")).strip()
+    return " ".join(str(value or "").split()).strip()
+
+
+def _words(value: str) -> list[str]:
+    return [word.strip(".,;:!?()[]{}·•") for word in _compact_text(value).split() if word.strip(".,;:!?()[]{}·•")]
 
 
 def has_terminal_deferral_predicate(value: str) -> bool:
-    words = [word.strip(".,;:!?()[]{}").casefold() for word in _compact_text(value).split()]
-    words = [word for word in words if word]
+    words = [word.casefold() for word in _words(value)]
     for index, word in enumerate(words):
         if word not in {"are", "be", "is", "remain", "remains", "stay", "stays", "were"}:
             continue
@@ -28,9 +28,7 @@ def has_terminal_deferral_predicate(value: str) -> bool:
 def terminal_deferral_subject(value: str) -> str:
     """Return the noun phrase before a terminal deferral predicate."""
 
-    text = re.sub(r"\s+[·•]\s+", " ", _compact_text(value)).strip(" .")
-    words = [word.strip(".,;:!?()[]{}·•") for word in text.split()]
-    words = [word for word in words if word]
+    words = _words(str(value or "").replace("·", " ").replace("•", " "))
     for index, word in enumerate(words):
         if word.casefold() not in {"are", "be", "is", "remain", "remains", "stay", "stays", "were"}:
             continue

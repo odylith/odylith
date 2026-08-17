@@ -1,15 +1,26 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     GREENFIELD_OPERATING_ENVELOPE_VERSION,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
+    LOWER_CAPABILITY_SAFETY_PROFILE,
+)
+from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     require_supported_greenfield_operating_envelope,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    SEMANTIC_INTENT_PACKET_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
+    SEMANTIC_REASONING_CAPABILITY_PROFILE,
 )
 
 
@@ -20,7 +31,7 @@ def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() 
             "external_systems": [],
             "internal_systems": ["Intake", "Review"],
         },
-        source_format="operator_prompt",
+        source_format="semantic_intent_packet",
         source_size_bytes=120,
     )
 
@@ -31,18 +42,50 @@ def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() 
     assert receipt["scope"]["write_boundary"] == "repo_local_governance_package"
     assert receipt["host_contract"]["confirmation_hosts"] == ["codex", "claude"]
     assert receipt["evidence_contract"]["languages"] == ["en"]
+    assert receipt["evidence_contract"]["formats"] == ["semantic_intent_packet"]
+    assert receipt["evidence_contract"]["semantic_intent_packet_versions"] == [
+        SEMANTIC_INTENT_PACKET_VERSION
+    ]
     assert receipt["complexity"]["band"] == "bounded"
     assert receipt["complexity"]["dimensions"]["actors"] == 1
     assert receipt["filesystem_contract"]["package_visibility"] == (
         "journaled_recovery_not_atomic_generation_pointer"
     )
-    assert "lower-capability-safe-v1" in receipt["model_contract"]["profiles"]
+    assert receipt["model_contract"]["semantic_authority_profiles"] == [
+        SEMANTIC_REASONING_CAPABILITY_PROFILE
+    ]
+    assert receipt["model_contract"]["non_authority_safety_profiles"] == [
+        LOWER_CAPABILITY_SAFETY_PROFILE
+    ]
+    assert receipt["model_contract"]["lower_capability_probe"] == {
+        "profile": LOWER_CAPABILITY_SAFETY_PROFILE,
+        "authority_eligible": False,
+        "prompt_only": True,
+        "allowed_outcomes": ["clarify", "fail_safe"],
+        "proof_contract": "runner_bound_independently_reviewed_safety_report_v1",
+    }
+    assert set(receipt["model_contract"]["semantic_authority_profiles"]).isdisjoint(
+        receipt["model_contract"]["non_authority_safety_profiles"]
+    )
 
 
-def test_greenfield_operating_envelope_rejects_unknown_evidence_format() -> None:
+@pytest.mark.parametrize(
+    "legacy_format",
+    [
+        "compiled_proposal_intent",
+        "in_memory_confirmed_intent",
+        "json",
+        "legacy_json",
+        "markdown",
+        "operator_prompt",
+        "operator_prompt_with_edit_evidence",
+        "typed_envelope_json",
+    ],
+)
+def test_greenfield_operating_envelope_rejects_legacy_evidence_formats(legacy_format: str) -> None:
     receipt = greenfield_operating_envelope_receipt(
         facts={},
-        source_format="host_private_chain_of_thought",
+        source_format=legacy_format,
         source_size_bytes=120,
     )
 
@@ -56,7 +99,7 @@ def test_greenfield_operating_envelope_rejects_unknown_evidence_format() -> None
 def test_greenfield_operating_envelope_rejects_unbounded_actor_fanout() -> None:
     receipt = greenfield_operating_envelope_receipt(
         facts={"human_actors": [f"Actor {index}" for index in range(65)]},
-        source_format="markdown",
+        source_format="semantic_intent_packet",
         source_size_bytes=120,
     )
 
@@ -74,7 +117,7 @@ def test_greenfield_operating_envelope_measures_structural_complexity() -> None:
             "ambiguities": [f"Ambiguity {index}" for index in range(3)],
             "operational_constraints": ["No production authority", "Preserve consent", "Audit every change"],
         },
-        source_format="operator_prompt_with_edit_evidence",
+        source_format="semantic_intent_packet",
         source_size_bytes=80 * 1024,
         source_document_count=2,
     )
@@ -94,3 +137,78 @@ def test_greenfield_operating_envelope_measures_structural_complexity() -> None:
         "ambiguities": 3,
         "safety_boundaries": 3,
     }
+
+
+def test_greenfield_operating_envelope_rejects_legacy_receipt_versions() -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={"internal_systems": ["Intake"]},
+        source_format="semantic_intent_packet",
+        source_size_bytes=120,
+    )
+    receipt["version"] = "odylith.greenfield-operating-envelope.v3"
+
+    with pytest.raises(ValueError, match="version is unsupported"):
+        require_supported_greenfield_operating_envelope(receipt)
+
+
+@pytest.mark.parametrize(
+    ("path", "replacement"),
+    [
+        (("semantic_authority_profiles",), [LOWER_CAPABILITY_SAFETY_PROFILE]),
+        (("non_authority_safety_profiles",), [SEMANTIC_REASONING_CAPABILITY_PROFILE]),
+        (("lower_capability_probe", "authority_eligible"), True),
+        (("lower_capability_probe", "prompt_only"), False),
+        (("lower_capability_probe", "allowed_outcomes"), ["commit"]),
+    ],
+)
+def test_greenfield_operating_envelope_rejects_model_authority_boundary_mutation(
+    path: tuple[str, ...],
+    replacement: object,
+) -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={"internal_systems": ["Intake"]},
+        source_format="semantic_intent_packet",
+        source_size_bytes=120,
+    )
+    target = receipt["model_contract"]
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = replacement
+
+    with pytest.raises(ValueError, match="model contract is unsupported"):
+        require_supported_greenfield_operating_envelope(receipt)
+
+
+def test_greenfield_operating_envelope_rejects_mutated_packet_version_contract() -> None:
+    receipt = greenfield_operating_envelope_receipt(
+        facts={"internal_systems": ["Intake"]},
+        source_format="semantic_intent_packet",
+        source_size_bytes=120,
+    )
+    receipt["evidence_contract"]["semantic_intent_packet_versions"] = [
+        "odylith.greenfield.semantic-intent-packet.v1"
+    ]
+
+    with pytest.raises(ValueError, match="packet version is unsupported"):
+        require_supported_greenfield_operating_envelope(receipt)
+
+
+def test_public_greenfield_copy_does_not_claim_atomic_package_visibility() -> None:
+    root = Path(__file__).resolve().parents[3]
+    surfaces = (
+        root / "docs" / "OPERATOR_INSTRUCTIONS.md",
+        root / "odylith" / "skills" / "odylith-greenfield-governance" / "SKILL.md",
+        root / "src" / "odylith" / "bundle" / "assets" / "odylith" / "skills"
+        / "odylith-greenfield-governance" / "SKILL.md",
+        root / "src" / "odylith" / "runtime" / "analysis_engine" / "capability_inventory.py",
+        root / "src" / "odylith" / "runtime" / "domain_intelligence" / "greenfield_create_commit.py",
+    )
+
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in surfaces).casefold()
+
+    assert "commits its sealed bytes atomically" not in combined
+    assert "commits records atomically" not in combined
+    assert "sealed bytes atomically under rollback guard" not in combined
+    assert "atomically commit the user-confirmed precompiled package" not in combined
+    assert "active-generation pointer" in combined
+    assert "arbitrary filesystem readers are outside this visibility guarantee" in combined

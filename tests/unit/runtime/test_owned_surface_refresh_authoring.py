@@ -246,6 +246,42 @@ def test_owned_surface_refresh_batches_multiple_surfaces_once(tmp_path: Path, mo
     ]
 
 
+def test_owned_surface_refresh_can_preserve_precompiled_atlas_without_resync(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        owned_surface_refresh,
+        "_policy_for_surface",
+        lambda surface: owned_surface_refresh.OwnedSurfaceRefreshPolicy(
+            surface=str(surface), atlas_sync=str(surface) == "atlas"
+        ),
+    )
+    from odylith.runtime.context_engine import odylith_context_engine_projection_search_runtime
+    from odylith.runtime.governance import sync_workstream_artifacts
+
+    monkeypatch.setattr(
+        odylith_context_engine_projection_search_runtime,
+        "clear_runtime_process_caches",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        sync_workstream_artifacts,
+        "refresh_dashboard_surfaces",
+        lambda **kwargs: calls.append(dict(kwargs)) or 0,
+    )
+
+    rc = owned_surface_refresh.refresh_owned_surfaces(
+        repo_root=tmp_path,
+        surfaces=("radar", "atlas"),
+        atlas_sync=False,
+    )
+
+    assert rc == 0
+    assert calls[0]["atlas_sync"] is False
+
+
 def test_owned_surface_refresh_supports_tooling_shell_project_surface(tmp_path: Path, monkeypatch) -> None:
     calls: list[dict[str, object]] = []
 

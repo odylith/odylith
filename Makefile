@@ -1,26 +1,24 @@
 GREENFIELD_FAST_TESTS := \
-	tests/unit/runtime/test_greenfield_code_hygiene.py \
-	tests/unit/runtime/test_greenfield_component_contract_profile_merge.py \
-	tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py \
-	tests/unit/runtime/test_greenfield_component_spec_narrative_quality.py \
-	tests/unit/runtime/test_greenfield_component_spec_quality.py \
-	tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py \
-	tests/unit/runtime/test_greenfield_confirmed_diagrams.py \
-	tests/unit/runtime/test_greenfield_confirmed_text.py \
-	tests/unit/runtime/test_greenfield_domain_profile_quality.py \
-	tests/unit/runtime/test_greenfield_preconfirm_patch_payload.py \
-	tests/unit/runtime/test_greenfield_quality_lens_repair.py \
-	tests/unit/runtime/test_greenfield_semantic_model_quality.py \
-	tests/unit/runtime/test_greenfield_title_specificity.py \
-	tests/unit/runtime/test_prose_grammar.py
+	tests/unit/runtime/test_greenfield_graph_authority_severance.py \
+	tests/unit/runtime/test_greenfield_semantic_graph_v2_contract.py \
+	tests/unit/runtime/test_greenfield_semantic_projection_plan.py \
+	tests/unit/runtime/test_greenfield_semantic_release_custody.py \
+	tests/unit/runtime/test_greenfield_semantic_artifact_consumers.py \
+	tests/unit/runtime/test_greenfield_semantic_radar_write.py \
+	tests/unit/runtime/test_greenfield_public_entry_contract.py \
+	tests/unit/runtime/test_greenfield_semantic_preview_isolation.py \
+	tests/unit/runtime/test_greenfield_postconfirm_fingerprint_boundary.py \
+	tests/unit/runtime/test_greenfield_presentation_dependency_severance.py
 
 GREENFIELD_LIFECYCLE_TESTS := \
-	tests/unit/runtime/test_greenfield_cli_paths.py \
-	tests/unit/install/test_greenfield_browser_surface_proof.py \
 	tests/unit/runtime/test_greenfield_host_confirmation.py \
-	tests/unit/runtime/test_greenfield_host_routing.py
+	tests/unit/runtime/test_greenfield_host_routing.py \
+	tests/unit/runtime/test_greenfield_commit_rollback.py \
+	tests/unit/runtime/test_greenfield_transaction.py \
+	tests/unit/runtime/test_greenfield_commit_journal.py \
+	tests/unit/runtime/test_greenfield_transaction_provenance.py
 
-.PHONY: help validate dev-validate dev-refresh license-audit lane-show benchmark-analysis release-version-preview release-version-show release-session-show release-session-clear local-release-assets greenfield-test-fast greenfield-test-lifecycle greenfield-preconfirm-matrix greenfield-matrix-generate-cases greenfield-matrix-shards greenfield-matrix-campaign release-candidate release-preflight release-dispatch dogfood-activate consumer-rehearsal ga-gate
+.PHONY: help validate dev-validate dev-refresh license-audit lane-show benchmark-analysis release-version-preview release-version-show release-session-show release-session-clear local-release-assets greenfield-test-fast greenfield-test-lifecycle greenfield-mechanism-experiment greenfield-graph-release-proof release-candidate release-preflight release-dispatch dogfood-activate consumer-rehearsal ga-gate
 
 help:
 	@./bin/help
@@ -63,19 +61,13 @@ greenfield-test-fast:
 
 greenfield-test-lifecycle:
 	@.venv/bin/python -m pytest -q $(GREENFIELD_LIFECYCLE_TESTS)
-	@.venv/bin/python -m pytest -q -m greenfield_lifecycle tests/unit/runtime/test_greenfield_domain_profile_quality.py
 
-greenfield-preconfirm-matrix:
-	@./bin/greenfield-preconfirm-matrix "$(VERSION)" "$(DIST)"
+greenfield-mechanism-experiment:
+	@[[ -n "$(EXPERIMENT)" ]] || { echo "EXPERIMENT=/path/to/semantic-mechanism-experiment.json is required" >&2; exit 2; }
+	@.venv/bin/python scripts/release/greenfield_semantic_mechanism_experiment.py --experiment-file "$(EXPERIMENT)" $(if $(OUTPUT),--output "$(OUTPUT)",)
 
-greenfield-matrix-generate-cases:
-	@./bin/greenfield-matrix-generate-cases
-
-greenfield-matrix-shards:
-	@./bin/greenfield-matrix-shards
-
-greenfield-matrix-campaign:
-	@./bin/greenfield-matrix-campaign "$(VERSION)" "$(DIST)"
+greenfield-graph-release-proof:
+	@./bin/greenfield-graph-release-proof "$(VERSION)" "$(DIST)"
 
 release-candidate:
 	@./bin/release-candidate "$(VERSION)"

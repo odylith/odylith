@@ -6,8 +6,10 @@ from collections.abc import Mapping
 from typing import Any
 
 
-PRECONFIRM_ENGINE_VERSION = "greenfield-pre-confirm-fixpoint-v1"
+PRECONFIRM_ENGINE_VERSION = "greenfield-pre-confirm-evidence-v2"
 PRECONFIRM_QUALITY_MANIFEST_VERSION = "greenfield-pre-confirm-quality-manifest-v1"
+PRECONFIRM_REPAIR_TIERS = ("auto", "standard", "rescue", "deep")
+DEFAULT_PRECONFIRM_REPAIR_TIER = "auto"
 
 
 def finalize_greenfield_commit_manifest(
@@ -28,7 +30,9 @@ def finalize_greenfield_commit_manifest(
 
 
 __all__ = [
+    "DEFAULT_PRECONFIRM_REPAIR_TIER",
     "PRECONFIRM_ENGINE_VERSION",
     "PRECONFIRM_QUALITY_MANIFEST_VERSION",
+    "PRECONFIRM_REPAIR_TIERS",
     "finalize_greenfield_commit_manifest",
 ]

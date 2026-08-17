@@ -9,14 +9,7 @@ from pathlib import Path
 import shlex
 from typing import Any, Mapping
 
-from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import GreenfieldClarificationRequired
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import materialize_prompt_intent_hypothesis
-from odylith.runtime.domain_intelligence.greenfield_prompt_intent_materialization import render_product_intent_preview
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import GreenfieldPreconfirmEngineError
-from odylith.runtime.domain_intelligence.greenfield_preconfirm_engine import PRECONFIRM_REPAIR_TIERS
-from odylith.runtime.project_intelligence.intent_confirmation import format_confirmation_choice_lines
+from odylith.runtime.domain_intelligence.greenfield_create_contract import product_intent_authorities_match
 
 
 _PUBLIC_INTENT_AUTHORITY_SUMMARY_VERSION = "odylith.product-intent-authority-summary.v1"
@@ -30,9 +23,23 @@ _PUBLIC_INTENT_AUTHORITY_SUMMARY_KEYS = (
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="odylith greenfield",
-        description="Preview and commit confirmation-gated greenfield product records.",
+        description="Verify host-authored Semantic Intent and stage confirmation-gated product records.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+    schema = subparsers.add_parser(
+        "semantic-intent-schema",
+        help="Print the exact host-authored Semantic Intent packet schema.",
+    )
+    schema.add_argument("--repo-root", default=".", help=argparse.SUPPRESS)
+    authoring = subparsers.add_parser(
+        "semantic-intent-request",
+        help="Print exact evidence and the deterministic host authoring contract.",
+    )
+    authoring.add_argument("--repo-root", default=".")
+    authoring.add_argument("--prompt", default="")
+    authoring.add_argument("--edit", default="")
+    authoring.add_argument("--edit-evidence", default="")
+    authoring.add_argument("--supersedes-hash", default="")
     propose = subparsers.add_parser("propose", help="Preview a confirmation-gated greenfield product proposal.")
     propose.add_argument("--repo-root", default=".")
     propose.add_argument("--prompt", required=True)
@@ -59,11 +66,12 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help=argparse.SUPPRESS,
     )
     propose.add_argument(
+        "--semantic-intent-file",
         "--intent-file",
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help=argparse.SUPPRESS,
+        help="Source-cited Semantic Intent packet authored by the active host model.",
     )
     apply = subparsers.add_parser(
         "apply",
@@ -75,15 +83,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--proposal-json", default="")
     apply.add_argument("--confirm", action="store_true")
     apply.add_argument("--release", default="")
-    apply.add_argument(
-        "--repair-tier",
-        choices=PRECONFIRM_REPAIR_TIERS,
-        default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=(
-            "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
-            "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
-        ),
-    )
     apply.add_argument("--json", action="store_true", dest="as_json")
     compile_transaction = subparsers.add_parser(
         "compile-transaction",
@@ -94,22 +93,14 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     compile_transaction.add_argument("--edit", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument("--edit-evidence", default="", help=argparse.SUPPRESS)
     compile_transaction.add_argument(
+        "--semantic-intent-file",
         "--intent-file",
         "--confirmed-intent-file",
         default="",
         dest="intent_file",
-        help=argparse.SUPPRESS,
+        help="Source-cited Semantic Intent packet authored by the active host model.",
     )
     compile_transaction.add_argument("--release", default="")
-    compile_transaction.add_argument(
-        "--repair-tier",
-        choices=PRECONFIRM_REPAIR_TIERS,
-        default=greenfield_proposals.DEFAULT_PRECONFIRM_REPAIR_TIER,
-        help=(
-            "Create-transaction compiler budget: auto keeps standard compilation under 60s and enters 90s "
-            "rescue only for repairable semantic or quality gates; deep is explicit 120s premium/CI proof."
-        ),
-    )
     compile_transaction.add_argument(
         "--output",
         default="",
@@ -179,6 +170,10 @@ def _transaction_confirmation_text(
     transaction: Any,
     output_path: str = "",
 ) -> str:
+    from odylith.runtime.domain_intelligence.greenfield_confirmation_rail import (
+        format_confirmation_choice_lines,
+    )
+
     summary = transaction.summary()
     manifest = transaction.quality_manifest if isinstance(transaction.quality_manifest, Mapping) else {}
     intent_authority = transaction.intent_authority if isinstance(transaction.intent_authority, Mapping) else {}
@@ -222,24 +217,12 @@ def _transaction_confirmation_text(
 def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
     if as_json:
         payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
-        if isinstance(exc, GreenfieldPreconfirmEngineError):
-            payload["commit_manifest"] = exc.manifest
+        manifest = getattr(exc, "manifest", None)
+        if isinstance(manifest, Mapping):
+            payload["commit_manifest"] = dict(manifest)
         print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))
-
-
-def _print_greenfield_clarification(exc: GreenfieldClarificationRequired, *, as_json: bool) -> None:
-    clarification = {
-        "question": exc.question,
-        "required_fields": list(exc.required_fields),
-    }
-    if as_json:
-        print(json.dumps({"mode": "clarification_required", "clarification": clarification}, indent=2, sort_keys=True))
-        return
-    print("Odylith needs one product decision.")
-    print(exc.question)
-    print("Reply with one plain-language sentence. No transaction or governed records were created.")
 
 
 def _transaction_output_path(*, repo_root: Path, output_path: str) -> Path | None:
@@ -248,15 +231,6 @@ def _transaction_output_path(*, repo_root: Path, output_path: str) -> Path | Non
         return None
     path = Path(value).expanduser()
     return path if path.is_absolute() else repo_root / path
-
-
-def _finish_clarification(
-    *,
-    exc: GreenfieldClarificationRequired,
-    as_json: bool,
-) -> int:
-    _print_greenfield_clarification(exc, as_json=as_json)
-    return 0
 
 
 def _edit_evidence_from_args(args: argparse.Namespace, *, repo_root: Path) -> str:
@@ -281,43 +255,60 @@ def _compile_prompt_evidence_transaction(
     prompt: str,
     edit_evidence: str,
     release_selector: str,
-    repair_tier: str = "",
+    semantic_intent_file: str,
 ) -> tuple[dict[str, Any], Any, Path]:
-    candidate_intent = materialize_prompt_intent_hypothesis(
+    from odylith.runtime.domain_intelligence import greenfield_pending_transaction_store
+    from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
+        load_semantic_intent_packet,
+        semantic_intent_authority,
+    )
+    from odylith.runtime.domain_intelligence.greenfield_semantic_workflow import (
+        build_verified_semantic_proposal_for_repo,
+        compile_verified_semantic_transaction,
+    )
+
+    packet_path = Path(semantic_intent_file).expanduser()
+    if not packet_path.is_absolute():
+        packet_path = repo_root / packet_path
+    verified = load_semantic_intent_packet(
+        packet_path,
         prompt=prompt,
-        repo_root=repo_root,
-        fallback_title=greenfield_proposals.intent_title(prompt),
         edit_evidence=edit_evidence,
     )
-    proposal = greenfield_proposals.build_greenfield_proposal(
-        repo_root=repo_root,
+    candidate_intent = dict(verified.product_facts)
+    candidate_intent["product_intent_authority"] = semantic_intent_authority(
+        verified,
         prompt=prompt,
-        confirmed_intent=candidate_intent,
-        require_completion_ready=False,
+        edit_evidence=edit_evidence,
+    )
+    proposal = build_verified_semantic_proposal_for_repo(
+        repo_root=repo_root,
+        authority=candidate_intent["product_intent_authority"],
+        release_selector=release_selector,
     )
     candidate_authority = candidate_intent.get("product_intent_authority")
     if not isinstance(candidate_authority, Mapping):
         raise RuntimeError("pre-confirm typed Product Intent authority is missing")
     proposal = dict(proposal)
     proposal["product_intent_authority"] = candidate_authority
-    transaction = greenfield_proposals.compile_greenfield_create_transaction(
+    transaction = compile_verified_semantic_transaction(
         repo_root=repo_root,
         proposal=proposal,
         release_selector=release_selector,
-        proposal_ready=True,
-        **({"repair_tier": repair_tier} if repair_tier else {}),
     )
-    candidate_intent = dict(transaction.proposal.get("intent") or {})
-    candidate_intent["product_intent_authority"] = transaction.intent_authority
-    candidate_authority = candidate_intent.get("product_intent_authority")
+    proposal_authority = (
+        transaction.proposal.get("product_intent_authority")
+        if isinstance(transaction.proposal, Mapping)
+        else None
+    )
     transaction_authority = transaction.intent_authority if isinstance(transaction.intent_authority, Mapping) else {}
-    if not isinstance(candidate_authority, Mapping) or (
-        str(candidate_authority.get("product_facts_sha256", "")).strip()
-        != str(transaction_authority.get("product_facts_sha256", "")).strip()
-    ):
+    if not product_intent_authorities_match(proposal_authority, transaction_authority):
         raise RuntimeError(
-            "pre-confirm compiler produced a transaction whose product facts do not match the visible typed preview"
+            "pre-confirm compiler produced a transaction whose Product Intent authority bytes do not match "
+            "the visible typed preview"
         )
+    candidate_intent = dict(transaction.proposal.get("intent") or {})
+    candidate_intent["product_intent_authority"] = transaction_authority
     transaction_path = greenfield_pending_transaction_store.stage_pending_transaction(
         repo_root=repo_root,
         transaction=transaction,
@@ -343,11 +334,20 @@ def _public_intent_hypothesis(candidate_intent: Mapping[str, Any]) -> dict[str, 
     return visible
 
 
-def _retired_intent_file_message() -> str:
+def _semantic_intent_file_message() -> str:
     return (
-        "The separate Product Intent confirmation flow is retired. `propose` now compiles the typed evidence and "
-        "full ProductCreateTransaction before it shows the only CONFIRM rail. Use `--edit` or `--edit-evidence` "
-        "to rebuild from corrections; edited Markdown is evidence, never a confirmed product source."
+        "Greenfield requires a source-cited Semantic Intent packet authored by the active host model. "
+        "Run `odylith greenfield semantic-intent-request --repo-root . --prompt <request>`, author the packet "
+        "at the returned destination, then use the returned next invocation. Plain prompt and EDIT text remain "
+        "evidence, never parser-derived product authority."
+    )
+
+
+def _render_product_intent_preview(intent: Mapping[str, Any]) -> str:
+    from odylith.runtime.domain_intelligence.greenfield_candidate_intent_stage import render_candidate_intent_markdown
+
+    return render_candidate_intent_markdown(intent).replace(
+        "Product Intent Confirmation", "Product Intent Preview", 1
     )
 
 
@@ -358,10 +358,47 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         return create_main(tokens)
     args = _parse_args(tokens)
+    if args.command == "semantic-intent-schema":
+        from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
+            semantic_intent_packet_schema,
+        )
+
+        print(json.dumps(semantic_intent_packet_schema(), indent=2, sort_keys=True))
+        return 0
+    if args.command == "semantic-intent-request":
+        from odylith.runtime.domain_intelligence.greenfield_semantic_intent_request import (
+            semantic_intent_authoring_request,
+            semantic_intent_revision_request,
+        )
+
+        repo_root = Path(str(args.repo_root)).expanduser().resolve()
+        try:
+            edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
+            supersedes = str(args.supersedes_hash or "").strip()
+            if supersedes:
+                request = semantic_intent_revision_request(
+                    repo_root=repo_root,
+                    transaction_hash=supersedes,
+                    correction=edit_evidence,
+                )
+            else:
+                prompt = str(args.prompt or "")
+                if not prompt:
+                    raise ValueError("Greenfield Semantic Intent authoring requires --prompt")
+                request = semantic_intent_authoring_request(
+                    prompt=prompt,
+                    edit_evidence=edit_evidence,
+                )
+        except (OSError, RuntimeError, ValueError, json.JSONDecodeError) as exc:
+            _print_greenfield_error(exc, as_json=True)
+            return 2
+        print(json.dumps(request, indent=2, sort_keys=True))
+        return 0
     repo_root = Path(str(args.repo_root)).expanduser().resolve()
     if args.command == "propose":
-        if bool(args.confirm_intent) or str(args.intent_file or "").strip():
-            _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
+        semantic_intent_file = str(args.intent_file or "").strip()
+        if bool(args.confirm_intent) or not semantic_intent_file:
+            _print_greenfield_error(ValueError(_semantic_intent_file_message()), as_json=args.output_format == "json")
             return 2
         try:
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
@@ -370,9 +407,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 prompt=str(args.prompt),
                 release_selector="",
                 edit_evidence=edit_evidence,
+                semantic_intent_file=semantic_intent_file,
             )
-        except GreenfieldClarificationRequired as exc:
-            return _finish_clarification(exc=exc, as_json=args.output_format == "json")
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
@@ -388,7 +424,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ),
             }, indent=2, sort_keys=True))
         else:
-            preview = render_product_intent_preview(candidate_intent).rstrip()
+            preview = _render_product_intent_preview(candidate_intent).rstrip()
             print(
                 f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=str(transaction_path.relative_to(repo_root)))}",
                 end="",
@@ -402,8 +438,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(message)
         return 2
     if args.command == "compile-transaction":
-        if str(args.intent_file or "").strip():
-            _print_greenfield_error(ValueError(_retired_intent_file_message()), as_json=args.output_format == "json")
+        semantic_intent_file = str(args.intent_file or "").strip()
+        if not semantic_intent_file:
+            _print_greenfield_error(ValueError(_semantic_intent_file_message()), as_json=args.output_format == "json")
             return 2
         try:
             edit_evidence = _edit_evidence_from_args(args, repo_root=repo_root)
@@ -412,23 +449,31 @@ def main(argv: Sequence[str] | None = None) -> int:
                 prompt=str(args.prompt),
                 release_selector=str(args.release),
                 edit_evidence=edit_evidence,
-                repair_tier=str(args.repair_tier),
+                semantic_intent_file=semantic_intent_file,
             )
             output_path = str(args.output or "").strip()
             if output_path:
                 path = _transaction_output_path(repo_root=repo_root, output_path=output_path)
                 assert path is not None
-                greenfield_proposals.write_product_create_transaction_file(path, transaction)
+                from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+                    write_compiled_product_create_transaction_file,
+                )
+
+                write_compiled_product_create_transaction_file(path, transaction)
                 output_path = str(path)
             else:
                 output_path = str(staged_path)
             if args.output_format == "json":
+                from odylith.runtime.domain_intelligence.greenfield_create_transaction import (
+                    product_create_transaction_to_dict,
+                )
+
                 summary = transaction.summary()
                 payload = {
                     "mode": "product_create_transaction",
                     "intent_hypothesis": _public_intent_hypothesis(candidate_intent),
                     "product_create_transaction": summary,
-                    "transaction": greenfield_proposals.product_create_transaction_to_dict(transaction),
+                    "transaction": product_create_transaction_to_dict(transaction),
                     "confirmation": _transaction_confirmation_payload(
                         transaction=transaction,
                         output_path=output_path,
@@ -438,13 +483,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                     payload["transaction_file"] = output_path
                 print(json.dumps(payload, indent=2, sort_keys=True))
             else:
-                preview = render_product_intent_preview(candidate_intent).rstrip()
+                preview = _render_product_intent_preview(candidate_intent).rstrip()
                 print(f"{preview}\n\n{_transaction_confirmation_text(transaction=transaction, output_path=output_path)}", end="")
-        except GreenfieldClarificationRequired as exc:
-            return _finish_clarification(
-                exc=exc,
-                as_json=args.output_format == "json",
-            )
         except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
             _print_greenfield_error(exc, as_json=args.output_format == "json")
             return 2
