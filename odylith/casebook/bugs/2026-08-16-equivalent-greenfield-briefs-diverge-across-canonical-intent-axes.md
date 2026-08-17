@@ -91,6 +91,18 @@
   failure repeats, compare a second independent materiality critic or a
   candidate-review regime rather than adding local exceptions.
 
+- Contract Follow-up (2026-08-17): The first fresh rerun under the revised
+  field semantics corrected all three targeted decisions, but the explicit
+  contradiction case failed closed before graph authoring. The provider-valid
+  field array allowed the critic to mark multiple rows materially unresolved
+  while the top-level decision named one clarification. Runtime validation
+  correctly rejected the inconsistency, no retry occurred, and no partial
+  segment was written. Replace the parallel unresolved-row representation with
+  one top-level clarification that owns the omitted canonical field, its exact
+  citations, and alternatives; the remaining field rows must all be settled.
+  This makes multiple unresolved claims unrepresentable instead of relying on
+  prompt wording or validator-error repair.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.

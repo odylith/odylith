@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v4"
+    "odylith.greenfield.semantic-intent-authoring-request.v5"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -108,6 +108,11 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             (
                 "ask exactly one question for the highest-impact unresolved canonical field and "
                 "preserve all settled meaning"
+            ),
+            (
+                "when clarification is required, clarification owns the omitted field, its exact "
+                "source references, and at least two material alternatives; fields contains only "
+                "the other eight settled canonical fields"
             ),
         ],
         "structured_output_contract": {

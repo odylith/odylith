@@ -143,23 +143,26 @@ def test_prompt_only_gate_rejects_tamper_and_mechanism_drift(
         assessment["clarification"] = {
             "field": "visible_result",
             "question": "Which visible result is required?",
+            "source_refs": [semantic_ref(PATH_EVIDENCE)],
+            "alternatives": ["receipt", "audit view"],
         }
-        assessment["fields"][4]["status"] = "materially_unresolved"
-        assessment["fields"][4]["alternatives"] = ["receipt", "audit view"]
+        assessment["fields"] = [
+            row for row in assessment["fields"] if row["field"] != "visible_result"
+        ]
         _rehash_assessment(packet)
 
     with pytest.raises(ValueError, match=message):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_materially_unresolved_field_requires_two_alternatives_only() -> None:
+def test_materiality_clarification_requires_two_alternatives_only() -> None:
     packet = semantic_clarification_packet()
     assessment = packet["materiality_assessment"]
     assert isinstance(assessment, dict)
-    assessment["fields"][4]["alternatives"] = ["claim receipt"]
+    assessment["clarification"]["alternatives"] = ["claim receipt"]
     _rehash_assessment(packet)
 
-    with pytest.raises(ValueError, match="at least two alternatives"):
+    with pytest.raises(ValueError, match="citation, and two alternatives"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
@@ -171,8 +174,14 @@ def test_provider_schema_encodes_materiality_status_invariants() -> None:
     assert clarification[0]["properties"] == {
         "field": {"type": "string", "enum": [""]},
         "question": {"type": "string", "enum": [""]},
+        "source_refs": {"type": "array", "minItems": 0, "maxItems": 0},
+        "alternatives": {"type": "array", "minItems": 0, "maxItems": 0},
     }
     assert clarification[1]["properties"]["question"]["minLength"] == 1
+    assert clarification[1]["properties"]["source_refs"]["minItems"] == 1
+    assert clarification[1]["properties"]["alternatives"]["minItems"] == 2
+    assert schema["properties"]["fields"]["minItems"] == 8
+    assert schema["properties"]["fields"]["maxItems"] == 9
     assert variants[0]["properties"]["status"]["enum"] == [
         "explicit",
         "source_entailable",
@@ -187,11 +196,7 @@ def test_provider_schema_encodes_materiality_status_invariants() -> None:
     )
     assert variants[1]["properties"]["source_refs"]["maxItems"] == 0
     assert variants[1]["properties"]["alternatives"]["maxItems"] == 0
-    assert variants[2]["properties"]["status"]["enum"] == [
-        "materially_unresolved"
-    ]
-    assert variants[2]["properties"]["source_refs"]["minItems"] == 1
-    assert variants[2]["properties"]["alternatives"]["minItems"] == 2
+    assert len(variants) == 2
 
 
 def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
@@ -217,14 +222,14 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v4_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v5_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v2")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v4")
-    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v2")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v5")
+    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v3")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
     assert request["materiality_gate"]["structured_output"] == (
@@ -255,6 +260,10 @@ def test_v4_request_requires_prompt_only_schema_constrained_independent_runs() -
     assert "human-facing interaction" in protocol["materiality_field_semantics"]["role"]
     assert any(
         "internal transition" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
+    assert any(
+        "other eight settled canonical fields" in rule
         for rule in protocol["materiality_decision_rules"]
     )
     assert request["packet_header"]["authoring_contract_sha256"] == (

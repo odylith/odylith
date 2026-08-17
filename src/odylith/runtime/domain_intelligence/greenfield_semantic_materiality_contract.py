@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_MATERIALITY_ASSESSMENT_VERSION = (
-    "odylith.greenfield.semantic-materiality-assessment.v2"
+    "odylith.greenfield.semantic-materiality-assessment.v3"
 )
 SEMANTIC_REASONING_CAPABILITY_PROFILE = "frontier_semantic_reasoning"
 SEMANTIC_MATERIALITY_ASSESSMENT_BASIS = "prompt_only_pre_graph"
@@ -26,7 +26,6 @@ SEMANTIC_MATERIALITY_STATUSES = (
     "explicit",
     "source_entailable",
     "nonmaterial_assumption",
-    "materially_unresolved",
 )
 SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS = (
     "state_object",
@@ -72,10 +71,10 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
                 "type": "string",
                 "enum": ["authorize_graph", "clarification_required"],
             },
-            "clarification": _materiality_clarification_schema(),
+            "clarification": _materiality_clarification_schema(source_ref),
             "fields": {
                 "type": "array",
-                "minItems": len(SEMANTIC_CLARIFICATION_FIELDS),
+                "minItems": len(SEMANTIC_CLARIFICATION_FIELDS) - 1,
                 "maxItems": len(SEMANTIC_CLARIFICATION_FIELDS),
                 "items": _materiality_field_schema(source_ref),
             },
@@ -83,28 +82,44 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
     }
 
 
-def _materiality_clarification_schema() -> dict[str, Any]:
+def _materiality_clarification_schema(
+    source_ref: Mapping[str, Any],
+) -> dict[str, Any]:
     return {
         "anyOf": [
             {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["field", "question"],
+                "required": ["field", "question", "source_refs", "alternatives"],
                 "properties": {
                     "field": {"type": "string", "enum": [""]},
                     "question": {"type": "string", "enum": [""]},
+                    "source_refs": {"type": "array", "minItems": 0, "maxItems": 0},
+                    "alternatives": {"type": "array", "minItems": 0, "maxItems": 0},
                 },
             },
             {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["field", "question"],
+                "required": ["field", "question", "source_refs", "alternatives"],
                 "properties": {
                     "field": {
                         "type": "string",
                         "enum": list(SEMANTIC_CLARIFICATION_FIELDS),
                     },
                     "question": {"type": "string", "minLength": 1, "maxLength": 600},
+                    "source_refs": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "items": dict(source_ref),
+                    },
+                    "alternatives": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 8,
+                        "items": {"type": "string", "minLength": 1, "maxLength": 600},
+                    },
                 },
             },
         ]
@@ -129,13 +144,6 @@ def _materiality_field_schema(source_ref: Mapping[str, Any]) -> dict[str, Any]:
                 source_ref_maximum=0,
                 alternative_minimum=0,
                 alternative_maximum=0,
-            ),
-            _materiality_field_variant_schema(
-                source_ref=source_ref,
-                statuses=("materially_unresolved",),
-                source_ref_minimum=1,
-                alternative_minimum=2,
-                alternative_maximum=8,
             ),
         ]
     }
@@ -257,20 +265,21 @@ def require_semantic_materiality_assessment(
         {"authorize_graph", "clarification_required"},
         "materiality decision",
     )
-    clarification = _materiality_clarification(assessment.get("clarification"))
+    clarification = _materiality_clarification(
+        assessment.get("clarification"), evidence_sources=evidence_sources,
+    )
+    omitted_field = clarification["field"] if decision == "clarification_required" else ""
     fields = _materiality_fields(
         assessment.get("fields"),
         evidence_sources=evidence_sources,
+        omitted_field=omitted_field,
     )
-    unresolved = [row for row in fields if row["status"] == "materially_unresolved"]
     if decision == "authorize_graph":
-        if unresolved or clarification != {"field": "", "question": ""}:
+        if clarification != {
+            "field": "", "question": "", "source_refs": [], "alternatives": [],
+        }:
             raise ValueError("authorize_graph materiality decision carries unresolved meaning")
-    elif (
-        len(unresolved) != 1
-        or clarification["field"] != unresolved[0]["field"]
-        or not clarification["question"]
-    ):
+    elif not clarification["field"] or not clarification["question"]:
         raise ValueError("clarification_required must name one unresolved canonical field")
     return {
         "version": assessment["version"],
@@ -366,12 +375,16 @@ def _materiality_fields(
     value: Any,
     *,
     evidence_sources: Mapping[str, str],
+    omitted_field: str,
 ) -> list[dict[str, Any]]:
+    expected_fields = [
+        field for field in SEMANTIC_CLARIFICATION_FIELDS if field != omitted_field
+    ]
     rows = _sequence(value, len(SEMANTIC_CLARIFICATION_FIELDS), "materiality fields")
-    if len(rows) != len(SEMANTIC_CLARIFICATION_FIELDS):
+    if len(rows) != len(expected_fields):
         raise ValueError("Semantic materiality assessment lacks exact canonical field coverage")
     result: list[dict[str, Any]] = []
-    for position, expected_field in enumerate(SEMANTIC_CLARIFICATION_FIELDS):
+    for position, expected_field in enumerate(expected_fields):
         row = _mapping(rows[position], "Semantic materiality field")
         _exact_keys(
             row,
@@ -404,10 +417,7 @@ def _materiality_fields(
             8,
             "materiality alternatives",
         )
-        if status == "materially_unresolved":
-            if len(alternatives) < 2:
-                raise ValueError("materially unresolved field needs at least two alternatives")
-        elif alternatives:
+        if alternatives:
             raise ValueError("resolved materiality field carries alternatives")
         result.append(
             {
@@ -420,9 +430,15 @@ def _materiality_fields(
     return result
 
 
-def _materiality_clarification(value: Any) -> dict[str, str]:
+def _materiality_clarification(
+    value: Any, *, evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
     row = _mapping(value, "Semantic materiality clarification")
-    _exact_keys(row, {"field", "question"}, "Semantic materiality clarification")
+    _exact_keys(
+        row,
+        {"field", "question", "source_refs", "alternatives"},
+        "Semantic materiality clarification",
+    )
     field = row.get("field")
     if not isinstance(field, str) or field not in {"", *SEMANTIC_CLARIFICATION_FIELDS}:
         raise ValueError("Semantic materiality clarification field is invalid")
@@ -432,7 +448,25 @@ def _materiality_clarification(value: Any) -> dict[str, str]:
         "materiality clarification question",
         allow_empty=True,
     )
-    return {"field": field, "question": question}
+    source_refs = require_semantic_source_refs(
+        row.get("source_refs"), evidence_sources=evidence_sources, allow_empty=field == "",
+    )
+    alternatives = _unique_text_rows(
+        row.get("alternatives"), 8, "materiality alternatives",
+    )
+    if field:
+        if not question or not source_refs or len(alternatives) < 2:
+            raise ValueError(
+                "Semantic materiality clarification needs one question, citation, and two alternatives"
+            )
+    elif question or source_refs or alternatives:
+        raise ValueError("Resolved materiality assessment carries clarification evidence")
+    return {
+        "field": field,
+        "question": question,
+        "source_refs": source_refs,
+        "alternatives": alternatives,
+    }
 
 
 def _unique_text_rows(value: Any, maximum: int, label: str) -> list[str]:

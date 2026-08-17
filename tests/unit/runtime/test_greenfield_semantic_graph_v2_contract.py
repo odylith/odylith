@@ -155,7 +155,7 @@ def test_graph_v2_versions_and_authoring_cardinality_are_explicit() -> None:
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v2")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v4")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v5")
     assert request["version"] == SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION
     assert request["packet_header"]["version"] == SEMANTIC_INTENT_PACKET_VERSION
     assert request["authoring_contract_sha256"] == authority[

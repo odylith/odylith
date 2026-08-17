@@ -65,7 +65,12 @@ def semantic_materiality_assessment() -> dict[str, Any]:
         "authoring_contract_sha256": contract_sha256,
         "assessment_basis": SEMANTIC_MATERIALITY_ASSESSMENT_BASIS,
         "decision": "authorize_graph",
-        "clarification": {"field": "", "question": ""},
+        "clarification": {
+            "field": "",
+            "question": "",
+            "source_refs": [],
+            "alternatives": [],
+        },
         "fields": [
             {
                 "field": field,
@@ -218,12 +223,12 @@ def semantic_clarification_packet() -> dict[str, Any]:
     assessment["clarification"] = {
         "field": "visible_result",
         "question": question,
+        "source_refs": [semantic_ref(PATH_EVIDENCE)],
+        "alternatives": ["claim receipt", "claim audit view"],
     }
-    visible_result = next(
-        row for row in assessment["fields"] if row["field"] == "visible_result"
-    )
-    visible_result["status"] = "materially_unresolved"
-    visible_result["alternatives"] = ["claim receipt", "claim audit view"]
+    assessment["fields"] = [
+        row for row in assessment["fields"] if row["field"] != "visible_result"
+    ]
     packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
         assessment
     )

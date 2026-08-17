@@ -5,7 +5,7 @@
       "author_run_id": "fixture-semantic-author-run",
       "capability_profile": "frontier_semantic_reasoning"
     },
-    "authoring_contract_sha256": "a66cf2fd4a0e06afa54653c354c55abd66cac4e159640f2b1d130ae35285be61",
+    "authoring_contract_sha256": "a8450533776ad4dc6f85e96bde17010a312a51c702ef9b779af48d46258f0c80",
     "critic_run": {
       "capability_profile": "frontier_semantic_reasoning",
       "critic_run_id": "fixture-materiality-critic-run",
@@ -15,10 +15,12 @@
     "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
     "materiality_assessment": {
       "assessment_basis": "prompt_only_pre_graph",
-      "authoring_contract_sha256": "a66cf2fd4a0e06afa54653c354c55abd66cac4e159640f2b1d130ae35285be61",
+      "authoring_contract_sha256": "a8450533776ad4dc6f85e96bde17010a312a51c702ef9b779af48d46258f0c80",
       "clarification": {
+        "alternatives": [],
         "field": "",
-        "question": ""
+        "question": "",
+        "source_refs": []
       },
       "decision": "authorize_graph",
       "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
@@ -137,9 +139,9 @@
           "status": "source_entailable"
         }
       ],
-      "version": "odylith.greenfield.semantic-materiality-assessment.v2"
+      "version": "odylith.greenfield.semantic-materiality-assessment.v3"
     },
-    "materiality_assessment_sha256": "aaf17999ea74df92643066a00bf38f4df779870645193475f0fa43aa63c2000c",
+    "materiality_assessment_sha256": "31b1b85c2d5ddcbeb1700fb9522b328be45451f010db82ffb36600949184f0be",
     "semantic_intent": {
       "clarification": {
         "fields": [],
