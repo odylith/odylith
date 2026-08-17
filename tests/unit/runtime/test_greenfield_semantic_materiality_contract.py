@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
     SEMANTIC_MATERIALITY_ASSESSMENT_VERSION,
     SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS,
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
+    semantic_intent_output_schema_for_materiality,
     semantic_materiality_assessment_schema,
     semantic_materiality_assessment_sha256,
 )
@@ -169,6 +170,46 @@ def test_materiality_clarification_requires_two_alternatives_only() -> None:
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
+def test_materiality_clarification_citations_are_single_authority() -> None:
+    packet = semantic_clarification_packet()
+    packet["semantic_intent"]["clarification"]["source_refs"] = [
+        semantic_ref("The card moves from ready to claimed.")
+    ]
+
+    with pytest.raises(ValueError, match="clarification does not match"):
+        require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+
+def test_graph_author_schema_locks_the_validated_materiality_decision() -> None:
+    complete = semantic_intent_packet()["materiality_assessment"]
+    clarification = semantic_clarification_packet()["materiality_assessment"]
+    evidence_sources = {"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""}
+    complete_schema = semantic_intent_output_schema_for_materiality(
+        complete,
+        evidence_sources=evidence_sources,
+    )
+    clarification_schema = semantic_intent_output_schema_for_materiality(
+        clarification,
+        evidence_sources=evidence_sources,
+    )
+
+    assert complete_schema["properties"]["status"]["enum"] == ["complete"]
+    assert complete_schema["properties"]["clarification"]["properties"][
+        "question"
+    ]["enum"] == [""]
+    locked = clarification_schema["properties"]["clarification"]["properties"]
+    assert clarification_schema["properties"]["status"]["enum"] == [
+        "clarification_required"
+    ]
+    assert locked["question"]["enum"] == [clarification["clarification"]["question"]]
+    assert locked["fields"]["items"]["enum"] == ["visible_result"]
+    assert locked["source_refs"]["minItems"] == 1
+    assert locked["source_refs"]["maxItems"] == 1
+    assert locked["source_refs"]["items"]["anyOf"][0]["properties"]["quote"][
+        "enum"
+    ] == ["A shift coordinator claims one ready card and receives a claim receipt."]
+
+
 def test_provider_schema_encodes_materiality_status_invariants() -> None:
     schema = semantic_materiality_assessment_schema()
     clarification = schema["properties"]["clarification"]["anyOf"]
@@ -217,7 +258,18 @@ def test_provider_schema_encodes_materiality_status_invariants() -> None:
 
 
 def test_provider_schema_declares_items_for_every_array() -> None:
-    pending: list[object] = [semantic_materiality_assessment_schema()]
+    evidence_sources = {"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""}
+    pending: list[object] = [
+        semantic_materiality_assessment_schema(),
+        semantic_intent_output_schema_for_materiality(
+            semantic_intent_packet()["materiality_assessment"],
+            evidence_sources=evidence_sources,
+        ),
+        semantic_intent_output_schema_for_materiality(
+            semantic_clarification_packet()["materiality_assessment"],
+            evidence_sources=evidence_sources,
+        ),
+    ]
     while pending:
         value = pending.pop()
         if isinstance(value, dict):
@@ -251,13 +303,13 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v5_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v6_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v2")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v5")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v6")
     assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v3")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
@@ -267,6 +319,9 @@ def test_v5_request_requires_prompt_only_schema_constrained_independent_runs() -
     assert request["materiality_gate"]["schema_failure_action"] == (
         "block_or_start_fresh_independent_author_run"
     )
+    assert "provider-locked" in protocol["materiality_gate"][
+        "graph_author_binding"
+    ]
     assert request["packet_structured_output"] == "exact_schema_constrained_when_available"
     assert protocol["structured_output_contract"]["forbidden_action"] == (
         "validation_error_driven_field_repair"

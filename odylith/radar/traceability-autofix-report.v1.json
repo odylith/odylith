@@ -2,18 +2,8 @@
   "repo_root": "/private/tmp/odylith-release-f78169eac",
   "dry_run": false,
   "force_overwrite": false,
-  "modified_files": [
-    "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md"
-  ],
-  "fields_filled": [
-    {
-      "idea_id": "B-144",
-      "file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
-      "field": "related_diagram_ids",
-      "value": "D-043,D-045,D-046,D-047",
-      "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
-    }
-  ],
+  "modified_files": [],
+  "fields_filled": [],
   "conflicts_skipped": [
     {
       "idea_id": "B-010",
@@ -62,11 +52,11 @@
   "warnings": [],
   "summary": {
     "ideas_seen": 145,
-    "files_modified": 1,
-    "fields_filled": 1,
+    "files_modified": 0,
+    "fields_filled": 0,
     "conflicts": 6,
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-08-17 15:39:11Z"
+  "generated_utc": "2026-08-17 15:54:51Z"
 }

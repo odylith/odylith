@@ -11,6 +11,9 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     SEMANTIC_CLARIFICATION_FIELDS,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
+    semantic_intent_output_schema,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
     semantic_source_ref_schema,
@@ -78,6 +81,82 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
                 "maxItems": len(SEMANTIC_CLARIFICATION_FIELDS),
                 "items": _materiality_field_schema(source_ref),
             },
+        },
+    }
+
+
+def semantic_intent_output_schema_for_materiality(
+    assessment: Mapping[str, Any],
+    *,
+    evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
+    """Bind graph author output to the critic-owned materiality decision."""
+
+    schema = semantic_intent_output_schema()
+    properties = schema["properties"]
+    decision = _enum(
+        assessment.get("decision"),
+        {"authorize_graph", "clarification_required"},
+        "materiality decision",
+    )
+    if decision == "authorize_graph":
+        properties["status"] = {"type": "string", "enum": ["complete"]}
+        properties["clarification"] = properties["clarification"]["anyOf"][0]
+        return schema
+
+    clarification = _mapping(
+        assessment.get("clarification"), "Semantic materiality clarification"
+    )
+    field = _enum(
+        clarification.get("field"),
+        set(SEMANTIC_CLARIFICATION_FIELDS),
+        "materiality clarification field",
+    )
+    question = _canonical_text(
+        clarification.get("question"), 600, "materiality clarification question"
+    )
+    source_refs = require_semantic_source_refs(
+        clarification.get("source_refs"),
+        evidence_sources=evidence_sources,
+    )
+    properties["status"] = {
+        "type": "string",
+        "enum": ["clarification_required"],
+    }
+    properties["clarification"] = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["question", "fields", "source_refs"],
+        "properties": {
+            "question": {"type": "string", "enum": [question]},
+            "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "items": {"type": "string", "enum": [field]},
+            },
+            "source_refs": {
+                "type": "array",
+                "minItems": len(source_refs),
+                "maxItems": len(source_refs),
+                "items": {
+                    "anyOf": [_locked_source_ref_schema(row) for row in source_refs]
+                },
+            },
+        },
+    }
+    return schema
+
+
+def _locked_source_ref_schema(source_ref: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["source_id", "quote", "occurrence"],
+        "properties": {
+            "source_id": {"type": "string", "enum": [source_ref["source_id"]]},
+            "quote": {"type": "string", "enum": [source_ref["quote"]]},
+            "occurrence": {"type": "integer", "enum": [source_ref["occurrence"]]},
         },
     }
 
@@ -375,6 +454,7 @@ def require_materiality_intent_alignment(
         or status != "clarification_required"
         or clarification.get("fields") != [expected.get("field")]
         or clarification.get("question") != expected.get("question")
+        or clarification.get("source_refs") != expected.get("source_refs")
     ):
         raise ValueError("materiality clarification does not match the clarification IR")
 
@@ -562,6 +642,7 @@ __all__ = [
     "require_semantic_materiality_assessment",
     "require_semantic_reasoning_runs",
     "semantic_intent_author_schema",
+    "semantic_intent_output_schema_for_materiality",
     "semantic_materiality_assessment_schema",
     "semantic_materiality_assessment_sha256",
     "semantic_materiality_critic_schema",

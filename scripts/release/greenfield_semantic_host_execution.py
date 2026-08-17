@@ -34,11 +34,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     require_semantic_intent_ir,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
-    semantic_intent_output_schema,
-)
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     require_materiality_intent_alignment,
+    semantic_intent_output_schema_for_materiality,
     semantic_materiality_assessment_schema,
     semantic_materiality_assessment_sha256,
 )
@@ -87,10 +85,17 @@ def author_development_case(
         case_id=case_id,
         materiality_assessment=assessment,
     )
+    validated_assessment = _mapping(
+        author_input.get("materiality_assessment"), "validated materiality assessment"
+    )
+    author_evidence = _mapping(author_input.get("evidence"), "author evidence")
     author_output, author_usage, author_wall_ms = _run_stage(
         stage="author",
         phase_input=author_input,
-        output_schema=_author_output_schema(),
+        output_schema=_author_output_schema(
+            validated_assessment,
+            evidence_sources={key: str(value) for key, value in author_evidence.items()},
+        ),
         binary=binary,
         host_profile=host_profile,
         timeout_seconds=timeout_seconds,
@@ -337,13 +342,20 @@ def _run_receipt(
     )
 
 
-def _author_output_schema() -> dict[str, Any]:
+def _author_output_schema(
+    materiality_assessment: Mapping[str, Any],
+    *,
+    evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
     return {
         "type": "object",
         "additionalProperties": False,
         "required": ["semantic_intent", "self_challenge"],
         "properties": {
-            "semantic_intent": semantic_intent_output_schema(),
+            "semantic_intent": semantic_intent_output_schema_for_materiality(
+                materiality_assessment,
+                evidence_sources=evidence_sources,
+            ),
             "self_challenge": {
                 "type": "array",
                 "minItems": len(SEMANTIC_INTENT_MANDATORY_CHALLENGES),

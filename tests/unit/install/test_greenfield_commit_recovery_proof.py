@@ -62,7 +62,7 @@ def _semantic_authority(case, *, semantic_intent=None, evidence_sha256=None):  #
         "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v3",
         "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v2",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v5"
+            "odylith.greenfield.semantic-intent-authoring-request.v6"
         ),
         "semantic_intent_authoring_contract_sha256": packet[
             "authoring_contract_sha256"

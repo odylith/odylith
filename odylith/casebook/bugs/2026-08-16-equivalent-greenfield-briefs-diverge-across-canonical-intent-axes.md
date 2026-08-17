@@ -114,6 +114,20 @@
   regression prevents another provider-array drift. Fresh assignments and a
   fresh contract hash are required before semantic evidence resumes.
 
+- Clarification-Authority Follow-up (2026-08-17): Fresh provider-valid evidence
+  produced the correct visible-result, missing-role, and explicit-conflict
+  decisions in three completed segments, but a fourth segment failed because
+  the graph author paraphrased the critic-owned clarification question. Prompt
+  instructions already required exact copying, so another instruction is a
+  rejected mechanism. Letting the host rewrite model output after validation
+  would hide the disagreement. Instead, keep the materiality critic as the
+  sole decision owner and derive the graph author's structured-output schema
+  from the validated assessment: status, clarification field, and question are
+  provider-locked before authoring, while the independent author still owns
+  the settled source-cited graph. Runtime alignment must compare the complete
+  clarification, including citations. This is a typed authority boundary, not
+  prose normalization or validator-guided repair.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.
