@@ -58,6 +58,39 @@
   prose-reparse paths as their final compatibility callers move; keep
   post-confirm publication model-free and byte-exact.
 
+- Mechanism Evidence (2026-08-17): A fresh revision-bound v3 frontier ran an
+  isolated prompt-only materiality critic and a distinct graph author once for
+  each of four previously difficult ambiguity cases. All four executions were
+  structurally valid, source-cited, and repair-free. The critic correctly
+  requested clarification for the explicit preview-versus-release conflict,
+  but incorrectly authorized two workflows that supplied only an internal
+  destination instead of a consumer-visible result and one workflow that
+  omitted the human owner. The graph author then sealed those three incomplete
+  interpretations as complete while reporting every self-challenge as passed.
+  This repeats a material failure class across independent prompts and blocks
+  scaling the current contract to the full cohort.
+
+- Failed Mechanism (2026-08-17): A field-agnostic materiality schema plus the
+  broad statement that actor and ownership axes are optional does not give the
+  reasoning critic enough semantic distinction to separate an observable
+  result from an internal state or destination, or a genuinely actorless
+  product workflow from a human workflow whose owner is missing. JSON schema,
+  citation, and self-challenge validity cannot repair that missing decision
+  contract. Adding deterministic prose patterns or fixture vocabulary is
+  explicitly rejected.
+
+- Revised Solution (2026-08-17): Keep the single isolated critic provisional,
+  but version its authoring contract with domain-neutral field semantics and
+  counterexamples. A visible result must be an observable artifact, status,
+  decision, notification, or evidence available after the path; a transition,
+  destination, collection membership, or completed action alone is not a
+  visible result unless the source makes it observable. Actorless execution is
+  valid only when evidence entails product or system ownership; a described
+  human-operated workflow with no accountable role remains materially
+  unresolved. Re-run the same blinded frontier with fresh assignments. If the
+  failure repeats, compare a second independent materiality critic or a
+  candidate-review regime rather than adding local exceptions.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.
@@ -86,3 +119,6 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py
 - src/odylith/runtime/domain_intelligence/greenfield_structured_first_path.py
 - src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py
+- src/odylith/runtime/domain_intelligence/greenfield_semantic_authoring_contract.py
+- src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py
+- scripts/release/greenfield_semantic_host_execution.py

@@ -18,7 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 SEMANTIC_MATERIALITY_ASSESSMENT_VERSION = (
-    "odylith.greenfield.semantic-materiality-assessment.v1"
+    "odylith.greenfield.semantic-materiality-assessment.v2"
 )
 SEMANTIC_REASONING_CAPABILITY_PROFILE = "frontier_semantic_reasoning"
 SEMANTIC_MATERIALITY_ASSESSMENT_BASIS = "prompt_only_pre_graph"
@@ -27,6 +27,13 @@ SEMANTIC_MATERIALITY_STATUSES = (
     "source_entailable",
     "nonmaterial_assumption",
     "materially_unresolved",
+)
+SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS = (
+    "state_object",
+    "dependency",
+    "constraint",
+    "non_goal",
+    "component_boundary",
 )
 
 
@@ -117,6 +124,7 @@ def _materiality_field_schema(source_ref: Mapping[str, Any]) -> dict[str, Any]:
             _materiality_field_variant_schema(
                 source_ref=source_ref,
                 statuses=("nonmaterial_assumption",),
+                fields=SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS,
                 source_ref_minimum=0,
                 source_ref_maximum=0,
                 alternative_minimum=0,
@@ -137,6 +145,7 @@ def _materiality_field_variant_schema(
     *,
     source_ref: Mapping[str, Any],
     statuses: tuple[str, ...],
+    fields: tuple[str, ...] = SEMANTIC_CLARIFICATION_FIELDS,
     source_ref_minimum: int,
     source_ref_maximum: int = 8,
     alternative_minimum: int,
@@ -149,7 +158,7 @@ def _materiality_field_variant_schema(
         "properties": {
             "field": {
                 "type": "string",
-                "enum": list(SEMANTIC_CLARIFICATION_FIELDS),
+                "enum": list(fields),
             },
             "status": {"type": "string", "enum": list(statuses)},
             "source_refs": {
@@ -383,6 +392,13 @@ def _materiality_fields(
         )
         if status == "nonmaterial_assumption" and source_refs:
             raise ValueError("nonmaterial assumption carries explicit source citations")
+        if (
+            status == "nonmaterial_assumption"
+            and expected_field not in SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS
+        ):
+            raise ValueError(
+                f"Semantic materiality field cannot be assumed nonmaterial: {expected_field}"
+            )
         alternatives = _unique_text_rows(
             row.get("alternatives"),
             8,
@@ -491,6 +507,7 @@ def _canonical_json_bytes(value: Mapping[str, Any]) -> bytes:
 __all__ = [
     "SEMANTIC_MATERIALITY_ASSESSMENT_BASIS",
     "SEMANTIC_MATERIALITY_ASSESSMENT_VERSION",
+    "SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS",
     "SEMANTIC_MATERIALITY_STATUSES",
     "SEMANTIC_REASONING_CAPABILITY_PROFILE",
     "require_materiality_intent_alignment",

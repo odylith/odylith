@@ -17,17 +17,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_diagrams import (
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_packet import (
     require_semantic_intent_packet,
-    semantic_evidence_sha256,
     semantic_intent_authority,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import (
     semantic_artifact_identifier,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
-    SEMANTIC_INTENT_IR_VERSION,
-)
-from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
-    semantic_materiality_assessment_sha256,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_plan import (
     build_semantic_projection_plan,
@@ -39,11 +32,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_proposal import (
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
-    semantic_fact,
     semantic_intent_packet,
-    semantic_narrative,
-    semantic_ref,
-    semantic_relation,
+    stateless_semantic_intent_packet as _stateless_packet,
 )
 
 
@@ -744,187 +734,6 @@ def _stateless_graph() -> dict[str, Any]:
         _relation("relation.implements.2", "implements", "system.0", "output.1", 2),
     ]
     return {"facts": facts, "relations": relations, "narratives": []}
-
-
-def _stateless_packet() -> tuple[dict[str, Any], str]:
-    prompt = (
-        "Build a signal view. The product presents a signal chart and signal summary "
-        "without durable state."
-    )
-    facts = [
-        semantic_fact(
-            "identity.0",
-            "identity",
-            "Signal View",
-            "Signal View presents a chart and summary without durable state.",
-            0,
-            prompt,
-            attributes={"source_title": "signal view"},
-        ),
-        semantic_fact(
-            "step.0",
-            "workflow_step",
-            "Present signal",
-            "The product presents a signal chart and signal summary.",
-            0,
-            prompt,
-            owner_kind="product",
-            attributes={
-                "action": "present",
-                "action_phrase": "present a signal chart and signal summary",
-            },
-        ),
-        semantic_fact(
-            "output.0",
-            "visible_output",
-            "Signal chart",
-            "A signal chart is visible.",
-            0,
-            prompt,
-        ),
-        semantic_fact(
-            "output.1",
-            "visible_output",
-            "Signal summary",
-            "A signal summary is visible.",
-            1,
-            prompt,
-        ),
-        semantic_fact(
-            "system.0",
-            "internal_system",
-            "Signal Service",
-            "Signal Service owns stateless chart and summary presentation.",
-            0,
-            prompt,
-            custody="bounded_interpretation",
-            attributes={
-                "responsibility": "Present the two accepted signal outputs without durable state.",
-                "component_kind": "service",
-                "boundary": "Own signal chart and summary presentation.",
-                "outside_boundary": "Durable state and behavior outside the accepted outputs.",
-                "proof": "Prove that both accepted outputs are visible without durable state.",
-                "risk": "One output could be omitted or persistence could be invented.",
-                "release_scope": "first_path_required",
-            },
-        ),
-        semantic_fact(
-            "non-goal.0",
-            "non_goal",
-            "No durable state",
-            "The signal view has no durable state.",
-            0,
-            prompt,
-        ),
-    ]
-    relations = [
-        semantic_relation("produces", "step.0", "output.0", 0, prompt),
-        semantic_relation("produces", "step.0", "output.1", 1, prompt),
-        semantic_relation("implements", "system.0", "step.0", 0, prompt),
-        semantic_relation("implements", "system.0", "output.0", 1, prompt),
-        semantic_relation("implements", "system.0", "output.1", 2, prompt),
-        semantic_relation("excludes", "identity.0", "non-goal.0", 0, prompt),
-    ]
-    narratives = [
-        semantic_narrative(
-            "product_story",
-            "Signal View presents a signal chart and summary without durable state.",
-            ["identity.0", "step.0", "output.0", "output.1"],
-            prompt,
-        ),
-        semantic_narrative(
-            "problem",
-            "Two signal outputs need one explicit stateless presentation path.",
-            ["identity.0", "output.0", "output.1"],
-            prompt,
-        ),
-        semantic_narrative(
-            "customer",
-            "The product consumer receives both signal outputs.",
-            ["output.0", "output.1"],
-            prompt,
-        ),
-        semantic_narrative(
-            "opportunity",
-            "Present both accepted outputs without inventing persistence.",
-            ["output.0", "output.1", "non-goal.0"],
-            prompt,
-        ),
-        semantic_narrative(
-            "product_view",
-            "A stateless service presents a signal chart and signal summary.",
-            ["system.0", "output.0", "output.1"],
-            prompt,
-        ),
-        semantic_narrative(
-            "proof_boundary",
-            "Both signal outputs are visible and no durable state is created.",
-            ["output.0", "output.1", "non-goal.0"],
-            prompt,
-        ),
-        semantic_narrative(
-            "success_metric",
-            "The signal chart is visible.",
-            ["output.0"],
-            prompt,
-        ),
-        semantic_narrative(
-            "success_metric",
-            "The signal summary is visible without durable state.",
-            ["output.1", "non-goal.0"],
-            prompt,
-            order=1,
-        ),
-        semantic_narrative(
-            "evidence_requirement",
-            "Verify both outputs and the absence of durable state.",
-            ["output.0", "output.1", "non-goal.0"],
-            prompt,
-        ),
-    ]
-    graph = {
-        "version": SEMANTIC_INTENT_IR_VERSION,
-        "status": "complete",
-        "clarification": {"question": "", "fields": [], "source_refs": []},
-        "facts": facts,
-        "relations": relations,
-        "narratives": narratives,
-    }
-    packet = semantic_intent_packet()
-    evidence_sha256 = semantic_evidence_sha256(
-        {"operator_prompt": prompt, "operator_edit": ""}
-    )
-    assessment = copy.deepcopy(packet["materiality_assessment"])
-    assessment["evidence_sha256"] = evidence_sha256
-    cited_fields = {
-        "identity",
-        "first_path",
-        "visible_result",
-        "non_goal",
-        "component_boundary",
-    }
-    for row in assessment["fields"]:
-        field = row["field"]
-        row["status"] = (
-            "source_entailable"
-            if field == "component_boundary"
-            else "explicit"
-            if field in cited_fields
-            else "nonmaterial_assumption"
-        )
-        row["source_refs"] = [semantic_ref(prompt)] if field in cited_fields else []
-        row["alternatives"] = []
-    packet.update(
-        {
-            "evidence_sha256": evidence_sha256,
-            "materiality_assessment": assessment,
-            "materiality_assessment_sha256": (
-                semantic_materiality_assessment_sha256(assessment)
-            ),
-            "semantic_intent": graph,
-        }
-    )
-    return packet, prompt
 
 
 def _two_state_graph() -> dict[str, Any]:

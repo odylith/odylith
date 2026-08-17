@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v3"
+    "odylith.greenfield.semantic-intent-authoring-request.v4"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -56,6 +56,60 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "decision": "authorize_graph_or_request_one_focused_clarification",
             "candidate_access": "forbidden",
         },
+        "materiality_field_semantics": {
+            "identity": (
+                "the product or tool being created; discarded or historical labels are not identity"
+            ),
+            "role": (
+                "the target user or accountable human or organizational participant; an empty "
+                "actor graph is settled only when evidence entails product or system ownership "
+                "without a human-facing interaction"
+            ),
+            "first_path": (
+                "the complete ordered usable path from its accepted input or selection through "
+                "the action that makes the visible result available"
+            ),
+            "state_object": (
+                "a durable domain object and its supported transition; a destination or collection "
+                "name alone does not establish a separate state object"
+            ),
+            "visible_result": (
+                "an artifact, status, decision, notification, summary, receipt, or evidence that "
+                "a consumer can observe after the path; a mutation, destination, collection "
+                "membership, or completed action alone is not a visible result"
+            ),
+            "dependency": (
+                "a named system, data source, repository resource, or service required by the path"
+            ),
+            "constraint": "a safety or operating limit on accepted behavior or access",
+            "non_goal": "a capability or outcome explicitly excluded from product scope",
+            "component_boundary": (
+                "a distinct implementation responsibility or external boundary justified by typed "
+                "facts; optional architecture depth is not a material product question"
+            ),
+        },
+        "materiality_decision_rules": [
+            (
+                "authorize only when identity, target role or source-entailable actorless ownership, "
+                "complete first path, and observable visible result are settled"
+            ),
+            (
+                "do not use an internal transition, destination, lane membership, or successful "
+                "mutation as evidence of a visible result unless the source makes it observable"
+            ),
+            (
+                "when evidence describes a human-facing interaction but omits who performs or "
+                "receives it, mark role materially unresolved"
+            ),
+            (
+                "when product or system ownership is explicit and no human-facing interaction is "
+                "required, role may be source-entailable without an actor fact"
+            ),
+            (
+                "ask exactly one question for the highest-impact unresolved canonical field and "
+                "preserve all settled meaning"
+            ),
+        ],
         "structured_output_contract": {
             "assessment_mode": "exact_schema_constrained_when_available",
             "packet_mode": "exact_schema_constrained_when_available",
@@ -119,10 +173,15 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "component_boundaries",
             "proof",
         ],
-        "optional_axes": [
-            "actors_and_ownership",
-            "state_objects_and_transitions",
-        ],
+        "conditionally_optional_axes": {
+            "actors_and_ownership": (
+                "empty only for source-entailable product or system ownership without a "
+                "human-facing interaction"
+            ),
+            "state_objects_and_transitions": (
+                "empty when evidence does not declare durable state"
+            ),
+        },
         "empty_axis_rule": (
             "emit an empty actor or state-object collection when evidence does not "
             "support that axis; never synthesize a placeholder fact"

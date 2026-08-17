@@ -780,7 +780,7 @@ def _require_case_evidence_bound_to_transaction(
         "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v3",
         "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v2",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v3"
+            "odylith.greenfield.semantic-intent-authoring-request.v4"
         ),
         "semantic_intent_authoring_contract_sha256": str(
             case.packet.get("authoring_contract_sha256") or ""

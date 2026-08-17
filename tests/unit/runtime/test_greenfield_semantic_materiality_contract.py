@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_request impo
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_MATERIALITY_ASSESSMENT_VERSION,
+    SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS,
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
     semantic_materiality_assessment_schema,
     semantic_materiality_assessment_sha256,
@@ -38,6 +39,7 @@ from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     semantic_clarification_packet,
     semantic_intent_packet,
     semantic_ref,
+    stateless_semantic_intent_packet,
 )
 
 
@@ -49,45 +51,15 @@ def _rehash_assessment(packet: dict[str, object]) -> None:
     )
 
 
-def _actorless_stateless_packet() -> dict[str, object]:
-    packet = copy.deepcopy(semantic_intent_packet())
-    intent = packet["semantic_intent"]
-    assert isinstance(intent, dict)
-    intent["facts"] = [
-        row for row in intent["facts"] if row["kind"] not in {"actor", "state_object"}
-    ]
-    for row in intent["facts"]:
-        if row["kind"] == "workflow_step":
-            row["owner_kind"] = "product"
-    intent["relations"] = [
-        row
-        for row in intent["relations"]
-        if row["kind"] not in {"owned_by", "changes"}
-        and row["object_id"] != "state.0"
-    ]
-    live_fact_ids = {row["fact_id"] for row in intent["facts"]}
-    for row in intent["narratives"]:
-        row["fact_ids"] = [
-            fact_id for fact_id in row["fact_ids"] if fact_id in live_fact_ids
-        ] or ["identity.0"]
-    assessment = packet["materiality_assessment"]
-    assert isinstance(assessment, dict)
-    for row in assessment["fields"]:
-        if row["field"] in {"role", "state_object"}:
-            row["status"] = "nonmaterial_assumption"
-            row["source_refs"] = []
-    _rehash_assessment(packet)
-    return packet
-
-
 def test_prompt_only_gate_accepts_complete_and_actorless_stateless_graphs() -> None:
+    stateless_packet, stateless_prompt = stateless_semantic_intent_packet()
     complete = require_semantic_intent_packet(
         semantic_intent_packet(),
         prompt=SEMANTIC_PROMPT,
     )
     support = require_semantic_intent_packet(
-        _actorless_stateless_packet(),
-        prompt=SEMANTIC_PROMPT,
+        stateless_packet,
+        prompt=stateless_prompt,
     )
 
     assert complete.materiality_assessment["decision"] == "authorize_graph"
@@ -123,6 +95,7 @@ def test_prompt_only_gate_accepts_one_aligned_clarification_but_cannot_seal_it()
         ("post_candidate", "not prompt-only and pre-graph"),
         ("candidate_aware", "invalid structure"),
         ("resolved_alternatives", "resolved materiality field carries alternatives"),
+        ("required_field_assumed_nonmaterial", "cannot be assumed nonmaterial: role"),
         ("decision_mismatch", "materiality clarification does not match"),
     ],
 )
@@ -160,6 +133,10 @@ def test_prompt_only_gate_rejects_tamper_and_mechanism_drift(
         _rehash_assessment(packet)
     elif mutation == "resolved_alternatives":
         assessment["fields"][0]["alternatives"] = ["one", "two"]
+        _rehash_assessment(packet)
+    elif mutation == "required_field_assumed_nonmaterial":
+        assessment["fields"][1]["status"] = "nonmaterial_assumption"
+        assessment["fields"][1]["source_refs"] = []
         _rehash_assessment(packet)
     else:
         assessment["decision"] = "clarification_required"
@@ -205,6 +182,9 @@ def test_provider_schema_encodes_materiality_status_invariants() -> None:
     assert variants[1]["properties"]["status"]["enum"] == [
         "nonmaterial_assumption"
     ]
+    assert variants[1]["properties"]["field"]["enum"] == list(
+        SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS
+    )
     assert variants[1]["properties"]["source_refs"]["maxItems"] == 0
     assert variants[1]["properties"]["alternatives"]["maxItems"] == 0
     assert variants[2]["properties"]["status"]["enum"] == [
@@ -237,14 +217,14 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v3_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v4_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v2")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v3")
-    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v1")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v4")
+    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v2")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
     assert request["materiality_gate"]["structured_output"] == (
@@ -271,6 +251,12 @@ def test_v3_request_requires_prompt_only_schema_constrained_independent_runs() -
         "semantic_kind_conflation"
     )
     assert protocol["semantic_kind_disambiguation"]["runtime_detection"] == "forbidden"
+    assert "consumer can observe" in protocol["materiality_field_semantics"]["visible_result"]
+    assert "human-facing interaction" in protocol["materiality_field_semantics"]["role"]
+    assert any(
+        "internal transition" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
     assert request["packet_header"]["authoring_contract_sha256"] == (
         semantic_intent_authoring_contract_sha256()
     )

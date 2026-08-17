@@ -35,9 +35,7 @@ from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     SEMANTIC_PROMPT,
     semantic_fact,
     semantic_intent_packet,
-)
-from tests.unit.runtime.test_greenfield_semantic_projection_plan import (
-    _stateless_packet,
+    stateless_semantic_intent_packet as _stateless_packet,
 )
 
 

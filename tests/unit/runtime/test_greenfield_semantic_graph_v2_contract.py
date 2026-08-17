@@ -155,7 +155,7 @@ def test_graph_v2_versions_and_authoring_cardinality_are_explicit() -> None:
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v2")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v3")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v4")
     assert request["version"] == SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION
     assert request["packet_header"]["version"] == SEMANTIC_INTENT_PACKET_VERSION
     assert request["authoring_contract_sha256"] == authority[
@@ -195,10 +195,16 @@ def test_graph_v2_versions_and_authoring_cardinality_are_explicit() -> None:
         "evidence-noise labels" in requirement
         for requirement in request["authoring_protocol"]["outcome_requirements"]
     )
-    assert request["authoring_protocol"]["optional_axes"] == [
+    optional = request["authoring_protocol"]["conditionally_optional_axes"]
+    assert set(optional) == {
         "actors_and_ownership",
         "state_objects_and_transitions",
-    ]
+    }
+    assert "human-facing interaction" in optional["actors_and_ownership"]
+    assert "durable state" in optional["state_objects_and_transitions"]
+    semantics = request["authoring_protocol"]["materiality_field_semantics"]
+    assert set(semantics) == set(contract["status_contract"]["clarification_fields"])
+    assert "not a visible result" in semantics["visible_result"]
     assert contract["status_contract"]["clarification_fields"] == [
         "identity",
         "role",
