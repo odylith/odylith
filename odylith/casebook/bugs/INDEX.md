@@ -6,6 +6,8 @@ Last updated (UTC): 2026-08-17
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-329 | 2026-08-17 | Greenfield treats a missing proper name as a material product ambiguity | P1 | domain-intelligence | Open | [2026-08-17-greenfield-treats-a-missing-proper-name-as-a-material-product-ambiguity.md](2026-08-17-greenfield-treats-a-missing-proper-name-as-a-material-product-ambiguity.md) |
+| CB-330 | 2026-08-17 | Greenfield release evidence was stored in ephemeral temporary storage | P1 | release | Open | [2026-08-17-greenfield-release-evidence-was-stored-in-ephemeral-temporary-storage.md](2026-08-17-greenfield-release-evidence-was-stored-in-ephemeral-temporary-storage.md) |
 | CB-326 | 2026-08-16 | Greenfield leakage baseline misses native supplemental source candidates | P1 | release | Open | [2026-08-16-greenfield-leakage-baseline-misses-native-supplemental-source-candidates.md](2026-08-16-greenfield-leakage-baseline-misses-native-supplemental-source-candidates.md) |
 | CB-327 | 2026-08-16 | Greenfield aggregate proof misclassifies sealed synthetic metamorphic evidence | P1 | release | Open | [2026-08-16-greenfield-aggregate-proof-misclassifies-sealed-synthetic-metamorphic-evidence.md](2026-08-16-greenfield-aggregate-proof-misclassifies-sealed-synthetic-metamorphic-evidence.md) |
 | CB-328 | 2026-08-16 | Equivalent greenfield briefs diverge across canonical intent axes | P1 | domain-intelligence | Open | [2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md](2026-08-16-equivalent-greenfield-briefs-diverge-across-canonical-intent-axes.md) |

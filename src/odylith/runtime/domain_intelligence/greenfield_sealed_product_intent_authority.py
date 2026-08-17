@@ -36,7 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v11"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v12"
 _SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
         "version",

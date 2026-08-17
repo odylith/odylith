@@ -134,7 +134,7 @@ def test_codex_jsonl_accepts_reasoning_and_rejects_tool_events(tmp_path: Path) -
 
 def _context(tmp_path: Path) -> dict[str, Any]:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v5.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v6.json").read_text(
             encoding="utf-8"
         )
     )

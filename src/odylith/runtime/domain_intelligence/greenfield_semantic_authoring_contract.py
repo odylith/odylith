@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v9"
+    "odylith.greenfield.semantic-intent-authoring-request.v10"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -63,7 +63,9 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
         },
         "materiality_field_semantics": {
             "identity": (
-                "the product or tool being created; discarded or historical labels are not identity"
+                "the functional product or tool being created, not necessarily a proper name; "
+                "when the product function and boundary are settled, a missing name is a "
+                "nonmaterial bounded assumption; discarded or historical labels are not identity"
             ),
             "role": (
                 "the target user or accountable human or organizational participant; an empty "
@@ -95,8 +97,14 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
         },
         "materiality_decision_rules": [
             (
-                "authorize only when identity, target role or source-entailable actorless ownership, "
-                "complete first path, and observable visible result are settled"
+                "authorize when functional identity, target role or source-entailable actorless "
+                "ownership, complete first path, and observable visible result are settled; a "
+                "missing proper name alone is not a material question"
+            ),
+            (
+                "clarify identity only when competing product interpretations materially change "
+                "the product boundary, first path, or visible result; otherwise author a concise "
+                "functional identity as bounded interpretation and keep the assumption visible"
             ),
             (
                 "do not use an internal transition, destination, lane membership, or successful "

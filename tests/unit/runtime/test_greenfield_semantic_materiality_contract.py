@@ -41,10 +41,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
     semantic_source_ref_schema,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
+    IDENTITY_EVIDENCE,
     PATH_EVIDENCE,
     SEMANTIC_PROMPT,
     semantic_clarification_packet,
     semantic_intent_packet,
+    semantic_materiality_assessment,
     semantic_ref,
     stateless_semantic_intent_packet,
 )
@@ -74,6 +76,51 @@ def test_prompt_only_gate_accepts_complete_and_actorless_stateless_graphs() -> N
     assert support.product_facts is not None
     assert support.product_facts["human_actors"] == []
     assert support.product_facts["state_objects"] == []
+
+
+def test_missing_proper_name_is_a_nonmaterial_identity_assumption() -> None:
+    packet = copy.deepcopy(semantic_intent_packet())
+    assessment = packet["materiality_assessment"]
+    assert isinstance(assessment, dict)
+    identity = next(row for row in assessment["fields"] if row["field"] == "identity")
+    identity["status"] = "nonmaterial_assumption"
+    identity["source_refs"] = []
+    _rehash_assessment(packet)
+
+    verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+    assert verified.materiality_assessment["decision"] == "authorize_graph"
+    assert "identity" in SEMANTIC_NONMATERIAL_ASSUMPTION_FIELDS
+
+
+def test_identity_clarification_remains_available_for_material_boundary_choice() -> None:
+    packet = semantic_clarification_packet()
+    assessment = packet["materiality_assessment"]
+    assert isinstance(assessment, dict)
+    question = "Which product boundary is intended?"
+    source_refs = [semantic_ref(IDENTITY_EVIDENCE)]
+    assessment["clarification"] = {
+        "field": "identity",
+        "question": question,
+        "source_refs": source_refs,
+        "alternatives": ["a standalone claim desk", "a capability in an existing tool"],
+    }
+    assessment["fields"] = [
+        row
+        for row in semantic_materiality_assessment()["fields"]
+        if row["field"] != "identity"
+    ]
+    packet["semantic_intent"]["clarification"] = {
+        "question": question,
+        "fields": ["identity"],
+        "source_refs": source_refs,
+    }
+    _rehash_assessment(packet)
+
+    verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+    assert verified.product_facts is None
+    assert verified.semantic_intent["clarification"]["fields"] == ["identity"]
 
 
 def test_prompt_only_gate_accepts_one_aligned_clarification_but_cannot_seal_it() -> None:
@@ -382,14 +429,14 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v8_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v10_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v5")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v9")
-    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v3")
+    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v6")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v10")
+    assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v4")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
     assert request["materiality_gate"]["structured_output"] == (
@@ -421,6 +468,15 @@ def test_v8_request_requires_prompt_only_schema_constrained_independent_runs() -
     assert protocol["semantic_kind_disambiguation"]["runtime_detection"] == "forbidden"
     assert "consumer can observe" in protocol["materiality_field_semantics"]["visible_result"]
     assert "human-facing interaction" in protocol["materiality_field_semantics"]["role"]
+    assert "missing name is a nonmaterial" in protocol["materiality_field_semantics"]["identity"]
+    assert any(
+        "missing proper name alone is not a material question" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
+    assert any(
+        "competing product interpretations materially change" in rule
+        for rule in protocol["materiality_decision_rules"]
+    )
     assert "critic-validated exact-byte citation catalog" in protocol[
         "materiality_gate"
     ]["graph_author_binding"]
