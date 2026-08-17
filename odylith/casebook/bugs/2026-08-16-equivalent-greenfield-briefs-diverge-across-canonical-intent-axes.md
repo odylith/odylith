@@ -189,6 +189,29 @@
   transaction/recovery proof is `141/141`; a new revision-bound assignment is
   required before development evidence resumes.
 
+- Component-Role Follow-up (2026-08-17): The first complete handle-bound
+  development cohort produced 24 structurally valid one-shot segments with
+  zero repair, but bundle compilation stopped on `gfhi-011`. Its local text
+  index adapter was correctly required by the first path and correctly owned
+  no workflow/state/output result. The author therefore selected
+  `first_path_required`, while component projection incorrectly treated that
+  release-membership value as synonymous with direct result ownership. This
+  was a contract collision, not missing source custody.
+
+- Component-Role Resolution (2026-08-17): Release membership and
+  implementation role now have separate typed owners. `release_scope` answers
+  only whether a component is `first_path_required` or `deferred`; the retired
+  `supporting` scope value is absent. Projection derives
+  `result_implementing` solely from typed `implements` relations and
+  `boundary_supporting` solely from a required component's incoming dependency
+  plus outgoing dependency/constraint/exclusion topology. The persisted
+  projection plan owns the first-workflow component used for release handoff.
+  IR v4, packet v5, request v9, authority v11, compiler identity v10,
+  component contract v3, projection plan v2, proposal v2, and semantic model
+  v4 reject or supersede the conflated contract. Focused proof is `33/33` and
+  the release-contract suite is `251/251`; fresh model evidence is still
+  required.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.

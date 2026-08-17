@@ -69,8 +69,9 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     assert len(proposal["diagrams"]) == 1
     contract = proposal["components"][0]["component_contract"]
     assert contract["schema_version"] == (
-        "odylith.greenfield.semantic-component-contract.v2"
+        "odylith.greenfield.semantic-component-contract.v3"
     )
+    assert contract["component_role"] == "result_implementing"
     assert contract["workflow_fact_ids"] == ["step.0"]
     assert contract["workflow_labels"] == ["Present signal"]
     assert contract["state_objects"] == []
@@ -85,7 +86,7 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
     )
     assert "state" not in proposal["components"][0]["validation"][1].casefold()
     semantic_model = proposal["semantic_model"]
-    assert semantic_model["schema_version"] == "odylith.greenfield.semantic_model.v3"
+    assert semantic_model["schema_version"] == "odylith.greenfield.semantic_model.v4"
     first_path = semantic_model["first_path_contract"]
     assert first_path["workflow_fact_ids"] == ["step.0"]
     assert first_path["visible_outputs"] == ["Signal chart", "Signal summary"]
@@ -110,6 +111,7 @@ def test_actorless_stateless_one_system_two_output_plan_stays_single_slice() -> 
         "Signal chart",
         "Signal summary",
     )
+    assert authoring_contract["component_role"] == "result_implementing"
     assert len(authoring_contract["local_proof"]) == 2
 
 
@@ -187,7 +189,8 @@ def test_supporting_dependency_boundary_needs_no_invented_result_ownership() -> 
         row for row in inputs if row["semantic_fact_id"] == "system.1"
     )
 
-    assert plan.components[1]["release_scope"] == "supporting"
+    assert plan.components[1]["release_scope"] == "first_path_required"
+    assert plan.components[1]["component_role"] == "boundary_supporting"
     assert plan.components[1]["semantic_implements"] == []
     assert plan.components[1]["result_summary"] == ""
     assert plan.components[1]["interfaces"] == [
@@ -198,6 +201,9 @@ def test_supporting_dependency_boundary_needs_no_invented_result_ownership() -> 
     ]
     assert supporting["component_contract"]["state_objects"] == ()
     assert supporting["component_contract"]["visible_outputs"] == ()
+    assert supporting["component_contract"]["component_role"] == (
+        "boundary_supporting"
+    )
     assert supporting["interfaces"] == (
         "Signal Service depends on Signal Source Reader",
         "Signal Source Reader depends on Signal Source",
@@ -255,17 +261,14 @@ def test_graph_lane_source_has_no_synthetic_result_fallback() -> None:
     assert offenders == []
 
 
-def test_first_path_component_without_implemented_result_remains_invalid() -> None:
+def test_release_membership_does_not_fabricate_result_ownership() -> None:
     graph = _supporting_boundary_graph()
-    supporting = next(
-        row for row in graph["facts"] if row["fact_id"] == "system.1"
-    )
-    next(
-        row for row in supporting["attributes"] if row["name"] == "release_scope"
-    )["value"] = "first_path_required"
+    plan, _ = _component_inputs(graph)
+    supporting = plan.components[1]
 
-    with pytest.raises(ValueError, match="first-path.*lacks an implemented result fact"):
-        _component_inputs(graph)
+    assert supporting["release_scope"] == "first_path_required"
+    assert supporting["component_role"] == "boundary_supporting"
+    assert supporting["semantic_implements"] == []
 
 
 def test_resultless_supporting_component_without_first_path_consumer_is_orphaned() -> None:
@@ -518,7 +521,7 @@ def test_verified_proposal_persists_and_consumes_one_projection_plan() -> None:
     )
 
     assert proposal["projection_plan"]["version"] == (
-        "odylith.greenfield.semantic-projection-plan.v1"
+        "odylith.greenfield.semantic-projection-plan.v2"
     )
     assert "apply_semantic_input" not in proposal
     assert proposal["semantic_model"]["first_path_contract"]["state_objects"] == [
@@ -675,7 +678,7 @@ def _supporting_system(
             "outside_boundary": "Signal presentation and source mutation.",
             "proof": "Prove that source access remains read-only.",
             "risk": "Source access could mutate upstream truth.",
-            "release_scope": "supporting",
+            "release_scope": "first_path_required",
         },
     )
 

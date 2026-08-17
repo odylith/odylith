@@ -145,14 +145,14 @@ def _multi_state_multi_output_packet() -> dict[str, object]:
     return packet
 
 
-def test_graph_v3_versions_and_authoring_cardinality_are_explicit() -> None:
+def test_graph_v4_versions_and_authoring_cardinality_are_explicit() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     contract = semantic_intent_authoring_contract()
     authority = semantic_intent_with_authority()["product_intent_authority"]
 
-    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v8")
+    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v4")
+    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v5")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v9")
     assert request["version"] == SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION
     assert request["packet_header"]["version"] == SEMANTIC_INTENT_PACKET_VERSION
     assert request["authoring_contract_sha256"] == authority[
@@ -240,9 +240,22 @@ def test_graph_author_schema_and_runtime_share_internal_system_value_contracts()
         "component_kind": list(INTERNAL_SYSTEM_COMPONENT_KINDS),
         "release_scope": list(INTERNAL_SYSTEM_RELEASE_SCOPES),
     }
+    assert INTERNAL_SYSTEM_RELEASE_SCOPES == (
+        "first_path_required",
+        "deferred",
+    )
     assert contract["fact_contracts"]["internal_system"][
         "attribute_value_contracts"
     ] == conditional_values
+    scope_semantics = contract["fact_contracts"]["internal_system"][
+        "release_scope_semantics"
+    ]
+    assert set(scope_semantics) == {
+        "first_path_required",
+        "deferred",
+        "implementation_role",
+    }
+    assert "implements relations" in scope_semantics["implementation_role"]
     for kind, rule in fact_rules.items():
         assert rule["owner_kind"]["enum"] == contract["fact_contracts"][kind][
             "owner_kinds"
@@ -381,7 +394,7 @@ def test_clarification_ir_preserves_and_validates_its_settled_partial_graph() ->
         )
 
 
-def test_graph_v3_rejects_v1_packets_without_a_compatibility_adapter() -> None:
+def test_graph_v4_rejects_v1_packets_without_a_compatibility_adapter() -> None:
     old_packet = semantic_intent_packet()
     old_packet["version"] = "odylith.greenfield.semantic-intent-packet.v1"
     with pytest.raises(ValueError, match="packet uses an unsupported version"):
@@ -393,7 +406,7 @@ def test_graph_v3_rejects_v1_packets_without_a_compatibility_adapter() -> None:
         require_semantic_intent_packet(old_ir, prompt=SEMANTIC_PROMPT)
 
 
-def test_graph_v3_accepts_no_actors_no_state_one_system_and_multiple_outputs() -> None:
+def test_graph_v4_accepts_no_actors_no_state_one_system_and_multiple_outputs() -> None:
     verified = require_semantic_intent_packet(
         _actorless_stateless_multi_output_packet(),
         prompt=SEMANTIC_PROMPT,
@@ -430,7 +443,7 @@ def test_graph_v3_accepts_no_actors_no_state_one_system_and_multiple_outputs() -
     assert produced == {"step.0": "output.1", "step.1": "output.0"}
 
 
-def test_graph_v3_projects_multiple_state_objects_and_outputs_without_collapse() -> None:
+def test_graph_v4_projects_multiple_state_objects_and_outputs_without_collapse() -> None:
     verified = require_semantic_intent_packet(
         _multi_state_multi_output_packet(),
         prompt=SEMANTIC_PROMPT,
@@ -477,7 +490,7 @@ def test_graph_v3_projects_multiple_state_objects_and_outputs_without_collapse()
         ("changes", "change coverage for every state object"),
     ],
 )
-def test_graph_v3_rejects_orphaned_material_facts(
+def test_graph_v4_rejects_orphaned_material_facts(
     relation_kind: str,
     message: str,
 ) -> None:
@@ -491,7 +504,7 @@ def test_graph_v3_rejects_orphaned_material_facts(
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_graph_v3_requires_one_first_path_system_and_active_implementation() -> None:
+def test_graph_v4_requires_one_first_path_system_and_active_implementation() -> None:
     all_deferred = semantic_intent_packet()
     for fact in all_deferred["semantic_intent"]["facts"]:
         if fact["kind"] == "internal_system":
@@ -517,7 +530,37 @@ def test_graph_v3_requires_one_first_path_system_and_active_implementation() -> 
         )
 
 
-def test_graph_v3_rejects_zero_internal_systems() -> None:
+def test_graph_v4_derives_required_boundary_support_from_typed_relations() -> None:
+    packet = semantic_intent_packet()
+    graph = packet["semantic_intent"]
+    for relation in graph["relations"]:
+        if relation["kind"] == "implements" and relation["subject_id"] == "system.0":
+            relation["subject_id"] = "system.1"
+
+    verified = require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+    system = next(
+        row for row in verified.semantic_intent["facts"]
+        if row["fact_id"] == "system.0"
+    )
+    assert next(
+        row["value"] for row in system["attributes"]
+        if row["name"] == "release_scope"
+    ) == "first_path_required"
+
+    graph["relations"] = [
+        relation
+        for relation in graph["relations"]
+        if not (
+            relation["kind"] == "depends_on"
+            and relation["subject_id"] == "system.1"
+            and relation["object_id"] == "system.0"
+        )
+    ]
+    with pytest.raises(ValueError, match="lacks typed supporting topology"):
+        require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+
+def test_graph_v4_rejects_zero_internal_systems() -> None:
     packet = semantic_intent_packet()
     graph = packet["semantic_intent"]
     system_ids = {
@@ -540,7 +583,7 @@ def test_graph_v3_rejects_zero_internal_systems() -> None:
 
 
 @pytest.mark.parametrize("target_id", ["state.0", "output.0"])
-def test_graph_v3_requires_direct_active_implementation_for_state_and_output(
+def test_graph_v4_requires_direct_active_implementation_for_state_and_output(
     target_id: str,
 ) -> None:
     packet = semantic_intent_packet()
@@ -564,7 +607,7 @@ def test_graph_v3_requires_direct_active_implementation_for_state_and_output(
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_graph_v3_rejects_more_than_sixteen_state_objects() -> None:
+def test_graph_v4_rejects_more_than_sixteen_state_objects() -> None:
     packet = semantic_intent_packet()
     graph = packet["semantic_intent"]
     for order in range(1, 17):
@@ -593,7 +636,7 @@ def test_graph_v3_rejects_more_than_sixteen_state_objects() -> None:
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_graph_v3_rejects_a_non_atomic_state_transition() -> None:
+def test_graph_v4_rejects_a_non_atomic_state_transition() -> None:
     packet = semantic_intent_packet()
     state = next(
         fact
@@ -606,7 +649,7 @@ def test_graph_v3_rejects_a_non_atomic_state_transition() -> None:
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_graph_v3_rejects_transition_custody_on_a_non_state_fact() -> None:
+def test_graph_v4_rejects_transition_custody_on_a_non_state_fact() -> None:
     packet = semantic_intent_packet()
     actor = next(
         fact
@@ -619,7 +662,7 @@ def test_graph_v3_rejects_transition_custody_on_a_non_state_fact() -> None:
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
 
 
-def test_graph_v3_product_facts_expose_no_scalar_state_or_output_adapter() -> None:
+def test_graph_v4_product_facts_expose_no_scalar_state_or_output_adapter() -> None:
     verified = require_semantic_intent_packet(
         semantic_intent_packet(),
         prompt=SEMANTIC_PROMPT,

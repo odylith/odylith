@@ -218,6 +218,7 @@ def semantic_projection_component_rows(
         if (
             row.get("semantic_fact_id") != binding.get("semantic_fact_id")
             or row.get("release_scope") != binding.get("release_scope")
+            or row.get("component_role") != binding.get("component_role")
             or _strings(row.get("semantic_implements")) != _strings(binding.get("implements"))
         ):
             raise ValueError(f"verified semantic component `{component_id}` drifted from its plan")

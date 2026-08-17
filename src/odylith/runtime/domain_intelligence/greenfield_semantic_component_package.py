@@ -494,8 +494,12 @@ def _artifact_component_contract(
     attributes = _attributes(system_node)
     if not attributes.get("proof", ""):
         raise ValueError("persisted semantic component lacks typed proof")
+    component_role = _required_text(component_plan, "component_role")
+    if _required_text(proposal_contract, "component_role") != component_role:
+        raise ValueError("persisted semantic component role binding drifted")
     local_proof = list(_required_strings(proposal_contract, "local_proof"))
     return {
+        "component_role": component_role,
         "accepted_inputs": _required_text(proposal_contract, "accepted_inputs"),
         "state_objects": state_objects,
         "visible_outputs": visible_outputs,
@@ -542,10 +546,11 @@ def _validate_semantic_component_roles(
         component_id = _required_text(component, "component_id")
         system_id = _required_text(component, "semantic_fact_id")
         release_scope = _required_text(component, "release_scope")
-        if release_scope not in {"first_path_required", "supporting"}:
+        if release_scope != "first_path_required":
             raise ValueError(
                 f"persisted semantic component `{component_id}` has an invalid release scope"
             )
+        component_role = _required_text(component, "component_role")
         implemented = _strings(component.get("implements"))
         if any(
             node_by_id[fact_id].get("kind") not in allowed_result_kinds
@@ -564,9 +569,12 @@ def _validate_semantic_component_roles(
             raise ValueError(
                 f"persisted semantic component `{component_id}` implementation binding drifted"
             )
-        if release_scope == "first_path_required" and not implemented:
+        expected_role = (
+            "result_implementing" if implemented else "boundary_supporting"
+        )
+        if component_role != expected_role:
             raise ValueError(
-                f"persisted first-path semantic component `{component_id}` lacks an implemented result fact"
+                f"persisted semantic component `{component_id}` has a mismatched typed role"
             )
 
         incoming = tuple(
@@ -587,7 +595,7 @@ def _validate_semantic_component_roles(
             and row.get("kind") in {"depends_on", "constrained_by", "excludes"}
             and row.get("object_id") != system_id
         )
-        if release_scope == "supporting" and not implemented:
+        if component_role == "boundary_supporting":
             if not incoming or not outgoing:
                 raise ValueError(
                     f"persisted supporting semantic component `{component_id}` is orphaned"

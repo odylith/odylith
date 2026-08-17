@@ -16,9 +16,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import 
 
 SEMANTIC_SYSTEM_POLICY_CUSTODY = "system_policy"
 SEMANTIC_COMPONENT_CONTRACT_VERSION = (
-    "odylith.greenfield.semantic-component-contract.v2"
+    "odylith.greenfield.semantic-component-contract.v3"
 )
-_RELEASE_COMPONENT_SCOPES = frozenset({"first_path_required", "supporting"})
+_RELEASE_COMPONENT_SCOPE = "first_path_required"
 
 
 def semantic_evidence_tier(custody_state: str) -> str:
@@ -82,7 +82,7 @@ def semantic_component_rows(
             row
             for row in facts
             if row.get("kind") == "internal_system"
-            and _attributes(row).get("release_scope") in _RELEASE_COMPONENT_SCOPES
+            and _attributes(row).get("release_scope") == _RELEASE_COMPONENT_SCOPE
         ),
         key=lambda row: int(row["order"]),
     )
@@ -145,10 +145,9 @@ def semantic_component_rows(
         )
         result_labels = output_labels or state_labels or workflow_labels
         has_result = bool(result_labels)
-        if attributes["release_scope"] == "first_path_required" and not has_result:
-            raise ValueError(
-                f"first-path semantic component `{label}` lacks an implemented result fact"
-            )
+        component_role = (
+            "result_implementing" if has_result else "boundary_supporting"
+        )
         produced = (
             _sentence_list(
                 (*output_labels, *transition_labels) or result_labels,
@@ -178,7 +177,7 @@ def semantic_component_rows(
                 f"Blocked-path proof for {label}: reject invalid {accepted_inputs} before producing {produced}."
             )
         else:
-            if attributes["release_scope"] != "supporting" or not boundary_interfaces:
+            if not boundary_interfaces:
                 raise ValueError(
                     f"resultless semantic component `{label}` lacks a typed supporting boundary"
                 )
@@ -202,6 +201,7 @@ def semantic_component_rows(
         )
         contract = {
             "schema_version": SEMANTIC_COMPONENT_CONTRACT_VERSION,
+            "component_role": component_role,
             "workflow_fact_ids": list(workflow_fact_ids),
             "workflow_labels": list(workflow_labels),
             "state_objects": list(state_labels),
@@ -231,6 +231,7 @@ def semantic_component_rows(
                 "custody_state": str(system["custody"]),
                 "evidence_tier": semantic_evidence_tier(str(system["custody"])),
                 "release_scope": attributes["release_scope"],
+                "component_role": component_role,
                 "source_system_description": str(system["statement"]),
                 "semantic_fact_id": system_id,
                 "semantic_implements": [str(row["fact_id"]) for row in implemented],

@@ -386,9 +386,9 @@ def test_v8_request_requires_prompt_only_schema_constrained_independent_runs() -
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
-    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v3")
-    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v8")
+    assert SEMANTIC_INTENT_IR_VERSION.endswith(".v4")
+    assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v5")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v9")
     assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v3")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"

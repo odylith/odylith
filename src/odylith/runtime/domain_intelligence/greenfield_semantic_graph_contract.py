@@ -77,7 +77,6 @@ INTERNAL_SYSTEM_COMPONENT_KINDS = (
 )
 INTERNAL_SYSTEM_RELEASE_SCOPES = (
     "first_path_required",
-    "supporting",
     "deferred",
 )
 FACT_REQUIRED_ATTRIBUTES = {
@@ -187,7 +186,20 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
                         "attribute_value_contracts": {
                             "component_kind": list(INTERNAL_SYSTEM_COMPONENT_KINDS),
                             "release_scope": list(INTERNAL_SYSTEM_RELEASE_SCOPES),
-                        }
+                        },
+                        "release_scope_semantics": {
+                            "first_path_required": (
+                                "included in the first release because the component either "
+                                "implements a workflow/state/output fact or provides a typed "
+                                "boundary required by such a component"
+                            ),
+                            "deferred": "excluded from the first release",
+                            "implementation_role": (
+                                "derive result ownership only from implements relations; derive "
+                                "required boundary support only from typed dependency, constraint, "
+                                "or exclusion relations"
+                            ),
+                        },
                     }
                     if kind == "internal_system"
                     else {}
@@ -221,10 +233,8 @@ def semantic_intent_authoring_contract() -> dict[str, Any]:
             "every_visible_output_has_a_typed_produces_relation": True,
             "every_state_object_has_a_typed_changes_relation": True,
             "minimum_first_path_required_internal_systems": 1,
-            "implementation_coverage_release_scopes": [
-                "first_path_required",
-                "supporting",
-            ],
+            "implementation_coverage_release_scopes": ["first_path_required"],
+            "resultless_first_path_systems_require_typed_supporting_topology": True,
             "every_workflow_step_state_object_and_visible_output_is_implemented_by_an_active_system": True,
             "maximum_transition_pairs_per_state_object": 1,
             "multiple_transitions_for_one_state_object": "clarification_required",

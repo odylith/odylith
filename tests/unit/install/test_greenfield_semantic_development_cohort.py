@@ -468,7 +468,7 @@ def _compile(context: dict[str, Any], *, output: Path) -> dict[str, Any]:
 
 def _smoke_packet() -> dict[str, Any]:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v4.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v5.json").read_text(
             encoding="utf-8"
         )
     )
@@ -477,7 +477,7 @@ def _smoke_packet() -> dict[str, Any]:
 
 def _smoke_prompt() -> str:
     fixture = json.loads(
-        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v4.json").read_text(
+        (SCRIPTS_ROOT / "fixtures" / "greenfield-semantic-smoke.v5.json").read_text(
             encoding="utf-8"
         )
     )

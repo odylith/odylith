@@ -234,6 +234,17 @@ this plan as active until the size and ownership targets are met.
   before canonical graph validation and output hashing. This is a typed
   transport boundary, not semantic normalization. Development author input v4
   and mechanism evidence v4 pin the rule; focused proof is `141/141`.
+- The resulting 24-case one-shot cohort then exposed an overloaded component
+  field before a candidate bundle could be sealed. A required local adapter
+  had no result implementation, but downstream projection interpreted
+  `first_path_required` as a result-owner declaration. The losing contract is
+  removed: release scope is now only `first_path_required|deferred`, while the
+  projection plan derives `result_implementing|boundary_supporting` from typed
+  relations and persists the first-workflow start component. No label, prose,
+  vocabulary, or empty-result fallback selects ownership. Focused graph/
+  projection/release proof is `33/33`; the wider release-contract gate is
+  `251/251`. The prior 24 segments remain failed evidence under the superseded
+  contract and cannot be reused as release evidence.
 
 ## Stop Conditions
 

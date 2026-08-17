@@ -120,11 +120,11 @@ def _component_row(
         for value in component.get("interfaces", ())
         if str(value).strip()
     ]
-    release_scope = str(component.get("release_scope") or "").strip()
+    component_role = str(component.get("component_role") or "").strip()
     result_summary = str(component.get("result_summary") or "").strip()
-    if not result_summary and release_scope != "supporting":
+    if not result_summary and component_role != "boundary_supporting":
         raise ValueError(
-            f"first-path semantic component `{label}` lacks a projected result"
+            f"semantic component `{label}` lacks a result for its typed role"
         )
     if not result_summary and not interfaces:
         raise ValueError(

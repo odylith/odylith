@@ -50,8 +50,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 )
 
 
-SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v3"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v4"
+SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v4"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v5"
 
 _CUSTODY_STATES = frozenset(
     {"source_fact", "bounded_interpretation", "visible_assumption"}
@@ -429,7 +429,7 @@ def _require_complete_material_graph(
     active_system_ids = {
         row["fact_id"]
         for row in by_kind["internal_system"]
-        if _attribute(row, "release_scope") in {"first_path_required", "supporting"}
+        if _attribute(row, "release_scope") == "first_path_required"
     }
     for step in by_kind["workflow_step"]:
         owners = [row for row in owned_by if row["subject_id"] == step["fact_id"]]
@@ -470,6 +470,35 @@ def _require_complete_material_graph(
         raise ValueError(
             "complete Semantic Intent IR lacks active typed implementation coverage"
         )
+    result_system_ids = {
+        row["subject_id"]
+        for row in implements
+        if row["subject_id"] in active_system_ids
+        and row["object_id"] in implementation_target_ids
+    }
+    depends_on = [row for row in relations if row["kind"] == "depends_on"]
+    boundary_relations = [
+        row
+        for row in relations
+        if row["kind"] in {"depends_on", "constrained_by", "excludes"}
+    ]
+    for system_id in active_system_ids - result_system_ids:
+        consumed = any(
+            row["object_id"] == system_id
+            and (
+                row["subject_id"] in active_system_ids
+                or fact_index[row["subject_id"]]["kind"] in {"identity", "workflow_step"}
+            )
+            for row in depends_on
+        )
+        owns_boundary = any(
+            row["subject_id"] == system_id and row["object_id"] != system_id
+            for row in boundary_relations
+        )
+        if not consumed or not owns_boundary:
+            raise ValueError(
+                "resultless first-path Semantic Intent system lacks typed supporting topology"
+            )
 
 
 def _facts_by_kind(facts: Sequence[Mapping[str, Any]]) -> dict[str, list[Mapping[str, Any]]]:

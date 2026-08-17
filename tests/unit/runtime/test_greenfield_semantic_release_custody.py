@@ -47,11 +47,22 @@ def test_release_membership_and_start_owner_follow_typed_scope_after_reorder() -
         "Card Claim Service",
     ]
     assert [row["release_scope"] for row in proposal["components"]] == [
-        "supporting",
+        "first_path_required",
         "first_path_required",
     ]
-    assert proposal["release_plan"]["required_component_fact_ids"] == ["system.0"]
-    assert proposal["release_plan"]["supporting_component_fact_ids"] == ["system.1"]
+    assert [row["component_role"] for row in proposal["components"]] == [
+        "result_implementing",
+        "result_implementing",
+    ]
+    assert proposal["release_plan"]["release_component_fact_ids"] == [
+        "system.1",
+        "system.0",
+    ]
+    assert proposal["release_plan"]["result_component_fact_ids"] == [
+        "system.1",
+        "system.0",
+    ]
+    assert proposal["release_plan"]["supporting_component_fact_ids"] == []
     assert proposal["release_plan"]["deferred_component_fact_ids"] == ["system.2"]
     assert proposal["release_plan"]["target_workstream_titles"] == [
         "Deliver Claim Desk First Path",
@@ -287,7 +298,6 @@ def _release_scope_packet() -> dict[str, object]:
     receipt = _system(packet, "system.1")
     claim["order"] = 1
     receipt["order"] = 0
-    _set_attribute(receipt, "release_scope", "supporting")
     packet["semantic_intent"]["facts"].append(
         semantic_fact(
             "system.2",

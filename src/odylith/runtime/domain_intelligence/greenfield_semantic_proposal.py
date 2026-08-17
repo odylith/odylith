@@ -53,7 +53,7 @@ def build_verified_semantic_proposal(
     observed_source: Mapping[str, Any],
     release_selector: str = "",
 ) -> dict[str, Any]:
-    """Return one deterministic proposal from a validated v8 authority."""
+    """Return one deterministic proposal from validated Semantic Intent authority."""
 
     require_product_intent_authority_structure(authority)
     if authority.get("origin") != "verified_semantic_intent_packet":
@@ -97,7 +97,7 @@ def build_verified_semantic_proposal(
         release=release,
     )
     proposal: dict[str, Any] = {
-        "schema_version": "odylith.greenfield.proposal.v1",
+        "schema_version": "odylith.greenfield.proposal.v2",
         "mode": "host_reasoned_greenfield_proposal",
         "provider_calls": 0,
         "host_agnostic": True,
@@ -244,6 +244,7 @@ def _semantic_model(
             "label": row["label"],
             "semantic_axis": f"sealed:{row['semantic_fact_id']}",
             "release_scope": row["release_scope"],
+            "component_role": row["component_role"],
             "contract_schema_version": row["component_contract"]["schema_version"],
             "workflow_fact_ids": list(
                 row["component_contract"]["workflow_fact_ids"]
@@ -304,7 +305,7 @@ def _semantic_model(
         for row in components
     )
     return {
-        "schema_version": "odylith.greenfield.semantic_model.v3",
+        "schema_version": "odylith.greenfield.semantic_model.v4",
         "custody_state": SEMANTIC_SYSTEM_POLICY_CUSTODY,
         "evidence_tier": semantic_evidence_tier(SEMANTIC_SYSTEM_POLICY_CUSTODY),
         "semantic_fact_custody": semantic_fact_custody_rows(facts),

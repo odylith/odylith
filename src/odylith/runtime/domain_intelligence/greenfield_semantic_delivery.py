@@ -175,17 +175,18 @@ def _start_workstream_plan(plan: Mapping[str, Any]) -> Mapping[str, Any]:
         raise ValueError("persisted semantic projection plan lacks a product workstream")
     if len(workstreams) == 1:
         return product
-    required = next(
+    component_id = _required_text(plan, "start_component_id")
+    result_owner = next(
         (
             row
             for row in mapping_rows(plan.get("components"))
-            if row.get("release_scope") == "first_path_required"
+            if row.get("component_id") == component_id
+            and row.get("component_role") == "result_implementing"
         ),
         None,
     )
-    if required is None:
-        raise ValueError("persisted semantic projection plan lacks a required component")
-    component_id = _required_text(required, "component_id")
+    if result_owner is None:
+        raise ValueError("persisted semantic projection plan has an invalid start component")
     matches = tuple(
         row
         for row in workstreams

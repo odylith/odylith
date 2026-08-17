@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_component_projectio
 )
 
 
-SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v1"
+SEMANTIC_PROJECTION_PLAN_VERSION = "odylith.greenfield.semantic-projection-plan.v2"
 _FACT_KIND_ORDER = (
     "identity",
     "actor",
@@ -106,6 +106,7 @@ class SemanticProjectionPlan:
     workflow_step_fact_ids: tuple[str, ...]
     state_fact_ids: tuple[str, ...]
     visible_output_fact_ids: tuple[str, ...]
+    start_component_id: str
     diagram_plans: tuple[SemanticDiagramPlan, ...]
     workstream_plans: tuple[SemanticWorkstreamPlan, ...]
 
@@ -162,6 +163,19 @@ def build_semantic_projection_plan(
         components=components,
         diagrams=diagram_plans,
     )
+    start_component = next(
+        (
+            component
+            for workflow_id in workflow_step_fact_ids
+            for component in components
+            if workflow_id in component["semantic_implements"]
+        ),
+        None,
+    )
+    if start_component is None:
+        raise ValueError(
+            "verified semantic projection lacks a component for its first workflow action"
+        )
     return SemanticProjectionPlan(
         title=identities[0].label,
         project_slug=project_slug,
@@ -172,6 +186,7 @@ def build_semantic_projection_plan(
         workflow_step_fact_ids=workflow_step_fact_ids,
         state_fact_ids=state_fact_ids,
         visible_output_fact_ids=visible_output_fact_ids,
+        start_component_id=str(start_component["component_id"]),
         diagram_plans=diagram_plans,
         workstream_plans=workstream_plans,
     )
@@ -186,6 +201,7 @@ def semantic_projection_plan_mapping(
         "version": SEMANTIC_PROJECTION_PLAN_VERSION,
         "project_slug": plan.project_slug,
         "identity_fact_id": plan.identity_fact_id,
+        "start_component_id": plan.start_component_id,
         "nodes": [
             {
                 "fact_id": node.fact_id,
@@ -226,6 +242,7 @@ def semantic_projection_plan_mapping(
                 "component_id": str(component["component_id"]),
                 "semantic_fact_id": str(component["semantic_fact_id"]),
                 "release_scope": str(component["release_scope"]),
+                "component_role": str(component["component_role"]),
                 "implements": list(component["semantic_implements"]),
             }
             for component in plan.components
@@ -261,19 +278,16 @@ def semantic_release_plan(
     """Project release membership and start ownership from typed topology."""
 
     workstream_titles = [row.title for row in plan.workstream_plans]
-    required = [
-        row
-        for row in plan.components
-        if row.get("release_scope") == "first_path_required"
+    release_components = list(plan.components)
+    result_components = [
+        row for row in release_components if row.get("component_role") == "result_implementing"
     ]
     supporting = [
-        row
-        for row in plan.components
-        if row.get("release_scope") == "supporting"
+        row for row in release_components if row.get("component_role") == "boundary_supporting"
     ]
-    if not required:
+    if not result_components:
         raise ValueError(
-            "verified semantic release requires a first_path_required component"
+            "verified semantic release requires a result-implementing component"
         )
     deferred = [
         node
@@ -281,8 +295,13 @@ def semantic_release_plan(
         if node.kind == "internal_system"
         and node.attribute("release_scope") == "deferred"
     ]
+    start_owner = next(
+        row
+        for row in result_components
+        if row["component_id"] == plan.start_component_id
+    )
     start_title = (
-        f"Implement {required[0]['label']}"
+        f"Implement {start_owner['label']}"
         if len(plan.components) > 1
         else workstream_titles[0]
     )
@@ -310,8 +329,11 @@ def semantic_release_plan(
         "project_workstream_title": workstream_titles[0],
         "start_workstream_title": start_title,
         "target_workstream_titles": workstream_titles,
-        "required_component_fact_ids": [
-            str(row["semantic_fact_id"]) for row in required
+        "release_component_fact_ids": [
+            str(row["semantic_fact_id"]) for row in release_components
+        ],
+        "result_component_fact_ids": [
+            str(row["semantic_fact_id"]) for row in result_components
         ],
         "supporting_component_fact_ids": [
             str(row["semantic_fact_id"]) for row in supporting

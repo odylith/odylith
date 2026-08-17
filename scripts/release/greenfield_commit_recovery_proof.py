@@ -36,7 +36,7 @@ COMMAND_TIMEOUT_SECONDS = 300
 PROOF_SCOPE = "real_installed_additive_write_sigkill_recovery_conflict_same_hash_retry_and_fsync_rollback"
 RECOVERY_CASE_SCOPE = "semantic-intent-v3-release-fixture"
 _GOVERNED_ROOTS = ("odylith", "src/odylith/bundle/assets/odylith")
-_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v4.json"
+_DEFAULT_SEMANTIC_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "greenfield-semantic-smoke.v5.json"
 
 
 @dataclass(frozen=True)
@@ -65,7 +65,7 @@ def load_semantic_recovery_case(
     packet = payload.get("packet")
     if not case_id or not prompt or not isinstance(packet, Mapping):
         raise RuntimeError("installed recovery semantic fixture is incomplete")
-    if packet.get("version") != "odylith.greenfield.semantic-intent-packet.v4":
+    if packet.get("version") != "odylith.greenfield.semantic-intent-packet.v5":
         raise RuntimeError("installed recovery semantic fixture must use Semantic Intent packet v3")
     semantic_intent = packet.get("semantic_intent")
     if not isinstance(semantic_intent, Mapping) or semantic_intent.get("status") != "complete":
@@ -773,14 +773,14 @@ def _require_case_evidence_bound_to_transaction(
     """Prove the sealed v8 authority contains the exact assessed graph packet."""
 
     expected = {
-        "version": "odylith.product-intent-authority.v10",
+        "version": "odylith.product-intent-authority.v11",
         "origin": "verified_semantic_intent_packet",
         "source_format": "semantic_intent_packet",
         "evidence_sha256": str(case.packet.get("evidence_sha256") or ""),
-        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v4",
-        "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v3",
+        "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v5",
+        "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v4",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v8"
+            "odylith.greenfield.semantic-intent-authoring-request.v9"
         ),
         "semantic_intent_authoring_contract_sha256": str(
             case.packet.get("authoring_contract_sha256") or ""

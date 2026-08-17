@@ -770,9 +770,9 @@
         }
       ],
       "status": "complete",
-      "version": "odylith.greenfield.semantic-intent-ir.v3"
+      "version": "odylith.greenfield.semantic-intent-ir.v4"
     },
-    "version": "odylith.greenfield.semantic-intent-packet.v4"
+    "version": "odylith.greenfield.semantic-intent-packet.v5"
   },
   "platform_custody_sentinels": [
     "Claim Desk",

@@ -123,7 +123,7 @@ def _component_description(component: Mapping[str, Any]) -> str:
     label = str(component.get("label") or "").strip()
     responsibility = str(component.get("responsibility") or "").strip()
     result = str(component.get("result_summary") or "").strip()
-    release_scope = str(component.get("release_scope") or "").strip()
+    component_role = str(component.get("component_role") or "").strip()
     if result:
         contract = component.get("component_contract")
         if not isinstance(contract, Mapping):
@@ -135,9 +135,9 @@ def _component_description(component: Mapping[str, Any]) -> str:
             f"Owns this boundary: {responsibility} "
             f"Receives {accepted_inputs}; produces {result}."
         )
-    if release_scope != "supporting":
+    if component_role != "boundary_supporting":
         raise ValueError(
-            f"first-path semantic component `{label}` lacks a projected result"
+            f"semantic component `{label}` lacks a result for its typed role"
         )
     relations = [
         str(value).strip().rstrip(".")
