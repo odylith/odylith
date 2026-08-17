@@ -89,6 +89,19 @@ def test_greenfield_traceability_does_not_repeat_first_step_label_as_step_body()
     assert "First implementation step: First implementation step" not in "\n".join(lines)
 
 
+def test_greenfield_traceability_long_scope_lines_avoid_clipped_cover_fragments() -> None:
+    lines = greenfield_traceability._bounded_scope_lines(
+        "Record corridor request, check blocked constraints, confirm receiving-site readiness, "
+        "publish safe operating status, record review evidence, notify the receiving operator, "
+        "capture the release decision rationale, verify replayable proof history, and keep deferred integrations "
+        "outside the release proof."
+    )
+
+    assert lines[0].startswith("Record corridor request")
+    assert lines[1].startswith("Completion proof:")
+    assert "Completion proof covers" not in "\n".join(lines)
+
+
 def test_greenfield_traceability_why_now_starts_with_workstream_focus() -> None:
     text = greenfield_traceability._why_now_text(
         row={},

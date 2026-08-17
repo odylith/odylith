@@ -14,12 +14,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 588,
+    "explicit_event_count": 590,
     "mapped_workstream_evidence_count": 482,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 63,
+    "spec_history_event_count": 64,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 588
+    "timeline_event_count": 590
   },
   "name": "Release",
   "path_prefixes": [
@@ -55,7 +55,7 @@
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
-      "event_index": 1148,
+      "event_index": 1150,
       "explicit_components": [
         "atlas",
         "compass",
@@ -88,7 +88,7 @@
       "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
-      "event_index": 1147,
+      "event_index": 1149,
       "explicit_components": [
         "atlas",
         "compass",
@@ -125,7 +125,7 @@
         "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py"
       ],
       "confidence": "high",
-      "event_index": 1146,
+      "event_index": 1148,
       "explicit_components": [
         "atlas",
         "compass",
@@ -161,7 +161,7 @@
         "tests/integration/runtime/test_greenfield_component_contract_preconfirm.py"
       ],
       "confidence": "high",
-      "event_index": 1145,
+      "event_index": 1147,
       "explicit_components": [
         "atlas",
         "compass",
@@ -198,7 +198,7 @@
         "tests/unit/runtime/test_greenfield_code_hygiene.py"
       ],
       "confidence": "high",
-      "event_index": 1144,
+      "event_index": 1146,
       "explicit_components": [
         "atlas",
         "compass",
@@ -234,7 +234,7 @@
         "tests/unit/runtime/test_greenfield_transaction_intent_authority.py"
       ],
       "confidence": "high",
-      "event_index": 1143,
+      "event_index": 1145,
       "explicit_components": [
         "atlas",
         "compass",
@@ -271,7 +271,7 @@
         "tests/unit/runtime/test_greenfield_prompt_workflow_custody.py"
       ],
       "confidence": "high",
-      "event_index": 1142,
+      "event_index": 1144,
       "explicit_components": [
         "atlas",
         "compass",
@@ -308,7 +308,7 @@
         "tests/fixtures/greenfield-release-corpus/retired-ba25-final-holdout-regressions.v1.json"
       ],
       "confidence": "high",
-      "event_index": 1141,
+      "event_index": 1143,
       "explicit_components": [
         "atlas",
         "compass",
@@ -347,7 +347,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py"
       ],
       "confidence": "high",
-      "event_index": 1140,
+      "event_index": 1142,
       "explicit_components": [
         "atlas",
         "compass",
@@ -375,6 +375,40 @@
       "workstreams": [
         "B-142"
       ]
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1141,
+      "explicit_components": [
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-08-04T15:26:33-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1140,
+      "explicit_components": [
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Implementation evidence linked this component to governed work.",
+      "ts_iso": "2026-08-04T14:47:16-07:00",
+      "workstreams": []
     },
     {
       "artifact_count": 3,

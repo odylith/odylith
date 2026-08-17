@@ -179,6 +179,11 @@ def test_component_semantic_context_stays_in_dedicated_owner() -> None:
         label_terms=["permit", "note"],
         description_terms=["review", "document"],
     ) == ("permit note", "missing document")
+    assert context_object_phrases(
+        "Keeps replayable evidence for review, permit note, and missing documents.",
+        label_terms=["permit", "note"],
+        description_terms=["review", "document"],
+    ) == ("permit note", "missing document")
     assert semantic_contract._compact_artifact_phrase("source-backed_review record")
     assert not semantic_contract._compact_artifact_phrase("source-backed audit trail evidence record")
 

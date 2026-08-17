@@ -385,7 +385,7 @@ def _patch_sections(
         )
     sections["Scope"] = _bullets(
         [
-            first_slice or str(row.get("scope", "")).strip(),
+            *_bounded_scope_lines(first_slice or str(row.get("scope", "")).strip()),
             *_section_items(row.get("scope_items", [])),
         ]
     )
@@ -604,13 +604,12 @@ def _first_implementation_step_lines(first_slice: str) -> list[str]:
     text = re.sub(r"^first implementation step\s*:\s*", "", text, count=1, flags=re.IGNORECASE).strip(" .")
     if not text:
         return []
-    if len(text) <= 240 or text.count(",") < 5:
+    if len(text) <= 240 and text.count(",") < 5:
         return [f"First implementation step: {text}."]
     lead, separator, detail = text.partition(":")
     if not separator:
-        lead = "First implementation step"
         detail = text
-    lead_text = _clean(lead).strip(" .:") or "First implementation step"
+    lead_text = _clean(lead).strip(" .:") if separator else ""
     segments = [
         _first_slice_segment(segment)
         for segment in text_values(detail, split_scalar=True, split_commas=True)
@@ -621,11 +620,39 @@ def _first_implementation_step_lines(first_slice: str) -> list[str]:
     midpoint = max(2, min(len(segments) - 1, (len(segments) + 1) // 2))
     first_group = "; ".join(segments[:midpoint]).strip(" ;.")
     second_group = "; ".join(segments[midpoint:]).strip(" ;.")
+    if lead_text:
+        return [
+            f"First implementation step: {lead_text}.",
+            f"Path actions: {first_group}.",
+            f"Completion check: {second_group}.",
+        ]
     return [
-        f"First implementation step: {lead_text}.",
-        f"Path actions: {first_group}.",
+        f"First implementation step: {first_group}.",
         f"Completion check: {second_group}.",
     ]
+
+
+def _bounded_scope_lines(value: str) -> list[str]:
+    text = _clean(value).strip(" .")
+    if not text:
+        return []
+    if len(text) <= 240:
+        return [text]
+    segments = [
+        _first_slice_segment(segment)
+        for segment in text_values(text, split_scalar=True, split_commas=True)
+    ]
+    segments = [segment for segment in segments if segment]
+    if len(segments) < 2:
+        return [text]
+    first = segments[0]
+    second = segments[1] if len(segments) > 2 else ""
+    completion = segments[-1]
+    scope = f"{first}; {second}" if second else first
+    rows = [scope]
+    if completion.casefold() not in scope.casefold():
+        rows.append(f"Completion proof: {completion}")
+    return rows
 
 
 def _first_slice_segment(value: str) -> str:

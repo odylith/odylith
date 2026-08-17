@@ -13,7 +13,6 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTIO
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
 )
-from odylith.runtime.domain_intelligence.greenfield_component_terms import action_forms_pattern as _action_forms_pattern
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import finite_action_clause as _finite_action_clause
@@ -30,7 +29,6 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_
 from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_forms_pattern as _verb_forms_pattern
 from odylith.runtime.domain_intelligence.greenfield_component_owned_state import owned_state_noun_phrase
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
-from odylith.runtime.domain_intelligence.greenfield_phrase_quality import artifact_phrase_has_clause_shape
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, unique_text, visible_words
 from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase as _transfer_object_phrase
 
@@ -61,7 +59,7 @@ def context_object_phrases(
     carry = 0
     carry_base: tuple[str, ...] = ()
     for clause in clauses(value):
-        if _is_reproducibility_proof_clause(clause):
+        if _is_generic_proof_behavior_clause(clause):
             continue
         if _is_deferred_or_outside_clause(clause):
             continue
@@ -232,17 +230,7 @@ def needs_context_backfill(
 def _is_underspecified_detail(value: str) -> bool:
     words = {word.casefold().strip(".,;:") for word in visible_words(_clean(value))}
     words -= {"a", "an", "captures", "keeps", "owns", "stores", "the", "tracks"}
-    broad_terms = {
-        "central",
-        "data",
-        "detail",
-        "details",
-        "fact",
-        "facts",
-        "information",
-        "object",
-        "payload",
-    }
+    broad_terms = {"central", "data", "detail", "details", "fact", "facts", "information", "object", "payload"}
     material_carriers = _ARTIFACT_CARRIER_TERMS - broad_terms
     return bool(words & broad_terms) and not bool(words & material_carriers) and len(words) <= 3
 
@@ -263,7 +251,7 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
         return []
     rows: list[str] = []
     for clause in re.split(r"(?<=[.!?])\s+|[,;]", _clean(value)):
-        if _is_reproducibility_proof_clause(clause):
+        if _is_generic_proof_behavior_clause(clause):
             continue
         if _is_deferred_or_outside_clause(clause):
             continue
@@ -552,6 +540,18 @@ def _is_reproducibility_proof_clause(value: str) -> bool:
     return bool(re.search(r"\b(?:can|must|should)\s+reproduc(?:e|es|ed|ing)\b", text))
 
 
+def _is_generic_proof_behavior_clause(value: str) -> bool:
+    """Keep proof instructions from being misread as owned domain objects."""
+
+    text = _clean(value).casefold()
+    if _is_reproducibility_proof_clause(text):
+        return True
+    return bool(
+        re.search(r"\bexplains?\s+missing\s+or\s+invalid\s+input\s+with\s+a\s+clear\s+blocker\b", text)
+        or re.search(r"\bkeeps?\s+replayable\s+evidence\s+for\s+review\b", text)
+    )
+
+
 def _preserve_explicit_detail_carrier(terms: Sequence[str], phrase: str) -> list[str]:
     result = list(terms)
     if set(result) & {"detail", "fact", "field", "information"}:
@@ -689,21 +689,7 @@ def _preserve_missing_detail_carrier(terms: Sequence[str], clause: str) -> list[
 
 
 _CONTEXT_METADATA_LEADS = frozenset(
-    {
-        "choice",
-        "checkpoint",
-        "command",
-        "done_when",
-        "impact",
-        "must_capture",
-        "operator_question",
-        "path",
-        "prompt",
-        "recommended",
-        "section",
-        "use_when",
-        "why_it_matter",
-    }
+    {"choice", "checkpoint", "command", "done_when", "impact", "must_capture", "operator_question", "path", "prompt", "recommended", "section", "use_when", "why_it_matter"}
 )
 
 
@@ -740,22 +726,7 @@ def needs_source_evidence(
 
 
 _TRANSITION_CONTEXT_TERMS = frozenset(
-    {
-        "event",
-        "events",
-        "history",
-        "lifecycle",
-        "lifecycles",
-        "progress",
-        "stage",
-        "stages",
-        "status",
-        "timeline",
-        "timelines",
-        "transition",
-        "transitions",
-        "workflow",
-    }
+    {"event", "events", "history", "lifecycle", "lifecycles", "progress", "stage", "stages", "status", "timeline", "timelines", "transition", "transitions", "workflow"}
 )
 
 
