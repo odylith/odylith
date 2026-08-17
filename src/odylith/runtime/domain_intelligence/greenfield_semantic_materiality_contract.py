@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema impor
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
     semantic_source_ref_schema,
+    semantic_source_ref_selection_schema,
 )
 
 
@@ -92,7 +93,16 @@ def semantic_intent_output_schema_for_materiality(
 ) -> dict[str, Any]:
     """Bind graph author output to the critic-owned materiality decision."""
 
-    schema = semantic_intent_output_schema()
+    catalog = _materiality_source_ref_catalog(
+        assessment,
+        evidence_sources=evidence_sources,
+    )
+    schema = semantic_intent_output_schema(
+        source_ref_schema=semantic_source_ref_selection_schema(
+            catalog,
+            evidence_sources=evidence_sources,
+        )
+    )
     properties = schema["properties"]
     decision = _enum(
         assessment.get("decision"),
@@ -139,26 +149,48 @@ def semantic_intent_output_schema_for_materiality(
                 "type": "array",
                 "minItems": len(source_refs),
                 "maxItems": len(source_refs),
-                "items": {
-                    "anyOf": [_locked_source_ref_schema(row) for row in source_refs]
-                },
+                "items": semantic_source_ref_selection_schema(
+                    source_refs,
+                    evidence_sources=evidence_sources,
+                ),
             },
         },
     }
     return schema
 
 
-def _locked_source_ref_schema(source_ref: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["source_id", "quote", "occurrence"],
-        "properties": {
-            "source_id": {"type": "string", "enum": [source_ref["source_id"]]},
-            "quote": {"type": "string", "enum": [source_ref["quote"]]},
-            "occurrence": {"type": "integer", "enum": [source_ref["occurrence"]]},
-        },
-    }
+def _materiality_source_ref_catalog(
+    assessment: Mapping[str, Any],
+    *,
+    evidence_sources: Mapping[str, str],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    clarification = _mapping(
+        assessment.get("clarification"), "Semantic materiality clarification"
+    )
+    rows.extend(
+        require_semantic_source_refs(
+            clarification.get("source_refs"),
+            evidence_sources=evidence_sources,
+            allow_empty=True,
+        )
+    )
+    for field in _sequence(
+        assessment.get("fields"),
+        len(SEMANTIC_CLARIFICATION_FIELDS),
+        "materiality fields",
+    ):
+        field_row = _mapping(field, "Semantic materiality field")
+        rows.extend(
+            require_semantic_source_refs(
+                field_row.get("source_refs"),
+                evidence_sources=evidence_sources,
+                allow_empty=True,
+            )
+        )
+    if not rows:
+        raise ValueError("Semantic materiality assessment lacks an author citation catalog")
+    return rows
 
 
 def _materiality_clarification_schema(

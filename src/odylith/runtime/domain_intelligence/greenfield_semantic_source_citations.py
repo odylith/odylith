@@ -30,10 +30,11 @@ def require_semantic_source_refs(
     *,
     evidence_sources: Mapping[str, str],
     allow_empty: bool = False,
+    maximum: int = 8,
 ) -> list[dict[str, Any]]:
     """Validate citations against exact source bytes and return canonical rows."""
 
-    rows = _sequence(value, 8)
+    rows = _sequence(value, maximum)
     if not rows and not allow_empty:
         raise ValueError("Semantic Intent fact lacks source citations")
     result: list[dict[str, Any]] = []
@@ -45,6 +46,39 @@ def require_semantic_source_refs(
         resolve_semantic_source_ref(raw, evidence_sources=evidence_sources)
         result.append(dict(raw))
     return result
+
+
+def semantic_source_ref_selection_schema(
+    value: Any,
+    *,
+    evidence_sources: Mapping[str, str],
+) -> dict[str, Any]:
+    """Constrain a model to exact citations already accepted from evidence."""
+
+    rows = require_semantic_source_refs(
+        value,
+        evidence_sources=evidence_sources,
+        maximum=80,
+    )
+    unique: dict[tuple[str, str, int], dict[str, Any]] = {}
+    for row in rows:
+        key = (row["source_id"], row["quote"], row["occurrence"])
+        unique[key] = row
+    return {
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["source_id", "quote", "occurrence"],
+                "properties": {
+                    "source_id": {"type": "string", "enum": [row["source_id"]]},
+                    "quote": {"type": "string", "enum": [row["quote"]]},
+                    "occurrence": {"type": "integer", "enum": [row["occurrence"]]},
+                },
+            }
+            for row in unique.values()
+        ]
+    }
 
 
 def resolve_semantic_source_ref(
@@ -139,4 +173,5 @@ __all__ = [
     "resolve_semantic_source_ref",
     "resolved_semantic_source_refs",
     "semantic_source_ref_schema",
+    "semantic_source_ref_selection_schema",
 ]

@@ -217,6 +217,15 @@ this plan as active until the size and ownership targets are met.
   and graph-contract filenames now match their v4/v3 contracts. A fresh
   revision-bound development cohort is the next gate; no final-holdout evidence
   has been accessed.
+- The first wider development wave then exposed exact-citation duplication:
+  after the critic validated source bytes, the graph author independently
+  retyped them and one relation citation drifted. The graph author now selects
+  only from the critic-validated provider-locked citation catalog. This moves
+  byte custody to one owner without changing entailment responsibility, adding
+  a repair loop, or introducing prose parsing. Request v8, authority v10, and
+  compiler identity v9 fail closed on the superseded contract; focused proof is
+  `121/121`. The failed case remains failed evidence and will receive only a
+  fresh assignment after this revision is committed.
 
 ## Stop Conditions
 

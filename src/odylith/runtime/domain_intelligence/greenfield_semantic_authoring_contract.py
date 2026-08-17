@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v7"
+    "odylith.greenfield.semantic-intent-authoring-request.v8"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -57,7 +57,8 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
             "candidate_access": "forbidden",
             "graph_author_binding": (
                 "validated decision, clarification field, question, and citations are "
-                "provider-locked before graph authoring"
+                "provider-locked before graph authoring; every graph citation is selected "
+                "from the critic-validated exact-byte citation catalog"
             ),
         },
         "materiality_field_semantics": {

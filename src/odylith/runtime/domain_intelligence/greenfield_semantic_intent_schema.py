@@ -25,10 +25,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 _SYSTEM_ATTRIBUTE_NAMES = frozenset({"component_kind", "release_scope"})
 
 
-def semantic_intent_output_schema() -> dict[str, Any]:
+def semantic_intent_output_schema(
+    *, source_ref_schema: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Return the exact schema accepted by the structured-output provider lane."""
 
-    source_ref = semantic_source_ref_schema()
+    source_ref = source_ref_schema or semantic_source_ref_schema()
     source_refs = _source_refs(source_ref, minimum=1)
     return {
         "type": "object",

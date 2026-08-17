@@ -209,6 +209,42 @@ def test_graph_author_schema_locks_the_validated_materiality_decision() -> None:
         "enum"
     ] == ["A shift coordinator claims one ready card and receives a claim receipt."]
 
+    expected_quotes = {
+        ref["quote"]
+        for field in complete["fields"]
+        for ref in field["source_refs"]
+    }
+    fact_variants = complete_schema["properties"]["facts"]["items"]["anyOf"]
+    relation = complete_schema["properties"]["relations"]["items"]
+    narrative = complete_schema["properties"]["narratives"]["items"]
+    for owner in (*fact_variants, relation, narrative):
+        selections = owner["properties"]["source_refs"]["items"]["anyOf"]
+        assert {
+            selection["properties"]["quote"]["enum"][0]
+            for selection in selections
+        } == expected_quotes
+
+
+def test_graph_author_schema_cannot_retype_a_non_catalog_source_quote() -> None:
+    assessment = copy.deepcopy(semantic_intent_packet()["materiality_assessment"])
+    evidence_sources = {"operator_prompt": SEMANTIC_PROMPT, "operator_edit": ""}
+    retained = assessment["fields"][0]["source_refs"][0]
+    for field in assessment["fields"]:
+        field["source_refs"] = [copy.deepcopy(retained)]
+
+    schema = semantic_intent_output_schema_for_materiality(
+        assessment,
+        evidence_sources=evidence_sources,
+    )
+    relation_ref = schema["properties"]["relations"]["items"]["properties"][
+        "source_refs"
+    ]["items"]
+
+    assert len(relation_ref["anyOf"]) == 1
+    assert relation_ref["anyOf"][0]["properties"]["quote"]["enum"] == [
+        retained["quote"]
+    ]
+
 
 def test_provider_schema_encodes_materiality_status_invariants() -> None:
     schema = semantic_materiality_assessment_schema()
@@ -303,13 +339,13 @@ def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:
         require_product_intent_authority_structure(tampered)
 
 
-def test_v7_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
+def test_v8_request_requires_prompt_only_schema_constrained_independent_runs() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     protocol = request["authoring_protocol"]
 
     assert SEMANTIC_INTENT_IR_VERSION.endswith(".v3")
     assert SEMANTIC_INTENT_PACKET_VERSION.endswith(".v4")
-    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v7")
+    assert SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION.endswith(".v8")
     assert SEMANTIC_MATERIALITY_ASSESSMENT_VERSION.endswith(".v3")
     assert request["materiality_gate"]["order"] == "before_graph_authoring"
     assert request["materiality_gate"]["candidate_access"] == "forbidden"
@@ -342,6 +378,9 @@ def test_v7_request_requires_prompt_only_schema_constrained_independent_runs() -
     assert protocol["semantic_kind_disambiguation"]["runtime_detection"] == "forbidden"
     assert "consumer can observe" in protocol["materiality_field_semantics"]["visible_result"]
     assert "human-facing interaction" in protocol["materiality_field_semantics"]["role"]
+    assert "critic-validated exact-byte citation catalog" in protocol[
+        "materiality_gate"
+    ]["graph_author_binding"]
     assert any(
         "internal transition" in rule
         for rule in protocol["materiality_decision_rules"]

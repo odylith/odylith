@@ -151,6 +151,25 @@
   host-execution proof is `120/120`; a fresh revision-bound cohort remains the
   release evidence gate.
 
+- Citation-Custody Follow-up (2026-08-17): The fresh 24-case development run
+  reached 15 accepted cases before `gfhi-012` failed closed. Its prompt-only
+  critic passed exact-byte custody, but the independent graph author retyped
+  one relation citation with bytes not present in the source. Runtime rejected
+  the graph, wrote no segment, and performed no retry. Asking the author to
+  copy more carefully or repairing the quote after validation are rejected
+  mechanisms because neither adds semantic judgment.
+
+- Citation-Catalog Resolution (2026-08-17): The validated materiality
+  assessment now owns a bounded exact-byte citation catalog. The graph author
+  may select only provider-locked citations from that catalog for facts,
+  relations, narratives, and clarification; a non-catalog quote is
+  structurally unrepresentable. The canonical IR still carries full exact
+  citations, so no post-output semantic rewrite or fuzzy resolver was added.
+  Authoring request v8, authority v10, and compiler identity v9 reject the
+  prior contract. Focused graph/materiality/transaction/recovery/host proof is
+  `121/121`; the failed assignment will not be retried, and a fresh assignment
+  under a new revision is required.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.

@@ -773,14 +773,14 @@ def _require_case_evidence_bound_to_transaction(
     """Prove the sealed v8 authority contains the exact assessed graph packet."""
 
     expected = {
-        "version": "odylith.product-intent-authority.v9",
+        "version": "odylith.product-intent-authority.v10",
         "origin": "verified_semantic_intent_packet",
         "source_format": "semantic_intent_packet",
         "evidence_sha256": str(case.packet.get("evidence_sha256") or ""),
         "semantic_intent_packet_version": "odylith.greenfield.semantic-intent-packet.v4",
         "semantic_intent_ir_version": "odylith.greenfield.semantic-intent-ir.v3",
         "semantic_intent_authoring_request_version": (
-            "odylith.greenfield.semantic-intent-authoring-request.v7"
+            "odylith.greenfield.semantic-intent-authoring-request.v8"
         ),
         "semantic_intent_authoring_contract_sha256": str(
             case.packet.get("authoring_contract_sha256") or ""

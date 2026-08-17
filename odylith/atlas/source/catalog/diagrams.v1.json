@@ -4222,8 +4222,8 @@
       ],
       "reviewed_watch_fingerprints": {
         "src/odylith/runtime/domain_intelligence/greenfield_operating_envelope.py": "e2483e87c46f89a7be127757b972f7bbd9ecc3d5e5a92e9fa58c1b131285e49e",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "49900dd134b58c2341edb1da55bf6e5aeca650d922ca6db557b52a27bf92b8f0",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "83c753e4d368f7f5690b9970c44f98ae94d721ef9c01afbdd3b02fc77ce660c9",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "26fe642c1744613759ae69d86010f35518bbe9bff7c44495be654611b461f489",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "f1c1c7c5caddf37942c627fa4b8c6dfd97f65df73b102f987a7fb235f7b2ed17",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py": "877709ea12b3eb941a6e7a22eb0142cb6e61e29dde412a61261492e76161f964",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py": "31f0f6ee8120b7ba98fd8581a230b30ee8c3e8b442f06a4bf02e5738940be315",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_projection_plan.py": "b865091d8971ef53b99281c00dbf34a61adfe833786543ca5fb92990e9b8fae9",
@@ -4376,8 +4376,8 @@
         "scripts/release/greenfield_semantic_host_execution_contract.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "49900dd134b58c2341edb1da55bf6e5aeca650d922ca6db557b52a27bf92b8f0",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "83c753e4d368f7f5690b9970c44f98ae94d721ef9c01afbdd3b02fc77ce660c9",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_materiality_contract.py": "26fe642c1744613759ae69d86010f35518bbe9bff7c44495be654611b461f489",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_schema.py": "f1c1c7c5caddf37942c627fa4b8c6dfd97f65df73b102f987a7fb235f7b2ed17",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_contract.py": "877709ea12b3eb941a6e7a22eb0142cb6e61e29dde412a61261492e76161f964",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_intent_packet.py": "31f0f6ee8120b7ba98fd8581a230b30ee8c3e8b442f06a4bf02e5738940be315",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_host_profiles.py": "d842921e6af65e6095d864e6d22de20f2a5b780fac5119c365ccf32ecd4fb0ba",
