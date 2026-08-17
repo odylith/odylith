@@ -94,8 +94,22 @@ def _materiality_clarification_schema(
                 "properties": {
                     "field": {"type": "string", "enum": [""]},
                     "question": {"type": "string", "enum": [""]},
-                    "source_refs": {"type": "array", "minItems": 0, "maxItems": 0},
-                    "alternatives": {"type": "array", "minItems": 0, "maxItems": 0},
+                    "source_refs": {
+                        "type": "array",
+                        "minItems": 0,
+                        "maxItems": 0,
+                        "items": dict(source_ref),
+                    },
+                    "alternatives": {
+                        "type": "array",
+                        "minItems": 0,
+                        "maxItems": 0,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 600,
+                        },
+                    },
                 },
             },
             {

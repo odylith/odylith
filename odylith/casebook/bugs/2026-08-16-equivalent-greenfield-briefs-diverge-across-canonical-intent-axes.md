@@ -103,6 +103,17 @@
   This makes multiple unresolved claims unrepresentable instead of relying on
   prompt wording or validator-error repair.
 
+- Provider-Schema Follow-up (2026-08-17): The first fresh assignments under
+  the singular-clarification contract stopped before model reasoning because
+  the resolved clarification variant constrained `source_refs` and
+  `alternatives` to empty arrays without declaring their item schemas. The
+  public provider rejected all four critic response schemas; no semantic
+  output or partial segment was written and the assignments will not be
+  retried. The single materiality schema owner now declares item schemas on
+  every array, including zero-length variants, and an exhaustive structural
+  regression prevents another provider-array drift. Fresh assignments and a
+  fresh contract hash are required before semantic evidence resumes.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.

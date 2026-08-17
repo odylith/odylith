@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "ec23e3ebcdfa5b299e707693dcf5b4e6b60e162122d313e4631c95933c4df1af",
+    "digest": "4213f71b040d748264a7b4458c390789820cdbf4c3bcd17c7fa5b7c2cadbd72a",
     "file_count": 316,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8518,10 +8518,7 @@
       "workstream_merged_from": [],
       "related_diagram_ids": [
         "D-023",
-        "D-043",
-        "D-045",
-        "D-046",
-        "D-047"
+        "D-043"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
@@ -8602,7 +8599,7 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 5,
+        "linked_diagram_count": 2,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -8664,7 +8661,12 @@
       "workstream_split_into": [],
       "workstream_merged_into": "",
       "workstream_merged_from": [],
-      "related_diagram_ids": [],
+      "related_diagram_ids": [
+        "D-043",
+        "D-045",
+        "D-046",
+        "D-047"
+      ],
       "idea_file": "odylith/radar/source/ideas/2026-07/2026-07-16-decompose-greenfield-semantic-compiler-into-result-and-projection-owners.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md",
       "plan_traceability": {
@@ -8720,7 +8722,7 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Added to 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 0,
+        "linked_diagram_count": 4,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -10936,9 +10938,7 @@
         "D-004",
         "D-040",
         "D-041",
-        "D-043",
         "D-044",
-        "D-046",
         "D-005",
         "D-006",
         "D-007",
@@ -10958,7 +10958,8 @@
         "D-030",
         "D-036",
         "D-039",
-        "D-038"
+        "D-038",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -11206,7 +11207,6 @@
         "D-009",
         "D-038",
         "D-040",
-        "D-043",
         "D-002",
         "D-003",
         "D-007",
@@ -11236,7 +11236,8 @@
         "D-039",
         "D-037",
         "D-041",
-        "D-042"
+        "D-042",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -11426,10 +11427,7 @@
         "B-143"
       ],
       "diagrams": [
-        "D-043",
-        "D-045",
-        "D-046",
-        "D-047"
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -11798,7 +11796,10 @@
         "D-042",
         "D-037",
         "D-038",
-        "D-043"
+        "D-043",
+        "D-045",
+        "D-046",
+        "D-047"
       ],
       "sources": [
         "manifest",
@@ -12275,7 +12276,6 @@
         "D-005",
         "D-006",
         "D-036",
-        "D-043",
         "D-044",
         "D-002",
         "D-003",
@@ -12303,7 +12303,8 @@
         "D-038",
         "D-037",
         "D-041",
-        "D-042"
+        "D-042",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -12357,7 +12358,6 @@
         "D-013",
         "D-018",
         "D-036",
-        "D-043",
         "D-002",
         "D-003",
         "D-006",
@@ -12381,7 +12381,8 @@
         "D-028",
         "D-029",
         "D-039",
-        "D-038"
+        "D-038",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -12434,7 +12435,6 @@
       ],
       "diagrams": [
         "D-022",
-        "D-047",
         "D-019",
         "D-020",
         "D-021",
@@ -13755,21 +13755,14 @@
       "owner": "product",
       "file": "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
       "related_workstreams": [
-        "B-142"
+        "B-144"
       ],
       "component_names": [
+        "Semantic materiality critic",
+        "Semantic graph author",
         "Domain Intelligence",
-        "Tribunal visible actor projection",
-        "ArtifactPlanIR projection contract",
-        "Typed findings",
-        "Tribunal patch planner",
-        "Radar",
-        "Registry",
-        "Registry forensics custody",
-        "Atlas",
-        "Compass",
-        "Release proof",
-        "Legacy issue blockers"
+        "Commit-only publisher",
+        "Release evidence"
       ],
       "related_component_ids": []
     },
@@ -13806,52 +13799,57 @@
     {
       "id": "diagram:D-045",
       "type": "diagram",
-      "label": "Greenfield First-Path Semantic Copy Custody",
+      "label": "Greenfield Semantic Intent Custody",
       "diagram_id": "D-045",
       "status": "active",
       "owner": "product",
       "file": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
       "related_workstreams": [
-        "B-142"
+        "B-144"
       ],
       "component_names": [
-        "Domain Intelligence",
-        "Generated Copy Quality"
+        "Materiality critic",
+        "Graph author",
+        "Provider schema",
+        "Deterministic verifier"
       ],
       "related_component_ids": []
     },
     {
       "id": "diagram:D-046",
       "type": "diagram",
-      "label": "Greenfield Rendered Surface And Static Atlas Custody",
+      "label": "Greenfield Graph Projection And Surface Custody",
       "diagram_id": "D-046",
       "status": "active",
       "owner": "product",
       "file": "odylith/atlas/source/greenfield-rendered-surface-and-static-atlas-custody.mmd",
       "related_workstreams": [
-        "B-142"
+        "B-144"
       ],
       "component_names": [
-        "Domain Intelligence",
-        "Atlas",
-        "Generated Flowchart Assets"
+        "Projection plan",
+        "Graph-native artifact writers",
+        "Package validator",
+        "Transaction compiler"
       ],
       "related_component_ids": []
     },
     {
       "id": "diagram:D-047",
       "type": "diagram",
-      "label": "Greenfield Matrix Tiered Campaign Progress",
+      "label": "Greenfield Semantic Mechanism Evidence And Release Gates",
       "diagram_id": "D-047",
       "status": "active",
       "owner": "release",
       "file": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
       "related_workstreams": [
-        "B-142"
+        "B-144"
       ],
       "component_names": [
-        "Release",
-        "Domain Intelligence"
+        "Development evidence plan",
+        "One-attempt host executor",
+        "Independent evaluator",
+        "Release gates"
       ],
       "related_component_ids": []
     },
@@ -20784,21 +20782,6 @@
     },
     {
       "source": "B-142",
-      "target": "diagram:D-045",
-      "edge_type": "diagram_linkage"
-    },
-    {
-      "source": "B-142",
-      "target": "diagram:D-046",
-      "edge_type": "diagram_linkage"
-    },
-    {
-      "source": "B-142",
-      "target": "diagram:D-047",
-      "edge_type": "diagram_linkage"
-    },
-    {
-      "source": "B-142",
       "target": "plan:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "edge_type": "promoted_to_plan"
     },
@@ -20831,6 +20814,26 @@
       "source": "B-144",
       "target": "component:odylith",
       "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-144",
+      "target": "diagram:D-043",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-144",
+      "target": "diagram:D-045",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-144",
+      "target": "diagram:D-046",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-144",
+      "target": "diagram:D-047",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "B-144",
@@ -21025,11 +21028,6 @@
     {
       "source": "component:atlas",
       "target": "diagram:D-044",
-      "edge_type": "component_diagram"
-    },
-    {
-      "source": "component:atlas",
-      "target": "diagram:D-046",
       "edge_type": "component_diagram"
     },
     {
@@ -21735,21 +21733,6 @@
     {
       "source": "component:domain-intelligence",
       "target": "diagram:D-043",
-      "edge_type": "component_diagram"
-    },
-    {
-      "source": "component:domain-intelligence",
-      "target": "diagram:D-045",
-      "edge_type": "component_diagram"
-    },
-    {
-      "source": "component:domain-intelligence",
-      "target": "diagram:D-046",
-      "edge_type": "component_diagram"
-    },
-    {
-      "source": "component:domain-intelligence",
-      "target": "diagram:D-047",
       "edge_type": "component_diagram"
     },
     {
@@ -22123,6 +22106,21 @@
       "edge_type": "component_diagram"
     },
     {
+      "source": "component:odylith",
+      "target": "diagram:D-045",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:odylith",
+      "target": "diagram:D-046",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:odylith",
+      "target": "diagram:D-047",
+      "edge_type": "component_diagram"
+    },
+    {
       "source": "component:odylith-chatter",
       "target": "diagram:D-002",
       "edge_type": "component_diagram"
@@ -22915,11 +22913,6 @@
     {
       "source": "component:release",
       "target": "diagram:D-027",
-      "edge_type": "component_diagram"
-    },
-    {
-      "source": "component:release",
-      "target": "diagram:D-047",
       "edge_type": "component_diagram"
     },
     {
@@ -24883,7 +24876,7 @@
     },
     "B-142": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 5,
+      "linked_diagram_count": 2,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -24897,7 +24890,7 @@
     },
     "B-144": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 0,
+      "linked_diagram_count": 4,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -24977,7 +24970,7 @@
       "category": "topology_conflict",
       "message": "B-142: autofix skipped `related_diagram_ids` due to metadata conflict",
       "idea_id": "B-142",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023,D-043,D-045,D-046,D-047'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
@@ -25003,7 +24996,7 @@
     },
     "connectivity": {
       "spine_node_count": 262,
-      "structural_edge_count": 1715,
+      "structural_edge_count": 1714,
       "connected_component_count": 3,
       "largest_component_size": 260,
       "isolated_node_count": 2,
@@ -25022,11 +25015,11 @@
     "execution_program_count": 5,
     "execution_wave_count": 30,
     "node_count": 355,
-    "edge_count": 1821,
+    "edge_count": 1820,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-08-16 14:31:07Z"
+  "generated_utc": "2026-08-17 15:39:26Z"
 }

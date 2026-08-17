@@ -30,8 +30,6 @@ founder_override: no
 
 promoted_to_plan: odylith/technical-plans/in-progress/2026-08/2026-08-16-greenfield-semantic-compiler-result-and-projection-owners.md
 
-execution_model: standard
-
 workstream_type: standalone
 
 workstream_parent:
@@ -42,7 +40,7 @@ workstream_depends_on:
 
 workstream_blocks:
 
-related_diagram_ids:
+related_diagram_ids: D-043,D-045,D-046,D-047
 
 workstream_reopens:
 
@@ -59,6 +57,8 @@ workstream_merged_from:
 supersedes:
 
 superseded_by:
+
+execution_model: standard
 
 ## Problem
 greenfield_semantic_compiler.py is 1,418 LOC and combines visible-result extraction, candidate selection, validation, and projection repair; transaction-safety fixes now touch it without a clear phase boundary.
