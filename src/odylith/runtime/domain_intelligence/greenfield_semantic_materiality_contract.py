@@ -65,47 +65,104 @@ def semantic_materiality_assessment_schema() -> dict[str, Any]:
                 "type": "string",
                 "enum": ["authorize_graph", "clarification_required"],
             },
-            "clarification": {
+            "clarification": _materiality_clarification_schema(),
+            "fields": {
+                "type": "array",
+                "minItems": len(SEMANTIC_CLARIFICATION_FIELDS),
+                "maxItems": len(SEMANTIC_CLARIFICATION_FIELDS),
+                "items": _materiality_field_schema(source_ref),
+            },
+        },
+    }
+
+
+def _materiality_clarification_schema() -> dict[str, Any]:
+    return {
+        "anyOf": [
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["field", "question"],
+                "properties": {
+                    "field": {"type": "string", "enum": [""]},
+                    "question": {"type": "string", "enum": [""]},
+                },
+            },
+            {
                 "type": "object",
                 "additionalProperties": False,
                 "required": ["field", "question"],
                 "properties": {
                     "field": {
                         "type": "string",
-                        "enum": ["", *SEMANTIC_CLARIFICATION_FIELDS],
+                        "enum": list(SEMANTIC_CLARIFICATION_FIELDS),
                     },
-                    "question": {"type": "string", "maxLength": 600},
+                    "question": {"type": "string", "minLength": 1, "maxLength": 600},
                 },
             },
-            "fields": {
+        ]
+    }
+
+
+def _materiality_field_schema(source_ref: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "anyOf": [
+            _materiality_field_variant_schema(
+                source_ref=source_ref,
+                statuses=("explicit", "source_entailable"),
+                source_ref_minimum=1,
+                alternative_minimum=0,
+                alternative_maximum=0,
+            ),
+            _materiality_field_variant_schema(
+                source_ref=source_ref,
+                statuses=("nonmaterial_assumption",),
+                source_ref_minimum=0,
+                source_ref_maximum=0,
+                alternative_minimum=0,
+                alternative_maximum=0,
+            ),
+            _materiality_field_variant_schema(
+                source_ref=source_ref,
+                statuses=("materially_unresolved",),
+                source_ref_minimum=1,
+                alternative_minimum=2,
+                alternative_maximum=8,
+            ),
+        ]
+    }
+
+
+def _materiality_field_variant_schema(
+    *,
+    source_ref: Mapping[str, Any],
+    statuses: tuple[str, ...],
+    source_ref_minimum: int,
+    source_ref_maximum: int = 8,
+    alternative_minimum: int,
+    alternative_maximum: int,
+) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["field", "status", "source_refs", "alternatives"],
+        "properties": {
+            "field": {
+                "type": "string",
+                "enum": list(SEMANTIC_CLARIFICATION_FIELDS),
+            },
+            "status": {"type": "string", "enum": list(statuses)},
+            "source_refs": {
                 "type": "array",
-                "minItems": len(SEMANTIC_CLARIFICATION_FIELDS),
-                "maxItems": len(SEMANTIC_CLARIFICATION_FIELDS),
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": ["field", "status", "source_refs", "alternatives"],
-                    "properties": {
-                        "field": {
-                            "type": "string",
-                            "enum": list(SEMANTIC_CLARIFICATION_FIELDS),
-                        },
-                        "status": {
-                            "type": "string",
-                            "enum": list(SEMANTIC_MATERIALITY_STATUSES),
-                        },
-                        "source_refs": {
-                            "type": "array",
-                            "maxItems": 8,
-                            "items": source_ref,
-                        },
-                        "alternatives": {
-                            "type": "array",
-                            "maxItems": 8,
-                            "items": {"type": "string", "minLength": 1, "maxLength": 600},
-                        },
-                    },
-                },
+                "minItems": source_ref_minimum,
+                "maxItems": source_ref_maximum,
+                "items": dict(source_ref),
+            },
+            "alternatives": {
+                "type": "array",
+                "minItems": alternative_minimum,
+                "maxItems": alternative_maximum,
+                "items": {"type": "string", "minLength": 1, "maxLength": 600},
             },
         },
     }

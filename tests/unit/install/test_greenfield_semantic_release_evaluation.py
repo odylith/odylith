@@ -37,6 +37,7 @@ from greenfield_semantic_release_evaluation import _floor_checks
 from greenfield_semantic_release_evaluation import _rate
 from greenfield_semantic_release_evaluation import evaluate_semantic_release
 from greenfield_semantic_release_evaluation import wilson_interval
+from greenfield_semantic_host_execution_contract import HOST_RUNTIME_RECEIPT_VERSION
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
@@ -46,6 +47,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
+    semantic_materiality_assessment_sha256,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     semantic_clarification_packet,
@@ -482,6 +484,11 @@ def _candidate(
         "author_run_id": assignment["author_assignment"]["run_id"],
     }
     assessment = packet["materiality_assessment"]
+    assessment["authoring_contract_sha256"] = semantic_intent_authoring_contract_sha256()
+    packet["authoring_contract_sha256"] = semantic_intent_authoring_contract_sha256()
+    packet["materiality_assessment_sha256"] = semantic_materiality_assessment_sha256(
+        assessment
+    )
     semantic_intent = packet["semantic_intent"]
     critic_input = materiality_critic_input_for_case(
         corpus=corpus, plan=plan, case_id=case_id,
@@ -501,7 +508,15 @@ def _candidate(
     author = _run_receipt(
         assignment["author_assignment"],
         input_sha=canonical_sha256(author_input),
-        output_sha=canonical_sha256(semantic_intent),
+        output_sha=canonical_sha256(
+            {
+                "semantic_intent": semantic_intent,
+                "self_challenge": [
+                    {"challenge": challenge, "status": "passed"}
+                    for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES
+                ],
+            }
+        ),
         stage="author",
         materiality_sha=packet["materiality_assessment_sha256"],
     )
@@ -557,6 +572,16 @@ def _run_receipt(
         "run_assignment_sha256": assignment["run_assignment_sha256"],
         "host_profile": assignment["host_profile"],
         "capability_profile": assignment["capability_profile"],
+        "execution_profile": assignment["execution_profile"],
+        "host_runtime": {
+            "version": HOST_RUNTIME_RECEIPT_VERSION,
+            "host_profile": assignment["host_profile"],
+            "runtime_name": (
+                "codex-cli" if assignment["host_profile"] == "codex" else "claude-code"
+            ),
+            "runtime_version": "test-runtime-v1",
+            "runtime_binary_sha256": "e" * 64,
+        },
         "independent_context": True,
         "attempt_count": 1,
         "validation_error_repair_count": 0,

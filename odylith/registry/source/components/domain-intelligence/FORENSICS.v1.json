@@ -1,19 +1,16 @@
 {
   "component_id": "domain-intelligence",
   "diagrams": [
-    "D-043",
-    "D-045",
-    "D-046",
-    "D-047"
+    "D-043"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 551,
-    "mapped_workstream_evidence_count": 459,
+    "explicit_event_count": 552,
+    "mapped_workstream_evidence_count": 460,
     "recent_path_match_count": 0,
-    "spec_history_event_count": 294,
+    "spec_history_event_count": 295,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 551
+    "timeline_event_count": 552
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,6 +18,29 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 0,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 1160,
+      "explicit_components": [
+        "domain-intelligence",
+        "odylith",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "odylith",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-08-17T07:38:15-07:00",
+      "workstreams": [
+        "B-144"
+      ]
+    },
     {
       "artifact_count": 3,
       "artifacts": [

@@ -426,14 +426,25 @@ def _require_candidate_case(
             expected_input_sha256=canonical_sha256(critic_input),
             expected_output_sha256=canonical_sha256(assessment),
         )
-        author = require_run_evidence(
+        author_evidence = _mapping(
             evidence.get("author"),
+            f"candidate {case_id} author evidence",
+        )
+        author = require_run_evidence(
+            author_evidence,
             stage="author",
             assignment=assignment["author_assignment"],
             expected_input_sha256=canonical_sha256(author_input),
-            expected_output_sha256=canonical_sha256(verified.semantic_intent),
+            expected_output_sha256=canonical_sha256(
+                {
+                    "semantic_intent": verified.semantic_intent,
+                    "self_challenge": author_evidence.get("self_challenge"),
+                }
+            ),
             materiality_assessment_sha256=materiality_sha,
         )
+        if critic["host_runtime"] != author["host_runtime"]:
+            raise RuntimeError("critic and author host runtime receipts differ")
     except RuntimeError as error:
         raise ValueError(f"candidate {case_id} execution evidence is invalid: {error}") from error
     for stage, receipt in (("critic", critic), ("author", author)):

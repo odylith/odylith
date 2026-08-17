@@ -12,12 +12,14 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
     SEMANTIC_INTENT_PACKET_VERSION,
     require_semantic_intent_ir,
     semantic_intent_authoring_contract,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
     semantic_intent_output_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
-    FACT_REQUIRED_ATTRIBUTES,
     INTERNAL_SYSTEM_COMPONENT_KINDS,
     INTERNAL_SYSTEM_RELEASE_SCOPES,
+    SEMANTIC_FACT_KINDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
@@ -39,6 +41,22 @@ from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
     semantic_ref,
     semantic_relation,
 )
+
+
+def _nested_mapping_keys(value: object) -> set[str]:
+    if isinstance(value, dict):
+        return set(value) | {
+            key
+            for nested in value.values()
+            for key in _nested_mapping_keys(nested)
+        }
+    if isinstance(value, list):
+        return {
+            key
+            for nested in value
+            for key in _nested_mapping_keys(nested)
+        }
+    return set()
 
 
 def _actorless_stateless_multi_output_packet() -> dict[str, object]:
@@ -197,16 +215,24 @@ def test_graph_v2_versions_and_authoring_cardinality_are_explicit() -> None:
 def test_graph_author_schema_and_runtime_share_internal_system_value_contracts() -> None:
     request = semantic_intent_authoring_request(prompt=SEMANTIC_PROMPT)
     contract = semantic_intent_authoring_contract()
-    attribute_schema = semantic_intent_output_schema()["properties"]["facts"][
-        "items"
-    ]["properties"]["attributes"]["items"]
+    schema = semantic_intent_output_schema()
+    fact_rules = {
+        row["properties"]["kind"]["enum"][0]: row["properties"]
+        for row in schema["properties"]["facts"]["items"]["anyOf"]
+    }
+    internal_attributes = fact_rules["internal_system"]["attributes"]["items"][
+        "anyOf"
+    ]
     conditional_values = {
-        row["if"]["properties"]["name"]["const"]: row["then"]["properties"][
-            "value"
-        ]["enum"]
-        for row in attribute_schema["allOf"]
+        row["properties"]["name"]["enum"][0]: row["properties"]["value"][
+            "enum"
+        ]
+        for row in internal_attributes
+        if row["properties"]["name"]["enum"]
+        in (["component_kind"], ["release_scope"])
     }
 
+    assert set(fact_rules) == set(SEMANTIC_FACT_KINDS)
     assert conditional_values == {
         "component_kind": list(INTERNAL_SYSTEM_COMPONENT_KINDS),
         "release_scope": list(INTERNAL_SYSTEM_RELEASE_SCOPES),
@@ -214,23 +240,40 @@ def test_graph_author_schema_and_runtime_share_internal_system_value_contracts()
     assert contract["fact_contracts"]["internal_system"][
         "attribute_value_contracts"
     ] == conditional_values
-    fact_rules = {
-        row["if"]["properties"]["kind"]["const"]: row["then"]["properties"]
-        for row in semantic_intent_output_schema()["properties"]["facts"]["items"][
-            "allOf"
+    for kind, rule in fact_rules.items():
+        assert rule["owner_kind"]["enum"] == contract["fact_contracts"][kind][
+            "owner_kinds"
         ]
-    }
-    for kind, required_names in FACT_REQUIRED_ATTRIBUTES.items():
-        assert {
-            rule["contains"]["properties"]["name"]["const"]
-            for rule in fact_rules[kind]["attributes"]["allOf"]
-        } == set(required_names)
+        allowed_names = {
+            name
+            for variant in rule["attributes"]["items"]["anyOf"]
+            for name in variant["properties"]["name"]["enum"]
+        }
+        assert set(contract["fact_contracts"][kind]["required_attributes"]) <= allowed_names
+        assert ({"from_state", "to_state"} <= allowed_names) == (
+            kind == "state_object"
+        )
+        assert ({"component_kind", "release_scope"} <= allowed_names) == (
+            kind == "internal_system"
+        )
     assert fact_rules["workflow_step"]["owner_kind"]["enum"] == [
         "actor",
         "product",
         "system",
     ]
     assert fact_rules["internal_system"]["owner_kind"]["enum"] == ["none"]
+    forbidden_provider_keywords = {
+        "allOf",
+        "not",
+        "if",
+        "then",
+        "else",
+        "contains",
+        "minContains",
+        "maxContains",
+        "const",
+    }
+    assert not forbidden_provider_keywords & _nested_mapping_keys(schema)
 
     packet = semantic_intent_packet()
     internal_system = next(

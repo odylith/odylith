@@ -31,6 +31,10 @@ from greenfield_semantic_development_evidence import prepare_development_evidenc
 from greenfield_semantic_development_evidence import require_development_evidence_plan
 from greenfield_semantic_development_evidence import run_evidence_sha256
 from greenfield_semantic_release_evidence import CANDIDATE_BUNDLE_VERSION
+from greenfield_semantic_host_execution_contract import HOST_RUNTIME_RECEIPT_VERSION
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
+    host_execution_profile,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_sha256,
@@ -114,7 +118,7 @@ def test_phase_inputs_are_exact_and_annotation_blind(tmp_path: Path) -> None:
     common = {
         "version", "cohort_nonce", "case_id", "case_nonce", "assignment_sha256",
         "run_nonce", "run_id", "run_assignment_sha256", "host_profile",
-        "capability_profile", "independent_context", "attempt_limit", "evidence",
+        "capability_profile", "execution_profile", "independent_context", "attempt_limit", "evidence",
         "evidence_sha256", "authoring_contract", "authoring_contract_sha256",
     }
     assert set(critic_input) == common
@@ -130,6 +134,20 @@ def test_phase_inputs_are_exact_and_annotation_blind(tmp_path: Path) -> None:
     assert author_input["materiality_assessment"] == context["assessment"]
     assert critic_input["run_id"] != author_input["run_id"]
     assert critic_input["host_profile"] == author_input["host_profile"] == "codex"
+    assert critic_input["execution_profile"] == author_input["execution_profile"] == {
+        "version": "odylith.greenfield.host-execution-profile.v1",
+        "host_profile": "codex",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "high",
+        "runner_family": "codex_exec",
+        "structured_output_mode": "provider_json_schema",
+        "tool_event_policy": "reject",
+        "session_persistence": "disabled",
+    }
+    assert context["plan"]["host_execution_profiles"] == [
+        host_execution_profile("codex")
+    ]
 
 
 def test_development_cohort_rejects_v1_and_caller_assembled_packet(tmp_path: Path) -> None:
@@ -195,6 +213,18 @@ def test_development_plan_rejects_reused_runner_nonce(tmp_path: Path) -> None:
             lambda row: row["author_stage"].__setitem__("host_profile", "claude"),
             "does not match its assignment: host_profile",
         ),
+        (
+            lambda row: row["author_stage"]["execution_profile"].__setitem__(
+                "model", "unpinned-model"
+            ),
+            "pinned contract",
+        ),
+        (
+            lambda row: row["author_stage"]["host_runtime"].__setitem__(
+                "host_profile", "claude"
+            ),
+            "assigned host",
+        ),
         (lambda row: row["critic_stage"].__setitem__("attempt_count", 2), "attempt, or repair"),
         (lambda row: row["critic_stage"].__setitem__("wall_ms", 0), "positive integer"),
         (
@@ -228,7 +258,17 @@ def test_development_cohort_rejects_missing_challenge_and_run_hash_drift(
 ) -> None:
     missing = _context(tmp_path / "missing", outcome="commit")
     segment = deepcopy(missing["segment"])
-    segment["cases"][0]["author_stage"]["self_challenge"].pop()
+    author_stage = segment["cases"][0]["author_stage"]
+    author_stage["self_challenge"].pop()
+    author_stage["output_sha256"] = canonical_sha256(
+        {
+            "semantic_intent": author_stage["semantic_intent"],
+            "self_challenge": author_stage["self_challenge"],
+        }
+    )
+    author_stage["run_sha256"] = run_evidence_sha256(
+        {key: value for key, value in author_stage.items() if key != "semantic_intent"}
+    )
     missing["segment_path"] = _write(tmp_path / "missing-challenge.json", segment)
     with pytest.raises(RuntimeError, match="mandatory self-challenge coverage"):
         _compile(missing, output=tmp_path / "missing-output.json")
@@ -256,6 +296,8 @@ def test_development_evidence_has_no_semantic_matcher_dependency() -> None:
     for source in (
         SCRIPTS_ROOT / "greenfield_semantic_development_evidence.py",
         SCRIPTS_ROOT / "greenfield_semantic_development_cohort.py",
+        SCRIPTS_ROOT / "greenfield_semantic_host_execution.py",
+        SCRIPTS_ROOT / "greenfield_semantic_host_execution_contract.py",
     ):
         tree = ast.parse(source.read_text(encoding="utf-8"))
         imported = {
@@ -296,6 +338,7 @@ def _context(
         output_path=plan_path,
     )
     assessment = deepcopy(fixture["materiality_assessment"])
+    assessment["authoring_contract_sha256"] = semantic_intent_authoring_contract_sha256()
     semantic_intent = deepcopy(fixture["semantic_intent"])
     assignment = plan["cases"][0]
     critic_input = build_materiality_critic_input(
@@ -361,17 +404,36 @@ def _run_receipt(
     output_value: dict[str, Any],
     materiality_sha256: str = "",
 ) -> dict[str, Any]:
+    self_challenge = [
+        {"challenge": challenge, "status": "passed"}
+        for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES
+    ]
+    exact_output = (
+        {"semantic_intent": output_value, "self_challenge": self_challenge}
+        if stage == "author"
+        else output_value
+    )
     row: dict[str, Any] = {
         "run_nonce": assignment["run_nonce"],
         "run_id": assignment["run_id"],
         "run_assignment_sha256": assignment["run_assignment_sha256"],
         "host_profile": assignment["host_profile"],
         "capability_profile": assignment["capability_profile"],
+        "execution_profile": assignment["execution_profile"],
+        "host_runtime": {
+            "version": HOST_RUNTIME_RECEIPT_VERSION,
+            "host_profile": assignment["host_profile"],
+            "runtime_name": (
+                "codex-cli" if assignment["host_profile"] == "codex" else "claude-code"
+            ),
+            "runtime_version": "test-runtime-v1",
+            "runtime_binary_sha256": "d" * 64,
+        },
         "independent_context": True,
         "attempt_count": 1,
         "validation_error_repair_count": 0,
         "input_sha256": canonical_sha256(input_value),
-        "output_sha256": canonical_sha256(output_value),
+        "output_sha256": canonical_sha256(exact_output),
         "access_receipt": expected_access_receipt(stage),
         "wall_ms": 10,
         "token_usage": {
@@ -383,10 +445,7 @@ def _run_receipt(
     }
     if stage == "author":
         row["materiality_assessment_sha256"] = materiality_sha256
-        row["self_challenge"] = [
-            {"challenge": challenge, "status": "passed"}
-            for challenge in SEMANTIC_INTENT_MANDATORY_CHALLENGES
-        ]
+        row["self_challenge"] = self_challenge
     row["run_sha256"] = run_evidence_sha256(row)
     return row
 

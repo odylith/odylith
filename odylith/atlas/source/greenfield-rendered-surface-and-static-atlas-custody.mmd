@@ -1,89 +1,50 @@
 flowchart LR
-    subgraph write_lane["Post-Confirm Write Boundary"]
+    verified_graph["Verified Semantic Intent graph<br/>typed facts, relations and citations"]
+    projection_plan["Persisted projection plan<br/>release systems, artifact depth,<br/>workstreams, components and diagrams"]
+
+    subgraph adaptive_depth["Graph-derived artifact depth"]
       direction TB
-      final_manifest["Final greenfield manifest<br/>semantic, package, and lens gates"]
-      prewrite_safety["Prewrite safety evidence<br/>program, release target,<br/>assignment, validation dry-runs"]
-      governed_write["Governed records written<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
-      rollback_guard["Rollback guard<br/>source truth plus managed<br/>surface assets restored on failure"]
-      dashboard_refresh["Surface refresh orchestration<br/>readable views after source truth"]
-      brand_assets["Managed brand assets<br/>lockup, icons, manifest<br/>seeded before browser proof"]
+      workstreams["Radar plan<br/>one product row for one component;<br/>product plus component rows for plural boundaries"]
+      components["Registry component packages<br/>exact implemented facts and typed interfaces;<br/>connected supporting systems may be result-less"]
+      diagrams["Atlas views<br/>first path always;<br/>context, state evidence and boundaries only when justified"]
     end
 
-    subgraph atlas_lane["Atlas Render Custody"]
+    subgraph governed_surfaces["Typed surface writers"]
       direction TB
-      catalog_truth["Atlas catalog truth<br/>source MMD, links,<br/>watch fingerprints"]
-      mermaid_worker["Mermaid worker render<br/>preferred SVG and PNG path"]
-      static_renderer["Static generated-flowchart renderer<br/>browserless fallback for<br/>Odylith-generated flowcharts"]
-      rendered_assets["Rendered Atlas assets<br/>SVG, PNG, payload entries"]
-      freshness_gate["Freshness gate<br/>all diagrams fresh,<br/>no stale watched truth"]
+      radar["Radar source rows<br/>exact titles and semantic custody"]
+      registry["Registry source packages<br/>plural states and outputs,<br/>no invented result fallback"]
+      atlas["Atlas catalog and diagrams<br/>actual typed graph edges"]
+      memory["Accepted memory and dashboard<br/>state and replay copy only when state exists"]
+      delivery["Delivery and traceability<br/>release membership and proof bindings"]
     end
 
-    subgraph surface_lane["Generated Surface Package"]
-      direction TB
-      matrix_seed["Seeded matrix install<br/>one runtime seed per batch,<br/>cloned mutable repo per case"]
-      rendered_package["Rendered package collector<br/>Radar, Registry, Atlas,<br/>Compass, Casebook, Project"]
-      typed_units["Typed artifact-quality units<br/>projection id, source path,<br/>surface role, text kind"]
-      projection_surface_scan["Recursive projection surface scan<br/>project brief, accepted project,<br/>dashboard, operator prompts"]
-      structural_metadata["Structural metadata boundary<br/>repo identity and paths are not<br/>public copy repair targets"]
-      source_address_gate["Source-address gate<br/>repairable findings require exact<br/>SemanticModelIR or ArtifactPlanIR fact"]
-      governed_readback["Governed readback parser<br/>release catalogs/events,<br/>program waves,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch"]
-      evidence_readback["Independent package evidence<br/>brief depth, Radar sections,<br/>Registry proof text,<br/>Atlas labels, prewrite safety,<br/>Project prompts from persisted payload,<br/>declared sentinel plus distinctive-anchor readback,<br/>guidance/catalog Markdown excluded"]
-      retained_evidence["Retained case evidence<br/>prompt and intent hashes,<br/>artifact inventory, excerpts,<br/>full-text grounding,<br/>quality findings, browser state,<br/>manifest summary"]
-      cleanup_proof["Per-case cleanup proof<br/>temp project deleted after<br/>evidence capture"]
-      surface_health["Surface health checks<br/>HTML, payload, routes,<br/>asset references"]
-      browser_state["Generated browser state proof<br/>Project tab and governed shell tabs,<br/>normal, fallback,<br/>invalid-query recovery"]
-      hard_score["Brutal release score<br/>weakest dimension wins"]
-    end
+    package_gate["Graph-native package validator<br/>cross-surface fact retention,<br/>projection-plan equality, quality and traceability"]
+    transaction["Sealed ProductCreateTransaction<br/>complete after-image and reporting fields"]
 
-    subgraph blocker_lane["Fail-Closed Outcomes"]
-      direction TB
-      exact_blockers["Exact blockers<br/>missing assets, stale diagrams,<br/>unattempted browser proof"]
-      no_release_claim["No release claim<br/>until installed matrix proves<br/>the generated package"]
-      proof_checkpoint["Compass proof checkpoint<br/>validated evidence only"]
-    end
+    verified_graph --> projection_plan
+    projection_plan --> workstreams
+    projection_plan --> components
+    projection_plan --> diagrams
+    workstreams --> radar
+    components --> registry
+    diagrams --> atlas
+    projection_plan --> memory
+    projection_plan --> delivery
+    radar --> package_gate
+    registry --> package_gate
+    atlas --> package_gate
+    memory --> package_gate
+    delivery --> package_gate
+    package_gate -- "pass" --> transaction
+    package_gate -- "fail closed" --> projection_plan
 
-    final_manifest --> governed_write
-    final_manifest --> prewrite_safety
-    prewrite_safety --> governed_write
-    governed_write --> rollback_guard
-    rollback_guard --> dashboard_refresh
-    dashboard_refresh --> brand_assets
-    brand_assets --> surface_health
-    dashboard_refresh --> catalog_truth
-    catalog_truth --> mermaid_worker
-    mermaid_worker --> rendered_assets
-    mermaid_worker --> static_renderer
-    static_renderer --> rendered_assets
-    rendered_assets --> freshness_gate
-    freshness_gate --> matrix_seed
-    matrix_seed --> rendered_package
-    rendered_package --> typed_units
-    typed_units --> projection_surface_scan
-    projection_surface_scan --> structural_metadata
-    structural_metadata --> source_address_gate
-    source_address_gate --> governed_readback
-    governed_readback --> evidence_readback
-    evidence_readback --> retained_evidence
-    retained_evidence --> cleanup_proof
-    cleanup_proof --> surface_health
-    surface_health --> browser_state
-    browser_state --> hard_score
-    hard_score --> proof_checkpoint
-    freshness_gate --> exact_blockers
-    surface_health --> exact_blockers
-    exact_blockers --> no_release_claim
+    classDef authority fill:#EFF6FF,stroke:#60A5FA,color:#132033,stroke-width:1.2px;
+    classDef plan fill:#F8FAFC,stroke:#94A3B8,color:#132033,stroke-width:1.2px;
+    classDef surface fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
+    class verified_graph authority;
+    class projection_plan,workstreams,components,diagrams,package_gate,transaction plan;
+    class radar,registry,atlas,memory,delivery surface;
 
-    classDef write fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
-    classDef atlas fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
-    classDef surface fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
-    classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class final_manifest,prewrite_safety,governed_write,rollback_guard,dashboard_refresh,brand_assets write;
-    class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
-    class matrix_seed,rendered_package,typed_units,projection_surface_scan,structural_metadata,source_address_gate,governed_readback,evidence_readback,retained_evidence,cleanup_proof,surface_health,browser_state,hard_score surface;
-    class exact_blockers,no_release_claim,proof_checkpoint blocker;
-
-    style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
-    style atlas_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
-    style surface_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#293D52
-    style blocker_lane fill:#FFF8F7,stroke:#F7B4AE,stroke-width:1px,color:#293D52
+    style adaptive_depth fill:#FBFDFF,stroke:#94A3B8,stroke-width:1px,color:#293D52
+    style governed_surfaces fill:#F8FFF9,stroke:#4ADE80,stroke-width:1px,color:#293D52
     linkStyle default stroke:#9FB2C8,stroke-width:1.25px

@@ -12,7 +12,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
     COMPLETE_FACT_COUNTS as _COMPLETE_FACT_COUNTS,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
-    FACT_OWNER_KINDS as _FACT_OWNER_KINDS,
     FACT_REQUIRED_ATTRIBUTES as _FACT_REQUIRED_ATTRIBUTES,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
@@ -24,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     RELATION_ENDPOINT_KINDS as _RELATION_ENDPOINT_KINDS,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
+    SEMANTIC_ATTRIBUTE_NAMES,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract import (
     SEMANTIC_CLARIFICATION_FIELDS,
@@ -45,7 +47,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations import (
     require_semantic_source_refs,
-    semantic_source_ref_schema,
 )
 
 
@@ -56,201 +57,7 @@ _CUSTODY_STATES = frozenset(
     {"source_fact", "bounded_interpretation", "visible_assumption"}
 )
 _OWNER_KINDS = frozenset({"none", "actor", "product", "system"})
-_ATTRIBUTE_NAMES = frozenset(
-    {
-        "action",
-        "action_phrase",
-        "object",
-        "from_state",
-        "to_state",
-        "condition",
-        "responsibility",
-        "component_kind",
-        "boundary",
-        "outside_boundary",
-        "proof",
-        "risk",
-        "release_scope",
-        "source_title",
-        "access_mode",
-    }
-)
-
-
-def semantic_intent_output_schema() -> dict[str, Any]:
-    """Return the compact provider schema for one semantic graph."""
-
-    source_ref = semantic_source_ref_schema()
-    source_refs = {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 8,
-        "items": source_ref,
-    }
-    return {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["version", "status", "clarification", "facts", "relations", "narratives"],
-        "properties": {
-            "version": {"type": "string", "enum": [SEMANTIC_INTENT_IR_VERSION]},
-            "status": {"type": "string", "enum": ["complete", "clarification_required"]},
-            "clarification": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["question", "fields", "source_refs"],
-                "properties": {
-                    "question": {"type": "string", "maxLength": 600},
-                    "fields": {
-                        "type": "array",
-                        "maxItems": 3,
-                        "items": {
-                            "type": "string",
-                            "enum": list(SEMANTIC_CLARIFICATION_FIELDS),
-                        },
-                    },
-                    "source_refs": {"type": "array", "maxItems": 8, "items": source_ref},
-                },
-            },
-            "facts": {
-                "type": "array",
-                "maxItems": 128,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": [
-                        "fact_id",
-                        "kind",
-                        "label",
-                        "statement",
-                        "order",
-                        "owner_kind",
-                        "custody",
-                        "attributes",
-                        "source_refs",
-                    ],
-                    "properties": {
-                        "fact_id": {"type": "string", "minLength": 1, "maxLength": 100},
-                        "kind": {"type": "string", "enum": list(SEMANTIC_FACT_KINDS)},
-                        "label": {"type": "string", "minLength": 1, "maxLength": 300},
-                        "statement": {"type": "string", "minLength": 1, "maxLength": 1600},
-                        "order": {"type": "integer", "minimum": 0},
-                        "owner_kind": {"type": "string", "enum": sorted(_OWNER_KINDS)},
-                        "custody": {"type": "string", "enum": sorted(_CUSTODY_STATES)},
-                        "attributes": {
-                            "type": "array",
-                            "maxItems": 12,
-                            "items": _semantic_attribute_schema(),
-                        },
-                        "source_refs": source_refs,
-                    },
-                    "allOf": [
-                        _semantic_fact_kind_schema(kind)
-                        for kind in SEMANTIC_FACT_KINDS
-                    ],
-                },
-            },
-            "relations": {
-                "type": "array",
-                "maxItems": 256,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": [
-                        "relation_id",
-                        "kind",
-                        "subject_id",
-                        "object_id",
-                        "order",
-                        "source_refs",
-                    ],
-                    "properties": {
-                        "relation_id": {"type": "string", "minLength": 1, "maxLength": 100},
-                        "kind": {"type": "string", "enum": list(SEMANTIC_RELATION_KINDS)},
-                        "subject_id": {"type": "string", "minLength": 1, "maxLength": 100},
-                        "object_id": {"type": "string", "minLength": 1, "maxLength": 100},
-                        "order": {"type": "integer", "minimum": 0},
-                        "source_refs": source_refs,
-                    },
-                },
-            },
-            "narratives": {
-                "type": "array",
-                "maxItems": 64,
-                "items": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "required": ["field", "order", "text", "fact_ids", "source_refs"],
-                    "properties": {
-                        "field": {"type": "string", "enum": list(SEMANTIC_NARRATIVE_FIELDS)},
-                        "order": {"type": "integer", "minimum": 0},
-                        "text": {"type": "string", "minLength": 1, "maxLength": 1600},
-                        "fact_ids": {
-                            "type": "array",
-                            "minItems": 1,
-                            "maxItems": 32,
-                            "items": {"type": "string"},
-                        },
-                        "source_refs": source_refs,
-                    },
-                },
-            },
-        },
-    }
-
-
-def _semantic_attribute_schema() -> dict[str, Any]:
-    value_contracts = {
-        "component_kind": INTERNAL_SYSTEM_COMPONENT_KINDS,
-        "release_scope": INTERNAL_SYSTEM_RELEASE_SCOPES,
-    }
-    return {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["name", "value"],
-        "properties": {
-            "name": {"type": "string", "enum": sorted(_ATTRIBUTE_NAMES)},
-            "value": {"type": "string", "minLength": 1, "maxLength": 800},
-        },
-        "allOf": [
-            {
-                "if": {"properties": {"name": {"const": name}}},
-                "then": {"properties": {"value": {"enum": list(values)}}},
-            }
-            for name, values in value_contracts.items()
-        ],
-    }
-
-
-def _semantic_fact_kind_schema(kind: str) -> dict[str, Any]:
-    attribute_rules: dict[str, Any] = {
-        "allOf": [
-            {
-                "contains": {
-                    "properties": {"name": {"const": name}},
-                    "required": ["name"],
-                },
-                "minContains": 1,
-                "maxContains": 1,
-            }
-            for name in _FACT_REQUIRED_ATTRIBUTES.get(kind, ())
-        ]
-    }
-    if kind != "state_object":
-        attribute_rules["not"] = {
-            "contains": {
-                "properties": {"name": {"enum": ["from_state", "to_state"]}},
-                "required": ["name"],
-            }
-        }
-    return {
-        "if": {"properties": {"kind": {"const": kind}}, "required": ["kind"]},
-        "then": {
-            "properties": {
-                "owner_kind": {"enum": list(_FACT_OWNER_KINDS[kind])},
-                "attributes": attribute_rules,
-            }
-        },
-    }
+_ATTRIBUTE_NAMES = frozenset(SEMANTIC_ATTRIBUTE_NAMES)
 
 
 def require_semantic_intent_ir(
@@ -773,7 +580,6 @@ __all__ = [
     "semantic_intent_fact_ids",
     "semantic_intent_meaning_sha256",
     "semantic_intent_meaning_projection",
-    "semantic_intent_output_schema",
     "semantic_intent_product_facts",
     "semantic_intent_product_facts_sha256",
     "semantic_intent_sha256",

@@ -4,25 +4,30 @@ Last updated: 2026-08-17
 
 ## Overview
 
-Domain Intelligence owns the Greenfield evidence-to-transaction boundary. It
-turns untrusted operator evidence into typed product facts, compiles and validates
-the complete governed package before confirmation, stores each pending package at
-an immutable hash-addressed path, and publishes the accepted package as one
-transaction-addressed generation. Codex and Claude transport the same exact
-hash-bound `CONFIRM`, `EDIT`, and `REJECT` contract; host prose is never product
-truth and no product interpretation or artifact generation runs after confirmation.
+Domain Intelligence owns the Greenfield evidence-to-transaction boundary. A
+pinned, isolated host first challenges material uncertainty and then authors a
+source-cited typed Semantic Intent graph in an independent context. That graph
+is an untrusted handoff: deterministic code verifies exact citations, fact and
+relation types, graph completeness, materiality alignment, operating limits,
+and transaction laws before any proposal can be shown. The verified graph
+projects the complete governed package, stores it at an immutable hash-addressed
+path, and publishes the accepted bytes as one transaction-addressed generation.
+Codex and Claude use the same exact `CONFIRM`, `EDIT`, and `REJECT` contract;
+no product interpretation, model call, retry repair, or artifact generation runs
+after confirmation.
 
 ## Boundary
 
-- **Logical boundary**: deterministic Greenfield intent compilation, pre-confirm
-  package tribunal, immutable pending custody, and commit-only publication.
+- **Logical boundary**: isolated host semantic authoring, provider-constrained
+  typed handoff, deterministic graph and package verification, immutable pending
+  custody, and commit-only publication.
 - **Evidence anchor**: `src/odylith/runtime/domain_intelligence`; Project
   source-launch projection owner:
   `src/odylith/runtime/project_intelligence/source_launch.py`
 - **Kind**: library
 - **Status**: active
 - **Evidence tier**: manifest
-- **Workstreams**: B-141, B-142
+- **Workstreams**: B-141, B-142, B-144
 - **Diagrams**: D-043, D-045, D-046, D-047
 
 ## Requirements Trace
@@ -50,6 +55,20 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-08-17: Replaced the live Greenfield prose-interpreter and repair regime with a source-cited graph authority. (Plan: [B-144](odylith/radar/radar.html?view=plan&workstream=B-144); Bug: `CB-328`; Diagram: D-043)
+  The public mechanism now separates a prompt-only materiality critic from an
+  independent graph author, pins exact Codex and Claude execution profiles,
+  requires provider-enforced structured output, and rejects tool events,
+  retries, validation-error repair, and partial evidence. Deterministic runtime
+  owners validate citations, typed endpoints, ownership, cardinality,
+  materiality alignment, hashes, and transaction laws without regex, token,
+  fuzzy, or downstream prose interpretation. A real Codex run produced 13 facts
+  and 12 relations, passed all 13 mandatory challenges, and compiled a verified
+  91-write transaction with zero repair attempts. The complete semantic test
+  manifest passes 159 tests. Fresh blinded development evidence, Claude parity,
+  lower-capability safety, clean distribution, browser proof, and the untouched
+  final holdout remain mandatory release gates.
 
 - 2026-08-15: Repaired the semantic custody failures exposed by the retired independent Greenfield holdout. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-303`, `CB-315`, `CB-319`, `CB-323`; Diagram: D-043)
   Prompt and edit evidence now preserve section-local and atomic custody,

@@ -10,6 +10,12 @@ from pathlib import Path
 import secrets
 from typing import Any
 
+from greenfield_semantic_host_execution_contract import (
+    TOKEN_MEASUREMENT_BASES,
+    positive_integer,
+    require_host_runtime_receipt,
+    require_token_usage,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_authoring_contract import (
     SEMANTIC_INTENT_MANDATORY_CHALLENGES,
     semantic_intent_authoring_contract_payload,
@@ -24,16 +30,20 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
     require_semantic_materiality_assessment,
     semantic_materiality_assessment_sha256,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
+    host_execution_profile,
+    require_host_execution_profile,
+    require_host_profiles,
+)
 
 
-DEVELOPMENT_EVIDENCE_PLAN_VERSION = "odylith.greenfield.development-evidence-plan.v2"
-AUTHOR_SEGMENT_VERSION = "odylith.greenfield.development-author-segment.v2"
-CRITIC_INPUT_VERSION = "odylith.greenfield.development-materiality-critic-input.v2"
-AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v2"
-MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v2"
+DEVELOPMENT_EVIDENCE_PLAN_VERSION = "odylith.greenfield.development-evidence-plan.v3"
+AUTHOR_SEGMENT_VERSION = "odylith.greenfield.development-author-segment.v3"
+CRITIC_INPUT_VERSION = "odylith.greenfield.development-materiality-critic-input.v3"
+AUTHOR_INPUT_VERSION = "odylith.greenfield.development-graph-author-input.v3"
+MECHANISM_EVIDENCE_VERSION = "odylith.greenfield.semantic-development-mechanism-evidence.v3"
 MECHANISM_ID = "prompt_only_materiality_gate_then_independent_graph_author"
 DETERMINISTIC_LAW_REPORT_VERSION = "odylith.greenfield.deterministic-law-report.v2"
-TOKEN_MEASUREMENT_BASES = ("provider_usage_receipt", "host_runtime_usage_receipt")
 REQUIRED_DETERMINISTIC_LAW_IDS = (
     "no_post_confirm_semantic_or_model_work",
     "exact_sealed_byte_publication",
@@ -97,7 +107,7 @@ def prepare_development_evidence_plan(
     corpus_file = safe_json_file(corpus_path, "development corpus")
     corpus = json_mapping(corpus_file, "development corpus")
     cases = _case_index(corpus)
-    hosts = _host_profiles(host_profiles)
+    hosts = require_host_profiles(host_profiles)
     issue_nonce = secrets.token_hex
     cohort_nonce = _issued_nonce(issue_nonce, "cohort")
     rows: list[dict[str, Any]] = []
@@ -139,6 +149,7 @@ def prepare_development_evidence_plan(
         "mechanism_contract_sha256": development_mechanism_contract_sha256(),
         "cohort_nonce": cohort_nonce,
         "required_host_profiles": hosts,
+        "host_execution_profiles": [host_execution_profile(host) for host in hosts],
         "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
         "cases": rows,
     }
@@ -161,7 +172,7 @@ def require_development_evidence_plan(
         {
             "version", "corpus_sha256", "authoring_contract_sha256",
             "mechanism_contract_sha256", "cohort_nonce", "cohort_assignment_sha256",
-            "required_host_profiles", "capability_profile", "cases",
+            "required_host_profiles", "host_execution_profiles", "capability_profile", "cases",
         },
         "development evidence plan",
     )
@@ -173,7 +184,10 @@ def require_development_evidence_plan(
         raise RuntimeError("development evidence plan uses a stale authoring contract")
     if plan.get("mechanism_contract_sha256") != development_mechanism_contract_sha256():
         raise RuntimeError("development evidence plan uses a stale mechanism contract")
-    hosts = _host_profiles(plan.get("required_host_profiles"))
+    hosts = require_host_profiles(plan.get("required_host_profiles"))
+    expected_execution_profiles = [host_execution_profile(host) for host in hosts]
+    if plan.get("host_execution_profiles") != expected_execution_profiles:
+        raise RuntimeError("development evidence plan changes a pinned host execution profile")
     if plan.get("capability_profile") != SEMANTIC_REASONING_CAPABILITY_PROFILE:
         raise RuntimeError("development evidence plan uses an unsupported capability profile")
     cohort_nonce = text(plan.get("cohort_nonce"), "cohort nonce", maximum=200)
@@ -236,6 +250,7 @@ def require_development_evidence_plan(
         "mechanism_contract_sha256": development_mechanism_contract_sha256(),
         "cohort_nonce": cohort_nonce,
         "required_host_profiles": hosts,
+        "host_execution_profiles": expected_execution_profiles,
         "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
         "cases": normalized,
     }
@@ -398,7 +413,8 @@ def require_run_evidence(
     row = mapping(value, f"{stage} run evidence")
     expected_fields = {
         "run_nonce", "run_id", "run_assignment_sha256", "run_sha256",
-        "host_profile", "capability_profile", "independent_context", "attempt_count",
+        "host_profile", "capability_profile", "execution_profile", "host_runtime",
+        "independent_context", "attempt_count",
         "validation_error_repair_count", "input_sha256", "output_sha256",
         "access_receipt", "wall_ms", "token_usage",
     }
@@ -426,14 +442,24 @@ def require_run_evidence(
     exact_keys(access, set(ACCESS_FIELDS), f"{stage} access receipt")
     if access != expected_access_receipt(stage):
         raise RuntimeError(f"{stage} run used forbidden or missing evidence access")
-    wall_ms = _positive_integer(row.get("wall_ms"), f"{stage} wall_ms")
-    token_usage = _token_usage(row.get("token_usage"), stage=stage)
+    execution_profile = require_host_execution_profile(
+        row.get("execution_profile"), host_profile=assignment["host_profile"]
+    )
+    if execution_profile != assignment.get("execution_profile"):
+        raise RuntimeError(f"{stage} run evidence changes its pinned execution profile")
+    host_runtime = require_host_runtime_receipt(
+        row.get("host_runtime"), host_profile=assignment["host_profile"]
+    )
+    wall_ms = positive_integer(row.get("wall_ms"), f"{stage} wall_ms")
+    token_usage = require_token_usage(row.get("token_usage"), stage=stage)
     normalized = {
         "run_nonce": assignment["run_nonce"],
         "run_id": assignment["run_id"],
         "run_assignment_sha256": assignment["run_assignment_sha256"],
         "host_profile": assignment["host_profile"],
         "capability_profile": assignment["capability_profile"],
+        "execution_profile": execution_profile,
+        "host_runtime": host_runtime,
         "independent_context": True,
         "attempt_count": 1,
         "validation_error_repair_count": 0,
@@ -484,6 +510,7 @@ def _phase_input(
         "run_assignment_sha256": run_assignment["run_assignment_sha256"],
         "host_profile": run_assignment["host_profile"],
         "capability_profile": run_assignment["capability_profile"],
+        "execution_profile": run_assignment["execution_profile"],
         "independent_context": True,
         "attempt_limit": 1,
         "evidence": evidence_sources,
@@ -536,6 +563,7 @@ def _run_assignment(
         "run_id": run_id,
         "host_profile": host_profile,
         "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
+        "execution_profile": host_execution_profile(host_profile),
         "independent_context": True,
         "attempt_limit": 1,
         "case_nonce": case_nonce,
@@ -553,7 +581,7 @@ def _require_run_assignment(
         raw,
         {
             "stage", "run_nonce", "run_id", "run_assignment_sha256", "host_profile",
-            "capability_profile", "independent_context", "attempt_limit", "case_nonce",
+            "capability_profile", "execution_profile", "independent_context", "attempt_limit", "case_nonce",
         },
         f"{stage} run assignment",
     )
@@ -567,6 +595,7 @@ def _require_run_assignment(
     if (
         raw.get("host_profile") != host_profile
         or raw.get("capability_profile") != SEMANTIC_REASONING_CAPABILITY_PROFILE
+        or raw.get("execution_profile") != host_execution_profile(host_profile)
         or raw.get("independent_context") is not True
         or raw.get("attempt_limit") != 1
     ):
@@ -577,6 +606,7 @@ def _require_run_assignment(
         "run_id": run_id,
         "host_profile": host_profile,
         "capability_profile": SEMANTIC_REASONING_CAPABILITY_PROFILE,
+        "execution_profile": host_execution_profile(host_profile),
         "independent_context": True,
         "attempt_limit": 1,
         "case_nonce": case_nonce,
@@ -596,6 +626,7 @@ def _cohort_assignment_sha256(plan: Mapping[str, Any]) -> str:
             "mechanism_contract_sha256": plan["mechanism_contract_sha256"],
             "cohort_nonce": plan["cohort_nonce"],
             "required_host_profiles": plan["required_host_profiles"],
+            "host_execution_profiles": plan["host_execution_profiles"],
             "capability_profile": plan["capability_profile"],
             "assignment_sha256s": [row["assignment_sha256"] for row in plan["cases"]],
         }
@@ -618,44 +649,6 @@ def expected_access_receipt(stage: str) -> dict[str, bool]:
     if stage not in {"critic", "author"}:
         raise RuntimeError("development evidence stage must be critic or author")
     return _expected_access(stage)
-
-
-def _host_profiles(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
-        raise RuntimeError("required host profiles must be a JSON string array")
-    hosts = [text(row, "host profile", maximum=100) for row in value]
-    if not hosts or len(set(hosts)) != len(hosts):
-        raise RuntimeError("required host profiles must be non-empty and unique")
-    return hosts
-
-
-def _token_usage(value: Any, *, stage: str) -> dict[str, Any]:
-    row = mapping(value, f"{stage} token usage")
-    exact_keys(
-        row,
-        {"input_tokens", "output_tokens", "total_tokens", "measurement_basis"},
-        f"{stage} token usage",
-    )
-    input_tokens = _positive_integer(row.get("input_tokens"), f"{stage} input tokens")
-    output_tokens = _positive_integer(row.get("output_tokens"), f"{stage} output tokens")
-    total_tokens = _positive_integer(row.get("total_tokens"), f"{stage} total tokens")
-    if total_tokens != input_tokens + output_tokens:
-        raise RuntimeError(f"{stage} token total does not match its measured parts")
-    basis = row.get("measurement_basis")
-    if basis not in TOKEN_MEASUREMENT_BASES:
-        raise RuntimeError(f"{stage} token measurement basis is unsupported")
-    return {
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "total_tokens": total_tokens,
-        "measurement_basis": basis,
-    }
-
-
-def _positive_integer(value: Any, label: str) -> int:
-    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        raise RuntimeError(f"{label} must be a positive integer")
-    return value
 
 
 def _case_index(corpus: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:

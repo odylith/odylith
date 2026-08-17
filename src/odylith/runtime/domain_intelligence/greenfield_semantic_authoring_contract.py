@@ -12,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_graph_contract impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     SEMANTIC_INTENT_IR_VERSION,
     SEMANTIC_INTENT_PACKET_VERSION,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
     semantic_intent_output_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (

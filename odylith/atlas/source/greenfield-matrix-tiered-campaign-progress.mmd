@@ -1,122 +1,57 @@
-%% Atlas visual contract: neutral containers organize structure; semantic node classes carry state; labels stay wrapped.
 flowchart TB
-    subgraph case_lane["Case variance lane"]
-      direction TB
-      external_cases["External case files<br/>domain vocabulary stays outside<br/>Odylith platform source"]
-      case_text_canonicalization["Case text canonicalization<br/>dedupe adjacent source words<br/>in prompts, required terms,<br/>leakage sentinels, and confirmations"]
-      source_generator["Source-grounded case generator<br/>balances stressors, sources,<br/>tags, and density"]
-      prior_results["Prior result payloads<br/>readable exact evidence with<br/>case id, slug, prompt hash,<br/>confirmed-intent hash"]
-      content_identity["Content identity hierarchy<br/>case id, prompt hash,<br/>confirmed-intent hash first"]
-      weak_identity["Weak-name replay fallback<br/>accepted only when unique;<br/>ambiguous names are blocked"]
-      stressor_tags["Stressor tags<br/>modal lens, path grants,<br/>homonyms, scientific casing,<br/>long paths, latency pressure"]
-      taxonomy_owner["Shared stressor taxonomy<br/>one owner for coverage,<br/>density, custom tags,<br/>10-point variance score"]
-      required_term_gate["Required-term provenance gate<br/>evaluation terms must be grounded<br/>in prompt or confirmed intent tokens"]
-      leakage_term_gate["Leakage-term provenance gate<br/>declared sentinels must be<br/>source-grounded or source terms<br/>become the fallback scan"]
-      tier_size_gate["Tier-size guard<br/>60, 120, and 240 labels<br/>require enough source cases"]
-      shard_builder["Shard builder<br/>failed subset, 60, 120,<br/>240, release shards"]
-      variance_report["Variance evaluation<br/>coverage ratio, stressor density,<br/>taxonomy score, low-depth cases"]
-      stressor_outcomes["Stressor outcomes<br/>passed and failed cases<br/>by ambiguity shape"]
+    subgraph frozen_inputs["Evidence frozen before authoring"]
+      direction LR
+      revision["Committed implementation revision"]
+      contracts["Authoring, materiality, graph,<br/>mechanism and evaluator contract hashes"]
+      corpus["Blinded development corpus<br/>case hashes only"]
+      plan["Runner-owned evidence plan<br/>host assignments, nonces,<br/>resource ceilings and deterministic laws"]
     end
 
-    subgraph campaign_lane["Tiered campaign lane"]
-      direction TB
-      campaign_orchestrator["Campaign orchestrator<br/>tier order, readiness posture,<br/>failure response"]
-      case_file_preflight["Campaign case-file preflight<br/>existing selected shard files<br/>validated before worker launch"]
-      failed_replay["Failed-subset replay<br/>stable identity match first"]
-      regression["60-case regression<br/>controlled discovery concurrency"]
-      volume["120-case discovery<br/>bounded workers, seeded installs"]
-      deep_volume["240-case discovery<br/>deeper variance, controlled workers"]
-      release_proof["Release proof<br/>full install, browser proof,<br/>rescue and natural rescue"]
-      dependency_injection["Shard runner dependencies<br/>explicit command, telemetry,<br/>cleanup functions; no global swaps"]
-      shard_execution_owner["Shard execution owner<br/>process tailing, temp cleanup,<br/>matrix command custody"]
+    subgraph per_case["Exactly one isolated two-stage run per case"]
+      direction LR
+      critic["Prompt-only critic<br/>one attempt, no tools or prior candidate"]
+      author["Independent graph author<br/>one attempt, no validator feedback"]
+      receipts["Runtime receipts<br/>binary hash, model profile,<br/>tokens, wall time and access claims"]
+      packet["Complete packet v3<br/>assessment, graph, challenges and hashes"]
+      transaction["Graph-native transaction proof<br/>or one material clarification"]
     end
 
-    subgraph telemetry_lane["Merged progress lane"]
-      direction TB
-      matrix_preflight["Matrix preflight<br/>invalid source metadata becomes<br/>structured failed-case telemetry"]
-      shard_jsonl["Shard telemetry<br/>run and per-case JSONL"]
-      exception_result["Case exception result<br/>clone/run exceptions become<br/>failed case completion telemetry"]
-      process_failure["Shard process failure cluster<br/>pre-result exits keep<br/>tail-preserved stderr evidence"]
-      source_shard_replay["Source-shard replay packet<br/>missing, unreadable, or multi-case<br/>pre-result payloads do not<br/>claim exact failed subset"]
-      synthetic_payload["Synthetic shard payload<br/>case ids, stressors,<br/>prompt fingerprints for replay"]
-      incremental_result["Incremental matrix result<br/>case updates flushed before run end"]
-      progress_jsonl["Campaign progress JSONL<br/>merged case events as they arrive"]
-      console_progress["Compact live progress lines<br/>stderr projection from<br/>canonical campaign events"]
-      running_snapshot["Running case snapshot<br/>started counts and active cases<br/>visible before run end"]
-      progress_snapshot["Campaign snapshot JSON<br/>live counts, running shards,<br/>cluster and stop decisions"]
-      live_failed_identity["Live failed-case identity<br/>per-shard failed cases<br/>feed exact replay"]
-      failure_origin["Failure-emitting shard origin<br/>stop decisions point at the shard<br/>that emitted failed telemetry"]
-      shard_backfill["Shard completion backfill<br/>missing case/cluster counts<br/>without double counting"]
-      tooling_payload["Tooling payload readback<br/>anchored global assignment,<br/>simple binding resolution"]
-      final_payload["Final campaign JSON<br/>tiers, release posture,<br/>failure clusters"]
-      failure_response["Failure-response packet<br/>Casebook capture required,<br/>failed result JSONs,<br/>exact replay identities"]
-      replay_materializer["Failed-subset replay artifacts<br/>ready-to-run shard files<br/>when exact source identity exists"]
+    subgraph independent_proof["Independent development adjudication"]
+      direction LR
+      fidelity["Semantic fidelity<br/>facts, relations, polarity,<br/>unsupported additions and omissions"]
+      utility["Package utility<br/>component differentiation,<br/>surface retention and equivalent-source behavior"]
+      resources["Mechanism cost<br/>latency, tokens, calls,<br/>complexity and recoverability"]
+      decision{"Zero P0 or P1<br/>and every threshold met?"}
     end
 
-    subgraph stop_lane["Stop and proof boundary"]
-      direction TB
-      cluster_gate["Live failure cluster gate<br/>telemetry-derived stop reason"]
-      worker_profile["Default worker profile<br/>failed subset one worker,<br/>discovery tiers two workers"]
-      in_flight_stop["In-flight shard interrupt<br/>siblings stop after tier signal"]
-      release_policy["Release-tier policy guard<br/>direct matrix and campaign require<br/>browser, rescue, natural rescue"]
-      release_stressors["Release-proof stressor guard<br/>requested variance coverage<br/>also applies to release tier"]
-      child_stressors["Child matrix stressor contract<br/>required stressors propagate<br/>to shard commands and preflight"]
-      release_preflight_status["Release preflight status<br/>preflight abort is not<br/>completed release proof"]
-      campaign_status["Campaign status split<br/>discovery-passed is not<br/>release-ready"]
-      shard_temp_scope["Per-shard temp scope<br/>isolated cleanup proof<br/>stale shard roots precleaned"]
-      temp_default["Portable temp default<br/>host temp directory unless<br/>TEMP_PARENT overrides"]
-      cleanup_proof["Temp cleanup proof<br/>directories, files, symlinks<br/>must all be gone"]
-      readiness_boundary["Readiness boundary<br/>discovery is not release proof"]
-      stop_fix_replay["Stop-fix-replay loop<br/>capture learning, repair platform,<br/>rerun failed subset, resume discovery"]
+    subgraph release_gates["Release evidence after development is clean"]
+      direction LR
+      parity["Codex and Claude parity<br/>same public graph and transaction laws"]
+      lower["Lower-capability safety<br/>clarify or fail safe only"]
+      install["Fresh distribution and clean install"]
+      browser["Normal, empty and degraded browser proof"]
+      holdout["Protected holdout<br/>opened and run exactly once, last"]
     end
 
-    external_cases --> case_text_canonicalization --> source_generator --> stressor_tags --> taxonomy_owner --> required_term_gate --> leakage_term_gate --> tier_size_gate --> shard_builder --> variance_report --> stressor_outcomes
-    prior_results --> content_identity --> weak_identity --> tier_size_gate
-    shard_builder --> campaign_orchestrator --> case_file_preflight --> failed_replay --> regression --> volume --> deep_volume --> release_proof
-    campaign_orchestrator --> dependency_injection --> shard_execution_owner
-    failed_replay --> shard_execution_owner
-    regression --> shard_execution_owner
-    volume --> shard_execution_owner
-    deep_volume --> shard_execution_owner
-    release_proof --> shard_execution_owner
-    shard_execution_owner --> matrix_preflight
-    matrix_preflight --> shard_jsonl
-    matrix_preflight --> incremental_result
-    shard_jsonl --> exception_result --> process_failure --> source_shard_replay --> synthetic_payload --> incremental_result --> progress_jsonl --> console_progress --> running_snapshot --> progress_snapshot --> live_failed_identity --> failure_origin --> shard_backfill --> tooling_payload --> final_payload --> failure_response --> replay_materializer
-    stressor_outcomes --> final_payload
-    progress_snapshot --> cluster_gate
-    live_failed_identity --> synthetic_payload
-    failure_origin --> cluster_gate
-    cluster_gate --> worker_profile --> in_flight_stop
-    cluster_gate --> failure_response
-    replay_materializer --> stop_fix_replay
-    replay_materializer --> failed_replay
-    in_flight_stop --> shard_temp_scope
-    shard_temp_scope --> temp_default
-    regression --> shard_temp_scope
-    volume --> shard_temp_scope
-    deep_volume --> shard_temp_scope
-    release_proof --> shard_temp_scope
-    temp_default --> cleanup_proof
-    release_proof --> release_policy
-    release_policy --> release_stressors --> child_stressors --> release_preflight_status --> campaign_status --> readiness_boundary
-    release_proof --> readiness_boundary
-    volume -. "discovery only" .-> readiness_boundary
-    deep_volume -. "discovery only" .-> readiness_boundary
-    failure_response --> readiness_boundary
+    revision --> plan
+    contracts --> plan
+    corpus --> plan
+    plan --> critic --> author --> receipts --> packet --> transaction
+    transaction --> fidelity --> utility --> resources --> decision
+    decision -- "no" --> revision
+    decision -- "yes" --> parity --> lower --> install --> browser --> holdout
 
-    classDef neutral fill:#FBFDFF,stroke:#D8E5F4,color:#132033,stroke-width:1px;
-    classDef primary fill:#EFF6FF,stroke:#BFD7FE,color:#132033,stroke-width:1px;
-    classDef execution fill:#ECFDFB,stroke:#A7E9E3,color:#132033,stroke-width:1px;
-    classDef governance fill:#F5F3FF,stroke:#DDD6FE,color:#132033,stroke-width:1px;
-    classDef constraint fill:#FFF8E6,stroke:#F6D98B,color:#132033,stroke-width:1px;
-    classDef invalid fill:#FFF1F0,stroke:#F7B4AE,color:#132033,stroke-width:1px;
-    class external_cases,case_text_canonicalization,source_generator,prior_results,content_identity,weak_identity,stressor_tags,taxonomy_owner,required_term_gate,leakage_term_gate,tier_size_gate,shard_builder,variance_report,stressor_outcomes primary;
-    class campaign_orchestrator,case_file_preflight,failed_replay,regression,volume,deep_volume,release_proof,dependency_injection,shard_execution_owner execution;
-    class matrix_preflight,shard_jsonl,exception_result,process_failure,source_shard_replay,synthetic_payload,incremental_result,progress_jsonl,console_progress,running_snapshot,progress_snapshot,live_failed_identity,failure_origin,shard_backfill,tooling_payload,final_payload,failure_response,replay_materializer governance;
-    class cluster_gate,worker_profile,in_flight_stop,release_policy,release_stressors,child_stressors,release_preflight_status,campaign_status,shard_temp_scope,temp_default,cleanup_proof,readiness_boundary,stop_fix_replay constraint;
-    style case_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#293D52
-    style campaign_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#293D52
-    style telemetry_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#293D52
-    style stop_lane fill:#FBFDFF,stroke:#F6D98B,stroke-width:1px,color:#293D52
-    linkStyle default stroke:#B9C7D8,stroke-width:1.25px
+    classDef frozen fill:#EFF6FF,stroke:#60A5FA,color:#132033,stroke-width:1.2px;
+    classDef run fill:#F8FAFC,stroke:#94A3B8,color:#132033,stroke-width:1.2px;
+    classDef proof fill:#FFF7ED,stroke:#FB923C,color:#132033,stroke-width:1.2px;
+    classDef release fill:#F0FDF4,stroke:#4ADE80,color:#132033,stroke-width:1.2px;
+    class revision,contracts,corpus,plan frozen;
+    class critic,author,receipts,packet,transaction run;
+    class fidelity,utility,resources,decision proof;
+    class parity,lower,install,browser,holdout release;
+
+    style frozen_inputs fill:#FBFDFF,stroke:#60A5FA,stroke-width:1px,color:#293D52
+    style per_case fill:#FBFDFF,stroke:#94A3B8,stroke-width:1px,color:#293D52
+    style independent_proof fill:#FFFBF5,stroke:#FB923C,stroke-width:1px,color:#293D52
+    style release_gates fill:#F8FFF9,stroke:#4ADE80,stroke-width:1px,color:#293D52
+    linkStyle default stroke:#9FB2C8,stroke-width:1.25px

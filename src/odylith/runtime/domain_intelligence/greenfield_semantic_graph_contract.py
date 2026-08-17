@@ -49,6 +49,23 @@ SEMANTIC_CLARIFICATION_FIELDS = (
     "non_goal",
     "component_boundary",
 )
+SEMANTIC_ATTRIBUTE_NAMES = (
+    "action",
+    "action_phrase",
+    "object",
+    "from_state",
+    "to_state",
+    "condition",
+    "responsibility",
+    "component_kind",
+    "boundary",
+    "outside_boundary",
+    "proof",
+    "risk",
+    "release_scope",
+    "source_title",
+    "access_mode",
+)
 SINGULAR_NARRATIVE_FIELDS = frozenset(
     {"product_story", "problem", "customer", "opportunity", "product_view", "proof_boundary"}
 )
@@ -224,6 +241,7 @@ __all__ = [
     "FACT_SEMANTIC_ROLES",
     "LIST_NARRATIVE_FIELDS",
     "RELATION_ENDPOINT_KINDS",
+    "SEMANTIC_ATTRIBUTE_NAMES",
     "SEMANTIC_FACT_KINDS",
     "SEMANTIC_CLARIFICATION_FIELDS",
     "SEMANTIC_NARRATIVE_FIELDS",

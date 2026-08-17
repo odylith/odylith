@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_request impo
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_MATERIALITY_ASSESSMENT_VERSION,
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
+    semantic_materiality_assessment_schema,
     semantic_materiality_assessment_sha256,
 )
 from tests.unit.runtime.greenfield_semantic_intent_fixtures import (
@@ -183,6 +184,34 @@ def test_materially_unresolved_field_requires_two_alternatives_only() -> None:
 
     with pytest.raises(ValueError, match="at least two alternatives"):
         require_semantic_intent_packet(packet, prompt=SEMANTIC_PROMPT)
+
+
+def test_provider_schema_encodes_materiality_status_invariants() -> None:
+    schema = semantic_materiality_assessment_schema()
+    clarification = schema["properties"]["clarification"]["anyOf"]
+    variants = schema["properties"]["fields"]["items"]["anyOf"]
+
+    assert clarification[0]["properties"] == {
+        "field": {"type": "string", "enum": [""]},
+        "question": {"type": "string", "enum": [""]},
+    }
+    assert clarification[1]["properties"]["question"]["minLength"] == 1
+    assert variants[0]["properties"]["status"]["enum"] == [
+        "explicit",
+        "source_entailable",
+    ]
+    assert variants[0]["properties"]["source_refs"]["minItems"] == 1
+    assert variants[0]["properties"]["alternatives"]["maxItems"] == 0
+    assert variants[1]["properties"]["status"]["enum"] == [
+        "nonmaterial_assumption"
+    ]
+    assert variants[1]["properties"]["source_refs"]["maxItems"] == 0
+    assert variants[1]["properties"]["alternatives"]["maxItems"] == 0
+    assert variants[2]["properties"]["status"]["enum"] == [
+        "materially_unresolved"
+    ]
+    assert variants[2]["properties"]["source_refs"]["minItems"] == 1
+    assert variants[2]["properties"]["alternatives"]["minItems"] == 2
 
 
 def test_authority_seals_assessment_hash_and_distinct_run_evidence() -> None:

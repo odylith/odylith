@@ -6,12 +6,15 @@ def test_bundle_root_contains_installed_agents_entrypoint() -> None:
     root = bundle_root()
     assert (root / "AGENTS.md").is_file()
     agents_text = (root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "repairs and quality-gates the full staged ProductCreateTransaction" in agents_text
+    assert (
+        "deterministically verifies typed endpoints, graph completeness, and the full "
+        "ProductCreateTransaction without semantic regexes or repair retries"
+    ) in agents_text
     assert "renders the sole visible confirmation view" in agents_text
-    assert "**CONFIRM** commits the exact shown transaction hash" in agents_text
+    assert "**CONFIRM** commits the exact hash" in agents_text
     assert "greenfield create --repo-root . --transaction-file" in agents_text
     assert (
-        "It does not parse product Markdown, call a host model, generate artifacts, or repair prose "
+        "It does not parse evidence, call a model, generate artifacts, or repair prose "
         "after CONFIRM"
     ) in agents_text
     assert "greenfield compile-transaction" not in agents_text

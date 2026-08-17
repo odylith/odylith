@@ -210,14 +210,20 @@ def _compile_case(
         f"{case_id} author stage",
     )
     semantic_intent = mapping(author_stage.get("semantic_intent"), f"{case_id} Semantic Intent")
+    author_output = {
+        "semantic_intent": semantic_intent,
+        "self_challenge": author_stage.get("self_challenge"),
+    }
     author_evidence = require_run_evidence(
         {key: value for key, value in author_stage.items() if key != "semantic_intent"},
         stage="author",
         assignment=assignment["author_assignment"],
         expected_input_sha256=canonical_sha256(author_input),
-        expected_output_sha256=canonical_sha256(semantic_intent),
+        expected_output_sha256=canonical_sha256(author_output),
         materiality_assessment_sha256=materiality_sha256,
     )
+    if critic_evidence["host_runtime"] != author_evidence["host_runtime"]:
+        raise RuntimeError(f"{case_id} critic and author used different host runtimes")
     started_ns = time.monotonic_ns()
     packet = {
         "version": SEMANTIC_INTENT_PACKET_VERSION,
@@ -341,7 +347,8 @@ def _transaction_proof(
 def _run_fields(stage: str) -> set[str]:
     result = {
         "run_nonce", "run_id", "run_assignment_sha256", "run_sha256",
-        "host_profile", "capability_profile", "independent_context", "attempt_count",
+        "host_profile", "capability_profile", "execution_profile", "host_runtime",
+        "independent_context", "attempt_count",
         "validation_error_repair_count", "input_sha256", "output_sha256",
         "access_receipt", "wall_ms", "token_usage",
     }

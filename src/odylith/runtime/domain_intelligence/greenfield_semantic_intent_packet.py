@@ -13,10 +13,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
     require_semantic_intent_ir,
     semantic_evidence_sha256,
     semantic_intent_meaning_sha256,
-    semantic_intent_output_schema,
     semantic_intent_product_facts,
     semantic_intent_product_facts_sha256,
     semantic_intent_sha256,
+)
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_schema import (
+    semantic_intent_output_schema,
 )
 from odylith.runtime.domain_intelligence.greenfield_operating_envelope import (
     greenfield_operating_envelope_receipt,

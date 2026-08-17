@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract imp
 from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contract import (
     SEMANTIC_REASONING_CAPABILITY_PROFILE,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_host_profiles import (
+    semantic_authority_execution_profiles,
+)
 
 
 def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() -> None:
@@ -54,6 +57,9 @@ def test_greenfield_operating_envelope_accepts_one_bounded_governance_product() 
     assert receipt["model_contract"]["semantic_authority_profiles"] == [
         SEMANTIC_REASONING_CAPABILITY_PROFILE
     ]
+    assert receipt["model_contract"]["semantic_authority_execution_profiles"] == (
+        semantic_authority_execution_profiles()
+    )
     assert receipt["model_contract"]["non_authority_safety_profiles"] == [
         LOWER_CAPABILITY_SAFETY_PROFILE
     ]
@@ -156,6 +162,7 @@ def test_greenfield_operating_envelope_rejects_legacy_receipt_versions() -> None
     [
         (("semantic_authority_profiles",), [LOWER_CAPABILITY_SAFETY_PROFILE]),
         (("non_authority_safety_profiles",), [SEMANTIC_REASONING_CAPABILITY_PROFILE]),
+        (("semantic_authority_execution_profiles",), []),
         (("lower_capability_probe", "authority_eligible"), True),
         (("lower_capability_probe", "prompt_only"), False),
         (("lower_capability_probe", "allowed_outcomes"), ["commit"]),
