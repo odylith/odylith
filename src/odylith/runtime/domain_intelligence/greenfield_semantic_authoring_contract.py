@@ -24,7 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_materiality_contrac
 
 
 SEMANTIC_INTENT_AUTHORING_REQUEST_VERSION = (
-    "odylith.greenfield.semantic-intent-authoring-request.v6"
+    "odylith.greenfield.semantic-intent-authoring-request.v7"
 )
 SEMANTIC_INTENT_MANDATORY_CHALLENGES = (
     "unsupported_addition",
@@ -188,7 +188,8 @@ def semantic_intent_authoring_protocol() -> dict[str, Any]:
                 "human-facing interaction"
             ),
             "state_objects_and_transitions": (
-                "empty when evidence does not declare durable state"
+                "empty when evidence does not declare durable state; a transition is one "
+                "atomic from_state/to_state object or null, never independent attributes"
             ),
         },
         "empty_axis_rule": (

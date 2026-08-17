@@ -1,4 +1,4 @@
-"""Reusable source-cited Semantic Intent fixtures for v8 authority tests."""
+"""Reusable source-cited Semantic Intent fixtures for v9 authority tests."""
 
 from __future__ import annotations
 
@@ -106,7 +106,8 @@ def semantic_intent_packet() -> dict[str, Any]:
         semantic_fact(
             "state.0", "state_object", "Card", "The card moves from ready to claimed.",
             0, STATE_EVIDENCE,
-            attributes={"object": "card", "from_state": "ready", "to_state": "claimed"},
+            attributes={"object": "card"},
+            transition={"from_state": "ready", "to_state": "claimed"},
         ),
         semantic_fact(
             "output.0", "visible_output", "Claim receipt", "A claim receipt is visible.",
@@ -283,8 +284,9 @@ def semantic_fact(
     owner_kind: str = "none",
     custody: str = "source_fact",
     attributes: dict[str, str] | None = None,
+    transition: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    return {
+    result = {
         "fact_id": fact_id,
         "kind": kind,
         "label": label,
@@ -301,6 +303,9 @@ def semantic_fact(
             for value in ([quote] if isinstance(quote, str) else quote)
         ],
     }
+    if kind == "state_object":
+        result["transition"] = transition
+    return result
 
 
 def semantic_relation(

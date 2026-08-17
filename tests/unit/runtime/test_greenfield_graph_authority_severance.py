@@ -376,7 +376,7 @@ def test_public_graph_proposal_loads_only_the_explicit_graph_transaction_closure
             if len(transaction_paths) != 1:
                 raise SystemExit("public graph proposal did not stage exactly one transaction")
             transaction = json.loads(transaction_paths[0].read_text(encoding="utf-8"))
-            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v8":
+            if transaction["intent_authority"].get("version") != "odylith.product-intent-authority.v9":
                 raise SystemExit("graph transaction changed its v8 authority")
             if transaction["compiler_provenance"].get("phase") != "pre_confirm_compile":
                 raise SystemExit("graph transaction lost its pre-confirm compiler attestation")

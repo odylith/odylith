@@ -1,11 +1,11 @@
 {
-  "case_id": "claim-desk-installed-smoke",
+  "case_id": "claim-desk-installed-smoke-v4",
   "packet": {
     "author_run": {
       "author_run_id": "fixture-semantic-author-run",
       "capability_profile": "frontier_semantic_reasoning"
     },
-    "authoring_contract_sha256": "a8450533776ad4dc6f85e96bde17010a312a51c702ef9b779af48d46258f0c80",
+    "authoring_contract_sha256": "b252f6e9dd77c66dfa8e13b7c224c3538a1ec75022fbfac2722bb31fd8729dd6",
     "critic_run": {
       "capability_profile": "frontier_semantic_reasoning",
       "critic_run_id": "fixture-materiality-critic-run",
@@ -15,7 +15,7 @@
     "evidence_sha256": "1aab6c40c0a403aefb41b735b49a116bca24734cc06f16ae854a12d8badb3462",
     "materiality_assessment": {
       "assessment_basis": "prompt_only_pre_graph",
-      "authoring_contract_sha256": "a8450533776ad4dc6f85e96bde17010a312a51c702ef9b779af48d46258f0c80",
+      "authoring_contract_sha256": "b252f6e9dd77c66dfa8e13b7c224c3538a1ec75022fbfac2722bb31fd8729dd6",
       "clarification": {
         "alternatives": [],
         "field": "",
@@ -258,14 +258,6 @@
             {
               "name": "object",
               "value": "card"
-            },
-            {
-              "name": "from_state",
-              "value": "ready"
-            },
-            {
-              "name": "to_state",
-              "value": "claimed"
             }
           ],
           "custody": "source_fact",
@@ -281,7 +273,11 @@
               "source_id": "operator_prompt"
             }
           ],
-          "statement": "The card moves from ready to claimed."
+          "statement": "The card moves from ready to claimed.",
+          "transition": {
+            "from_state": "ready",
+            "to_state": "claimed"
+          }
         },
         {
           "attributes": [],
@@ -774,9 +770,9 @@
         }
       ],
       "status": "complete",
-      "version": "odylith.greenfield.semantic-intent-ir.v2"
+      "version": "odylith.greenfield.semantic-intent-ir.v3"
     },
-    "version": "odylith.greenfield.semantic-intent-packet.v3"
+    "version": "odylith.greenfield.semantic-intent-packet.v4"
   },
   "platform_custody_sentinels": [
     "Claim Desk",

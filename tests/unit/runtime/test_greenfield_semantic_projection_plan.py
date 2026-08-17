@@ -427,11 +427,8 @@ def test_projection_depth_changes_only_the_affected_adaptive_surfaces() -> None:
             "Signal record",
             "The signal record moves from absent to ready.",
             0,
-            attributes={
-                "object": "signal record",
-                "from_state": "absent",
-                "to_state": "ready",
-            },
+            attributes={"object": "signal record"},
+            transition={"from_state": "absent", "to_state": "ready"},
         )
     )
     stateful_graph["relations"].extend(
@@ -770,7 +767,8 @@ def _two_state_graph() -> dict[str, Any]:
             "Intake record",
             "The intake record moves from absent to received.",
             0,
-            attributes={"object": "intake record", "from_state": "absent", "to_state": "received"},
+            attributes={"object": "intake record"},
+            transition={"from_state": "absent", "to_state": "received"},
         ),
         _fact(
             "state.1",
@@ -778,7 +776,8 @@ def _two_state_graph() -> dict[str, Any]:
             "Decision record",
             "The decision record moves from pending to approved.",
             1,
-            attributes={"object": "decision record", "from_state": "pending", "to_state": "approved"},
+            attributes={"object": "decision record"},
+            transition={"from_state": "pending", "to_state": "approved"},
         ),
         _fact("output.0", "visible_output", "Intake receipt", "An intake receipt is visible.", 0),
         _fact("output.1", "visible_output", "Decision notice", "A decision notice is visible.", 1),
@@ -836,8 +835,9 @@ def _fact(
     owner_kind: str = "none",
     custody: str = "source_fact",
     attributes: dict[str, str] | None = None,
+    transition: dict[str, str] | None = None,
 ) -> dict[str, Any]:
-    return {
+    result = {
         "fact_id": fact_id,
         "kind": kind,
         "label": label,
@@ -851,6 +851,9 @@ def _fact(
         ],
         "source_refs": [],
     }
+    if kind == "state_object":
+        result["transition"] = transition
+    return result
 
 
 def _relation(

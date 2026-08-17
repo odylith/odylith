@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-08-16
 
-Updated: 2026-08-16
+Updated: 2026-08-17
 
 Backlog: B-144
 
@@ -57,16 +57,15 @@ boundary is therefore:
 3. Material uncertainty produces one focused clarification before authority is
    sealed. Independent model critique is advisory evidence; it cannot silently
    rewrite the active host's packet or become a second semantic authority.
-4. The verified graph is sealed as Product Intent authority v7. Components,
+4. The verified graph is sealed as Product Intent authority v9. Components,
    backlog, semantic events, evaluator evidence, and transaction snapshots
    project from fact ids and relation coordinates rather than lexical overlap.
-5. A v7 proposal receives one read-only pre-confirm projection pass. Invalid
+5. A graph-native proposal receives one read-only pre-confirm projection pass. Invalid
    output fails closed at its graph projector; no fixpoint, rescue prompt,
    regex repair, or prose normalization may change sealed meaning.
 6. CONFIRM remains model-free and publishes the exact sealed transaction bytes.
-7. Legacy parser and repair mechanisms remain only for explicitly versioned
-   compatibility inputs while the cutover proceeds. They are not reachable
-   from the public v7 propose path and are deleted as their final callers move.
+7. Legacy parser and repair mechanisms are unreachable from the public graph
+   proposal path and are deleted as their final compatibility callers move.
 
 Product outcome, source fidelity, clarification policy, transaction laws,
 operating envelope, and proof standards remain fixed. Provider choice, model
@@ -132,8 +131,9 @@ this plan as active until the size and ownership targets are met.
 
 1. Define the Semantic Intent IR, exact citation contract, clarification
    contract, JSON schemas, and deterministic verifier.
-2. Add bounded provider-backed extraction and independent critique with pinned
-   model profiles, call/time/token budgets, and fail-closed provider errors.
+2. Run one prompt-only materiality critic and one independently isolated graph
+   author through pinned host profiles, call/time/token budgets, and fail-closed
+   host or provider errors. Neither stage may repair the other after validation.
 3. Seal the verified IR into Product Intent authority and transaction hashes;
    preserve byte-exact, model-free commit-only execution.
 4. Cut proposal, semantic model, components, systems, backlog, Registry, Atlas,
@@ -192,6 +192,31 @@ this plan as active until the size and ownership targets are met.
   compiler, confirmed prompt source, confirmed intent recovery, and matrix
   runner still exceed their target sizes. Exact installed and browser proof
   is also pending before any safety-critical exception can narrow.
+
+## Mechanism Checkpoint — 2026-08-17
+
+- Fresh ambiguity-frontier evidence falsified three successive contract shapes
+  without prompting fixture-specific repairs: field-agnostic materiality missed
+  visible-result and human-owner gaps; parallel unresolved fields could exceed
+  the one-question contract; and duplicated clarification ownership allowed the
+  graph author to paraphrase the critic-owned question.
+- The materiality critic is now the sole material-decision owner. The graph
+  author receives a provider-locked decision boundary and independently owns
+  only the settled source-cited graph. Runtime validation compares the complete
+  clarification, including citations, and performs no validator-guided retry.
+- A fresh graph author then exposed a separate schema defect: `from_state` and
+  `to_state` were independent generic attributes, so the provider could emit a
+  half transition. Semantic Intent IR v3 now represents a transition as one
+  nullable typed object whose `from_state` and `to_state` members are both
+  required. Packet v4, authoring request v7, Product Intent authority v9, and
+  compiler identity v8 fail closed on older graph contracts; no compatibility
+  alias or prose repair path remains in the graph lane.
+- The current frozen focused proof is `120/120` across graph validation,
+  materiality, projection planning, authority severance, transaction provenance,
+  post-confirm fingerprinting, commit recovery, and host execution. The fixture
+  and graph-contract filenames now match their v4/v3 contracts. A fresh
+  revision-bound development cohort is the next gate; no final-holdout evidence
+  has been accessed.
 
 ## Stop Conditions
 

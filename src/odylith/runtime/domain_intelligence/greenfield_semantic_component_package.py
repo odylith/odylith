@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
+    semantic_state_transition,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_traceability import (
     require_persisted_semantic_projection_plan,
     semantic_projection_component_rows,
@@ -634,14 +637,13 @@ def _is_first_path_consumer(
 
 
 def _state_transition(node: Mapping[str, Any]) -> str:
-    attributes = _attributes(node)
-    before = attributes.get("from_state", "")
-    after = attributes.get("to_state", "")
-    if bool(before) != bool(after):
-        raise ValueError("persisted semantic state node carries an incomplete transition")
-    if not before:
+    transition = semantic_state_transition(node)
+    if transition is None:
         return ""
-    return f"{_required_text(node, 'label')}: {before} to {after}"
+    return (
+        f"{_required_text(node, 'label')}: "
+        f"{transition['from_state']} to {transition['to_state']}"
+    )
 
 
 def _attributes(node: Mapping[str, Any]) -> dict[str, str]:

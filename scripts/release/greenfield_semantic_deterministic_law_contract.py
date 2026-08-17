@@ -36,7 +36,7 @@ DETERMINISTIC_LAW_TEST_TARGETS = {
         "tests/unit/runtime/test_greenfield_generation_store.py",
     ),
     "no_unsupported_accepted_facts_at_type_boundary": (
-        "tests/unit/runtime/test_greenfield_semantic_graph_v2_contract.py",
+        "tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py",
         "tests/unit/runtime/test_greenfield_semantic_materiality_contract.py",
     ),
     "idempotent_retry": (

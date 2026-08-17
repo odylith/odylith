@@ -1,4 +1,4 @@
-"""Parser-free v8 Semantic Intent authority and sealed-byte checks."""
+"""Parser-free v9 Semantic Intent authority and sealed-byte checks."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 
 
 PRODUCT_INTENT_AUTHORITY_KEY = "product_intent_authority"
-PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v8"
+PRODUCT_INTENT_AUTHORITY_VERSION = "odylith.product-intent-authority.v9"
 _SEMANTIC_AUTHORITY_FIELDS = frozenset(
     {
         "version",

@@ -1,6 +1,6 @@
 GREENFIELD_FAST_TESTS := \
 	tests/unit/runtime/test_greenfield_graph_authority_severance.py \
-	tests/unit/runtime/test_greenfield_semantic_graph_v2_contract.py \
+	tests/unit/runtime/test_greenfield_semantic_graph_v3_contract.py \
 	tests/unit/runtime/test_greenfield_semantic_projection_plan.py \
 	tests/unit/runtime/test_greenfield_semantic_release_custody.py \
 	tests/unit/runtime/test_greenfield_semantic_artifact_consumers.py \

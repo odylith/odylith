@@ -53,8 +53,6 @@ SEMANTIC_ATTRIBUTE_NAMES = (
     "action",
     "action_phrase",
     "object",
-    "from_state",
-    "to_state",
     "condition",
     "responsibility",
     "component_kind",
@@ -105,7 +103,10 @@ FACT_SEMANTIC_ROLES = {
     "identity": "the source-backed product identity, excluding discarded or superseded labels",
     "actor": "one explicit human role or participant; preserve each declared role separately",
     "workflow_step": "one ordered source-entailable action with its real semantic owner kind",
-    "state_object": "one durable domain object and at most one explicit transition pair",
+    "state_object": (
+        "one durable domain object with either no transition or one atomic "
+        "from_state/to_state transition object"
+    ),
     "visible_output": "one source-entailable result that a consumer can observe",
     "external_system": "one explicit dependency or external boundary; never merge named dependencies",
     "internal_system": (

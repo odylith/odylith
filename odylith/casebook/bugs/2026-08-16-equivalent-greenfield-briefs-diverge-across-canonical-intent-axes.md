@@ -128,6 +128,29 @@
   clarification, including citations. This is a typed authority boundary, not
   prose normalization or validator-guided repair.
 
+- Typed-State Follow-up (2026-08-17): Provider-locking the clarification
+  authority removed the question drift, but the next fresh author emitted one
+  half of a state transition and the deterministic graph validator rejected
+  the segment. The current IR represents `from_state` and `to_state` as two
+  independent entries in a generic attribute array. The structured-output
+  provider supports array item schemas and cardinality, but not the dependency
+  or positional keywords needed to require both entries atomically. Adding a
+  prompt instruction or accepting a half transition are rejected mechanisms.
+  Move transition custody into one typed nullable state-transition object,
+  remove the two generic attribute names, and bump the IR, packet, authority,
+  and authoring contracts. Deterministic consumers must read that one typed
+  object; no authoring adapter or compatibility alias remains on the graph
+  lane.
+
+- Typed-State Resolution (2026-08-17): Semantic Intent IR v3 now requires each
+  state fact to carry either `transition: null` or one exact transition object
+  with both `from_state` and `to_state`. The two names are absent from the
+  generic attribute vocabulary. Packet v4, request v7, authority v9, and
+  compiler identity v8 reject the previous contract rather than translating
+  it. Graph, materiality, projection, authority, transaction, recovery, and
+  host-execution proof is `120/120`; a fresh revision-bound cohort remains the
+  release evidence gate.
+
 - Rollback/Forward Fix: Forward fix pre-confirm compiler only; post-confirm commit-only runtime remains unchanged.
 
 - Verification: Exact paired canonical-fact tests for handoff, marker, packet, digest, accent, and dry-run groups; relevant workflow, canonical, semantic, component, transaction-boundary suites; retained-result issue adjudication before a full installed rerun.

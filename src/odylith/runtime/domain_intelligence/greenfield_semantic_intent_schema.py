@@ -22,7 +22,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 )
 
 
-_STATE_ATTRIBUTE_NAMES = frozenset({"from_state", "to_state"})
 _SYSTEM_ATTRIBUTE_NAMES = frozenset({"component_kind", "release_scope"})
 
 
@@ -114,20 +113,23 @@ def _clarification_field() -> dict[str, Any]:
 
 
 def _fact_schema(*, kind: str, source_refs: dict[str, Any]) -> dict[str, Any]:
+    required = [
+        "fact_id",
+        "kind",
+        "label",
+        "statement",
+        "order",
+        "owner_kind",
+        "custody",
+        "attributes",
+        "source_refs",
+    ]
+    if kind == "state_object":
+        required.append("transition")
     return {
         "type": "object",
         "additionalProperties": False,
-        "required": [
-            "fact_id",
-            "kind",
-            "label",
-            "statement",
-            "order",
-            "owner_kind",
-            "custody",
-            "attributes",
-            "source_refs",
-        ],
+        "required": required,
         "properties": {
             "fact_id": {"type": "string", "minLength": 1, "maxLength": 100},
             "kind": {"type": "string", "enum": [kind]},
@@ -144,6 +146,11 @@ def _fact_schema(*, kind: str, source_refs: dict[str, Any]) -> dict[str, Any]:
                 "maxItems": 12,
                 "items": {"anyOf": _attribute_variants(kind)},
             },
+            **(
+                {"transition": _state_transition_schema()}
+                if kind == "state_object"
+                else {}
+            ),
             "source_refs": source_refs,
         },
     }
@@ -151,8 +158,6 @@ def _fact_schema(*, kind: str, source_refs: dict[str, Any]) -> dict[str, Any]:
 
 def _attribute_variants(kind: str) -> list[dict[str, Any]]:
     generic_names = set(SEMANTIC_ATTRIBUTE_NAMES) - _SYSTEM_ATTRIBUTE_NAMES
-    if kind != "state_object":
-        generic_names -= _STATE_ATTRIBUTE_NAMES
     variants = [_attribute_schema(names=sorted(generic_names))]
     if kind == "internal_system":
         variants.extend(
@@ -166,6 +171,24 @@ def _attribute_variants(kind: str) -> list[dict[str, Any]]:
             ]
         )
     return variants
+
+
+def _state_transition_schema() -> dict[str, Any]:
+    value = {"type": "string", "minLength": 1, "maxLength": 800}
+    return {
+        "anyOf": [
+            {"type": "null"},
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["from_state", "to_state"],
+                "properties": {
+                    "from_state": dict(value),
+                    "to_state": dict(value),
+                },
+            },
+        ]
+    }
 
 
 def _attribute_schema(

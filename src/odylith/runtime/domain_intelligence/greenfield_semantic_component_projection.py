@@ -7,6 +7,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_intent_contract import (
     require_semantic_intent_ir,
+    semantic_state_transition,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_identifiers import (
     semantic_artifact_identifier,
@@ -345,11 +346,11 @@ def _boundary_interfaces(
 
 
 def _state_label(fact: Mapping[str, Any]) -> str:
-    attributes = _attributes(fact)
-    before = attributes.get("from_state", "")
-    after = attributes.get("to_state", "")
+    transition = semantic_state_transition(fact)
     label = str(fact["label"])
-    return f"{label}: {before} to {after}" if before and after else label
+    if transition is None:
+        return label
+    return f"{label}: {transition['from_state']} to {transition['to_state']}"
 
 
 def _implemented_facts(

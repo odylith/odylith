@@ -131,7 +131,7 @@ def test_product_create_transaction_provenance_carries_compiler_identity(tmp_pat
     assert (
         transaction.compiler_provenance["compiler_identity"]["version"]
         == PRODUCT_CREATE_TRANSACTION_COMPILER_IDENTITY_VERSION
-        == "odylith.greenfield.compiler_identity.v7"
+        == "odylith.greenfield.compiler_identity.v8"
     )
 
 
@@ -477,8 +477,8 @@ def test_sealed_commit_loader_requires_exact_v8_authority_protocol(
         load_sealed_product_create_commit(transaction_path)
 
 
-def test_create_contract_accepts_only_v8_intent_authority() -> None:
-    assert PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION == "odylith.product-intent-authority.v8"
+def test_create_contract_accepts_only_v9_intent_authority() -> None:
+    assert PRODUCT_CREATE_TRANSACTION_ACCEPTED_INTENT_AUTHORITY_VERSION == "odylith.product-intent-authority.v9"
 
 
 @pytest.mark.parametrize("mutation", ("extra_field", "reformatted"))

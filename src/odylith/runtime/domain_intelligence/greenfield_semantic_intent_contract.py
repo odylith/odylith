@@ -50,8 +50,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_source_citations im
 )
 
 
-SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v2"
-SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v3"
+SEMANTIC_INTENT_IR_VERSION = "odylith.greenfield.semantic-intent-ir.v3"
+SEMANTIC_INTENT_PACKET_VERSION = "odylith.greenfield.semantic-intent-packet.v4"
 
 _CUSTODY_STATES = frozenset(
     {"source_fact", "bounded_interpretation", "visible_assumption"}
@@ -261,9 +261,10 @@ def _validate_facts(value: Any, *, evidence_sources: Mapping[str, str]) -> list[
     result: list[dict[str, Any]] = []
     for raw in rows:
         row = _mapping(raw, "fact")
-        _exact_keys(row, keys, "fact")
         _fact_id(row.get("fact_id"), "fact")
         kind = _enum(row.get("kind"), set(SEMANTIC_FACT_KINDS), "fact kind")
+        expected_keys = keys | ({"transition"} if kind == "state_object" else set())
+        _exact_keys(row, expected_keys, "fact")
         if not _text(row.get("label"), 300) or not _text(row.get("statement"), 1600):
             raise ValueError("Semantic Intent fact is incomplete")
         if not isinstance(row.get("order"), int) or isinstance(row.get("order"), bool) or row["order"] < 0:
@@ -271,6 +272,8 @@ def _validate_facts(value: Any, *, evidence_sources: Mapping[str, str]) -> list[
         owner_kind = _enum(row.get("owner_kind"), _OWNER_KINDS, "owner kind")
         _enum(row.get("custody"), _CUSTODY_STATES, "custody")
         attributes = _validate_attributes(row.get("attributes"), kind=kind)
+        if kind == "state_object":
+            semantic_state_transition(row)
         require_semantic_source_refs(row.get("source_refs"), evidence_sources=evidence_sources)
         _require_kind_contract(kind=kind, owner_kind=owner_kind, attributes=attributes)
         result.append(dict(row))
@@ -286,10 +289,6 @@ def _validate_attributes(value: Any, *, kind: str) -> dict[str, str]:
         _exact_keys(row, {"name", "value"}, "fact attribute")
         name = _enum(row.get("name"), _ATTRIBUTE_NAMES, "attribute name")
         if name in attributes:
-            if kind == "state_object" and name in {"from_state", "to_state"}:
-                raise ValueError(
-                    "Semantic Intent state object exceeds one transition pair"
-                )
             raise ValueError("Semantic Intent fact repeats an attribute")
         attributes[name] = _text(row.get("value"), 800)
     return attributes
@@ -308,14 +307,21 @@ def _require_kind_contract(*, kind: str, owner_kind: str, attributes: Mapping[st
             raise ValueError("Semantic Intent internal system has an invalid component kind")
         if attributes["release_scope"] not in INTERNAL_SYSTEM_RELEASE_SCOPES:
             raise ValueError("Semantic Intent internal system has an invalid release scope")
-    before = attributes.get("from_state", "")
-    after = attributes.get("to_state", "")
-    if kind != "state_object" and (before or after):
-        raise ValueError(
-            "non-state Semantic Intent fact carries state transition attributes"
-        )
-    if bool(before) != bool(after):
-        raise ValueError("Semantic Intent state transition is half specified")
+
+
+def semantic_state_transition(value: Mapping[str, Any]) -> dict[str, str] | None:
+    """Return one atomic state transition or no transition."""
+
+    transition = value.get("transition")
+    if transition is None:
+        return None
+    row = _mapping(transition, "state transition")
+    _exact_keys(row, {"from_state", "to_state"}, "state transition")
+    before = _text(row.get("from_state"), 800)
+    after = _text(row.get("to_state"), 800)
+    if not before or not after:
+        raise ValueError("Semantic Intent state transition is incomplete")
+    return {"from_state": before, "to_state": after}
 
 
 def _validate_relations(
@@ -583,4 +589,5 @@ __all__ = [
     "semantic_intent_product_facts",
     "semantic_intent_product_facts_sha256",
     "semantic_intent_sha256",
+    "semantic_state_transition",
 ]
